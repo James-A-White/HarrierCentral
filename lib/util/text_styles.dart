@@ -37,7 +37,7 @@ TextStyle ts_numberStyle = TextStyle(
   color: Colors.black87,
   fontFamily: 'AvenirNextDemiBold',
   fontStyle: FontStyle.normal,
-  fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+  fontSize: 16.0 * deviceInfo.deviceWidthScaleFactor,
   height: 1.0,
 );
 
@@ -45,7 +45,7 @@ TextStyle ts_boldTitleStyle = TextStyle(
   color: Colors.black87,
   fontFamily: 'AvenirNextBold',
   fontStyle: FontStyle.normal,
-  fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+  fontSize: 16.0 * deviceInfo.deviceWidthScaleFactor,
   height: 1.0,
 );
 

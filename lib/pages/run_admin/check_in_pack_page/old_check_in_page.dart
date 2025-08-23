@@ -70,10 +70,10 @@
 //   bool _highlightSearchType = false;
 
 //   final TextStyle _localFootnoteSmallRed = ts_footnoteSmallRed.copyWith(
-//     fontSize: 12 * G0<DeviceInfo>().deviceWidthScaleFactor,
+//     fontSize: 12 * deviceInfo.deviceWidthScaleFactor,
 //   );
 //   final TextStyle _localFootnoteSmall = ts_footnoteSmall.copyWith(
-//     fontSize: 12 * G0<DeviceInfo>().deviceWidthScaleFactor,
+//     fontSize: 12 * deviceInfo.deviceWidthScaleFactor,
 //   );
 
 //   List<int> _filterValues = <int>[0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -110,14 +110,14 @@
 //   }
 
 //   Future<void> _refreshSqlTablesFromBackend(bool showLoadingIndicator) async {
-//     if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.connected) {
+//     if (appModel.connectionStatus == EnumConnectionStatus2.connected) {
 //       if (showLoadingIndicator) {
 //         setState(() {
 //           _isLoading = true;
 //         });
 //       }
 
-//       await G0<TableModel>().syncEventAdminService.updateFromBackend(
+//       await tableModel.syncEventAdminService.updateFromBackend(
 //         SyncEventAdminService.flagHashersTable |
 //             SyncEventAdminService.flagPaymentsTable |
 //             SyncEventAdminService.flagHasherEventMapTable |
@@ -144,19 +144,19 @@
 //               null as hemId,
 //               coalesce(
 //                   CASE 
-//                       WHEN (julianday(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate}) >= julianday('now','localtime')) THEN 1 
+//                       WHEN (julianday(hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate}) >= julianday('now','localtime')) THEN 1 
 //                       ELSE 0 
 //                   END, 0) as isMember,
-//               coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing}, 0) as isFollowing,
+//               coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colFollowing}, 0) as isFollowing,
 //               0 as isHare,
 //               0 as isPaid, 
 //               coalesce(
-//                   hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName}, 
+//                   hkm.${tableModel.hasherKennelMapTableHelper.colKennelHashName}, 
 //                   coalesce(h.dispName, h.hashName, coalesce(h.firstName, '') || ' ' || coalesce(h.lastName, ''))
 //               ) as nameForDisplay,
 //               lower(
 //                   coalesce(
-//                       ' ' || hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName} || ' ',
+//                       ' ' || hkm.${tableModel.hasherKennelMapTableHelper.colKennelHashName} || ' ',
 //                       ' ' || coalesce(h.hashName, '') || ' ' || coalesce(h.dispName, '') || ' ' || coalesce(h.firstName, '') || ' ' || coalesce(h.lastName, '')
 //                   )
 //               ) as nameForSort,
@@ -168,18 +168,18 @@
 //               0 as attendanceState,
 //               null as hemUpdatedAt,
 //               null as payUpdatedAt,
-//               coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount}, 0) as discountAmount,
-//               coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent}, 0) as discountPercent,
+//               coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colDiscountAmount}, 0) as discountAmount,
+//               coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colDiscountPercent}, 0) as discountPercent,
 //               0 as credit
-//           FROM ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h
-//           LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm 
-//               ON hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = h.${G0<TableModel>().hashersTableHelper.colHasherId}
-//           WHERE h.${G0<TableModel>().hashersTableHelper.colDispName} NOT LIKE 'Placeholder user for%'
+//           FROM ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h
+//           LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm 
+//               ON hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = h.${tableModel.hashersTableHelper.colHasherId}
+//           WHERE h.${tableModel.hashersTableHelper.colDispName} NOT LIKE 'Placeholder user for%'
 //           ORDER BY nameForSort;
 
 //           ''';
 
-//       final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
+//       final List<Map<String, dynamic>> results = await database.rawQuery(
 //         sql,
 //       );
 
@@ -200,52 +200,52 @@
 //     try {
 //       final String sql = '''
 //       SELECT 
-//           h.${G0<TableModel>().hashersTableHelper.colHasherId} AS hasherId,
-//           hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} AS hemId,
+//           h.${tableModel.hashersTableHelper.colHasherId} AS hasherId,
+//           hem.${tableModel.hasherEventMapTableHelper.colHemId} AS hemId,
 //           CASE 
-//               WHEN (julianday(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate}) >= julianday('now', 'localtime')) 
+//               WHEN (julianday(hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate}) >= julianday('now', 'localtime')) 
 //               THEN 1 
 //               ELSE 0 
 //           END AS isMember,
-//           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing} AS isFollowing,
-//           COALESCE(hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare}, 0) AS isHare,
+//           hkm.${tableModel.hasherKennelMapTableHelper.colFollowing} AS isFollowing,
+//           COALESCE(hem.${tableModel.hasherEventMapTableHelper.colIsHare}, 0) AS isHare,
 //           CASE 
-//               WHEN pay.${G0<TableModel>().paymentsTableHelper.colHemId} IS NULL 
+//               WHEN pay.${tableModel.paymentsTableHelper.colHemId} IS NULL 
 //               THEN 0 
 //               ELSE 1 
 //           END AS isPaid, 
-//           COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName}, 
-//               COALESCE(h.${G0<TableModel>().hashersTableHelper.colDispName}, 
-//                   h.${G0<TableModel>().hashersTableHelper.colHashName}, 
-//                   COALESCE(h.${G0<TableModel>().hashersTableHelper.colFirstName}, '') || ' ' || 
-//                   COALESCE(h.${G0<TableModel>().hashersTableHelper.colLastName}, ''))) AS nameForDisplay,
-//           LOWER(COALESCE(' ' || hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName} || ' ', 
-//               ' ' || COALESCE(h.${G0<TableModel>().hashersTableHelper.colHashName}, '') || ' ' || 
-//               COALESCE(h.${G0<TableModel>().hashersTableHelper.colDispName}, '') || ' ' || 
-//               COALESCE(h.${G0<TableModel>().hashersTableHelper.colFirstName}, '') || ' ' || 
-//               COALESCE(h.${G0<TableModel>().hashersTableHelper.colLastName}, ''))) AS nameForSort,
-//           COALESCE(pay.${G0<TableModel>().paymentsTableHelper.colPaymentType}, 0) AS paymentType,
-//           COALESCE(pay.${G0<TableModel>().paymentsTableHelper.colCreditAmount}, 0) AS creditAmount,
-//           COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelUserPhoto}, h.${G0<TableModel>().hashersTableHelper.colPhoto}) AS photo,
+//           COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colKennelHashName}, 
+//               COALESCE(h.${tableModel.hashersTableHelper.colDispName}, 
+//                   h.${tableModel.hashersTableHelper.colHashName}, 
+//                   COALESCE(h.${tableModel.hashersTableHelper.colFirstName}, '') || ' ' || 
+//                   COALESCE(h.${tableModel.hashersTableHelper.colLastName}, ''))) AS nameForDisplay,
+//           LOWER(COALESCE(' ' || hkm.${tableModel.hasherKennelMapTableHelper.colKennelHashName} || ' ', 
+//               ' ' || COALESCE(h.${tableModel.hashersTableHelper.colHashName}, '') || ' ' || 
+//               COALESCE(h.${tableModel.hashersTableHelper.colDispName}, '') || ' ' || 
+//               COALESCE(h.${tableModel.hashersTableHelper.colFirstName}, '') || ' ' || 
+//               COALESCE(h.${tableModel.hashersTableHelper.colLastName}, ''))) AS nameForSort,
+//           COALESCE(pay.${tableModel.paymentsTableHelper.colPaymentType}, 0) AS paymentType,
+//           COALESCE(pay.${tableModel.paymentsTableHelper.colCreditAmount}, 0) AS creditAmount,
+//           COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colKennelUserPhoto}, h.${tableModel.hashersTableHelper.colPhoto}) AS photo,
 //           0 AS virginVisitorType,
-//           COALESCE(hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState}, 0) AS rsvpState,
-//           COALESCE(hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel}, 0) AS totalRunsThisKennel,
-//           COALESCE(hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel}, 0) AS totalHaringThisKennel,
-//           COALESCE(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState}, 0) AS attendenceState,
-//           hem.${G0<TableModel>().hasherEventMapTableHelper.colUpdatedAt} AS hemUpdatedAt,
-//           pay.${G0<TableModel>().paymentsTableHelper.colUpdatedAt} AS payUpdatedAt,
-//           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit} AS credit,
-//           COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount}, 0) AS discountAmount,
-//           COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent}, 0) AS discountPercent,
-//           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount} AS hcTotalRunCount,
-//           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount} AS hcHaringCount,
-//           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount} AS historicalTotalRunCount,
-//           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount} AS historicalHaringCount,
-//           hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate} AS historicalCountIsEstimate
-//       FROM ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm
-//       INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h ON h.hasherId = hkm.userId
-//       LEFT OUTER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem ON hem.userId = hkm.userId AND hem.eventId = "${widget.eventAggregate.event.eventId}"
-//       LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay ON pay.hemId = hem.hemId AND pay.cancelledBy IS NULL
+//           COALESCE(hem.${tableModel.hasherEventMapTableHelper.colRsvpState}, 0) AS rsvpState,
+//           COALESCE(hem.${tableModel.hasherEventMapTableHelper.colTotalRunsThisKennel}, 0) AS totalRunsThisKennel,
+//           COALESCE(hem.${tableModel.hasherEventMapTableHelper.colTotalHaringThisKennel}, 0) AS totalHaringThisKennel,
+//           COALESCE(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState}, 0) AS attendenceState,
+//           hem.${tableModel.hasherEventMapTableHelper.colUpdatedAt} AS hemUpdatedAt,
+//           pay.${tableModel.paymentsTableHelper.colUpdatedAt} AS payUpdatedAt,
+//           hkm.${tableModel.hasherKennelMapTableHelper.colKennelCredit} AS credit,
+//           COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colDiscountAmount}, 0) AS discountAmount,
+//           COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colDiscountPercent}, 0) AS discountPercent,
+//           hkm.${tableModel.hasherKennelMapTableHelper.colHcTotalRunCount} AS hcTotalRunCount,
+//           hkm.${tableModel.hasherKennelMapTableHelper.colHcHaringCount} AS hcHaringCount,
+//           hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount} AS historicalTotalRunCount,
+//           hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount} AS historicalHaringCount,
+//           hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalCountIsEstimate} AS historicalCountIsEstimate
+//       FROM ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm
+//       INNER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h ON h.hasherId = hkm.userId
+//       LEFT OUTER JOIN ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem ON hem.userId = hkm.userId AND hem.eventId = "${widget.eventAggregate.event.eventId}"
+//       LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay ON pay.hemId = hem.hemId AND pay.cancelledBy IS NULL
 //       WHERE hkm.kennelId = "${widget.eventAggregate.event.kennelId}" 
 //         AND COALESCE(hem.virginVisitorType, 0) = 0
 //         AND (
@@ -288,22 +288,22 @@
 //           END AS photo,
 //           COALESCE(hem2.virginVisitorType, 1) AS virginVisitorType,
 //           COALESCE(hem2.rsvpState, 0) AS rsvpState,
-//           COALESCE(hem2.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel}, 0) AS totalRunsThisKennel,
-//           COALESCE(hem2.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel}, 0) AS totalHaringThisKennel,
+//           COALESCE(hem2.${tableModel.hasherEventMapTableHelper.colTotalRunsThisKennel}, 0) AS totalRunsThisKennel,
+//           COALESCE(hem2.${tableModel.hasherEventMapTableHelper.colTotalHaringThisKennel}, 0) AS totalHaringThisKennel,
 //           COALESCE(hem2.attendenceState, 0) AS attendenceState,
 //           hem2.updatedAt AS hemUpdatedAt,
 //           pay2.updatedAt AS payUpdatedAt,
 //           0 AS credit,
-//           0 AS ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount},
-//           0 AS ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent},
-//           NULL AS ${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount},
-//           NULL AS ${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount},
-//           NULL AS ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},
-//           NULL AS ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},
-//           NULL AS ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate}
-//       FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem2
-//       INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h2 ON h2.hasherId = hem2.userId
-//       LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay2 ON pay2.hemId = hem2.hemId AND pay2.cancelledBy IS NULL
+//           0 AS ${tableModel.hasherKennelMapTableHelper.colDiscountAmount},
+//           0 AS ${tableModel.hasherKennelMapTableHelper.colDiscountPercent},
+//           NULL AS ${tableModel.hasherKennelMapTableHelper.colHcTotalRunCount},
+//           NULL AS ${tableModel.hasherKennelMapTableHelper.colHcHaringCount},
+//           NULL AS ${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount},
+//           NULL AS ${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount},
+//           NULL AS ${tableModel.hasherKennelMapTableHelper.colHistoricalCountIsEstimate}
+//       FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem2
+//       INNER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h2 ON h2.hasherId = hem2.userId
+//       LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay2 ON pay2.hemId = hem2.hemId AND pay2.cancelledBy IS NULL
 //       WHERE hem2.eventId = "${widget.eventAggregate.event.eventId}" 
 //         AND hem2.virginVisitorType != 0
 
@@ -313,43 +313,43 @@
 //           hem3.userId AS hasherId,
 //           hem3.hemId AS hemId,
 //           0 AS isMember,
-//           hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing} AS isFollowing,
+//           hkm4.${tableModel.hasherKennelMapTableHelper.colFollowing} AS isFollowing,
 //           hem3.isHare AS isHare,
 //           CASE 
 //               WHEN pay3.hemId IS NULL 
 //               THEN 0 
 //               ELSE 1 
 //           END AS isPaid, 
-//           COALESCE(hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName}, 
+//           COALESCE(hkm4.${tableModel.hasherKennelMapTableHelper.colKennelHashName}, 
 //               COALESCE(h3.dispName, h3.hashName, COALESCE(h3.firstName, '') || ' ' || 
 //               COALESCE(h3.lastName, ''))) AS nameForDisplay,
-//           LOWER(COALESCE(hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName}, 
+//           LOWER(COALESCE(hkm4.${tableModel.hasherKennelMapTableHelper.colKennelHashName}, 
 //               COALESCE(h3.dispName, h3.hashName, '') || ' ' || 
 //               COALESCE(h3.lastName, '') || ' ' || 
 //               COALESCE(h3.firstName, ''))) AS nameForSort,
 //           COALESCE(pay3.paymentType, 0) AS paymentType,
 //           COALESCE(pay3.creditAmount, 0) AS creditAmount,
-//           COALESCE(hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colKennelUserPhoto}, h3.photo) AS photo,
+//           COALESCE(hkm4.${tableModel.hasherKennelMapTableHelper.colKennelUserPhoto}, h3.photo) AS photo,
 //           hem3.virginVisitorType AS virginVisitorType,
 //           COALESCE(hem3.rsvpState, 0) AS rsvpState,
-//           COALESCE(hem3.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel}, 0) AS totalRunsThisKennel,
-//           COALESCE(hem3.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel}, 0) AS totalHaringThisKennel,
+//           COALESCE(hem3.${tableModel.hasherEventMapTableHelper.colTotalRunsThisKennel}, 0) AS totalRunsThisKennel,
+//           COALESCE(hem3.${tableModel.hasherEventMapTableHelper.colTotalHaringThisKennel}, 0) AS totalHaringThisKennel,
 //           COALESCE(hem3.attendenceState, 0) AS attendenceState,
 //           hem3.updatedAt AS hemUpdatedAt,
 //           pay3.updatedAt AS payUpdatedAt,
-//           hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit} AS credit,
-//           COALESCE(hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount}, 0) AS discountAmount,
-//           COALESCE(hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent}, 0) AS discountPercent,
-//           hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount},
-//           hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount},
-//           hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},
-//           hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},
-//           hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate}
-//       FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem3
-//       INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h3 ON h3.hasherId = hem3.userId
-//       LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay3 ON pay3.hemId = hem3.hemId AND pay3.cancelledBy IS NULL
-//       LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm3 ON hkm3.userId = h3.hasherId AND hkm3.kennelId = "${widget.eventAggregate.event.kennelId}" AND julianday(hkm3.membershipExpirationDate) >= julianday('now', 'localtime')
-//       LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm4 ON hkm4.userId = h3.hasherId AND hkm4.kennelId = "${widget.eventAggregate.event.kennelId}" 
+//           hkm4.${tableModel.hasherKennelMapTableHelper.colKennelCredit} AS credit,
+//           COALESCE(hkm4.${tableModel.hasherKennelMapTableHelper.colDiscountAmount}, 0) AS discountAmount,
+//           COALESCE(hkm4.${tableModel.hasherKennelMapTableHelper.colDiscountPercent}, 0) AS discountPercent,
+//           hkm4.${tableModel.hasherKennelMapTableHelper.colHcTotalRunCount},
+//           hkm4.${tableModel.hasherKennelMapTableHelper.colHcHaringCount},
+//           hkm4.${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount},
+//           hkm4.${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount},
+//           hkm4.${tableModel.hasherKennelMapTableHelper.colHistoricalCountIsEstimate}
+//       FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem3
+//       INNER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h3 ON h3.hasherId = hem3.userId
+//       LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay3 ON pay3.hemId = hem3.hemId AND pay3.cancelledBy IS NULL
+//       LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm3 ON hkm3.userId = h3.hasherId AND hkm3.kennelId = "${widget.eventAggregate.event.kennelId}" AND julianday(hkm3.membershipExpirationDate) >= julianday('now', 'localtime')
+//       LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm4 ON hkm4.userId = h3.hasherId AND hkm4.kennelId = "${widget.eventAggregate.event.kennelId}" 
 //       WHERE hem3.eventId = "${widget.eventAggregate.event.eventId}" 
 //         AND hem3.virginVisitorType = 0 
 //         AND (
@@ -373,7 +373,7 @@
 
 //       try {
 //         List<Map<String, dynamic>> results;
-//         results = await G0<Database>().rawQuery(sql);
+//         results = await database.rawQuery(sql);
 
 //         setState(() {
 //           if (results.isNotEmpty) {
@@ -544,15 +544,15 @@
 //               COUNT(CASE WHEN pay.paymentType >= 2 THEN 1 ELSE NULL END) as paid,
 //               COUNT(CASE WHEN rsvpState >= 2 AND attendenceState < 20 THEN 1 ELSE NULL END) as coming,
 //               COUNT(CASE WHEN attendenceState >= 30 THEN 1 ELSE NULL END) as onIn,
-//               (SELECT COUNT(*) FROM ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm WHERE hkm.kennelId = "${widget.eventAggregate.event.kennelId}" and hkm.isMember = 1) as memberCount
-//           FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem
-//           INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h ON hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = h.${G0<TableModel>().hashersTableHelper.colHasherId}
-//           LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay on pay.hemId = hem.hemId and pay.cancelledBy IS NULL
-//           WHERE h.${G0<TableModel>().hashersTableHelper.colRemoved} = 0
+//               (SELECT COUNT(*) FROM ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm WHERE hkm.kennelId = "${widget.eventAggregate.event.kennelId}" and hkm.isMember = 1) as memberCount
+//           FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem
+//           INNER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h ON hem.${tableModel.hasherEventMapTableHelper.colUserId} = h.${tableModel.hashersTableHelper.colHasherId}
+//           LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay on pay.hemId = hem.hemId and pay.cancelledBy IS NULL
+//           WHERE h.${tableModel.hashersTableHelper.colRemoved} = 0
   
 //           ''';
 
-//       final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
+//       final List<Map<String, dynamic>> results = await database.rawQuery(
 //         sql,
 //       );
 //       if (results.isNotEmpty) {
@@ -622,7 +622,7 @@
 
 //     if ((result != null) && (result['hasher']?.hasherId != null)) {
 //       // NOTE:this method returns adHoc data that we are ignoring
-//       await G0<TableModel>().hasherEventMapService.setEventAttendence(
+//       await tableModel.hasherEventMapService.setEventAttendence(
 //         widget.eventAggregate.event.eventId,
 //         result['hasher'].hasherId,
 //         AppDomainType.event,
@@ -654,7 +654,7 @@
 //         false;
 
 //     if (doCopyRsvps) {
-//       final List<dynamic> adHocData = await G0<TableModel>()
+//       final List<dynamic> adHocData = await tableModel
 //           .hasherEventMapService
 //           .copyEventRsvps(fromEventId, widget.eventAggregate.event.eventId);
 
@@ -698,7 +698,7 @@
 //           setState(() {
 //             _isLoading = true;
 //           });
-//           final Future<List<dynamic>> retVal = G0<TableModel>()
+//           final Future<List<dynamic>> retVal = tableModel
 //               .hasherEventMapService
 //               .joinEventAsVisitor(
 //                 widget.eventAggregate.event.eventId,
@@ -784,7 +784,7 @@
 //       backgroundColor: themeAppBarBackground,
 //       iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
 //       title: TextScaleFactorClamper(
-//         textScaleFactor: G0<DeviceInfo>().textClamp15,
+//         textScaleFactor: deviceInfo.textClamp15,
 //         child: Text(title, style: ts_appBarTitle),
 //       ),
 //     );
@@ -845,7 +845,7 @@
 //               ),
 //               Expanded(
 //                 child: TextScaleFactorClamper(
-//                   textScaleFactor: G0<DeviceInfo>().textClamp00,
+//                   textScaleFactor: deviceInfo.textClamp00,
 //                   child: Column(
 //                     children: <Widget>[
 //                       Row(
@@ -917,7 +917,7 @@
 
 //   Widget _filterBar() {
 //     return TextScaleFactorClamper(
-//       textScaleFactor: G0<DeviceInfo>().textClamp25,
+//       textScaleFactor: deviceInfo.textClamp25,
 //       child: Container(
 //         decoration: const BoxDecoration(
 //           // border: new Border.all(width: 1.0, color: Colors.black),
@@ -1229,7 +1229,7 @@
 //             backgroundColor: Colors.green,
 //             label: 'Preset Filters',
 //             labelStyle: TextStyle(
-//               fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+//               fontSize: 18.0 * (1.0 / deviceInfo.deviceTextScaleFactor),
 //             ),
 //             onTap: () {
 //               _filterOptionsPopup();
@@ -1261,7 +1261,7 @@
 //             backgroundColor: hc_blue,
 //             label: 'Add Virgin / Visitor',
 //             labelStyle: TextStyle(
-//               fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+//               fontSize: 18.0 * (1.0 / deviceInfo.deviceTextScaleFactor),
 //             ),
 //             onTap: () => _showVirginVisitorPopup(context),
 //           ),
@@ -1273,7 +1273,7 @@
 //             backgroundColor: hc_blue,
 //             label: 'Find Hasher and add',
 //             labelStyle: TextStyle(
-//               fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+//               fontSize: 18.0 * (1.0 / deviceInfo.deviceTextScaleFactor),
 //             ),
 //             onTap: () async => await _findHasher(),
 //           ),
@@ -1285,7 +1285,7 @@
 //             backgroundColor: hc_blue,
 //             label: 'Copy RSVPs from Previous run',
 //             labelStyle: TextStyle(
-//               fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+//               fontSize: 18.0 * (1.0 / deviceInfo.deviceTextScaleFactor),
 //             ),
 //             onTap: () => _copyRsvpsFromLastRun(context),
 //           ),
@@ -1297,7 +1297,7 @@
 //             backgroundColor: Colors.deepOrange,
 //             label: 'Enable multi-selection',
 //             labelStyle: TextStyle(
-//               fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+//               fontSize: 18.0 * (1.0 / deviceInfo.deviceTextScaleFactor),
 //             ),
 //             onTap: () => _copyRsvpsFromLastRun(context),
 //           ),
@@ -1306,7 +1306,7 @@
 //           //     backgroundColor: Colors.deepOrange,
 //           //     label: 'View video tutorial',
 //           //     labelStyle: TextStyle(
-//           //       fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+//           //       fontSize: 18.0 * (1.0 / deviceInfo.deviceTextScaleFactor),
 //           //     ),
 //           //     onTap: () => Navigator.push<dynamic>(
 //           //           context,
@@ -1324,7 +1324,7 @@
 //           //     backgroundColor: Colors.purple,
 //           //     label: 'Bank Transfer\r\n(Member)',
 //           //     labelStyle: TextStyle(
-//           //       fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+//           //       fontSize: 18.0 * (1.0 / deviceInfo.deviceTextScaleFactor),
 //           //     ),
 //           //     onTap:
 //           //         () => BankTransferQr.showBankTransferQrCode(
@@ -1338,7 +1338,7 @@
 //           //     backgroundColor: Colors.purple,
 //           //     label: 'Bank Transfer\r\n(Non-Member)',
 //           //     labelStyle: TextStyle(
-//           //       fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+//           //       fontSize: 18.0 * (1.0 / deviceInfo.deviceTextScaleFactor),
 //           //     ),
 //           //     onTap:
 //           //         () => BankTransferQr.showBankTransferQrCode(
@@ -2054,7 +2054,7 @@
 //       print('rsvpState = $rsvpState');
 //     }
 
-//     final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService
+//     final List<dynamic> adHocData = await tableModel.hasherEventMapService
 //         .setEventRsvp(
 //           widget.eventAggregate.event.eventId,
 //           hasherId,
@@ -2080,7 +2080,7 @@
 //     int attendenceState,
 //     int isHare,
 //   ) async {
-//     await G0<TableModel>().hasherEventMapService.setEventAttendence(
+//     await tableModel.hasherEventMapService.setEventAttendence(
 //       widget.eventAggregate.event.eventId,
 //       packMember.hasherId,
 //       AppDomainType.event,
@@ -2109,7 +2109,7 @@
 //           await _refreshSqlTablesFromBackend(true);
 //         },
 //         child: TextScaleFactorClamper(
-//           textScaleFactor: G0<DeviceInfo>().textClamp25,
+//           textScaleFactor: deviceInfo.textClamp25,
 //           child: ListView.separated(
 //             separatorBuilder:
 //                 (BuildContext context, int index) =>
@@ -2186,7 +2186,7 @@
 //                             packMember.isPaid == 1
 //                                 ? Container(
 //                                   color: Colors.grey,
-//                                   width: G0<DeviceInfo>().deviceWidth,
+//                                   width: deviceInfo.deviceWidth,
 //                                   child: Column(
 //                                     children: <Widget>[
 //                                       const Padding(
@@ -2212,7 +2212,7 @@
 //                                 )
 //                                 : Container(
 //                                   color: hc_blue,
-//                                   width: G0<DeviceInfo>().deviceWidth,
+//                                   width: deviceInfo.deviceWidth,
 //                                   child: Column(
 //                                     children: <Widget>[
 //                                       Padding(
@@ -2294,7 +2294,7 @@
 //                                 ? packMember.attendenceState >=
 //                                         attendenceOnIn.value
 //                                     ? Container(
-//                                       width: G0<DeviceInfo>().deviceWidth,
+//                                       width: deviceInfo.deviceWidth,
 //                                       color: Colors.grey,
 //                                       child: Column(
 //                                         mainAxisAlignment:
@@ -2323,7 +2323,7 @@
 //                                     )
 //                                     : Container(
 //                                       color: Colors.amber[800],
-//                                       width: G0<DeviceInfo>().deviceWidth,
+//                                       width: deviceInfo.deviceWidth,
 //                                       child: Column(
 //                                         mainAxisAlignment:
 //                                             MainAxisAlignment.end,
@@ -2350,7 +2350,7 @@
 //                                       ),
 //                                     )
 //                                 : Container(
-//                                   width: G0<DeviceInfo>().deviceWidth,
+//                                   width: deviceInfo.deviceWidth,
 //                                   color: Colors.green,
 //                                   child: Column(
 //                                     mainAxisAlignment: MainAxisAlignment.center,
@@ -2486,7 +2486,7 @@
 //   @override
 //   Widget build(BuildContext context) {
 //     return TextScaleFactorClamper(
-//       textScaleFactor: G0<DeviceInfo>().textClamp25,
+//       textScaleFactor: deviceInfo.textClamp25,
 //       child: AlertDialog(
 //         title: Text('Add Visitor or Virgin', style: ts_alertDialogTitle),
 //         content: Column(
@@ -2550,7 +2550,7 @@
 //               child: const Text(
 //                 'Cancel',
 //                 textAlign: TextAlign.center,
-//                 //textScaleFactor: G0<DeviceInfo>().textClamp15,
+//                 //textScaleFactor: deviceInfo.textClamp15,
 //               ),
 //               onPressed: () {
 //                 Navigator.of(
@@ -2570,7 +2570,7 @@
 //               child: const Text(
 //                 'Add\r\nVisitor',
 //                 textAlign: TextAlign.center,
-//                 //textScaleFactor: G0<DeviceInfo>().textClamp15,
+//                 //textScaleFactor: deviceInfo.textClamp15,
 //               ),
 //               onPressed: () {
 //                 Navigator.of(context).pop(<String, String>{
@@ -2593,7 +2593,7 @@
 //               child: const Text(
 //                 'Add\r\nVirgin',
 //                 textAlign: TextAlign.center,
-//                 //textScaleFactor: G0<DeviceInfo>().textClamp15,
+//                 //textScaleFactor: deviceInfo.textClamp15,
 //               ),
 //               onPressed: () {
 //                 Navigator.of(context).pop(<String, String>{

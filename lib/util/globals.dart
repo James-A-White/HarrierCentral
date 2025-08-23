@@ -6,45 +6,14 @@ import 'package:harrier_central/imports.dart';
 // DART style conventions.
 
 // ignore: non_constant_identifier_names
-final GetIt G0 = GetIt.instance;
+//final GetIt G0 = GetIt.instance;
+
+AppModel get appModel => Get.find<AppModel>();
+DeviceInfo get deviceInfo => Get.find<DeviceInfo>();
+TableModel get tableModel => Get.find<TableModel>();
+Database get database => Get.find<Database>();
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
-Future<void> setupLocalServices(
-  num deviceWidth,
-  num deviceHeight,
-  double textScaleFactor,
-) async {
-  G0.registerSingletonAsync<DeviceInfo>(() async {
-    final DeviceInfo deviceInfo = DeviceInfo();
-    await deviceInfo.init(deviceWidth, deviceHeight, textScaleFactor);
-    return deviceInfo;
-  });
-
-  _initTables();
-}
-
-void _initTables() {
-  if (G0.isRegistered<TableModel>()) {
-    G0.unregister<TableModel>();
-  }
-  G0.registerSingleton<TableModel>(TableModel());
-  G0<TableModel>().initializeGlobals();
-
-  G0<TableModel>().tablesForRemoteSync = <BaseTableHelper>[
-    G0<TableModel>().citiesTableHelper,
-    G0<TableModel>().countriesTableHelper,
-    G0<TableModel>().regionsTableHelper,
-    G0<TableModel>().receiptsTableHelper,
-    G0<TableModel>().paymentsTableHelper,
-    G0<TableModel>().hashersTableHelper,
-    //G0<TableModel>().kennelCreditsTableHelper,
-    G0<TableModel>().kennelsTableHelper,
-    G0<TableModel>().eventsTableHelper,
-    G0<TableModel>().hasherEventMapTableHelper,
-    G0<TableModel>().hasherKennelMapTableHelper,
-  ];
-}
 
 bool _createIndexes = false;
 
@@ -58,11 +27,14 @@ Future<bool> setupDatabase(
   // }
 
   // print('******* > DB Setup step 1');
-  G0<AppModel>().dbStatus = EdbStatus.opening;
-  G0.registerSingletonAsync<Database>(() async {
-    // print('******* > DB Setup step 2');
-    _initTables();
-    // print('******* > DB Setup step 3');
+  appModel.dbStatus = EdbStatus.opening;
+
+  if (Get.isRegistered<Database>()) {
+    await Get.delete<Database>(); // or await if you prefer
+  }
+
+  await Get.putAsync<Database>(() async {
+    // _initTables();
     return DBProvider.openOrInitDb(
       DB_NAME,
       DB_VERSION,
@@ -72,18 +44,14 @@ Future<bool> setupDatabase(
       openDb: _openDb,
       clientAppIdentifier: clientAppIdentifier,
     );
-  });
-
-  // print('******* > DB Setup step 6');
-
-  await G0.isReady<Database>();
+  }, permanent: true);
 
   final Client client = Client();
 
   // print('******* > DB Setup step 7');
 
   try {
-    await G0<TableModel>().syncUserDataService.updateFromBackend(
+    await tableModel.syncUserDataService.updateFromBackend(
       SyncUserDataService.flagCitiesTable |
           SyncUserDataService.flagRegionsTable |
           SyncUserDataService.flagCountriesTable,
@@ -95,7 +63,7 @@ Future<bool> setupDatabase(
       usePaging: false,
     );
 
-    await G0<TableModel>().syncUserDataService.updateFromBackend(
+    await tableModel.syncUserDataService.updateFromBackend(
       SyncUserDataService.flagHasherEventMapTable |
           SyncUserDataService.flagPaymentsTable,
       false,
@@ -106,7 +74,7 @@ Future<bool> setupDatabase(
       usePaging: false,
     );
 
-    await G0<TableModel>().syncUserDataService.updateFromBackend(
+    await tableModel.syncUserDataService.updateFromBackend(
       SyncUserDataService.flagHasherKennelMapTable,
       false,
       informUser: informUser,
@@ -116,7 +84,7 @@ Future<bool> setupDatabase(
       usePaging: false,
     );
 
-    await G0<TableModel>().syncUserDataService.updateFromBackend(
+    await tableModel.syncUserDataService.updateFromBackend(
       SyncUserDataService.flagKennelsTable,
       false,
       informUser: informUser,
@@ -126,7 +94,7 @@ Future<bool> setupDatabase(
       usePaging: true,
     );
 
-    await G0<TableModel>().syncUserDataService.updateFromBackend(
+    await tableModel.syncUserDataService.updateFromBackend(
       SyncUserDataService.flagNarrowEventsTable,
       false,
       informUser: informUser,
@@ -136,7 +104,7 @@ Future<bool> setupDatabase(
       usePaging: true,
     );
 
-    await G0<TableModel>().syncUserDataService.updateFromBackend(
+    await tableModel.syncUserDataService.updateFromBackend(
       SyncUserDataService.flagHashersTable,
       false,
       informUser: informUser,
@@ -147,20 +115,20 @@ Future<bool> setupDatabase(
     );
 
     await CommonQueries.deleteRemovedRecords(
-      G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user),
+      tableModel.hashersTableHelper.getTableName(AppDomainType.user),
     );
     await CommonQueries.deleteRemovedRecords(
-      G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user),
+      tableModel.eventsTableHelper.getTableName(AppDomainType.user),
     );
     await CommonQueries.deleteRemovedRecords(
-      G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.kennel),
+      tableModel.eventsTableHelper.getTableName(AppDomainType.kennel),
     );
 
     // print('******* > DB Setup step 10');
 
     if (_createIndexes) {
       await Tables.createIndexes(
-        G0<Database>(),
+        database,
         DB_VERSION,
         informUser,
         clientAppIdentifier,
@@ -175,7 +143,7 @@ Future<bool> setupDatabase(
 
   String message =
       (await CommonQueries.countRecords(
-        G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user),
+        tableModel.hashersTableHelper.getTableName(AppDomainType.user),
       )).toString();
   if (kDebugMode) {
     print('Hashers count = $message');
@@ -183,7 +151,7 @@ Future<bool> setupDatabase(
 
   message =
       (await CommonQueries.countRecords(
-        G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user),
+        tableModel.eventsTableHelper.getTableName(AppDomainType.user),
       )).toString();
   if (kDebugMode) {
     print('Events count = $message');
@@ -191,7 +159,7 @@ Future<bool> setupDatabase(
 
   message =
       (await CommonQueries.countRecords(
-        G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user),
+        tableModel.kennelsTableHelper.getTableName(AppDomainType.user),
       )).toString();
   if (kDebugMode) {
     print('Kennels count = $message');
@@ -199,9 +167,7 @@ Future<bool> setupDatabase(
 
   message =
       (await CommonQueries.countRecords(
-        G0<TableModel>().hasherEventMapTableHelper.getTableName(
-          AppDomainType.user,
-        ),
+        tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.user),
       )).toString();
   if (kDebugMode) {
     print('Hasher event map count = $message');
@@ -209,9 +175,7 @@ Future<bool> setupDatabase(
 
   message =
       (await CommonQueries.countRecords(
-        G0<TableModel>().hasherKennelMapTableHelper.getTableName(
-          AppDomainType.user,
-        ),
+        tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.user),
       )).toString();
   if (kDebugMode) {
     print('Hasher kennel map count = $message');
@@ -221,7 +185,7 @@ Future<bool> setupDatabase(
     print('******* > DB Setup step 11');
   }
 
-  G0<AppModel>().dbStatus = EdbStatus.opened;
+  appModel.dbStatus = EdbStatus.opened;
   if (kDebugMode) {
     print('******* > DB Setup step 12');
   }
@@ -249,7 +213,7 @@ Future<void> _createTables(
 
 enum EdbStatus { uninitialized, opening, opened }
 
-class AppModel {
+class AppModel extends GetxService {
   AppModel();
   EnumConnectionStatus2 connectionStatus = EnumConnectionStatus2.notConnected;
   StreamSubscription<Position>? geoLocationStream;
@@ -266,67 +230,49 @@ class AppModel {
   }
 }
 
-class TableModel {
-  TableModel();
+class TableModel extends GetxService {
+  // Helpers
+  late final CitiesTableHelper citiesTableHelper = CitiesTableHelper();
+  late final CountriesTableHelper countriesTableHelper = CountriesTableHelper();
+  late final RegionsTableHelper regionsTableHelper = RegionsTableHelper();
+  late final ReceiptsTableHelper receiptsTableHelper = ReceiptsTableHelper();
+  late final PaymentsTableHelper paymentsTableHelper = PaymentsTableHelper();
+  late final HashersTableHelper hashersTableHelper = HashersTableHelper();
+  late final KennelsTableHelper kennelsTableHelper = KennelsTableHelper();
+  late final EventsTableHelper eventsTableHelper = EventsTableHelper();
+  late final HasherEventMapTableHelper hasherEventMapTableHelper =
+      HasherEventMapTableHelper();
+  late final HasherKennelMapTableHelper hasherKennelMapTableHelper =
+      HasherKennelMapTableHelper();
 
-  late CitiesTableHelper citiesTableHelper;
-  late CountriesTableHelper countriesTableHelper;
-  late RegionsTableHelper regionsTableHelper;
-  late ReceiptsTableHelper receiptsTableHelper;
-  late PaymentsTableHelper paymentsTableHelper;
-  late HashersTableHelper hashersTableHelper;
-  //KennelCreditsTableHelper kennelCreditsTableHelper;
-  late KennelsTableHelper kennelsTableHelper;
-  late EventsTableHelper eventsTableHelper;
-  late HasherEventMapTableHelper hasherEventMapTableHelper;
-  late HasherKennelMapTableHelper hasherKennelMapTableHelper;
+  // Services
+  late final SyncUserDataService syncUserDataService = SyncUserDataService();
+  late final SyncKennelAdminService syncKennelAdminService =
+      SyncKennelAdminService();
+  late final SyncEventAdminService syncEventAdminService =
+      SyncEventAdminService();
 
-  late SyncUserDataService syncUserDataService;
-  late SyncKennelAdminService syncKennelAdminService;
-  late SyncEventAdminService syncEventAdminService;
-
-  late BaseService baseService;
-
-  late HashersService hashersService;
-  late PaymentsService paymentsService;
-  late EventsService eventsService;
-  late HasherEventMapService hasherEventMapService;
-  late HasherKennelMapService hasherKennelMapService;
+  late final BaseService baseService = BaseService();
+  late final HashersService hashersService = HashersService();
+  late final PaymentsService paymentsService = PaymentsService();
+  late final EventsService eventsService = EventsService();
+  late final HasherEventMapService hasherEventMapService =
+      HasherEventMapService();
+  late final HasherKennelMapService hasherKennelMapService =
+      HasherKennelMapService();
 
   List<KennelListAggregate>? globalKennelMainPageList;
+  final List<BaseTableHelper> tablesForRemoteSync = <BaseTableHelper>[];
 
-  void initializeGlobals() {
-    citiesTableHelper = CitiesTableHelper();
-    countriesTableHelper = CountriesTableHelper();
-    regionsTableHelper = RegionsTableHelper();
-    receiptsTableHelper = ReceiptsTableHelper();
-    paymentsTableHelper = PaymentsTableHelper();
-    hashersTableHelper = HashersTableHelper();
-    //kennelCreditsTableHelper = KennelCreditsTableHelper();
-    kennelsTableHelper = KennelsTableHelper();
-    eventsTableHelper = EventsTableHelper();
-    hasherEventMapTableHelper = HasherEventMapTableHelper();
-    hasherKennelMapTableHelper = HasherKennelMapTableHelper();
-
-    //
-    syncUserDataService = SyncUserDataService();
-    syncKennelAdminService = SyncKennelAdminService();
-    syncEventAdminService = SyncEventAdminService();
-
-    baseService = BaseService();
-    hashersService = HashersService();
-    paymentsService = PaymentsService();
-    eventsService = EventsService();
-    hasherEventMapService = HasherEventMapService();
-    hasherKennelMapService = HasherKennelMapService();
+  // Cleanup hooks if any helper/service exposes dispose/close
+  @override
+  void onClose() {
+    // e.g., receiptsTableHelper.dispose();
+    super.onClose();
   }
-
-  List<BaseTableHelper> tablesForRemoteSync = <BaseTableHelper>[];
 }
 
-class DeviceInfo {
-  DeviceInfo();
-
+class DeviceInfo extends GetxService {
   late IosDeviceInfo iosInfo;
   late AndroidDeviceInfo androidInfo;
 
@@ -353,41 +299,40 @@ class DeviceInfo {
   late double textClamp75;
   late double textClamp99;
 
-  // a flag to indicate if we are running in the simulator
   bool isPhysicalDevice = true;
   bool get supportsCamera => Platform.isAndroid || isPhysicalDevice;
 
-  Future<void> init(
-    num deviceWidth,
-    num deviceHeight,
-    double textScaleFactor,
-  ) async {
-    deviceWidth = deviceWidth;
-    deviceHeight = deviceHeight;
+  /// Async init method that returns itself so it works with Get.putAsync
+  Future<DeviceInfo> init(num width, num height, double textScaleFactor) async {
+    deviceWidth = width.toDouble();
+    deviceHeight = height.toDouble();
+
     deviceWidthScaleFactor = deviceWidth / BASE_DEVICE_WIDTH;
     deviceHeightScaleFactor = deviceHeight / BASE_DEVICE_HEIGHT;
     deviceMaxScaleFactor = max(deviceWidthScaleFactor, deviceHeightScaleFactor);
     deviceMinScaleFactor = min(deviceWidthScaleFactor, deviceHeightScaleFactor);
     deviceTextScaleFactor = textScaleFactor;
+
     textClamp00 = textScaleFactor.clamp(0.9, 1.00);
     textClamp15 = textScaleFactor.clamp(0.9, 1.15);
     textClamp25 = textScaleFactor.clamp(0.9, 1.25);
     textClamp50 = textScaleFactor.clamp(0.9, 1.50);
     textClamp75 = textScaleFactor.clamp(0.9, 1.75);
+    textClamp99 = textScaleFactor.clamp(0.9, 1.99);
 
-    final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    final plugin = DeviceInfoPlugin();
     if (Platform.isAndroid) {
-      androidInfo = await deviceInfo.androidInfo;
+      androidInfo = await plugin.androidInfo;
       deviceId = androidInfo.id.toUpperCase();
       deviceType = '${androidInfo.model} / device: ${androidInfo.device}';
       deviceName = '<unknown>';
       systemName = androidInfo.host;
       systemVersion =
-          '${androidInfo.version.sdkInt.toString()} / release: ${androidInfo.version.release} / security patch: ${androidInfo.version.securityPatch ?? '<no Android security patch'}';
+          '${androidInfo.version.sdkInt} / release: ${androidInfo.version.release} / security patch: ${androidInfo.version.securityPatch ?? '<no Android security patch>'}';
       manufacturer = androidInfo.brand;
       isPhysicalDevice = androidInfo.isPhysicalDevice;
     } else if (Platform.isIOS) {
-      iosInfo = await deviceInfo.iosInfo;
+      iosInfo = await plugin.iosInfo;
       deviceId =
           (iosInfo.identifierForVendor ?? '<no device ID>').toUpperCase();
       deviceType = iosInfo.model;
@@ -397,5 +342,7 @@ class DeviceInfo {
       manufacturer = 'Apple';
       isPhysicalDevice = iosInfo.isPhysicalDevice;
     }
+
+    return this;
   }
 }

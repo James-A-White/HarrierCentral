@@ -146,7 +146,7 @@
 
 //     _appBarText = _tabTitles[0];
 
-//     // final bool result = await G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagsAllData, false);
+//     // final bool result = await tableModel.syncUserDataService.updateFromBackend(SyncUserDataService.flagsAllData, false);
 //     // final String resultStr = result ? 'successfully' : 'unsuccessfully';
 //     // //print('Master data synchronized $resultStr');
 
@@ -170,7 +170,7 @@
 //       // print('******* > Finished DB Setup');
 //       // final NotificationSupport notifications = NotificationSupport();
 //       // await notifications.configureNotifications(true);
-//       // G0<TableModel>().syncUserDataService.updateFromBackend(SyncUserDataService.flagsAllData, false, informUser: informUser).then((bool result) {
+//       // tableModel.syncUserDataService.updateFromBackend(SyncUserDataService.flagsAllData, false, informUser: informUser).then((bool result) {
 //       //   final String resultStr = result ? 'successfully' : 'unsuccessfully';
 //       //   //print('Master data synchronized $resultStr');
 
@@ -264,7 +264,7 @@
 //       // print('Seconds since last refresh = $xxx');
 
 //       if (d.inMinutes > 2) {
-//         await G0<TableModel>().syncUserDataService.updateFromBackend(
+//         await tableModel.syncUserDataService.updateFromBackend(
 //           SyncUserDataService.flagHasherEventMapTable |
 //               SyncUserDataService.flagNarrowEventsTable |
 //               SyncUserDataService.flagKennelsTable |
@@ -405,7 +405,7 @@
 //   }
 
 //   Future<void> _checkInAtEvent(String eventId, String userId) async {
-//     await G0<TableModel>().hasherEventMapService.setEventAttendence(
+//     await tableModel.hasherEventMapService.setEventAttendence(
 //       eventId,
 //       userId,
 //       AppDomainType.user,
@@ -418,8 +418,8 @@
 //   }
 
 //   Future<bool> _checkLocationPermissions() async {
-//     G0<AppModel>().hasLocationPermissions = await Permission.location.isGranted;
-//     return G0<AppModel>().hasLocationPermissions;
+//     appModel.hasLocationPermissions = await Permission.location.isGranted;
+//     return appModel.hasLocationPermissions;
 //   }
 
 //   void informUser(String message) {
@@ -594,8 +594,8 @@
 //                         style: ts_appBarTitle,
 //                         maxLines: 1,
 //                         // textScaler:
-//                         //     TextScaler.linear(G0<DeviceInfo>().textClamp00),
-//                         //textScaleFactor: G0<DeviceInfo>().textClamp00,
+//                         //     TextScaler.linear(deviceInfo.textClamp00),
+//                         //textScaleFactor: deviceInfo.textClamp00,
 //                       ),
 //                       centerTitle: true,
 //                       actions: <IconButton>[
@@ -744,7 +744,7 @@
 //                       // ignore: avoid_unnecessary_containers
 //                       front: Container(
 //                         child: TextScaleFactorClamper(
-//                           textScaleFactor: G0<DeviceInfo>().textClamp00,
+//                           textScaleFactor: deviceInfo.textClamp00,
 //                           child: FancyBottomNavigation(
 //                             circleColor: themeButtonColors,
 //                             inactiveIconColor: themeBackgroundColor,
@@ -800,7 +800,7 @@
 //         ),
 //         OfflineModeRibbon(
 //           showRibbon:
-//               G0<AppModel>().connectionStatus ==
+//               appModel.connectionStatus ==
 //               EnumConnectionStatus2.notConnected,
 //           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
 //           ribbonImage: 'images/icons/offline_mode.png',

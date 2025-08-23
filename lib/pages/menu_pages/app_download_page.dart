@@ -283,7 +283,7 @@
 //           children: <Widget>[
 //             SizedBox(
 //               width: 10,
-//               height: (G0<DeviceInfo>().deviceWidthScaleFactor - 1) * 90,
+//               height: (deviceInfo.deviceWidthScaleFactor - 1) * 90,
 //             ),
 //             Container(
 //               padding: const EdgeInsets.only(top: 10, bottom: 20, right: 25, left: 25),
@@ -294,7 +294,7 @@
 //                   color: Colors.white,
 //                   fontFamily: 'AvenirNextDemiBold',
 //                   fontStyle: FontStyle.normal,
-//                   fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+//                   fontSize: 16.0 * deviceInfo.deviceWidthScaleFactor,
 //                   height: 1.2,
 //                 ),
 //               ),
@@ -324,7 +324,7 @@
 //                   color: Colors.white,
 //                   fontFamily: 'AvenirNextDemiBold',
 //                   fontStyle: FontStyle.normal,
-//                   fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+//                   fontSize: 16.0 * deviceInfo.deviceWidthScaleFactor,
 //                   height: 1.2,
 //                 ),
 //               ),
@@ -406,7 +406,7 @@
 //           children: <Widget>[
 //             SizedBox(
 //               width: 10,
-//               height: (G0<DeviceInfo>().deviceWidthScaleFactor - 1) * 90,
+//               height: (deviceInfo.deviceWidthScaleFactor - 1) * 90,
 //             ),
 //             Container(
 //               padding: const EdgeInsets.only(top: 10, bottom: 20, right: 25, left: 25),
@@ -417,7 +417,7 @@
 //                   color: Colors.white,
 //                   fontFamily: 'AvenirNextDemiBold',
 //                   fontStyle: FontStyle.normal,
-//                   fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+//                   fontSize: 16.0 * deviceInfo.deviceWidthScaleFactor,
 //                   height: 1.2,
 //                 ),
 //               ),
@@ -447,7 +447,7 @@
 //                   color: Colors.white,
 //                   fontFamily: 'AvenirNextDemiBold',
 //                   fontStyle: FontStyle.normal,
-//                   fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+//                   fontSize: 16.0 * deviceInfo.deviceWidthScaleFactor,
 //                   height: 1.2,
 //                 ),
 //               ),

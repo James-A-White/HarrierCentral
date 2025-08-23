@@ -326,8 +326,7 @@ class RunListItem extends StatelessWidget {
                                         ((futureRun.extensions.distToEvent ??
                                                 -1.0) >=
                                             0) &&
-                                        (G0<AppModel>()
-                                            .hasLocationPermissions)) ...<
+                                        (appModel.hasLocationPermissions)) ...<
                                       Widget
                                     >[
                                       Text(
@@ -359,7 +358,7 @@ class RunListItem extends StatelessWidget {
                               ),
                             ),
 
-                            if (G0<AppModel>().connectionStatus ==
+                            if (appModel.connectionStatus ==
                                 EnumConnectionStatus2.connected) ...<Widget>[
                               IconButton(
                                 icon: const Icon(
@@ -376,7 +375,7 @@ class RunListItem extends StatelessWidget {
 
                             // (futureRun.event.hares ?? '') == '' ? Container(
                             //   padding: const EdgeInsets.only(top:15),
-                            //   child:Image(width: 40.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 40.0 * G0<DeviceInfo>().deviceWidthScaleFactor, fit: BoxFit.fill, image: const AssetImage('images/other/hare_needed_stamp.png'))) : Container(),
+                            //   child:Image(width: 40.0 * deviceInfo.deviceWidthScaleFactor, height: 40.0 * deviceInfo.deviceWidthScaleFactor, fit: BoxFit.fill, image: const AssetImage('images/other/hare_needed_stamp.png'))) : Container(),
                           ],
                         ),
                       ),
@@ -436,7 +435,7 @@ class RunListItem extends StatelessWidget {
 
   Future<void> _showAllOptionsPopup() async {
     if (Connection2.checkForConnection(
-      G0<AppModel>().connectionStatus,
+      appModel.connectionStatus,
       message:
           'Setting run options is not available in offline mode. Please connect to the Internet.',
     )) {
@@ -747,7 +746,7 @@ class RunListItem extends StatelessWidget {
 
   void _showRsvpOptionsPopup() async {
     if (Connection2.checkForConnection(
-      G0<AppModel>().connectionStatus,
+      appModel.connectionStatus,
       message:
           'Setting run options is not available in offline mode. Please connect to the Internet.',
     )) {
@@ -846,7 +845,7 @@ class RunListItem extends StatelessWidget {
     rliController.rsvpState.value = -1;
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
-    final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService
+    final List<dynamic> adHocData = await tableModel.hasherEventMapService
         .setEventRsvp(
           futureRun.event.eventId,
           userId,
@@ -1019,7 +1018,7 @@ class RunListItem extends StatelessWidget {
       final EnumEmailAlertState<int> nState = retVal;
       rliController.setEmailState(-1);
 
-      List<dynamic> results = await G0<TableModel>().hasherEventMapService
+      List<dynamic> results = await tableModel.hasherEventMapService
           .setEmailAndNotificationPreferences(
             futureRun.event.eventId,
             userId,
@@ -1038,7 +1037,7 @@ class RunListItem extends StatelessWidget {
       final NotificationState nState = retVal;
       rliController.setNotificationState(NotificationState.unchanged);
 
-      List<dynamic> results = await G0<TableModel>().hasherEventMapService
+      List<dynamic> results = await tableModel.hasherEventMapService
           .setEmailAndNotificationPreferences(
             futureRun.event.eventId,
             userId,

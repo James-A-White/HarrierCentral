@@ -94,64 +94,62 @@ class CheckInPackController extends GetxController
     try {
       final String sql = '''
       SELECT 
-          h.${G0<TableModel>().hashersTableHelper.colHasherId} AS hasherId,
-          hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} AS hemId,
+          h.${tableModel.hashersTableHelper.colHasherId} AS hasherId,
+          hem.${tableModel.hasherEventMapTableHelper.colHemId} AS hemId,
           CASE 
-              WHEN (julianday(COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate},'1/1/2020')) >= julianday('now', 'localtime')) 
+              WHEN (julianday(COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate},'1/1/2020')) >= julianday('now', 'localtime')) 
               THEN 1 
               ELSE 0 
           END AS isMember,
-          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing},0) AS isFollowing,
-          COALESCE(hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare}, 0) AS isHare,
+          COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colFollowing},0) AS isFollowing,
+          COALESCE(hem.${tableModel.hasherEventMapTableHelper.colIsHare}, 0) AS isHare,
           CASE 
-              WHEN pay.${G0<TableModel>().paymentsTableHelper.colHemId} IS NULL 
+              WHEN pay.${tableModel.paymentsTableHelper.colHemId} IS NULL 
               THEN NULL
               ELSE 1 
           END AS isPaid, 
-          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName}, 
-          COALESCE(h.${G0<TableModel>().hashersTableHelper.colDispName}, 
-                  h.${G0<TableModel>().hashersTableHelper.colHashName}, 
-                  COALESCE(h.${G0<TableModel>().hashersTableHelper.colFirstName}, '') || ' ' || 
-                  COALESCE(h.${G0<TableModel>().hashersTableHelper.colLastName}, ''))) AS nameForDisplay,
-         COALESCE(h.${G0<TableModel>().hashersTableHelper.colFirstName}, '') as firstName,
-         COALESCE(h.${G0<TableModel>().hashersTableHelper.colLastName}, '') as lastName,
+          COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colKennelHashName}, 
+          COALESCE(h.${tableModel.hashersTableHelper.colDispName}, 
+                  h.${tableModel.hashersTableHelper.colHashName}, 
+                  COALESCE(h.${tableModel.hashersTableHelper.colFirstName}, '') || ' ' || 
+                  COALESCE(h.${tableModel.hashersTableHelper.colLastName}, ''))) AS nameForDisplay,
+         COALESCE(h.${tableModel.hashersTableHelper.colFirstName}, '') as firstName,
+         COALESCE(h.${tableModel.hashersTableHelper.colLastName}, '') as lastName,
          
-          LOWER(COALESCE(' ' || hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName} || ' ', 
-              ' ' || COALESCE(h.${G0<TableModel>().hashersTableHelper.colHashName}, '') || ' ' || 
-              COALESCE(h.${G0<TableModel>().hashersTableHelper.colDispName}, '') || ' ' || 
-              COALESCE(h.${G0<TableModel>().hashersTableHelper.colFirstName}, '') || ' ' || 
-              COALESCE(h.${G0<TableModel>().hashersTableHelper.colLastName}, ''))) AS nameForSort,
-          COALESCE(pay.${G0<TableModel>().paymentsTableHelper.colPaymentType}, 0) AS paymentType,
-          COALESCE(pay.${G0<TableModel>().paymentsTableHelper.colCreditAmount}, 0) AS creditAmount,
-          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelUserPhoto}, h.${G0<TableModel>().hashersTableHelper.colPhoto}) AS photo,
+          LOWER(COALESCE(' ' || hkm.${tableModel.hasherKennelMapTableHelper.colKennelHashName} || ' ', 
+              ' ' || COALESCE(h.${tableModel.hashersTableHelper.colHashName}, '') || ' ' || 
+              COALESCE(h.${tableModel.hashersTableHelper.colDispName}, '') || ' ' || 
+              COALESCE(h.${tableModel.hashersTableHelper.colFirstName}, '') || ' ' || 
+              COALESCE(h.${tableModel.hashersTableHelper.colLastName}, ''))) AS nameForSort,
+          COALESCE(pay.${tableModel.paymentsTableHelper.colPaymentType}, 0) AS paymentType,
+          COALESCE(pay.${tableModel.paymentsTableHelper.colCreditAmount}, 0) AS creditAmount,
+          COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colKennelUserPhoto}, h.${tableModel.hashersTableHelper.colPhoto}) AS photo,
           0 AS virginVisitorType,
-          COALESCE(hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState}, 0) AS rsvpState,
-          COALESCE(hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel}, 0) AS totalRunsThisKennel,
-          COALESCE(hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel}, 0) AS totalHaringThisKennel,
-          COALESCE(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState}, 0) AS attendenceState,
-          hem.${G0<TableModel>().hasherEventMapTableHelper.colUpdatedAt} AS hemUpdatedAt,
-          pay.${G0<TableModel>().paymentsTableHelper.colUpdatedAt} AS payUpdatedAt,
-          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit},0) AS credit,
-          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount}, 0) AS discountAmount,
-          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent}, 0) AS discountPercent,
-          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount}, 0) AS hcTotalRunCount,
-          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount}, 0) AS hcHaringCount,
-          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount}, 0) AS historicalTotalRunCount,
-          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount}, 0) AS historicalHaringCount,
-          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate}, 0) AS historicalCountIsEstimate,
-          ken.${G0<TableModel>().kennelsTableHelper.colKennelName} as homeKennelName
-      FROM ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h 
-      LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm ON h.hasherId = hkm.userId
-      LEFT OUTER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem ON hem.userId = hkm.userId AND hem.eventId = "${eventAggregate.event.eventId}"
-      LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay ON pay.hemId = hem.hemId AND pay.cancelledBy IS NULL
-      LEFT OUTER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ken on h.${G0<TableModel>().hashersTableHelper.colHomeKennelId} = ken.${G0<TableModel>().kennelsTableHelper.colKennelId}
-      WHERE h.${G0<TableModel>().hashersTableHelper.colDispName} NOT LIKE 'Placeholder user for%'
+          COALESCE(hem.${tableModel.hasherEventMapTableHelper.colRsvpState}, 0) AS rsvpState,
+          COALESCE(hem.${tableModel.hasherEventMapTableHelper.colTotalRunsThisKennel}, 0) AS totalRunsThisKennel,
+          COALESCE(hem.${tableModel.hasherEventMapTableHelper.colTotalHaringThisKennel}, 0) AS totalHaringThisKennel,
+          COALESCE(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState}, 0) AS attendenceState,
+          hem.${tableModel.hasherEventMapTableHelper.colUpdatedAt} AS hemUpdatedAt,
+          pay.${tableModel.paymentsTableHelper.colUpdatedAt} AS payUpdatedAt,
+          COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colKennelCredit},0) AS credit,
+          COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colDiscountAmount}, 0) AS discountAmount,
+          COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colDiscountPercent}, 0) AS discountPercent,
+          COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colHcTotalRunCount}, 0) AS hcTotalRunCount,
+          COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colHcHaringCount}, 0) AS hcHaringCount,
+          COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount}, 0) AS historicalTotalRunCount,
+          COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount}, 0) AS historicalHaringCount,
+          COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalCountIsEstimate}, 0) AS historicalCountIsEstimate,
+          ken.${tableModel.kennelsTableHelper.colKennelName} as homeKennelName
+      FROM ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h 
+      LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm ON h.hasherId = hkm.userId
+      LEFT OUTER JOIN ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem ON hem.userId = hkm.userId AND hem.eventId = "${eventAggregate.event.eventId}"
+      LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay ON pay.hemId = hem.hemId AND pay.cancelledBy IS NULL
+      LEFT OUTER JOIN ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} ken on h.${tableModel.hashersTableHelper.colHomeKennelId} = ken.${tableModel.kennelsTableHelper.colKennelId}
+      WHERE h.${tableModel.hashersTableHelper.colDispName} NOT LIKE 'Placeholder user for%'
       ORDER BY nameForDisplay;
       ''';
 
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
-        sql,
-      );
+      final List<Map<String, dynamic>> results = await database.rawQuery(sql);
 
       allHashers.addAll(results.map((row) => CheckInPackModel.fromMap(row)));
     } catch (e) {
@@ -161,7 +159,7 @@ class CheckInPackController extends GetxController
   }
 
   Future<void> refreshSqlTablesFromBackend(bool showLoadingIndicator) async {
-    if (G0<AppModel>().connectionStatus != EnumConnectionStatus2.connected) {
+    if (appModel.connectionStatus != EnumConnectionStatus2.connected) {
       return;
     }
 
@@ -170,7 +168,7 @@ class CheckInPackController extends GetxController
       update(['scaffold']);
     }
 
-    await G0<TableModel>().syncEventAdminService.updateFromBackend(
+    await tableModel.syncEventAdminService.updateFromBackend(
       SyncEventAdminService.flagHashersTable |
           SyncEventAdminService.flagPaymentsTable |
           SyncEventAdminService.flagHasherEventMapTable |
@@ -191,19 +189,17 @@ class CheckInPackController extends GetxController
         COUNT(CASE WHEN pay.paymentType >= 2 THEN 1 ELSE NULL END) as paid,
         COUNT(CASE WHEN rsvpState >= 2 AND attendenceState < 20 THEN 1 ELSE NULL END) as coming,
         COUNT(CASE WHEN attendenceState >= 30 THEN 1 ELSE NULL END) as onIn,
-        (SELECT COUNT(*) FROM ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm 
+        (SELECT COUNT(*) FROM ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm 
          WHERE hkm.kennelId = "${eventAggregate.event.kennelId}" AND hkm.isMember = 1) as memberCount
-      FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem
-      INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h 
-        ON hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = h.${G0<TableModel>().hashersTableHelper.colHasherId}
-      LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay 
+      FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem
+      INNER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h 
+        ON hem.${tableModel.hasherEventMapTableHelper.colUserId} = h.${tableModel.hashersTableHelper.colHasherId}
+      LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay 
         ON pay.hemId = hem.hemId AND pay.cancelledBy IS NULL
-      WHERE h.${G0<TableModel>().hashersTableHelper.colRemoved} = 0
+      WHERE h.${tableModel.hashersTableHelper.colRemoved} = 0
     ''';
 
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
-        sql,
-      );
+      final List<Map<String, dynamic>> results = await database.rawQuery(sql);
       if (results.isNotEmpty) {
         final row = results[0];
         countAtHash.value = row['atHash'] ?? 0;
@@ -246,57 +242,57 @@ class CheckInPackController extends GetxController
     try {
       final String sql = '''
       SELECT 
-          h.${G0<TableModel>().hashersTableHelper.colHasherId} AS hasherId,
-          hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} AS hemId,
+          h.${tableModel.hashersTableHelper.colHasherId} AS hasherId,
+          hem.${tableModel.hasherEventMapTableHelper.colHemId} AS hemId,
           CASE 
-              WHEN (julianday(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate}) >= julianday('now', 'localtime')) 
+              WHEN (julianday(hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate}) >= julianday('now', 'localtime')) 
               THEN 1 
               ELSE 0 
           END AS isMember,
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing} AS isFollowing,
-          COALESCE(hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare}, 0) AS isHare,
+          hkm.${tableModel.hasherKennelMapTableHelper.colFollowing} AS isFollowing,
+          COALESCE(hem.${tableModel.hasherEventMapTableHelper.colIsHare}, 0) AS isHare,
           CASE 
-              WHEN pay.${G0<TableModel>().paymentsTableHelper.colHemId} IS NULL 
+              WHEN pay.${tableModel.paymentsTableHelper.colHemId} IS NULL 
               THEN NULL
               ELSE 1 
           END AS isPaid, 
-          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName}, 
-              COALESCE(h.${G0<TableModel>().hashersTableHelper.colDispName}, 
-                  h.${G0<TableModel>().hashersTableHelper.colHashName}, 
-                  COALESCE(h.${G0<TableModel>().hashersTableHelper.colFirstName}, '') || ' ' || 
-                  COALESCE(h.${G0<TableModel>().hashersTableHelper.colLastName}, ''))) AS nameForDisplay,
-         COALESCE(h.${G0<TableModel>().hashersTableHelper.colFirstName}, '') as firstName,
-         COALESCE(h.${G0<TableModel>().hashersTableHelper.colLastName}, '') as lastName,
+          COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colKennelHashName}, 
+              COALESCE(h.${tableModel.hashersTableHelper.colDispName}, 
+                  h.${tableModel.hashersTableHelper.colHashName}, 
+                  COALESCE(h.${tableModel.hashersTableHelper.colFirstName}, '') || ' ' || 
+                  COALESCE(h.${tableModel.hashersTableHelper.colLastName}, ''))) AS nameForDisplay,
+         COALESCE(h.${tableModel.hashersTableHelper.colFirstName}, '') as firstName,
+         COALESCE(h.${tableModel.hashersTableHelper.colLastName}, '') as lastName,
          
-          LOWER(COALESCE(' ' || hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName} || ' ', 
-              ' ' || COALESCE(h.${G0<TableModel>().hashersTableHelper.colHashName}, '') || ' ' || 
-              COALESCE(h.${G0<TableModel>().hashersTableHelper.colDispName}, '') || ' ' || 
-              COALESCE(h.${G0<TableModel>().hashersTableHelper.colFirstName}, '') || ' ' || 
-              COALESCE(h.${G0<TableModel>().hashersTableHelper.colLastName}, ''))) AS nameForSort,
-          COALESCE(pay.${G0<TableModel>().paymentsTableHelper.colPaymentType}, 0) AS paymentType,
-          COALESCE(pay.${G0<TableModel>().paymentsTableHelper.colCreditAmount}, 0) AS creditAmount,
-          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelUserPhoto}, h.${G0<TableModel>().hashersTableHelper.colPhoto}) AS photo,
+          LOWER(COALESCE(' ' || hkm.${tableModel.hasherKennelMapTableHelper.colKennelHashName} || ' ', 
+              ' ' || COALESCE(h.${tableModel.hashersTableHelper.colHashName}, '') || ' ' || 
+              COALESCE(h.${tableModel.hashersTableHelper.colDispName}, '') || ' ' || 
+              COALESCE(h.${tableModel.hashersTableHelper.colFirstName}, '') || ' ' || 
+              COALESCE(h.${tableModel.hashersTableHelper.colLastName}, ''))) AS nameForSort,
+          COALESCE(pay.${tableModel.paymentsTableHelper.colPaymentType}, 0) AS paymentType,
+          COALESCE(pay.${tableModel.paymentsTableHelper.colCreditAmount}, 0) AS creditAmount,
+          COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colKennelUserPhoto}, h.${tableModel.hashersTableHelper.colPhoto}) AS photo,
           0 AS virginVisitorType,
-          COALESCE(hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState}, 0) AS rsvpState,
-          COALESCE(hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel}, 0) AS totalRunsThisKennel,
-          COALESCE(hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel}, 0) AS totalHaringThisKennel,
-          COALESCE(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState}, 0) AS attendenceState,
-          hem.${G0<TableModel>().hasherEventMapTableHelper.colUpdatedAt} AS hemUpdatedAt,
-          pay.${G0<TableModel>().paymentsTableHelper.colUpdatedAt} AS payUpdatedAt,
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit} AS credit,
-          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount}, 0) AS discountAmount,
-          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent}, 0) AS discountPercent,
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount} AS hcTotalRunCount,
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount} AS hcHaringCount,
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount} AS historicalTotalRunCount,
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount} AS historicalHaringCount,
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate} AS historicalCountIsEstimate,
-          ken.${G0<TableModel>().kennelsTableHelper.colKennelName} as homeKennelName
-      FROM ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm
-      INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h ON h.hasherId = hkm.userId
-      LEFT OUTER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem ON hem.userId = hkm.userId AND hem.eventId = "${eventAggregate.event.eventId}"
-      LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay ON pay.hemId = hem.hemId AND pay.cancelledBy IS NULL
-      LEFT OUTER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ken on h.${G0<TableModel>().hashersTableHelper.colHomeKennelId} = ken.${G0<TableModel>().kennelsTableHelper.colKennelId}
+          COALESCE(hem.${tableModel.hasherEventMapTableHelper.colRsvpState}, 0) AS rsvpState,
+          COALESCE(hem.${tableModel.hasherEventMapTableHelper.colTotalRunsThisKennel}, 0) AS totalRunsThisKennel,
+          COALESCE(hem.${tableModel.hasherEventMapTableHelper.colTotalHaringThisKennel}, 0) AS totalHaringThisKennel,
+          COALESCE(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState}, 0) AS attendenceState,
+          hem.${tableModel.hasherEventMapTableHelper.colUpdatedAt} AS hemUpdatedAt,
+          pay.${tableModel.paymentsTableHelper.colUpdatedAt} AS payUpdatedAt,
+          hkm.${tableModel.hasherKennelMapTableHelper.colKennelCredit} AS credit,
+          COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colDiscountAmount}, 0) AS discountAmount,
+          COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colDiscountPercent}, 0) AS discountPercent,
+          hkm.${tableModel.hasherKennelMapTableHelper.colHcTotalRunCount} AS hcTotalRunCount,
+          hkm.${tableModel.hasherKennelMapTableHelper.colHcHaringCount} AS hcHaringCount,
+          hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount} AS historicalTotalRunCount,
+          hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount} AS historicalHaringCount,
+          hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalCountIsEstimate} AS historicalCountIsEstimate,
+          ken.${tableModel.kennelsTableHelper.colKennelName} as homeKennelName
+      FROM ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm
+      INNER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h ON h.hasherId = hkm.userId
+      LEFT OUTER JOIN ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem ON hem.userId = hkm.userId AND hem.eventId = "${eventAggregate.event.eventId}"
+      LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay ON pay.hemId = hem.hemId AND pay.cancelledBy IS NULL
+      LEFT OUTER JOIN ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} ken on h.${tableModel.hashersTableHelper.colHomeKennelId} = ken.${tableModel.kennelsTableHelper.colKennelId}
       WHERE hkm.kennelId = "${eventAggregate.event.kennelId}" 
         AND COALESCE(hem.virginVisitorType, 0) = 0
         AND (
@@ -341,24 +337,24 @@ class CheckInPackController extends GetxController
           END AS photo,
           COALESCE(hem2.virginVisitorType, 1) AS virginVisitorType,
           COALESCE(hem2.rsvpState, 0) AS rsvpState,
-          COALESCE(hem2.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel}, 0) AS totalRunsThisKennel,
-          COALESCE(hem2.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel}, 0) AS totalHaringThisKennel,
+          COALESCE(hem2.${tableModel.hasherEventMapTableHelper.colTotalRunsThisKennel}, 0) AS totalRunsThisKennel,
+          COALESCE(hem2.${tableModel.hasherEventMapTableHelper.colTotalHaringThisKennel}, 0) AS totalHaringThisKennel,
           COALESCE(hem2.attendenceState, 0) AS attendenceState,
           hem2.updatedAt AS hemUpdatedAt,
           pay2.updatedAt AS payUpdatedAt,
           0 AS credit,
-          0 AS ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount},
-          0 AS ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent},
-          NULL AS ${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount},
-          NULL AS ${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount},
-          NULL AS ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},
-          NULL AS ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},
-          NULL AS ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate},
-          ken2.${G0<TableModel>().kennelsTableHelper.colKennelName} as homeKennelName
-      FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem2
-      INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h2 ON h2.hasherId = hem2.userId
-      LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay2 ON pay2.hemId = hem2.hemId AND pay2.cancelledBy IS NULL
-      LEFT OUTER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ken2 on h2.${G0<TableModel>().hashersTableHelper.colHomeKennelId} = ken2.${G0<TableModel>().kennelsTableHelper.colKennelId}
+          0 AS ${tableModel.hasherKennelMapTableHelper.colDiscountAmount},
+          0 AS ${tableModel.hasherKennelMapTableHelper.colDiscountPercent},
+          NULL AS ${tableModel.hasherKennelMapTableHelper.colHcTotalRunCount},
+          NULL AS ${tableModel.hasherKennelMapTableHelper.colHcHaringCount},
+          NULL AS ${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount},
+          NULL AS ${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount},
+          NULL AS ${tableModel.hasherKennelMapTableHelper.colHistoricalCountIsEstimate},
+          ken2.${tableModel.kennelsTableHelper.colKennelName} as homeKennelName
+      FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem2
+      INNER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h2 ON h2.hasherId = hem2.userId
+      LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay2 ON pay2.hemId = hem2.hemId AND pay2.cancelledBy IS NULL
+      LEFT OUTER JOIN ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} ken2 on h2.${tableModel.hashersTableHelper.colHomeKennelId} = ken2.${tableModel.kennelsTableHelper.colKennelId}
       WHERE hem2.eventId = "${eventAggregate.event.eventId}" 
         AND hem2.virginVisitorType != 0
 
@@ -368,48 +364,48 @@ class CheckInPackController extends GetxController
           hem3.userId AS hasherId,
           hem3.hemId AS hemId,
           0 AS isMember,
-          hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing} AS isFollowing,
+          hkm4.${tableModel.hasherKennelMapTableHelper.colFollowing} AS isFollowing,
           hem3.isHare AS isHare,
           CASE 
               WHEN pay3.hemId IS NULL 
               THEN NULL
               ELSE 1 
           END AS isPaid, 
-          COALESCE(hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName}, 
+          COALESCE(hkm4.${tableModel.hasherKennelMapTableHelper.colKennelHashName}, 
               COALESCE(h3.dispName, h3.hashName, COALESCE(h3.firstName, '') || ' ' || 
               COALESCE(h3.lastName, ''))) AS nameForDisplay,
           COALESCE(h3.firstName, '') as firstName,
           COALESCE(h3.lastName, '') as lastName,
     
-          LOWER(COALESCE(hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName}, 
+          LOWER(COALESCE(hkm4.${tableModel.hasherKennelMapTableHelper.colKennelHashName}, 
               COALESCE(h3.dispName, h3.hashName, '') || ' ' || 
               COALESCE(h3.lastName, '') || ' ' || 
               COALESCE(h3.firstName, ''))) AS nameForSort,
           COALESCE(pay3.paymentType, 0) AS paymentType,
           COALESCE(pay3.creditAmount, 0) AS creditAmount,
-          COALESCE(hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colKennelUserPhoto}, h3.photo) AS photo,
+          COALESCE(hkm4.${tableModel.hasherKennelMapTableHelper.colKennelUserPhoto}, h3.photo) AS photo,
           hem3.virginVisitorType AS virginVisitorType,
           COALESCE(hem3.rsvpState, 0) AS rsvpState,
-          COALESCE(hem3.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel}, 0) AS totalRunsThisKennel,
-          COALESCE(hem3.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel}, 0) AS totalHaringThisKennel,
+          COALESCE(hem3.${tableModel.hasherEventMapTableHelper.colTotalRunsThisKennel}, 0) AS totalRunsThisKennel,
+          COALESCE(hem3.${tableModel.hasherEventMapTableHelper.colTotalHaringThisKennel}, 0) AS totalHaringThisKennel,
           COALESCE(hem3.attendenceState, 0) AS attendenceState,
           hem3.updatedAt AS hemUpdatedAt,
           pay3.updatedAt AS payUpdatedAt,
-          hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit} AS credit,
-          COALESCE(hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount}, 0) AS discountAmount,
-          COALESCE(hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent}, 0) AS discountPercent,
-          hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount},
-          hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount},
-          hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},
-          hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},
-          hkm4.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate},
-          ken3.${G0<TableModel>().kennelsTableHelper.colKennelName} as homeKennelName
-      FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem3
-      INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h3 ON h3.hasherId = hem3.userId
-      LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay3 ON pay3.hemId = hem3.hemId AND pay3.cancelledBy IS NULL
-      LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm3 ON hkm3.userId = h3.hasherId AND hkm3.kennelId = "${eventAggregate.event.kennelId}" AND julianday(hkm3.membershipExpirationDate) >= julianday('now', 'localtime')
-      LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm4 ON hkm4.userId = h3.hasherId AND hkm4.kennelId = "${eventAggregate.event.kennelId}" 
-      LEFT OUTER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ken3 on h3.${G0<TableModel>().hashersTableHelper.colHomeKennelId} = ken3.${G0<TableModel>().kennelsTableHelper.colKennelId}
+          hkm4.${tableModel.hasherKennelMapTableHelper.colKennelCredit} AS credit,
+          COALESCE(hkm4.${tableModel.hasherKennelMapTableHelper.colDiscountAmount}, 0) AS discountAmount,
+          COALESCE(hkm4.${tableModel.hasherKennelMapTableHelper.colDiscountPercent}, 0) AS discountPercent,
+          hkm4.${tableModel.hasherKennelMapTableHelper.colHcTotalRunCount},
+          hkm4.${tableModel.hasherKennelMapTableHelper.colHcHaringCount},
+          hkm4.${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount},
+          hkm4.${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount},
+          hkm4.${tableModel.hasherKennelMapTableHelper.colHistoricalCountIsEstimate},
+          ken3.${tableModel.kennelsTableHelper.colKennelName} as homeKennelName
+      FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem3
+      INNER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h3 ON h3.hasherId = hem3.userId
+      LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay3 ON pay3.hemId = hem3.hemId AND pay3.cancelledBy IS NULL
+      LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm3 ON hkm3.userId = h3.hasherId AND hkm3.kennelId = "${eventAggregate.event.kennelId}" AND julianday(hkm3.membershipExpirationDate) >= julianday('now', 'localtime')
+      LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm4 ON hkm4.userId = h3.hasherId AND hkm4.kennelId = "${eventAggregate.event.kennelId}" 
+      LEFT OUTER JOIN ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} ken3 on h3.${tableModel.hashersTableHelper.colHomeKennelId} = ken3.${tableModel.kennelsTableHelper.colKennelId}
       WHERE hem3.eventId = "${eventAggregate.event.eventId}" 
         AND hem3.virginVisitorType = 0 
         AND (
@@ -431,9 +427,7 @@ class CheckInPackController extends GetxController
 
           ''';
 
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
-        sql,
-      );
+      final List<Map<String, dynamic>> results = await database.rawQuery(sql);
 
       if (results.isNotEmpty) {
         packList.clear();
@@ -866,13 +860,13 @@ class CheckInPackController extends GetxController
           .map((entry) => entry.key)
           .join(',');
 
-      await G0<TableModel>().hasherEventMapService.setBulkEventAttendence(
+      await tableModel.hasherEventMapService.setBulkEventAttendence(
         eventAggregate.event.eventId,
         selectedHasherIds,
         attendenceState,
       );
     } else {
-      await G0<TableModel>().hasherEventMapService.setEventAttendence(
+      await tableModel.hasherEventMapService.setEventAttendence(
         eventAggregate.event.eventId,
         packMember.hasherId,
         AppDomainType.event,
@@ -896,7 +890,7 @@ class CheckInPackController extends GetxController
       print('rsvpState = $rsvpState');
     }
 
-    final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService
+    final List<dynamic> adHocData = await tableModel.hasherEventMapService
         .setEventRsvp(
           eventAggregate.event.eventId,
           hasherId,
@@ -1191,8 +1185,8 @@ class CheckInPackController extends GetxController
         // setState(() {
         //   _isLoading = true;
         // });
-        await G0<TableModel>()
-            //final List<dynamic> adHocData = await G0<TableModel>()
+        await tableModel
+            //final List<dynamic> adHocData = await tableModel
             .hasherEventMapService
             .joinEventAsVisitor(
               eventAggregate.event.eventId,
@@ -1281,8 +1275,7 @@ class CheckInPackController extends GetxController
         false;
 
     if (doCopyRsvps) {
-      final List<dynamic> adHocData = await G0<TableModel>()
-          .hasherEventMapService
+      final List<dynamic> adHocData = await tableModel.hasherEventMapService
           .copyEventRsvps(fromEventId, eventAggregate.event.eventId);
 
       final String serverMessage = adHocData[0]['serverMessage'] ?? '';
@@ -1578,7 +1571,7 @@ class CheckInPackController extends GetxController
 
     if ((result != null) && (result['hasher']?.hasherId != null)) {
       // NOTE:this method returns adHoc data that we are ignoring
-      await G0<TableModel>().hasherEventMapService.setEventAttendence(
+      await tableModel.hasherEventMapService.setEventAttendence(
         eventAggregate.event.eventId,
         result['hasher'].hasherId,
         AppDomainType.event,

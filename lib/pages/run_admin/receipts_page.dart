@@ -32,11 +32,9 @@ class ReceiptsListState extends State<ReceiptsList> {
 
   void refreshFromTable() {
     try {
-      G0<Database>()
+      database
           .query(
-            G0<TableModel>().receiptsTableHelper.getTableName(
-              AppDomainType.event,
-            ),
+            tableModel.receiptsTableHelper.getTableName(AppDomainType.event),
           )
           .then((List<Map<String, dynamic>> results) {
             setState(() {
@@ -118,7 +116,7 @@ class ReceiptsListState extends State<ReceiptsList> {
   }
 
   Future<void> _handleRefresh() async {
-    await G0<TableModel>().syncEventAdminService.updateFromBackend(
+    await tableModel.syncEventAdminService.updateFromBackend(
       SyncEventAdminService.flagReceiptsTable,
       true,
       widget.eventAggregate.event.eventId,
@@ -134,7 +132,7 @@ class ReceiptsListState extends State<ReceiptsList> {
   ) async {
     final String userId = getStringPref(StringPrefsEnum.userId)!;
 
-    await G0<Database>().transaction<dynamic>((Transaction txn) async {
+    await database.transaction<dynamic>((Transaction txn) async {
       final String guidFlag = cancelReimbursement ? GUID_9 : GUID_8;
       final String sql =
           'UPDATE receipts SET reimbursedBy = "$guidFlag" where receiptId = "$receiptId"';
@@ -161,11 +159,11 @@ class ReceiptsListState extends State<ReceiptsList> {
     final ReceiptsService srv = ReceiptsService();
     final String responseBody = await srv.uploadReceipt(item);
     if (!responseBody.startsWith(ERROR_PREFIX)) {
-      await G0<TableModel>().baseService.bulkUpdateDatabase(
-        G0<TableModel>().receiptsTableHelper,
-        G0<TableModel>().receiptsTableHelper.getTableName(AppDomainType.event),
+      await tableModel.baseService.bulkUpdateDatabase(
+        tableModel.receiptsTableHelper,
+        tableModel.receiptsTableHelper.getTableName(AppDomainType.event),
         responseBody,
-        G0<Database>(),
+        database,
       );
 
       refreshFromTable();
@@ -180,7 +178,7 @@ class ReceiptsListState extends State<ReceiptsList> {
   }
 
   Future<void> setReceiptRemovedStatus(String receiptId, bool removed) async {
-    await G0<Database>().transaction<dynamic>((Transaction txn) async {
+    await database.transaction<dynamic>((Transaction txn) async {
       final String guidFlag = removed ? GUID_9 : GUID_8;
       final String sql =
           'UPDATE receipts SET reimbursedBy = "$guidFlag" where receiptId = "$receiptId"';
@@ -209,11 +207,11 @@ class ReceiptsListState extends State<ReceiptsList> {
     final ReceiptsService srv = ReceiptsService();
     final String responseBody = await srv.uploadReceipt(item);
     if (!responseBody.startsWith(ERROR_PREFIX)) {
-      await G0<TableModel>().baseService.bulkUpdateDatabase(
-        G0<TableModel>().receiptsTableHelper,
-        G0<TableModel>().receiptsTableHelper.getTableName(AppDomainType.event),
+      await tableModel.baseService.bulkUpdateDatabase(
+        tableModel.receiptsTableHelper,
+        tableModel.receiptsTableHelper.getTableName(AppDomainType.event),
         responseBody,
-        G0<Database>(),
+        database,
       );
       refreshFromTable();
     } else {

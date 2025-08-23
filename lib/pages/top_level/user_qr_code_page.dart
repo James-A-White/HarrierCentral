@@ -258,7 +258,7 @@ class QrCodeTabState extends State<QrCodeTab>
             children: <Widget>[
               SizedBox(
                 width: 10,
-                height: (G0<DeviceInfo>().deviceWidthScaleFactor - 1) * 90,
+                height: (deviceInfo.deviceWidthScaleFactor - 1) * 90,
               ),
               Container(
                 padding: const EdgeInsets.only(
@@ -271,7 +271,7 @@ class QrCodeTabState extends State<QrCodeTab>
                   'This code can be scanned by mismanagement to check you in at the beginning and end of runs.',
                   textAlign: TextAlign.justify,
                   style: ts_titleMedium.copyWith(
-                    fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+                    fontSize: 16.0 * deviceInfo.deviceWidthScaleFactor,
                   ),
                 ),
               ),
@@ -282,7 +282,7 @@ class QrCodeTabState extends State<QrCodeTab>
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 style: ts_titleMedium.copyWith(
-                  fontSize: 24.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+                  fontSize: 24.0 * deviceInfo.deviceWidthScaleFactor,
                 ),
               ),
 
@@ -508,8 +508,7 @@ class QrScannerTabState extends State<QrScannerTab>
 
         final String userId = getStringPref(StringPrefsEnum.userId)!;
 
-        final List<dynamic> adHocData = await G0<TableModel>()
-            .hasherEventMapService
+        final List<dynamic> adHocData = await tableModel.hasherEventMapService
             .setEventAttendence(
               scanData,
               userId,
@@ -570,7 +569,7 @@ class QrScannerTabState extends State<QrScannerTab>
           } else {
             final String userId = getStringPref(StringPrefsEnum.userId)!;
 
-            final List<dynamic> adHocData = await G0<TableModel>()
+            final List<dynamic> adHocData = await tableModel
                 .hasherEventMapService
                 .setEventAttendence(
                   scanData,
@@ -705,7 +704,7 @@ class QrScannerTabState extends State<QrScannerTab>
       children: <Widget>[
         SizedBox(
           width: 10,
-          height: (G0<DeviceInfo>().deviceWidthScaleFactor - 1) * 90,
+          height: (deviceInfo.deviceWidthScaleFactor - 1) * 90,
         ),
         Container(
           padding: const EdgeInsets.only(left: 20, right: 20),
@@ -715,7 +714,7 @@ class QrScannerTabState extends State<QrScannerTab>
             textAlign: TextAlign.justify,
             maxLines: 4,
             style: ts_titleMedium.copyWith(
-              fontSize: 16.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+              fontSize: 16.0 * deviceInfo.deviceWidthScaleFactor,
             ),
           ),
         ),
@@ -724,7 +723,7 @@ class QrScannerTabState extends State<QrScannerTab>
         Expanded(
           child: Container(
             padding: EdgeInsets.all(
-              10 * (G0<DeviceInfo>().deviceMaxScaleFactor * 1.5),
+              10 * (deviceInfo.deviceMaxScaleFactor * 1.5),
             ),
             child: Stack(
               alignment: AlignmentDirectional.center,
@@ -783,7 +782,7 @@ class QrScannerTabState extends State<QrScannerTab>
             //width: 280.0,
             height: 40.0,
             child: Connection2.styleForConnected(
-              G0<AppModel>().connectionStatus,
+              appModel.connectionStatus,
               ElevatedButton(
                 child: Text(
                   _isScanning ? 'Stop Scanning' : 'Start Scanning',
@@ -791,7 +790,7 @@ class QrScannerTabState extends State<QrScannerTab>
                 ),
                 onPressed: () async {
                   if (Connection2.checkForConnection(
-                    G0<AppModel>().connectionStatus,
+                    appModel.connectionStatus,
                   )) {
                     await _toggleScanning();
                   }

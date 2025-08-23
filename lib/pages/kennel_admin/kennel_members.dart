@@ -96,27 +96,26 @@ class KennelMemberListState extends State<KennelMembersList>
   }
 
   Future<void> _refreshKennelMembersFromTable(bool forceRefresh) async {
-    String orderBy =
-        'lower(h.${G0<TableModel>().hashersTableHelper.colDispName})';
+    String orderBy = 'lower(h.${tableModel.hashersTableHelper.colDispName})';
 
     switch (_sortBy) {
       case EnumSortByType.sortByName:
-        orderBy = 'lower(h.${G0<TableModel>().hashersTableHelper.colDispName})';
+        orderBy = 'lower(h.${tableModel.hashersTableHelper.colDispName})';
         break;
       case EnumSortByType.sortByLastRunDate:
         orderBy =
-            'hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDateOfLastRun}';
+            'hkm.${tableModel.hasherKennelMapTableHelper.colDateOfLastRun}';
         break;
       case EnumSortByType.sortByMembershipExpirationDate:
         orderBy =
-            'hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate} asc';
+            'hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate} asc';
         break;
     }
 
     if (kDebugMode) {
       final String message =
           (await CommonQueries.countRecords(
-            G0<TableModel>().hasherKennelMapTableHelper.getTableName(
+            tableModel.hasherKennelMapTableHelper.getTableName(
               AppDomainType.kennel,
             ),
           )).toString();
@@ -125,38 +124,38 @@ class KennelMemberListState extends State<KennelMembersList>
 
     final String query = '''
         SELECT 
-          h.${G0<TableModel>().hashersTableHelper.colHasherId},
-          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName},coalesce(h.${G0<TableModel>().hashersTableHelper.colDispName},h.${G0<TableModel>().hashersTableHelper.colHashName},h.${G0<TableModel>().hashersTableHelper.colFirstName} || " " || h.${G0<TableModel>().hashersTableHelper.colLastName},"<no name>")) as dispName,
-          lower(coalesce(" " || hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName} || " ",(" " || coalesce(h.${G0<TableModel>().hashersTableHelper.colHashName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colDispName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colFirstName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colLastName},"") || " "))) as nameForSort,
-          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelUserPhoto},h.${G0<TableModel>().hashersTableHelper.colPhoto}) as photo,
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDateOfLastRun},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelEmailAlertPreference},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMemberSince},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colAppAccessFlags},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},          
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colAppAccessFlags},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMismanagementRoles},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit},
-          k.${G0<TableModel>().kennelsTableHelper.colMembershipDurationInMonths},
-          k.${G0<TableModel>().kennelsTableHelper.colKennelShortName},
-          k.${G0<TableModel>().kennelsTableHelper.colKennelId}
+          h.${tableModel.hashersTableHelper.colHasherId},
+          coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colKennelHashName},coalesce(h.${tableModel.hashersTableHelper.colDispName},h.${tableModel.hashersTableHelper.colHashName},h.${tableModel.hashersTableHelper.colFirstName} || " " || h.${tableModel.hashersTableHelper.colLastName},"<no name>")) as dispName,
+          lower(coalesce(" " || hkm.${tableModel.hasherKennelMapTableHelper.colKennelHashName} || " ",(" " || coalesce(h.${tableModel.hashersTableHelper.colHashName},"") || " " || coalesce(h.${tableModel.hashersTableHelper.colDispName},"") || " " || coalesce(h.${tableModel.hashersTableHelper.colFirstName},"") || " " || coalesce(h.${tableModel.hashersTableHelper.colLastName},"") || " "))) as nameForSort,
+          coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colKennelUserPhoto},h.${tableModel.hashersTableHelper.colPhoto}) as photo,
+          hkm.${tableModel.hasherKennelMapTableHelper.colFollowing},
+          hkm.${tableModel.hasherKennelMapTableHelper.colDateOfLastRun},
+          hkm.${tableModel.hasherKennelMapTableHelper.colKennelEmailAlertPreference},
+          hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate},
+          hkm.${tableModel.hasherKennelMapTableHelper.colMemberSince},
+          hkm.${tableModel.hasherKennelMapTableHelper.colAppAccessFlags},
+          hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount},
+          hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount},          
+          hkm.${tableModel.hasherKennelMapTableHelper.colHcHaringCount},
+          hkm.${tableModel.hasherKennelMapTableHelper.colHcTotalRunCount},
+          hkm.${tableModel.hasherKennelMapTableHelper.colAppAccessFlags},
+          hkm.${tableModel.hasherKennelMapTableHelper.colMismanagementRoles},
+          hkm.${tableModel.hasherKennelMapTableHelper.colKennelCredit},
+          k.${tableModel.kennelsTableHelper.colMembershipDurationInMonths},
+          k.${tableModel.kennelsTableHelper.colKennelShortName},
+          k.${tableModel.kennelsTableHelper.colKennelId}
           ,case 
-            when hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate} >= date('now') then 1
-            when ((hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDateOfLastRun} is not null) AND (hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDateOfLastRun} >= date('now','-182 day'))) then 2
-            when hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDateOfLastRun} is not null then 3
-            when hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing} = 1 then 4
+            when hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate} >= date('now') then 1
+            when ((hkm.${tableModel.hasherKennelMapTableHelper.colDateOfLastRun} is not null) AND (hkm.${tableModel.hasherKennelMapTableHelper.colDateOfLastRun} >= date('now','-182 day'))) then 2
+            when hkm.${tableModel.hasherKennelMapTableHelper.colDateOfLastRun} is not null then 3
+            when hkm.${tableModel.hasherKennelMapTableHelper.colFollowing} = 1 then 4
             else 5
           end as memberFollowingStatus
           FROM hashers h
-          LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = h.${G0<TableModel>().hashersTableHelper.colHasherId} AND hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelId} = '${widget.kennelListAggregate.kennel.kennelId}'
-          LEFT OUTER JOIN kennels k on k.${G0<TableModel>().kennelsTableHelper.colKennelId} = '${widget.kennelListAggregate.kennel.kennelId}'
-          WHERE h.${G0<TableModel>().hashersTableHelper.colRemoved} = 0 
-          AND h.${G0<TableModel>().hashersTableHelper.colDispName} not like 'Placeholder user for%'
+          LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} hkm on hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = h.${tableModel.hashersTableHelper.colHasherId} AND hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = '${widget.kennelListAggregate.kennel.kennelId}'
+          LEFT OUTER JOIN kennels k on k.${tableModel.kennelsTableHelper.colKennelId} = '${widget.kennelListAggregate.kennel.kennelId}'
+          WHERE h.${tableModel.hashersTableHelper.colRemoved} = 0 
+          AND h.${tableModel.hashersTableHelper.colDispName} not like 'Placeholder user for%'
           ORDER BY memberFollowingStatus,$orderBy
           
           ''';
@@ -169,9 +168,7 @@ class KennelMemberListState extends State<KennelMembersList>
     int lastMemberType = 0;
 
     try {
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
-        query,
-      );
+      final List<Map<String, dynamic>> results = await database.rawQuery(query);
       for (int i = 0; i < results.length; i++) {
         final KennelMemberResultsModel hlrItem =
             KennelMemberResultsModel.fromMap(results[i]);
@@ -227,18 +224,16 @@ class KennelMemberListState extends State<KennelMembersList>
       final String sql = '''
 
           SELECT 
-              COUNT(CASE WHEN ${G0<TableModel>().hasherKennelMapTableHelper.colFollowing} > 0 THEN 1 ELSE NULL END) as isFollowing,
-              COUNT(CASE WHEN ${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate} > date('now') THEN 1 ELSE NULL END) as isMember,
+              COUNT(CASE WHEN ${tableModel.hasherKennelMapTableHelper.colFollowing} > 0 THEN 1 ELSE NULL END) as isFollowing,
+              COUNT(CASE WHEN ${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate} > date('now') THEN 1 ELSE NULL END) as isMember,
           
-              COUNT(CASE WHEN ${G0<TableModel>().hasherKennelMapTableHelper.colDateOfLastRun} >= date('now','-365 day') THEN 1 ELSE NULL END) as hasRecentRuns
-              FROM ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} hkm
-              INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h on h.${G0<TableModel>().hashersTableHelper.colHasherId} = hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId}
+              COUNT(CASE WHEN ${tableModel.hasherKennelMapTableHelper.colDateOfLastRun} >= date('now','-365 day') THEN 1 ELSE NULL END) as hasRecentRuns
+              FROM ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} hkm
+              INNER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h on h.${tableModel.hashersTableHelper.colHasherId} = hkm.${tableModel.hasherKennelMapTableHelper.colUserId}
   
           ''';
 
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
-        sql,
-      );
+      final List<Map<String, dynamic>> results = await database.rawQuery(sql);
       if (results.isNotEmpty) {
         countIsMember = results[0]['isMember'];
         countIsFollowing = results[0]['isFollowing'];
@@ -560,7 +555,7 @@ class KennelMemberListState extends State<KennelMembersList>
                                     // counts, make sure to also refresh the HKM users
                                     // table so the run history page is accurate
                                     if (refreshThisUserData) {
-                                      await G0<TableModel>().syncUserDataService
+                                      await tableModel.syncUserDataService
                                           .updateFromBackend(
                                             SyncUserDataService
                                                 .flagHasherKennelMapTable,
@@ -669,7 +664,7 @@ class KennelMemberListState extends State<KennelMembersList>
                                   },
                                   toggleEmailPreferenceCallback: () {
                                     if (Connection2.checkForConnection(
-                                      G0<AppModel>().connectionStatus,
+                                      appModel.connectionStatus,
                                       message:
                                           'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.',
                                     )) {
@@ -1013,7 +1008,7 @@ class KennelMemberListState extends State<KennelMembersList>
       //_isLoading = true;
     });
 
-    await G0<TableModel>().syncKennelAdminService.updateFromBackend(
+    await tableModel.syncKennelAdminService.updateFromBackend(
       SyncKennelAdminService.flagKennelTable |
           SyncKennelAdminService.flagHashersTable |
           SyncKennelAdminService.flagHasherKennelMapTable,

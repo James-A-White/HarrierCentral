@@ -2,7 +2,7 @@ import 'package:harrier_central/imports.dart';
 
 class GetResetCodeService {
   Future<SingleResultModel?> getResetCode(String supportCode) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
       return null;
       // TODO(James): fix this so we can return a bool
       //return false;
@@ -23,7 +23,7 @@ class GetResetCodeService {
       'queryType': 'getResetCode',
       'deviceId': deviceId,
       'accessToken': accessToken,
-      'supportCode': supportCode
+      'supportCode': supportCode,
     });
 
     final String responseBody = await ServiceCommon.sendHttpPostV2(body);
@@ -31,11 +31,9 @@ class GetResetCodeService {
     SingleResultModel? result;
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
-      json.decode(responseBody).forEach(
-        (dynamic item) {
-          result = SingleResultModel(result: item[0]['result']);
-        },
-      );
+      json.decode(responseBody).forEach((dynamic item) {
+        result = SingleResultModel(result: item[0]['result']);
+      });
     }
 
     return result;

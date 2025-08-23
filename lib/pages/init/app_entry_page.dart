@@ -14,10 +14,10 @@ class AppEntryPageState extends State<AppEntryPage>
 
   Future<void> _handleStartup(BuildContext context) async {
     print('App startup called...');
-    await G0.allReady();
-    print('GetX registered...');
-    G0.registerSingleton<AppModel>(AppModel());
-    print('AppModel registered...');
+    // await G0.allReady();
+    // print('GetX registered...');
+    // G0.registerSingleton<AppModel>(AppModel());
+    // print('AppModel registered...');
 
     String? userId = getStringPref(StringPrefsEnum.userId);
     final String? deviceId = getStringPref(StringPrefsEnum.deviceId);
@@ -46,7 +46,7 @@ class AppEntryPageState extends State<AppEntryPage>
       // now tear down the database GetIt instance and Get data
       await DBProvider.deleteDb(DB_NAME);
       await Get.deleteAll(force: true);
-      await GetIt.instance.reset();
+      Get.reset(clearRouteBindings: true);
 
       // and re-run the app.
       await Future.microtask(() {
@@ -55,7 +55,7 @@ class AppEntryPageState extends State<AppEntryPage>
 
       // stop it from falling through and continuing to run.
       // this shouldn't be needed, but I'll put it in for now for testing
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 5000));
 
       // if (result.isNotEmpty) {
       //   await Utilities.showAlert(
@@ -77,34 +77,34 @@ class AppEntryPageState extends State<AppEntryPage>
 
     await setStringPref(StringPrefsEnum.harrierCentralVersion, p.version);
 
-    await setupLocalServices(
-      MediaQuery.of(navigatorKey.currentContext!).size.width,
-      MediaQuery.of(navigatorKey.currentContext!).size.height,
-      MediaQuery.of(navigatorKey.currentContext!).textScaler.scale(1.0),
-    );
+    // await setupLocalServices(
+    //   MediaQuery.of(navigatorKey.currentContext!).size.width,
+    //   MediaQuery.of(navigatorKey.currentContext!).size.height,
+    //   MediaQuery.of(navigatorKey.currentContext!).textScaler.scale(1.0),
+    // );
 
-    G0<AppModel>().appStartTime = DateTime.now();
+    appModel.appStartTime = DateTime.now();
 
-    G0<AppModel>().hasLocationPermissions = await Permission.location.isGranted;
+    appModel.hasLocationPermissions = await Permission.location.isGranted;
 
-    G0<DeviceInfo>().deviceWidthScaleFactor =
+    deviceInfo.deviceWidthScaleFactor =
         MediaQuery.of(navigatorKey.currentContext!).size.width /
         BASE_DEVICE_WIDTH;
-    G0<DeviceInfo>().deviceHeightScaleFactor =
+    deviceInfo.deviceHeightScaleFactor =
         MediaQuery.of(navigatorKey.currentContext!).size.height /
         BASE_DEVICE_HEIGHT;
-    G0<DeviceInfo>().deviceMaxScaleFactor = max(
-      G0<DeviceInfo>().deviceWidthScaleFactor,
-      G0<DeviceInfo>().deviceHeightScaleFactor,
+    deviceInfo.deviceMaxScaleFactor = max(
+      deviceInfo.deviceWidthScaleFactor,
+      deviceInfo.deviceHeightScaleFactor,
     );
-    G0<DeviceInfo>().deviceMinScaleFactor = min(
-      G0<DeviceInfo>().deviceWidthScaleFactor,
-      G0<DeviceInfo>().deviceHeightScaleFactor,
+    deviceInfo.deviceMinScaleFactor = min(
+      deviceInfo.deviceWidthScaleFactor,
+      deviceInfo.deviceHeightScaleFactor,
     );
 
-    G0<DeviceInfo>().deviceWidth =
+    deviceInfo.deviceWidth =
         MediaQuery.of(navigatorKey.currentContext!).size.width;
-    G0<DeviceInfo>().deviceHeight =
+    deviceInfo.deviceHeight =
         MediaQuery.of(navigatorKey.currentContext!).size.height;
 
     ApproveLoginModel? loginResult;
@@ -113,7 +113,7 @@ class AppEntryPageState extends State<AppEntryPage>
 
     await Utilities.subscribeToGeoLocationStream();
 
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.connected) {
+    if (appModel.connectionStatus == EnumConnectionStatus2.connected) {
       final String responseBody = await svc.approveLogin(
         navigatorKey.currentContext!,
         null,
@@ -182,7 +182,7 @@ class AppEntryPageState extends State<AppEntryPage>
       exit(0);
     } else if (loginResult == null) {
       // open app in offline mode
-      G0<AppModel>().connectionStatus = EnumConnectionStatus2.notConnected;
+      appModel.connectionStatus = EnumConnectionStatus2.notConnected;
 
       Get.off(() => MainNavigationPage(), routeName: '/main');
 
@@ -211,7 +211,7 @@ class AppEntryPageState extends State<AppEntryPage>
       if (allowContinueFromMessage) {
         if (loginResult.serverStatusCode == serverStatusUp.value) {
           if (loginResult.approvalCode == loginApprovalApproved.value) {
-            G0<AppModel>().connectionStatus = EnumConnectionStatus2.connected;
+            appModel.connectionStatus = EnumConnectionStatus2.connected;
             //if (true) {
             if (((userId == null) ||
                 (userId.isEmpty) ||
@@ -252,7 +252,7 @@ class AppEntryPageState extends State<AppEntryPage>
 
                 if (resetCode.isNotEmpty) {
                   await DBProvider.deleteDb(DB_NAME);
-                  G0<AppModel>().dbStatus = EdbStatus.uninitialized;
+                  appModel.dbStatus = EdbStatus.uninitialized;
 
                   //bool isLoading = true;
                   String userName;

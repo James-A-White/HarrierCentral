@@ -228,7 +228,7 @@ class FutureRunsListPage extends StatelessWidget {
                                 children: <Widget>[
                                   if ((listController.filteredRuns[index] ==
                                           2) &&
-                                      (G0<AppModel>().connectionStatus ==
+                                      (appModel.connectionStatus ==
                                           EnumConnectionStatus2
                                               .connected)) ...<Widget>[
                                     const SizedBox(width: 36.0),
@@ -254,7 +254,7 @@ class FutureRunsListPage extends StatelessWidget {
                                         ? 'Runs from Kennels I follow'
                                         : 'All other upcoming runs',
                                     textAlign: TextAlign.center,
-                                    //textScaleFactor: G0<DeviceInfo>().textClamp15,
+                                    //textScaleFactor: deviceInfo.textClamp15,
                                     style: ts_titleLarge,
                                   ),
                                   if ((listController.filteredRuns[index] ==
@@ -282,7 +282,7 @@ class FutureRunsListPage extends StatelessWidget {
                                   ],
                                   if ((listController.filteredRuns[index] ==
                                           2) &&
-                                      (G0<AppModel>().connectionStatus ==
+                                      (appModel.connectionStatus ==
                                           EnumConnectionStatus2
                                               .connected)) ...<Widget>[
                                     GestureDetector(
@@ -335,8 +335,7 @@ class FutureRunsListPage extends StatelessWidget {
                                                   .location
                                                   .serviceStatus
                                                   .isEnabled) {
-                                                G0<AppModel>()
-                                                        .hasLocationPermissions =
+                                                appModel.hasLocationPermissions =
                                                     true;
                                                 await Utilities.subscribeToGeoLocationStream().then((
                                                   void _,
@@ -637,8 +636,7 @@ class FutureRunsListPage extends StatelessWidget {
       },
     ).then((dynamic retVal) async {
       if (retVal == 9999) {
-        if (G0<AppModel>().connectionStatus ==
-            EnumConnectionStatus2.connected) {
+        if (appModel.connectionStatus == EnumConnectionStatus2.connected) {
           final HashersService srv = HashersService();
 
           final int hasherPreferences =
@@ -665,8 +663,7 @@ class FutureRunsListPage extends StatelessWidget {
       } else if ((retVal is! EnumFollowType) &&
           (retVal >= hasherPref_0) &&
           (retVal <= hasherPref_500)) {
-        if (G0<AppModel>().connectionStatus ==
-            EnumConnectionStatus2.connected) {
+        if (appModel.connectionStatus == EnumConnectionStatus2.connected) {
           final HashersService srv = HashersService();
 
           final int hasherPreferences =
@@ -703,7 +700,7 @@ class FutureRunsListPage extends StatelessWidget {
             ? ' km'
             : ' miles';
 
-    if (!G0<AppModel>().hasLocationPermissions) {
+    if (!appModel.hasLocationPermissions) {
       distancePref = hasherPref_0;
     }
 

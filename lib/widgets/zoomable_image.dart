@@ -87,8 +87,8 @@ class ZoomableImagePage2 extends StatelessWidget {
                             ),
                             Padding(
                               padding: EdgeInsets.only(
-                                left: G0<DeviceInfo>().deviceWidth / 6,
-                                right: G0<DeviceInfo>().deviceWidth / 6,
+                                left: deviceInfo.deviceWidth / 6,
+                                right: deviceInfo.deviceWidth / 6,
                               ),
                               child: AutoSizeText(
                                 (assetImageText ?? '').toLowerCase().contains(

@@ -144,13 +144,11 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
         final ReceiptsService srv = ReceiptsService();
         final String responseBody = await srv.uploadReceipt(item);
         if (!responseBody.startsWith(ERROR_PREFIX)) {
-          await G0<TableModel>().baseService.bulkUpdateDatabase(
-            G0<TableModel>().receiptsTableHelper,
-            G0<TableModel>().receiptsTableHelper.getTableName(
-              AppDomainType.event,
-            ),
+          await tableModel.baseService.bulkUpdateDatabase(
+            tableModel.receiptsTableHelper,
+            tableModel.receiptsTableHelper.getTableName(AppDomainType.event),
             responseBody,
-            G0<Database>(),
+            database,
           );
 
           if (!mounted) return;

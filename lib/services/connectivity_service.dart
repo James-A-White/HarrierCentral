@@ -30,9 +30,9 @@ class NetworkService extends GetxService {
     status.value = hasNet ? NetworkStatus.online : NetworkStatus.offline;
 
     if (hasNet) {
-      G0<AppModel>().connectionStatus = EnumConnectionStatus2.connected;
+      appModel.connectionStatus = EnumConnectionStatus2.connected;
     } else {
-      G0<AppModel>().connectionStatus = EnumConnectionStatus2.notConnected;
+      appModel.connectionStatus = EnumConnectionStatus2.notConnected;
     }
 
     // Listen for interface changes
@@ -58,9 +58,9 @@ class NetworkService extends GetxService {
     final hasInternet = await InternetConnection().hasInternetAccess;
     status.value = hasInternet ? NetworkStatus.online : NetworkStatus.offline;
     if (hasInternet) {
-      G0<AppModel>().connectionStatus = EnumConnectionStatus2.connected;
+      appModel.connectionStatus = EnumConnectionStatus2.connected;
     } else {
-      G0<AppModel>().connectionStatus = EnumConnectionStatus2.notConnected;
+      appModel.connectionStatus = EnumConnectionStatus2.notConnected;
     }
 
     return hasInternet;
@@ -87,9 +87,9 @@ class NetworkService extends GetxService {
       final hasInternet = await InternetConnection().hasInternetAccess;
       status.value = hasInternet ? NetworkStatus.online : NetworkStatus.offline;
       if (hasInternet) {
-        G0<AppModel>().connectionStatus = EnumConnectionStatus2.connected;
+        appModel.connectionStatus = EnumConnectionStatus2.connected;
       } else {
-        G0<AppModel>().connectionStatus = EnumConnectionStatus2.notConnected;
+        appModel.connectionStatus = EnumConnectionStatus2.notConnected;
       }
     });
   }
@@ -99,9 +99,9 @@ class NetworkService extends GetxService {
     _debounceTimer = Timer(debounce, () {
       status.value = newStatus;
       if (newStatus == NetworkStatus.online) {
-        G0<AppModel>().connectionStatus = EnumConnectionStatus2.connected;
+        appModel.connectionStatus = EnumConnectionStatus2.connected;
       } else {
-        G0<AppModel>().connectionStatus = EnumConnectionStatus2.notConnected;
+        appModel.connectionStatus = EnumConnectionStatus2.notConnected;
       }
     });
   }

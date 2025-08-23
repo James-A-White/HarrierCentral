@@ -322,7 +322,7 @@ class EmailEditorPageState extends State<EmailEditorPage> {
     );
 
     if (doEmail ?? false) {
-      final Map<String, String> result = await G0<TableModel>().eventsService
+      final Map<String, String> result = await tableModel.eventsService
           .sendRunDetailsByEmail(eventId: widget.eventId, emailBody: emailBody);
 
       if (!mounted) return;

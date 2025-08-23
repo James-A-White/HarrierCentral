@@ -118,7 +118,7 @@ class HashersService extends BaseService {
     int preferences = -1,
     int nameDisplayPreference = -1,
   }) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
       return '';
       // TODO(James): fix this so we can return a bool
       //return false;
@@ -151,42 +151,42 @@ class HashersService extends BaseService {
 
     if (!newUserForThisDevice) {
       final int hashersLastUpdated = await getLastUpdatedTime(
-        G0<Database>(),
-        G0<TableModel>().hashersTableHelper,
-        G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user),
-        G0<TableModel>().hashersTableHelper.colUpdatedAtValue,
+        database,
+        tableModel.hashersTableHelper,
+        tableModel.hashersTableHelper.getTableName(AppDomainType.user),
+        tableModel.hashersTableHelper.colUpdatedAtValue,
       );
       hashersUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
         hashersLastUpdated + 1,
       );
 
       // TODO(James): Check the logic here in this call we are using AppDomainType of event but in the next one we have logic to go between event and kennel
-      final int hasherEventMapLastUpdated = await G0<TableModel>().baseService
+      final int hasherEventMapLastUpdated = await tableModel.baseService
           .getLastUpdatedTime(
-            G0<Database>(),
-            G0<TableModel>().hasherEventMapTableHelper,
-            G0<TableModel>().hasherEventMapTableHelper.getTableName(
+            database,
+            tableModel.hasherEventMapTableHelper,
+            tableModel.hasherEventMapTableHelper.getTableName(
               AppDomainType.event,
             ),
-            G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
+            tableModel.hasherEventMapTableHelper.colUpdatedAtValue,
           );
       hasherEventMapUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
         hasherEventMapLastUpdated + 1,
       );
 
       // this one has event and kennel
-      final int hasherKennelMapLastUpdated = await G0<TableModel>().baseService
+      final int hasherKennelMapLastUpdated = await tableModel.baseService
           .getLastUpdatedTime(
-            G0<Database>(),
-            G0<TableModel>().hasherKennelMapTableHelper,
-            G0<TableModel>().hasherKennelMapTableHelper.getTableName(
+            database,
+            tableModel.hasherKennelMapTableHelper,
+            tableModel.hasherKennelMapTableHelper.getTableName(
               ((eventId != null) &&
                       (eventId.isNotEmpty) &&
                       (eventId != GUID_EMPTY))
                   ? AppDomainType.event
                   : AppDomainType.kennel,
             ),
-            G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
+            tableModel.hasherKennelMapTableHelper.colUpdatedAtValue,
           );
       hasherKennelMapUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
         hasherKennelMapLastUpdated + 1,
@@ -230,8 +230,8 @@ class HashersService extends BaseService {
       'historicalCountIsEstimate':
           (historicalCountIsEstimate ?? false) ? '1' : '0',
       'followKennelOnAddNewUser': followKennelOnAddNewUser?.toString(),
-      'latitude': G0<DeviceInfo>().deviceLat.toString(),
-      'longitude': G0<DeviceInfo>().deviceLon.toString(),
+      'latitude': deviceInfo.deviceLat.toString(),
+      'longitude': deviceInfo.deviceLon.toString(),
       'nameDisplayPreference': nameDisplayPreference.toString(),
     });
 
@@ -271,16 +271,16 @@ class HashersService extends BaseService {
             ((kennelId == null) || (kennelId == GUID_EMPTY))) {
           // we don't have either an eventId or a kennelId so all we need to do is update
           // the Hasher table
-          await G0<TableModel>().syncUserDataService
+          await tableModel.syncUserDataService
               .updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
         } else if ((eventId != null) && (eventId != GUID_EMPTY)) {
           // if we have an eventId we are definitely editing an event irrespective of whether or not
           // there is also a kennelId
-          await G0<TableModel>().syncEventAdminService
+          await tableModel.syncEventAdminService
               .updateSqlTablesWithResultsFromBackendApiCall(responseBody);
         } else if ((kennelId != null) && (kennelId != GUID_EMPTY)) {
           // if we get here, we have a kennelId but no eventId, which means we are editing kennel members
-          await G0<TableModel>().syncKennelAdminService
+          await tableModel.syncKennelAdminService
               .updateSqlTablesWithResultsFromBackendApiCall(responseBody);
         } else {
           // TODO(James): handle this error, we should never arrive at this point in the code
@@ -319,7 +319,7 @@ class HashersService extends BaseService {
     required String targetUserId,
     required String photo,
   }) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
       return false;
       // TODO(James): fix this so we can return a bool
       //return false;
@@ -377,7 +377,7 @@ class HashersService extends BaseService {
     required String email,
     int includeInGlobalHashDirectory = -1,
   }) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
       return '';
       // TODO(James): fix this so we can return a bool
       //return false;
@@ -403,10 +403,10 @@ class HashersService extends BaseService {
 
     if (!newUserForThisDevice) {
       final int hashersLastUpdated = await getLastUpdatedTime(
-        G0<Database>(),
-        G0<TableModel>().hashersTableHelper,
-        G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user),
-        G0<TableModel>().hashersTableHelper.colUpdatedAtValue,
+        database,
+        tableModel.hashersTableHelper,
+        tableModel.hashersTableHelper.getTableName(AppDomainType.user),
+        tableModel.hashersTableHelper.colUpdatedAtValue,
       );
       hashersUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
         hashersLastUpdated + 1,
@@ -439,8 +439,8 @@ class HashersService extends BaseService {
       'thirdPartyAccessTokenExpires': loginData.accessTokenExpires?.toString(),
       'includeInGlobalHashDirectory': includeInGlobalHashDirectory.toString(),
       'hcVersion': hcVersion,
-      'latitude': G0<DeviceInfo>().deviceLat.toString(),
-      'longitude': G0<DeviceInfo>().deviceLon.toString(),
+      'latitude': deviceInfo.deviceLat.toString(),
+      'longitude': deviceInfo.deviceLon.toString(),
       'thirdPartyEmail': loginData.thirdPartyEmail,
     });
 
@@ -448,13 +448,13 @@ class HashersService extends BaseService {
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       if (!newUserForThisDevice) {
-        await G0<TableModel>().syncUserDataService
+        await tableModel.syncUserDataService
             .updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
       }
     }
 
     if (!newUserForThisDevice) {
-      await G0<TableModel>().syncUserDataService
+      await tableModel.syncUserDataService
           .updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
     }
 

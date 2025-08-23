@@ -464,11 +464,11 @@
 //                                                                 ),
 //                                                         ),
 
-//                                                         Connection2.styleForConnected(G0<AppModel>().connectionStatus,
+//                                                         Connection2.styleForConnected(appModel.connectionStatus,
 //                                                           ElevatedButton(
 //                                                             onPressed: () {
 
-//                                                               // if (Connection2.checkForConnection(context,G0<AppModel>().connectionStatus)) {
+//                                                               // if (Connection2.checkForConnection(context,appModel.connectionStatus)) {
 //                                                               //   Navigator.push(
 //                                                               //     context,
 //                                                               //     MaterialPageRoute<String>(
@@ -609,11 +609,11 @@
 //             bottom: 0,
 //             child: Container(
 //                 padding: const EdgeInsets.fromLTRB(220, 10, 10, 10),
-//                 child: Connection2.styleForConnected(G0<AppModel>().connectionStatus,
+//                 child: Connection2.styleForConnected(appModel.connectionStatus,
 //                   ElevatedButton(
 //                     color: _isDirty ? Theme.of(context).accentColor : Colors.grey,
 //                     onPressed: () {
-//                       if (Connection2.checkForConnection(context,G0<AppModel>().connectionStatus) && _isDirty) {
+//                       if (Connection2.checkForConnection(context,appModel.connectionStatus) && _isDirty) {
 //                         _updateProfile();
 //                       }
 //                     },

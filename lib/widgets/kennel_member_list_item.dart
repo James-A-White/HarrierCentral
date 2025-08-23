@@ -241,15 +241,14 @@ class KennelMemberListItem extends StatelessWidget {
                   //     : Text(
                   //         '${kennelMember.homeKennelName ?? '<no home hash>'}',
                   //         overflow: TextOverflow.ellipsis,
-                  //         style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * G0<DeviceInfo>().deviceWidthScaleFactor, height: 1.0),
+                  //         style: TextStyle(fontFamily: 'AvenirNextMedium', fontStyle: FontStyle.normal, fontSize: 13.0 * deviceInfo.deviceWidthScaleFactor, height: 1.0),
                   //         textAlign: TextAlign.left,
                   //       ),
                   if (kennelMember.dateOfLastRun != null) ...<Widget>[
                     Text(
                       'Last run: ${DateFormat('MMM dd, yyyy').format(kennelMember.dateOfLastRun!)}',
                       style: ts_regularBlack.copyWith(
-                        fontSize:
-                            13.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+                        fontSize: 13.0 * deviceInfo.deviceWidthScaleFactor,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -262,8 +261,7 @@ class KennelMemberListItem extends StatelessWidget {
                       : Text(
                         'Runs: ${kennelMember.hcTotalRunCount + kennelMember.historicalTotalRunCount}, Haring: ${kennelMember.hcHaringCount + kennelMember.historicalHaringCount}',
                         style: ts_regularBlack.copyWith(
-                          fontSize:
-                              13.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+                          fontSize: 13.0 * deviceInfo.deviceWidthScaleFactor,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -273,8 +271,7 @@ class KennelMemberListItem extends StatelessWidget {
                         style: TextStyle(
                           fontFamily: 'AvenirNextBold',
                           fontStyle: FontStyle.normal,
-                          fontSize:
-                              13.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+                          fontSize: 13.0 * deviceInfo.deviceWidthScaleFactor,
                           height: 1.0,
                           color: hc_blue,
                         ),
@@ -287,8 +284,7 @@ class KennelMemberListItem extends StatelessWidget {
                             '(following this Kennel)',
                             style: ts_regularBlack.copyWith(
                               fontSize:
-                                  13.0 *
-                                  G0<DeviceInfo>().deviceWidthScaleFactor,
+                                  13.0 * deviceInfo.deviceWidthScaleFactor,
                             ),
                             textAlign: TextAlign.center,
                           )
@@ -297,8 +293,7 @@ class KennelMemberListItem extends StatelessWidget {
                             ? 'Permanent Member'
                             : 'Valid until: ${DateFormat('MMM dd, yyyy').format(kennelMember.membershipExpirationDate!)}',
                         style: ts_regularBlack.copyWith(
-                          fontSize:
-                              13.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+                          fontSize: 13.0 * deviceInfo.deviceWidthScaleFactor,
                         ),
                         textAlign: TextAlign.center,
                       ),

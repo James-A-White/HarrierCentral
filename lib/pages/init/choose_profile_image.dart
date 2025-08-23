@@ -202,8 +202,8 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
                     alignment: AlignmentDirectional.center,
                     children: <Widget>[
                       SizedBox(
-                        width: G0<DeviceInfo>().deviceWidth,
-                        height: G0<DeviceInfo>().deviceHeight,
+                        width: deviceInfo.deviceWidth,
+                        height: deviceInfo.deviceHeight,
                       ),
                       Positioned(
                         top: 25.0,

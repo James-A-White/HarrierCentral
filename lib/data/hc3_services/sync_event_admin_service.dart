@@ -22,56 +22,61 @@ class SyncEventAdminService {
   int _hashersLastUpdated = FORCE;
 
   Future<int> _getLastUpdatedTime(String colName, String tableName) async {
-    final List<Map<String, dynamic>> table = await G0<Database>()
-        .rawQuery('SELECT MAX($colName) AS maxDate FROM $tableName');
+    final List<Map<String, dynamic>> table = await database.rawQuery(
+      'SELECT MAX($colName) AS maxDate FROM $tableName',
+    );
     int? timeValue = table.first['maxDate'];
     //print(timeValue.toString());
     return timeValue ?? FORCE;
   }
 
   Future<void> _getLastUpdatedTimes(int flags) async {
-    _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0
-        ? IGNORE_REPLICATION_TIMESTAMP
-        : await _getLastUpdatedTime(
-            G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
-            G0<TableModel>()
-                .hasherEventMapTableHelper
-                .getTableName(AppDomainType.event));
-    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0
-        ? IGNORE_REPLICATION_TIMESTAMP
-        : await _getLastUpdatedTime(
-            G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
-            G0<TableModel>()
-                .hasherKennelMapTableHelper
-                .getTableName(AppDomainType.event));
-    _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0
-        ? IGNORE_REPLICATION_TIMESTAMP
-        : await _getLastUpdatedTime(
-            G0<TableModel>().eventsTableHelper.colUpdatedAtValue,
-            G0<TableModel>()
-                .eventsTableHelper
-                .getTableName(AppDomainType.user));
-    _paymentsLastUpdated = (flags & flagPaymentsTable) == 0
-        ? IGNORE_REPLICATION_TIMESTAMP
-        : await _getLastUpdatedTime(
-            G0<TableModel>().paymentsTableHelper.colUpdatedAtValue,
-            G0<TableModel>()
-                .paymentsTableHelper
-                .getTableName(AppDomainType.event));
-    _receiptsLastUpdated = (flags & flagReceiptsTable) == 0
-        ? IGNORE_REPLICATION_TIMESTAMP
-        : await _getLastUpdatedTime(
-            G0<TableModel>().receiptsTableHelper.colUpdatedAtValue,
-            G0<TableModel>()
-                .receiptsTableHelper
-                .getTableName(AppDomainType.event));
-    _hashersLastUpdated = (flags & flagHashersTable) == 0
-        ? IGNORE_REPLICATION_TIMESTAMP
-        : await _getLastUpdatedTime(
-            G0<TableModel>().hashersTableHelper.colUpdatedAtValue,
-            G0<TableModel>()
-                .hashersTableHelper
-                .getTableName(AppDomainType.user));
+    _hasherEventMapLastUpdated =
+        (flags & flagHasherEventMapTable) == 0
+            ? IGNORE_REPLICATION_TIMESTAMP
+            : await _getLastUpdatedTime(
+              tableModel.hasherEventMapTableHelper.colUpdatedAtValue,
+              tableModel.hasherEventMapTableHelper.getTableName(
+                AppDomainType.event,
+              ),
+            );
+    _hasherKennelMapLastUpdated =
+        (flags & flagHasherKennelMapTable) == 0
+            ? IGNORE_REPLICATION_TIMESTAMP
+            : await _getLastUpdatedTime(
+              tableModel.hasherKennelMapTableHelper.colUpdatedAtValue,
+              tableModel.hasherKennelMapTableHelper.getTableName(
+                AppDomainType.event,
+              ),
+            );
+    _narrowEventsLastUpdated =
+        (flags & flagNarrowEventsTable) == 0
+            ? IGNORE_REPLICATION_TIMESTAMP
+            : await _getLastUpdatedTime(
+              tableModel.eventsTableHelper.colUpdatedAtValue,
+              tableModel.eventsTableHelper.getTableName(AppDomainType.user),
+            );
+    _paymentsLastUpdated =
+        (flags & flagPaymentsTable) == 0
+            ? IGNORE_REPLICATION_TIMESTAMP
+            : await _getLastUpdatedTime(
+              tableModel.paymentsTableHelper.colUpdatedAtValue,
+              tableModel.paymentsTableHelper.getTableName(AppDomainType.event),
+            );
+    _receiptsLastUpdated =
+        (flags & flagReceiptsTable) == 0
+            ? IGNORE_REPLICATION_TIMESTAMP
+            : await _getLastUpdatedTime(
+              tableModel.receiptsTableHelper.colUpdatedAtValue,
+              tableModel.receiptsTableHelper.getTableName(AppDomainType.event),
+            );
+    _hashersLastUpdated =
+        (flags & flagHashersTable) == 0
+            ? IGNORE_REPLICATION_TIMESTAMP
+            : await _getLastUpdatedTime(
+              tableModel.hashersTableHelper.colUpdatedAtValue,
+              tableModel.hashersTableHelper.getTableName(AppDomainType.user),
+            );
   }
 
   Future<bool> updateFromBackend(
@@ -81,7 +86,7 @@ class SyncEventAdminService {
     Function? informUser,
     bool usePaging = false,
   }) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
       return false;
     }
 
@@ -90,32 +95,27 @@ class SyncEventAdminService {
       // narrowEvents is not included here because all events are loaded all the time for all hashers.
       // TODO(James): create separate events table for event management
 
-      await G0<TableModel>().baseService.clearTable(
-            G0<Database>(),
-            G0<TableModel>().paymentsTableHelper,
-            G0<TableModel>()
-                .paymentsTableHelper
-                .getTableName(AppDomainType.event),
-          );
-      await G0<TableModel>().baseService.clearTable(
-          G0<Database>(),
-          G0<TableModel>().hasherEventMapTableHelper,
-          G0<TableModel>()
-              .hasherEventMapTableHelper
-              .getTableName(AppDomainType.event));
-      await G0<TableModel>().baseService.clearTable(
-          G0<Database>(),
-          G0<TableModel>().hasherKennelMapTableHelper,
-          G0<TableModel>()
-              .hasherKennelMapTableHelper
-              .getTableName(AppDomainType.event));
-      await G0<TableModel>().baseService.clearTable(
-          G0<Database>(),
-          G0<TableModel>().receiptsTableHelper,
-          G0<TableModel>()
-              .receiptsTableHelper
-              .getTableName(AppDomainType.event));
-      // await G0<TableModel>().baseService.clearTable(G0<Database>(), G0<TableModel>().kennelCreditsTableHelper, G0<TableModel>().kennelCreditsTableHelper.getTableName(AppDomainType.event));
+      await tableModel.baseService.clearTable(
+        database,
+        tableModel.paymentsTableHelper,
+        tableModel.paymentsTableHelper.getTableName(AppDomainType.event),
+      );
+      await tableModel.baseService.clearTable(
+        database,
+        tableModel.hasherEventMapTableHelper,
+        tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event),
+      );
+      await tableModel.baseService.clearTable(
+        database,
+        tableModel.hasherKennelMapTableHelper,
+        tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event),
+      );
+      await tableModel.baseService.clearTable(
+        database,
+        tableModel.receiptsTableHelper,
+        tableModel.receiptsTableHelper.getTableName(AppDomainType.event),
+      );
+      // await tableModel.baseService.clearTable(database, tableModel.kennelCreditsTableHelper, tableModel.kennelCreditsTableHelper.getTableName(AppDomainType.event));
       // we don't want to clear the Hashers table since it is meant to be persistent and not tied to a single event
 
       await setStringPref(StringPrefsEnum.adminEventId, eventId);
@@ -129,9 +129,7 @@ class SyncEventAdminService {
     // ((narrowEventsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - narrowEventsLastUpdate) > NarrowEventsTableHelper.forceRequeryInterval) ||
     // ((hashersLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hashersLastUpdate) > HasherEventMapTableHelper.forceRequeryInterval) ||
     // ((kennelCreditsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - kennelCreditsLastUpdate) > KennelCreditsTableHelper.forceRequeryInterval)
-
     // )
-
     {
       // check to see if we need to clear the cache
       //int lastCacheClear = getIntPref(CitiesTableHelper.lastCacheClearKey);
@@ -163,12 +161,15 @@ class SyncEventAdminService {
           DateTime.fromMicrosecondsSinceEpoch(_hasherKennelMapLastUpdated + 1);
       final DateTime narrowEventsUpdatedAfter =
           DateTime.fromMicrosecondsSinceEpoch(_narrowEventsLastUpdated + 1);
-      final DateTime paymentsUpdatedAfter =
-          DateTime.fromMicrosecondsSinceEpoch(_paymentsLastUpdated + 1);
-      final DateTime receiptsUpdatedAfter =
-          DateTime.fromMicrosecondsSinceEpoch(_receiptsLastUpdated + 1);
-      final DateTime hashersUpdatedAfter =
-          DateTime.fromMicrosecondsSinceEpoch(_hashersLastUpdated + 1);
+      final DateTime paymentsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
+        _paymentsLastUpdated + 1,
+      );
+      final DateTime receiptsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
+        _receiptsLastUpdated + 1,
+      );
+      final DateTime hashersUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
+        _hashersLastUpdated + 1,
+      );
 
       String userId = getStringPref(StringPrefsEnum.userId) ?? '';
       if (userId.isEmpty) {
@@ -190,24 +191,30 @@ class SyncEventAdminService {
         'deviceId': deviceId,
         'accessToken': accessToken,
         'eventId': eventId,
-        'hashersUpdatedAfter': (flags & flagHashersTable) == 0
-            ? 'ignore'
-            : ('${hashersUpdatedAfter}000000').substring(0, 26),
-        'hasherEventMapUpdatedAfter': (flags & flagHasherEventMapTable) == 0
-            ? 'ignore'
-            : ('${hasherEventMapUpdatedAfter}000000').substring(0, 26),
-        'hasherKennelMapUpdatedAfter': (flags & flagHasherKennelMapTable) == 0
-            ? 'ignore'
-            : ('${hasherKennelMapUpdatedAfter}000000').substring(0, 26),
-        'narrowEventsUpdatedAfter': (flags & flagNarrowEventsTable) == 0
-            ? 'ignore'
-            : ('${narrowEventsUpdatedAfter}000000').substring(0, 26),
-        'paymentsUpdatedAfter': (flags & flagPaymentsTable) == 0
-            ? 'ignore'
-            : ('${paymentsUpdatedAfter}000000').substring(0, 26),
-        'receiptsUpdatedAfter': (flags & flagReceiptsTable) == 0
-            ? 'ignore'
-            : ('${receiptsUpdatedAfter}000000').substring(0, 26),
+        'hashersUpdatedAfter':
+            (flags & flagHashersTable) == 0
+                ? 'ignore'
+                : ('${hashersUpdatedAfter}000000').substring(0, 26),
+        'hasherEventMapUpdatedAfter':
+            (flags & flagHasherEventMapTable) == 0
+                ? 'ignore'
+                : ('${hasherEventMapUpdatedAfter}000000').substring(0, 26),
+        'hasherKennelMapUpdatedAfter':
+            (flags & flagHasherKennelMapTable) == 0
+                ? 'ignore'
+                : ('${hasherKennelMapUpdatedAfter}000000').substring(0, 26),
+        'narrowEventsUpdatedAfter':
+            (flags & flagNarrowEventsTable) == 0
+                ? 'ignore'
+                : ('${narrowEventsUpdatedAfter}000000').substring(0, 26),
+        'paymentsUpdatedAfter':
+            (flags & flagPaymentsTable) == 0
+                ? 'ignore'
+                : ('${paymentsUpdatedAfter}000000').substring(0, 26),
+        'receiptsUpdatedAfter':
+            (flags & flagReceiptsTable) == 0
+                ? 'ignore'
+                : ('${receiptsUpdatedAfter}000000').substring(0, 26),
         'usePaging': usePaging ? '1' : '0',
       });
 
@@ -226,19 +233,24 @@ class SyncEventAdminService {
   }
 
   final List<BaseTableHelper> _eventTables = <BaseTableHelper>[
-    G0<TableModel>().paymentsTableHelper,
-    G0<TableModel>().hashersTableHelper,
-    G0<TableModel>().receiptsTableHelper,
-    G0<TableModel>().eventsTableHelper,
-    G0<TableModel>().hasherEventMapTableHelper,
-    G0<TableModel>().hasherKennelMapTableHelper,
-    //G0<TableModel>().kennelCreditsTableHelper,
+    tableModel.paymentsTableHelper,
+    tableModel.hashersTableHelper,
+    tableModel.receiptsTableHelper,
+    tableModel.eventsTableHelper,
+    tableModel.hasherEventMapTableHelper,
+    tableModel.hasherKennelMapTableHelper,
+    //tableModel.kennelCreditsTableHelper,
   ];
 
   Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(
-      String jsonResults,
-      {Function? informUser}) async {
-    return G0<TableModel>().baseService.updateSqlTablesFromJsonWithAdHocData(
-        jsonResults, _eventTables, G0<Database>(), AppDomainType.event);
+    String jsonResults, {
+    Function? informUser,
+  }) async {
+    return tableModel.baseService.updateSqlTablesFromJsonWithAdHocData(
+      jsonResults,
+      _eventTables,
+      database,
+      AppDomainType.event,
+    );
   }
 }

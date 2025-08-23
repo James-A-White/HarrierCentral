@@ -20,66 +20,67 @@ class SyncKennelAdminService {
   int _paymentsLastUpdated = FORCE;
 
   Future<int> _getLastUpdatedTime(String colName, String tableName) async {
-    final List<Map<String, dynamic>> table = await G0<Database>()
-        .rawQuery('SELECT MAX($colName) AS maxDate FROM $tableName');
+    final List<Map<String, dynamic>> table = await database.rawQuery(
+      'SELECT MAX($colName) AS maxDate FROM $tableName',
+    );
     final int? timeValue = table.first['maxDate'];
     //print(timeValue.toString());
     return timeValue ?? FORCE;
   }
 
   Future<void> getLastUpdatedTimes(int flags) async {
-    _kennelLastUpdated = (flags & flagKennelTable) == 0
-        ? IGNORE_REPLICATION_TIMESTAMP
-        : await _getLastUpdatedTime(
-            G0<TableModel>().kennelsTableHelper.colUpdatedAtValue,
-            G0<TableModel>()
-                .kennelsTableHelper
-                .getTableName(AppDomainType.kennel));
-    _hashersLastUpdated = (flags & flagHashersTable) == 0
-        ? IGNORE_REPLICATION_TIMESTAMP
-        : await _getLastUpdatedTime(
-            G0<TableModel>().hashersTableHelper.colUpdatedAtValue,
-            G0<TableModel>()
-                .hashersTableHelper
-                .getTableName(AppDomainType.user));
-    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0
-        ? IGNORE_REPLICATION_TIMESTAMP
-        : await _getLastUpdatedTime(
-            G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
-            G0<TableModel>()
-                .hasherKennelMapTableHelper
-                .getTableName(AppDomainType.kennel));
-    _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0
-        ? IGNORE_REPLICATION_TIMESTAMP
-        : await _getLastUpdatedTime(
-            G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
-            G0<TableModel>()
-                .hasherEventMapTableHelper
-                .getTableName(AppDomainType.kennel));
-    _paymentsLastUpdated = (flags & flagPaymentsTable) == 0
-        ? IGNORE_REPLICATION_TIMESTAMP
-        : await _getLastUpdatedTime(
-            G0<TableModel>().paymentsTableHelper.colUpdatedAtValue,
-            G0<TableModel>()
-                .paymentsTableHelper
-                .getTableName(AppDomainType.kennel));
+    _kennelLastUpdated =
+        (flags & flagKennelTable) == 0
+            ? IGNORE_REPLICATION_TIMESTAMP
+            : await _getLastUpdatedTime(
+              tableModel.kennelsTableHelper.colUpdatedAtValue,
+              tableModel.kennelsTableHelper.getTableName(AppDomainType.kennel),
+            );
+    _hashersLastUpdated =
+        (flags & flagHashersTable) == 0
+            ? IGNORE_REPLICATION_TIMESTAMP
+            : await _getLastUpdatedTime(
+              tableModel.hashersTableHelper.colUpdatedAtValue,
+              tableModel.hashersTableHelper.getTableName(AppDomainType.user),
+            );
+    _hasherKennelMapLastUpdated =
+        (flags & flagHasherKennelMapTable) == 0
+            ? IGNORE_REPLICATION_TIMESTAMP
+            : await _getLastUpdatedTime(
+              tableModel.hasherKennelMapTableHelper.colUpdatedAtValue,
+              tableModel.hasherKennelMapTableHelper.getTableName(
+                AppDomainType.kennel,
+              ),
+            );
+    _hasherEventMapLastUpdated =
+        (flags & flagHasherEventMapTable) == 0
+            ? IGNORE_REPLICATION_TIMESTAMP
+            : await _getLastUpdatedTime(
+              tableModel.hasherEventMapTableHelper.colUpdatedAtValue,
+              tableModel.hasherEventMapTableHelper.getTableName(
+                AppDomainType.kennel,
+              ),
+            );
+    _paymentsLastUpdated =
+        (flags & flagPaymentsTable) == 0
+            ? IGNORE_REPLICATION_TIMESTAMP
+            : await _getLastUpdatedTime(
+              tableModel.paymentsTableHelper.colUpdatedAtValue,
+              tableModel.paymentsTableHelper.getTableName(AppDomainType.kennel),
+            );
   }
 
   Future<void> clearEventData() async {
-    await G0<TableModel>().baseService.clearTable(
-          G0<Database>(),
-          G0<TableModel>().hasherEventMapTableHelper,
-          G0<TableModel>()
-              .hasherEventMapTableHelper
-              .getTableName(AppDomainType.kennel),
-        );
-    await G0<TableModel>().baseService.clearTable(
-          G0<Database>(),
-          G0<TableModel>().paymentsTableHelper,
-          G0<TableModel>()
-              .paymentsTableHelper
-              .getTableName(AppDomainType.kennel),
-        );
+    await tableModel.baseService.clearTable(
+      database,
+      tableModel.hasherEventMapTableHelper,
+      tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.kennel),
+    );
+    await tableModel.baseService.clearTable(
+      database,
+      tableModel.paymentsTableHelper,
+      tableModel.paymentsTableHelper.getTableName(AppDomainType.kennel),
+    );
   }
 
   Future<bool> updateFromBackend(
@@ -90,19 +91,19 @@ class SyncKennelAdminService {
     bool usePaging = false,
     String? targetHasherId,
   }) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
       return false;
     }
 
     if (getStringPref(StringPrefsEnum.adminKennelId) != kennelId) {
       // NOTE: kennels and hashers are not cleared here because all kennels and all hashers are loaded all the time for all users
-      await G0<TableModel>().baseService.clearTable(
-            G0<Database>(),
-            G0<TableModel>().hasherKennelMapTableHelper,
-            G0<TableModel>()
-                .hasherKennelMapTableHelper
-                .getTableName(AppDomainType.kennel),
-          );
+      await tableModel.baseService.clearTable(
+        database,
+        tableModel.hasherKennelMapTableHelper,
+        tableModel.hasherKennelMapTableHelper.getTableName(
+          AppDomainType.kennel,
+        ),
+      );
 
       await setStringPref(StringPrefsEnum.adminKennelId, kennelId);
     }
@@ -141,16 +142,19 @@ class SyncKennelAdminService {
       // the table and add one second to it
       await getLastUpdatedTimes(flags);
 
-      final DateTime kennelsUpdatedAfter =
-          DateTime.fromMicrosecondsSinceEpoch(_kennelLastUpdated + 1);
-      final DateTime hashersUpdatedAfter =
-          DateTime.fromMicrosecondsSinceEpoch(_hashersLastUpdated + 1);
+      final DateTime kennelsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
+        _kennelLastUpdated + 1,
+      );
+      final DateTime hashersUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
+        _hashersLastUpdated + 1,
+      );
       final DateTime hasherKennelMapUpdatedAfter =
           DateTime.fromMicrosecondsSinceEpoch(_hasherKennelMapLastUpdated + 1);
       final DateTime hasherEventMapUpdatedAfter =
           DateTime.fromMicrosecondsSinceEpoch(_hasherEventMapLastUpdated + 1);
-      final DateTime paymentsUpdatedAfter =
-          DateTime.fromMicrosecondsSinceEpoch(_paymentsLastUpdated + 1);
+      final DateTime paymentsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
+        _paymentsLastUpdated + 1,
+      );
 
       String userId = getStringPref(StringPrefsEnum.userId) ?? '';
       if (userId.isEmpty) {
@@ -172,21 +176,26 @@ class SyncKennelAdminService {
         'deviceId': deviceId,
         'accessToken': accessToken,
         'kennelId': kennelId,
-        'hashersUpdatedAfter': (flags & flagHashersTable) == 0
-            ? 'ignore'
-            : ('${hashersUpdatedAfter}000000').substring(0, 26),
-        'kennelsUpdatedAfter': (flags & flagKennelTable) == 0
-            ? 'ignore'
-            : ('${kennelsUpdatedAfter}000000').substring(0, 26),
-        'hasherKennelMapUpdatedAfter': (flags & flagHasherKennelMapTable) == 0
-            ? 'ignore'
-            : ('${hasherKennelMapUpdatedAfter}000000').substring(0, 26),
-        'hasherEventMapUpdatedAfter': (flags & flagHasherEventMapTable) == 0
-            ? 'ignore'
-            : ('${hasherEventMapUpdatedAfter}000000').substring(0, 26),
-        'paymentsUpdatedAfter': (flags & flagPaymentsTable) == 0
-            ? 'ignore'
-            : ('${paymentsUpdatedAfter}000000').substring(0, 26),
+        'hashersUpdatedAfter':
+            (flags & flagHashersTable) == 0
+                ? 'ignore'
+                : ('${hashersUpdatedAfter}000000').substring(0, 26),
+        'kennelsUpdatedAfter':
+            (flags & flagKennelTable) == 0
+                ? 'ignore'
+                : ('${kennelsUpdatedAfter}000000').substring(0, 26),
+        'hasherKennelMapUpdatedAfter':
+            (flags & flagHasherKennelMapTable) == 0
+                ? 'ignore'
+                : ('${hasherKennelMapUpdatedAfter}000000').substring(0, 26),
+        'hasherEventMapUpdatedAfter':
+            (flags & flagHasherEventMapTable) == 0
+                ? 'ignore'
+                : ('${hasherEventMapUpdatedAfter}000000').substring(0, 26),
+        'paymentsUpdatedAfter':
+            (flags & flagPaymentsTable) == 0
+                ? 'ignore'
+                : ('${paymentsUpdatedAfter}000000').substring(0, 26),
         'usePaging': usePaging ? '1' : '0',
       };
 
@@ -210,17 +219,22 @@ class SyncKennelAdminService {
   }
 
   List<BaseTableHelper> kennelTables = <BaseTableHelper>[
-    G0<TableModel>().kennelsTableHelper,
-    G0<TableModel>().hashersTableHelper,
-    G0<TableModel>().hasherKennelMapTableHelper,
-    G0<TableModel>().hasherEventMapTableHelper,
-    G0<TableModel>().paymentsTableHelper,
+    tableModel.kennelsTableHelper,
+    tableModel.hashersTableHelper,
+    tableModel.hasherKennelMapTableHelper,
+    tableModel.hasherEventMapTableHelper,
+    tableModel.paymentsTableHelper,
   ];
 
   Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(
-      String jsonResults,
-      {Function? informUser}) async {
-    return G0<TableModel>().baseService.updateSqlTablesFromJsonWithAdHocData(
-        jsonResults, kennelTables, G0<Database>(), AppDomainType.kennel);
+    String jsonResults, {
+    Function? informUser,
+  }) async {
+    return tableModel.baseService.updateSqlTablesFromJsonWithAdHocData(
+      jsonResults,
+      kennelTables,
+      database,
+      AppDomainType.kennel,
+    );
   }
 }

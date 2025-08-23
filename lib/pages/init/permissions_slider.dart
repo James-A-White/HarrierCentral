@@ -71,17 +71,17 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
 
     descriptionStyle = TextStyle(
       color: Colors.black,
-      fontSize: 24.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+      fontSize: 24.0 * deviceInfo.deviceWidthScaleFactor,
       fontFamily: 'AvenirNextRegular',
     );
     titleStyle = TextStyle(
       color: Colors.black,
-      fontSize: 32.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+      fontSize: 32.0 * deviceInfo.deviceWidthScaleFactor,
       fontFamily: 'AvenirNextRegular',
     );
     navStyle = TextStyle(
       color: themeAppBarBackground,
-      fontSize: 18.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+      fontSize: 18.0 * deviceInfo.deviceWidthScaleFactor,
       fontFamily: 'AvenirNextDemiBold',
     );
 
@@ -93,7 +93,7 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
         description: 'This lets us find the Hash events closest to you',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_phone_location.png',
-        heightImage: 140 * G0<DeviceInfo>().deviceMaxScaleFactor,
+        heightImage: 140 * deviceInfo.deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 230, 203, 203),
         colorEnd: const Color.fromARGB(255, 230, 203, 203),
         directionColorBegin: Alignment.topRight,
@@ -110,7 +110,7 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
             'Can we access your camera for your profile photo and to scan QR codes?',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_old_camera.png',
-        heightImage: 120 * G0<DeviceInfo>().deviceMaxScaleFactor,
+        heightImage: 120 * deviceInfo.deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 222, 215, 252),
         colorEnd: const Color.fromARGB(255, 222, 215, 252),
         directionColorBegin: Alignment.topRight,
@@ -127,7 +127,7 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
             'Let us notify you about changes to runs you are following',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_notification.png',
-        heightImage: 150 * G0<DeviceInfo>().deviceMaxScaleFactor,
+        heightImage: 150 * deviceInfo.deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 252, 212, 212),
         colorEnd: const Color.fromARGB(255, 252, 212, 212),
         directionColorBegin: Alignment.topRight,
@@ -144,7 +144,7 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
             'Please Provide Just a Tiny Bit of Personal Information...',
         styleDescription: descriptionStyle,
         pathImage: 'images/init/intro/intro_pen.png',
-        heightImage: 150 * G0<DeviceInfo>().deviceMaxScaleFactor,
+        heightImage: 150 * deviceInfo.deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 227, 227, 227),
         colorEnd: const Color.fromARGB(255, 227, 227, 227),
         directionColorBegin: Alignment.topRight,
@@ -198,11 +198,11 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
 
         if (ps.isGranted) {
           if (await Permission.location.serviceStatus.isEnabled) {
-            G0<AppModel>().hasLocationPermissions = true;
+            appModel.hasLocationPermissions = true;
             await Utilities.subscribeToGeoLocationStream();
           }
         } else {
-          G0<AppModel>().hasLocationPermissions = false;
+          appModel.hasLocationPermissions = false;
         }
 
         activeTab = 1;

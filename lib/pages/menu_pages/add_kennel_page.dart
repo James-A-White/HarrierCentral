@@ -97,7 +97,7 @@ class FaqPageContentState extends State<FaqPageContent> {
                     ),
                     const SizedBox(height: 20.0),
                     Connection2.styleForConnected(
-                      G0<AppModel>().connectionStatus,
+                      appModel.connectionStatus,
                       Center(
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(

@@ -230,7 +230,7 @@ class EventsService extends BaseService {
     String? eventImageUrl,
     String? hares,
   }) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
       return '';
       // TODO(James): fix this so we can return a bool
       //return false;
@@ -248,10 +248,10 @@ class EventsService extends BaseService {
     );
 
     final int eventsLastUpdated = await getLastUpdatedTime(
-      G0<Database>(),
-      G0<TableModel>().eventsTableHelper,
-      G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user),
-      G0<TableModel>().eventsTableHelper.colUpdatedAtValue,
+      database,
+      tableModel.eventsTableHelper,
+      tableModel.eventsTableHelper.getTableName(AppDomainType.user),
+      tableModel.eventsTableHelper.colUpdatedAtValue,
     );
     // final DateTime eventUpdatedAfter = eventsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(eventsLastUpdated + 1);
 
@@ -391,7 +391,7 @@ class EventsService extends BaseService {
     final String responseBody = await ServiceCommon.sendHttpPostV2(body);
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
-      await G0<TableModel>().syncUserDataService
+      await tableModel.syncUserDataService
           .updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
 
       final dynamic responseJson = jsonDecode(responseBody);
@@ -450,20 +450,20 @@ class EventsService extends BaseService {
     );
     if (results.isNotEmpty) {
       double? dist;
-      if ((G0<DeviceInfo>().deviceLat != null) &&
-          (G0<DeviceInfo>().deviceLon != null)) {
+      if ((deviceInfo.deviceLat != null) && (deviceInfo.deviceLon != null)) {
         dist = Geolocator.distanceBetween(
-          G0<DeviceInfo>().deviceLat!,
-          G0<DeviceInfo>().deviceLon!,
+          deviceInfo.deviceLat!,
+          deviceInfo.deviceLon!,
           results[0]['evtLat'],
           results[0]['evtLon'],
         );
       }
-      final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(
+      final EventModel eventItem = tableModel.eventsTableHelper.fromMap(
         results[0],
       );
-      final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper
-          .fromMap(results[0]);
+      final KennelsModel kennelItem = tableModel.kennelsTableHelper.fromMap(
+        results[0],
+      );
       final RunQueryExtensionsModel extensionsItem =
           RunQueryExtensionsModel.fromJsonWithDateSearchText(
             results[0],

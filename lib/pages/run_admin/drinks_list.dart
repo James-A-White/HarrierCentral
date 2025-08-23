@@ -73,14 +73,14 @@ class DrinksListState extends State<DrinksList>
   final List<DrinksResults> _awards = <DrinksResults>[];
 
   Future<void> _refreshSqlTablesFromBackend(bool showLoadingIndicator) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.connected) {
+    if (appModel.connectionStatus == EnumConnectionStatus2.connected) {
       if (showLoadingIndicator) {
         setState(() {
           _isLoading = true;
         });
       }
 
-      await G0<TableModel>().syncEventAdminService.updateFromBackend(
+      await tableModel.syncEventAdminService.updateFromBackend(
         SyncEventAdminService.flagHashersTable |
             SyncEventAdminService.flagPaymentsTable |
             SyncEventAdminService.flagHasherEventMapTable |
@@ -116,37 +116,35 @@ class DrinksListState extends State<DrinksList>
   Future<void> _refreshDrinksFromTable(bool forceRefresh) async {
     final String query = '''
         SELECT 
-          h.${G0<TableModel>().hashersTableHelper.colHasherId},
+          h.${tableModel.hashersTableHelper.colHasherId},
           coalesce(
-            hem.${G0<TableModel>().hasherEventMapTableHelper.colDisplayName},
-            h.${G0<TableModel>().hashersTableHelper.colDispName},
-            h.${G0<TableModel>().hashersTableHelper.colHashName},
-            h.${G0<TableModel>().hashersTableHelper.colFirstName} || " " || h.${G0<TableModel>().hashersTableHelper.colLastName},"<no name>") as dispName,
-          lower(" " || coalesce(h.${G0<TableModel>().hashersTableHelper.colHashName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colDispName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colFirstName},"") || " " || coalesce(h.${G0<TableModel>().hashersTableHelper.colLastName},"") || " ") as nameForSort,
-          h.${G0<TableModel>().hashersTableHelper.colPhoto},         
-          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel},0) 
-          + coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},0)
+            hem.${tableModel.hasherEventMapTableHelper.colDisplayName},
+            h.${tableModel.hashersTableHelper.colDispName},
+            h.${tableModel.hashersTableHelper.colHashName},
+            h.${tableModel.hashersTableHelper.colFirstName} || " " || h.${tableModel.hashersTableHelper.colLastName},"<no name>") as dispName,
+          lower(" " || coalesce(h.${tableModel.hashersTableHelper.colHashName},"") || " " || coalesce(h.${tableModel.hashersTableHelper.colDispName},"") || " " || coalesce(h.${tableModel.hashersTableHelper.colFirstName},"") || " " || coalesce(h.${tableModel.hashersTableHelper.colLastName},"") || " ") as nameForSort,
+          h.${tableModel.hashersTableHelper.colPhoto},         
+          coalesce(hem.${tableModel.hasherEventMapTableHelper.colTotalHaringThisKennel},0) 
+          + coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount},0)
           as totalHaringThisKennel,
-          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel},0) 
-          + coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},0)
+          coalesce(hem.${tableModel.hasherEventMapTableHelper.colTotalRunsThisKennel},0) 
+          + coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount},0)
           as totalRunsThisKennel,
-          hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare}
-          FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem 
-          INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h on hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = h.${G0<TableModel>().hashersTableHelper.colHasherId}  
-          LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = h.${G0<TableModel>().hashersTableHelper.colHasherId} AND hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelId} = hem.${G0<TableModel>().hasherEventMapTableHelper.colEventKennelId}
-          WHERE hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} = '${widget.eventAggregate.event.eventId}' 
-          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState} >= 20
-          AND h.${G0<TableModel>().hashersTableHelper.colRemoved} = 0 
-          AND h.${G0<TableModel>().hashersTableHelper.colHashName} not like '👣 Anonymous%' 
+          hem.${tableModel.hasherEventMapTableHelper.colIsHare}
+          FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem 
+          INNER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h on hem.${tableModel.hasherEventMapTableHelper.colUserId} = h.${tableModel.hashersTableHelper.colHasherId}  
+          LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm on hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = h.${tableModel.hashersTableHelper.colHasherId} AND hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = hem.${tableModel.hasherEventMapTableHelper.colEventKennelId}
+          WHERE hem.${tableModel.hasherEventMapTableHelper.colEventId} = '${widget.eventAggregate.event.eventId}' 
+          AND hem.${tableModel.hasherEventMapTableHelper.colAttendenceState} >= 20
+          AND h.${tableModel.hashersTableHelper.colRemoved} = 0 
+          AND h.${tableModel.hashersTableHelper.colHashName} not like '👣 Anonymous%' 
           ORDER BY totalHaringThisKennel, totalRunsThisKennel
           ''';
 
     try {
       _awards.clear();
 
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
-        query,
-      );
+      final List<Map<String, dynamic>> results = await database.rawQuery(query);
       for (int i = 0; i < results.length; i++) {
         final DrinksResults hlrItem = DrinksResults.fromMap(results[i]);
 

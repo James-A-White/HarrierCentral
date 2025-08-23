@@ -274,7 +274,7 @@ class FaqPageContentState extends State<FaqPageContent> {
                     ),
 
                     Connection2.styleForConnected(
-                      G0<AppModel>().connectionStatus,
+                      appModel.connectionStatus,
                       Center(
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(

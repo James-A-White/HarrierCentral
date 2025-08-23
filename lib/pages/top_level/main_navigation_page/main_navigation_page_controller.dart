@@ -340,8 +340,8 @@ class MainNavigationController extends GetxController
   // }
 
   Future<bool> _checkLocationPermissions() async {
-    G0<AppModel>().hasLocationPermissions = await Permission.location.isGranted;
-    return G0<AppModel>().hasLocationPermissions;
+    appModel.hasLocationPermissions = await Permission.location.isGranted;
+    return appModel.hasLocationPermissions;
   }
 
   void resetNewVersionPromoScreen() {
@@ -385,7 +385,7 @@ class MainNavigationController extends GetxController
     try {
       _screenWatcherSub = _screen?.screenStateStream.listen((event) {
         if (event == ScreenStateEvent.SCREEN_UNLOCKED) {
-          if (G0<AppModel>().hasLocationPermissions) _checkAreWeAtRunStart();
+          if (appModel.hasLocationPermissions) _checkAreWeAtRunStart();
         }
       });
     } catch (_) {}

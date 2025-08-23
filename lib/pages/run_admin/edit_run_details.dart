@@ -112,25 +112,29 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
     _eventNameController.text = _eventAggregate.event.eventName;
     _eventDescriptionController.text =
         _eventAggregate.event.eventDescription ?? '';
-    _eventDatetimeController.text = DateFormat('E, d MMM, yyyy, h:mm a')
-        .format(_eventAggregate.event.eventStartDatetime);
+    _eventDatetimeController.text = DateFormat(
+      'E, d MMM, yyyy, h:mm a',
+    ).format(_eventAggregate.event.eventStartDatetime);
     _locationOneLineDescController.text =
         _eventAggregate.event.locationOneLineDesc ?? '';
     _haresController.text = _eventAggregate.event.hares ?? '';
 
     _absoluteEventNumberController.text =
         _eventAggregate.event.absoluteEventNumber?.toString() ?? '';
-    _eventPriceForMembersController.text = _eventAggregate
-            .event.eventPriceForMembers
-            ?.toStringAsFixed(_eventAggregate.extensions.digAfterDec) ??
+    _eventPriceForMembersController.text =
+        _eventAggregate.event.eventPriceForMembers?.toStringAsFixed(
+          _eventAggregate.extensions.digAfterDec,
+        ) ??
         '';
-    _eventPriceForNonMembersController.text = _eventAggregate
-            .event.eventPriceForNonMembers
-            ?.toStringAsFixed(_eventAggregate.extensions.digAfterDec) ??
+    _eventPriceForNonMembersController.text =
+        _eventAggregate.event.eventPriceForNonMembers?.toStringAsFixed(
+          _eventAggregate.extensions.digAfterDec,
+        ) ??
         '';
-    _eventPriceForExtrasController.text = _eventAggregate
-            .event.eventPriceForExtras
-            ?.toStringAsFixed(_eventAggregate.extensions.digAfterDec) ??
+    _eventPriceForExtrasController.text =
+        _eventAggregate.event.eventPriceForExtras?.toStringAsFixed(
+          _eventAggregate.extensions.digAfterDec,
+        ) ??
         '';
     _extrasDescriptionController.text =
         _eventAggregate.event.extrasDescription ?? '';
@@ -148,10 +152,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
-        iconTheme: const IconThemeData(
-          color: Colors.white,
-          size: 28.0,
-        ),
+        iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
         title: Text('Edit run details', style: ts_appBarTitle),
       ),
       body: Container(
@@ -174,25 +175,26 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
             //           height: 1.0),
             //     )),
             Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  //color: Colors.white,
-                  height: 85,
-                  decoration: BoxDecoration(
-                    // border: new Border.all(width: 1.0, color: Colors.black),
-                    //shape: BoxShape.circle,
-                    color: Colors.yellow.shade50,
-                    boxShadow: const <BoxShadow>[
-                      BoxShadow(
-                        color: Color.fromARGB(70, 0, 0, 0),
-                        offset: Offset(0.0, 6.0),
-                        blurRadius: 10.0,
-                      ),
-                    ],
-                  ),
-                )),
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                //color: Colors.white,
+                height: 85,
+                decoration: BoxDecoration(
+                  // border: new Border.all(width: 1.0, color: Colors.black),
+                  //shape: BoxShape.circle,
+                  color: Colors.yellow.shade50,
+                  boxShadow: const <BoxShadow>[
+                    BoxShadow(
+                      color: Color.fromARGB(70, 0, 0, 0),
+                      offset: Offset(0.0, 6.0),
+                      blurRadius: 10.0,
+                    ),
+                  ],
+                ),
+              ),
+            ),
             Positioned(
               top: 20,
               left: 20,
@@ -213,8 +215,11 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                     isScrollable: false,
                     unselectedLabelColor: Colors.black,
                     labelColor: Colors.white,
-                    labelPadding:
-                        const EdgeInsets.only(top: 5, left: 20, right: 20),
+                    labelPadding: const EdgeInsets.only(
+                      top: 5,
+                      left: 20,
+                      right: 20,
+                    ),
                     indicatorSize: TabBarIndicatorSize.tab,
                     indicator: BubbleTabIndicator(
                       indicatorHeight: 35.0,
@@ -229,24 +234,25 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
               ),
             ),
             Positioned(
-                top: 86,
-                bottom: 0,
-                child: SizedBox(
-                  //key: _tabKey,
-                  //color: Colors.teal,
-                  width: MediaQuery.of(context).size.width,
-                  child: TabBarView(
-                    physics: const NeverScrollableScrollPhysics(),
-                    controller: _tabController,
-                    children: <Widget>[
-                      _buildDetailsPage(context),
-                      _buildMapPage(),
-                      _buildImagePage(),
-                      _buildOtherDetailsPage(context)
-                      //OtherInfoTab(_eventAggregate, widget.getUpdatedEventAggregate),
-                    ],
-                  ),
-                )),
+              top: 86,
+              bottom: 0,
+              child: SizedBox(
+                //key: _tabKey,
+                //color: Colors.teal,
+                width: MediaQuery.of(context).size.width,
+                child: TabBarView(
+                  physics: const NeverScrollableScrollPhysics(),
+                  controller: _tabController,
+                  children: <Widget>[
+                    _buildDetailsPage(context),
+                    _buildMapPage(),
+                    _buildImagePage(),
+                    _buildOtherDetailsPage(context),
+                    //OtherInfoTab(_eventAggregate, widget.getUpdatedEventAggregate),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -373,19 +379,27 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
           useFbRunDetails: 0,
           isCountedRun: _eventAggregate.event.isCountedRun == 1,
           kennelId: _eventAggregate.event.kennelId,
-          eventPriceForMembers: _eventPriceForMembersController.text.isEmpty
-              ? -2
-              : double.tryParse(
-                  _eventPriceForMembersController.text.replaceAll(',', '.')),
-          eventPriceForNonMembers: _eventPriceForNonMembersController
-                  .text.isEmpty
-              ? -2
-              : double.tryParse(
-                  _eventPriceForNonMembersController.text.replaceAll(',', '.')),
-          eventPriceForExtras: _eventPriceForExtrasController.text.isEmpty
-              ? -2
-              : double.tryParse(
-                  _eventPriceForExtrasController.text.replaceAll(',', '.')),
+          eventPriceForMembers:
+              _eventPriceForMembersController.text.isEmpty
+                  ? -2
+                  : double.tryParse(
+                    _eventPriceForMembersController.text.replaceAll(',', '.'),
+                  ),
+          eventPriceForNonMembers:
+              _eventPriceForNonMembersController.text.isEmpty
+                  ? -2
+                  : double.tryParse(
+                    _eventPriceForNonMembersController.text.replaceAll(
+                      ',',
+                      '.',
+                    ),
+                  ),
+          eventPriceForExtras:
+              _eventPriceForExtrasController.text.isEmpty
+                  ? -2
+                  : double.tryParse(
+                    _eventPriceForExtrasController.text.replaceAll(',', '.'),
+                  ),
         );
 
         _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
@@ -409,27 +423,37 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
           final EventsService nSvc = EventsService();
           final String eventId = await nSvc.addEditEvent(
             eventId: _eventAggregate.event.eventId,
-            eventPriceForMembers: _eventPriceForMembersController.text.isEmpty
-                ? -2
-                : double.tryParse(
-                    _eventPriceForMembersController.text.replaceAll(',', '.')),
+            eventPriceForMembers:
+                _eventPriceForMembersController.text.isEmpty
+                    ? -2
+                    : double.tryParse(
+                      _eventPriceForMembersController.text.replaceAll(',', '.'),
+                    ),
             eventPriceForNonMembers:
                 _eventPriceForNonMembersController.text.isEmpty
                     ? -2
-                    : double.tryParse(_eventPriceForNonMembersController.text
-                        .replaceAll(',', '.')),
+                    : double.tryParse(
+                      _eventPriceForNonMembersController.text.replaceAll(
+                        ',',
+                        '.',
+                      ),
+                    ),
             // note for "auto" the value we send to the server is '0' because this will
             // remove any previous absoluteEventNumber that is stored there
-            absoluteEventNumber: _absoluteEventNumberController.text.isEmpty
-                ? 0
-                : int.tryParse(_absoluteEventNumberController.text),
-            eventPriceForExtras: _eventPriceForExtrasController.text.isEmpty
-                ? -2
-                : double.tryParse(
-                    _eventPriceForExtrasController.text.replaceAll(',', '.')),
-            extrasDescription: _extrasDescriptionController.text.isEmpty
-                ? '<none>'
-                : _extrasDescriptionController.text,
+            absoluteEventNumber:
+                _absoluteEventNumberController.text.isEmpty
+                    ? 0
+                    : int.tryParse(_absoluteEventNumberController.text),
+            eventPriceForExtras:
+                _eventPriceForExtrasController.text.isEmpty
+                    ? -2
+                    : double.tryParse(
+                      _eventPriceForExtrasController.text.replaceAll(',', '.'),
+                    ),
+            extrasDescription:
+                _extrasDescriptionController.text.isEmpty
+                    ? '<none>'
+                    : _extrasDescriptionController.text,
             hares: _haresController.text,
             isCountedRun: _isCountedRun,
             isVisible: _isVisible,
@@ -452,8 +476,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
             );
 
             if (!mounted) return;
-            ScaffoldMessenger.of(navigatorKey.currentContext!)
-                .showSnackBar(snackBar);
+            ScaffoldMessenger.of(
+              navigatorKey.currentContext!,
+            ).showSnackBar(snackBar);
           });
         }
       }
@@ -466,38 +491,20 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
       keyboardBarColor: Colors.grey[200],
       nextFocus: true,
       actions: <KeyboardActionsItem>[
-        KeyboardActionsItem(
-          focusNode: _focusNodeEventName,
-        ),
-        KeyboardActionsItem(
-          focusNode: _focusNodeEventDescription,
-        ),
+        KeyboardActionsItem(focusNode: _focusNodeEventName),
+        KeyboardActionsItem(focusNode: _focusNodeEventDescription),
 
-        KeyboardActionsItem(
-          focusNode: _focusNodeAbsoluteEventNumber,
-        ),
-        KeyboardActionsItem(
-          focusNode: _focusNodeEventPriceForMembers,
-        ),
-        KeyboardActionsItem(
-          focusNode: _focusNodeEventPriceForNonMembers,
-        ),
-        KeyboardActionsItem(
-          focusNode: _focusNodeEventPriceForExtras,
-        ),
-        KeyboardActionsItem(
-          focusNode: _focusNodeExtrasDescription,
-        ),
-        KeyboardActionsItem(
-          focusNode: _focusNodeHares,
-        ),
+        KeyboardActionsItem(focusNode: _focusNodeAbsoluteEventNumber),
+        KeyboardActionsItem(focusNode: _focusNodeEventPriceForMembers),
+        KeyboardActionsItem(focusNode: _focusNodeEventPriceForNonMembers),
+        KeyboardActionsItem(focusNode: _focusNodeEventPriceForExtras),
+        KeyboardActionsItem(focusNode: _focusNodeExtrasDescription),
+        KeyboardActionsItem(focusNode: _focusNodeHares),
 
         // KeyboardActionsItem(
         //   focusNode: focusNodeDatetime,
         // ),
-        KeyboardActionsItem(
-          focusNode: _focusNodeLocationOneLineDesc,
-        ),
+        KeyboardActionsItem(focusNode: _focusNodeLocationOneLineDesc),
       ],
     );
   }
@@ -506,10 +513,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
     return Theme(
       data: Theme.of(context).copyWith(
         disabledColor: Colors.grey,
-        iconTheme: IconTheme.of(context).copyWith(
-          color: hc_red,
-          size: 35,
-        ),
+        iconTheme: IconTheme.of(context).copyWith(color: hc_red, size: 35),
       ),
       child: KeyboardActions(
         config: _buildConfig(context),
@@ -526,30 +530,40 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                     Container(
                       margin: const EdgeInsets.only(top: 25.0, bottom: 5.0),
                       padding: const EdgeInsets.only(
-                          top: 5.0, bottom: 5.0, left: 20.0, right: 20.0),
+                        top: 5.0,
+                        bottom: 5.0,
+                        left: 20.0,
+                        right: 20.0,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.yellow[100],
                         border: Border.all(width: 2.0),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(10.0)),
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(10.0),
+                        ),
                       ),
                       child: Text(
-                          _eventAggregate.event.useFbRunDetails == 1
-                              ? _eventAggregate
-                                          .event.eventInboundIntegrationId >=
-                                      integrationPlatformNames.length
-                                  ? 'Run data from external source'
-                                  : 'Run data from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
-                              : 'Run data from Harrier Central',
-                          textAlign: TextAlign.center,
-                          style: ts_headingBlack),
+                        _eventAggregate.event.useFbRunDetails == 1
+                            ? _eventAggregate.event.eventInboundIntegrationId >=
+                                    integrationPlatformNames.length
+                                ? 'Run data from external source'
+                                : 'Run data from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
+                            : 'Run data from Harrier Central',
+                        textAlign: TextAlign.center,
+                        style: ts_headingBlack,
+                      ),
                     ),
                     Container(
-                      color: _focusNodeEventName.hasFocus
-                          ? Colors.yellow.shade50
-                          : Colors.white,
+                      color:
+                          _focusNodeEventName.hasFocus
+                              ? Colors.yellow.shade50
+                              : Colors.white,
                       margin: const EdgeInsets.only(
-                          top: 20.0, bottom: 10.0, left: 25.0, right: 25.0),
+                        top: 20.0,
+                        bottom: 10.0,
+                        left: 25.0,
+                        right: 25.0,
+                      ),
                       child: TextFormField(
                         focusNode: _focusNodeEventName,
                         controller: _eventNameController,
@@ -581,11 +595,16 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       ),
                     ),
                     Container(
-                      color: _focusNodeEventDescription.hasFocus
-                          ? Colors.yellow.shade50
-                          : Colors.white,
+                      color:
+                          _focusNodeEventDescription.hasFocus
+                              ? Colors.yellow.shade50
+                              : Colors.white,
                       margin: const EdgeInsets.only(
-                          top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                        top: 10.0,
+                        bottom: 10.0,
+                        left: 25.0,
+                        right: 25.0,
+                      ),
                       child: TextFormField(
                         onChanged: (String text) {
                           //widget.EventDescription = text;
@@ -616,11 +635,16 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       ),
                     ),
                     Container(
-                      color: _focusNodeLocationOneLineDesc.hasFocus
-                          ? Colors.yellow.shade50
-                          : Colors.white,
+                      color:
+                          _focusNodeLocationOneLineDesc.hasFocus
+                              ? Colors.yellow.shade50
+                              : Colors.white,
                       margin: const EdgeInsets.only(
-                          top: 20.0, bottom: 10.0, left: 25.0, right: 25.0),
+                        top: 20.0,
+                        bottom: 10.0,
+                        left: 25.0,
+                        right: 25.0,
+                      ),
                       child: TextFormField(
                         focusNode: _focusNodeLocationOneLineDesc,
                         controller: _locationOneLineDescController,
@@ -652,201 +676,219 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       ),
                     ),
                     Container(
-                        color: _focusNodeDatetime.hasFocus
-                            ? Colors.yellow.shade50
-                            : Colors.white,
-                        margin: const EdgeInsets.only(
-                            top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
-                        // child: OmniDateTimePicker(
-                        //   onDateTimeChanged: (value) {},
-                        // ),
-                        child: TextFormField(
-                          controller: _eventDatetimeController,
-                          focusNode: _focusNodeDatetime,
-                          readOnly: true,
-                          onTap: () async {
-                            final DateFormat formatter =
-                                DateFormat('E, d MMM, yyyy, h:mm a');
-                            DateTime eventStartDate = formatter
-                                    .tryParse(_eventDatetimeController.text) ??
-                                DateTime.now();
+                      color:
+                          _focusNodeDatetime.hasFocus
+                              ? Colors.yellow.shade50
+                              : Colors.white,
+                      margin: const EdgeInsets.only(
+                        top: 10.0,
+                        bottom: 10.0,
+                        left: 25.0,
+                        right: 25.0,
+                      ),
+                      // child: OmniDateTimePicker(
+                      //   onDateTimeChanged: (value) {},
+                      // ),
+                      child: TextFormField(
+                        controller: _eventDatetimeController,
+                        focusNode: _focusNodeDatetime,
+                        readOnly: true,
+                        onTap: () async {
+                          final DateFormat formatter = DateFormat(
+                            'E, d MMM, yyyy, h:mm a',
+                          );
+                          DateTime eventStartDate =
+                              formatter.tryParse(
+                                _eventDatetimeController.text,
+                              ) ??
+                              DateTime.now();
 
-                            // Dismiss keyboard (just in case)
-                            FocusScope.of(context).requestFocus(FocusNode());
+                          // Dismiss keyboard (just in case)
+                          FocusScope.of(context).requestFocus(FocusNode());
 
-                            // Show date picker
-                            DateTime? pickedDate = await showDatePicker(
+                          // Show date picker
+                          DateTime? pickedDate = await showDatePicker(
+                            context: context,
+                            initialDate: eventStartDate,
+                            firstDate: DateTime(2000),
+                            lastDate: DateTime(2100),
+                          );
+
+                          if (pickedDate == null) return;
+
+                          if (context.mounted) {
+                            // Show time picker
+                            TimeOfDay? pickedTime = await showTimePicker(
                               context: context,
-                              initialDate: eventStartDate,
-                              firstDate: DateTime(2000),
-                              lastDate: DateTime(2100),
+                              initialTime: TimeOfDay.fromDateTime(
+                                eventStartDate,
+                              ),
+                              builder: (BuildContext context, Widget? child) {
+                                return MediaQuery(
+                                  data: MediaQuery.of(
+                                    context,
+                                  ).copyWith(alwaysUse24HourFormat: false),
+                                  child: child!,
+                                );
+                              },
                             );
 
-                            if (pickedDate == null) return;
+                            if (pickedTime == null) return;
 
-                            if (context.mounted) {
-                              // Show time picker
-                              TimeOfDay? pickedTime = await showTimePicker(
-                                context: context,
-                                initialTime:
-                                    TimeOfDay.fromDateTime(eventStartDate),
-                                builder: (BuildContext context, Widget? child) {
-                                  return MediaQuery(
-                                    data: MediaQuery.of(context)
-                                        .copyWith(alwaysUse24HourFormat: false),
-                                    child: child!,
-                                  );
-                                },
-                              );
+                            final selectedDateTime = DateTime(
+                              pickedDate.year,
+                              pickedDate.month,
+                              pickedDate.day,
+                              pickedTime.hour,
+                              pickedTime.minute,
+                            );
 
-                              if (pickedTime == null) return;
+                            // Format to desired string
+                            final formatted = DateFormat(
+                              'E, d MMM, yyyy, h:mm a',
+                            ).format(selectedDateTime);
 
-                              final selectedDateTime = DateTime(
-                                pickedDate.year,
-                                pickedDate.month,
-                                pickedDate.day,
-                                pickedTime.hour,
-                                pickedTime.minute,
-                              );
+                            // Update the controller
+                            _eventDatetimeController.text = formatted;
 
-                              // Format to desired string
-                              final formatted =
-                                  DateFormat('E, d MMM, yyyy, h:mm a')
-                                      .format(selectedDateTime);
-
-                              // Update the controller
-                              _eventDatetimeController.text = formatted;
-
-                              // Optionally trigger rebuild or setState
-                              setState(() {});
-                            }
-                          },
-                          decoration: InputDecoration(
-                            labelText: 'Date / Time',
-                            fillColor: hc_red,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                              borderSide: const BorderSide(),
-                            ),
-                            hintStyle: ts_hint,
+                            // Optionally trigger rebuild or setState
+                            setState(() {});
+                          }
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Date / Time',
+                          fillColor: hc_red,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                            borderSide: const BorderSide(),
                           ),
-                          validator: (String? val) {
-                            return null; // or your custom validation
-                          },
-                        )
-
-                        // DateTimePicker(
-                        //   onFieldSubmitted: (value) {
-                        //     _eventDatetimeController.text = value;
-                        //     setState(() {});
-                        //   },
-                        //   onChanged: (value) {
-                        //     _eventDatetimeController.text = value;
-                        //     setState(() {});
-                        //   },
-                        //   onSaved: (newValue) {
-                        //     _eventDatetimeController.text = newValue ?? '';
-                        //     setState(() {});
-                        //   },
-                        //   decoration: InputDecoration(
-                        //     labelText: 'Date / Time',
-                        //     fillColor: hc_red,
-                        //     border: OutlineInputBorder(
-                        //       borderRadius: BorderRadius.circular(10.0),
-                        //       borderSide: const BorderSide(),
-                        //     ),
-                        //     hintStyle: ts_hint,
-                        //   ),
-                        //   focusNode: _focusNodeDatetime,
-                        //   controller: _eventDatetimeController,
-                        //   type: DateTimePickerType.dateTime,
-                        //   use24HourFormat: false,
-                        //   locale: const Locale('en', 'US'),
-                        //   dateMask: 'E, d MMM, yyyy, h:mm a',
-                        //   firstDate: DateTime(2000),
-                        //   lastDate: DateTime(2100),
-                        //   dateLabelText: 'Date',
-                        //   timeLabelText: 'Hour',
-                        //   validator: (String? val) {
-                        //     return null;
-                        //   },
-                        // ),
-
+                          hintStyle: ts_hint,
                         ),
+                        validator: (String? val) {
+                          return null; // or your custom validation
+                        },
+                      ),
+
+                      // DateTimePicker(
+                      //   onFieldSubmitted: (value) {
+                      //     _eventDatetimeController.text = value;
+                      //     setState(() {});
+                      //   },
+                      //   onChanged: (value) {
+                      //     _eventDatetimeController.text = value;
+                      //     setState(() {});
+                      //   },
+                      //   onSaved: (newValue) {
+                      //     _eventDatetimeController.text = newValue ?? '';
+                      //     setState(() {});
+                      //   },
+                      //   decoration: InputDecoration(
+                      //     labelText: 'Date / Time',
+                      //     fillColor: hc_red,
+                      //     border: OutlineInputBorder(
+                      //       borderRadius: BorderRadius.circular(10.0),
+                      //       borderSide: const BorderSide(),
+                      //     ),
+                      //     hintStyle: ts_hint,
+                      //   ),
+                      //   focusNode: _focusNodeDatetime,
+                      //   controller: _eventDatetimeController,
+                      //   type: DateTimePickerType.dateTime,
+                      //   use24HourFormat: false,
+                      //   locale: const Locale('en', 'US'),
+                      //   dateMask: 'E, d MMM, yyyy, h:mm a',
+                      //   firstDate: DateTime(2000),
+                      //   lastDate: DateTime(2100),
+                      //   dateLabelText: 'Date',
+                      //   timeLabelText: 'Hour',
+                      //   validator: (String? val) {
+                      //     return null;
+                      //   },
+                      // ),
+                    ),
                     Container(
                       margin: const EdgeInsets.only(top: 25.0, bottom: 5.0),
                       padding: const EdgeInsets.only(
-                          top: 5.0, bottom: 5.0, left: 20.0, right: 20.0),
+                        top: 5.0,
+                        bottom: 5.0,
+                        left: 20.0,
+                        right: 20.0,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.yellow[100],
                         border: Border.all(width: 2.0),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(10.0)),
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(10.0),
+                        ),
                       ),
                       child: Text(
-                          _eventAggregate.event.useFbRunDetails == 1
-                              ? _eventAggregate
-                                          .event.eventInboundIntegrationId >=
-                                      integrationPlatformNames.length
-                                  ? 'Run data from external source'
-                                  : 'Run data from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
-                              : 'Run data from Harrier Central',
-                          textAlign: TextAlign.center,
-                          style: ts_headingBlack),
+                        _eventAggregate.event.useFbRunDetails == 1
+                            ? _eventAggregate.event.eventInboundIntegrationId >=
+                                    integrationPlatformNames.length
+                                ? 'Run data from external source'
+                                : 'Run data from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
+                            : 'Run data from Harrier Central',
+                        textAlign: TextAlign.center,
+                        style: ts_headingBlack,
+                      ),
                     ),
                     const SizedBox(height: 20.0),
                     _isUpdating
                         ? const SizedBox(
-                            height: 70.0,
-                            width: 70.0,
-                            child: HcCircularProgressIndicator(
-                                key: Key('112096562')),
-                          )
-                        : ElevatedButton(
-                            child: Text(
-                                widget.isNewRun
-                                    ? 'Next'
-                                    : 'Save changes to Harrier Central',
-                                style: ts_button),
-                            onPressed: () async {
-                              if (_detailsFormKey.currentState?.validate() ??
-                                  false) {
-                                await _updateRunDetails(true);
-
-                                if (widget.isNewRun) {
-                                  // this delay is required to ensure that the _isUpdating setState
-                                  // to function properly
-                                  _tabController.animateTo(1);
-                                } else {
-                                  final SnackBar snackBar = SnackBar(
-                                    duration: const Duration(seconds: 3),
-                                    content: Text(
-                                      'Run details have been saved',
-                                      textAlign: TextAlign.center,
-                                      style: ts_titleCondensed,
-                                    ),
-                                    backgroundColor: hc_blue,
-                                  );
-
-                                  if (!mounted) return;
-                                  ScaffoldMessenger.of(
-                                          navigatorKey.currentContext!)
-                                      .showSnackBar(snackBar);
-                                }
-                                await Future<void>.delayed(
-                                    const Duration(milliseconds: 500));
-                                setState(() {
-                                  _isUpdating = false;
-                                });
-                              }
-                            },
+                          height: 70.0,
+                          width: 70.0,
+                          child: HcCircularProgressIndicator(
+                            key: Key('112096562'),
                           ),
+                        )
+                        : ElevatedButton(
+                          child: Text(
+                            widget.isNewRun
+                                ? 'Next'
+                                : 'Save changes to Harrier Central',
+                            style: ts_button,
+                          ),
+                          onPressed: () async {
+                            if (_detailsFormKey.currentState?.validate() ??
+                                false) {
+                              await _updateRunDetails(true);
+
+                              if (widget.isNewRun) {
+                                // this delay is required to ensure that the _isUpdating setState
+                                // to function properly
+                                _tabController.animateTo(1);
+                              } else {
+                                final SnackBar snackBar = SnackBar(
+                                  duration: const Duration(seconds: 3),
+                                  content: Text(
+                                    'Run details have been saved',
+                                    textAlign: TextAlign.center,
+                                    style: ts_titleCondensed,
+                                  ),
+                                  backgroundColor: hc_blue,
+                                );
+
+                                if (!mounted) return;
+                                ScaffoldMessenger.of(
+                                  navigatorKey.currentContext!,
+                                ).showSnackBar(snackBar);
+                              }
+                              await Future<void>.delayed(
+                                const Duration(milliseconds: 500),
+                              );
+                              setState(() {
+                                _isUpdating = false;
+                              });
+                            }
+                          },
+                        ),
                     if ((_eventAggregate.event.eventFacebookId != null) &&
                         (!_isUpdating)) ...<Widget>[
                       ElevatedButton(
                         child: Text(
-                            'Copy data from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
-                            style: ts_button),
+                          'Copy data from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
+                          style: ts_button,
+                        ),
                         onPressed: () {
                           setState(() {
                             _useExternalSourceDetails();
@@ -867,312 +909,333 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
 
   Widget _buildImagePage() {
     return FutureBuilder<File?>(
-        future: _imageFromGallery,
-        builder: (BuildContext context, AsyncSnapshot<File?> snapshot) {
-          if (snapshot.hasData) {
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                const SizedBox(height: 20),
-                Expanded(
-                  child: Container(
-                    margin: const EdgeInsets.all(20.0),
-                    child: Image.file(snapshot.data!, fit: BoxFit.scaleDown),
+      future: _imageFromGallery,
+      builder: (BuildContext context, AsyncSnapshot<File?> snapshot) {
+        if (snapshot.hasData) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const SizedBox(height: 20),
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.all(20.0),
+                  child: Image.file(snapshot.data!, fit: BoxFit.scaleDown),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(
+                      double.infinity,
+                      40,
+                    ), // double.infinity is the width and 30 is the height
                   ),
-                ),
-                const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: const Size(double.infinity,
-                            40), // double.infinity is the width and 30 is the height
-                      ),
-                      child: Text('Use this image', style: ts_button),
-                      onPressed: () async {
-                        if ((_eventAggregate.event.eventId.isNotEmpty) &&
-                            (_eventAggregate.event.eventId != GUID_EMPTY)) {
-                          final String fileName = _upload(
-                              snapshot.data!, _eventAggregate.event.eventId);
+                  child: Text('Use this image', style: ts_button),
+                  onPressed: () async {
+                    if ((_eventAggregate.event.eventId.isNotEmpty) &&
+                        (_eventAggregate.event.eventId != GUID_EMPTY)) {
+                      final String fileName = _upload(
+                        snapshot.data!,
+                        _eventAggregate.event.eventId,
+                      );
 
-                          final EventsService nSvc = EventsService();
-                          final String eventId = await nSvc.addEditEvent(
-                            eventId: _eventAggregate.event.eventId,
-                            eventImageUrl: BASE_EVENT_IMAGE_URL + fileName,
-                            useFbImage: 0,
-                          );
+                      final EventsService nSvc = EventsService();
+                      final String eventId = await nSvc.addEditEvent(
+                        eventId: _eventAggregate.event.eventId,
+                        eventImageUrl: BASE_EVENT_IMAGE_URL + fileName,
+                        useFbImage: 0,
+                      );
 
-                          _eventAggregate =
-                              await widget.getUpdatedEventAggregate(eventId);
+                      _eventAggregate = await widget.getUpdatedEventAggregate(
+                        eventId,
+                      );
 
-                          if (widget.isNewRun) {
-                            setState(() {
-                              _isUpdating = false;
-                            });
-                            await Future<void>.delayed(
-                                const Duration(milliseconds: 1000));
-                            _tabController.animateTo(3);
-                          } else {
-                            setState(() {
-                              _isUpdating = false;
-                            });
-
-                            final SnackBar snackBar = SnackBar(
-                              duration: const Duration(seconds: 3),
-                              content: Text(
-                                'Event image has been updated',
-                                textAlign: TextAlign.center,
-                                style: ts_titleCondensed,
-                              ),
-                              backgroundColor: hc_blue,
-                            );
-
-                            if (!mounted) return;
-                            ScaffoldMessenger.of(navigatorKey.currentContext!)
-                                .showSnackBar(snackBar);
-                          }
-                        }
-                      }),
-                ),
-                //const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity,
-                          40), // double.infinity is the width and 30 is the height
-                    ),
-                    child: Text('Select again from gallery', style: ts_button),
-                    onPressed: () {
-                      _getImageFromGallery(ImageSource.gallery);
-                    },
-                  ),
-                ),
-                if ((_eventAggregate.event.eventFacebookId != null) &&
-                    (!_isUpdating)) ...<Widget>[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: const Size(double.infinity,
-                            40), // double.infinity is the width and 30 is the height
-                      ),
-                      child: Text(
-                          'Use image from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
-                          style: ts_button),
-                      onPressed: () async {
-                        setState(() {
-                          _isUpdating = true;
-                        });
-                        final EventsService nSvc = EventsService();
-                        final String eventId = await nSvc.addEditEvent(
-                          eventId: _eventAggregate.event.eventId,
-                          useFbImage: 1,
-                        );
-
-                        _eventAggregate =
-                            await widget.getUpdatedEventAggregate(eventId);
+                      if (widget.isNewRun) {
                         setState(() {
                           _isUpdating = false;
-                          final SnackBar snackBar = SnackBar(
-                            duration: const Duration(seconds: 3),
-                            content: Text(
-                              'Image is being synced from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
-                              textAlign: TextAlign.center,
-                              style: ts_titleCondensedBlack,
-                            ),
-                            backgroundColor: hc_blue,
-                          );
-                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
                         });
-                      },
-                    ),
+                        await Future<void>.delayed(
+                          const Duration(milliseconds: 1000),
+                        );
+                        _tabController.animateTo(3);
+                      } else {
+                        setState(() {
+                          _isUpdating = false;
+                        });
+
+                        final SnackBar snackBar = SnackBar(
+                          duration: const Duration(seconds: 3),
+                          content: Text(
+                            'Event image has been updated',
+                            textAlign: TextAlign.center,
+                            style: ts_titleCondensed,
+                          ),
+                          backgroundColor: hc_blue,
+                        );
+
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(
+                          navigatorKey.currentContext!,
+                        ).showSnackBar(snackBar);
+                      }
+                    }
+                  },
+                ),
+              ),
+              //const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(
+                      double.infinity,
+                      40,
+                    ), // double.infinity is the width and 30 is the height
                   ),
-                ],
-                //const SizedBox(height: 20),
+                  child: Text('Select again from gallery', style: ts_button),
+                  onPressed: () {
+                    _getImageFromGallery(ImageSource.gallery);
+                  },
+                ),
+              ),
+              if ((_eventAggregate.event.eventFacebookId != null) &&
+                  (!_isUpdating)) ...<Widget>[
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity,
-                          40), // double.infinity is the width and 30 is the height
+                      minimumSize: const Size(
+                        double.infinity,
+                        40,
+                      ), // double.infinity is the width and 30 is the height
                     ),
-                    child: Text('Use original image', style: ts_button),
-                    onPressed: () {
+                    child: Text(
+                      'Use image from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
+                      style: ts_button,
+                    ),
+                    onPressed: () async {
                       setState(() {
-                        _imageFromGallery = Future<File?>.value(null);
+                        _isUpdating = true;
+                      });
+                      final EventsService nSvc = EventsService();
+                      final String eventId = await nSvc.addEditEvent(
+                        eventId: _eventAggregate.event.eventId,
+                        useFbImage: 1,
+                      );
+
+                      _eventAggregate = await widget.getUpdatedEventAggregate(
+                        eventId,
+                      );
+                      setState(() {
+                        _isUpdating = false;
+                        final SnackBar snackBar = SnackBar(
+                          duration: const Duration(seconds: 3),
+                          content: Text(
+                            'Image is being synced from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
+                            textAlign: TextAlign.center,
+                            style: ts_titleCondensedBlack,
+                          ),
+                          backgroundColor: hc_blue,
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
                       });
                     },
                   ),
                 ),
-                const SizedBox(height: 40),
               ],
-            );
-          } else {
-            return _isUpdating
-                ? const SizedBox(
-                    height: 70.0,
-                    width: 70.0,
-                    child: HcCircularProgressIndicator(key: Key('6669001123')),
-                  )
-                : Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      if (_eventAggregate.event.eventImage != null) ...<Widget>[
-                        Expanded(
-                          child: Container(
-                            margin: const EdgeInsets.all(20.0),
-                            //height: G0<DeviceInfo>().deviceHeight - 235,
-                            child: Column(
-                              //mainAxisSize: MainAxisSize.min,
+              //const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(
+                      double.infinity,
+                      40,
+                    ), // double.infinity is the width and 30 is the height
+                  ),
+                  child: Text('Use original image', style: ts_button),
+                  onPressed: () {
+                    setState(() {
+                      _imageFromGallery = Future<File?>.value(null);
+                    });
+                  },
+                ),
+              ),
+              const SizedBox(height: 40),
+            ],
+          );
+        } else {
+          return _isUpdating
+              ? const SizedBox(
+                height: 70.0,
+                width: 70.0,
+                child: HcCircularProgressIndicator(key: Key('6669001123')),
+              )
+              : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  if (_eventAggregate.event.eventImage != null) ...<Widget>[
+                    Expanded(
+                      child: Container(
+                        margin: const EdgeInsets.all(20.0),
+                        //height: deviceInfo.deviceHeight - 235,
+                        child: Column(
+                          //mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Expanded(
+                              child: CachedNetworkImage(
+                                imageUrl: _eventAggregate.event.eventImage!,
+                                // errorWidget:
+                                //     (BuildContext context, String url, Exception error) =>
+                                //         const  Icon(Icons.error),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: <Widget>[
-                                Expanded(
-                                  child: CachedNetworkImage(
-                                    imageUrl: _eventAggregate.event.eventImage!,
-                                    // errorWidget:
-                                    //     (BuildContext context, String url, Exception error) =>
-                                    //         const  Icon(Icons.error),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20.0,
+                                  ),
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      minimumSize: const Size(
+                                        double.infinity,
+                                        40,
+                                      ), // double.infinity is the width and 30 is the height
+                                    ),
+                                    child: Text(
+                                      'Select from gallery',
+                                      style: ts_button,
+                                    ),
+                                    onPressed: () {
+                                      _getImageFromGallery(ImageSource.gallery);
+                                    },
                                   ),
                                 ),
-                                const SizedBox(height: 20),
-                                Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: <Widget>[
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 20.0),
-                                      child: ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          minimumSize: const Size(
-                                              double.infinity,
-                                              40), // double.infinity is the width and 30 is the height
-                                        ),
-                                        child: Text('Select from gallery',
-                                            style: ts_button),
-                                        onPressed: () {
-                                          _getImageFromGallery(
-                                              ImageSource.gallery);
-                                        },
-                                      ),
+                                if ((_eventAggregate.event.eventFacebookId !=
+                                        null) &&
+                                    (!_isUpdating)) ...<Widget>[
+                                  const SizedBox(height: 10),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20.0,
                                     ),
-                                    if ((_eventAggregate
-                                                .event.eventFacebookId !=
-                                            null) &&
-                                        (!_isUpdating)) ...<Widget>[
-                                      const SizedBox(height: 10),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 20.0),
-                                        child: ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                            minimumSize: const Size(
-                                                double.infinity,
-                                                40), // double.infinity is the width and 30 is the height
-                                          ),
-                                          child: Text(
-                                              'Use ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
-                                              style: ts_button),
-                                          onPressed: () async {
-                                            setState(() {
-                                              _isUpdating = true;
-                                            });
-                                            final EventsService nSvc =
-                                                EventsService();
-                                            final String eventId =
-                                                await nSvc.addEditEvent(
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        minimumSize: const Size(
+                                          double.infinity,
+                                          40,
+                                        ), // double.infinity is the width and 30 is the height
+                                      ),
+                                      child: Text(
+                                        'Use ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
+                                        style: ts_button,
+                                      ),
+                                      onPressed: () async {
+                                        setState(() {
+                                          _isUpdating = true;
+                                        });
+                                        final EventsService nSvc =
+                                            EventsService();
+                                        final String eventId = await nSvc
+                                            .addEditEvent(
                                               eventId:
                                                   _eventAggregate.event.eventId,
                                               useFbImage: 1,
                                             );
 
-                                            _eventAggregate = await widget
-                                                .getUpdatedEventAggregate(
-                                                    eventId);
-                                            setState(() {
-                                              _isUpdating = false;
-                                              final SnackBar snackBar =
-                                                  SnackBar(
-                                                duration:
-                                                    const Duration(seconds: 3),
-                                                content: Text(
-                                                  'Image is being synced from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
-                                                  textAlign: TextAlign.center,
-                                                  style: ts_titleCondensedBlack,
-                                                ),
-                                                backgroundColor: hc_blue,
-                                              );
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(snackBar);
-                                            });
-                                          },
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                                const SizedBox(height: 40),
+                                        _eventAggregate = await widget
+                                            .getUpdatedEventAggregate(eventId);
+                                        setState(() {
+                                          _isUpdating = false;
+                                          final SnackBar snackBar = SnackBar(
+                                            duration: const Duration(
+                                              seconds: 3,
+                                            ),
+                                            content: Text(
+                                              'Image is being synced from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
+                                              textAlign: TextAlign.center,
+                                              style: ts_titleCondensedBlack,
+                                            ),
+                                            backgroundColor: hc_blue,
+                                          );
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(snackBar);
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
-                          ),
+                            const SizedBox(height: 40),
+                          ],
                         ),
-                      ],
-                      if (_eventAggregate.event.eventImage == null) ...<Widget>[
-                        Text(
-                          'No image provided',
-                          textAlign: TextAlign.center,
-                          style:
-                              ts_headingVeryLarge.copyWith(color: Colors.black),
+                      ),
+                    ),
+                  ],
+                  if (_eventAggregate.event.eventImage == null) ...<Widget>[
+                    Text(
+                      'No image provided',
+                      textAlign: TextAlign.center,
+                      style: ts_headingVeryLarge.copyWith(color: Colors.black),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20.0,
+                        vertical: 50.0,
+                      ),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(
+                            double.infinity,
+                            40,
+                          ), // double.infinity is the width and 30 is the height
                         ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20.0, vertical: 50.0),
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: const Size(double.infinity,
-                                  40), // double.infinity is the width and 30 is the height
-                            ),
-                            child:
-                                Text('Select from gallery', style: ts_button),
-                            onPressed: () {
-                              _getImageFromGallery(ImageSource.gallery);
-                            },
-                          ),
-                        ),
-                      ],
-                      if (widget.isNewRun) ...<Widget>[
-                        ElevatedButton(
-                          child: Text(
-                            'Skip',
-                            style: ts_button,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _tabController.animateTo(3);
-                            });
-                          },
-                        ),
-                        const SizedBox(width: 20.0),
-                      ],
-                    ],
-                  );
-          }
-        });
+                        child: Text('Select from gallery', style: ts_button),
+                        onPressed: () {
+                          _getImageFromGallery(ImageSource.gallery);
+                        },
+                      ),
+                    ),
+                  ],
+                  if (widget.isNewRun) ...<Widget>[
+                    ElevatedButton(
+                      child: Text('Skip', style: ts_button),
+                      onPressed: () {
+                        setState(() {
+                          _tabController.animateTo(3);
+                        });
+                      },
+                    ),
+                    const SizedBox(width: 20.0),
+                  ],
+                ],
+              );
+        }
+      },
+    );
   }
 
   String _upload(File imageFile, String eventId) {
     final String datetime = DateFormat('yyyyMMddkkmmss').format(DateTime.now());
     final String fileName = 'eventImage_${eventId}_$datetime.jpg';
     final Uri uri = Uri.parse(
-        'https://harriercentral.blob.core.windows.net/event-images/$fileName?sv=2020-04-08&st=2021-09-15T14%3A03%3A04Z&se=2100-09-16T14%3A03%3A00Z&sr=c&sp=racwdxlt&sig=q%2BVTH8wcrKOlSZK1FH7cUoaoYFPtjGpblCAVUqA4WFY%3D');
+      'https://harriercentral.blob.core.windows.net/event-images/$fileName?sv=2020-04-08&st=2021-09-15T14%3A03%3A04Z&se=2100-09-16T14%3A03%3A00Z&sr=c&sp=racwdxlt&sig=q%2BVTH8wcrKOlSZK1FH7cUoaoYFPtjGpblCAVUqA4WFY%3D',
+    );
 
     final Request request = Request('PUT', uri);
 
     final Map<String, String> headers = <String, String>{
       'content-type': 'image/jpeg',
-      'x-ms-blob-type': 'BlockBlob'
+      'x-ms-blob-type': 'BlockBlob',
     };
 
     request.headers.addAll(headers);
@@ -1206,13 +1269,14 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
       } else {
         final ImageCropper ic = ImageCropper();
         final CroppedFile? croppedFile = await ic.cropImage(
-            sourcePath: image.path,
-            //aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
-            //aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],
-            maxWidth: 1000,
-            maxHeight: 1000,
-            compressFormat: ImageCompressFormat.jpg,
-            compressQuality: 50);
+          sourcePath: image.path,
+          //aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
+          //aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],
+          maxWidth: 1000,
+          maxHeight: 1000,
+          compressFormat: ImageCompressFormat.jpg,
+          compressQuality: 50,
+        );
 
         setState(() {
           if (croppedFile != null) {
@@ -1236,15 +1300,18 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
               //   //decoration: Backgrounds.defaultHcBackground(),
               //   height: MediaQuery.of(context).size.height - 300,
               //   child:
-
               MyFlutterMap(
                 _eventAggregate.extensions.latitude == null
                     ? null
-                    : latlng.LatLng(_eventAggregate.extensions.latitude!,
-                        _eventAggregate.extensions.longitude!),
+                    : latlng.LatLng(
+                      _eventAggregate.extensions.latitude!,
+                      _eventAggregate.extensions.longitude!,
+                    ),
                 _mapCenter,
-                latlng.LatLng(_eventAggregate.extensions.kenlLat,
-                    _eventAggregate.extensions.kenlLon),
+                latlng.LatLng(
+                  _eventAggregate.extensions.kenlLat,
+                  _eventAggregate.extensions.kenlLon,
+                ),
                 1.0,
                 18.0,
                 14.0,
@@ -1260,8 +1327,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                   onTapDown: (dynamic tapDownDetails) {
                     setState(() {
                       _mapCenter = latlng.LatLng(
-                          _eventAggregate.extensions.kenlLat,
-                          _eventAggregate.extensions.kenlLon);
+                        _eventAggregate.extensions.kenlLat,
+                        _eventAggregate.extensions.kenlLon,
+                      );
                     });
                   },
                   child: Container(color: Colors.black54),
@@ -1282,8 +1350,11 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                   (_mapCenter.longitude != CLEAR_LATLONG)) ...<Widget>[
                 IgnorePointer(
                   ignoring: true,
-                  child: Image.asset('images/other/map_center_target.png',
-                      height: 300.0, width: 300.0),
+                  child: Image.asset(
+                    'images/other/map_center_target.png',
+                    height: 300.0,
+                    width: 300.0,
+                  ),
                 ),
               ],
 
@@ -1299,11 +1370,12 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                     borderRadius: const BorderRadius.all(Radius.circular(10.0)),
                   ),
                   child: Text(
-                      _eventAggregate.event.useFbLatLon == 1
-                          ? 'Location from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
-                          : 'Location from Harrier Central',
-                      textAlign: TextAlign.center,
-                      style: ts_headingBlack),
+                    _eventAggregate.event.useFbLatLon == 1
+                        ? 'Location from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
+                        : 'Location from Harrier Central',
+                    textAlign: TextAlign.center,
+                    style: ts_headingBlack,
+                  ),
                 ),
               ),
 
@@ -1313,36 +1385,42 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                 child: GestureDetector(
                   onTap: () {
                     setState(() {
-                      _mapCenter =
-                          const latlng.LatLng(CLEAR_LATLONG, CLEAR_LATLONG);
+                      _mapCenter = const latlng.LatLng(
+                        CLEAR_LATLONG,
+                        CLEAR_LATLONG,
+                      );
                     });
                   },
                   child: SizedBox(
                     height: 50.0,
                     width: 50.0,
-                    child:
-                        Image.asset('images/other/set_map_to_no_location.png'),
+                    child: Image.asset(
+                      'images/other/set_map_to_no_location.png',
+                    ),
                   ),
                 ),
               ),
 
-              if ((G0<DeviceInfo>().deviceLat != null) &&
-                  (G0<DeviceInfo>().deviceLon != null)) ...<Widget>[
+              if ((deviceInfo.deviceLat != null) &&
+                  (deviceInfo.deviceLon != null)) ...<Widget>[
                 Positioned(
                   right: 70.0,
                   top: 10.0,
                   child: GestureDetector(
                     onTap: () {
                       setState(() {
-                        _mapCenter = latlng.LatLng(G0<DeviceInfo>().deviceLat!,
-                            G0<DeviceInfo>().deviceLon!);
+                        _mapCenter = latlng.LatLng(
+                          deviceInfo.deviceLat!,
+                          deviceInfo.deviceLon!,
+                        );
                       });
                     },
                     child: SizedBox(
                       height: 50.0,
                       width: 50.0,
                       child: Image.asset(
-                          'images/other/set_map_to_current_location.png'),
+                        'images/other/set_map_to_current_location.png',
+                      ),
                     ),
                   ),
                 ),
@@ -1366,7 +1444,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       height: 50.0,
                       width: 50.0,
                       child: Image.asset(
-                          'images/other/set_map_to_event_location.png'),
+                        'images/other/set_map_to_event_location.png',
+                      ),
                     ),
                   ),
                 ),
@@ -1383,9 +1462,11 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                   child: SizedBox(
                     height: 50.0,
                     width: 50.0,
-                    child: Image.asset(_trueNorthLock
-                        ? 'images/other/set_map_to_true_north_lock.png'
-                        : 'images/other/set_map_rotation_enabled.png'),
+                    child: Image.asset(
+                      _trueNorthLock
+                          ? 'images/other/set_map_to_true_north_lock.png'
+                          : 'images/other/set_map_rotation_enabled.png',
+                    ),
                   ),
                 ),
               ),
@@ -1393,163 +1474,177 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                 left: 10.0,
                 right: 10.0,
                 bottom: 80.0,
-                child: _isUpdating
-                    ? const SizedBox(
-                        height: 70.0,
-                        width: 70.0,
-                        child:
-                            HcCircularProgressIndicator(key: Key('655931031')),
-                      )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          if (widget.isNewRun) ...<Widget>[
+                child:
+                    _isUpdating
+                        ? const SizedBox(
+                          height: 70.0,
+                          width: 70.0,
+                          child: HcCircularProgressIndicator(
+                            key: Key('655931031'),
+                          ),
+                        )
+                        : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            if (widget.isNewRun) ...<Widget>[
+                              ElevatedButton(
+                                child: Text('Skip', style: ts_button),
+                                onPressed: () {
+                                  setState(() {
+                                    _tabController.animateTo(2);
+                                  });
+                                },
+                              ),
+                              const SizedBox(width: 20.0),
+                            ],
                             ElevatedButton(
                               child: Text(
-                                'Skip',
+                                ((_mapCenter.latitude == CLEAR_LATLONG) &&
+                                        (_mapCenter.longitude == CLEAR_LATLONG))
+                                    ? 'Set no location'
+                                    : 'Set Location',
                                 style: ts_button,
                               ),
-                              onPressed: () {
-                                setState(() {
-                                  _tabController.animateTo(2);
-                                });
-                              },
-                            ),
-                            const SizedBox(width: 20.0),
-                          ],
-                          ElevatedButton(
-                            child: Text(
-                              ((_mapCenter.latitude == CLEAR_LATLONG) &&
-                                      (_mapCenter.longitude == CLEAR_LATLONG))
-                                  ? 'Set no location'
-                                  : 'Set Location',
-                              style: ts_button,
-                            ),
-                            onPressed: () async {
-                              if ((_eventAggregate.event.eventId.isEmpty) ||
-                                  (_eventAggregate.event.eventId ==
-                                      GUID_EMPTY)) {
-                                await Utilities.showAlert(
-                                  'Please save details first',
-                                  'When creating a new event, please save the information on the Details tab before saving the location',
-                                  'OK',
-                                );
-
-                                _tabController.animateTo(0);
-                              } else {
-                                setState(() {
-                                  _isUpdating = true;
-                                });
-                                final EventsService nSvc = EventsService();
-                                // check to see if "no location" is set. If so, don't overwrite it
-                                if ((_mapCenter.latitude != CLEAR_LATLONG) &&
-                                    (_mapCenter.longitude != CLEAR_LATLONG) &&
-                                    (_mapKey.currentState?.mapController !=
-                                        null)) {
-                                  _mapCenter = _mapKey.currentState!
-                                      .mapController.camera.center;
-                                }
-                                final String eventId = await nSvc.addEditEvent(
-                                  eventId: _eventAggregate.event.eventId,
-                                  lat: _mapCenter.latitude,
-                                  lon: _mapCenter.longitude,
-                                  useFbLatLon: 0,
-                                );
-                                _eventAggregate = await widget
-                                    .getUpdatedEventAggregate(eventId);
-
-                                if (widget.isNewRun) {
-                                  setState(() {
-                                    _isUpdating = false;
-                                  });
-                                  await Future<void>.delayed(
-                                      const Duration(milliseconds: 1000));
-                                  _tabController.animateTo(2);
-                                } else {
-                                  final SnackBar snackBar = SnackBar(
-                                    duration: const Duration(seconds: 3),
-                                    content: Text(
-                                      'Updated location saved in Harrier Central',
-                                      textAlign: TextAlign.center,
-                                      style: ts_titleCondensed,
-                                    ),
-                                    backgroundColor: hc_blue,
+                              onPressed: () async {
+                                if ((_eventAggregate.event.eventId.isEmpty) ||
+                                    (_eventAggregate.event.eventId ==
+                                        GUID_EMPTY)) {
+                                  await Utilities.showAlert(
+                                    'Please save details first',
+                                    'When creating a new event, please save the information on the Details tab before saving the location',
+                                    'OK',
                                   );
 
-                                  if (!mounted) return;
-                                  ScaffoldMessenger.of(context)
-                                      .showSnackBar(snackBar);
-                                }
-
-                                await Future<void>.delayed(
-                                    const Duration(milliseconds: 500));
-                                setState(() {
-                                  _isUpdating = false;
-                                });
-
-                                //_showEventPopup(_calendarController.selectedDay);
-                              }
-                            },
-                          ),
-                          if ((_eventAggregate.event.eventFacebookId != null) &&
-                              (!_isUpdating)) ...<Widget>[
-                            const SizedBox(width: 20.0),
-                            Expanded(
-                              child: ElevatedButton(
-                                child: AutoSizeText(
-                                  'Use ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
-                                  style: ts_button,
-                                  minFontSize: 3.0,
-                                  maxLines: 1,
-                                  //overflow: TextOverflow.ellipsis,
-                                ),
-                                onPressed: () async {
+                                  _tabController.animateTo(0);
+                                } else {
                                   setState(() {
                                     _isUpdating = true;
                                   });
                                   final EventsService nSvc = EventsService();
-                                  final String eventId =
-                                      await nSvc.addEditEvent(
-                                    eventId: _eventAggregate.event.eventId,
-                                    useFbLatLon: 1,
-                                  );
-
+                                  // check to see if "no location" is set. If so, don't overwrite it
+                                  if ((_mapCenter.latitude != CLEAR_LATLONG) &&
+                                      (_mapCenter.longitude != CLEAR_LATLONG) &&
+                                      (_mapKey.currentState?.mapController !=
+                                          null)) {
+                                    _mapCenter =
+                                        _mapKey
+                                            .currentState!
+                                            .mapController
+                                            .camera
+                                            .center;
+                                  }
+                                  final String eventId = await nSvc
+                                      .addEditEvent(
+                                        eventId: _eventAggregate.event.eventId,
+                                        lat: _mapCenter.latitude,
+                                        lon: _mapCenter.longitude,
+                                        useFbLatLon: 0,
+                                      );
                                   _eventAggregate = await widget
                                       .getUpdatedEventAggregate(eventId);
-                                  setState(() {
-                                    if ((_eventAggregate.extensions.latitude ==
-                                            null) ||
-                                        (_eventAggregate.extensions.longitude ==
-                                            null)) {
-                                      _mapCenter = latlng.LatLng(
-                                        _eventAggregate.extensions.kenlLat,
-                                        _eventAggregate.extensions.kenlLon,
-                                      );
-                                    } else {
-                                      _mapCenter = latlng.LatLng(
-                                        _eventAggregate.extensions.latitude!,
-                                        _eventAggregate.extensions.longitude!,
-                                      );
-                                    }
-                                    _isUpdating = false;
+
+                                  if (widget.isNewRun) {
+                                    setState(() {
+                                      _isUpdating = false;
+                                    });
+                                    await Future<void>.delayed(
+                                      const Duration(milliseconds: 1000),
+                                    );
+                                    _tabController.animateTo(2);
+                                  } else {
                                     final SnackBar snackBar = SnackBar(
                                       duration: const Duration(seconds: 3),
                                       content: Text(
-                                        'Location is being synced from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
+                                        'Updated location saved in Harrier Central',
                                         textAlign: TextAlign.center,
-                                        style: ts_titleCondensedBlack,
+                                        style: ts_titleCondensed,
                                       ),
                                       backgroundColor: hc_blue,
                                     );
-                                    ScaffoldMessenger.of(context)
-                                        .showSnackBar(snackBar);
+
+                                    if (!mounted) return;
+                                    ScaffoldMessenger.of(
+                                      context,
+                                    ).showSnackBar(snackBar);
+                                  }
+
+                                  await Future<void>.delayed(
+                                    const Duration(milliseconds: 500),
+                                  );
+                                  setState(() {
+                                    _isUpdating = false;
                                   });
-                                },
-                              ),
+
+                                  //_showEventPopup(_calendarController.selectedDay);
+                                }
+                              },
                             ),
-                          ]
-                        ],
-                      ),
+                            if ((_eventAggregate.event.eventFacebookId !=
+                                    null) &&
+                                (!_isUpdating)) ...<Widget>[
+                              const SizedBox(width: 20.0),
+                              Expanded(
+                                child: ElevatedButton(
+                                  child: AutoSizeText(
+                                    'Use ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
+                                    style: ts_button,
+                                    minFontSize: 3.0,
+                                    maxLines: 1,
+                                    //overflow: TextOverflow.ellipsis,
+                                  ),
+                                  onPressed: () async {
+                                    setState(() {
+                                      _isUpdating = true;
+                                    });
+                                    final EventsService nSvc = EventsService();
+                                    final String eventId = await nSvc
+                                        .addEditEvent(
+                                          eventId:
+                                              _eventAggregate.event.eventId,
+                                          useFbLatLon: 1,
+                                        );
+
+                                    _eventAggregate = await widget
+                                        .getUpdatedEventAggregate(eventId);
+                                    setState(() {
+                                      if ((_eventAggregate
+                                                  .extensions
+                                                  .latitude ==
+                                              null) ||
+                                          (_eventAggregate
+                                                  .extensions
+                                                  .longitude ==
+                                              null)) {
+                                        _mapCenter = latlng.LatLng(
+                                          _eventAggregate.extensions.kenlLat,
+                                          _eventAggregate.extensions.kenlLon,
+                                        );
+                                      } else {
+                                        _mapCenter = latlng.LatLng(
+                                          _eventAggregate.extensions.latitude!,
+                                          _eventAggregate.extensions.longitude!,
+                                        );
+                                      }
+                                      _isUpdating = false;
+                                      final SnackBar snackBar = SnackBar(
+                                        duration: const Duration(seconds: 3),
+                                        content: Text(
+                                          'Location is being synced from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
+                                          textAlign: TextAlign.center,
+                                          style: ts_titleCondensedBlack,
+                                        ),
+                                        backgroundColor: hc_blue,
+                                      );
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(snackBar);
+                                    });
+                                  },
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
               ),
             ],
           ),
@@ -1562,10 +1657,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
     return Theme(
       data: Theme.of(context).copyWith(
         disabledColor: Colors.grey,
-        iconTheme: IconTheme.of(context).copyWith(
-          color: hc_red,
-          size: 35,
-        ),
+        iconTheme: IconTheme.of(context).copyWith(color: hc_red, size: 35),
       ),
       child: KeyboardActions(
         config: _buildConfig(context),
@@ -1582,30 +1674,47 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                     Container(
                       margin: const EdgeInsets.only(top: 25.0, bottom: 5.0),
                       padding: const EdgeInsets.only(
-                          top: 5.0, bottom: 5.0, left: 20.0, right: 20.0),
+                        top: 5.0,
+                        bottom: 5.0,
+                        left: 20.0,
+                        right: 20.0,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.yellow[100],
                         border: Border.all(width: 2.0),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(10.0)),
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(10.0),
+                        ),
                       ),
-                      child: Text('Run data from Harrier Central',
-                          textAlign: TextAlign.center, style: ts_headingBlack),
+                      child: Text(
+                        'Run data from Harrier Central',
+                        textAlign: TextAlign.center,
+                        style: ts_headingBlack,
+                      ),
                     ),
                     Container(
                       margin: const EdgeInsets.only(
-                          top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
+                        top: 20.0,
+                        bottom: 0.0,
+                        left: 30.0,
+                        right: 30.0,
+                      ),
                       child: Text(
                         'Enter hares here. These names will be presented in addition to anyone who has RSVPed as a Hare using the app',
                         style: ts_mediumBlack,
                       ),
                     ),
                     Container(
-                      color: _focusNodeHares.hasFocus
-                          ? Colors.yellow.shade50
-                          : Colors.white,
+                      color:
+                          _focusNodeHares.hasFocus
+                              ? Colors.yellow.shade50
+                              : Colors.white,
                       margin: const EdgeInsets.only(
-                          top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                        top: 10.0,
+                        bottom: 10.0,
+                        left: 25.0,
+                        right: 25.0,
+                      ),
                       child: TextFormField(
                         // onChanged: (String text) {
                         //   if ((text == null) || (text.isEmpty)) {
@@ -1642,18 +1751,27 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                     ),
                     Container(
                       margin: const EdgeInsets.only(
-                          top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
+                        top: 20.0,
+                        bottom: 0.0,
+                        left: 30.0,
+                        right: 30.0,
+                      ),
                       child: Text(
                         'Harrier Central automatically numbers runs. But if there is a reason to override this, you can manually enter a run number here.',
                         style: ts_mediumBlack,
                       ),
                     ),
                     Container(
-                      color: _focusNodeAbsoluteEventNumber.hasFocus
-                          ? Colors.yellow.shade50
-                          : Colors.white,
+                      color:
+                          _focusNodeAbsoluteEventNumber.hasFocus
+                              ? Colors.yellow.shade50
+                              : Colors.white,
                       margin: const EdgeInsets.only(
-                          top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                        top: 10.0,
+                        bottom: 10.0,
+                        left: 25.0,
+                        right: 25.0,
+                      ),
                       child: TextFormField(
                         // onChanged: (String text) {
                         //   if ((text == null) || (text.isEmpty)) {
@@ -1690,7 +1808,11 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                     ),
                     Container(
                       margin: const EdgeInsets.only(
-                          top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
+                        top: 20.0,
+                        bottom: 0.0,
+                        left: 30.0,
+                        right: 30.0,
+                      ),
                       child: Text(
                         'Enter in the hash cash amount here if it is different than the normal hash cash value.',
                         style: ts_mediumBlack,
@@ -1698,16 +1820,21 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                     ),
                     Container(
                       margin: const EdgeInsets.only(
-                          top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                        top: 10.0,
+                        bottom: 10.0,
+                        left: 25.0,
+                        right: 25.0,
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
                           Expanded(
                             flex: 1,
                             child: Container(
-                              color: _focusNodeEventPriceForMembers.hasFocus
-                                  ? Colors.yellow.shade50
-                                  : Colors.white,
+                              color:
+                                  _focusNodeEventPriceForMembers.hasFocus
+                                      ? Colors.yellow.shade50
+                                      : Colors.white,
                               margin: const EdgeInsets.only(right: 12.5),
                               child: TextFormField(
                                 // onChanged: (String text) {
@@ -1723,7 +1850,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                 controller: _eventPriceForMembersController,
                                 keyboardType:
                                     const TextInputType.numberWithOptions(
-                                        signed: false, decimal: true),
+                                      signed: false,
+                                      decimal: true,
+                                    ),
                                 textCapitalization:
                                     TextCapitalization.sentences,
                                 style: ts_titleMediumBlack,
@@ -1743,9 +1872,10 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                           Expanded(
                             flex: 1,
                             child: Container(
-                              color: _focusNodeEventPriceForNonMembers.hasFocus
-                                  ? Colors.yellow.shade50
-                                  : Colors.white,
+                              color:
+                                  _focusNodeEventPriceForNonMembers.hasFocus
+                                      ? Colors.yellow.shade50
+                                      : Colors.white,
                               margin: const EdgeInsets.only(left: 12.5),
                               child: TextFormField(
                                 // onChanged: (String text) {
@@ -1762,7 +1892,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                 controller: _eventPriceForNonMembersController,
                                 keyboardType:
                                     const TextInputType.numberWithOptions(
-                                        signed: false, decimal: true),
+                                      signed: false,
+                                      decimal: true,
+                                    ),
                                 textCapitalization:
                                     TextCapitalization.sentences,
                                 style: ts_titleMediumBlack,
@@ -1784,7 +1916,11 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                     ),
                     Container(
                       margin: const EdgeInsets.only(
-                          top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
+                        top: 20.0,
+                        bottom: 0.0,
+                        left: 30.0,
+                        right: 30.0,
+                      ),
                       child: Text(
                         'If you have extra charges associated with your run, such as for dinner, you can put in the price and description here.',
                         style: ts_mediumBlack,
@@ -1792,16 +1928,21 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                     ),
                     Container(
                       margin: const EdgeInsets.only(
-                          top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                        top: 10.0,
+                        bottom: 10.0,
+                        left: 25.0,
+                        right: 25.0,
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
                           Expanded(
                             flex: 1,
                             child: Container(
-                              color: _focusNodeEventPriceForExtras.hasFocus
-                                  ? Colors.yellow.shade50
-                                  : Colors.white,
+                              color:
+                                  _focusNodeEventPriceForExtras.hasFocus
+                                      ? Colors.yellow.shade50
+                                      : Colors.white,
                               margin: const EdgeInsets.only(right: 12.5),
                               child: TextFormField(
                                 // onChanged: (String text) {
@@ -1817,7 +1958,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                 controller: _eventPriceForExtrasController,
                                 keyboardType:
                                     const TextInputType.numberWithOptions(
-                                        signed: false, decimal: true),
+                                      signed: false,
+                                      decimal: true,
+                                    ),
                                 textCapitalization:
                                     TextCapitalization.sentences,
                                 style: ts_titleMediumBlack,
@@ -1837,9 +1980,10 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                           Expanded(
                             flex: 1,
                             child: Container(
-                              color: _focusNodeExtrasDescription.hasFocus
-                                  ? Colors.yellow.shade50
-                                  : Colors.white,
+                              color:
+                                  _focusNodeExtrasDescription.hasFocus
+                                      ? Colors.yellow.shade50
+                                      : Colors.white,
                               margin: const EdgeInsets.only(left: 12.5),
                               child: TextFormField(
                                 // onChanged: (String text) {
@@ -1876,18 +2020,25 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                     Container(
                       //color: _focusNodeAbsoluteEventNumber.hasFocus ? Colors.yellow.shade50 : Colors.white,
                       margin: const EdgeInsets.only(
-                          top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                        top: 10.0,
+                        bottom: 10.0,
+                        left: 25.0,
+                        right: 25.0,
+                      ),
                       decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(color: Colors.grey.shade500),
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(10),
-                          )),
+                        color: Colors.white,
+                        border: Border.all(color: Colors.grey.shade500),
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(10),
+                        ),
+                      ),
                       child: Column(
                         children: <Widget>[
                           CheckboxFormField(
-                            title: Text('Show run in Harrier Central',
-                                style: ts_regularBlack),
+                            title: Text(
+                              'Show run in Harrier Central',
+                              style: ts_regularBlack,
+                            ),
                             validator: (bool? result) {
                               _isVisible = result ?? false;
                               return null;
@@ -1895,8 +2046,10 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                             initialValue: _eventAggregate.event.isVisible == 1,
                           ),
                           CheckboxFormField(
-                            title:
-                                Text('Count this run', style: ts_regularBlack),
+                            title: Text(
+                              'Count this run',
+                              style: ts_regularBlack,
+                            ),
                             initialValue:
                                 _eventAggregate.event.isCountedRun == 1,
                             validator: (bool? result) {
@@ -1905,14 +2058,18 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                             },
                           ),
                           CheckboxFormField(
-                            title: Text('Users can edit run history',
-                                style: ts_regularBlack),
-                            initialValue: _eventAggregate
-                                        .event.canEditRunAttendence ==
-                                    null
-                                ? false
-                                : _eventAggregate.event.canEditRunAttendence ==
-                                    1,
+                            title: Text(
+                              'Users can edit run history',
+                              style: ts_regularBlack,
+                            ),
+                            initialValue:
+                                _eventAggregate.event.canEditRunAttendence ==
+                                        null
+                                    ? false
+                                    : _eventAggregate
+                                            .event
+                                            .canEditRunAttendence ==
+                                        1,
                             tristate: true,
                             validator: (bool? result) {
                               if (result == null) {
@@ -1925,8 +2082,10 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                             },
                           ),
                           CheckboxFormField(
-                            title: Text('Promote this run',
-                                style: ts_regularBlack),
+                            title: Text(
+                              'Promote this run',
+                              style: ts_regularBlack,
+                            ),
                             initialValue:
                                 _eventAggregate.event.isPromotedEvent == 1,
                             validator: (bool? result) {
@@ -1939,7 +2098,11 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                     ),
                     Container(
                       margin: const EdgeInsets.only(
-                          top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
+                        top: 20.0,
+                        bottom: 0.0,
+                        left: 30.0,
+                        right: 30.0,
+                      ),
                       child: Text(
                         'Let Hashers around the corner or around the world know about your run if it is interesting to them! By telling us the geographic scope of your run it will help us do a better job promoting it for you!',
                         style: ts_mediumBlack,
@@ -1948,18 +2111,25 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                     Container(
                       //color: _focusNodeAbsoluteEventNumber.hasFocus ? Colors.yellow.shade50 : Colors.white,
                       margin: const EdgeInsets.only(
-                          top: 10.0, bottom: 10.0, left: 25.0, right: 25.0),
+                        top: 10.0,
+                        bottom: 10.0,
+                        left: 25.0,
+                        right: 25.0,
+                      ),
                       decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(color: Colors.grey.shade500),
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(10),
-                          )),
+                        color: Colors.white,
+                        border: Border.all(color: Colors.grey.shade500),
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(10),
+                        ),
+                      ),
                       child: Column(
                         children: <Widget>[
                           ListTile(
-                            title: Text('Local (normal run)',
-                                style: ts_regularBlack),
+                            title: Text(
+                              'Local (normal run)',
+                              style: ts_regularBlack,
+                            ),
                             leading: Radio<int>(
                               value: 1,
                               groupValue: _eventGeographicScope,
@@ -1971,8 +2141,10 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                             ),
                           ),
                           ListTile(
-                            title: Text('Local (special event)',
-                                style: ts_regularBlack),
+                            title: Text(
+                              'Local (special event)',
+                              style: ts_regularBlack,
+                            ),
                             leading: Radio<int>(
                               value: 2,
                               groupValue: _eventGeographicScope,
@@ -1984,8 +2156,10 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                             ),
                           ),
                           ListTile(
-                            title: Text('Regional / State',
-                                style: ts_regularBlack),
+                            title: Text(
+                              'Regional / State',
+                              style: ts_regularBlack,
+                            ),
                             leading: Radio<int>(
                               value: 3,
                               groupValue: _eventGeographicScope,
@@ -1997,8 +2171,10 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                             ),
                           ),
                           ListTile(
-                            title: Text('Nash Hash (national)',
-                                style: ts_regularBlack),
+                            title: Text(
+                              'Nash Hash (national)',
+                              style: ts_regularBlack,
+                            ),
                             leading: Radio<int>(
                               value: 4,
                               groupValue: _eventGeographicScope,
@@ -2010,8 +2186,10 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                             ),
                           ),
                           ListTile(
-                            title: Text('Interhash / Continent',
-                                style: ts_regularBlack),
+                            title: Text(
+                              'Interhash / Continent',
+                              style: ts_regularBlack,
+                            ),
                             leading: Radio<int>(
                               value: 5,
                               groupValue: _eventGeographicScope,
@@ -2023,8 +2201,10 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                             ),
                           ),
                           ListTile(
-                            title: Text('World Interhash / Global',
-                                style: ts_regularBlack),
+                            title: Text(
+                              'World Interhash / Global',
+                              style: ts_regularBlack,
+                            ),
                             leading: Radio<int>(
                               value: 6,
                               groupValue: _eventGeographicScope,
@@ -2048,8 +2228,10 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                             ),
                           ),
                           ListTile(
-                            title:
-                                Text('Not specified', style: ts_regularBlack),
+                            title: Text(
+                              'Not specified',
+                              style: ts_regularBlack,
+                            ),
                             leading: Radio<int>(
                               value: 0,
                               groupValue: _eventGeographicScope,
@@ -2065,59 +2247,65 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                     ),
                     Container(
                       margin: const EdgeInsets.only(
-                          top: 10.0, bottom: 60.0, left: 25.0, right: 25.0),
+                        top: 10.0,
+                        bottom: 60.0,
+                        left: 25.0,
+                        right: 25.0,
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         //crossAxisAlignment: CrossAxisAlignment.center,
                         children: <Widget>[
                           _isUpdating
                               ? const SizedBox(
-                                  height: 70.0,
-                                  width: 70.0,
-                                  child: HcCircularProgressIndicator(
-                                      key: Key('3444910299')),
-                                )
-                              : SizedBox(
-                                  width: 300.0,
-                                  child: ElevatedButton(
-                                    child: Text(
-                                        widget.isNewRun
-                                            ? 'Finish'
-                                            : 'Save Other Information',
-                                        style: ts_button),
-                                    onPressed: () async {
-                                      setState(() {
-                                        _isUpdating = true;
-                                      });
-                                      await _updateRunDetails(false);
-
-                                      if (widget.isNewRun) {
-                                        if (!mounted) return;
-                                        Navigator.of(
-                                                navigatorKey.currentContext!)
-                                            .pop();
-                                      } else {
-                                        final SnackBar snackBar = SnackBar(
-                                          duration: const Duration(seconds: 3),
-                                          content: Text(
-                                            'Other info has been saved',
-                                            textAlign: TextAlign.center,
-                                            style: ts_titleCondensed,
-                                          ),
-                                          backgroundColor: hc_blue,
-                                        );
-
-                                        if (!mounted) return;
-                                        ScaffoldMessenger.of(
-                                                navigatorKey.currentContext!)
-                                            .showSnackBar(snackBar);
-                                      }
-                                      setState(() {
-                                        _isUpdating = false;
-                                      });
-                                    },
-                                  ),
+                                height: 70.0,
+                                width: 70.0,
+                                child: HcCircularProgressIndicator(
+                                  key: Key('3444910299'),
                                 ),
+                              )
+                              : SizedBox(
+                                width: 300.0,
+                                child: ElevatedButton(
+                                  child: Text(
+                                    widget.isNewRun
+                                        ? 'Finish'
+                                        : 'Save Other Information',
+                                    style: ts_button,
+                                  ),
+                                  onPressed: () async {
+                                    setState(() {
+                                      _isUpdating = true;
+                                    });
+                                    await _updateRunDetails(false);
+
+                                    if (widget.isNewRun) {
+                                      if (!mounted) return;
+                                      Navigator.of(
+                                        navigatorKey.currentContext!,
+                                      ).pop();
+                                    } else {
+                                      final SnackBar snackBar = SnackBar(
+                                        duration: const Duration(seconds: 3),
+                                        content: Text(
+                                          'Other info has been saved',
+                                          textAlign: TextAlign.center,
+                                          style: ts_titleCondensed,
+                                        ),
+                                        backgroundColor: hc_blue,
+                                      );
+
+                                      if (!mounted) return;
+                                      ScaffoldMessenger.of(
+                                        navigatorKey.currentContext!,
+                                      ).showSnackBar(snackBar);
+                                    }
+                                    setState(() {
+                                      _isUpdating = false;
+                                    });
+                                  },
+                                ),
+                              ),
                           // if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
                           //   const SizedBox(width: 10.0),
                           //   Container(
@@ -2155,23 +2343,28 @@ class CheckboxFormField extends FormField<bool> {
     super.validator,
     bool super.initialValue = false,
     bool tristate = false,
-  }) : super(builder: (FormFieldState<bool> state) {
-          return CheckboxListTile(
-            dense: state.hasError,
-            title: title,
-            tristate: tristate,
-            value: state.value,
-            onChanged: state.didChange,
-            subtitle: state.hasError
-                ? Builder(
-                    builder: (BuildContext context) => Text(
-                      state.errorText ?? '',
-                      style:
-                          TextStyle(color: Theme.of(context).colorScheme.error),
-                    ),
-                  )
-                : null,
-            controlAffinity: ListTileControlAffinity.leading,
-          );
-        });
+  }) : super(
+         builder: (FormFieldState<bool> state) {
+           return CheckboxListTile(
+             dense: state.hasError,
+             title: title,
+             tristate: tristate,
+             value: state.value,
+             onChanged: state.didChange,
+             subtitle:
+                 state.hasError
+                     ? Builder(
+                       builder:
+                           (BuildContext context) => Text(
+                             state.errorText ?? '',
+                             style: TextStyle(
+                               color: Theme.of(context).colorScheme.error,
+                             ),
+                           ),
+                     )
+                     : null,
+             controlAffinity: ListTileControlAffinity.leading,
+           );
+         },
+       );
 }

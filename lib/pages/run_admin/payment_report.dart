@@ -53,7 +53,7 @@ class PaymentReportState extends State<PaymentReportPage> {
       _isLoading = true;
     });
 
-    await G0<TableModel>().syncEventAdminService.updateFromBackend(
+    await tableModel.syncEventAdminService.updateFromBackend(
       SyncEventAdminService.flagPaymentsTable |
           SyncEventAdminService.flagHasherEventMapTable |
           SyncEventAdminService.flagHasherKennelMapTable,
@@ -77,7 +77,7 @@ SELECT
     pay.*,
     -- Extensions
     hem.hemId AS pkHemId,
-    COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName},
+    COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colKennelHashName},
              COALESCE(
                 CASE
                     WHEN hem.displayName IS NULL THEN NULL
@@ -95,30 +95,28 @@ SELECT
         WHEN ((hkm.membershipExpirationDate IS NOT NULL) AND (julianday(hkm.membershipExpirationDate) >= julianday('now', 'localtime'))) THEN 1
         ELSE 0
     END AS isMember,
-    COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount}, 0) AS discountAmountAvailable,
-    COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent}, 0) AS discountPercentAvailable,
-    COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountDescription}, '') AS discountAvailableDescription,
-    COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing}, 0) AS isFollowing,
-    COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit}, 0) AS creditAvailable,
+    COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colDiscountAmount}, 0) AS discountAmountAvailable,
+    COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colDiscountPercent}, 0) AS discountPercentAvailable,
+    COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colDiscountDescription}, '') AS discountAvailableDescription,
+    COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colFollowing}, 0) AS isFollowing,
+    COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colKennelCredit}, 0) AS creditAvailable,
     COALESCE(e.eventPriceForMembers, k.defaultPriceForMembers, 0) AS eventPriceForMembers,
     COALESCE(e.eventPriceForNonMembers, k.defaultPriceForNonMembers, 0) AS eventPriceForNonMembers,
     COALESCE(confBy.dispName, '') AS confByName,
-    COALESCE(e.${G0<TableModel>().eventsTableHelper.colExtrasDescription}, '<unknown>') AS extrasDescription,
-    COALESCE(e.${G0<TableModel>().eventsTableHelper.colEventPriceForExtras}, 0) AS extrasPrice
-    FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem
-    INNER JOIN ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} e ON e.eventId = hem.eventId
-    INNER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k ON k.kennelId = e.kennelId
-    LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm ON hkm.userId = hem.userId AND hkm.kennelId = "${widget.eventAggregate.event.kennelId}"
-    LEFT OUTER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h ON h.hasherId = hem.userId
-    LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay ON pay.hemId = hem.hemId AND pay.CancelledBy IS NULL
-    LEFT OUTER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} paidTo ON paidTo.hasherId = pay.paidTo
-    LEFT OUTER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} confBy ON confBy.hasherId = pay.confirmedBy
+    COALESCE(e.${tableModel.eventsTableHelper.colExtrasDescription}, '<unknown>') AS extrasDescription,
+    COALESCE(e.${tableModel.eventsTableHelper.colEventPriceForExtras}, 0) AS extrasPrice
+    FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem
+    INNER JOIN ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} e ON e.eventId = hem.eventId
+    INNER JOIN ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} k ON k.kennelId = e.kennelId
+    LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm ON hkm.userId = hem.userId AND hkm.kennelId = "${widget.eventAggregate.event.kennelId}"
+    LEFT OUTER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h ON h.hasherId = hem.userId
+    LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay ON pay.hemId = hem.hemId AND pay.CancelledBy IS NULL
+    LEFT OUTER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} paidTo ON paidTo.hasherId = pay.paidTo
+    LEFT OUTER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} confBy ON confBy.hasherId = pay.confirmedBy
     WHERE hem.attendenceState >= 20
     ''';
 
-    final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
-      sql,
-    );
+    final List<Map<String, dynamic>> results = await database.rawQuery(sql);
 
     _paymentsList.clear();
 
@@ -126,7 +124,7 @@ SELECT
       PaymentsModel? paymentItem;
 
       if (results[i]['paymentId'] != null) {
-        paymentItem = G0<TableModel>().paymentsTableHelper.fromMap(results[i]);
+        paymentItem = tableModel.paymentsTableHelper.fromMap(results[i]);
       }
 
       final PaymentQueryExtensionsModel extensions =
@@ -164,9 +162,9 @@ SELECT
           select 0 as paymentType, 
           (
             SELECT COUNT(*) 
-            FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem 
+            FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem 
             WHERE  hem.attendenceState >= 20
-            AND hem.hemId not in (SELECT hemId from ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay3 where pay3.cancelledBy IS NULL) 
+            AND hem.hemId not in (SELECT hemId from ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay3 where pay3.cancelledBy IS NULL) 
           ) as count, 
           0.0 as totalCollected,
           0.0 as totalDebited,
@@ -176,27 +174,27 @@ SELECT
           select paymentType, 
             (
                 SELECT COUNT(*) 
-                FROM ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay 
-                INNER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem on hem.hemId = pay.hemId AND hem.attendenceState >= 20
+                FROM ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay 
+                INNER JOIN ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem on hem.hemId = pay.hemId AND hem.attendenceState >= 20
                 WHERE pay.paymentType = x.paymentType AND pay.cancelledBy IS NULL
 
             ) as count,
             (
                 SELECT SUM(pay2.creditAmount)
-                FROM ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay2 
-                INNER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
+                FROM ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay2 
+                INNER JOIN ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
                 WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL
             ) as totalCollected,
             (
-                SELECT SUM(pay2.${G0<TableModel>().paymentsTableHelper.colDebitAmount})
-                FROM ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay2 
-                INNER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
+                SELECT SUM(pay2.${tableModel.paymentsTableHelper.colDebitAmount})
+                FROM ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay2 
+                INNER JOIN ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
                 WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL
             ) as totalDebited,
             (
-                SELECT SUM(pay2.${G0<TableModel>().paymentsTableHelper.colDoPayForExtras})
-                FROM ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} pay2 
-                INNER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
+                SELECT SUM(pay2.${tableModel.paymentsTableHelper.colDoPayForExtras})
+                FROM ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay2 
+                INNER JOIN ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
                 WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL
             ) as extrasPaid
           FROM (select 1 as paymentType union values (2), (3), (4), (5), (6), (7), (8) ) x
@@ -204,9 +202,7 @@ SELECT
 
           ''';
 
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
-        sql,
-      );
+      final List<Map<String, dynamic>> results = await database.rawQuery(sql);
       setState(() {
         _paymentTotals = results;
         _totalCollected = 0;
@@ -343,7 +339,7 @@ SELECT
               label: 'Email me payment report',
               labelStyle: const TextStyle(fontSize: 18.0),
               onTap: () async {
-                final Map<String, String?> result = await G0<TableModel>()
+                final Map<String, String?> result = await tableModel
                     .paymentsService
                     .sendPaymentReportByEmail(
                       eventId: widget.eventAggregate.event.eventId,

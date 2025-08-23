@@ -29,9 +29,10 @@ class UserEventListItem extends StatelessWidget {
   Container _listItem(BuildContext context) {
     double netPayment = (item.creditAmount ?? 0) - (item.debitAmount ?? 0);
     Color paymentColor = Colors.green.shade800;
-    Color creditAvailableColor = (item.creditAvailable ?? 0) > 0
-        ? Colors.green.shade800
-        : (item.creditAvailable ?? 0) < 0
+    Color creditAvailableColor =
+        (item.creditAvailable ?? 0) > 0
+            ? Colors.green.shade800
+            : (item.creditAvailable ?? 0) < 0
             ? hc_red
             : Colors.black38;
 
@@ -42,18 +43,28 @@ class UserEventListItem extends StatelessWidget {
     }
 
     final String amountDue = IveCoreUtilities.getFormattedMoney(
-        item.debitAmount ?? 0, item.digitsAfterDecimal, item.currencySymbol);
+      item.debitAmount ?? 0,
+      item.digitsAfterDecimal,
+      item.currencySymbol,
+    );
 
     final String creditAmount = IveCoreUtilities.getFormattedMoney(
-        item.creditAmount ?? 0, item.digitsAfterDecimal, item.currencySymbol);
+      item.creditAmount ?? 0,
+      item.digitsAfterDecimal,
+      item.currencySymbol,
+    );
 
     final String creditAvailable = IveCoreUtilities.getFormattedMoney(
-        item.creditAvailable ?? 0,
-        item.digitsAfterDecimal,
-        item.currencySymbol);
+      item.creditAvailable ?? 0,
+      item.digitsAfterDecimal,
+      item.currencySymbol,
+    );
 
     final String extrasPrice = IveCoreUtilities.getFormattedMoney(
-        item.extrasPrice ?? 0, item.digitsAfterDecimal, item.currencySymbol);
+      item.extrasPrice ?? 0,
+      item.digitsAfterDecimal,
+      item.currencySymbol,
+    );
 
     return Container(
       margin: const EdgeInsets.only(left: 5, top: 5, bottom: 5),
@@ -65,41 +76,44 @@ class UserEventListItem extends StatelessWidget {
             item.isUpdating
                 ? Icon(delayIcon, color: hc_blue, size: 35.0)
                 : item.attendenceState < attendenceAtHash.value
-                    ? Icon(FontAwesome.times_circle, color: hc_red, size: 35.0)
-                    : item.isHare == isHareNo.value
-                        ? const Icon(FontAwesome.check_circle,
-                            color: Colors.green, size: 35.0)
-                        : const Padding(
-                            padding: EdgeInsets.only(left: 2.5, right: 2.5),
-                            child: ImageIcon(
-                                AssetImage('images/icons/hare_icon.png'),
-                                color: Colors.purple,
-                                size: 30.0),
-                          ),
+                ? Icon(FontAwesome.times_circle, color: hc_red, size: 35.0)
+                : item.isHare == isHareNo.value
+                ? const Icon(
+                  FontAwesome.check_circle,
+                  color: Colors.green,
+                  size: 35.0,
+                )
+                : const Padding(
+                  padding: EdgeInsets.only(left: 2.5, right: 2.5),
+                  child: ImageIcon(
+                    AssetImage('images/icons/hare_icon.png'),
+                    color: Colors.purple,
+                    size: 30.0,
+                  ),
+                ),
             if (showCountry) ...<Widget>[
               Padding(
-                  padding: const EdgeInsets.only(left: 5.0),
-                  child: Image.asset(
-                    'images/flags/${item.flagFile}',
-                    height: 28,
-                    width: 28,
-                  )),
+                padding: const EdgeInsets.only(left: 5.0),
+                child: Image.asset(
+                  'images/flags/${item.flagFile}',
+                  height: 28,
+                  width: 28,
+                ),
+              ),
             ],
             if (showKennel) ...<Widget>[
               Padding(
-                  padding: const EdgeInsets.only(left: 5.0),
-                  child: KennelLogo(
-                    kennelLogoUrl: item.kennelLogo,
-                    kennelShortName: item.kennelShortName,
-                    logoHeight: 60,
-                  )),
+                padding: const EdgeInsets.only(left: 5.0),
+                child: KennelLogo(
+                  kennelLogoUrl: item.kennelLogo,
+                  kennelShortName: item.kennelShortName,
+                  logoHeight: 60,
+                ),
+              ),
             ],
             const Padding(
               padding: EdgeInsets.only(left: 7.0, right: 3.0),
-              child: VerticalDivider(
-                thickness: 2.0,
-                width: 2.0,
-              ),
+              child: VerticalDivider(thickness: 2.0, width: 2.0),
             ),
             Expanded(
               child: Padding(
@@ -113,7 +127,8 @@ class UserEventListItem extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: ts_titleMediumCondensedBlack.copyWith(
-                          color: Colors.black87),
+                        color: Colors.black87,
+                      ),
                       textAlign: TextAlign.left,
                     ),
                     Text(
@@ -123,34 +138,37 @@ class UserEventListItem extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: ts_titleMediumCondensedBlack.copyWith(
-                          color: Colors.black87),
+                        color: Colors.black87,
+                      ),
                       textAlign: TextAlign.left,
                     ),
                     item.attendenceState < attendenceAtHash.value
                         ? Container()
                         : Row(
-                            children: <Widget>[
-                              Text(
-                                'My ${item.kennelShortName} run #${(item.totalRunsThisKennel ?? 0) + (historicalTotalRunCount)}',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: ts_titleMediumCondensedBlack.copyWith(
-                                    color: Colors.green.shade800),
-                                textAlign: TextAlign.left,
+                          children: <Widget>[
+                            Text(
+                              'My ${item.kennelShortName} run #${(item.totalRunsThisKennel ?? 0) + (historicalTotalRunCount)}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: ts_titleMediumCondensedBlack.copyWith(
+                                color: Colors.green.shade800,
                               ),
-                              item.isHare == isHareNo.value
-                                  ? Container()
-                                  : Text(
-                                      ' and #${(item.totalHaringThisKennel ?? 0) + (historicalHaringCount)} time haring',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style:
-                                          ts_titleMediumCondensedBlack.copyWith(
-                                              color: Colors.purple.shade800),
-                                      textAlign: TextAlign.left,
-                                    ),
-                            ],
-                          ),
+                              textAlign: TextAlign.left,
+                            ),
+                            item.isHare == isHareNo.value
+                                ? Container()
+                                : Text(
+                                  ' and #${(item.totalHaringThisKennel ?? 0) + (historicalHaringCount)} time haring',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: ts_titleMediumCondensedBlack.copyWith(
+                                    color: Colors.purple.shade800,
+                                  ),
+                                  textAlign: TextAlign.left,
+                                ),
+                          ],
+                        ),
+
                     // Container(
                     //   //padding: const EdgeInsets.only(top: 15.0, bottom: 10.0),
                     //   margin: const EdgeInsets.only(top: 7.0, bottom: 7.0),
@@ -158,17 +176,19 @@ class UserEventListItem extends StatelessWidget {
                     //   height: 1.0,
                     //   color: Colors.grey[800],
                     // ),
-
                     if ((item.doPayForExtras ?? 0) != 0) ...<Widget>[
                       const SizedBox(height: 5.0),
                       Center(
                         child: Text(
-                            (item.extrasDescription ?? 'Extra charge: ') +
-                                extrasPrice,
-                            style: netPayment == 0
-                                ? ts_mediumBlack.copyWith(color: paymentColor)
-                                : ts_mediumBlackBold.copyWith(
-                                    color: paymentColor)),
+                          (item.extrasDescription ?? 'Extra charge: ') +
+                              extrasPrice,
+                          style:
+                              netPayment == 0
+                                  ? ts_mediumBlack.copyWith(color: paymentColor)
+                                  : ts_mediumBlackBold.copyWith(
+                                    color: paymentColor,
+                                  ),
+                        ),
                       ),
                     ],
 
@@ -181,18 +201,28 @@ class UserEventListItem extends StatelessWidget {
                             flex: 33,
                             child: Column(
                               children: [
-                                Text('Run fee',
-                                    style: netPayment == 0
-                                        ? ts_smallTextBlackDemiBold.copyWith(
-                                            color: paymentColor)
-                                        : ts_smallTextBlackBold.copyWith(
-                                            color: paymentColor)),
-                                Text(amountDue,
-                                    style: netPayment == 0
-                                        ? ts_smallTextBlackDemiBold.copyWith(
-                                            color: paymentColor)
-                                        : ts_smallTextBlackBold.copyWith(
-                                            color: paymentColor)),
+                                Text(
+                                  'Run fee',
+                                  style:
+                                      netPayment == 0
+                                          ? ts_smallTextBlackDemiBold.copyWith(
+                                            color: paymentColor,
+                                          )
+                                          : ts_smallTextBlackBold.copyWith(
+                                            color: paymentColor,
+                                          ),
+                                ),
+                                Text(
+                                  amountDue,
+                                  style:
+                                      netPayment == 0
+                                          ? ts_smallTextBlackDemiBold.copyWith(
+                                            color: paymentColor,
+                                          )
+                                          : ts_smallTextBlackBold.copyWith(
+                                            color: paymentColor,
+                                          ),
+                                ),
                               ],
                             ),
                           ),
@@ -202,19 +232,25 @@ class UserEventListItem extends StatelessWidget {
                               children: <Widget>[
                                 Text(
                                   creditWasUsed ? 'From credit' : 'Paid',
-                                  style: netPayment == 0
-                                      ? ts_smallTextBlackDemiBold.copyWith(
-                                          color: paymentColor)
-                                      : ts_smallTextBlackBold.copyWith(
-                                          color: paymentColor),
+                                  style:
+                                      netPayment == 0
+                                          ? ts_smallTextBlackDemiBold.copyWith(
+                                            color: paymentColor,
+                                          )
+                                          : ts_smallTextBlackBold.copyWith(
+                                            color: paymentColor,
+                                          ),
                                 ),
                                 Text(
                                   creditWasUsed ? amountDue : creditAmount,
-                                  style: netPayment == 0
-                                      ? ts_smallTextBlackDemiBold.copyWith(
-                                          color: paymentColor)
-                                      : ts_smallTextBlackBold.copyWith(
-                                          color: paymentColor),
+                                  style:
+                                      netPayment == 0
+                                          ? ts_smallTextBlackDemiBold.copyWith(
+                                            color: paymentColor,
+                                          )
+                                          : ts_smallTextBlackBold.copyWith(
+                                            color: paymentColor,
+                                          ),
                                 ),
                               ],
                             ),
@@ -225,11 +261,14 @@ class UserEventListItem extends StatelessWidget {
                               children: [
                                 Text(
                                   'Credit left',
-                                  style: netPayment == 0
-                                      ? ts_smallTextBlackDemiBold.copyWith(
-                                          color: creditAvailableColor)
-                                      : ts_smallTextBlackBold.copyWith(
-                                          color: creditAvailableColor),
+                                  style:
+                                      netPayment == 0
+                                          ? ts_smallTextBlackDemiBold.copyWith(
+                                            color: creditAvailableColor,
+                                          )
+                                          : ts_smallTextBlackBold.copyWith(
+                                            color: creditAvailableColor,
+                                          ),
                                 ),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -238,41 +277,48 @@ class UserEventListItem extends StatelessWidget {
                                     if (netPayment != 0) ...<Widget>[
                                       Padding(
                                         padding: const EdgeInsets.only(
-                                            left: 0.0, bottom: 2.0, right: 3.0),
+                                          left: 0.0,
+                                          bottom: 2.0,
+                                          right: 3.0,
+                                        ),
                                         child: SizedBox(
-                                            child: netPayment > 0
-                                                ? Icon(
+                                          child:
+                                              netPayment > 0
+                                                  ? Icon(
                                                     Fontisto.caret_up,
                                                     color:
                                                         Colors.green.shade800,
                                                     size: 12.0,
                                                   )
-                                                : Icon(
+                                                  : Icon(
                                                     Fontisto.caret_down,
                                                     color: hc_red,
                                                     size: 12.0,
-                                                  )),
+                                                  ),
+                                        ),
                                       ),
                                     ],
                                     Text(
                                       creditAvailable,
-                                      style: netPayment == 0
-                                          ? ts_smallTextBlackDemiBold.copyWith(
-                                              color: creditAvailableColor)
-                                          : ts_smallTextBlackBold.copyWith(
-                                              color: creditAvailableColor),
+                                      style:
+                                          netPayment == 0
+                                              ? ts_smallTextBlackDemiBold
+                                                  .copyWith(
+                                                    color: creditAvailableColor,
+                                                  )
+                                              : ts_smallTextBlackBold.copyWith(
+                                                color: creditAvailableColor,
+                                              ),
                                     ),
                                     if (netPayment != 0) ...<Widget>[
-                                      const SizedBox(width: 3.0)
+                                      const SizedBox(width: 3.0),
                                     ],
                                   ],
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(
-                            width: 40.0,
-                          ),
+                          const SizedBox(width: 40.0),
                         ],
                       ),
                     ],
@@ -280,7 +326,7 @@ class UserEventListItem extends StatelessWidget {
                 ),
               ),
             ),
-            if ((G0<AppModel>().connectionStatus ==
+            if ((appModel.connectionStatus ==
                     EnumConnectionStatus2.connected) &&
                 (item.canEditRunAttendence != 0)) ...<Widget>[
               IconButton(
@@ -301,7 +347,7 @@ class UserEventListItem extends StatelessWidget {
 
   Future<void> _showRunAttendencePopup(BuildContext context) async {
     if (Connection2.checkForConnection(
-      G0<AppModel>().connectionStatus,
+      appModel.connectionStatus,
       message:
           'Setting run options is not available in offline mode. Please connect to the Internet.',
     )) {
@@ -310,39 +356,54 @@ class UserEventListItem extends StatelessWidget {
           'title': 'I was at this Hash',
           'icon': <Widget>[
             Container(
-                height: 30,
-                width: 30,
-                decoration: const BoxDecoration(
-                    color: Colors.white, shape: BoxShape.circle)),
-            const Icon(FontAwesome.check_circle,
-                color: Colors.green, size: 28.0),
+              height: 30,
+              width: 30,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const Icon(
+              FontAwesome.check_circle,
+              color: Colors.green,
+              size: 28.0,
+            ),
           ],
-          'returnValue': 1
+          'returnValue': 1,
         },
         <String, dynamic>{
           'title': 'I was not at this Hash',
           'icon': <Widget>[
             Container(
-                height: 30,
-                width: 30,
-                decoration: const BoxDecoration(
-                    color: Colors.white, shape: BoxShape.circle)),
+              height: 30,
+              width: 30,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+            ),
             Icon(FontAwesome.times_circle, color: hc_red, size: 28.0),
           ],
-          'returnValue': 0
+          'returnValue': 0,
         },
         <String, dynamic>{
           'title': 'I hared this Hash',
           'icon': <Widget>[
             Container(
-                height: 30,
-                width: 30,
-                decoration: const BoxDecoration(
-                    color: Colors.white, shape: BoxShape.circle)),
-            const ImageIcon(AssetImage('images/icons/hare_icon.png'),
-                color: Colors.purple, size: 24.0),
+              height: 30,
+              width: 30,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const ImageIcon(
+              AssetImage('images/icons/hare_icon.png'),
+              color: Colors.purple,
+              size: 24.0,
+            ),
           ],
-          'returnValue': 2
+          'returnValue': 2,
         },
       ];
 
@@ -355,11 +416,12 @@ class UserEventListItem extends StatelessWidget {
       );
 
       final int retVal = await showDialog<dynamic>(
-          context: context,
-          barrierDismissible: false, // user must tap button!
-          builder: (BuildContext context) {
-            return popup;
-          });
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return popup;
+        },
+      );
 
       switch (retVal) {
         case 0:

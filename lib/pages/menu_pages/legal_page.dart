@@ -206,7 +206,7 @@ class LegalPageContentState extends State<LegalPageContent> {
                         right: 20,
                       ),
                       child: Text(
-                        '(5) You acknowledge You will not be able to access and Use certain functionalities of the App unless You have internet access through a GPRS, 3G or Wi-Fi G0<AppModel>().connectionStatus mobile device. All traffic charges or access charges incurred due to the Use of the App are subject to Your agreed terms with your mobile network provider.',
+                        '(5) You acknowledge You will not be able to access and Use certain functionalities of the App unless You have internet access through a GPRS, 3G or Wi-Fi appModel.connectionStatus mobile device. All traffic charges or access charges incurred due to the Use of the App are subject to Your agreed terms with your mobile network provider.',
                         style: ts_medium,
                         textAlign: TextAlign.justify,
                       ),

@@ -140,7 +140,7 @@ class PaymentsService {
   ) async {
     List<dynamic> results = <dynamic>[];
 
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
       return results;
       // TODO(James): fix this so we can return a bool
       //return false;
@@ -157,38 +157,36 @@ class PaymentsService {
       paramString: deviceSecret,
     );
 
-    final int hasherEventMapLastUpdated = await G0<TableModel>().baseService
+    final int hasherEventMapLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(
-          G0<Database>(),
-          G0<TableModel>().hasherEventMapTableHelper,
-          G0<TableModel>().hasherEventMapTableHelper.getTableName(
+          database,
+          tableModel.hasherEventMapTableHelper,
+          tableModel.hasherEventMapTableHelper.getTableName(
             AppDomainType.event,
           ),
-          G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
+          tableModel.hasherEventMapTableHelper.colUpdatedAtValue,
         );
     final DateTime hasherEventMapUpdatedAfter =
         DateTime.fromMicrosecondsSinceEpoch(hasherEventMapLastUpdated + 1);
 
-    final int hasherKennelMapLastUpdated = await G0<TableModel>().baseService
+    final int hasherKennelMapLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(
-          G0<Database>(),
-          G0<TableModel>().hasherKennelMapTableHelper,
-          G0<TableModel>().hasherKennelMapTableHelper.getTableName(
+          database,
+          tableModel.hasherKennelMapTableHelper,
+          tableModel.hasherKennelMapTableHelper.getTableName(
             AppDomainType.event,
           ),
-          G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
+          tableModel.hasherKennelMapTableHelper.colUpdatedAtValue,
         );
     final DateTime hasherKennelMapUpdatedAfter =
         DateTime.fromMicrosecondsSinceEpoch(hasherKennelMapLastUpdated + 1);
 
-    final int paymentsLastUpdated = await G0<TableModel>().baseService
+    final int paymentsLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(
-          G0<Database>(),
-          G0<TableModel>().paymentsTableHelper,
-          G0<TableModel>().paymentsTableHelper.getTableName(
-            AppDomainType.event,
-          ),
-          G0<TableModel>().paymentsTableHelper.colUpdatedAtValue,
+          database,
+          tableModel.paymentsTableHelper,
+          tableModel.paymentsTableHelper.getTableName(AppDomainType.event),
+          tableModel.paymentsTableHelper.colUpdatedAtValue,
         );
     final DateTime paymentsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
       paymentsLastUpdated + 1,
@@ -213,7 +211,7 @@ class PaymentsService {
     final String responseBody = await ServiceCommon.sendHttpPostV2(body);
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
-      results = await G0<TableModel>().syncEventAdminService
+      results = await tableModel.syncEventAdminService
           .updateSqlTablesWithResultsFromBackendApiCall(responseBody);
     }
     return results;
@@ -237,7 +235,7 @@ class PaymentsService {
   }) async {
     List<dynamic> results = <dynamic>[];
 
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
       return results;
       // TODO(James): fix this so we can return a bool
       //return false;
@@ -265,36 +263,32 @@ class PaymentsService {
       paramString: tokenParameterString,
     );
 
-    final int hasherEventMapLastUpdated = await G0<TableModel>().baseService
+    final int hasherEventMapLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(
-          G0<Database>(),
-          G0<TableModel>().hasherEventMapTableHelper,
-          G0<TableModel>().hasherEventMapTableHelper.getTableName(
-            appDomainType,
-          ),
-          G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
+          database,
+          tableModel.hasherEventMapTableHelper,
+          tableModel.hasherEventMapTableHelper.getTableName(appDomainType),
+          tableModel.hasherEventMapTableHelper.colUpdatedAtValue,
         );
     final DateTime hasherEventMapUpdatedAfter =
         DateTime.fromMicrosecondsSinceEpoch(hasherEventMapLastUpdated + 1);
 
-    final int hasherKennelMapLastUpdated = await G0<TableModel>().baseService
+    final int hasherKennelMapLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(
-          G0<Database>(),
-          G0<TableModel>().hasherKennelMapTableHelper,
-          G0<TableModel>().hasherKennelMapTableHelper.getTableName(
-            appDomainType,
-          ),
-          G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
+          database,
+          tableModel.hasherKennelMapTableHelper,
+          tableModel.hasherKennelMapTableHelper.getTableName(appDomainType),
+          tableModel.hasherKennelMapTableHelper.colUpdatedAtValue,
         );
     final DateTime hasherKennelMapUpdatedAfter =
         DateTime.fromMicrosecondsSinceEpoch(hasherKennelMapLastUpdated + 1);
 
-    final int paymentsLastUpdated = await G0<TableModel>().baseService
+    final int paymentsLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(
-          G0<Database>(),
-          G0<TableModel>().paymentsTableHelper,
-          G0<TableModel>().paymentsTableHelper.getTableName(appDomainType),
-          G0<TableModel>().paymentsTableHelper.colUpdatedAtValue,
+          database,
+          tableModel.paymentsTableHelper,
+          tableModel.paymentsTableHelper.getTableName(appDomainType),
+          tableModel.paymentsTableHelper.colUpdatedAtValue,
         );
     final DateTime paymentsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
       paymentsLastUpdated + 1,
@@ -340,10 +334,10 @@ class PaymentsService {
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       if (appDomainType == AppDomainType.event) {
-        results = await G0<TableModel>().syncEventAdminService
+        results = await tableModel.syncEventAdminService
             .updateSqlTablesWithResultsFromBackendApiCall(responseBody);
       } else {
-        results = await G0<TableModel>().syncUserDataService
+        results = await tableModel.syncUserDataService
             .updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
       }
     }

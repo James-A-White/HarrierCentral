@@ -271,7 +271,7 @@ class KennelListItemState extends State<KennelListItem> {
                             style: ts_regularMediumBlack,
                           ),
                         ],
-                        if ((G0<AppModel>().hasLocationPermissions) &&
+                        if ((appModel.hasLocationPermissions) &&
                             (widget.kennelItem.extensions.distToKennel !=
                                 null)) ...<Widget>[
                           Text(
@@ -324,7 +324,7 @@ class KennelListItemState extends State<KennelListItem> {
                     ),
                   ),
                 ),
-                if (G0<AppModel>().connectionStatus ==
+                if (appModel.connectionStatus ==
                     EnumConnectionStatus2.connected) ...<Widget>[
                   IconButton(
                     icon: const Icon(MaterialCommunityIcons.dots_vertical),
@@ -346,7 +346,7 @@ class KennelListItemState extends State<KennelListItem> {
 
   Future<void> _showFollowingPopup() async {
     if (Connection2.checkForConnection(
-      G0<AppModel>().connectionStatus,
+      appModel.connectionStatus,
       message:
           'Follwing kennels is not available in offline mode. Please connect to the Internet to change the following status for a kennel.',
     )) {
@@ -599,7 +599,7 @@ class KennelListItemState extends State<KennelListItem> {
 
     if (!mounted) return;
     if (Connection2.checkForConnection(
-      G0<AppModel>().connectionStatus,
+      appModel.connectionStatus,
       message:
           'Setting Kennel notifications is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.',
     )) {
@@ -607,7 +607,7 @@ class KennelListItemState extends State<KennelListItem> {
       setState(() {});
 
       final String userId = getStringPref(StringPrefsEnum.userId)!;
-      await G0<TableModel>().hasherKennelMapService
+      await tableModel.hasherKennelMapService
           .setEmailAndNotificationPreferences(
             widget.kennelItem.kennel.kennelId,
             userId,
@@ -754,7 +754,7 @@ class KennelListItemState extends State<KennelListItem> {
     ).then((dynamic retVal) async {
       if ((retVal == emailAlertsOn) || (retVal == emailAlertsOff)) {
         if (Connection2.checkForConnection(
-          G0<AppModel>().connectionStatus,
+          appModel.connectionStatus,
           message:
               'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.',
         )) {
@@ -762,7 +762,7 @@ class KennelListItemState extends State<KennelListItem> {
           setState(() {});
 
           final String userId = getStringPref(StringPrefsEnum.userId)!;
-          await G0<TableModel>().hasherKennelMapService
+          await tableModel.hasherKennelMapService
               .setEmailAndNotificationPreferences(
                 widget.kennelItem.kennel.kennelId,
                 userId,

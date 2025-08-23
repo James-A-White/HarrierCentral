@@ -17,7 +17,7 @@ class AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
   @override
   Widget build(BuildContext context) {
     return TextScaleFactorClamper(
-      textScaleFactor: G0<DeviceInfo>().textClamp25,
+      textScaleFactor: deviceInfo.textClamp25,
       child: AlertDialog(
         title: Text('Add Visitor or Virgin', style: ts_alertDialogTitle),
         content: Column(
@@ -81,7 +81,7 @@ class AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
               child: const Text(
                 'Cancel',
                 textAlign: TextAlign.center,
-                //textScaleFactor: G0<DeviceInfo>().textClamp15,
+                //textScaleFactor: deviceInfo.textClamp15,
               ),
               onPressed: () {
                 Navigator.of(
@@ -101,7 +101,7 @@ class AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
               child: const Text(
                 'Add\r\nVisitor',
                 textAlign: TextAlign.center,
-                //textScaleFactor: G0<DeviceInfo>().textClamp15,
+                //textScaleFactor: deviceInfo.textClamp15,
               ),
               onPressed: () {
                 Navigator.of(context).pop(<String, String>{
@@ -124,7 +124,7 @@ class AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
               child: const Text(
                 'Add\r\nVirgin',
                 textAlign: TextAlign.center,
-                //textScaleFactor: G0<DeviceInfo>().textClamp15,
+                //textScaleFactor: deviceInfo.textClamp15,
               ),
               onPressed: () {
                 Navigator.of(context).pop(<String, String>{

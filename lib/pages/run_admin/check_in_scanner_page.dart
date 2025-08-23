@@ -113,7 +113,7 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
                       ),
                     ],
                     Expanded(
-                      //padding: EdgeInsets.all(10 * (G0<DeviceInfo>().deviceMaxScaleFactor * 1.5)),
+                      //padding: EdgeInsets.all(10 * (deviceInfo.deviceMaxScaleFactor * 1.5)),
                       child: Stack(
                         alignment: AlignmentDirectional.center,
                         children: <Widget>[
@@ -362,8 +362,7 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
                   ? attendenceAtHash.value
                   : attendenceOnIn.value;
 
-          final List<dynamic> adHocData = await G0<TableModel>()
-              .hasherEventMapService
+          final List<dynamic> adHocData = await tableModel.hasherEventMapService
               .setEventAttendence(
                 widget.eventAggregate.event.eventId,
                 null, // result['hasher'].hasherId,

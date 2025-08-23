@@ -17,7 +17,8 @@ class AddEditEventsPage extends StatefulWidget {
   AddEditEventsPageState createState() => AddEditEventsPageState();
 }
 
-class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProviderStateMixin {
+class AddEditEventsPageState extends State<AddEditEventsPage>
+    with TickerProviderStateMixin {
   AddEditEventsPageState();
 
   @override
@@ -49,7 +50,10 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
       setState(() {});
     });
     _refreshSqlTablesFromBackend(true).then((void _) {
-      _refreshList(selectedDay: _focusedDay.value, focusedDay: _focusedDay.value);
+      _refreshList(
+        selectedDay: _focusedDay.value,
+        focusedDay: _focusedDay.value,
+      );
       Future<void>.delayed(const Duration(milliseconds: 500)).then((void _) {
         setState(() {
           // force the buttons on the calendar to be drawn
@@ -77,10 +81,15 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
   late AnimationController _animationController;
 
   final List<LiteEventModel> _allEvents = <LiteEventModel>[];
-  List<Map<String, dynamic>> _publishedRunCountSqlResult = <Map<String, dynamic>>[];
-  final ValueNotifier<List<LiteEventModel>> _selectedEvents = ValueNotifier<List<LiteEventModel>>(<LiteEventModel>[]);
-  final Map<DateTime, List<LiteEventModel>> _calendarEvents = <DateTime, List<LiteEventModel>>{};
-  Future<DateTime> _dateBeingUpdated = Future<DateTime>.value(_dateTimeUnassigned);
+  List<Map<String, dynamic>> _publishedRunCountSqlResult =
+      <Map<String, dynamic>>[];
+  final ValueNotifier<List<LiteEventModel>> _selectedEvents =
+      ValueNotifier<List<LiteEventModel>>(<LiteEventModel>[]);
+  final Map<DateTime, List<LiteEventModel>> _calendarEvents =
+      <DateTime, List<LiteEventModel>>{};
+  Future<DateTime> _dateBeingUpdated = Future<DateTime>.value(
+    _dateTimeUnassigned,
+  );
 
   //PageController _pageController;
 
@@ -93,11 +102,11 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
       });
     }
 
-    await G0<TableModel>().syncUserDataService.updateFromBackend(
-          SyncUserDataService.flagNarrowEventsTable,
-          true,
-          debugText: 'filter_events_page: Events',
-        );
+    await tableModel.syncUserDataService.updateFromBackend(
+      SyncUserDataService.flagNarrowEventsTable,
+      true,
+      debugText: 'filter_events_page: Events',
+    );
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('Events data synchronized $resultStr');
 
@@ -135,24 +144,26 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
   // }
 
   Future<void> _refreshEventFromTables(bool forceRefresh) async {
-    final String sortOrder = widget.pageType == FilterEventsPageType.future ? 'ASC' : 'DESC';
-    final String dateComparer = widget.pageType == FilterEventsPageType.future ? '>=' : '<=';
+    final String sortOrder =
+        widget.pageType == FilterEventsPageType.future ? 'ASC' : 'DESC';
+    final String dateComparer =
+        widget.pageType == FilterEventsPageType.future ? '>=' : '<=';
     //final String dateOffset = widget.pageType == FilterEventsPageType.future ? '-5 minutes' : '+5 minutes';
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
 
-    //       (SELECT COUNT(*) FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} evt2 where kennelId = "${widget.kennel.kennel.kennelId}" AND isVisible = 1) as publishedRunCount//
+    //       (SELECT COUNT(*) FROM ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} evt2 where kennelId = "${widget.kennel.kennel.kennelId}" AND isVisible = 1) as publishedRunCount//
 
     try {
       final String sql = '''
 
           SELECT COUNT(*) as publishedRunCount  
-          FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} evt 
+          FROM ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} evt 
           WHERE kennelId = "${widget.kennel.kennel.kennelId}" AND isVisible = 1
           AND date(datetime(evt.eventStartDatetime)) $dateComparer date(datetime('now'))
           ''';
 
-      _publishedRunCountSqlResult = await G0<Database>().rawQuery(sql);
+      _publishedRunCountSqlResult = await database.rawQuery(sql);
     } catch (e) {
       //print(e);
     }
@@ -161,26 +172,27 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
       final String sql = '''
 
           SELECT
-            evt.${G0<TableModel>().eventsTableHelper.colEventId},
-            evt.${G0<TableModel>().eventsTableHelper.colIsVisible},
-            evt.${G0<TableModel>().eventsTableHelper.colIsCountedRun},
-            evt.${G0<TableModel>().eventsTableHelper.colAbsoluteEventNumber},
-            evt.${G0<TableModel>().eventsTableHelper.colEventFacebookId},
-            evt.${G0<TableModel>().eventsTableHelper.colEventName},
-            evt.${G0<TableModel>().eventsTableHelper.colEventNumber},
-            evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime},
-            evt.${G0<TableModel>().eventsTableHelper.colEventInboundIntegrationId},
-            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colAppAccessFlags},
-            evt.${G0<TableModel>().eventsTableHelper.colCanEditRunAttendence}
-          FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} evt
-          INNER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelId} = "${widget.kennel.kennel.kennelId}" and hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = "$userId"
-          WHERE evt.${G0<TableModel>().eventsTableHelper.colKennelId} = "${widget.kennel.kennel.kennelId}"
-          AND date(datetime(evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime})) $dateComparer date(datetime('now'))
-          ORDER BY evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} $sortOrder, evt.${G0<TableModel>().eventsTableHelper.colEventNumber} $sortOrder
+            evt.${tableModel.eventsTableHelper.colEventId},
+            evt.${tableModel.eventsTableHelper.colIsVisible},
+            evt.${tableModel.eventsTableHelper.colIsCountedRun},
+            evt.${tableModel.eventsTableHelper.colAbsoluteEventNumber},
+            evt.${tableModel.eventsTableHelper.colEventFacebookId},
+            evt.${tableModel.eventsTableHelper.colEventName},
+            evt.${tableModel.eventsTableHelper.colEventNumber},
+            evt.${tableModel.eventsTableHelper.colEventStartDatetime},
+            evt.${tableModel.eventsTableHelper.colEventInboundIntegrationId},
+            hkm.${tableModel.hasherKennelMapTableHelper.colAppAccessFlags},
+            evt.${tableModel.eventsTableHelper.colCanEditRunAttendence}
+          FROM ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} evt
+          INNER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = "${widget.kennel.kennel.kennelId}" and hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = "$userId"
+          WHERE evt.${tableModel.eventsTableHelper.colKennelId} = "${widget.kennel.kennel.kennelId}"
+          AND date(datetime(evt.${tableModel.eventsTableHelper.colEventStartDatetime})) $dateComparer date(datetime('now'))
+          ORDER BY evt.${tableModel.eventsTableHelper.colEventStartDatetime} $sortOrder, evt.${tableModel.eventsTableHelper.colEventNumber} $sortOrder
         
           ''';
 
-      final List<Map<String, dynamic>> allEventsSqlResult = await G0<Database>().rawQuery(sql);
+      final List<Map<String, dynamic>> allEventsSqlResult = await database
+          .rawQuery(sql);
 
       _calendarEvents.clear();
       _allEvents.clear();
@@ -189,7 +201,9 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
       }
 
       for (int i = 0; i < allEventsSqlResult.length; i++) {
-        final LiteEventModel event = LiteEventModel.fromJson(allEventsSqlResult[i]);
+        final LiteEventModel event = LiteEventModel.fromJson(
+          allEventsSqlResult[i],
+        );
         _allEvents.add(event);
         DateTime? eventDate = event.eventStartDatetime;
         eventDate = _toDateOnly(eventDate);
@@ -229,86 +243,90 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        resizeToAvoidBottomInset: false,
-        // floatingActionButton: SpeedDial(
-        //   // both default to 16
-        //   marginEnd: 18,
-        //   marginBottom: 30,
-        //   animatedIcon: AnimatedIcons.menu_close,
-        //   animatedIconTheme: const IconThemeData(size: 22.0),
-        //   // this is ignored if animatedIcon is non null
-        //   // child:const  Icon(Icons.add),
-        //   visible: true,
-        //   curve: Curves.bounceIn,
-        //   overlayColor: Colors.black,
-        //   overlayOpacity: 0.5,
-        //   onOpen: () => //print('OPENING DIAL'),
-        //   onClose: () => //print('DIAL CLOSED'),
-        //   tooltip: 'Speed Dial',
-        //   heroTag: 'speed-dial-hero-tag',
-        //   backgroundColor: Theme.of(context).accentColor,
-        //   foregroundColor: Colors.white,
-        //   elevation: 8.0,
-        //   shape: CircleBorder(),
-        //   children: <SpeedDialChild>[
-        //     SpeedDialChild(
-        //       child: const Icon(MaterialCommunityIcons.email),
-        //       backgroundColor: Colors.teal[800],
-        //       label: 'Email this kennel\'s run history',
-        //       labelStyle: const TextStyle(fontSize: 18.0),
-        //       onTap: () => {
-        //             model
-        //                 .sendRunCountReportByEmail(
-        //                     kennelId: widget.kennel.kennelId,
-        //                     kennelName: widget.kennel.kennelName)
-        //                 .then((Map<String, String> result) {
-        //               if (result['result']
-        //                   .toLowerCase()
-        //                   .startsWith('success')) {
-        //                 await Utilities.showAlert(
-        //                     context,
-        //                     'E-mail successfully sent',
-        //                     'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
-        //                     'OK');
-        //               }
-        //             })
-        //           },
-        //     ),
-        //     SpeedDialChild(
-        //       child: const Icon(MaterialCommunityIcons.email_plus),
-        //       backgroundColor: hc_blue,
-        //       label: 'Email all kennels run history',
-        //       labelStyle: const TextStyle(fontSize: 18.0),
-        //       onTap: () => {
-        //             model
-        //                 .sendRunCountReportByEmail(
-        //                     kennelId: GUID_EMPTY,
-        //                     kennelName: 'All of your Hash Kennels')
-        //                 .then((Map<String, String> result) {
-        //               if (result['result']
-        //                   .toLowerCase()
-        //                   .startsWith('success')) {
-        //                 await Utilities.showAlert(
-        //                     context,
-        //                     'E-mail successfully sent',
-        //                     'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
-        //                     'OK');
-        //               }
-        //             })
-        //           },
-        //     ),
-        //   ],
-        // ),
-        appBar: AppBar(
-          centerTitle: true,
-          backgroundColor: themeAppBarBackground,
-          iconTheme: const IconThemeData(
-            color: Colors.white,
-            size: 28.0,
-          ),
-          title: Text('Events for ${widget.kennel.kennel.kennelShortName}', style: ts_appBarTitle),
+      resizeToAvoidBottomInset: false,
+      // floatingActionButton: SpeedDial(
+      //   // both default to 16
+      //   marginEnd: 18,
+      //   marginBottom: 30,
+      //   animatedIcon: AnimatedIcons.menu_close,
+      //   animatedIconTheme: const IconThemeData(size: 22.0),
+      //   // this is ignored if animatedIcon is non null
+      //   // child:const  Icon(Icons.add),
+      //   visible: true,
+      //   curve: Curves.bounceIn,
+      //   overlayColor: Colors.black,
+      //   overlayOpacity: 0.5,
+      //   onOpen: () => //print('OPENING DIAL'),
+      //   onClose: () => //print('DIAL CLOSED'),
+      //   tooltip: 'Speed Dial',
+      //   heroTag: 'speed-dial-hero-tag',
+      //   backgroundColor: Theme.of(context).accentColor,
+      //   foregroundColor: Colors.white,
+      //   elevation: 8.0,
+      //   shape: CircleBorder(),
+      //   children: <SpeedDialChild>[
+      //     SpeedDialChild(
+      //       child: const Icon(MaterialCommunityIcons.email),
+      //       backgroundColor: Colors.teal[800],
+      //       label: 'Email this kennel\'s run history',
+      //       labelStyle: const TextStyle(fontSize: 18.0),
+      //       onTap: () => {
+      //             model
+      //                 .sendRunCountReportByEmail(
+      //                     kennelId: widget.kennel.kennelId,
+      //                     kennelName: widget.kennel.kennelName)
+      //                 .then((Map<String, String> result) {
+      //               if (result['result']
+      //                   .toLowerCase()
+      //                   .startsWith('success')) {
+      //                 await Utilities.showAlert(
+      //                     context,
+      //                     'E-mail successfully sent',
+      //                     'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
+      //                     'OK');
+      //               }
+      //             })
+      //           },
+      //     ),
+      //     SpeedDialChild(
+      //       child: const Icon(MaterialCommunityIcons.email_plus),
+      //       backgroundColor: hc_blue,
+      //       label: 'Email all kennels run history',
+      //       labelStyle: const TextStyle(fontSize: 18.0),
+      //       onTap: () => {
+      //             model
+      //                 .sendRunCountReportByEmail(
+      //                     kennelId: GUID_EMPTY,
+      //                     kennelName: 'All of your Hash Kennels')
+      //                 .then((Map<String, String> result) {
+      //               if (result['result']
+      //                   .toLowerCase()
+      //                   .startsWith('success')) {
+      //                 await Utilities.showAlert(
+      //                     context,
+      //                     'E-mail successfully sent',
+      //                     'Your payment report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
+      //                     'OK');
+      //               }
+      //             })
+      //           },
+      //     ),
+      //   ],
+      // ),
+      appBar: AppBar(
+        centerTitle: true,
+        backgroundColor: themeAppBarBackground,
+        iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
+        title: Text(
+          'Events for ${widget.kennel.kennel.kennelShortName}',
+          style: ts_appBarTitle,
         ),
-        body: _isLoading ? const HcCircularProgressIndicator(key: Key('9844430132')) : _buildListView());
+      ),
+      body:
+          _isLoading
+              ? const HcCircularProgressIndicator(key: Key('9844430132'))
+              : _buildListView(),
+    );
   }
 
   Future<void> _handleRefresh() async {
@@ -316,11 +334,11 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
       _isLoading = true;
     });
 
-    await G0<TableModel>().syncUserDataService.updateFromBackend(
-          SyncUserDataService.flagNarrowEventsTable,
-          true,
-          debugText: 'filter_events_page: Events',
-        );
+    await tableModel.syncUserDataService.updateFromBackend(
+      SyncUserDataService.flagNarrowEventsTable,
+      true,
+      debugText: 'filter_events_page: Events',
+    );
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('Receipts data synchronized $resultStr');
     await _refreshEventFromTables(true);
@@ -336,116 +354,128 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
       decoration: Backgrounds.defaultHcBackgroundLight(),
       padding: const EdgeInsets.only(top: 0.0),
       child: RefreshIndicator(
-          onRefresh: _handleRefresh,
-          displacement: 130.0,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.max,
-            children: <Widget>[
-              Container(
-                decoration: const BoxDecoration(
-                  // border: new Border.all(width: 1.0, color: Colors.black),
-                  //shape: BoxShape.circle,
-                  color: Colors.white,
-                  boxShadow: <BoxShadow>[
-                    BoxShadow(
-                      color: Color.fromARGB(70, 0, 0, 0),
-                      offset: Offset(0.0, 6.0),
-                      blurRadius: 10.0,
-                    ),
-                  ],
-                ),
-                //color:Color.fromARGB(30, 0, 0, 0),
-                padding: const EdgeInsets.only(left: 5, top: 5, right: 0, bottom: 5),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    SizedBox(
-                      height: 75,
-                      child: KennelLogo(
-                        kennelId: widget.kennel.kennel.kennelId,
-                        kennelLogoUrl: widget.kennel.kennel.kennelLogo,
-                        kennelShortName: widget.kennel.kennel.kennelShortName,
-                        logoHeight: 75.0,
-                        rightPadding: 15.0,
-                      ),
-                    ),
-                    Expanded(
-                      flex: 1,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          AutoSizeText(
-                            widget.kennel.kennel.kennelName,
-                            //'Super fucking long text thats sure to overflow and more',
-                            //'999',
-                            overflow: TextOverflow.ellipsis,
-                            minFontSize: 18.0,
-                            maxLines: 1,
-                            style: ts_titleCondensedBlack,
-                            textAlign: TextAlign.left,
-                          ),
-                          AutoSizeText(
-                            widget.pageType == FilterEventsPageType.past ? 'Past run count: ${publishedRunCount.toString()}' : 'Future run count: ${publishedRunCount.toString()}',
-                            //'Super fucking long text thats sure to overflow and more',
-                            //'999',
-                            overflow: TextOverflow.ellipsis,
-                            minFontSize: 18.0,
-                            maxLines: 1,
-                            style: ts_titleCondensedBlack,
-                            textAlign: TextAlign.left,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                height: 55.0,
-                //padding: const EdgeInsets.only(top: 5),
-                decoration: BoxDecoration(
-                  // border: new Border.all(width: 1.0, color: Colors.black),
-                  //shape: BoxShape.circle,
-                  color: Colors.yellow.shade100,
-                  boxShadow: const <BoxShadow>[
-                    BoxShadow(
-                      color: Color.fromARGB(70, 0, 0, 0),
-                      offset: Offset(0.0, 6.0),
-                      blurRadius: 10.0,
-                    ),
-                  ],
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 1.0, right: 1.0),
-                  child: TabBar(
-                    labelStyle: ts_tabSelected,
-                    unselectedLabelStyle: ts_tabUnselected,
-                    isScrollable: false,
-                    unselectedLabelColor: Colors.black,
-                    labelColor: Colors.white,
-                    labelPadding: const EdgeInsets.only(top: 5, left: 20, right: 20),
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    indicator: BubbleTabIndicator(
-                      indicatorHeight: 35.0,
-                      indicatorColor: hc_red,
-                      tabBarIndicatorSize: TabBarIndicatorSize.tab,
-                      indicatorRadius: 20.0,
-                    ),
-                    tabs: _tabs,
-                    controller: _tabController,
+        onRefresh: _handleRefresh,
+        displacement: 130.0,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.max,
+          children: <Widget>[
+            Container(
+              decoration: const BoxDecoration(
+                // border: new Border.all(width: 1.0, color: Colors.black),
+                //shape: BoxShape.circle,
+                color: Colors.white,
+                boxShadow: <BoxShadow>[
+                  BoxShadow(
+                    color: Color.fromARGB(70, 0, 0, 0),
+                    offset: Offset(0.0, 6.0),
+                    blurRadius: 10.0,
                   ),
-                ),
+                ],
               ),
-              Expanded(
-                child: TabBarView(
+              //color:Color.fromARGB(30, 0, 0, 0),
+              padding: const EdgeInsets.only(
+                left: 5,
+                top: 5,
+                right: 0,
+                bottom: 5,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  SizedBox(
+                    height: 75,
+                    child: KennelLogo(
+                      kennelId: widget.kennel.kennel.kennelId,
+                      kennelLogoUrl: widget.kennel.kennel.kennelLogo,
+                      kennelShortName: widget.kennel.kennel.kennelShortName,
+                      logoHeight: 75.0,
+                      rightPadding: 15.0,
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        AutoSizeText(
+                          widget.kennel.kennel.kennelName,
+                          //'Super fucking long text thats sure to overflow and more',
+                          //'999',
+                          overflow: TextOverflow.ellipsis,
+                          minFontSize: 18.0,
+                          maxLines: 1,
+                          style: ts_titleCondensedBlack,
+                          textAlign: TextAlign.left,
+                        ),
+                        AutoSizeText(
+                          widget.pageType == FilterEventsPageType.past
+                              ? 'Past run count: ${publishedRunCount.toString()}'
+                              : 'Future run count: ${publishedRunCount.toString()}',
+                          //'Super fucking long text thats sure to overflow and more',
+                          //'999',
+                          overflow: TextOverflow.ellipsis,
+                          minFontSize: 18.0,
+                          maxLines: 1,
+                          style: ts_titleCondensedBlack,
+                          textAlign: TextAlign.left,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              height: 55.0,
+              //padding: const EdgeInsets.only(top: 5),
+              decoration: BoxDecoration(
+                // border: new Border.all(width: 1.0, color: Colors.black),
+                //shape: BoxShape.circle,
+                color: Colors.yellow.shade100,
+                boxShadow: const <BoxShadow>[
+                  BoxShadow(
+                    color: Color.fromARGB(70, 0, 0, 0),
+                    offset: Offset(0.0, 6.0),
+                    blurRadius: 10.0,
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.only(left: 1.0, right: 1.0),
+                child: TabBar(
+                  labelStyle: ts_tabSelected,
+                  unselectedLabelStyle: ts_tabUnselected,
+                  isScrollable: false,
+                  unselectedLabelColor: Colors.black,
+                  labelColor: Colors.white,
+                  labelPadding: const EdgeInsets.only(
+                    top: 5,
+                    left: 20,
+                    right: 20,
+                  ),
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  indicator: BubbleTabIndicator(
+                    indicatorHeight: 35.0,
+                    indicatorColor: hc_red,
+                    tabBarIndicatorSize: TabBarIndicatorSize.tab,
+                    indicatorRadius: 20.0,
+                  ),
+                  tabs: _tabs,
                   controller: _tabController,
-                  children: <Widget>[_calendarView(), _listView(_allEvents)],
                 ),
               ),
-            ],
-          )),
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: <Widget>[_calendarView(), _listView(_allEvents)],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -455,21 +485,38 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
         ElevatedButton(
           child: Text('Edit run', style: ts_button),
           onPressed: () async {
-            final LiteEventModel? rawEvent = _calendarEvents[_toDateOnly(_selectedDay.value)]?[0];
+            final LiteEventModel? rawEvent =
+                _calendarEvents[_toDateOnly(_selectedDay.value)]?[0];
             if (rawEvent != null) {
-              RunAdminAggregate? rda = await CommonQueries.getEventAdminInfoFromLocalCache(rawEvent.eventId, getStringPref(StringPrefsEnum.userId)!);
+              RunAdminAggregate? rda =
+                  await CommonQueries.getEventAdminInfoFromLocalCache(
+                    rawEvent.eventId,
+                    getStringPref(StringPrefsEnum.userId)!,
+                  );
 
               if (rda != null) {
                 if (!mounted) return;
                 await Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) => EditRunDetailsPage(false, rda!, (String eventId) async {
-                              final String userId = getStringPref(StringPrefsEnum.userId)!;
-                              rda = await CommonQueries.getEventAdminInfoFromLocalCache(eventId, userId);
-                              _isLoading = false;
-                              return rda;
-                            })));
+                  context,
+                  MaterialPageRoute<dynamic>(
+                    builder:
+                        (
+                          BuildContext context,
+                        ) => EditRunDetailsPage(false, rda!, (
+                          String eventId,
+                        ) async {
+                          final String userId =
+                              getStringPref(StringPrefsEnum.userId)!;
+                          rda =
+                              await CommonQueries.getEventAdminInfoFromLocalCache(
+                                eventId,
+                                userId,
+                              );
+                          _isLoading = false;
+                          return rda;
+                        }),
+                  ),
+                );
                 await _refreshSqlTablesFromBackend(true);
               }
             }
@@ -493,7 +540,11 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
             ),
           ),
           onPressed: () async {
-            RunAdminAggregate? rda = await CommonQueries.getNewEvent(widget.kennel.kennel.kennelId, getStringPref(StringPrefsEnum.userId)!, _selectedDay.value);
+            RunAdminAggregate? rda = await CommonQueries.getNewEvent(
+              widget.kennel.kennel.kennelId,
+              getStringPref(StringPrefsEnum.userId)!,
+              _selectedDay.value,
+            );
             //RunAdminAggregate rda = null;
 
             if (rda != null) {
@@ -501,16 +552,20 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
               await Navigator.push<dynamic>(
                 context,
                 MaterialPageRoute<dynamic>(
-                  builder: (BuildContext context) => EditRunDetailsPage(
-                    true,
-                    rda!,
-                    (String eventId) async {
-                      final String userId = getStringPref(StringPrefsEnum.userId)!;
-                      rda = await CommonQueries.getEventAdminInfoFromLocalCache(eventId, userId);
-                      _isLoading = false;
-                      return rda;
-                    },
-                  ),
+                  builder:
+                      (BuildContext context) => EditRunDetailsPage(true, rda!, (
+                        String eventId,
+                      ) async {
+                        final String userId =
+                            getStringPref(StringPrefsEnum.userId)!;
+                        rda =
+                            await CommonQueries.getEventAdminInfoFromLocalCache(
+                              eventId,
+                              userId,
+                            );
+                        _isLoading = false;
+                        return rda;
+                      }),
                 ),
               );
             }
@@ -532,26 +587,25 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
               _showEventPopup(_selectedDay.value);
             });
           },
-          child: Text(
-            'Add run placeholder',
-            style: ts_button,
-          ),
+          child: Text('Add run placeholder', style: ts_button),
         ),
       ],
     );
   }
 
   Future<void> _showEventPopup(DateTime eventStartDate) async {
-    final String title = 'Create new event on ${DateFormat('E, MMM d').format(eventStartDate)}';
+    final String title =
+        'Create new event on ${DateFormat('E, MMM d').format(eventStartDate)}';
 
     final CreateNewEventPopup newEventPopup = CreateNewEventPopup(title);
 
     final Map<String, String>? x = await showDialog<Map<String, String>>(
-        context: context,
-        barrierDismissible: false, // user must tap button!
-        builder: (BuildContext context) {
-          return newEventPopup;
-        });
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return newEventPopup;
+      },
+    );
 
     final String eventName = x?['eventName'] ?? '';
     final String type = x?['type'] ?? 'cancel';
@@ -563,11 +617,13 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
 
       final EventsService nSvc = EventsService();
       await nSvc.addEditEvent(
-          kennelId: widget.kennel.kennel.kennelId,
-          isVisible: true,
-          isCountedRun: type == eventFilterType_countEvent.value.toString() ? true : false,
-          eventName: eventName,
-          eventStartDatetime: _toDateOnly(eventStartDate));
+        kennelId: widget.kennel.kennel.kennelId,
+        isVisible: true,
+        isCountedRun:
+            type == eventFilterType_countEvent.value.toString() ? true : false,
+        eventName: eventName,
+        eventStartDatetime: _toDateOnly(eventStartDate),
+      );
 
       await _refreshEventFromTables(true);
       setState(() {
@@ -584,10 +640,9 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
       physics: const AlwaysScrollableScrollPhysics(),
       itemCount: listEvents.length,
       padding: const EdgeInsets.only(top: 5),
-      separatorBuilder: (BuildContext context, int index) => const Divider(
-        height: 1.0,
-        color: Colors.black45,
-      ),
+      separatorBuilder:
+          (BuildContext context, int index) =>
+              const Divider(height: 1.0, color: Colors.black45),
       //itemExtent: 58.0,
       //shrinkWrap: true,
       itemBuilder: (BuildContext context, int index) {
@@ -607,36 +662,55 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
             return Future<bool>.value(false);
           },
           background: Container(
-              color: ((event.appAccessFlags & authCanManageRuns) == 0) ? Colors.grey[350] : hc_red,
-              child: Row(children: <Widget>[
+            color:
+                ((event.appAccessFlags & authCanManageRuns) == 0)
+                    ? Colors.grey[350]
+                    : hc_red,
+            child: Row(
+              children: <Widget>[
                 const Padding(
                   padding: EdgeInsets.only(left: 10.0),
-                  child: Icon(Ionicons.ios_eye_off, color: Colors.white, size: 35.0),
+                  child: Icon(
+                    Ionicons.ios_eye_off,
+                    color: Colors.white,
+                    size: 35.0,
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(left: 15.0),
                   child: Text(
-                      // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
-                      'Hide event',
-                      style: ts_titleMedium),
-                )
-              ])),
+                    // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
+                    'Hide event',
+                    style: ts_titleMedium,
+                  ),
+                ),
+              ],
+            ),
+          ),
           secondaryBackground: Container(
-            color: ((event.appAccessFlags & authCanManageRuns) == 0) ? Colors.grey[350] : Colors.green,
+            color:
+                ((event.appAccessFlags & authCanManageRuns) == 0)
+                    ? Colors.grey[350]
+                    : Colors.green,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
                 const Padding(
                   padding: EdgeInsets.only(right: 15.0),
-                  child: Icon(Ionicons.ios_eye, color: Colors.white, size: 35.0),
+                  child: Icon(
+                    Ionicons.ios_eye,
+                    color: Colors.white,
+                    size: 35.0,
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(right: 15.0),
                   child: Text(
-                      //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
-                      'Show event',
-                      style: ts_titleMedium),
-                )
+                    //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                    'Show event',
+                    style: ts_titleMedium,
+                  ),
+                ),
               ],
             ),
           ),
@@ -645,7 +719,9 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
           },
           child: Stack(
             children: <Widget>[
-              if (_itemBeingUpdatedId == event.eventId) ...<Widget>[const HcCircularProgressIndicator(key: Key('5050202'))],
+              if (_itemBeingUpdatedId == event.eventId) ...<Widget>[
+                const HcCircularProgressIndicator(key: Key('5050202')),
+              ],
               Opacity(
                 opacity: _itemBeingUpdatedId == event.eventId ? 0.4 : 1,
                 child: FilterEventListItem(
@@ -660,16 +736,28 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
 
                     switch (ft) {
                       case eventFilterType_showEvent:
-                        await _updateEvent(eventId: event.eventId, isVisible: true);
+                        await _updateEvent(
+                          eventId: event.eventId,
+                          isVisible: true,
+                        );
                         break;
                       case eventFilterType_hideEvent:
-                        await _updateEvent(eventId: event.eventId, isVisible: false);
+                        await _updateEvent(
+                          eventId: event.eventId,
+                          isVisible: false,
+                        );
                         break;
                       case eventFilterType_countEvent:
-                        await _updateEvent(eventId: event.eventId, isCountedRun: true);
+                        await _updateEvent(
+                          eventId: event.eventId,
+                          isCountedRun: true,
+                        );
                         break;
                       case eventFilterType_doNotCountEvent:
-                        await _updateEvent(eventId: event.eventId, isCountedRun: false);
+                        await _updateEvent(
+                          eventId: event.eventId,
+                          isCountedRun: false,
+                        );
                         break;
                       case eventFilterType_setRunNumber:
                         await setRunNumber(event, context);
@@ -706,16 +794,22 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
   }
 
   Future<void> setRunNumber(LiteEventModel event, BuildContext context) async {
-    final RunNumberPopup newEventPopup = RunNumberPopup(runNumber: event.absoluteEventNumber);
+    final RunNumberPopup newEventPopup = RunNumberPopup(
+      runNumber: event.absoluteEventNumber,
+    );
 
     final Map<String, String>? x = await showDialog<Map<String, String>>(
-        context: context,
-        barrierDismissible: false, // user must tap button!
-        builder: (BuildContext context) {
-          return newEventPopup;
-        });
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return newEventPopup;
+      },
+    );
 
-    final String runNumber = x?['runNumber'] ?? event.absoluteEventNumber?.toString() ?? event.eventNumber.toString();
+    final String runNumber =
+        x?['runNumber'] ??
+        event.absoluteEventNumber?.toString() ??
+        event.eventNumber.toString();
 
     if (runNumber != 'cancel') {
       int rn = -1;
@@ -736,233 +830,284 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
     int? asboluteEventNumber,
     String? kennelId,
   }) async {
-    await G0<Database>().transaction<dynamic>((Transaction txn) async {
-      final int flag = isVisible ?? isCountedRun ?? (asboluteEventNumber != null) ? -3 : -2;
-      final String sql = 'UPDATE ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} SET canEditRunAttendence = "$flag" where eventId = "$eventId"';
+    await database.transaction<dynamic>((Transaction txn) async {
+      final int flag =
+          isVisible ?? isCountedRun ?? (asboluteEventNumber != null) ? -3 : -2;
+      final String sql =
+          'UPDATE ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} SET canEditRunAttendence = "$flag" where eventId = "$eventId"';
       await txn.rawUpdate(sql);
       //print(result.toString() + ' update to events table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
     });
 
     final EventsService nSvc = EventsService();
-    await nSvc.addEditEvent(eventId: eventId, kennelId: kennelId, isVisible: isVisible, isCountedRun: isCountedRun, absoluteEventNumber: asboluteEventNumber);
+    await nSvc.addEditEvent(
+      eventId: eventId,
+      kennelId: kennelId,
+      isVisible: isVisible,
+      isCountedRun: isCountedRun,
+      absoluteEventNumber: asboluteEventNumber,
+    );
     await _refreshEventFromTables(true);
     _refreshList();
   }
 
-  final ValueNotifier<DateTime> _focusedDay = ValueNotifier<DateTime>(DateTime.now());
-  final ValueNotifier<DateTime> _selectedDay = ValueNotifier<DateTime>(DateTime.now());
+  final ValueNotifier<DateTime> _focusedDay = ValueNotifier<DateTime>(
+    DateTime.now(),
+  );
+  final ValueNotifier<DateTime> _selectedDay = ValueNotifier<DateTime>(
+    DateTime.now(),
+  );
   CalendarFormat _calendarFormat = CalendarFormat.month;
 
   Widget _calendarView() {
-    return Column(children: <Widget>[
-      //
-      Container(
-        decoration: BoxDecoration(
-          // border: new Border.all(width: 1.0, color: Colors.black),
-          //shape: BoxShape.circle,
-          color: Colors.grey.shade300,
-          boxShadow: const <BoxShadow>[
-            BoxShadow(
-              color: Color.fromARGB(70, 0, 0, 0),
-              offset: Offset(0.0, 6.0),
-              blurRadius: 10.0,
-            ),
-          ],
-        ),
-        // TODO(James): Clean up builders to get rid of duplicate code
-        child: Column(
-          children: <Widget>[
-            const Divider(color: Colors.black, height: 1.0),
-            Container(
-              //color: Colors.white,
-              padding: const EdgeInsets.only(bottom: 10.0),
-              child: TableCalendar<dynamic>(
-                onCalendarCreated: (PageController controller) => controller,
-                firstDay: DateTime(2010, 1, 1),
-                lastDay: DateTime(2030, 1, 1),
-                focusedDay: _focusedDay.value,
-                calendarFormat: _calendarFormat,
-                rowHeight: 35.0,
-                rangeSelectionMode: RangeSelectionMode.toggledOff,
-                headerStyle: HeaderStyle(
-                  rightChevronIcon: const Icon(Icons.chevron_right, color: Colors.black),
-                  leftChevronIcon: const Icon(Icons.chevron_left, color: Colors.black),
-                  formatButtonDecoration: BoxDecoration(
-                    color: Colors.blue.shade600,
-                    borderRadius: BorderRadius.circular(6.0),
+    return Column(
+      children: <Widget>[
+        //
+        Container(
+          decoration: BoxDecoration(
+            // border: new Border.all(width: 1.0, color: Colors.black),
+            //shape: BoxShape.circle,
+            color: Colors.grey.shade300,
+            boxShadow: const <BoxShadow>[
+              BoxShadow(
+                color: Color.fromARGB(70, 0, 0, 0),
+                offset: Offset(0.0, 6.0),
+                blurRadius: 10.0,
+              ),
+            ],
+          ),
+          // TODO(James): Clean up builders to get rid of duplicate code
+          child: Column(
+            children: <Widget>[
+              const Divider(color: Colors.black, height: 1.0),
+              Container(
+                //color: Colors.white,
+                padding: const EdgeInsets.only(bottom: 10.0),
+                child: TableCalendar<dynamic>(
+                  onCalendarCreated: (PageController controller) => controller,
+                  firstDay: DateTime(2010, 1, 1),
+                  lastDay: DateTime(2030, 1, 1),
+                  focusedDay: _focusedDay.value,
+                  calendarFormat: _calendarFormat,
+                  rowHeight: 35.0,
+                  rangeSelectionMode: RangeSelectionMode.toggledOff,
+                  headerStyle: HeaderStyle(
+                    rightChevronIcon: const Icon(
+                      Icons.chevron_right,
+                      color: Colors.black,
+                    ),
+                    leftChevronIcon: const Icon(
+                      Icons.chevron_left,
+                      color: Colors.black,
+                    ),
+                    formatButtonDecoration: BoxDecoration(
+                      color: Colors.blue.shade600,
+                      borderRadius: BorderRadius.circular(6.0),
+                    ),
+                    formatButtonTextStyle: const TextStyle().copyWith(
+                      color: Colors.white,
+                    ),
                   ),
-                  formatButtonTextStyle: const TextStyle().copyWith(color: Colors.white),
-                ),
-                onFormatChanged: (CalendarFormat format) {
-                  setState(() {
-                    _calendarFormat = format;
-                  });
-                },
-                onPageChanged: (DateTime focusedDay) {
-                  _focusedDay.value = focusedDay;
-                },
+                  onFormatChanged: (CalendarFormat format) {
+                    setState(() {
+                      _calendarFormat = format;
+                    });
+                  },
+                  onPageChanged: (DateTime focusedDay) {
+                    _focusedDay.value = focusedDay;
+                  },
 
-                //onDayLongPressed: (DateTime selectedDay, DateTime focusedDay) {},
-                // onDayLongPressed: (DateTime datePressed, List<dynamic> list1, List<dynamic> list2) {
-                //   _calendarController.setSelectedDay(datePressed);
-                //   _selectedDate = datePressed;
+                  //onDayLongPressed: (DateTime selectedDay, DateTime focusedDay) {},
+                  // onDayLongPressed: (DateTime datePressed, List<dynamic> list1, List<dynamic> list2) {
+                  //   _calendarController.setSelectedDay(datePressed);
+                  //   _selectedDate = datePressed;
 
-                //   // only allow the date popup if the conditions allowing for new runs is met
-                //   if (datePressed != null &&
-                //       _toDateOnly(datePressed).difference(_toDateOnly(DateTime.now())).inDays >= 0 &&
-                //       (_calendarEvents[_toDateOnly(datePressed)]?.length ?? 0) == 0) {
-                //     _showEventPopup(datePressed);
-                //   }
-                // },
-
-                eventLoader: (DateTime dt) {
-                  return _calendarEvents[_toDateOnly(dt)] as List<dynamic>? ?? [];
-                },
-                onDaySelected: _onDaySelected,
-
-                availableCalendarFormats: const <CalendarFormat, String>{
-                  CalendarFormat.month: 'Week',
-                  CalendarFormat.twoWeeks: 'Month',
-                  CalendarFormat.week: '2 weeks',
-                },
-                calendarStyle: CalendarStyle(
-                  selectedDecoration: BoxDecoration(color: Colors.deepOrange[400]),
-                  todayDecoration: BoxDecoration(color: Colors.deepOrange[200]),
-                  markerDecoration: BoxDecoration(color: Colors.brown[700]),
-                  outsideDaysVisible: false,
-                ),
-                calendarBuilders: CalendarBuilders<dynamic>(
-                  // selectedBuilder: (BuildContext context, DateTime date, DateTime focusedDay) {
-                  //   return FutureBuilder<DateTime>(
-                  //       future: _dateBeingUpdated,
-                  //       builder: (BuildContext context, AsyncSnapshot<DateTime> snapshot) {
-                  //         return ((snapshot.hasData) && (_toDateOnly(snapshot.data) == _toDateOnly(date)))
-                  //             ? Container(
-                  //                 decoration: BoxDecoration(
-                  //                   color: (_calendarEvents[_toDateOnly(date)]?.length ?? 0) == 0
-                  //                       ? _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays == 0
-                  //                           ? Colors.blue.shade100
-                  //                           : _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0
-                  //                               ? Colors.white
-                  //                               : Colors.grey.shade200
-                  //                       : (_calendarEvents[_toDateOnly(date)]?.length ?? 0) > 1
-                  //                           ? hc_red.shade100
-                  //                           : _calendarEvents[_toDateOnly(date)][0]['isVisible'] == 0
-                  //                               ? Colors.grey.shade300
-                  //                               : _calendarEvents[_toDateOnly(date)][0]['isCountedRun'] == 1
-                  //                                   ? Colors.green.shade100
-                  //                                   : Colors.yellow.shade200,
-                  //                   border: Border.all(
-                  //                     color:hc_red,
-                  //                     width: 3.0,
-                  //                   ),
-                  //                 ),
-                  //                 // margin: const EdgeInsets.all(4.0),
-                  //                 // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
-                  //                 //color: Colors.deepOrange[300],
-                  //                 width: 100,
-                  //                 height: 50,
-                  //                 child: Icon(delayIcon, color: hc_blue),
-                  //               )
-                  //             : FadeTransition(
-                  //                 opacity: Tween<double>(begin: 0.0, end: 1.0).animate(_animationController),
-                  //                 child: Container(
-                  //                   decoration: BoxDecoration(
-                  //                     color: (_calendarEvents[_toDateOnly(date)]?.length ?? 0) == 0
-                  //                         ? _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays == 0
-                  //                             ? Colors.blue.shade100
-                  //                             : _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0
-                  //                                 ? Colors.white
-                  //                                 : Colors.grey.shade200
-                  //                         : (_calendarEvents[_toDateOnly(date)]?.length ?? 0) > 1
-                  //                             ? hc_red.shade100
-                  //                             : _calendarEvents[_toDateOnly(date)][0]['isVisible'] == 0
-                  //                                 ? Colors.grey.shade300
-                  //                                 : _calendarEvents[_toDateOnly(date)][0]['isCountedRun'] == 1
-                  //                                     ? Colors.green.shade100
-                  //                                     : Colors.yellow.shade200,
-                  //                     border: Border.all(
-                  //                       color:hc_red,
-                  //                       width: 3.0,
-                  //                     ),
-                  //                   ),
-                  //                   // margin: const EdgeInsets.all(4.0),
-                  //                   // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
-                  //                   //color: Colors.deepOrange[300],
-                  //                   width: 100,
-                  //                   height: 50,
-                  //                   child: Text(
-                  //                     '${date.day}',
-                  //                     style: const TextStyle().copyWith(fontSize: 16.0),
-                  //                   ),
-                  //                 ),
-                  //               );
-                  //       });
+                  //   // only allow the date popup if the conditions allowing for new runs is met
+                  //   if (datePressed != null &&
+                  //       _toDateOnly(datePressed).difference(_toDateOnly(DateTime.now())).inDays >= 0 &&
+                  //       (_calendarEvents[_toDateOnly(datePressed)]?.length ?? 0) == 0) {
+                  //     _showEventPopup(datePressed);
+                  //   }
                   // },
-                  todayBuilder: (BuildContext context, DateTime date, DateTime focusedDay) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: Colors.blue.shade100,
-                        border: Border.all(
-                          color: Colors.black26,
-                          width: 1.0,
-                        ),
-                      ),
-                      width: 100,
-                      height: 50,
-                      child: Text(
-                        '${date.day}',
-                        style: const TextStyle().copyWith(fontSize: 16.0),
-                      ),
-                    );
+                  eventLoader: (DateTime dt) {
+                    return _calendarEvents[_toDateOnly(dt)] as List<dynamic>? ??
+                        [];
                   },
+                  onDaySelected: _onDaySelected,
 
-                  outsideBuilder: (BuildContext context, DateTime date, DateTime focusedDay) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        border: Border.all(
-                          color: Colors.black12,
-                          width: 1.0,
-                        ),
-                      ),
-                      width: 100,
-                      height: 50,
-                      child: Text(
-                        '${date.day}',
-                        style: const TextStyle().copyWith(fontSize: 16.0, color: Colors.grey.shade400),
-                      ),
-                    );
+                  availableCalendarFormats: const <CalendarFormat, String>{
+                    CalendarFormat.month: 'Week',
+                    CalendarFormat.twoWeeks: 'Month',
+                    CalendarFormat.week: '2 weeks',
                   },
+                  calendarStyle: CalendarStyle(
+                    selectedDecoration: BoxDecoration(
+                      color: Colors.deepOrange[400],
+                    ),
+                    todayDecoration: BoxDecoration(
+                      color: Colors.deepOrange[200],
+                    ),
+                    markerDecoration: BoxDecoration(color: Colors.brown[700]),
+                    outsideDaysVisible: false,
+                  ),
+                  calendarBuilders: CalendarBuilders<dynamic>(
+                    // selectedBuilder: (BuildContext context, DateTime date, DateTime focusedDay) {
+                    //   return FutureBuilder<DateTime>(
+                    //       future: _dateBeingUpdated,
+                    //       builder: (BuildContext context, AsyncSnapshot<DateTime> snapshot) {
+                    //         return ((snapshot.hasData) && (_toDateOnly(snapshot.data) == _toDateOnly(date)))
+                    //             ? Container(
+                    //                 decoration: BoxDecoration(
+                    //                   color: (_calendarEvents[_toDateOnly(date)]?.length ?? 0) == 0
+                    //                       ? _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays == 0
+                    //                           ? Colors.blue.shade100
+                    //                           : _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0
+                    //                               ? Colors.white
+                    //                               : Colors.grey.shade200
+                    //                       : (_calendarEvents[_toDateOnly(date)]?.length ?? 0) > 1
+                    //                           ? hc_red.shade100
+                    //                           : _calendarEvents[_toDateOnly(date)][0]['isVisible'] == 0
+                    //                               ? Colors.grey.shade300
+                    //                               : _calendarEvents[_toDateOnly(date)][0]['isCountedRun'] == 1
+                    //                                   ? Colors.green.shade100
+                    //                                   : Colors.yellow.shade200,
+                    //                   border: Border.all(
+                    //                     color:hc_red,
+                    //                     width: 3.0,
+                    //                   ),
+                    //                 ),
+                    //                 // margin: const EdgeInsets.all(4.0),
+                    //                 // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
+                    //                 //color: Colors.deepOrange[300],
+                    //                 width: 100,
+                    //                 height: 50,
+                    //                 child: Icon(delayIcon, color: hc_blue),
+                    //               )
+                    //             : FadeTransition(
+                    //                 opacity: Tween<double>(begin: 0.0, end: 1.0).animate(_animationController),
+                    //                 child: Container(
+                    //                   decoration: BoxDecoration(
+                    //                     color: (_calendarEvents[_toDateOnly(date)]?.length ?? 0) == 0
+                    //                         ? _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays == 0
+                    //                             ? Colors.blue.shade100
+                    //                             : _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0
+                    //                                 ? Colors.white
+                    //                                 : Colors.grey.shade200
+                    //                         : (_calendarEvents[_toDateOnly(date)]?.length ?? 0) > 1
+                    //                             ? hc_red.shade100
+                    //                             : _calendarEvents[_toDateOnly(date)][0]['isVisible'] == 0
+                    //                                 ? Colors.grey.shade300
+                    //                                 : _calendarEvents[_toDateOnly(date)][0]['isCountedRun'] == 1
+                    //                                     ? Colors.green.shade100
+                    //                                     : Colors.yellow.shade200,
+                    //                     border: Border.all(
+                    //                       color:hc_red,
+                    //                       width: 3.0,
+                    //                     ),
+                    //                   ),
+                    //                   // margin: const EdgeInsets.all(4.0),
+                    //                   // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
+                    //                   //color: Colors.deepOrange[300],
+                    //                   width: 100,
+                    //                   height: 50,
+                    //                   child: Text(
+                    //                     '${date.day}',
+                    //                     style: const TextStyle().copyWith(fontSize: 16.0),
+                    //                   ),
+                    //                 ),
+                    //               );
+                    //       });
+                    // },
+                    todayBuilder: (
+                      BuildContext context,
+                      DateTime date,
+                      DateTime focusedDay,
+                    ) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade100,
+                          border: Border.all(color: Colors.black26, width: 1.0),
+                        ),
+                        width: 100,
+                        height: 50,
+                        child: Text(
+                          '${date.day}',
+                          style: const TextStyle().copyWith(fontSize: 16.0),
+                        ),
+                      );
+                    },
 
-                  defaultBuilder: (BuildContext context, DateTime date, DateTime focusedDay) {
-                    return FutureBuilder<DateTime>(
+                    outsideBuilder: (
+                      BuildContext context,
+                      DateTime date,
+                      DateTime focusedDay,
+                    ) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          border: Border.all(color: Colors.black12, width: 1.0),
+                        ),
+                        width: 100,
+                        height: 50,
+                        child: Text(
+                          '${date.day}',
+                          style: const TextStyle().copyWith(
+                            fontSize: 16.0,
+                            color: Colors.grey.shade400,
+                          ),
+                        ),
+                      );
+                    },
+
+                    defaultBuilder: (
+                      BuildContext context,
+                      DateTime date,
+                      DateTime focusedDay,
+                    ) {
+                      return FutureBuilder<DateTime>(
                         future: _dateBeingUpdated,
-                        builder: (BuildContext context, AsyncSnapshot<DateTime> snapshot) {
+                        builder: (
+                          BuildContext context,
+                          AsyncSnapshot<DateTime> snapshot,
+                        ) {
                           return Container(
                             // margin: const EdgeInsets.all(4.0),
                             // padding: const EdgeInsets.only(top: 5.0, left: 6.0),
                             decoration: BoxDecoration(
-                              color: (_calendarEvents[_toDateOnly(date)]?.length ?? 0) == 0
-                                  ? _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0
-                                      ? Colors.white
-                                      : Colors.grey.shade200
-                                  : (_calendarEvents[_toDateOnly(date)]?.length ?? 0) > 1
+                              color:
+                                  (_calendarEvents[_toDateOnly(date)]?.length ??
+                                              0) ==
+                                          0
+                                      ? _toDateOnly(date)
+                                                  .difference(
+                                                    _toDateOnly(DateTime.now()),
+                                                  )
+                                                  .inDays >=
+                                              0
+                                          ? Colors.white
+                                          : Colors.grey.shade200
+                                      : (_calendarEvents[_toDateOnly(date)]
+                                                  ?.length ??
+                                              0) >
+                                          1
                                       ? Colors.red.shade100
-                                      : _calendarEvents[_toDateOnly(date)]![0].isVisible == 0
-                                          ? Colors.grey.shade300
-                                          : _calendarEvents[_toDateOnly(date)]![0].isCountedRun == 1
-                                              ? Colors.green.shade100
-                                              : Colors.yellow.shade200,
-                              border: _toDateOnly(date) != _toDateOnly(_focusedDay.value)
-                                  ? Border.all(
-                                      color: Colors.black26,
-                                      width: 1.0,
-                                    )
-                                  : Border.all(
-                                      color: hc_red,
-                                      width: 3.0,
-                                    ),
+                                      : _calendarEvents[_toDateOnly(date)]![0]
+                                              .isVisible ==
+                                          0
+                                      ? Colors.grey.shade300
+                                      : _calendarEvents[_toDateOnly(date)]![0]
+                                              .isCountedRun ==
+                                          1
+                                      ? Colors.green.shade100
+                                      : Colors.yellow.shade200,
+                              border:
+                                  _toDateOnly(date) !=
+                                          _toDateOnly(_focusedDay.value)
+                                      ? Border.all(
+                                        color: Colors.black26,
+                                        width: 1.0,
+                                      )
+                                      : Border.all(color: hc_red, width: 3.0),
                             ),
                             width: 100,
                             height: 50,
@@ -974,78 +1119,101 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
                                   left: 1.0,
                                   child: Text(
                                     '${date.day}',
-                                    style:
-                                        const TextStyle().copyWith(fontSize: 16.0, color: _toDateOnly(date).difference(_toDateOnly(DateTime.now())).inDays >= 0 ? Colors.black : Colors.grey.shade500),
+                                    style: const TextStyle().copyWith(
+                                      fontSize: 16.0,
+                                      color:
+                                          _toDateOnly(date)
+                                                      .difference(
+                                                        _toDateOnly(
+                                                          DateTime.now(),
+                                                        ),
+                                                      )
+                                                      .inDays >=
+                                                  0
+                                              ? Colors.black
+                                              : Colors.grey.shade500,
+                                    ),
                                   ),
                                 ),
-                                if ((snapshot.hasData) && _toDateOnly(snapshot.data!) == _toDateOnly(date)) ...<Widget>[
+                                if ((snapshot.hasData) &&
+                                    _toDateOnly(snapshot.data!) ==
+                                        _toDateOnly(date)) ...<Widget>[
                                   Positioned(
                                     right: 1.0,
                                     child: Icon(delayIcon, color: hc_blue),
-                                  )
+                                  ),
                                 ],
                               ],
                             ),
                           );
-                        });
-                  },
-                  markerBuilder: (BuildContext context, DateTime date, List<dynamic> events) {
-                    final List<Widget> children = <Widget>[];
+                        },
+                      );
+                    },
+                    markerBuilder: (
+                      BuildContext context,
+                      DateTime date,
+                      List<dynamic> events,
+                    ) {
+                      final List<Widget> children = <Widget>[];
 
-                    if (events.isNotEmpty) {
-                      if (events.length <= 5) {
-                        for (int i = 0; i < events.length; i++) {
-                          children.add(
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 5.0),
-                              child: Icon(
-                                FontAwesome.circle,
-                                size: 8.0,
-                                color: events[i].isVisible == 0
-                                    ? Colors.grey
-                                    : events[i].isCountedRun == 0
-                                        ? hc_red
-                                        : hc_blue,
+                      if (events.isNotEmpty) {
+                        if (events.length <= 5) {
+                          for (int i = 0; i < events.length; i++) {
+                            children.add(
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 5.0),
+                                child: Icon(
+                                  FontAwesome.circle,
+                                  size: 8.0,
+                                  color:
+                                      events[i].isVisible == 0
+                                          ? Colors.grey
+                                          : events[i].isCountedRun == 0
+                                          ? hc_red
+                                          : hc_blue,
+                                ),
                               ),
-                            ),
-                          );
+                            );
+                          }
+                        } else {
+                          children.add(Text(events.length.toString()));
                         }
-                      } else {
-                        children.add(
-                          Text(events.length.toString()),
-                        );
                       }
-                    }
 
-                    return Row(mainAxisAlignment: MainAxisAlignment.center, children: children);
-                  },
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: children,
+                      );
+                    },
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 5.0),
-            // if (_selectedDay.value != null &&
-            //     _toDateOnly(_selectedDay.value).difference(_toDateOnly(DateTime.now())).inDays >= 0 &&
-            //     (_calendarEvents[_toDateOnly(_selectedDay.value)]?.length ?? 0) == 0) ...<Widget>[_buildAddButtons()],
+              const SizedBox(height: 5.0),
 
-            if (_toDateOnly(_selectedDay.value).difference(_toDateOnly(DateTime.now())).inDays >= 0 && (_calendarEvents[_toDateOnly(_selectedDay.value)]?.length ?? 0) == 1) ...<Widget>[
-              _buildEditButton()
+              // if (_selectedDay.value != null &&
+              //     _toDateOnly(_selectedDay.value).difference(_toDateOnly(DateTime.now())).inDays >= 0 &&
+              //     (_calendarEvents[_toDateOnly(_selectedDay.value)]?.length ?? 0) == 0) ...<Widget>[_buildAddButtons()],
+              if (_toDateOnly(
+                        _selectedDay.value,
+                      ).difference(_toDateOnly(DateTime.now())).inDays >=
+                      0 &&
+                  (_calendarEvents[_toDateOnly(_selectedDay.value)]?.length ??
+                          0) ==
+                      1) ...<Widget>[_buildEditButton()],
+              _buildAddButtons(),
             ],
-            _buildAddButtons(),
-          ],
+          ),
         ),
-      ),
-      Expanded(child: _listView(_selectedEvents.value)),
-    ]);
+        Expanded(child: _listView(_selectedEvents.value)),
+      ],
+    );
   }
 
   DateTime _toDateOnly(DateTime d) {
     return DateTime(d.year, d.month, d.day);
   }
 
-  void _refreshList({
-    DateTime? selectedDay,
-    DateTime? focusedDay,
-  }) {
+  void _refreshList({DateTime? selectedDay, DateTime? focusedDay}) {
     setState(() {
       if (selectedDay != null) {
         _selectedDay.value = selectedDay;
@@ -1054,7 +1222,9 @@ class AddEditEventsPageState extends State<AddEditEventsPage> with TickerProvide
       if (focusedDay != null) {
         _focusedDay.value = focusedDay;
       }
-      _selectedEvents.value = _calendarEvents[_toDateOnly(_selectedDay.value)] ?? <LiteEventModel>[];
+      _selectedEvents.value =
+          _calendarEvents[_toDateOnly(_selectedDay.value)] ??
+          <LiteEventModel>[];
     });
   }
 

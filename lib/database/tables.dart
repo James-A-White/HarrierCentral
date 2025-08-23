@@ -55,7 +55,7 @@ class Tables {
     MigrationsModel(
       dbVersion: 351,
       migrationText: '''
-      ALTER TABLE ${G0<TableModel>().regionsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().regionsTableHelper.colRegionAbbreviation} TEXT;
+      ALTER TABLE ${tableModel.regionsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.regionsTableHelper.colRegionAbbreviation} TEXT;
     ''',
       appliedAtInt: 0,
     ),
@@ -63,10 +63,10 @@ class Tables {
     MigrationsModel(
       dbVersion: 352,
       migrationText: '''
-      ALTER TABLE ${G0<TableModel>().citiesTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().citiesTableHelper.colCitySearchTags} TEXT;
-      ALTER TABLE ${G0<TableModel>().regionsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().regionsTableHelper.colRegionSearchTags} TEXT;
-      ALTER TABLE ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().countriesTableHelper.colCountrySearchTags} TEXT;
-      ALTER TABLE ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().kennelsTableHelper.colKennelSearchTags} TEXT;
+      ALTER TABLE ${tableModel.citiesTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.citiesTableHelper.colCitySearchTags} TEXT;
+      ALTER TABLE ${tableModel.regionsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.regionsTableHelper.colRegionSearchTags} TEXT;
+      ALTER TABLE ${tableModel.countriesTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.countriesTableHelper.colCountrySearchTags} TEXT;
+      ALTER TABLE ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.kennelsTableHelper.colKennelSearchTags} TEXT;
     ''',
       appliedAtInt: 0,
     ),
@@ -74,27 +74,27 @@ class Tables {
     MigrationsModel(
       dbVersion: 365,
       migrationText: '''
-      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount} INT;
-      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount} INT;
-      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount} INT;
+      ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colHcTotalRunCount} INT;
+      ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colHcTotalRunCount} INT;
+      ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colHcTotalRunCount} INT;
       
-      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount} INT;
-      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount} INT;
-      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount} INT;
+      ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colHcHaringCount} INT;
+      ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colHcHaringCount} INT;
+      ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colHcHaringCount} INT;
 
-      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount} INT;
-      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount} INT;
-      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount} INT;
+      ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount} INT;
+      ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount} INT;
+      ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount} INT;
 
-      ALTER TABLE ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherEventMapTableHelper.colTotalHaring} INT;
-      ALTER TABLE ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel} INT;
-      ALTER TABLE ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherEventMapTableHelper.colTotalRuns} INT;
-      ALTER TABLE ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel} INT;
+      ALTER TABLE ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTotalHaring} INT;
+      ALTER TABLE ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTotalHaringThisKennel} INT;
+      ALTER TABLE ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTotalRuns} INT;
+      ALTER TABLE ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTotalRunsThisKennel} INT;
 
-      ALTER TABLE ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherEventMapTableHelper.colTotalHaring} INT;
-      ALTER TABLE ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel} INT;
-      ALTER TABLE ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherEventMapTableHelper.colTotalRuns} INT;
-      ALTER TABLE ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel} INT;
+      ALTER TABLE ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTotalHaring} INT;
+      ALTER TABLE ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTotalHaringThisKennel} INT;
+      ALTER TABLE ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTotalRuns} INT;
+      ALTER TABLE ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colTotalRunsThisKennel} INT;
 
     ''',
       appliedAtInt: 0,
@@ -103,11 +103,11 @@ class Tables {
     MigrationsModel(
       dbVersion: 366,
       migrationText: '''
-      ALTER TABLE ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().eventsTableHelper.colEventUrl} TEXT;
+      ALTER TABLE ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.eventsTableHelper.colEventUrl} TEXT;
       
-      ALTER TABLE ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().kennelsTableHelper.colIntegrationType} TEXT;
-      ALTER TABLE ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().kennelsTableHelper.colKennelInboundIntegrationId} INT DEFAULT 0 NOT NULL;
-      ALTER TABLE ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().kennelsTableHelper.colKennelEventsUrl} TEXT;
+      ALTER TABLE ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.kennelsTableHelper.colIntegrationType} TEXT;
+      ALTER TABLE ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.kennelsTableHelper.colKennelInboundIntegrationId} INT DEFAULT 0 NOT NULL;
+      ALTER TABLE ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.kennelsTableHelper.colKennelEventsUrl} TEXT;
       ''',
       appliedAtInt: 0,
     ),
@@ -115,7 +115,7 @@ class Tables {
     MigrationsModel(
       dbVersion: 378,
       migrationText: '''
-      ALTER TABLE ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().eventsTableHelper.colEventInboundIntegrationId} INT DEFAULT 0 NOT NULL;
+      ALTER TABLE ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.eventsTableHelper.colEventInboundIntegrationId} INT DEFAULT 0 NOT NULL;
       ''',
       appliedAtInt: 0,
     ),
@@ -123,9 +123,9 @@ class Tables {
     MigrationsModel(
       dbVersion: 379,
       migrationText: '''
-      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit} NUM DEFAULT 0 NOT NULL;
-      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit} NUM DEFAULT 0 NOT NULL;
-      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit} NUM DEFAULT 0 NOT NULL;
+      ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colKennelCredit} NUM DEFAULT 0 NOT NULL;
+      ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colKennelCredit} NUM DEFAULT 0 NOT NULL;
+      ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colKennelCredit} NUM DEFAULT 0 NOT NULL;
       ''',
       appliedAtInt: 0,
     ),
@@ -133,29 +133,29 @@ class Tables {
     MigrationsModel(
       dbVersion: 380,
       migrationText: '''
-      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount} NUM DEFAULT 0 NOT NULL;
-      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount} NUM DEFAULT 0 NOT NULL;
-      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount} NUM DEFAULT 0 NOT NULL;
+      ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colDiscountAmount} NUM DEFAULT 0 NOT NULL;
+      ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colDiscountAmount} NUM DEFAULT 0 NOT NULL;
+      ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colDiscountAmount} NUM DEFAULT 0 NOT NULL;
       
-      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent} INT DEFAULT 0 NOT NULL;
-      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent} INT DEFAULT 0 NOT NULL;
-      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent} INT DEFAULT 0 NOT NULL;
+      ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colDiscountPercent} INT DEFAULT 0 NOT NULL;
+      ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colDiscountPercent} INT DEFAULT 0 NOT NULL;
+      ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colDiscountPercent} INT DEFAULT 0 NOT NULL;
       
-      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountDescription} TEXT DEFAULT "" NOT NULL;
-      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountDescription} TEXT DEFAULT "" NOT NULL;
-      ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colDiscountDescription} TEXT DEFAULT "" NOT NULL;
+      ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colDiscountDescription} TEXT DEFAULT "" NOT NULL;
+      ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colDiscountDescription} TEXT DEFAULT "" NOT NULL;
+      ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colDiscountDescription} TEXT DEFAULT "" NOT NULL;
       
-      ALTER TABLE ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().paymentsTableHelper.colDiscountAmount} NUM DEFAULT 0 NOT NULL;
-      ALTER TABLE ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().paymentsTableHelper.colDiscountAmount} NUM DEFAULT 0 NOT NULL;
+      ALTER TABLE ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${tableModel.paymentsTableHelper.colDiscountAmount} NUM DEFAULT 0 NOT NULL;
+      ALTER TABLE ${tableModel.paymentsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.paymentsTableHelper.colDiscountAmount} NUM DEFAULT 0 NOT NULL;
       
-      ALTER TABLE ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().paymentsTableHelper.colDiscountPercent} INT DEFAULT 0 NOT NULL;
-      ALTER TABLE ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().paymentsTableHelper.colDiscountPercent} INT DEFAULT 0 NOT NULL;
+      ALTER TABLE ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${tableModel.paymentsTableHelper.colDiscountPercent} INT DEFAULT 0 NOT NULL;
+      ALTER TABLE ${tableModel.paymentsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.paymentsTableHelper.colDiscountPercent} INT DEFAULT 0 NOT NULL;
       
-      ALTER TABLE ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().paymentsTableHelper.colDiscountDescription} TEXT DEFAULT "" NOT NULL;
-      ALTER TABLE ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().paymentsTableHelper.colDiscountDescription} TEXT DEFAULT "" NOT NULL;
+      ALTER TABLE ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${tableModel.paymentsTableHelper.colDiscountDescription} TEXT DEFAULT "" NOT NULL;
+      ALTER TABLE ${tableModel.paymentsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.paymentsTableHelper.colDiscountDescription} TEXT DEFAULT "" NOT NULL;
       
-      ALTER TABLE ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().paymentsTableHelper.colSpecialRunPriceReason} TEXT DEFAULT "" NOT NULL;
-      ALTER TABLE ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().paymentsTableHelper.colSpecialRunPriceReason} TEXT DEFAULT "" NOT NULL;
+      ALTER TABLE ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${tableModel.paymentsTableHelper.colSpecialRunPriceReason} TEXT DEFAULT "" NOT NULL;
+      ALTER TABLE ${tableModel.paymentsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.paymentsTableHelper.colSpecialRunPriceReason} TEXT DEFAULT "" NOT NULL;
 
       ''',
       appliedAtInt: 0,
@@ -164,9 +164,9 @@ class Tables {
     MigrationsModel(
       dbVersion: 381,
       migrationText: '''
-      ALTER TABLE ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().kennelsTableHelper.colDisseminateAllowWebLinks} INT DEFAULT 0 NOT NULL;
+      ALTER TABLE ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.kennelsTableHelper.colDisseminateAllowWebLinks} INT DEFAULT 0 NOT NULL;
 
-       ALTER TABLE ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().eventsTableHelper.colEvtDisseminateAllowWebLinks} INT NULL;
+       ALTER TABLE ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.eventsTableHelper.colEvtDisseminateAllowWebLinks} INT NULL;
       ''',
       appliedAtInt: 0,
     ),
@@ -174,9 +174,9 @@ class Tables {
     MigrationsModel(
       dbVersion: 392,
       migrationText: '''
-      ALTER TABLE ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().kennelsTableHelper.colPublicKennelId} TEXT NOT NULL;
+      ALTER TABLE ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.kennelsTableHelper.colPublicKennelId} TEXT NOT NULL;
 
-       ALTER TABLE ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().eventsTableHelper.colPublicEventId} TEXT NOT NULL;
+       ALTER TABLE ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.eventsTableHelper.colPublicEventId} TEXT NOT NULL;
       ''',
       appliedAtInt: 0,
     ),
@@ -193,7 +193,7 @@ class Tables {
     MigrationsModel(
       dbVersion: 416,
       migrationText: '''
-     ALTER TABLE ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().paymentsTableHelper.colDiscountAmount} NUM DEFAULT 0 NOT NULL;
+     ALTER TABLE ${tableModel.paymentsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.paymentsTableHelper.colDiscountAmount} NUM DEFAULT 0 NOT NULL;
       ''',
       appliedAtInt: 0,
     ),
@@ -202,25 +202,25 @@ class Tables {
       dbVersion: 417,
       migrationText: '''
 
-        ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colKennelUserPhoto} TEXT;
+        ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colKennelUserPhoto} TEXT;
 
-        ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colKennelUserPhoto} TEXT;
+        ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colKennelUserPhoto} TEXT;
 
-        ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colKennelUserPhoto} TEXT;
+        ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colKennelUserPhoto} TEXT;
 
-        ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName} TEXT;
+        ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colKennelHashName} TEXT;
 
-        ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName} TEXT;
+        ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colKennelHashName} TEXT;
 
-        ALTER TABLE ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName} TEXT;
+        ALTER TABLE ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${tableModel.hasherKennelMapTableHelper.colKennelHashName} TEXT;
 
-        ALTER TABLE ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherEventMapTableHelper.colKennelUserPhoto} TEXT;
+        ALTER TABLE ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colKennelUserPhoto} TEXT;
 
-        ALTER TABLE ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${G0<TableModel>().hasherEventMapTableHelper.colKennelHashName} TEXT;
+        ALTER TABLE ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colKennelHashName} TEXT;
 
-        ALTER TABLE ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherEventMapTableHelper.colKennelUserPhoto} TEXT;
+        ALTER TABLE ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colKennelUserPhoto} TEXT;
 
-        ALTER TABLE ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${G0<TableModel>().hasherEventMapTableHelper.colKennelHashName} TEXT;
+        ALTER TABLE ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colKennelHashName} TEXT;
      
       ''',
       appliedAtInt: 0,
@@ -285,47 +285,47 @@ class Tables {
     int version,
     Function informUser,
   ) async {
-    await G0<TableModel>().hashersTableHelper.createTable(
+    await tableModel.hashersTableHelper.createTable(
       db,
       version,
       AppDomainType.user,
     );
-    await G0<TableModel>().citiesTableHelper.createTable(
+    await tableModel.citiesTableHelper.createTable(
       db,
       version,
       AppDomainType.user,
     );
-    await G0<TableModel>().regionsTableHelper.createTable(
+    await tableModel.regionsTableHelper.createTable(
       db,
       version,
       AppDomainType.user,
     );
-    await G0<TableModel>().countriesTableHelper.createTable(
+    await tableModel.countriesTableHelper.createTable(
       db,
       version,
       AppDomainType.user,
     );
-    await G0<TableModel>().kennelsTableHelper.createTable(
+    await tableModel.kennelsTableHelper.createTable(
       db,
       version,
       AppDomainType.user,
     );
-    await G0<TableModel>().hasherKennelMapTableHelper.createTable(
+    await tableModel.hasherKennelMapTableHelper.createTable(
       db,
       version,
       AppDomainType.user,
     );
-    await G0<TableModel>().hasherEventMapTableHelper.createTable(
+    await tableModel.hasherEventMapTableHelper.createTable(
       db,
       version,
       AppDomainType.user,
     );
-    await G0<TableModel>().eventsTableHelper.createTable(
+    await tableModel.eventsTableHelper.createTable(
       db,
       version,
       AppDomainType.user,
     );
-    await G0<TableModel>().paymentsTableHelper.createTable(
+    await tableModel.paymentsTableHelper.createTable(
       db,
       version,
       AppDomainType.user,
@@ -334,40 +334,40 @@ class Tables {
     await MigrationsTableHelper.createTable(db, version);
 
     // create event admin tables
-    await G0<TableModel>().hasherEventMapTableHelper.createTable(
+    await tableModel.hasherEventMapTableHelper.createTable(
       db,
       version,
       AppDomainType.event,
     );
-    await G0<TableModel>().hasherKennelMapTableHelper.createTable(
+    await tableModel.hasherKennelMapTableHelper.createTable(
       db,
       version,
       AppDomainType.event,
     );
-    await G0<TableModel>().paymentsTableHelper.createTable(
+    await tableModel.paymentsTableHelper.createTable(
       db,
       version,
       AppDomainType.event,
     );
-    await G0<TableModel>().receiptsTableHelper.createTable(
+    await tableModel.receiptsTableHelper.createTable(
       db,
       version,
       AppDomainType.event,
     );
-    //await G0<TableModel>().kennelCreditsTableHelper.createTable(db, version, AppDomainType.event);
+    //await tableModel.kennelCreditsTableHelper.createTable(db, version, AppDomainType.event);
 
     // create kennel admin tables
-    await G0<TableModel>().hasherKennelMapTableHelper.createTable(
+    await tableModel.hasherKennelMapTableHelper.createTable(
       db,
       version,
       AppDomainType.kennel,
     );
-    await G0<TableModel>().hasherEventMapTableHelper.createTable(
+    await tableModel.hasherEventMapTableHelper.createTable(
       db,
       version,
       AppDomainType.kennel,
     );
-    await G0<TableModel>().paymentsTableHelper.createTable(
+    await tableModel.paymentsTableHelper.createTable(
       db,
       version,
       AppDomainType.kennel,
@@ -380,77 +380,77 @@ class Tables {
     Function informUser,
     String clientAppIdentifier,
   ) async {
-    await G0<TableModel>().hashersTableHelper.createIndexes(
+    await tableModel.hashersTableHelper.createIndexes(
       db,
       version,
       AppDomainType.user,
     );
-    await G0<TableModel>().citiesTableHelper.createIndexes(
+    await tableModel.citiesTableHelper.createIndexes(
       db,
       version,
       AppDomainType.user,
     );
-    await G0<TableModel>().regionsTableHelper.createIndexes(
+    await tableModel.regionsTableHelper.createIndexes(
       db,
       version,
       AppDomainType.user,
     );
-    await G0<TableModel>().countriesTableHelper.createIndexes(
+    await tableModel.countriesTableHelper.createIndexes(
       db,
       version,
       AppDomainType.user,
     );
-    await G0<TableModel>().kennelsTableHelper.createIndexes(
+    await tableModel.kennelsTableHelper.createIndexes(
       db,
       version,
       AppDomainType.user,
     );
-    await G0<TableModel>().hasherKennelMapTableHelper.createIndexes(
+    await tableModel.hasherKennelMapTableHelper.createIndexes(
       db,
       version,
       AppDomainType.user,
     );
-    await G0<TableModel>().hasherEventMapTableHelper.createIndexes(
+    await tableModel.hasherEventMapTableHelper.createIndexes(
       db,
       version,
       AppDomainType.user,
     );
-    await G0<TableModel>().eventsTableHelper.createIndexes(
+    await tableModel.eventsTableHelper.createIndexes(
       db,
       version,
       AppDomainType.user,
     );
-    await G0<TableModel>().paymentsTableHelper.createIndexes(
+    await tableModel.paymentsTableHelper.createIndexes(
       db,
       version,
       AppDomainType.user,
     );
 
     // create event admin tables
-    await G0<TableModel>().hasherEventMapTableHelper.createIndexes(
+    await tableModel.hasherEventMapTableHelper.createIndexes(
       db,
       version,
       AppDomainType.event,
     );
-    await G0<TableModel>().hasherKennelMapTableHelper.createIndexes(
+    await tableModel.hasherKennelMapTableHelper.createIndexes(
       db,
       version,
       AppDomainType.event,
     );
-    await G0<TableModel>().paymentsTableHelper.createIndexes(
+    await tableModel.paymentsTableHelper.createIndexes(
       db,
       version,
       AppDomainType.event,
     );
-    await G0<TableModel>().receiptsTableHelper.createIndexes(
+    await tableModel.receiptsTableHelper.createIndexes(
       db,
       version,
       AppDomainType.event,
     );
-    //await G0<TableModel>().kennelCreditsTableHelper.createIndexes(db, version, AppDomainType.event);
+    //await tableModel.kennelCreditsTableHelper.createIndexes(db, version, AppDomainType.event);
 
     // create kennel admin tables
-    await G0<TableModel>().hasherKennelMapTableHelper.createIndexes(
+    await tableModel.hasherKennelMapTableHelper.createIndexes(
       db,
       version,
       AppDomainType.kennel,

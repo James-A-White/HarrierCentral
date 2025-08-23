@@ -19,18 +19,18 @@ class ApproveLoginService {
     final String version = p.version;
     final String buildNumber = p.buildNumber;
 
-    //String deviceInfoDeviceId = 'unknown';
+    //String deviceInfoPlugInDeviceId = 'unknown';
     String deviceType = 'unknown';
     String deviceName = 'unknown';
     String systemName = 'unknown';
     String systemVersion = 'unknown';
     String manufacturer = 'unknown';
 
-    final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    final DeviceInfoPlugin deviceInfoPlugIn = DeviceInfoPlugin();
 
     if (Platform.isAndroid) {
-      final AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-      //deviceInfoDeviceId = androidInfo.id.toUpperCase();
+      final AndroidDeviceInfo androidInfo = await deviceInfoPlugIn.androidInfo;
+      //deviceInfoPlugInDeviceId = androidInfo.id.toUpperCase();
       deviceType = '${androidInfo.model} / device: ${androidInfo.device}';
       deviceName = '<unknown>';
       systemName = androidInfo.host;
@@ -38,8 +38,8 @@ class ApproveLoginService {
           '${androidInfo.version.sdkInt.toString()} / release: ${androidInfo.version.release} / security patch: ${androidInfo.version.securityPatch ?? '<no Android security patch'}';
       manufacturer = androidInfo.brand;
     } else if (Platform.isIOS) {
-      final IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
-      // deviceInfoDeviceId =
+      final IosDeviceInfo iosInfo = await deviceInfoPlugIn.iosInfo;
+      // deviceInfoPlugInDeviceId =
       //     (iosInfo.identifierForVendor ?? '<no vendor id>').toUpperCase();
       deviceType = iosInfo.model;
       deviceName = iosInfo.name;
@@ -124,16 +124,16 @@ class ApproveLoginService {
       'manufacturer': manufacturer,
       'latitude':
           position?.latitude.toString() ??
-          (G0<DeviceInfo>().deviceLat ?? DEFAULT_LATITUDE).toString(),
+          (deviceInfo.deviceLat ?? DEFAULT_LATITUDE).toString(),
       'longitude':
           position?.longitude.toString() ??
-          (G0<DeviceInfo>().deviceLon ?? DEFAULT_LONGITUDE).toString(),
+          (deviceInfo.deviceLon ?? DEFAULT_LONGITUDE).toString(),
       'hcVersion': version,
       'buildNumber': buildNumber,
       'fbToken': facebookAccessToken,
-      'usesLocSvcs': (G0<AppModel>().hasLocationPermissions) ? '1' : '0',
-      'screenWidth': (G0<DeviceInfo>().deviceWidth).toInt().toString(),
-      'screenHeight': (G0<DeviceInfo>().deviceHeight).toInt().toString(),
+      'usesLocSvcs': (appModel.hasLocationPermissions) ? '1' : '0',
+      'screenWidth': (deviceInfo.deviceWidth).toInt().toString(),
+      'screenHeight': (deviceInfo.deviceHeight).toInt().toString(),
       'ipInfo': responseBody,
     };
 

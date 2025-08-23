@@ -137,20 +137,18 @@ class ReceiptsService {
       paramString: deviceSecret,
     );
 
-    final int receiptsLastUpdated = await G0<TableModel>().baseService
+    final int receiptsLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(
-          G0<Database>(),
-          G0<TableModel>().receiptsTableHelper,
-          G0<TableModel>().receiptsTableHelper.getTableName(
-            AppDomainType.event,
-          ),
-          G0<TableModel>().receiptsTableHelper.colUpdatedAtValue,
+          database,
+          tableModel.receiptsTableHelper,
+          tableModel.receiptsTableHelper.getTableName(AppDomainType.event),
+          tableModel.receiptsTableHelper.colUpdatedAtValue,
         );
     final DateTime receiptsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
       receiptsLastUpdated + 1,
     );
 
-    final String body = G0<TableModel>().receiptsTableHelper.toQueryBody(
+    final String body = tableModel.receiptsTableHelper.toQueryBody(
       deviceId,
       accessToken,
       item,

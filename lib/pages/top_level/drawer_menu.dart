@@ -32,7 +32,7 @@ class DrawerMenuState extends State<DrawerMenu> {
   @override
   Widget build(BuildContext context) {
     return TextScaleFactorClamper(
-      textScaleFactor: G0<DeviceInfo>().textClamp15,
+      textScaleFactor: deviceInfo.textClamp15,
       child: Drawer(
         //elevation: 120,
         child: Stack(

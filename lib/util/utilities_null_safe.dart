@@ -339,31 +339,31 @@ class Utilities {
   }
 
   // static Future<void> subscribeToGeoLocationStream() async {
-  //   G0<DeviceInfo>().deviceLat =
+  //   deviceInfo.deviceLat =
   //       getDoublePref(NumPrefsEnum.currentDeviceLat) ?? DEFAULT_LATITUDE;
-  //   G0<DeviceInfo>().deviceLon =
+  //   deviceInfo.deviceLon =
   //       getDoublePref(NumPrefsEnum.currentDeviceLon) ?? DEFAULT_LONGITUDE;
 
   //   IveCoreUtilities.logTiming(
   //     'Geostatus query start',
-  //     G0<AppModel>().appStartTime,
+  //     appModel.appStartTime,
   //   );
   //   final LocationPermission permission = await Geolocator.checkPermission();
 
   //   IveCoreUtilities.logTiming(
   //     'Geolocation query start',
-  //     G0<AppModel>().appStartTime,
+  //     appModel.appStartTime,
   //   );
   //   if ((permission == LocationPermission.always) ||
   //       (permission == LocationPermission.whileInUse)) {
-  //     G0<AppModel>().geoLocationStream = Geolocator.getPositionStream(
+  //     appModel.geoLocationStream = Geolocator.getPositionStream(
   //       locationSettings: const LocationSettings(
   //         accuracy: BASE_APP_LOCATION_ACCURACY,
   //         distanceFilter: 50,
   //       ),
   //     ).listen((Position position) {
-  //       G0<DeviceInfo>().deviceLat = position.latitude + 0.0;
-  //       G0<DeviceInfo>().deviceLon = position.longitude + 0.0;
+  //       deviceInfo.deviceLat = position.latitude + 0.0;
+  //       deviceInfo.deviceLon = position.longitude + 0.0;
   //       setNumPref(NumPrefsEnum.currentDeviceLat, position.latitude + 0.0);
   //       setNumPref(NumPrefsEnum.currentDeviceLon, position.longitude + 0.0);
   //       setDatePref(DatePrefsEnum.lastLocationUpdate, DateTime.now());
@@ -381,8 +381,8 @@ class Utilities {
   //         accuracy: LocationAccuracy.lowest,
   //       ),
   //     ).then((Position position) {
-  //       G0<DeviceInfo>().deviceLat = position.latitude;
-  //       G0<DeviceInfo>().deviceLon = position.longitude;
+  //       deviceInfo.deviceLat = position.latitude;
+  //       deviceInfo.deviceLon = position.longitude;
   //       setNumPref(NumPrefsEnum.currentDeviceLat, position.latitude + 0.0);
   //       setNumPref(NumPrefsEnum.currentDeviceLon, position.longitude + 0.0);
   //       setDatePref(DatePrefsEnum.lastLocationUpdate, DateTime.now());
@@ -400,8 +400,6 @@ class Utilities {
     final storedLon =
         (getDoublePref(NumPrefsEnum.currentDeviceLon) ?? DEFAULT_LONGITUDE)
             .toDouble();
-    final appModel = G0<AppModel>();
-    final deviceInfo = G0<DeviceInfo>();
 
     deviceInfo.deviceLat = storedLat;
     deviceInfo.deviceLon = storedLon;
@@ -431,7 +429,6 @@ class Utilities {
   }
 
   static void _updateDeviceLocation(Position position) {
-    final deviceInfo = G0<DeviceInfo>();
     final lat = position.latitude.toDouble();
     final lon = position.longitude.toDouble();
 
@@ -537,7 +534,7 @@ class Utilities {
   }
 
   static String getDistance(double meters, {bool isMetric = true}) {
-    if (!G0<AppModel>().hasLocationPermissions) {
+    if (!appModel.hasLocationPermissions) {
       return '';
     }
 
@@ -816,7 +813,7 @@ class Utilities {
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {
         if (jsonDecode(responseBody)[0][0]['result'] == 'Connected') {
-          G0<AppModel>().connectionStatus = EnumConnectionStatus2.connected;
+          appModel.connectionStatus = EnumConnectionStatus2.connected;
           // check against the Harrier Central backend succeeded
           return;
         }
@@ -856,7 +853,7 @@ class Utilities {
           'The Harrier Central App is able to access the network but is unable to connect to our backend server.\n\nThis can happen if there is a problem with the network or our service is down for maintenance.\n\nYou can use the app offline or close the app and try again later.',
           'OK',
         );
-        G0<AppModel>().connectionStatus = EnumConnectionStatus2.notConnected;
+        appModel.connectionStatus = EnumConnectionStatus2.notConnected;
         return;
       } else {
         // No internet at all — retry dialog
@@ -868,7 +865,7 @@ class Utilities {
           cancelButtonText: 'Try again',
         );
         if (useOffline ?? true) {
-          G0<AppModel>().connectionStatus = EnumConnectionStatus2.notConnected;
+          appModel.connectionStatus = EnumConnectionStatus2.notConnected;
           return;
         }
 
@@ -878,7 +875,7 @@ class Utilities {
     }
 
     // If we get here, everything is good
-    G0<AppModel>().connectionStatus = EnumConnectionStatus2.connected;
+    appModel.connectionStatus = EnumConnectionStatus2.connected;
   }
 
   static String getFullLatLong(EventModel evt) {
@@ -997,7 +994,7 @@ class Utilities {
             );
 
         if (retVal == enumCheckInOption_Yes) {
-          await G0<TableModel>().hasherEventMapService.setEventAttendence(
+          await tableModel.hasherEventMapService.setEventAttendence(
             result.eventId,
             userId,
             AppDomainType.user,
@@ -1073,7 +1070,7 @@ class Utilities {
           for (AreWeAtRunModel result in resultList) {
             if ((selectedRuns.containsKey(result.eventId)) &&
                 (selectedRuns[result.eventId] == true)) {
-              await G0<TableModel>().hasherEventMapService.setEventAttendence(
+              await tableModel.hasherEventMapService.setEventAttendence(
                 result.eventId,
                 userId,
                 AppDomainType.user,

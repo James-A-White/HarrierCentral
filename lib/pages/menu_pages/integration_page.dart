@@ -40,7 +40,7 @@
 //           ),
 //         ),
 //         OfflineModeRibbon(
-//           showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected,
+//           showRibbon: appModel.connectionStatus == EnumConnectionStatus2.notConnected,
 //           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
 //           ribbonImage: 'images/icons/offline_mode.png',
 //         ),
@@ -72,7 +72,7 @@
 //   @override
 //   Widget build(BuildContext context) {
 //     return Container(
-//       width: G0<DeviceInfo>().deviceWidth,
+//       width: deviceInfo.deviceWidth,
 //       child: Column(children: <Widget>[
 //         Padding(
 //           padding: const EdgeInsets.only(top: 40, bottom: 10, left: 20, right: 20),

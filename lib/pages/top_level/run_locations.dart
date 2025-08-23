@@ -298,13 +298,10 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                     latlng.LatLng(_homeKennelLat!, _homeKennelLon!),
                     _mapController.camera.zoom,
                   );
-                } else if ((G0<DeviceInfo>().deviceLat != null) &&
-                    (G0<DeviceInfo>().deviceLon != null)) {
+                } else if ((deviceInfo.deviceLat != null) &&
+                    (deviceInfo.deviceLon != null)) {
                   _mapController.move(
-                    latlng.LatLng(
-                      G0<DeviceInfo>().deviceLat!,
-                      G0<DeviceInfo>().deviceLon!,
-                    ),
+                    latlng.LatLng(deviceInfo.deviceLat!, deviceInfo.deviceLon!),
                     _mapController.camera.zoom,
                   );
                 }
@@ -324,13 +321,10 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                 _mapCenterOption = centerOnCurrentLocation.value;
                 setIntPref(IntPrefsEnum.mapCenterOption, _mapCenterOption);
 
-                if ((G0<DeviceInfo>().deviceLat != null) &&
-                    (G0<DeviceInfo>().deviceLon != null)) {
+                if ((deviceInfo.deviceLat != null) &&
+                    (deviceInfo.deviceLon != null)) {
                   _mapController.move(
-                    latlng.LatLng(
-                      G0<DeviceInfo>().deviceLat!,
-                      G0<DeviceInfo>().deviceLon!,
-                    ),
+                    latlng.LatLng(deviceInfo.deviceLat!, deviceInfo.deviceLon!),
                     _mapController.camera.zoom,
                   );
                 }
@@ -396,38 +390,36 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
 
           SELECT 
             evt.*,
-            case when evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then evt.${G0<TableModel>().eventsTableHelper.colHcLatitude} else coalesce(evt.${G0<TableModel>().eventsTableHelper.colFbLatitude},evt.${G0<TableModel>().eventsTableHelper.colHcLatitude}) end as lat,
-            case when evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then evt.${G0<TableModel>().eventsTableHelper.colHcLongitude} else coalesce(evt.${G0<TableModel>().eventsTableHelper.colFbLongitude},evt.${G0<TableModel>().eventsTableHelper.colHcLongitude}) end as lon,
-            case when ((evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 AND evt.${G0<TableModel>().eventsTableHelper.colHcLongitude} IS NOT NULL) OR ((evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 1 AND coalesce(evt.${G0<TableModel>().eventsTableHelper.colFbLatitude},evt.${G0<TableModel>().eventsTableHelper.colHcLongitude}) IS NOT NULL))) THEN 1 ELSE 0 END as isMapAndDistanceValid,
-            coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
-            coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState},0) as rsvpState,
-            coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare},0) as isHare,
+            case when evt.${tableModel.eventsTableHelper.colUseFbLatLon} = 0 then evt.${tableModel.eventsTableHelper.colHcLatitude} else coalesce(evt.${tableModel.eventsTableHelper.colFbLatitude},evt.${tableModel.eventsTableHelper.colHcLatitude}) end as lat,
+            case when evt.${tableModel.eventsTableHelper.colUseFbLatLon} = 0 then evt.${tableModel.eventsTableHelper.colHcLongitude} else coalesce(evt.${tableModel.eventsTableHelper.colFbLongitude},evt.${tableModel.eventsTableHelper.colHcLongitude}) end as lon,
+            case when ((evt.${tableModel.eventsTableHelper.colUseFbLatLon} = 0 AND evt.${tableModel.eventsTableHelper.colHcLongitude} IS NOT NULL) OR ((evt.${tableModel.eventsTableHelper.colUseFbLatLon} = 1 AND coalesce(evt.${tableModel.eventsTableHelper.colFbLatitude},evt.${tableModel.eventsTableHelper.colHcLongitude}) IS NOT NULL))) THEN 1 ELSE 0 END as isMapAndDistanceValid,
+            coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
+            coalesce(hem.${tableModel.hasherEventMapTableHelper.colRsvpState},0) as rsvpState,
+            coalesce(hem.${tableModel.hasherEventMapTableHelper.colIsHare},0) as isHare,
             k.*,
             ${QueryRuns.searchRunsField}
-            FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} evt
-            INNER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k on evt.${G0<TableModel>().eventsTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId}
-            INNER JOIN ${G0<TableModel>().citiesTableHelper.getTableName(AppDomainType.user)} c on c.${G0<TableModel>().citiesTableHelper.colCityId} = k.${G0<TableModel>().kennelsTableHelper.colCityId}
-            INNER JOIN ${G0<TableModel>().regionsTableHelper.getTableName(AppDomainType.user)} r on r.${G0<TableModel>().regionsTableHelper.colRegionId} = k.${G0<TableModel>().kennelsTableHelper.colRegionId}
-            INNER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} n on n.${G0<TableModel>().countriesTableHelper.colCountryId} = k.${G0<TableModel>().kennelsTableHelper.colCountryId}
-            LEFT OUTER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user)} hem on hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} = evt.${G0<TableModel>().eventsTableHelper.colEventId} AND hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = "$userId"
-            WHERE evt.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1
+            FROM ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} evt
+            INNER JOIN ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} k on evt.${tableModel.eventsTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId}
+            INNER JOIN ${tableModel.citiesTableHelper.getTableName(AppDomainType.user)} c on c.${tableModel.citiesTableHelper.colCityId} = k.${tableModel.kennelsTableHelper.colCityId}
+            INNER JOIN ${tableModel.regionsTableHelper.getTableName(AppDomainType.user)} r on r.${tableModel.regionsTableHelper.colRegionId} = k.${tableModel.kennelsTableHelper.colRegionId}
+            INNER JOIN ${tableModel.countriesTableHelper.getTableName(AppDomainType.user)} n on n.${tableModel.countriesTableHelper.colCountryId} = k.${tableModel.kennelsTableHelper.colCountryId}
+            LEFT OUTER JOIN ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.user)} hem on hem.${tableModel.hasherEventMapTableHelper.colEventId} = evt.${tableModel.eventsTableHelper.colEventId} AND hem.${tableModel.hasherEventMapTableHelper.colUserId} = "$userId"
+            WHERE evt.${tableModel.eventsTableHelper.colIsVisible} = 1
             
           ''';
 
     if ((widget.kennel != null) && (widget.kennel!.kennelId.isNotEmpty)) {
       query =
-          '''$query AND evt.${G0<TableModel>().eventsTableHelper.colKennelId} = "${widget.kennel!.kennelId}"
+          '''$query AND evt.${tableModel.eventsTableHelper.colKennelId} = "${widget.kennel!.kennelId}"
           ''';
     }
 
     query =
-        '''$query ORDER BY evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}
+        '''$query ORDER BY evt.${tableModel.eventsTableHelper.colEventStartDatetime}
     ''';
 
     try {
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
-        query,
-      );
+      final List<Map<String, dynamic>> results = await database.rawQuery(query);
       _allRuns = <dynamic>[];
 
       _runLocationMarkers = <Marker>[];
@@ -528,25 +520,25 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
     String query = '''
 
           SELECT 
-            k.${G0<TableModel>().kennelsTableHelper.colKennelId} as kennelId,
-            k.${G0<TableModel>().kennelsTableHelper.colKennelLogo} as logo,
-            k.${G0<TableModel>().kennelsTableHelper.colKennelShortName} as shortName,
-            k.${G0<TableModel>().kennelsTableHelper.colKennelLatitude} as lat,
-            k.${G0<TableModel>().kennelsTableHelper.colKennelLongitude} as lon,
+            k.${tableModel.kennelsTableHelper.colKennelId} as kennelId,
+            k.${tableModel.kennelsTableHelper.colKennelLogo} as logo,
+            k.${tableModel.kennelsTableHelper.colKennelShortName} as shortName,
+            k.${tableModel.kennelsTableHelper.colKennelLatitude} as lat,
+            k.${tableModel.kennelsTableHelper.colKennelLongitude} as lon,
             ${QueryKennels.searchKennelsField}
-            FROM ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k 
-            INNER JOIN ${G0<TableModel>().citiesTableHelper.getTableName(AppDomainType.user)} c on c.${G0<TableModel>().citiesTableHelper.colCityId} = k.${G0<TableModel>().kennelsTableHelper.colCityId}
-            INNER JOIN ${G0<TableModel>().regionsTableHelper.getTableName(AppDomainType.user)} r on r.${G0<TableModel>().regionsTableHelper.colRegionId} = k.${G0<TableModel>().kennelsTableHelper.colRegionId}
-            INNER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} n on n.${G0<TableModel>().countriesTableHelper.colCountryId} = k.${G0<TableModel>().kennelsTableHelper.colCountryId}
+            FROM ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} k 
+            INNER JOIN ${tableModel.citiesTableHelper.getTableName(AppDomainType.user)} c on c.${tableModel.citiesTableHelper.colCityId} = k.${tableModel.kennelsTableHelper.colCityId}
+            INNER JOIN ${tableModel.regionsTableHelper.getTableName(AppDomainType.user)} r on r.${tableModel.regionsTableHelper.colRegionId} = k.${tableModel.kennelsTableHelper.colRegionId}
+            INNER JOIN ${tableModel.countriesTableHelper.getTableName(AppDomainType.user)} n on n.${tableModel.countriesTableHelper.colCountryId} = k.${tableModel.kennelsTableHelper.colCountryId}
 
            ''';
 
     if ((widget.kennel != null) && (widget.kennel!.kennelId.isNotEmpty)) {
       query =
-          '''$query WHERE k.${G0<TableModel>().kennelsTableHelper.colKennelId} = "${widget.kennel!.kennelId}"''';
+          '''$query WHERE k.${tableModel.kennelsTableHelper.colKennelId} = "${widget.kennel!.kennelId}"''';
     }
 
-    _allKennels = await G0<Database>().rawQuery(query);
+    _allKennels = await database.rawQuery(query);
 
     _filterKennels();
     _buildKennelMarkers();
@@ -623,7 +615,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
   }) {
     return GestureDetector(
       onTap: () async {
-        final RunDetailsAggregate? run = await G0<TableModel>().eventsService
+        final RunDetailsAggregate? run = await tableModel.eventsService
             .getSingleRun(eventId);
 
         if ((!mounted) || (run == null)) return;
@@ -674,19 +666,20 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
         if (results.isNotEmpty) {
           double? dist;
 
-          if ((G0<DeviceInfo>().deviceLat != null) &&
-              (G0<DeviceInfo>().deviceLon != null)) {
+          if ((deviceInfo.deviceLat != null) &&
+              (deviceInfo.deviceLon != null)) {
             dist = Geolocator.distanceBetween(
-              G0<DeviceInfo>().deviceLat!,
-              G0<DeviceInfo>().deviceLon!,
+              deviceInfo.deviceLat!,
+              deviceInfo.deviceLon!,
               results[0]['cityLat'],
               results[0]['cityLon'],
             );
           }
 
-          final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper
-              .fromMap(results[0]);
-          final HasherKennelMapModel hkmItem = G0<TableModel>()
+          final KennelsModel kennelItem = tableModel.kennelsTableHelper.fromMap(
+            results[0],
+          );
+          final HasherKennelMapModel hkmItem = tableModel
               .hasherKennelMapTableHelper
               .fromMap(results[0]);
           final KennelListQueryExtenstions extensionsItem =
@@ -841,11 +834,11 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                     ),
                     initialCenter:
                         ((_mapCenterOption == centerOnCurrentLocation.value) &&
-                                (G0<DeviceInfo>().deviceLat != null) &&
-                                (G0<DeviceInfo>().deviceLon != null))
+                                (deviceInfo.deviceLat != null) &&
+                                (deviceInfo.deviceLon != null))
                             ? latlng.LatLng(
-                              G0<DeviceInfo>().deviceLat!,
-                              G0<DeviceInfo>().deviceLon!,
+                              deviceInfo.deviceLat!,
+                              deviceInfo.deviceLon!,
                             )
                             : ((_mapCenterOption == centerOnHomeKennel.value) &&
                                 (_homeKennelLat != null) &&
@@ -859,8 +852,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                               widget.kennel!.kennelLongitude!,
                             )
                             : latlng.LatLng(
-                              G0<DeviceInfo>().deviceLat ?? DEFAULT_LATITUDE,
-                              G0<DeviceInfo>().deviceLon ?? DEFAULT_LONGITUDE,
+                              deviceInfo.deviceLat ?? DEFAULT_LATITUDE,
+                              deviceInfo.deviceLon ?? DEFAULT_LONGITUDE,
                             ),
 
                     initialZoom: 10.0,
@@ -880,15 +873,15 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                     ),
                     MarkerLayer(
                       markers: <Marker>[
-                        if ((G0<AppModel>().hasLocationPermissions) &&
-                            (G0<DeviceInfo>().deviceLat != null) &&
-                            (G0<DeviceInfo>().deviceLon != null)) ...<Marker>[
+                        if ((appModel.hasLocationPermissions) &&
+                            (deviceInfo.deviceLat != null) &&
+                            (deviceInfo.deviceLon != null)) ...<Marker>[
                           Marker(
                             height: 50.0,
                             width: 50.0,
                             point: latlng.LatLng(
-                              G0<DeviceInfo>().deviceLat!,
-                              G0<DeviceInfo>().deviceLon!,
+                              deviceInfo.deviceLat!,
+                              deviceInfo.deviceLon!,
                             ),
                             child: Container(
                               padding: const EdgeInsets.all(1.0),
@@ -970,9 +963,9 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                     // )
                   ],
                 ),
-                if ((G0<AppModel>().hasLocationPermissions) &&
-                    (G0<DeviceInfo>().deviceLat != null) &&
-                    (G0<DeviceInfo>().deviceLon != null)) ...<Widget>[
+                if ((appModel.hasLocationPermissions) &&
+                    (deviceInfo.deviceLat != null) &&
+                    (deviceInfo.deviceLon != null)) ...<Widget>[
                   Positioned(
                     right: 10.0,
                     top: 60.0,
@@ -981,8 +974,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                         setState(() {
                           _mapController.move(
                             latlng.LatLng(
-                              G0<DeviceInfo>().deviceLat!,
-                              G0<DeviceInfo>().deviceLon!,
+                              deviceInfo.deviceLat!,
+                              deviceInfo.deviceLon!,
                             ),
                             13.0,
                           );
@@ -1080,7 +1073,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                   ),
         ),
         // OfflineModeRibbon(
-        //   showRibbon: G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected,
+        //   showRibbon: appModel.connectionStatus == EnumConnectionStatus2.notConnected,
         //   lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
         //   ribbonImage: 'images/icons/offline_mode.png',
         // ),

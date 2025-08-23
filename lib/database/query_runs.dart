@@ -104,48 +104,48 @@ class QueryRuns {
   num dummyVariableToSuppressWarning = 0;
 
   static String searchRunsField = '''
-               "~ " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colEventName},"")
-            || " is " || coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelShortName},"") 
-            || " is " || coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelName},"")   
-            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colEventDescription},"")
-            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colHares},"")
-            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationCity},"")
-            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationCountry},"")
-            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationOneLineDesc},"")
-            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationPostCode},"")
-            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationRegion},"")
-            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationStreet},"")
-            || " " || coalesce(evt.${G0<TableModel>().eventsTableHelper.colLocationSubRegion},"")
-            || " " || case when evt.${G0<TableModel>().eventsTableHelper.colEventNumber} IS NOT NULL THEN cast(evt.${G0<TableModel>().eventsTableHelper.colEventNumber} as TEXT) END
-            || " " || c.${G0<TableModel>().citiesTableHelper.colCityName} 
-            || " " || r.${G0<TableModel>().regionsTableHelper.colRegionName}
-            || " " || coalesce(r.${G0<TableModel>().regionsTableHelper.colRegionAbbreviation},"") 
-            || " " || n.${G0<TableModel>().countriesTableHelper.colCountryName} 
-            || " " || n.${G0<TableModel>().countriesTableHelper.colCountryCode} 
-            || " " || replace(coalesce(c.${G0<TableModel>().citiesTableHelper.colCitySearchTags},""),","," ") 
-            || " " || replace(coalesce(r.${G0<TableModel>().regionsTableHelper.colRegionSearchTags},""),","," ") 
-            || " " || replace(coalesce(n.${G0<TableModel>().countriesTableHelper.colCountrySearchTags},""),","," ") 
-            || " " || replace(coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelSearchTags},""),","," ") 
+               "~ " || coalesce(evt.${tableModel.eventsTableHelper.colEventName},"")
+            || " is " || coalesce(k.${tableModel.kennelsTableHelper.colKennelShortName},"") 
+            || " is " || coalesce(k.${tableModel.kennelsTableHelper.colKennelName},"")   
+            || " " || coalesce(evt.${tableModel.eventsTableHelper.colEventDescription},"")
+            || " " || coalesce(evt.${tableModel.eventsTableHelper.colHares},"")
+            || " " || coalesce(evt.${tableModel.eventsTableHelper.colLocationCity},"")
+            || " " || coalesce(evt.${tableModel.eventsTableHelper.colLocationCountry},"")
+            || " " || coalesce(evt.${tableModel.eventsTableHelper.colLocationOneLineDesc},"")
+            || " " || coalesce(evt.${tableModel.eventsTableHelper.colLocationPostCode},"")
+            || " " || coalesce(evt.${tableModel.eventsTableHelper.colLocationRegion},"")
+            || " " || coalesce(evt.${tableModel.eventsTableHelper.colLocationStreet},"")
+            || " " || coalesce(evt.${tableModel.eventsTableHelper.colLocationSubRegion},"")
+            || " " || case when evt.${tableModel.eventsTableHelper.colEventNumber} IS NOT NULL THEN cast(evt.${tableModel.eventsTableHelper.colEventNumber} as TEXT) END
+            || " " || c.${tableModel.citiesTableHelper.colCityName} 
+            || " " || r.${tableModel.regionsTableHelper.colRegionName}
+            || " " || coalesce(r.${tableModel.regionsTableHelper.colRegionAbbreviation},"") 
+            || " " || n.${tableModel.countriesTableHelper.colCountryName} 
+            || " " || n.${tableModel.countriesTableHelper.colCountryCode} 
+            || " " || replace(coalesce(c.${tableModel.citiesTableHelper.colCitySearchTags},""),","," ") 
+            || " " || replace(coalesce(r.${tableModel.regionsTableHelper.colRegionSearchTags},""),","," ") 
+            || " " || replace(coalesce(n.${tableModel.countriesTableHelper.colCountrySearchTags},""),","," ") 
+            || " " || replace(coalesce(k.${tableModel.kennelsTableHelper.colKennelSearchTags},""),","," ") 
             || " " || 
               case 
-              when evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} = 1 THEN "not event is local" 
-              when evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} = 2 THEN "is event is local" 
-              when evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} = 3 THEN "is event is regional is state" 
-              when evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} = 4 THEN "is event is national is nash hash is nashhash" 
-              when evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} = 5 THEN "is event is continental is interhash" 
-              when evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} = 6 THEN "is event is global is world interhash" 
-              when evt.${G0<TableModel>().eventsTableHelper.colEventGeographicScope} = 7 THEN "is event is other" 
+              when evt.${tableModel.eventsTableHelper.colEventGeographicScope} = 1 THEN "not event is local" 
+              when evt.${tableModel.eventsTableHelper.colEventGeographicScope} = 2 THEN "is event is local" 
+              when evt.${tableModel.eventsTableHelper.colEventGeographicScope} = 3 THEN "is event is regional is state" 
+              when evt.${tableModel.eventsTableHelper.colEventGeographicScope} = 4 THEN "is event is national is nash hash is nashhash" 
+              when evt.${tableModel.eventsTableHelper.colEventGeographicScope} = 5 THEN "is event is continental is interhash" 
+              when evt.${tableModel.eventsTableHelper.colEventGeographicScope} = 6 THEN "is event is global is world interhash" 
+              when evt.${tableModel.eventsTableHelper.colEventGeographicScope} = 7 THEN "is event is other" 
               else "" 
               end 
             || " " || 
               case 
-              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "EU" then "europe" 
-              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "AF" then "africa" 
-              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "AS" then "asia" 
-              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "NA" then "north america" 
-              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "SA" then "south america" 
-              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "OC" then "oceania" 
-              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "AN" then "antarctica" 
+              when n.${tableModel.countriesTableHelper.colContinentCode} = "EU" then "europe" 
+              when n.${tableModel.countriesTableHelper.colContinentCode} = "AF" then "africa" 
+              when n.${tableModel.countriesTableHelper.colContinentCode} = "AS" then "asia" 
+              when n.${tableModel.countriesTableHelper.colContinentCode} = "NA" then "north america" 
+              when n.${tableModel.countriesTableHelper.colContinentCode} = "SA" then "south america" 
+              when n.${tableModel.countriesTableHelper.colContinentCode} = "OC" then "oceania" 
+              when n.${tableModel.countriesTableHelper.colContinentCode} = "AN" then "antarctica" 
               else "" 
               end || " ~" 
           as searchRunsText
@@ -216,7 +216,7 @@ class QueryRuns {
 
     //final Geolocator locator = Geolocator();
 
-    IveCoreUtilities.logTiming('Run query start', G0<AppModel>().appStartTime);
+    IveCoreUtilities.logTiming('Run query start', appModel.appStartTime);
     final List<Map<String, dynamic>> results = await QueryRuns.queryRuns(
       queryType,
       EnumRunQueryContext.user,
@@ -224,44 +224,45 @@ class QueryRuns {
       eventId: eventId,
     );
 
-    IveCoreUtilities.logTiming('Run query end', G0<AppModel>().appStartTime);
+    IveCoreUtilities.logTiming('Run query end', appModel.appStartTime);
 
     for (int i = 0; i < results.length; i++) {
-      final EventModel eventItem = G0<TableModel>().eventsTableHelper.fromMap(
+      final EventModel eventItem = tableModel.eventsTableHelper.fromMap(
         results[i],
       );
-      final KennelsModel kennelItem = G0<TableModel>().kennelsTableHelper
-          .fromMap(results[i]);
-      final CitiesModel cityItem = G0<TableModel>().citiesTableHelper.fromMap(
+      final KennelsModel kennelItem = tableModel.kennelsTableHelper.fromMap(
+        results[i],
+      );
+      final CitiesModel cityItem = tableModel.citiesTableHelper.fromMap(
         results[i],
       );
 
       double? dist;
       if ((results[i]['evtLat'] != null) &&
           (results[i]['evtLon'] != null) &&
-          (G0<DeviceInfo>().deviceLat != null) &&
-          (G0<DeviceInfo>().deviceLon != null)) {
+          (deviceInfo.deviceLat != null) &&
+          (deviceInfo.deviceLon != null)) {
         dist = Geolocator.distanceBetween(
-          G0<DeviceInfo>().deviceLat!,
-          G0<DeviceInfo>().deviceLon!,
+          deviceInfo.deviceLat!,
+          deviceInfo.deviceLon!,
           results[i]['evtLat'],
           results[i]['evtLon'],
         );
       } else if ((kennelItem.kennelLatitude != null) &&
           (kennelItem.kennelLongitude != null) &&
-          (G0<DeviceInfo>().deviceLat != null) &&
-          (G0<DeviceInfo>().deviceLon != null)) {
+          (deviceInfo.deviceLat != null) &&
+          (deviceInfo.deviceLon != null)) {
         dist = Geolocator.distanceBetween(
-          G0<DeviceInfo>().deviceLat!,
-          G0<DeviceInfo>().deviceLon!,
+          deviceInfo.deviceLat!,
+          deviceInfo.deviceLon!,
           kennelItem.kennelLatitude!,
           kennelItem.kennelLongitude!,
         );
-      } else if ((G0<DeviceInfo>().deviceLat != null) &&
-          (G0<DeviceInfo>().deviceLon != null)) {
+      } else if ((deviceInfo.deviceLat != null) &&
+          (deviceInfo.deviceLon != null)) {
         dist = Geolocator.distanceBetween(
-          G0<DeviceInfo>().deviceLat!,
-          G0<DeviceInfo>().deviceLon!,
+          deviceInfo.deviceLat!,
+          deviceInfo.deviceLon!,
           cityItem.latitude,
           cityItem.longitude,
         );
@@ -359,33 +360,33 @@ class QueryRuns {
 
     switch (queryContext) {
       case EnumRunQueryContext.user:
-        hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(
+        hkmTable = tableModel.hasherKennelMapTableHelper.getTableName(
           AppDomainType.user,
         );
-        hemTable = G0<TableModel>().hasherEventMapTableHelper.getTableName(
+        hemTable = tableModel.hasherEventMapTableHelper.getTableName(
           AppDomainType.user,
         );
-        paymentsTable = G0<TableModel>().paymentsTableHelper.getTableName(
+        paymentsTable = tableModel.paymentsTableHelper.getTableName(
           AppDomainType.user,
         );
         break;
       case EnumRunQueryContext.kennelAdmin:
-        hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(
+        hkmTable = tableModel.hasherKennelMapTableHelper.getTableName(
           AppDomainType.kennel,
         );
-        hemTable = G0<TableModel>().hasherEventMapTableHelper.getTableName(
+        hemTable = tableModel.hasherEventMapTableHelper.getTableName(
           AppDomainType.user,
         );
-        //paymentsTable = G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.kennel);
+        //paymentsTable = tableModel.paymentsTableHelper.getTableName(AppDomainType.kennel);
         break;
       case EnumRunQueryContext.eventAdmin:
-        hkmTable = G0<TableModel>().hasherKennelMapTableHelper.getTableName(
+        hkmTable = tableModel.hasherKennelMapTableHelper.getTableName(
           AppDomainType.event,
         );
-        hemTable = G0<TableModel>().hasherEventMapTableHelper.getTableName(
+        hemTable = tableModel.hasherEventMapTableHelper.getTableName(
           AppDomainType.event,
         );
-        paymentsTable = G0<TableModel>().paymentsTableHelper.getTableName(
+        paymentsTable = tableModel.paymentsTableHelper.getTableName(
           AppDomainType.event,
         );
         break;
@@ -402,21 +403,21 @@ class QueryRuns {
           k.*,
           c.*,
 
-          case when evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then evt.${G0<TableModel>().eventsTableHelper.colHcLatitude} else coalesce(evt.${G0<TableModel>().eventsTableHelper.colFbLatitude},evt.${G0<TableModel>().eventsTableHelper.colHcLatitude}) end as evtLat,
-          case when evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then evt.${G0<TableModel>().eventsTableHelper.colHcLongitude} else coalesce(evt.${G0<TableModel>().eventsTableHelper.colFbLongitude},evt.${G0<TableModel>().eventsTableHelper.colHcLongitude}) end as evtLon,
-          case when ((evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 AND evt.${G0<TableModel>().eventsTableHelper.colHcLongitude} IS NOT NULL) OR ((evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 1 AND coalesce(evt.${G0<TableModel>().eventsTableHelper.colFbLatitude},evt.${G0<TableModel>().eventsTableHelper.colHcLongitude}) IS NOT NULL))) THEN 1 ELSE 0 END as isMapAndDistanceValid,
+          case when evt.${tableModel.eventsTableHelper.colUseFbLatLon} = 0 then evt.${tableModel.eventsTableHelper.colHcLatitude} else coalesce(evt.${tableModel.eventsTableHelper.colFbLatitude},evt.${tableModel.eventsTableHelper.colHcLatitude}) end as evtLat,
+          case when evt.${tableModel.eventsTableHelper.colUseFbLatLon} = 0 then evt.${tableModel.eventsTableHelper.colHcLongitude} else coalesce(evt.${tableModel.eventsTableHelper.colFbLongitude},evt.${tableModel.eventsTableHelper.colHcLongitude}) end as evtLon,
+          case when ((evt.${tableModel.eventsTableHelper.colUseFbLatLon} = 0 AND evt.${tableModel.eventsTableHelper.colHcLongitude} IS NOT NULL) OR ((evt.${tableModel.eventsTableHelper.colUseFbLatLon} = 1 AND coalesce(evt.${tableModel.eventsTableHelper.colFbLatitude},evt.${tableModel.eventsTableHelper.colHcLongitude}) IS NOT NULL))) THEN 1 ELSE 0 END as isMapAndDistanceValid,
 
           coalesce(hkm.appAccessFlags,0) as appAccessFlags,
           coalesce(hkm.following,0) as following,
-          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState},0) as rsvpState,
-          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
+          coalesce(hem.${tableModel.hasherEventMapTableHelper.colRsvpState},0) as rsvpState,
+          coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
           0 as isPaid,
-          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare},0) as isHare,
+          coalesce(hem.${tableModel.hasherEventMapTableHelper.colIsHare},0) as isHare,
           case when ((hkm.membershipExpirationDate IS NOT NULL) AND (julianday(hkm.membershipExpirationDate) >= julianday('now','localtime'))) then 1 else 0 end as isMember,
           coalesce(hkm.kennelNotificationPreference,0) as notificationPreference,
           coalesce(hkm.kennelEmailAlertPreference,0) as emailAlertPreference,
-          COALESCE(k.${G0<TableModel>().kennelsTableHelper.colDigitsAfterDecimal},n.${G0<TableModel>().countriesTableHelper.colDigitsAfterDecimal}) as ${G0<TableModel>().countriesTableHelper.colDigitsAfterDecimal},
-          COALESCE(k.${G0<TableModel>().kennelsTableHelper.colCurrencySymbol},n.${G0<TableModel>().countriesTableHelper.colCurrencySymbol}) as ${G0<TableModel>().countriesTableHelper.colCurrencySymbol},
+          COALESCE(k.${tableModel.kennelsTableHelper.colDigitsAfterDecimal},n.${tableModel.countriesTableHelper.colDigitsAfterDecimal}) as ${tableModel.countriesTableHelper.colDigitsAfterDecimal},
+          COALESCE(k.${tableModel.kennelsTableHelper.colCurrencySymbol},n.${tableModel.countriesTableHelper.colCurrencySymbol}) as ${tableModel.countriesTableHelper.colCurrencySymbol},
           COALESCE(k.distancePreference,n.distancePreference,0) as distanceUnitsPref,
           CAST(julianday(evt.eventStartDatetime) + 0.5 AS INT) - CAST(julianday('now','localtime') + 0.5 AS INT) as daysUntilEvent,
           julianday(evt.eventStartDatetime) + 0.5 as eventJulian,
@@ -424,9 +425,9 @@ class QueryRuns {
           $searchRunsField
           FROM narrowEvents evt
           INNER JOIN kennels k on k.kennelId = evt.kennelId
-          INNER JOIN ${G0<TableModel>().citiesTableHelper.getTableName(AppDomainType.user)} c on c.${G0<TableModel>().citiesTableHelper.colCityId} = k.${G0<TableModel>().kennelsTableHelper.colCityId}
-          INNER JOIN ${G0<TableModel>().regionsTableHelper.getTableName(AppDomainType.user)} r on r.${G0<TableModel>().regionsTableHelper.colRegionId} = k.${G0<TableModel>().kennelsTableHelper.colRegionId}
-          INNER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} n on n.${G0<TableModel>().countriesTableHelper.colCountryId} = k.${G0<TableModel>().kennelsTableHelper.colCountryId}
+          INNER JOIN ${tableModel.citiesTableHelper.getTableName(AppDomainType.user)} c on c.${tableModel.citiesTableHelper.colCityId} = k.${tableModel.kennelsTableHelper.colCityId}
+          INNER JOIN ${tableModel.regionsTableHelper.getTableName(AppDomainType.user)} r on r.${tableModel.regionsTableHelper.colRegionId} = k.${tableModel.kennelsTableHelper.colRegionId}
+          INNER JOIN ${tableModel.countriesTableHelper.getTableName(AppDomainType.user)} n on n.${tableModel.countriesTableHelper.colCountryId} = k.${tableModel.kennelsTableHelper.colCountryId}
           LEFT OUTER JOIN $hkmTable hkm on hkm.kennelId = evt.kennelId and hkm.userId = "$userId"
           LEFT OUTER JOIN $hemTable hem on hem.eventId = evt.eventId and hem.userId = "$userId"
           ''';
@@ -438,21 +439,21 @@ class QueryRuns {
           k.*,
           c.*,
 
-          case when evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then evt.${G0<TableModel>().eventsTableHelper.colHcLatitude} else coalesce(evt.${G0<TableModel>().eventsTableHelper.colFbLatitude},evt.${G0<TableModel>().eventsTableHelper.colHcLatitude}) end as evtLat,
-          case when evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 then evt.${G0<TableModel>().eventsTableHelper.colHcLongitude} else coalesce(evt.${G0<TableModel>().eventsTableHelper.colFbLongitude},evt.${G0<TableModel>().eventsTableHelper.colHcLongitude}) end as evtLon,
-          case when ((evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 0 AND evt.${G0<TableModel>().eventsTableHelper.colHcLongitude} IS NOT NULL) OR ((evt.${G0<TableModel>().eventsTableHelper.colUseFbLatLon} = 1 AND coalesce(evt.${G0<TableModel>().eventsTableHelper.colFbLatitude},evt.${G0<TableModel>().eventsTableHelper.colHcLongitude}) IS NOT NULL))) THEN 1 ELSE 0 END as isMapAndDistanceValid,
+          case when evt.${tableModel.eventsTableHelper.colUseFbLatLon} = 0 then evt.${tableModel.eventsTableHelper.colHcLatitude} else coalesce(evt.${tableModel.eventsTableHelper.colFbLatitude},evt.${tableModel.eventsTableHelper.colHcLatitude}) end as evtLat,
+          case when evt.${tableModel.eventsTableHelper.colUseFbLatLon} = 0 then evt.${tableModel.eventsTableHelper.colHcLongitude} else coalesce(evt.${tableModel.eventsTableHelper.colFbLongitude},evt.${tableModel.eventsTableHelper.colHcLongitude}) end as evtLon,
+          case when ((evt.${tableModel.eventsTableHelper.colUseFbLatLon} = 0 AND evt.${tableModel.eventsTableHelper.colHcLongitude} IS NOT NULL) OR ((evt.${tableModel.eventsTableHelper.colUseFbLatLon} = 1 AND coalesce(evt.${tableModel.eventsTableHelper.colFbLatitude},evt.${tableModel.eventsTableHelper.colHcLongitude}) IS NOT NULL))) THEN 1 ELSE 0 END as isMapAndDistanceValid,
 
           coalesce(hkm.appAccessFlags,0) as appAccessFlags,
           coalesce(hkm.following,0) as following,
-          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState},0) as rsvpState,
-          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
+          coalesce(hem.${tableModel.hasherEventMapTableHelper.colRsvpState},0) as rsvpState,
+          coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
           CASE WHEN coalesce(pay.paymentType,0) >= 2 THEN 1 ELSE 0 END as isPaid,
-          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare},0) as isHare,
+          coalesce(hem.${tableModel.hasherEventMapTableHelper.colIsHare},0) as isHare,
           case when ((hkm.membershipExpirationDate IS NOT NULL) AND (julianday(hkm.membershipExpirationDate) >= julianday('now','localtime'))) then 1 else 0 end as isMember,
           coalesce(hem.eventNotificationPreference,hkm.kennelNotificationPreference,0) as notificationPreference,
           coalesce(hem.eventEmailAlertPreference,hkm.kennelEmailAlertPreference,0) as emailAlertPreference,
-          COALESCE(k.${G0<TableModel>().kennelsTableHelper.colDigitsAfterDecimal},n.${G0<TableModel>().countriesTableHelper.colDigitsAfterDecimal}) as ${G0<TableModel>().countriesTableHelper.colDigitsAfterDecimal},
-          COALESCE(k.${G0<TableModel>().kennelsTableHelper.colCurrencySymbol},n.${G0<TableModel>().countriesTableHelper.colCurrencySymbol}) as ${G0<TableModel>().countriesTableHelper.colCurrencySymbol},
+          COALESCE(k.${tableModel.kennelsTableHelper.colDigitsAfterDecimal},n.${tableModel.countriesTableHelper.colDigitsAfterDecimal}) as ${tableModel.countriesTableHelper.colDigitsAfterDecimal},
+          COALESCE(k.${tableModel.kennelsTableHelper.colCurrencySymbol},n.${tableModel.countriesTableHelper.colCurrencySymbol}) as ${tableModel.countriesTableHelper.colCurrencySymbol},
           COALESCE(k.distancePreference,n.distancePreference,0) as distanceUnitsPref,
           CAST(julianday(evt.eventStartDatetime) + 0.5 AS INT) - CAST(julianday('now','localtime') + 0.5 AS INT) as daysUntilEvent,
           julianday(evt.eventStartDatetime) + 0.5 as eventJulian,
@@ -460,19 +461,19 @@ class QueryRuns {
           $searchRunsField
           FROM narrowEvents evt
           INNER JOIN kennels k on k.kennelId = evt.kennelId
-          INNER JOIN ${G0<TableModel>().citiesTableHelper.getTableName(AppDomainType.user)} c on c.${G0<TableModel>().citiesTableHelper.colCityId} = k.${G0<TableModel>().kennelsTableHelper.colCityId}
-          INNER JOIN ${G0<TableModel>().regionsTableHelper.getTableName(AppDomainType.user)} r on r.${G0<TableModel>().regionsTableHelper.colRegionId} = k.${G0<TableModel>().kennelsTableHelper.colRegionId}
-          INNER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} n on n.${G0<TableModel>().countriesTableHelper.colCountryId} = k.${G0<TableModel>().kennelsTableHelper.colCountryId}
+          INNER JOIN ${tableModel.citiesTableHelper.getTableName(AppDomainType.user)} c on c.${tableModel.citiesTableHelper.colCityId} = k.${tableModel.kennelsTableHelper.colCityId}
+          INNER JOIN ${tableModel.regionsTableHelper.getTableName(AppDomainType.user)} r on r.${tableModel.regionsTableHelper.colRegionId} = k.${tableModel.kennelsTableHelper.colRegionId}
+          INNER JOIN ${tableModel.countriesTableHelper.getTableName(AppDomainType.user)} n on n.${tableModel.countriesTableHelper.colCountryId} = k.${tableModel.kennelsTableHelper.colCountryId}
           LEFT OUTER JOIN $hkmTable hkm on hkm.kennelId = evt.kennelId and hkm.userId = "$userId"
           LEFT OUTER JOIN $hemTable hem on hem.eventId = evt.eventId and hem.userId = "$userId"
-          LEFT OUTER JOIN $paymentsTable pay on pay.${G0<TableModel>().paymentsTableHelper.colHemId} = hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} AND pay.${G0<TableModel>().paymentsTableHelper.colCancelledBy} IS NULL
+          LEFT OUTER JOIN $paymentsTable pay on pay.${tableModel.paymentsTableHelper.colHemId} = hem.${tableModel.hasherEventMapTableHelper.colHemId} AND pay.${tableModel.paymentsTableHelper.colCancelledBy} IS NULL
           ''';
     }
 
     final String whereClauseForTopRunsPage = '''
-            WHERE datetime(evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) >= datetime('now','-4 hours') and evt.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1
+            WHERE datetime(evt.${tableModel.eventsTableHelper.colEventStartDatetime}) >= datetime('now','-4 hours') and evt.${tableModel.eventsTableHelper.colIsVisible} = 1
             AND coalesce(hkm.following,0) != 2
-            AND evt.${G0<TableModel>().eventsTableHelper.colRemoved} = 0
+            AND evt.${tableModel.eventsTableHelper.colRemoved} = 0
             AND (
                   "${searchAllRuns.toString()}" == "true"
                   OR
@@ -480,25 +481,25 @@ class QueryRuns {
                   OR 
                   (coalesce(hem.rsvpState,0) >= 2)
                 )
-            ORDER BY evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}, evt.${G0<TableModel>().eventsTableHelper.colEventNumber}
+            ORDER BY evt.${tableModel.eventsTableHelper.colEventStartDatetime}, evt.${tableModel.eventsTableHelper.colEventNumber}
           ''';
 
     final String whereClauseForKennelDetailsPage =
         kennelId == null
             ? ''
             : '''
-            WHERE datetime(evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) >= datetime('now','-4 hours') and evt.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1
-            AND evt.${G0<TableModel>().eventsTableHelper.colKennelId} = "$kennelId"
-            AND evt.${G0<TableModel>().eventsTableHelper.colRemoved} = 0
-            ORDER BY evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}, evt.${G0<TableModel>().eventsTableHelper.colEventNumber}
+            WHERE datetime(evt.${tableModel.eventsTableHelper.colEventStartDatetime}) >= datetime('now','-4 hours') and evt.${tableModel.eventsTableHelper.colIsVisible} = 1
+            AND evt.${tableModel.eventsTableHelper.colKennelId} = "$kennelId"
+            AND evt.${tableModel.eventsTableHelper.colRemoved} = 0
+            ORDER BY evt.${tableModel.eventsTableHelper.colEventStartDatetime}, evt.${tableModel.eventsTableHelper.colEventNumber}
           ''';
 
     final String whereClauseForSingleRun =
         eventId == null
             ? ''
             : '''
-            WHERE evt.${G0<TableModel>().eventsTableHelper.colEventId} = "$eventId"
-            AND evt.${G0<TableModel>().eventsTableHelper.colRemoved} = 0
+            WHERE evt.${tableModel.eventsTableHelper.colEventId} = "$eventId"
+            AND evt.${tableModel.eventsTableHelper.colRemoved} = 0
           ''';
 
     String query = queryBase;
@@ -512,7 +513,7 @@ class QueryRuns {
       assert(false);
     }
 
-    return G0<Database>().rawQuery(query);
+    return database.rawQuery(query);
   }
 
   static Future<List<Map<String, dynamic>>> queryPreviousRun(
@@ -521,16 +522,16 @@ class QueryRuns {
   ) async {
     String query = '''
         SELECT  
-          evt.${G0<TableModel>().eventsTableHelper.colEventName} as eventName,
-          evt.${G0<TableModel>().eventsTableHelper.colEventId} as eventId
+          evt.${tableModel.eventsTableHelper.colEventName} as eventName,
+          evt.${tableModel.eventsTableHelper.colEventId} as eventId
           FROM narrowEvents evt
-          WHERE evt.${G0<TableModel>().eventsTableHelper.colKennelId} = "$kennelId"
-          AND datetime(evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) < datetime('$eventStartDateTime') 
-          AND evt.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1
-          ORDER BY evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} DESC
+          WHERE evt.${tableModel.eventsTableHelper.colKennelId} = "$kennelId"
+          AND datetime(evt.${tableModel.eventsTableHelper.colEventStartDatetime}) < datetime('$eventStartDateTime') 
+          AND evt.${tableModel.eventsTableHelper.colIsVisible} = 1
+          ORDER BY evt.${tableModel.eventsTableHelper.colEventStartDatetime} DESC
           LIMIT 1
           ''';
 
-    return G0<Database>().rawQuery(query);
+    return database.rawQuery(query);
   }
 }

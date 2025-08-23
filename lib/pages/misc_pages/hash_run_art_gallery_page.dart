@@ -33,8 +33,7 @@ class HashRunArtGalleryPage extends StatelessWidget {
           //shrinkWrap: true,
           itemBuilder: (BuildContext context, int index) {
             final Map<String, dynamic> item = items[index];
-            if (item[G0<TableModel>().eventsTableHelper.colEventImage] ==
-                null) {
+            if (item[tableModel.eventsTableHelper.colEventImage] == null) {
               return const SizedBox();
             }
             return Card(
@@ -50,12 +49,10 @@ class HashRunArtGalleryPage extends StatelessWidget {
                   children: <Widget>[
                     GestureDetector(
                       onTap: () async {
-                        final RunDetailsAggregate? run = await G0<TableModel>()
+                        final RunDetailsAggregate? run = await tableModel
                             .eventsService
                             .getSingleRun(
-                              item[G0<TableModel>()
-                                  .eventsTableHelper
-                                  .colEventId],
+                              item[tableModel.eventsTableHelper.colEventId],
                             );
                         if (run != null) {
                           await Navigator.push<dynamic>(
@@ -77,7 +74,7 @@ class HashRunArtGalleryPage extends StatelessWidget {
                                   key: const Key('50201112'),
                                   pageTitle: 'Zoomable Event Image',
                                   imageUrl:
-                                      item[G0<TableModel>()
+                                      item[tableModel
                                           .eventsTableHelper
                                           .colEventImage],
                                   appBarBackgroundColor: themeAppBarBackground,
@@ -87,7 +84,7 @@ class HashRunArtGalleryPage extends StatelessWidget {
                         );
                       },
                       child: Image.network(
-                        item[G0<TableModel>().eventsTableHelper.colEventImage],
+                        item[tableModel.eventsTableHelper.colEventImage],
                         errorBuilder: (
                           BuildContext context,
                           Object error,
@@ -101,22 +98,19 @@ class HashRunArtGalleryPage extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(top: 8.0),
                       child: Text(
-                        item[G0<TableModel>().eventsTableHelper.colEventName] ??
-                            '',
+                        item[tableModel.eventsTableHelper.colEventName] ?? '',
                         style: ts_titleLarge.copyWith(color: Colors.black),
                         textAlign: TextAlign.center,
                       ),
                     ),
-                    item[G0<TableModel>()
-                                .eventsTableHelper
-                                .colEventStartDatetime] !=
+                    item[tableModel.eventsTableHelper.colEventStartDatetime] !=
                             null
                         ? Padding(
                           padding: const EdgeInsets.only(top: 15.0),
                           child: Text(
                             DateFormat("E, MMM d, yyyy 'at' h:mm a").format(
                               DateTime.parse(
-                                item[G0<TableModel>()
+                                item[tableModel
                                     .eventsTableHelper
                                     .colEventStartDatetime],
                               ),

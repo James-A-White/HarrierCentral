@@ -87,7 +87,7 @@ class CreateNewAccountPageContentState
       builder: (BuildContext context, BoxConstraints viewportConstraints) {
         final double newFontSize =
             (ts_headingLarge.fontSize ?? 24.0) *
-            G0<DeviceInfo>().deviceWidthScaleFactor;
+            deviceInfo.deviceWidthScaleFactor;
 
         final TextStyle localHeadingStyle = ts_headingLarge.copyWith(
           fontSize: newFontSize,

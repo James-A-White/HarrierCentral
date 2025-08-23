@@ -31,9 +31,9 @@ class FindHasherPageState extends State<FindHasherPage> {
     final HashersService svc = HashersService();
     svc
         .selectAllFromLocalDb(
-          G0<Database>(),
-          G0<TableModel>().hashersTableHelper,
-          G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user),
+          database,
+          tableModel.hashersTableHelper,
+          tableModel.hashersTableHelper.getTableName(AppDomainType.user),
         )
         .then((List<BaseModel> list) {
           _hasherList = list.cast<HashersModel>();

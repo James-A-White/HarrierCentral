@@ -2,7 +2,7 @@ import 'package:harrier_central/imports.dart';
 
 class AuthenticateWebPortalService {
   Future<SingleResultModel?> authenticateWebPortal(String scan) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
       return null;
       // TODO(James): fix this so we can return a bool
       //return false;

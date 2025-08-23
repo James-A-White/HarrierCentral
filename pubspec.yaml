@@ -51,7 +51,7 @@ dependencies:
   freezed_annotation: ^3.0.0
   geolocator: ^14.0.0
   get: ^4.6.5
-  get_it: ^8.0.3 
+  # get_it: ^8.0.3 
   get_storage: ^2.1.1
   google_api_availability: ^5.0.0 
   http: ^1.4.0

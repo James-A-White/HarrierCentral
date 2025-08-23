@@ -106,7 +106,7 @@ class RunAdminPageState extends State<RunAdminPage> {
   }
 
   // void _getRunDetails(String eventId) {
-  //   G0<TableModel>().syncEventAdminService.updateFromBackend(SyncEventAdminService.flagsAllData, false, eventId).then((bool result) {
+  //   tableModel.syncEventAdminService.updateFromBackend(SyncEventAdminService.flagsAllData, false, eventId).then((bool result) {
   //      CommonQueries.getEventAdminInfoFromLocalCache(widget.eventId, _userId).then<dynamic>((RunAdminAggregate rd) {
   //       _eventAggregate = rd;
   //       setState(() {
@@ -121,7 +121,7 @@ class RunAdminPageState extends State<RunAdminPage> {
   Future<void> _getRunDetails(String eventId) async {
     try {
       // Wait for the update from backend to complete
-      await G0<TableModel>().syncEventAdminService.updateFromBackend(
+      await tableModel.syncEventAdminService.updateFromBackend(
         SyncEventAdminService.flagsAllData,
         false,
         eventId,
@@ -212,7 +212,7 @@ class RunAdminPageState extends State<RunAdminPage> {
                           bottomMargin: 5.0,
                         ),
                         TextScaleFactorClamper(
-                          textScaleFactor: G0<DeviceInfo>().textClamp15,
+                          textScaleFactor: deviceInfo.textClamp15,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.start,
                             mainAxisSize: MainAxisSize.max,

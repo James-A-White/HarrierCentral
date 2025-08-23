@@ -2,7 +2,7 @@ import 'package:harrier_central/imports.dart';
 
 class GdprDeleteService {
   Future<SingleResultModel?> gdprDelete() async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
       return null;
       // TODO(James): fix this so we can return a bool
       //return false;
@@ -30,11 +30,9 @@ class GdprDeleteService {
     SingleResultModel? result;
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
-      json.decode(responseBody).forEach(
-        (dynamic item) {
-          result = SingleResultModel(result: item[0]['result']);
-        },
-      );
+      json.decode(responseBody).forEach((dynamic item) {
+        result = SingleResultModel(result: item[0]['result']);
+      });
     }
 
     return result;

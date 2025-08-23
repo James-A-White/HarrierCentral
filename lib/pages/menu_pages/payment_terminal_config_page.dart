@@ -70,7 +70,7 @@
 //   @override
 //   Widget build(BuildContext context) {
 //     return SizedBox(
-//       width: G0<DeviceInfo>().deviceWidth,
+//       width: deviceInfo.deviceWidth,
 //       child: Column(
 //         mainAxisAlignment: MainAxisAlignment.center,
 //         crossAxisAlignment: CrossAxisAlignment.center,

@@ -2,37 +2,39 @@ import 'package:harrier_central/imports.dart';
 
 class RunHistoryQueries {
   static Future<List<RunHistoryModel>> getRunHistory(
-      String userId, String? kennelId) async {
+    String userId,
+    String? kennelId,
+  ) async {
     final appDomain = AppDomainType.kennel;
 
     String query = '''
           SELECT 
-          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount} + hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount},0) as totalRunsThisKennel,
-          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount} + ${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount},0) as totalHaringThisKennel,
+          coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount} + hkm.${tableModel.hasherKennelMapTableHelper.colHcTotalRunCount},0) as totalRunsThisKennel,
+          coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount} + ${tableModel.hasherKennelMapTableHelper.colHcHaringCount},0) as totalHaringThisKennel,
 
-          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount},0) as hcRunsThisKennel,
-          coalesce(${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount},0) as hcHaringThisKennel,
+          coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colHcTotalRunCount},0) as hcRunsThisKennel,
+          coalesce(${tableModel.hasherKennelMapTableHelper.colHcHaringCount},0) as hcHaringThisKennel,
 
-          k.${G0<TableModel>().kennelsTableHelper.colKennelShortName},
-          k.${G0<TableModel>().kennelsTableHelper.colKennelName},
-          k.${G0<TableModel>().kennelsTableHelper.colKennelId},
-          k.${G0<TableModel>().kennelsTableHelper.colKennelLogo},
-          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},0) as ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},
-          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},0) as ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},
-          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate},0) as ${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate},
-          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing},0) as ${G0<TableModel>().hasherKennelMapTableHelper.colFollowing},
-          coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit},0) as kennelCredit,
-          coalesce(k.${G0<TableModel>().kennelsTableHelper.colDigitsAfterDecimal},c.${G0<TableModel>().countriesTableHelper.colDigitsAfterDecimal}) as digitsAfterDecimal,
-          coalesce(k.${G0<TableModel>().kennelsTableHelper.colCurrencySymbol},c.${G0<TableModel>().countriesTableHelper.colCurrencySymbol}) as currencySymbol
-          FROM ${G0<TableModel>().kennelsTableHelper.getTableName(appDomain)} k
-          INNER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(appDomain)} c on c.${G0<TableModel>().countriesTableHelper.colCountryId} = k.${G0<TableModel>().kennelsTableHelper.colCountryId}
-          LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(appDomain)} hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = "$userId"  and hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId}
+          k.${tableModel.kennelsTableHelper.colKennelShortName},
+          k.${tableModel.kennelsTableHelper.colKennelName},
+          k.${tableModel.kennelsTableHelper.colKennelId},
+          k.${tableModel.kennelsTableHelper.colKennelLogo},
+          coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount},0) as ${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount},
+          coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount},0) as ${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount},
+          coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalCountIsEstimate},0) as ${tableModel.hasherKennelMapTableHelper.colHistoricalCountIsEstimate},
+          coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colFollowing},0) as ${tableModel.hasherKennelMapTableHelper.colFollowing},
+          coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colKennelCredit},0) as kennelCredit,
+          coalesce(k.${tableModel.kennelsTableHelper.colDigitsAfterDecimal},c.${tableModel.countriesTableHelper.colDigitsAfterDecimal}) as digitsAfterDecimal,
+          coalesce(k.${tableModel.kennelsTableHelper.colCurrencySymbol},c.${tableModel.countriesTableHelper.colCurrencySymbol}) as currencySymbol
+          FROM ${tableModel.kennelsTableHelper.getTableName(appDomain)} k
+          INNER JOIN ${tableModel.countriesTableHelper.getTableName(appDomain)} c on c.${tableModel.countriesTableHelper.colCountryId} = k.${tableModel.kennelsTableHelper.colCountryId}
+          LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(appDomain)} hkm on hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = "$userId"  and hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId}
           
           ''';
 
     if (kennelId != null) {
       query +=
-          'WHERE k.${G0<TableModel>().kennelsTableHelper.colKennelId} = "$kennelId"';
+          'WHERE k.${tableModel.kennelsTableHelper.colKennelId} = "$kennelId"';
     }
 
     query += 'ORDER BY totalRunsThisKennel desc';
@@ -40,8 +42,7 @@ class RunHistoryQueries {
     final runHistoryList = <RunHistoryModel>[];
 
     try {
-      final List<Map<String, dynamic>> results =
-          await G0<Database>().rawQuery(query);
+      final List<Map<String, dynamic>> results = await database.rawQuery(query);
 
       for (var item in results) {
         runHistoryList.add(RunHistoryModel.fromMap(item));

@@ -88,8 +88,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   //bool _isLoading = true;
 
   latlng.LatLng _mapCenter = latlng.LatLng(
-    G0<DeviceInfo>().deviceLat ?? DEFAULT_LATITUDE,
-    G0<DeviceInfo>().deviceLon ?? DEFAULT_LONGITUDE,
+    deviceInfo.deviceLat ?? DEFAULT_LATITUDE,
+    deviceInfo.deviceLon ?? DEFAULT_LONGITUDE,
   );
 
   bool _trueNorthLock = true;
@@ -106,7 +106,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       });
     }
 
-    await G0<TableModel>().syncEventAdminService.updateFromBackend(
+    await tableModel.syncEventAdminService.updateFromBackend(
       SyncEventAdminService.flagHasherEventMapTable,
       true,
       widget.futureRun.event.eventId,
@@ -127,21 +127,19 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         SELECT  
           hem.*,
           h.*,
-          ken.${G0<TableModel>().kennelsTableHelper.colKennelName} as kennelName
-          FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem
-          LEFT OUTER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h on h.${G0<TableModel>().hashersTableHelper.colHasherId} = hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId}
-          LEFT OUTER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} ken on h.${G0<TableModel>().hashersTableHelper.colHomeKennelId} = ken.${G0<TableModel>().kennelsTableHelper.colKennelId}
-          WHERE hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} = "${widget.futureRun.event.eventId}"
-          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState} >= 1 AND hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState} <= 3
+          ken.${tableModel.kennelsTableHelper.colKennelName} as kennelName
+          FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem
+          LEFT OUTER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h on h.${tableModel.hashersTableHelper.colHasherId} = hem.${tableModel.hasherEventMapTableHelper.colUserId}
+          LEFT OUTER JOIN ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} ken on h.${tableModel.hashersTableHelper.colHomeKennelId} = ken.${tableModel.kennelsTableHelper.colKennelId}
+          WHERE hem.${tableModel.hasherEventMapTableHelper.colEventId} = "${widget.futureRun.event.eventId}"
+          AND hem.${tableModel.hasherEventMapTableHelper.colRsvpState} >= 1 AND hem.${tableModel.hasherEventMapTableHelper.colRsvpState} <= 3
           ''';
 
     try {
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
-        query,
-      );
+      final List<Map<String, dynamic>> results = await database.rawQuery(query);
 
       for (int i = 0; i < results.length; i++) {
-        final HasherEventMapModel packItem = G0<TableModel>()
+        final HasherEventMapModel packItem = tableModel
             .hasherEventMapTableHelper
             .fromMap(results[i]);
 
@@ -193,15 +191,13 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           count(case when hem.rsvpState = 2 then 1 else null end) as rsvpMaybeCount,
           count(case when hem.rsvpState = 1 then 1 else null end) as rsvpNoCount,
           count(case when hem.isHare = 1 then 1 else null end) as isHareCount
-          FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem
+          FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem
           WHERE hem.eventId = "${widget.futureRun.event.eventId}"
-          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState} >= 1 AND hem.${G0<TableModel>().hasherEventMapTableHelper.colRsvpState} <= 3
+          AND hem.${tableModel.hasherEventMapTableHelper.colRsvpState} >= 1 AND hem.${tableModel.hasherEventMapTableHelper.colRsvpState} <= 3
           ''';
 
     try {
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
-        query,
-      );
+      final List<Map<String, dynamic>> results = await database.rawQuery(query);
       if (results.isNotEmpty) {
         _packCount = results[0];
       }
@@ -243,14 +239,14 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         widget.futureRun.extensions.evtLat ??
         coords[0] ??
         widget.futureRun.kennel.kennelLatitude ??
-        G0<DeviceInfo>().deviceLon ??
+        deviceInfo.deviceLon ??
         DEFAULT_LATITUDE;
 
     double xLon =
         widget.futureRun.extensions.evtLon ??
         coords[1] ??
         widget.futureRun.kennel.kennelLongitude ??
-        G0<DeviceInfo>().deviceLon ??
+        deviceInfo.deviceLon ??
         DEFAULT_LONGITUDE;
 
     _mapCenter = latlng.LatLng(xLat, xLon);
@@ -382,7 +378,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   }
 
   TextStyle rsvpTitlesView = ts_tileText.copyWith(
-    fontSize: 20.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+    fontSize: 20.0 * deviceInfo.deviceWidthScaleFactor,
     color: Colors.white,
   );
 
@@ -1357,7 +1353,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
   //     //final String userId = getStringPref(StringPrefsEnum.userId);
   //     final List<dynamic> adHocData =
-  //         await G0<TableModel>().hasherEventMapService.setEventRsvp(
+  //         await tableModel.hasherEventMapService.setEventRsvp(
   //               widget.futureRun.event.eventId,
   //               _userId,
   //               AppDomainType.user,
@@ -1394,7 +1390,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     }
     //final String userId = getStringPref(StringPrefsEnum.userId);
 
-    final List<dynamic> adHocData = await G0<TableModel>().hasherEventMapService
+    final List<dynamic> adHocData = await tableModel.hasherEventMapService
         .setEventRsvp(
           widget.futureRun.event.eventId,
           _userId,
@@ -1590,11 +1586,11 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                   child: GestureDetector(
                     onTap: () {
                       setState(() {
-                        if ((G0<DeviceInfo>().deviceLat != null) &&
-                            (G0<DeviceInfo>().deviceLon != null)) {
+                        if ((deviceInfo.deviceLat != null) &&
+                            (deviceInfo.deviceLon != null)) {
                           _mapCenter = latlng.LatLng(
-                            G0<DeviceInfo>().deviceLat!,
-                            G0<DeviceInfo>().deviceLon!,
+                            deviceInfo.deviceLat!,
+                            deviceInfo.deviceLon!,
                           );
                         }
                       });
@@ -1791,7 +1787,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                 child: Padding(
                   padding: const EdgeInsets.only(left: 15.0, right: 15.0),
                   child: TextScaleFactorClamper(
-                    textScaleFactor: G0<DeviceInfo>().textClamp15,
+                    textScaleFactor: deviceInfo.textClamp15,
                     child: GetBuilder<FutureRunListPageController>(
                       id: 'chatTab',
                       builder: (controller) {

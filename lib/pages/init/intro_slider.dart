@@ -12,18 +12,18 @@ class IntroSliderPageState extends State<IntroSliderPage> {
 
   final TextStyle _titleStyle = TextStyle(
     color: Colors.black,
-    fontSize: 32.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+    fontSize: 32.0 * deviceInfo.deviceWidthScaleFactor,
     fontFamily: 'AvenirNextRegular',
   );
   final TextStyle _descriptionStyle = TextStyle(
     color: Colors.black,
-    fontSize: 24.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+    fontSize: 24.0 * deviceInfo.deviceWidthScaleFactor,
     fontFamily: 'AvenirNextRegular',
   );
 
   final TextStyle _navStyle = TextStyle(
     color: themeAppBarBackground,
-    fontSize: 18.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+    fontSize: 18.0 * deviceInfo.deviceWidthScaleFactor,
     fontFamily: 'AvenirNextDemiBold',
   );
 
@@ -41,7 +41,7 @@ class IntroSliderPageState extends State<IntroSliderPage> {
         description: 'The World\'s Best Way to Manage Your Hash Life',
         styleDescription: _descriptionStyle,
         pathImage: 'images/other/hc_app_icon.png',
-        heightImage: 120 * G0<DeviceInfo>().deviceMaxScaleFactor,
+        heightImage: 120 * deviceInfo.deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 227, 227, 227),
         colorEnd: const Color.fromARGB(255, 227, 227, 227),
         directionColorBegin: Alignment.topRight,
@@ -57,7 +57,7 @@ class IntroSliderPageState extends State<IntroSliderPage> {
             'Instantly Find Hash Runs Around the Corner or Across the Globe!',
         styleDescription: _descriptionStyle,
         pathImage: 'images/init/intro/intro_map.png',
-        heightImage: 120 * G0<DeviceInfo>().deviceMaxScaleFactor,
+        heightImage: 120 * deviceInfo.deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 172, 255, 161),
         colorEnd: const Color.fromARGB(255, 172, 255, 161),
         directionColorBegin: Alignment.topRight,
@@ -72,7 +72,7 @@ class IntroSliderPageState extends State<IntroSliderPage> {
         description: 'Track Your Run Counts Across all Hash Kennels',
         styleDescription: _descriptionStyle,
         pathImage: 'images/init/intro/intro_run_counts.png',
-        heightImage: 170 * G0<DeviceInfo>().deviceMaxScaleFactor,
+        heightImage: 170 * deviceInfo.deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 234, 195, 255),
         colorEnd: const Color.fromARGB(255, 234, 195, 255),
         directionColorBegin: Alignment.topRight,
@@ -88,7 +88,7 @@ class IntroSliderPageState extends State<IntroSliderPage> {
             'With new ways to pay for the Hash, you\'ll never fumble for cash again',
         styleDescription: _descriptionStyle,
         pathImage: 'images/init/intro/intro_cash.png',
-        heightImage: 140 * G0<DeviceInfo>().deviceMaxScaleFactor,
+        heightImage: 140 * deviceInfo.deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 255, 244, 210),
         colorEnd: const Color.fromARGB(255, 255, 244, 210),
         directionColorBegin: Alignment.topRight,
@@ -104,7 +104,7 @@ class IntroSliderPageState extends State<IntroSliderPage> {
             'Powerful Tools Designed to Make It Easier to Manage Your Kennel',
         styleDescription: _descriptionStyle,
         pathImage: 'images/init/intro/intro_admin_tools.png',
-        heightImage: 100 * G0<DeviceInfo>().deviceMaxScaleFactor,
+        heightImage: 100 * deviceInfo.deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 200, 200, 255),
         colorEnd: const Color.fromARGB(255, 200, 200, 255),
         directionColorBegin: Alignment.topRight,
@@ -120,7 +120,7 @@ class IntroSliderPageState extends State<IntroSliderPage> {
             'We don\'t Share Your Data with *Anyone* Outside of Harrier Central',
         styleDescription: _descriptionStyle,
         pathImage: 'images/init/intro/intro_data_security.png',
-        heightImage: 140 * G0<DeviceInfo>().deviceMaxScaleFactor,
+        heightImage: 140 * deviceInfo.deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 255, 190, 180),
         colorEnd: const Color.fromARGB(255, 255, 190, 180),
         directionColorBegin: Alignment.topRight,
@@ -136,7 +136,7 @@ class IntroSliderPageState extends State<IntroSliderPage> {
             'There are dozens more features designed just for the Hash coming soon!',
         styleDescription: _descriptionStyle,
         pathImage: 'images/init/intro/intro_rocket.png',
-        heightImage: 150 * G0<DeviceInfo>().deviceMaxScaleFactor,
+        heightImage: 150 * deviceInfo.deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 143, 234, 255),
         colorEnd: const Color.fromARGB(255, 143, 234, 255),
         directionColorBegin: Alignment.topRight,
@@ -152,7 +152,7 @@ class IntroSliderPageState extends State<IntroSliderPage> {
             'Now We Need Just a Bit of Information to Create Your Custom Harrier Central Experience!',
         styleDescription: _descriptionStyle,
         pathImage: 'images/init/intro/intro_info_sign.png',
-        heightImage: 100 * G0<DeviceInfo>().deviceMaxScaleFactor,
+        heightImage: 100 * deviceInfo.deviceMaxScaleFactor,
         colorBegin: const Color.fromARGB(255, 227, 227, 227),
         colorEnd: const Color.fromARGB(255, 227, 227, 227),
         directionColorBegin: Alignment.topRight,

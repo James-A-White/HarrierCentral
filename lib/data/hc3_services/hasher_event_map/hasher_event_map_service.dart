@@ -193,7 +193,7 @@ class HasherEventMapService {
     NotificationState notificationPreference,
     EnumEmailAlertState<int> emailPreference,
   ) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
       return <dynamic>[];
       // TODO(James): fix this so we can return a bool
       //return false;
@@ -211,23 +211,19 @@ class HasherEventMapService {
       paramString: deviceSecret,
     );
 
-    final int hasherEventMapLastUpdated = await G0<TableModel>().baseService
+    final int hasherEventMapLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(
-          G0<Database>(),
-          G0<TableModel>().hasherEventMapTableHelper,
-          G0<TableModel>().hasherEventMapTableHelper.getTableName(
-            appDomainType,
-          ),
-          G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
+          database,
+          tableModel.hasherEventMapTableHelper,
+          tableModel.hasherEventMapTableHelper.getTableName(appDomainType),
+          tableModel.hasherEventMapTableHelper.colUpdatedAtValue,
         );
-    final int hasherKennelMapLastUpdated = await G0<TableModel>().baseService
+    final int hasherKennelMapLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(
-          G0<Database>(),
-          G0<TableModel>().hasherKennelMapTableHelper,
-          G0<TableModel>().hasherKennelMapTableHelper.getTableName(
-            appDomainType,
-          ),
-          G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
+          database,
+          tableModel.hasherKennelMapTableHelper,
+          tableModel.hasherKennelMapTableHelper.getTableName(appDomainType),
+          tableModel.hasherKennelMapTableHelper.colUpdatedAtValue,
         );
 
     final DateTime hasherEventMapUpdatedAfter =
@@ -259,10 +255,10 @@ class HasherEventMapService {
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       if (appDomainType == AppDomainType.event) {
-        adHocData = await G0<TableModel>().syncEventAdminService
+        adHocData = await tableModel.syncEventAdminService
             .updateSqlTablesWithResultsFromBackendApiCall(responseBody);
       } else if (appDomainType == AppDomainType.user) {
-        adHocData = await G0<TableModel>().syncUserDataService
+        adHocData = await tableModel.syncUserDataService
             .updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
       } else {
         assert(false);
@@ -280,7 +276,7 @@ class HasherEventMapService {
     int? isHare,
     String? hemId,
   }) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
       return <dynamic>[];
       // TODO(James): fix this so we can return a bool
       //return false;
@@ -297,23 +293,19 @@ class HasherEventMapService {
       paramString: deviceSecret,
     );
 
-    final int hasherEventMapLastUpdated = await G0<TableModel>().baseService
+    final int hasherEventMapLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(
-          G0<Database>(),
-          G0<TableModel>().hasherEventMapTableHelper,
-          G0<TableModel>().hasherEventMapTableHelper.getTableName(
-            appDomainType,
-          ),
-          G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
+          database,
+          tableModel.hasherEventMapTableHelper,
+          tableModel.hasherEventMapTableHelper.getTableName(appDomainType),
+          tableModel.hasherEventMapTableHelper.colUpdatedAtValue,
         );
-    final int hasherKennelMapLastUpdated = await G0<TableModel>().baseService
+    final int hasherKennelMapLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(
-          G0<Database>(),
-          G0<TableModel>().hasherKennelMapTableHelper,
-          G0<TableModel>().hasherKennelMapTableHelper.getTableName(
-            appDomainType,
-          ),
-          G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
+          database,
+          tableModel.hasherKennelMapTableHelper,
+          tableModel.hasherKennelMapTableHelper.getTableName(appDomainType),
+          tableModel.hasherKennelMapTableHelper.colUpdatedAtValue,
         );
 
     final DateTime hasherEventMapUpdatedAfter =
@@ -345,10 +337,10 @@ class HasherEventMapService {
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       if (appDomainType == AppDomainType.event) {
-        adHocData = await G0<TableModel>().syncEventAdminService
+        adHocData = await tableModel.syncEventAdminService
             .updateSqlTablesWithResultsFromBackendApiCall(responseBody);
       } else if (appDomainType == AppDomainType.user) {
-        adHocData = await G0<TableModel>().syncUserDataService
+        adHocData = await tableModel.syncUserDataService
             .updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
       } else {
         assert(false);
@@ -363,7 +355,7 @@ class HasherEventMapService {
     String hasherIds,
     int attendenceState,
   ) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
       return <dynamic>[];
     }
 
@@ -377,23 +369,23 @@ class HasherEventMapService {
       paramString: deviceSecret,
     );
 
-    final int hasherEventMapLastUpdated = await G0<TableModel>().baseService
+    final int hasherEventMapLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(
-          G0<Database>(),
-          G0<TableModel>().hasherEventMapTableHelper,
-          G0<TableModel>().hasherEventMapTableHelper.getTableName(
+          database,
+          tableModel.hasherEventMapTableHelper,
+          tableModel.hasherEventMapTableHelper.getTableName(
             AppDomainType.event,
           ),
-          G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
+          tableModel.hasherEventMapTableHelper.colUpdatedAtValue,
         );
-    final int hasherKennelMapLastUpdated = await G0<TableModel>().baseService
+    final int hasherKennelMapLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(
-          G0<Database>(),
-          G0<TableModel>().hasherKennelMapTableHelper,
-          G0<TableModel>().hasherKennelMapTableHelper.getTableName(
+          database,
+          tableModel.hasherKennelMapTableHelper,
+          tableModel.hasherKennelMapTableHelper.getTableName(
             AppDomainType.event,
           ),
-          G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
+          tableModel.hasherKennelMapTableHelper.colUpdatedAtValue,
         );
 
     final DateTime hasherEventMapUpdatedAfter =
@@ -419,7 +411,7 @@ class HasherEventMapService {
     List<dynamic> adHocData = <dynamic>[];
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
-      adHocData = await G0<TableModel>().syncEventAdminService
+      adHocData = await tableModel.syncEventAdminService
           .updateSqlTablesWithResultsFromBackendApiCall(responseBody);
     }
 
@@ -435,7 +427,7 @@ class HasherEventMapService {
     String? qrScanText,
     String? hemId,
   }) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
       return <dynamic>[];
     }
 
@@ -449,23 +441,19 @@ class HasherEventMapService {
       paramString: deviceSecret,
     );
 
-    final int hasherEventMapLastUpdated = await G0<TableModel>().baseService
+    final int hasherEventMapLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(
-          G0<Database>(),
-          G0<TableModel>().hasherEventMapTableHelper,
-          G0<TableModel>().hasherEventMapTableHelper.getTableName(
-            appDomainType,
-          ),
-          G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
+          database,
+          tableModel.hasherEventMapTableHelper,
+          tableModel.hasherEventMapTableHelper.getTableName(appDomainType),
+          tableModel.hasherEventMapTableHelper.colUpdatedAtValue,
         );
-    final int hasherKennelMapLastUpdated = await G0<TableModel>().baseService
+    final int hasherKennelMapLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(
-          G0<Database>(),
-          G0<TableModel>().hasherKennelMapTableHelper,
-          G0<TableModel>().hasherKennelMapTableHelper.getTableName(
-            appDomainType,
-          ),
-          G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
+          database,
+          tableModel.hasherKennelMapTableHelper,
+          tableModel.hasherKennelMapTableHelper.getTableName(appDomainType),
+          tableModel.hasherKennelMapTableHelper.colUpdatedAtValue,
         );
 
     final DateTime hasherEventMapUpdatedAfter =
@@ -496,10 +484,10 @@ class HasherEventMapService {
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       if (appDomainType == AppDomainType.event) {
-        adHocData = await G0<TableModel>().syncEventAdminService
+        adHocData = await tableModel.syncEventAdminService
             .updateSqlTablesWithResultsFromBackendApiCall(responseBody);
       } else if (appDomainType == AppDomainType.user) {
-        adHocData = await G0<TableModel>().syncUserDataService
+        adHocData = await tableModel.syncUserDataService
             .updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
       } else {
         assert(false);
@@ -518,7 +506,7 @@ class HasherEventMapService {
     String phoneNumber,
     AppDomainType appDomainType,
   ) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
       return <dynamic>[];
       // TODO(James): fix this so we can return a bool
       //return false;
@@ -535,21 +523,19 @@ class HasherEventMapService {
       paramString: deviceSecret,
     );
 
-    final int hasherEventMapLastUpdated = await G0<TableModel>().baseService
+    final int hasherEventMapLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(
-          G0<Database>(),
-          G0<TableModel>().hasherEventMapTableHelper,
-          G0<TableModel>().hasherEventMapTableHelper.getTableName(
-            appDomainType,
-          ),
-          G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
+          database,
+          tableModel.hasherEventMapTableHelper,
+          tableModel.hasherEventMapTableHelper.getTableName(appDomainType),
+          tableModel.hasherEventMapTableHelper.colUpdatedAtValue,
         );
-    final int paymentsLastUpdated = await G0<TableModel>().baseService
+    final int paymentsLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(
-          G0<Database>(),
-          G0<TableModel>().paymentsTableHelper,
-          G0<TableModel>().paymentsTableHelper.getTableName(appDomainType),
-          G0<TableModel>().paymentsTableHelper.colUpdatedAtValue,
+          database,
+          tableModel.paymentsTableHelper,
+          tableModel.paymentsTableHelper.getTableName(appDomainType),
+          tableModel.paymentsTableHelper.colUpdatedAtValue,
         );
 
     final DateTime hasherEventMapUpdatedAfter =
@@ -577,7 +563,7 @@ class HasherEventMapService {
     List<dynamic> adHocData = <dynamic>[];
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
-      adHocData = await G0<TableModel>().syncEventAdminService
+      adHocData = await tableModel.syncEventAdminService
           .updateSqlTablesWithResultsFromBackendApiCall(responseBody);
     }
     return adHocData;
@@ -587,7 +573,7 @@ class HasherEventMapService {
     String fromEventId,
     String toEventId,
   ) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
       return <dynamic>[];
       // TODO(James): fix this so we can return a bool
       //return false;
@@ -604,14 +590,14 @@ class HasherEventMapService {
       paramString: deviceSecret,
     );
 
-    final int hasherEventMapLastUpdated = await G0<TableModel>().baseService
+    final int hasherEventMapLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(
-          G0<Database>(),
-          G0<TableModel>().hasherEventMapTableHelper,
-          G0<TableModel>().hasherEventMapTableHelper.getTableName(
+          database,
+          tableModel.hasherEventMapTableHelper,
+          tableModel.hasherEventMapTableHelper.getTableName(
             AppDomainType.event,
           ),
-          G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
+          tableModel.hasherEventMapTableHelper.colUpdatedAtValue,
         );
 
     final DateTime hasherEventMapUpdatedAfter =
@@ -636,7 +622,7 @@ class HasherEventMapService {
 
     List<dynamic> adHocData = <dynamic>[];
 
-    adHocData = await G0<TableModel>().syncEventAdminService
+    adHocData = await tableModel.syncEventAdminService
         .updateSqlTablesWithResultsFromBackendApiCall(responseBody);
 
     return adHocData;

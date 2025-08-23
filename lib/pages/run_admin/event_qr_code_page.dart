@@ -28,18 +28,23 @@ class EventQrCodePage extends StatefulWidget {
   EventQrCodePageState createState() => EventQrCodePageState();
 }
 
-class EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProviderStateMixin {
+class EventQrCodePageState extends State<EventQrCodePage>
+    with SingleTickerProviderStateMixin {
   List<Tab> tabs = <Tab>[];
 
   String barcode = '';
   bool isAdmin = true;
 
-  final PageController _pageController = PageController(initialPage: 0, keepPage: true);
+  final PageController _pageController = PageController(
+    initialPage: 0,
+    keepPage: true,
+  );
   late TabController _tabController;
 
   final String userId = getStringPref(StringPrefsEnum.userId)!;
 
-  GlobalKey<State<EventQrCodePage>> tabKey = GlobalKey<State<EventQrCodePage>>();
+  GlobalKey<State<EventQrCodePage>> tabKey =
+      GlobalKey<State<EventQrCodePage>>();
 
   @override
   Widget build(BuildContext context) {
@@ -47,10 +52,7 @@ class EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProvi
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
-        iconTheme: const IconThemeData(
-          color: Colors.white,
-          size: 28.0,
-        ),
+        iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
         title: Text('QR codes for this Hash', style: ts_appBarTitle),
       ),
       body: Container(
@@ -92,7 +94,11 @@ class EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProvi
                     unselectedLabelColor: Colors.black,
                     labelColor: Colors.white,
                     indicatorSize: TabBarIndicatorSize.tab,
-                    labelPadding: const EdgeInsets.only(top: 5, left: 20, right: 20),
+                    labelPadding: const EdgeInsets.only(
+                      top: 5,
+                      left: 20,
+                      right: 20,
+                    ),
                     indicator: BubbleTabIndicator(
                       indicatorHeight: 35.0,
                       indicatorColor: hc_red,
@@ -106,54 +112,58 @@ class EventQrCodePageState extends State<EventQrCodePage> with SingleTickerProvi
               ),
             ),
             Positioned(
-                top: 80,
-                bottom: 0,
-                child: SizedBox(
-                  key: tabKey,
-                  width: MediaQuery.of(context).size.width,
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: <Widget>[
-                      QrTab(
-                        isRunStart: true,
-                        qrPrefix: BASE_HCWEB_MOBILE_URL + widget.runStartPrefix,
-                        qrContent: widget.qrContent,
-                        title: widget.title,
-                        helpText: 'Print this QR code and make it available for Hashers to scan at the beginning of runs to check in at the run',
-                        subtitle: 'QR code for run start',
-                        eventStartDatetime: widget.eventStartDatetime,
-                        instructionTitle: 'Run Start QR Code',
-                        instructions:
-                            'This QR code can be scanned by Hashers to check in when they arrive at the start of a run.\r\n\r\nThis will automatically mark them as at the run, but will not mark them as paid. This is especially useful for Hashes with large packs.',
-                      ),
+              top: 80,
+              bottom: 0,
+              child: SizedBox(
+                key: tabKey,
+                width: MediaQuery.of(context).size.width,
+                child: TabBarView(
+                  controller: _tabController,
+                  children: <Widget>[
+                    QrTab(
+                      isRunStart: true,
+                      qrPrefix: BASE_HCWEB_MOBILE_URL + widget.runStartPrefix,
+                      qrContent: widget.qrContent,
+                      title: widget.title,
+                      helpText:
+                          'Print this QR code and make it available for Hashers to scan at the beginning of runs to check in at the run',
+                      subtitle: 'QR code for run start',
+                      eventStartDatetime: widget.eventStartDatetime,
+                      instructionTitle: 'Run Start QR Code',
+                      instructions:
+                          'This QR code can be scanned by Hashers to check in when they arrive at the start of a run.\r\n\r\nThis will automatically mark them as at the run, but will not mark them as paid. This is especially useful for Hashes with large packs.',
+                    ),
+                    QrTab(
+                      isRunStart: false,
+                      qrPrefix: BASE_HCWEB_MOBILE_URL + widget.runEndPrefix,
+                      qrContent: widget.qrContent,
+                      title: widget.title,
+                      helpText:
+                          'Print this QR code and make it available for Hashers to scan at the end of runs to record as On Inn',
+                      subtitle: 'QR code for run end',
+                      eventStartDatetime: widget.eventStartDatetime,
+                      instructionTitle: 'Run End QR Code',
+                      instructions:
+                          'This QR code can be scanned by Hashers to check in when they finish running the Hash trail.\r\n\r\nThis will automatically mark them as having finished the run.\r\n\r\nThis is especially useful for Hashes where it is important to account that everyone has arrived safely at the end of the run and ensure no one remains on trail.',
+                    ),
+                    if (widget.showRunLink)
                       QrTab(
                         isRunStart: false,
-                        qrPrefix: BASE_HCWEB_MOBILE_URL + widget.runEndPrefix,
+                        qrPrefix: BASE_HASHRUNS_DOT_ORG_URL + widget.runLink,
                         qrContent: widget.qrContent,
                         title: widget.title,
-                        helpText: 'Print this QR code and make it available for Hashers to scan at the end of runs to record as On Inn',
-                        subtitle: 'QR code for run end',
+                        helpText:
+                            'Print this QR code which contains a link to this run on www.hashruns.org',
+                        subtitle: 'Link to run on the web',
                         eventStartDatetime: widget.eventStartDatetime,
-                        instructionTitle: 'Run End QR Code',
+                        instructionTitle: 'Run Link QR Code',
                         instructions:
-                            'This QR code can be scanned by Hashers to check in when they finish running the Hash trail.\r\n\r\nThis will automatically mark them as having finished the run.\r\n\r\nThis is especially useful for Hashes where it is important to account that everyone has arrived safely at the end of the run and ensure no one remains on trail.',
+                            'This QR code can be scanned by anyone to access this run\'s information on the Web.\r\n\r\nThis QR code will not work if the Kennel has not opted-in to have their runs published on www.hashruns.org.',
                       ),
-                      if (widget.showRunLink)
-                        QrTab(
-                          isRunStart: false,
-                          qrPrefix: BASE_HASHRUNS_DOT_ORG_URL + widget.runLink,
-                          qrContent: widget.qrContent,
-                          title: widget.title,
-                          helpText: 'Print this QR code which contains a link to this run on www.hashruns.org',
-                          subtitle: 'Link to run on the web',
-                          eventStartDatetime: widget.eventStartDatetime,
-                          instructionTitle: 'Run Link QR Code',
-                          instructions:
-                              'This QR code can be scanned by anyone to access this run\'s information on the Web.\r\n\r\nThis QR code will not work if the Kennel has not opted-in to have their runs published on www.hashruns.org.',
-                        )
-                    ],
-                  ),
-                )),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -250,7 +260,8 @@ class QrTab extends StatefulWidget {
   QrTabState createState() => QrTabState();
 }
 
-class QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
+class QrTabState extends State<QrTab>
+    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   @override
   bool get wantKeepAlive => true;
 
@@ -260,10 +271,7 @@ class QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Single
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(
-            widget.instructionTitle,
-            style: ts_alertDialogTitle,
-          ),
+          title: Text(widget.instructionTitle, style: ts_alertDialogTitle),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
@@ -271,17 +279,14 @@ class QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Single
                   widget.instructions,
                   textAlign: TextAlign.justify,
                   style: ts_alertDialogBody,
-                )
+                ),
               ],
             ),
           ),
           actions: <Widget>[
             TextButton(
               style: text_button_style,
-              child: Text(
-                'OK, Got it!',
-                style: ts_button,
-              ),
+              child: Text('OK, Got it!', style: ts_button),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
@@ -292,7 +297,7 @@ class QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Single
     );
   }
 
-  double spacer = 12.0 + (G0<DeviceInfo>().deviceMaxScaleFactor * 30);
+  double spacer = 12.0 + (deviceInfo.deviceMaxScaleFactor * 30);
 
   @override
   Widget build(BuildContext context) {
@@ -303,10 +308,7 @@ class QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Single
       child: Column(
         //alignment: AlignmentDirectional.center,
         children: <Widget>[
-          SizedBox(
-            width: spacer / 3,
-            height: spacer / 3,
-          ),
+          SizedBox(width: spacer / 3, height: spacer / 3),
           Text(
             widget.helpText,
             textAlign: TextAlign.justify,
@@ -314,14 +316,11 @@ class QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Single
               color: Colors.white,
               fontFamily: 'AvenirNextDemiBold',
               fontStyle: FontStyle.normal,
-              fontSize: 14.0 * G0<DeviceInfo>().deviceWidthScaleFactor,
+              fontSize: 14.0 * deviceInfo.deviceWidthScaleFactor,
               height: 1.0,
             ),
           ),
-          SizedBox(
-            width: spacer,
-            height: spacer,
-          ),
+          SizedBox(width: spacer, height: spacer),
           AutoSizeText(
             //widget.eventName,
             widget.subtitle,
@@ -330,10 +329,7 @@ class QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Single
             textAlign: TextAlign.center,
             style: ts_titleLarge.copyWith(height: 0.8),
           ),
-          SizedBox(
-            width: spacer / 3,
-            height: spacer / 3,
-          ),
+          SizedBox(width: spacer / 3, height: spacer / 3),
           AutoSizeText(
             widget.title,
             // 'This is a fake hash run name that needs to be very long so we can see how it fits on the page when it overflows three lines',
@@ -343,35 +339,27 @@ class QrTabState extends State<QrTab> with AutomaticKeepAliveClientMixin, Single
             textAlign: TextAlign.center,
             style: ts_large,
           ),
-          SizedBox(
-            width: spacer / 3,
-            height: spacer / 3,
-          ),
+          SizedBox(width: spacer / 3, height: spacer / 3),
           Expanded(
             child: Stack(
               children: <Widget>[
                 QrImageView(
-                    backgroundColor: Colors.white,
-                    padding: const EdgeInsets.all(15.0),
-                    data: widget.qrPrefix + widget.qrContent,
-                    // data: (widget.isRunStart ? 'EVTSTART:' : 'EVTEND:') + widget.qrContent.toUpperCase(),
-                    //data: 'testing123',
-                    version: 5,
-                    //size: 200.0,
-                    errorCorrectionLevel: QrErrorCorrectLevel.M),
+                  backgroundColor: Colors.white,
+                  padding: const EdgeInsets.all(15.0),
+                  data: widget.qrPrefix + widget.qrContent,
+                  // data: (widget.isRunStart ? 'EVTSTART:' : 'EVTEND:') + widget.qrContent.toUpperCase(),
+                  //data: 'testing123',
+                  version: 5,
+                  //size: 200.0,
+                  errorCorrectionLevel: QrErrorCorrectLevel.M,
+                ),
               ],
             ),
           ),
-          SizedBox(
-            width: spacer / 3,
-            height: spacer / 3,
-          ),
+          SizedBox(width: spacer / 3, height: spacer / 3),
           TextButton(
             style: text_button_style,
-            child: Text(
-              'Learn more about this feature',
-              style: ts_button,
-            ),
+            child: Text('Learn more about this feature', style: ts_button),
             onPressed: () {
               _displayInstructions(context);
             },

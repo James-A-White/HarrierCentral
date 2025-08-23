@@ -101,7 +101,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       // TODO(James): Make this AppDomainType correct
       switch (widget.dataContext) {
         case EnumDataContext.event:
-          await G0<TableModel>().syncEventAdminService.updateFromBackend(
+          await tableModel.syncEventAdminService.updateFromBackend(
             SyncEventAdminService.flagHashersTable |
                 SyncEventAdminService.flagHasherKennelMapTable |
                 SyncEventAdminService.flagHasherEventMapTable,
@@ -112,7 +112,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           //print('Event data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
           break;
         case EnumDataContext.user:
-          await G0<TableModel>().syncUserDataService.updateFromBackend(
+          await tableModel.syncUserDataService.updateFromBackend(
             SyncUserDataService.flagHashersTable,
             true,
             debugText: 'hasher_profile_page: Hashers',
@@ -121,7 +121,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           //print('User master Hashers data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
           break;
         case EnumDataContext.kennel:
-          await G0<TableModel>().syncKennelAdminService.updateFromBackend(
+          await tableModel.syncKennelAdminService.updateFromBackend(
             SyncKennelAdminService.flagHashersTable |
                 SyncKennelAdminService.flagHasherKennelMapTable,
             true,
@@ -134,12 +134,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
           SELECT 
             h.*,
-            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},
-            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},
-            hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate}
-            FROM ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.kennel)} h
-            LEFT OUTER JOIN ${G0<TableModel>().hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} hkm ON hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelId} = "${widget.kennelId}" AND hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = "${widget.hasherId}"
-            WHERE h.${G0<TableModel>().hashersTableHelper.colHasherId} = "${widget.hasherId}"
+            hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount},
+            hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount},
+            hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalCountIsEstimate}
+            FROM ${tableModel.hashersTableHelper.getTableName(AppDomainType.kennel)} h
+            LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} hkm ON hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = "${widget.kennelId}" AND hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = "${widget.hasherId}"
+            WHERE h.${tableModel.hashersTableHelper.colHasherId} = "${widget.hasherId}"
           ''';
 
           break;
@@ -150,14 +150,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       setState(() {
         _isLoading = true;
       });
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
-        query,
-      );
+      final List<Map<String, dynamic>> results = await database.rawQuery(query);
       if (results.isNotEmpty) {
         _hasher = HashersModel.fromJson(results[0]);
 
         if (widget.dataContext == EnumDataContext.kennel) {
-          // _hkmData = G0<TableModel>().hasherKennelMapTableHelper.fromMap(results[0]);
+          // _hkmData = tableModel.hasherKennelMapTableHelper.fromMap(results[0]);
           _historicalTotalRunCount = results[0]['historicalTotalRunCount'];
           _historicalHaringCount = results[0]['historicalHaringCount'];
           _historicalCountIsEstimate =
@@ -214,7 +212,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   void initState() {
     Permission.location.isGranted.then((bool isGranted) {
       setState(() {
-        G0<AppModel>().hasLocationPermissions = isGranted;
+        appModel.hasLocationPermissions = isGranted;
       });
     });
 
@@ -679,12 +677,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                         padding: EdgeInsets.only(
                                           top: 30.0,
                                           left:
-                                              (G0<DeviceInfo>()
+                                              (deviceInfo
                                                       .deviceWidthScaleFactor -
                                                   1) *
                                               30,
                                           right:
-                                              (G0<DeviceInfo>()
+                                              (deviceInfo
                                                       .deviceWidthScaleFactor -
                                                   1) *
                                               30,
@@ -831,7 +829,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         ),
                                               ),
                                               Connection2.styleForConnected(
-                                                G0<AppModel>().connectionStatus,
+                                                appModel.connectionStatus,
                                                 ElevatedButton(
                                                   style: ElevatedButton.styleFrom(
                                                     padding:
@@ -844,8 +842,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                   ),
                                                   onPressed: () {
                                                     if (Connection2.checkForConnection(
-                                                      G0<AppModel>()
-                                                          .connectionStatus,
+                                                      appModel.connectionStatus,
                                                     )) {
                                                       Navigator.push(
                                                         context,
@@ -1008,7 +1005,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         topMargin: 45.0,
                                                         bottomMargin: 20.0,
                                                       ),
-                                                      if (G0<AppModel>()
+                                                      if (appModel
                                                           .hasLocationPermissions)
                                                         Container(
                                                           decoration: BoxDecoration(
@@ -1229,7 +1226,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             ],
                                                           ),
                                                         ),
-                                                      if (!G0<AppModel>()
+                                                      if (!appModel
                                                           .hasLocationPermissions) ...<
                                                         Widget
                                                       >[
@@ -1436,8 +1433,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                           .spaceAround,
                                                   children: <Widget>[
                                                     Connection2.styleForConnected(
-                                                      G0<AppModel>()
-                                                          .connectionStatus,
+                                                      appModel.connectionStatus,
                                                       ElevatedButton(
                                                         style: ElevatedButton.styleFrom(
                                                           padding:
@@ -1535,8 +1531,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                           .spaceAround,
                                                   children: <Widget>[
                                                     Connection2.styleForConnected(
-                                                      G0<AppModel>()
-                                                          .connectionStatus,
+                                                      appModel.connectionStatus,
                                                       ElevatedButton(
                                                         style: ElevatedButton.styleFrom(
                                                           padding:
@@ -1554,11 +1549,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                 widget.kennelId,
                                                               );
 
-                                                          await G0<TableModel>()
+                                                          await tableModel
                                                               .syncKennelAdminService
                                                               .clearEventData();
 
-                                                          await G0<TableModel>()
+                                                          await tableModel
                                                               .syncKennelAdminService
                                                               .updateFromBackend(
                                                                 SyncKennelAdminService
@@ -1752,8 +1747,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         .spaceAround,
                                                 children: <Widget>[
                                                   Connection2.styleForConnected(
-                                                    G0<AppModel>()
-                                                        .connectionStatus,
+                                                    appModel.connectionStatus,
                                                     ElevatedButton(
                                                       style: ElevatedButton.styleFrom(
                                                         padding:
@@ -1838,8 +1832,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         .spaceAround,
                                                 children: <Widget>[
                                                   Connection2.styleForConnected(
-                                                    G0<AppModel>()
-                                                        .connectionStatus,
+                                                    appModel.connectionStatus,
                                                     ElevatedButton(
                                                       style: ElevatedButton.styleFrom(
                                                         padding:
@@ -1870,18 +1863,16 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                               DB_NAME,
                                                             );
 
-                                                            await G0.reset();
-
-                                                            await GetIt.I.reset(
-                                                              dispose: true,
+                                                            Get.reset(
+                                                              clearRouteBindings:
+                                                                  true,
                                                             );
-
-                                                            setupDependencies();
-                                                            await GetIt.I
-                                                                .allReady();
+                                                            await initServices();
                                                             Get.offAll(
                                                               () =>
                                                                   AppEntryPage(),
+                                                              binding:
+                                                                  InitialBindings(),
                                                             );
                                                           }
                                                         });
@@ -1943,8 +1934,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         .spaceAround,
                                                 children: <Widget>[
                                                   Connection2.styleForConnected(
-                                                    G0<AppModel>()
-                                                        .connectionStatus,
+                                                    appModel.connectionStatus,
                                                     ElevatedButton(
                                                       style: ElevatedButton.styleFrom(
                                                         padding:
@@ -2031,8 +2021,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         .spaceAround,
                                                 children: <Widget>[
                                                   Connection2.styleForConnected(
-                                                    G0<AppModel>()
-                                                        .connectionStatus,
+                                                    appModel.connectionStatus,
                                                     ElevatedButton(
                                                       style: ElevatedButton.styleFrom(
                                                         padding:
@@ -2111,9 +2100,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             await DBProvider.deleteDb(
                                                               DB_NAME,
                                                             );
-                                                            await G0.reset();
 
-                                                            await G0.reset();
+                                                            Get.reset(
+                                                              clearRouteBindings:
+                                                                  true,
+                                                            );
+
                                                             Get.offAll(
                                                               () =>
                                                                   AppEntryPage(),
@@ -2158,14 +2150,14 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             width: MediaQuery.of(context).size.width,
             color: Colors.yellow[100],
             child: Connection2.styleForConnected(
-              G0<AppModel>().connectionStatus,
+              appModel.connectionStatus,
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _isDirty ? hc_red : Colors.grey,
                 ),
                 onPressed: () {
                   if (Connection2.checkForConnection(
-                        G0<AppModel>().connectionStatus,
+                        appModel.connectionStatus,
                       ) &&
                       _isDirty) {
                     _updateProfile();
@@ -2192,10 +2184,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     );
   }
 
-  void setupDependencies() {
-    // GetIt.I.registerSingleton<DeviceInfo>(DeviceInfo());
-    // Register other dependencies here
-  }
+  // void setupDependencies() {
+  //   // GetIt.I.registerSingleton<DeviceInfo>(DeviceInfo());
+  //   // Register other dependencies here
+  // }
 
   Future<void> _reloadData() async {
     final String? userId = getStringPref(StringPrefsEnum.userId);
@@ -2276,7 +2268,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
     await DBProvider.deleteDb(DB_NAME);
     await Get.deleteAll(force: true);
-    await GetIt.instance.reset();
+    Get.reset(clearRouteBindings: true);
 
     // and re-run the app.
     await Future.microtask(() {
@@ -2315,7 +2307,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
       if ((ps.isGranted) || success) {
         if (await Permission.location.serviceStatus.isEnabled) {
-          G0<AppModel>().hasLocationPermissions = true;
+          appModel.hasLocationPermissions = true;
           await Utilities.subscribeToGeoLocationStream().then((void _) async {
             await Utilities.showAlert(
               'Location Services Enabled',

@@ -72,91 +72,89 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
 
     String query = '''
           SELECT
-          hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel} as totalRunsThisKennel,
-          hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel} as totalHaringThisKennel,
-          e.${G0<TableModel>().eventsTableHelper.colEventId} as eventId,
-          e.${G0<TableModel>().eventsTableHelper.colEventName} as eventName,
-          e.${G0<TableModel>().eventsTableHelper.colEventNumber} as eventNumber,
-          n.${G0<TableModel>().countriesTableHelper.colCountryName} as countryName,
-          n.${G0<TableModel>().countriesTableHelper.colFlagFile} as flagFile,
-          k.${G0<TableModel>().kennelsTableHelper.colKennelName} as kennelName,
-          k.${G0<TableModel>().kennelsTableHelper.colKennelShortName} as kennelShortName,
-          coalesce(k.${G0<TableModel>().kennelsTableHelper.colDigitsAfterDecimal},n.${G0<TableModel>().countriesTableHelper.colDigitsAfterDecimal},2) as digitsAfterDecimal, 
-          coalesce(k.${G0<TableModel>().kennelsTableHelper.colCurrencySymbol},n.${G0<TableModel>().countriesTableHelper.colCurrencySymbol},"$dollarSign") as currencySymbol,
-          k.${G0<TableModel>().kennelsTableHelper.colKennelLogo} as kennelLogo,
-          e.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} as eventStartDatetime,
-          e.${G0<TableModel>().eventsTableHelper.colExtrasDescription} as extrasDescription,
-          e.${G0<TableModel>().eventsTableHelper.colEventPriceForExtras} as extrasPrice,
-          coalesce(e.${G0<TableModel>().eventsTableHelper.colCanEditRunAttendence},k.${G0<TableModel>().kennelsTableHelper.colCanEditRunAttendence}) as canEditRunAttendence,
-          hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} as hemId,
-          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
-          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare},0) as isHare,
-          pay.${G0<TableModel>().paymentsTableHelper.colCreditAmount} as creditAmount,
-          pay.${G0<TableModel>().paymentsTableHelper.colDebitAmount} as debitAmount,
-          pay.${G0<TableModel>().paymentsTableHelper.colCreditAvailable} as creditAvailable,
-          pay.${G0<TableModel>().paymentsTableHelper.colPaymentType} as paymentType,
-          pay.${G0<TableModel>().paymentsTableHelper.colDoPayForExtras} as doPayForExtras
+          hem.${tableModel.hasherEventMapTableHelper.colTotalRunsThisKennel} as totalRunsThisKennel,
+          hem.${tableModel.hasherEventMapTableHelper.colTotalHaringThisKennel} as totalHaringThisKennel,
+          e.${tableModel.eventsTableHelper.colEventId} as eventId,
+          e.${tableModel.eventsTableHelper.colEventName} as eventName,
+          e.${tableModel.eventsTableHelper.colEventNumber} as eventNumber,
+          n.${tableModel.countriesTableHelper.colCountryName} as countryName,
+          n.${tableModel.countriesTableHelper.colFlagFile} as flagFile,
+          k.${tableModel.kennelsTableHelper.colKennelName} as kennelName,
+          k.${tableModel.kennelsTableHelper.colKennelShortName} as kennelShortName,
+          coalesce(k.${tableModel.kennelsTableHelper.colDigitsAfterDecimal},n.${tableModel.countriesTableHelper.colDigitsAfterDecimal},2) as digitsAfterDecimal, 
+          coalesce(k.${tableModel.kennelsTableHelper.colCurrencySymbol},n.${tableModel.countriesTableHelper.colCurrencySymbol},"$dollarSign") as currencySymbol,
+          k.${tableModel.kennelsTableHelper.colKennelLogo} as kennelLogo,
+          e.${tableModel.eventsTableHelper.colEventStartDatetime} as eventStartDatetime,
+          e.${tableModel.eventsTableHelper.colExtrasDescription} as extrasDescription,
+          e.${tableModel.eventsTableHelper.colEventPriceForExtras} as extrasPrice,
+          coalesce(e.${tableModel.eventsTableHelper.colCanEditRunAttendence},k.${tableModel.kennelsTableHelper.colCanEditRunAttendence}) as canEditRunAttendence,
+          hem.${tableModel.hasherEventMapTableHelper.colHemId} as hemId,
+          coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
+          coalesce(hem.${tableModel.hasherEventMapTableHelper.colIsHare},0) as isHare,
+          pay.${tableModel.paymentsTableHelper.colCreditAmount} as creditAmount,
+          pay.${tableModel.paymentsTableHelper.colDebitAmount} as debitAmount,
+          pay.${tableModel.paymentsTableHelper.colCreditAvailable} as creditAvailable,
+          pay.${tableModel.paymentsTableHelper.colPaymentType} as paymentType,
+          pay.${tableModel.paymentsTableHelper.colDoPayForExtras} as doPayForExtras
           FROM narrowEvents e
-          INNER JOIN kennels k on e.${G0<TableModel>().eventsTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId}
-          INNER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(widget.appDomain)} n on e.${G0<TableModel>().eventsTableHelper.colCountryId} = n.${G0<TableModel>().countriesTableHelper.colCountryId}
-          LEFT OUTER JOIN ${G0<TableModel>().hasherEventMapTableHelper.getTableName(widget.appDomain)} hem on hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} = e.${G0<TableModel>().eventsTableHelper.colEventId} 
-          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId}  = "$userId"
-          LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(widget.appDomain)} pay on pay.${G0<TableModel>().paymentsTableHelper.colHemId} = hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} AND pay.${G0<TableModel>().paymentsTableHelper.colCancelledBy} IS NULL
-          WHERE e.${G0<TableModel>().eventsTableHelper.colIsCountedRun} = 1 
-          AND e.${G0<TableModel>().eventsTableHelper.colIsVisible} = 1 
-          AND e.${G0<TableModel>().eventsTableHelper.colRemoved} = 0
-          AND e.${G0<TableModel>().eventsTableHelper.colCountryId} = "${widget.countryId}" 
-          AND coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) >= $attendenceState 
-          AND DateTime(e.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) <= DateTime('now')
+          INNER JOIN kennels k on e.${tableModel.eventsTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId}
+          INNER JOIN ${tableModel.countriesTableHelper.getTableName(widget.appDomain)} n on e.${tableModel.eventsTableHelper.colCountryId} = n.${tableModel.countriesTableHelper.colCountryId}
+          LEFT OUTER JOIN ${tableModel.hasherEventMapTableHelper.getTableName(widget.appDomain)} hem on hem.${tableModel.hasherEventMapTableHelper.colEventId} = e.${tableModel.eventsTableHelper.colEventId} 
+          AND hem.${tableModel.hasherEventMapTableHelper.colUserId}  = "$userId"
+          LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(widget.appDomain)} pay on pay.${tableModel.paymentsTableHelper.colHemId} = hem.${tableModel.hasherEventMapTableHelper.colHemId} AND pay.${tableModel.paymentsTableHelper.colCancelledBy} IS NULL
+          WHERE e.${tableModel.eventsTableHelper.colIsCountedRun} = 1 
+          AND e.${tableModel.eventsTableHelper.colIsVisible} = 1 
+          AND e.${tableModel.eventsTableHelper.colRemoved} = 0
+          AND e.${tableModel.eventsTableHelper.colCountryId} = "${widget.countryId}" 
+          AND coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) >= $attendenceState 
+          AND DateTime(e.${tableModel.eventsTableHelper.colEventStartDatetime}) <= DateTime('now')
         UNION
           -- this part of the query is for where we want to cache run details in cases
           -- where the user is not following the Kennel and the run detail information will
           -- not be present on the device as a part of a run record
           SELECT 
-          hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalRunsThisKennel} as totalRunsThisKennel,
-          hem.${G0<TableModel>().hasherEventMapTableHelper.colTotalHaringThisKennel} as totalHaringThisKennel,
-          hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} as eventId,
-          hem.${G0<TableModel>().hasherEventMapTableHelper.colEventName} as eventName,
-          hem.${G0<TableModel>().hasherEventMapTableHelper.colEventNumber} as eventNumber,
-          n.${G0<TableModel>().countriesTableHelper.colCountryName} as countryName,
-          n.${G0<TableModel>().countriesTableHelper.colFlagFile} as flagFile,
-          k.${G0<TableModel>().kennelsTableHelper.colKennelName} as kennelName,
-          k.${G0<TableModel>().kennelsTableHelper.colKennelShortName} as kennelShortName,
-          coalesce(k.${G0<TableModel>().kennelsTableHelper.colDigitsAfterDecimal},n.${G0<TableModel>().countriesTableHelper.colDigitsAfterDecimal},2) as digitsAfterDecimal, 
-          coalesce(k.${G0<TableModel>().kennelsTableHelper.colCurrencySymbol},n.${G0<TableModel>().countriesTableHelper.colCurrencySymbol},"$dollarSign") as currencySymbol,
-          k.${G0<TableModel>().kennelsTableHelper.colKennelLogo} as kennelLogo,
-          hem.${G0<TableModel>().hasherEventMapTableHelper.colEventStartDatetime} as eventStartDatetime,
+          hem.${tableModel.hasherEventMapTableHelper.colTotalRunsThisKennel} as totalRunsThisKennel,
+          hem.${tableModel.hasherEventMapTableHelper.colTotalHaringThisKennel} as totalHaringThisKennel,
+          hem.${tableModel.hasherEventMapTableHelper.colEventId} as eventId,
+          hem.${tableModel.hasherEventMapTableHelper.colEventName} as eventName,
+          hem.${tableModel.hasherEventMapTableHelper.colEventNumber} as eventNumber,
+          n.${tableModel.countriesTableHelper.colCountryName} as countryName,
+          n.${tableModel.countriesTableHelper.colFlagFile} as flagFile,
+          k.${tableModel.kennelsTableHelper.colKennelName} as kennelName,
+          k.${tableModel.kennelsTableHelper.colKennelShortName} as kennelShortName,
+          coalesce(k.${tableModel.kennelsTableHelper.colDigitsAfterDecimal},n.${tableModel.countriesTableHelper.colDigitsAfterDecimal},2) as digitsAfterDecimal, 
+          coalesce(k.${tableModel.kennelsTableHelper.colCurrencySymbol},n.${tableModel.countriesTableHelper.colCurrencySymbol},"$dollarSign") as currencySymbol,
+          k.${tableModel.kennelsTableHelper.colKennelLogo} as kennelLogo,
+          hem.${tableModel.hasherEventMapTableHelper.colEventStartDatetime} as eventStartDatetime,
           null as extrasDescription,
           null as extrasPrice,
-          hem.${G0<TableModel>().hasherEventMapTableHelper.colCanEditRunAttendence} as canEditRunAttendence,
-          hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} as hemId,
-          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
-          coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colIsHare},0) as isHare,
-          pay.${G0<TableModel>().paymentsTableHelper.colCreditAmount} as creditAmount,
-          pay.${G0<TableModel>().paymentsTableHelper.colDebitAmount} as debitAmount,
-          pay.${G0<TableModel>().paymentsTableHelper.colPaymentType} as paymentType,
-          pay.${G0<TableModel>().paymentsTableHelper.colCreditAvailable} as creditAvailable,
-          pay.${G0<TableModel>().paymentsTableHelper.colDoPayForExtras} as doPayForExtras
-          FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(widget.appDomain)} hem
-          INNER JOIN ${G0<TableModel>().kennelsTableHelper.getTableName(widget.appDomain)} k on k.${G0<TableModel>().kennelsTableHelper.colKennelId} = ${G0<TableModel>().hasherEventMapTableHelper.colEventKennelId}
-          INNER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(widget.appDomain)} n on n.${G0<TableModel>().countriesTableHelper.colCountryId} = ${G0<TableModel>().hasherEventMapTableHelper.colCountryId}
-          LEFT OUTER JOIN ${G0<TableModel>().paymentsTableHelper.getTableName(widget.appDomain)} pay on pay.${G0<TableModel>().paymentsTableHelper.colHemId} = hem.${G0<TableModel>().hasherEventMapTableHelper.colHemId} AND pay.${G0<TableModel>().paymentsTableHelper.colCancelledBy} IS NULL
+          hem.${tableModel.hasherEventMapTableHelper.colCanEditRunAttendence} as canEditRunAttendence,
+          hem.${tableModel.hasherEventMapTableHelper.colHemId} as hemId,
+          coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
+          coalesce(hem.${tableModel.hasherEventMapTableHelper.colIsHare},0) as isHare,
+          pay.${tableModel.paymentsTableHelper.colCreditAmount} as creditAmount,
+          pay.${tableModel.paymentsTableHelper.colDebitAmount} as debitAmount,
+          pay.${tableModel.paymentsTableHelper.colPaymentType} as paymentType,
+          pay.${tableModel.paymentsTableHelper.colCreditAvailable} as creditAvailable,
+          pay.${tableModel.paymentsTableHelper.colDoPayForExtras} as doPayForExtras
+          FROM ${tableModel.hasherEventMapTableHelper.getTableName(widget.appDomain)} hem
+          INNER JOIN ${tableModel.kennelsTableHelper.getTableName(widget.appDomain)} k on k.${tableModel.kennelsTableHelper.colKennelId} = ${tableModel.hasherEventMapTableHelper.colEventKennelId}
+          INNER JOIN ${tableModel.countriesTableHelper.getTableName(widget.appDomain)} n on n.${tableModel.countriesTableHelper.colCountryId} = ${tableModel.hasherEventMapTableHelper.colCountryId}
+          LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(widget.appDomain)} pay on pay.${tableModel.paymentsTableHelper.colHemId} = hem.${tableModel.hasherEventMapTableHelper.colHemId} AND pay.${tableModel.paymentsTableHelper.colCancelledBy} IS NULL
           WHERE 
-          hem.${G0<TableModel>().hasherEventMapTableHelper.colEventId} NOT IN (SELECT eventId FROM NarrowEvents)
-          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colUserId} = "$userId"
-          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colEventIsCountedAndVisible} = 1 
-          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colRemoved} = 0 
-          AND hem.${G0<TableModel>().hasherEventMapTableHelper.colCountryId} = "${widget.countryId}" 
-          AND coalesce(hem.${G0<TableModel>().hasherEventMapTableHelper.colAttendenceState},0) >= $attendenceState 
-          AND DateTime(hem.${G0<TableModel>().hasherEventMapTableHelper.colEventStartDatetime}) <= DateTime('now') 
+          hem.${tableModel.hasherEventMapTableHelper.colEventId} NOT IN (SELECT eventId FROM NarrowEvents)
+          AND hem.${tableModel.hasherEventMapTableHelper.colUserId} = "$userId"
+          AND hem.${tableModel.hasherEventMapTableHelper.colEventIsCountedAndVisible} = 1 
+          AND hem.${tableModel.hasherEventMapTableHelper.colRemoved} = 0 
+          AND hem.${tableModel.hasherEventMapTableHelper.colCountryId} = "${widget.countryId}" 
+          AND coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) >= $attendenceState 
+          AND DateTime(hem.${tableModel.hasherEventMapTableHelper.colEventStartDatetime}) <= DateTime('now') 
           ORDER BY eventStartDatetime desc
           ''';
 
     _runCountsList = <UserRunHistoryModel>[];
     try {
-      final List<Map<String, dynamic>> results = await G0<Database>().rawQuery(
-        query,
-      );
+      final List<Map<String, dynamic>> results = await database.rawQuery(query);
 
       for (int i = 0; i < results.length; i++) {
         final UserRunHistoryModel hlrItem = UserRunHistoryModel.fromMap(
@@ -238,7 +236,7 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
                 //   label: 'Email run counts\r\n(this kennel)',
                 //   labelStyle: const TextStyle(fontSize: 18.0),
                 //   onTap: () {
-                //     G0<TableModel>()
+                //     tableModel
                 //         .hasherEventMapService
                 //         .sendRunCountReportByEmail(
                 //             kennelId:
@@ -272,7 +270,7 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
                   label: 'Email run counts\r\n(all kennels)',
                   labelStyle: const TextStyle(fontSize: 18.0),
                   onTap: () {
-                    G0<TableModel>().hasherEventMapService
+                    tableModel.hasherEventMapService
                         .sendRunCountReportByEmail(
                           kennelId: GUID_EMPTY,
                           kennelName: 'All of your Hash Kennels',
@@ -330,8 +328,8 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
       _isLoading = true;
     });
 
-    //final bool result = await G0<TableModel>()
-    await G0<TableModel>().syncUserDataService.updateFromBackend(
+    //final bool result = await tableModel
+    await tableModel.syncUserDataService.updateFromBackend(
       SyncUserDataService.flagHasherEventMapTable |
           SyncUserDataService.flagNarrowEventsTable |
           SyncUserDataService.flagKennelsTable |
@@ -886,7 +884,7 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
     EnumIsHare<int> isHare,
     AppDomainType appDomain,
   ) async {
-    await G0<TableModel>().hasherEventMapService.setEventAttendence(
+    await tableModel.hasherEventMapService.setEventAttendence(
       item.eventId,
       userId,
       appDomain,

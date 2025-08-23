@@ -63,16 +63,14 @@ class NewAccountPageContentState extends State<NewAccountPageContent> {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints viewportConstraints) {
         double newFontSize =
-            (ts_title.fontSize ?? 20.0) *
-            G0<DeviceInfo>().deviceWidthScaleFactor;
+            (ts_title.fontSize ?? 20.0) * deviceInfo.deviceWidthScaleFactor;
         final TextStyle localTitleStyle = ts_title.copyWith(
           fontSize: newFontSize,
           color: Colors.black,
         );
 
         newFontSize =
-            (ts_bodySmall.fontSize ?? 12) *
-            G0<DeviceInfo>().deviceWidthScaleFactor;
+            (ts_bodySmall.fontSize ?? 12) * deviceInfo.deviceWidthScaleFactor;
         final TextStyle localBodyStyle = ts_bodySmall.copyWith(
           fontSize: newFontSize,
           color: Colors.black,
@@ -80,7 +78,7 @@ class NewAccountPageContentState extends State<NewAccountPageContent> {
 
         newFontSize =
             (ts_headingLarge.fontSize ?? 24.0) *
-            G0<DeviceInfo>().deviceWidthScaleFactor;
+            deviceInfo.deviceWidthScaleFactor;
         final TextStyle localHeadingStyle = ts_headingLarge.copyWith(
           fontSize: newFontSize,
           height: 1.2,
@@ -126,10 +124,10 @@ class NewAccountPageContentState extends State<NewAccountPageContent> {
                         Image(
                           width:
                               PROFILE_PIC_SIZE2 *
-                              G0<DeviceInfo>().deviceWidthScaleFactor,
+                              deviceInfo.deviceWidthScaleFactor,
                           height:
                               PROFILE_PIC_SIZE2 *
-                              G0<DeviceInfo>().deviceWidthScaleFactor,
+                              deviceInfo.deviceWidthScaleFactor,
                           fit: BoxFit.fill,
                           image: const AssetImage('images/icons/pencil.png'),
                         ),
@@ -182,10 +180,10 @@ class NewAccountPageContentState extends State<NewAccountPageContent> {
                         Image(
                           width:
                               PROFILE_PIC_SIZE2 *
-                              G0<DeviceInfo>().deviceWidthScaleFactor,
+                              deviceInfo.deviceWidthScaleFactor,
                           height:
                               PROFILE_PIC_SIZE2 *
-                              G0<DeviceInfo>().deviceWidthScaleFactor,
+                              deviceInfo.deviceWidthScaleFactor,
                           fit: BoxFit.fill,
                           image: const AssetImage(
                             'images/icons/inviteCode.png',
@@ -241,10 +239,10 @@ class NewAccountPageContentState extends State<NewAccountPageContent> {
                         Image(
                           width:
                               PROFILE_PIC_SIZE2 *
-                              G0<DeviceInfo>().deviceWidthScaleFactor,
+                              deviceInfo.deviceWidthScaleFactor,
                           height:
                               PROFILE_PIC_SIZE2 *
-                              G0<DeviceInfo>().deviceWidthScaleFactor,
+                              deviceInfo.deviceWidthScaleFactor,
                           fit: BoxFit.fill,
                           image: const AssetImage('images/init/3rd_party.png'),
                         ),
@@ -282,8 +280,8 @@ class NewAccountPageContentState extends State<NewAccountPageContent> {
                 //       child: Row(
                 //         children: <Widget>[
                 //           Image(
-                //             width: PROFILE_PIC_SIZE2 * G0<DeviceInfo>().deviceWidthScaleFactor,
-                //             height: PROFILE_PIC_SIZE2 * G0<DeviceInfo>().deviceWidthScaleFactor,
+                //             width: PROFILE_PIC_SIZE2 * deviceInfo.deviceWidthScaleFactor,
+                //             height: PROFILE_PIC_SIZE2 * deviceInfo.deviceWidthScaleFactor,
                 //             fit: BoxFit.fill,
                 //             image: const AssetImage('images/icons/qrPhone.png'),
                 //           ),

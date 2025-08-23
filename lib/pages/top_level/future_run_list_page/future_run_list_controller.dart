@@ -41,7 +41,7 @@ class FutureRunListPageController extends GetxController {
       filterRuns();
     });
 
-    IveCoreUtilities.logTiming('initState called', G0<AppModel>().appStartTime);
+    IveCoreUtilities.logTiming('initState called', appModel.appStartTime);
     searchController.text = '';
     searchRunsText = '';
 
@@ -127,7 +127,7 @@ class FutureRunListPageController extends GetxController {
   }
 
   Future<void> _onInitAsync() async {
-    G0<AppModel>().hasLocationPermissions = await Permission.location.isGranted;
+    appModel.hasLocationPermissions = await Permission.location.isGranted;
 
     await refreshFromBackend();
     await refreshFromTable(true);
@@ -391,31 +391,31 @@ class FutureRunListPageController extends GetxController {
       //});
 
       String query =
-          'DELETE FROM ${G0<TableModel>().hasherEventMapTableHelper.getTableName(AppDomainType.user)}';
+          'DELETE FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.user)}';
       try {
-        await G0<Database>().rawQuery(query);
+        await database.rawQuery(query);
       } catch (e) {
         //print(e);
       }
 
       query =
-          'DELETE FROM ${G0<TableModel>().paymentsTableHelper.getTableName(AppDomainType.user)}';
+          'DELETE FROM ${tableModel.paymentsTableHelper.getTableName(AppDomainType.user)}';
       try {
-        await G0<Database>().rawQuery(query);
+        await database.rawQuery(query);
       } catch (e) {
         //print(e);
       }
 
       query =
-          'DELETE FROM ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)}';
+          'DELETE FROM ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)}';
       try {
-        await G0<Database>().rawQuery(query);
+        await database.rawQuery(query);
       } catch (e) {
         //print(e);
       }
     }
 
-    await G0<TableModel>().syncUserDataService.updateFromBackend(
+    await tableModel.syncUserDataService.updateFromBackend(
       SyncUserDataService.flagHasherEventMapTable |
           SyncUserDataService.flagNarrowEventsTable |
           SyncUserDataService.flagKennelsTable |

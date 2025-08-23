@@ -50,15 +50,18 @@ class MyFlutterMapState extends State<MyFlutterMap> {
   Widget build(BuildContext context) {
     // only move the map if the center has changed
     latlng.LatLng mapCenterPoint = widget.mapCenter;
-    if ((mapCenterPoint.latitude == CLEAR_LATLONG) && (mapCenterPoint.longitude == CLEAR_LATLONG)) {
+    if ((mapCenterPoint.latitude == CLEAR_LATLONG) &&
+        (mapCenterPoint.longitude == CLEAR_LATLONG)) {
       mapCenterPoint = widget.kennelLocation;
     }
 
-    if (_mapControllerAvailable && (mapController.camera.center != mapCenterPoint)) {
+    if (_mapControllerAvailable &&
+        (mapController.camera.center != mapCenterPoint)) {
       mapController.move(mapCenterPoint, mapController.camera.zoom);
     }
 
-    if (_mapControllerAvailable && (_oldTrueNorthLock != widget.trueNorthLock)) {
+    if (_mapControllerAvailable &&
+        (_oldTrueNorthLock != widget.trueNorthLock)) {
       _oldTrueNorthLock = widget.trueNorthLock;
       if (widget.trueNorthLock) {
         mapController.rotate(0.0);
@@ -68,25 +71,37 @@ class MyFlutterMapState extends State<MyFlutterMap> {
     _mapControllerAvailable = true;
     return FlutterMap(
       mapController: mapController,
-      options: widget.trueNorthLock
-          ? MapOptions(
-              interactionOptions: InteractionOptions(
-                flags: widget.trueNorthLock ? InteractiveFlag.pinchZoom | InteractiveFlag.drag : InteractiveFlag.pinchZoom | InteractiveFlag.drag | InteractiveFlag.rotate,
+      options:
+          widget.trueNorthLock
+              ? MapOptions(
+                interactionOptions: InteractionOptions(
+                  flags:
+                      widget.trueNorthLock
+                          ? InteractiveFlag.pinchZoom | InteractiveFlag.drag
+                          : InteractiveFlag.pinchZoom |
+                              InteractiveFlag.drag |
+                              InteractiveFlag.rotate,
+                ),
+                initialCenter: mapCenterPoint,
+                initialZoom: widget.zoom,
+                minZoom: widget.minZoom,
+                maxZoom: widget.maxZoom,
+                initialRotation: 0.0,
+              )
+              : MapOptions(
+                interactionOptions: InteractionOptions(
+                  flags:
+                      widget.trueNorthLock
+                          ? InteractiveFlag.pinchZoom | InteractiveFlag.drag
+                          : InteractiveFlag.pinchZoom |
+                              InteractiveFlag.drag |
+                              InteractiveFlag.rotate,
+                ),
+                initialCenter: mapCenterPoint,
+                initialZoom: widget.zoom,
+                minZoom: widget.minZoom,
+                maxZoom: widget.maxZoom,
               ),
-              initialCenter: mapCenterPoint,
-              initialZoom: widget.zoom,
-              minZoom: widget.minZoom,
-              maxZoom: widget.maxZoom,
-              initialRotation: 0.0,
-            )
-          : MapOptions(
-              interactionOptions:
-                  InteractionOptions(flags: widget.trueNorthLock ? InteractiveFlag.pinchZoom | InteractiveFlag.drag : InteractiveFlag.pinchZoom | InteractiveFlag.drag | InteractiveFlag.rotate),
-              initialCenter: mapCenterPoint,
-              initialZoom: widget.zoom,
-              minZoom: widget.minZoom,
-              maxZoom: widget.maxZoom,
-            ),
       children: <Widget>[
         TileLayer(
           urlTemplate:
@@ -97,11 +112,16 @@ class MyFlutterMapState extends State<MyFlutterMap> {
         ),
         MarkerLayer(
           markers: <Marker>[
-            if ((G0<AppModel>().hasLocationPermissions) && (G0<DeviceInfo>().deviceLat != null) && (G0<DeviceInfo>().deviceLon != null)) ...<Marker>[
+            if ((appModel.hasLocationPermissions) &&
+                (deviceInfo.deviceLat != null) &&
+                (deviceInfo.deviceLon != null)) ...<Marker>[
               Marker(
                 height: 50.0,
                 width: 50.0,
-                point: latlng.LatLng(G0<DeviceInfo>().deviceLat!, G0<DeviceInfo>().deviceLon!),
+                point: latlng.LatLng(
+                  deviceInfo.deviceLat!,
+                  deviceInfo.deviceLon!,
+                ),
                 child: GestureDetector(
                   child: Container(
                     padding: const EdgeInsets.all(1.0),
@@ -139,7 +159,7 @@ class MyFlutterMapState extends State<MyFlutterMap> {
               ),
             ],
           ],
-        )
+        ),
       ],
     );
   }

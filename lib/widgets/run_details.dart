@@ -181,11 +181,11 @@ class RunDetails extends StatelessWidget {
           Text(
             'Event details',
             style: ts_headingLarge,
-            //textScaleFactor: G0<DeviceInfo>().textClamp50,
+            //textScaleFactor: deviceInfo.textClamp50,
           ),
           const SizedBox(height: 15.0),
           TextScaleFactorClamper(
-            textScaleFactor: G0<DeviceInfo>().textClamp50,
+            textScaleFactor: deviceInfo.textClamp50,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -493,7 +493,7 @@ class RunDetails extends StatelessWidget {
                         ),
                       ],
                     ),
-                (G0<AppModel>().hasLocationPermissions) && isMapAndDistanceValid
+                (appModel.hasLocationPermissions) && isMapAndDistanceValid
                     ? Row(
                       children: <Widget>[
                         Expanded(
@@ -512,11 +512,9 @@ class RunDetails extends StatelessWidget {
                         ),
                         Expanded(
                           flex:
-                              G0<AppModel>().hasLocationPermissions
-                                  ? _flexRight
-                                  : 0,
+                              appModel.hasLocationPermissions ? _flexRight : 0,
                           child: Text(
-                            G0<AppModel>().hasLocationPermissions
+                            appModel.hasLocationPermissions
                                 ? (distToEvent ?? -1) >= 0
                                     ? '${Utilities.getDistance(distToEvent!, isMetric: ((distancePreference) & 0x01) == 0)} from here'
                                     : '<unknown>'
@@ -795,16 +793,16 @@ class RunDetails extends StatelessWidget {
                   Text(
                     'Event tags',
                     style: ts_headingLarge,
-                    //textScaleFactor: G0<DeviceInfo>().textClamp50,
+                    //textScaleFactor: deviceInfo.textClamp50,
                   ),
                   const SizedBox(height: 15.0),
                   TextScaleFactorClamper(
-                    textScaleFactor: G0<DeviceInfo>().textClamp50,
+                    textScaleFactor: deviceInfo.textClamp50,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         SizedBox(
-                          width: G0<DeviceInfo>().deviceWidth,
+                          width: deviceInfo.deviceWidth,
                         ), // this is required to force the column to be the full width of the device
                         for (int i = 0; i < runTags1.length; i++)
                           if (((runTags1.values.elementAt(i)) & event.tags1) !=
@@ -857,7 +855,7 @@ class RunDetails extends StatelessWidget {
                   textAlign: TextAlign.center,
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
-                  //textScaleFactor: G0<DeviceInfo>().textClamp50,
+                  //textScaleFactor: deviceInfo.textClamp50,
                 ),
               ),
 
@@ -874,7 +872,7 @@ class RunDetails extends StatelessWidget {
                     Text(
                       'QR Codes for Sharing Runs',
                       style: ts_headingLarge,
-                      //textScaleFactor: G0<DeviceInfo>().textClamp50,
+                      //textScaleFactor: deviceInfo.textClamp50,
                     ),
                     const SizedBox(height: 20),
                     OverflowBar(
@@ -992,7 +990,7 @@ class RunDetails extends StatelessWidget {
                   textAlign: TextAlign.center,
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
-                  //textScaleFactor: G0<DeviceInfo>().textClamp50,
+                  //textScaleFactor: deviceInfo.textClamp50,
                 ),
                 onPressed: () async {
                   await Clipboard.setData(
@@ -1060,9 +1058,7 @@ class RunDetails extends StatelessWidget {
               ),
               child: Linkify(
                 text: event.eventDescription!.replaceAll('\r\n', '\n'),
-                style: ts_body.copyWith(
-                  fontSize: 20 * G0<DeviceInfo>().textClamp50,
-                ),
+                style: ts_body.copyWith(fontSize: 20 * deviceInfo.textClamp50),
                 linkStyle: ts_bodyYellow,
                 onOpen: (LinkableElement link) async {
                   if (Utilities.isValidUrl(link.url)) {

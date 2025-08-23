@@ -96,33 +96,33 @@ class QueryKennels {
   // it is important to have the beginning and end of the search field have a space
   // character to ensure that searches run properly.
 
-// || " " || coalesce(r.${G0<TableModel>().regionsTableHelper.colRegionAbbreviation},"")
+  // || " " || coalesce(r.${tableModel.regionsTableHelper.colRegionAbbreviation},"")
 
   // note: the tilde characters at the beginning and end of the search field ensure
   // that the kennelName is searchable and whatever is at the end of the search field
   // is also searchable
   static String searchKennelsField = '''
                lower(
-               "~ " || k.${G0<TableModel>().kennelsTableHelper.colKennelName} 
-            || " " || k.${G0<TableModel>().kennelsTableHelper.colKennelShortName} 
-            || " " || c.${G0<TableModel>().citiesTableHelper.colCityName} 
-            || " " || r.${G0<TableModel>().regionsTableHelper.colRegionName}
-            || " " || coalesce(r.${G0<TableModel>().regionsTableHelper.colRegionAbbreviation},"") 
-            || " " || n.${G0<TableModel>().countriesTableHelper.colCountryName} 
-            || " " || n.${G0<TableModel>().countriesTableHelper.colCountryCode} 
-            || " " || replace(coalesce(c.${G0<TableModel>().citiesTableHelper.colCitySearchTags},""),","," ") 
-            || " " || replace(coalesce(r.${G0<TableModel>().regionsTableHelper.colRegionSearchTags},""),","," ") 
-            || " " || replace(coalesce(n.${G0<TableModel>().countriesTableHelper.colCountrySearchTags},""),","," ") 
-            || " " || replace(coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelSearchTags},""),","," ") 
+               "~ " || k.${tableModel.kennelsTableHelper.colKennelName} 
+            || " " || k.${tableModel.kennelsTableHelper.colKennelShortName} 
+            || " " || c.${tableModel.citiesTableHelper.colCityName} 
+            || " " || r.${tableModel.regionsTableHelper.colRegionName}
+            || " " || coalesce(r.${tableModel.regionsTableHelper.colRegionAbbreviation},"") 
+            || " " || n.${tableModel.countriesTableHelper.colCountryName} 
+            || " " || n.${tableModel.countriesTableHelper.colCountryCode} 
+            || " " || replace(coalesce(c.${tableModel.citiesTableHelper.colCitySearchTags},""),","," ") 
+            || " " || replace(coalesce(r.${tableModel.regionsTableHelper.colRegionSearchTags},""),","," ") 
+            || " " || replace(coalesce(n.${tableModel.countriesTableHelper.colCountrySearchTags},""),","," ") 
+            || " " || replace(coalesce(k.${tableModel.kennelsTableHelper.colKennelSearchTags},""),","," ") 
             || " " || 
               case 
-              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "EU" then "europe" 
-              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "AF" then "africa" 
-              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "AS" then "asia" 
-              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "NA" then "north america" 
-              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "SA" then "south america" 
-              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "OC" then "oceania" 
-              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "AN" then "antarctica" 
+              when n.${tableModel.countriesTableHelper.colContinentCode} = "EU" then "europe" 
+              when n.${tableModel.countriesTableHelper.colContinentCode} = "AF" then "africa" 
+              when n.${tableModel.countriesTableHelper.colContinentCode} = "AS" then "asia" 
+              when n.${tableModel.countriesTableHelper.colContinentCode} = "NA" then "north america" 
+              when n.${tableModel.countriesTableHelper.colContinentCode} = "SA" then "south america" 
+              when n.${tableModel.countriesTableHelper.colContinentCode} = "OC" then "oceania" 
+              when n.${tableModel.countriesTableHelper.colContinentCode} = "AN" then "antarctica" 
               else "" 
               end || " ~" 
             )
@@ -141,8 +141,9 @@ class QueryKennels {
     // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
     if (searchText.isNotEmpty) {
       // searchText = '$searchText , ${removeDiacritics(searchText)}';
-      final List<String> searchItems =
-          searchText.trim().toLowerCase().split(',');
+      final List<String> searchItems = searchText.trim().toLowerCase().split(
+        ',',
+      );
       for (String st in searchItems) {
         if (st.trim().isEmpty) {
           continue;
@@ -154,24 +155,25 @@ class QueryKennels {
         }
         final List<String> orItems = st.split('+');
 
-        filteredKennels = filteredKennels.where((KennelListAggregate a) {
-          for (String orItem in orItems) {
-            if (orItem.trim().isEmpty) {
-              continue;
-            }
-            orItem = ' ${orItem.trim().toLowerCase()}';
+        filteredKennels =
+            filteredKennels.where((KennelListAggregate a) {
+              for (String orItem in orItems) {
+                if (orItem.trim().isEmpty) {
+                  continue;
+                }
+                orItem = ' ${orItem.trim().toLowerCase()}';
 
-            if (((a.extensions.searchKennelsText ?? '')
-                    .toLowerCase()
-                    .contains(orItem)) ||
-                ((removeDiacritics(
-                        (a.extensions.searchKennelsText ?? '').toLowerCase()))
-                    .contains(orItem))) {
-              return !negate;
-            }
-          }
-          return negate;
-        }).toList();
+                if (((a.extensions.searchKennelsText ?? '')
+                        .toLowerCase()
+                        .contains(orItem)) ||
+                    ((removeDiacritics(
+                      (a.extensions.searchKennelsText ?? '').toLowerCase(),
+                    )).contains(orItem))) {
+                  return !negate;
+                }
+              }
+              return negate;
+            }).toList();
       }
     }
     //}
@@ -188,25 +190,29 @@ class QueryKennels {
     KennelListAggregate? kennel;
     final String hasherId = getStringPref(StringPrefsEnum.userId)!;
     final List<Map<String, dynamic>> results = await QueryKennels.queryKennels(
-        EnumKennelQueryType.singleKennel, EnumKennelQueryContext.user,
-        hasherId: hasherId, kennelId: kennelId);
+      EnumKennelQueryType.singleKennel,
+      EnumKennelQueryContext.user,
+      hasherId: hasherId,
+      kennelId: kennelId,
+    );
 
     if (results.isNotEmpty) {
       double? dist;
 
-      if ((G0<DeviceInfo>().deviceLat != null) &&
-          (G0<DeviceInfo>().deviceLon != null)) {
+      if ((deviceInfo.deviceLat != null) && (deviceInfo.deviceLon != null)) {
         dist = Geolocator.distanceBetween(
-            G0<DeviceInfo>().deviceLat!,
-            G0<DeviceInfo>().deviceLon!,
-            results[0]['cityLat'],
-            results[0]['cityLon']);
+          deviceInfo.deviceLat!,
+          deviceInfo.deviceLon!,
+          results[0]['cityLat'],
+          results[0]['cityLon'],
+        );
       }
 
-      final KennelsModel kennelItem =
-          G0<TableModel>().kennelsTableHelper.fromMap(results[0]);
-      final HasherKennelMapModel hkmItem =
-          G0<TableModel>().hasherKennelMapTableHelper.fromMap(results[0]);
+      final KennelsModel kennelItem = tableModel.kennelsTableHelper.fromMap(
+        results[0],
+      );
+      final HasherKennelMapModel hkmItem = tableModel.hasherKennelMapTableHelper
+          .fromMap(results[0]);
       final KennelListQueryExtenstions extensionsItem =
           KennelListQueryExtenstions.fromMap(results[0]);
       extensionsItem.distToKennel = dist;
@@ -215,10 +221,11 @@ class QueryKennels {
       extensionsItem.emailAlertRequested = -1;
 
       kennel = KennelListAggregate(
-          kennel: kennelItem,
-          extensions: extensionsItem,
-          hkm: hkmItem,
-          isHomeKennel: isHomeKennel);
+        kennel: kennelItem,
+        extensions: extensionsItem,
+        hkm: hkmItem,
+        isHomeKennel: isHomeKennel,
+      );
     }
     return kennel;
   }
@@ -233,14 +240,14 @@ class QueryKennels {
 
     switch (queryContext) {
       case EnumKennelQueryContext.user:
-        hkmTable = G0<TableModel>()
-            .hasherKennelMapTableHelper
-            .getTableName(AppDomainType.user);
+        hkmTable = tableModel.hasherKennelMapTableHelper.getTableName(
+          AppDomainType.user,
+        );
         break;
       case EnumKennelQueryContext.kennelAdmin:
-        hkmTable = G0<TableModel>()
-            .hasherKennelMapTableHelper
-            .getTableName(AppDomainType.kennel);
+        hkmTable = tableModel.hasherKennelMapTableHelper.getTableName(
+          AppDomainType.kennel,
+        );
         break;
     }
 
@@ -248,65 +255,66 @@ class QueryKennels {
       
         SELECT  
           k.*,           
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHkmId},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colIsMember},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colIsHomeKennel},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelNotificationPreference},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelEmailAlertPreference},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colAuthorizedDeviceList},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colAuthorizedDeviceCount},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserRoleFlags},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colAppAccessFlags},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcTotalRunCount},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHcHaringCount},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalTotalRunCount},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalHaringCount},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colHistoricalCountIsEstimate},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelCredit},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountAmount},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountPercent},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDiscountDescription},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colDateOfLastRun},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMemberSince},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colIsKennelFollowing},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMismanagementRoles},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelUserPhoto},
-          hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelHashName},
+          hkm.${tableModel.hasherKennelMapTableHelper.colHkmId},
+          hkm.${tableModel.hasherKennelMapTableHelper.colUserId},
+          hkm.${tableModel.hasherKennelMapTableHelper.colFollowing},
+          hkm.${tableModel.hasherKennelMapTableHelper.colIsMember},
+          hkm.${tableModel.hasherKennelMapTableHelper.colIsHomeKennel},
+          hkm.${tableModel.hasherKennelMapTableHelper.colKennelNotificationPreference},
+          hkm.${tableModel.hasherKennelMapTableHelper.colKennelEmailAlertPreference},
+          hkm.${tableModel.hasherKennelMapTableHelper.colAuthorizedDeviceList},
+          hkm.${tableModel.hasherKennelMapTableHelper.colAuthorizedDeviceCount},
+          hkm.${tableModel.hasherKennelMapTableHelper.colUserRoleFlags},
+          hkm.${tableModel.hasherKennelMapTableHelper.colAppAccessFlags},
+          hkm.${tableModel.hasherKennelMapTableHelper.colHcTotalRunCount},
+          hkm.${tableModel.hasherKennelMapTableHelper.colHcHaringCount},
+          hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount},
+          hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount},
+          hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalCountIsEstimate},
+          hkm.${tableModel.hasherKennelMapTableHelper.colKennelCredit},
+          hkm.${tableModel.hasherKennelMapTableHelper.colDiscountAmount},
+          hkm.${tableModel.hasherKennelMapTableHelper.colDiscountPercent},
+          hkm.${tableModel.hasherKennelMapTableHelper.colDiscountDescription},
+          hkm.${tableModel.hasherKennelMapTableHelper.colDateOfLastRun},
+          hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate},
+          hkm.${tableModel.hasherKennelMapTableHelper.colMemberSince},
+          hkm.${tableModel.hasherKennelMapTableHelper.colIsKennelFollowing},
+          hkm.${tableModel.hasherKennelMapTableHelper.colMismanagementRoles},
+          hkm.${tableModel.hasherKennelMapTableHelper.colKennelUserPhoto},
+          hkm.${tableModel.hasherKennelMapTableHelper.colKennelHashName},
 
-          h.${G0<TableModel>().hashersTableHelper.colPhoto} as originalProfilePhoto,
-          h.${G0<TableModel>().hashersTableHelper.colDispName} as originalDisplayName,
-          case when datetime(coalesce(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colMembershipExpirationDate},"2000-01-01")) <= datetime('now') then 0 else 1 end as isKennelMember,
-          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colFollowing},0) as following,
-          COALESCE(hkm.${G0<TableModel>().hasherKennelMapTableHelper.colAppAccessFlags},0) as appAccessFlags,
-          c.${G0<TableModel>().citiesTableHelper.colCityName} || ', ' || CASE WHEN n.${G0<TableModel>().countriesTableHelper.colShowRegion} = 1 THEN r.${G0<TableModel>().regionsTableHelper.colRegionName} || ', ' ELSE '' END || n.${G0<TableModel>().countriesTableHelper.colCountryName} as location,
-          c.${G0<TableModel>().citiesTableHelper.colCityName} as cityName,
-          r.${G0<TableModel>().regionsTableHelper.colRegionName} as regionName,
-          r.${G0<TableModel>().regionsTableHelper.colRegionAbbreviation} as regionAbbreviation,
-          n.${G0<TableModel>().countriesTableHelper.colCountryName} as countryName,
-          (SELECT min(${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) from narrowEvents e where e.${G0<TableModel>().eventsTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId} and datetime(e.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) >= datetime('now') and e.${G0<TableModel>().eventsTableHelper.colIsVisible} != 0 ) as nextRunDate,
-          (SELECT max(${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) from narrowEvents e where e.${G0<TableModel>().eventsTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId} and datetime(e.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}) <= datetime('now') and e.${G0<TableModel>().eventsTableHelper.colIsVisible} != 0 ) as lastRunDate,
-          COALESCE(k.${G0<TableModel>().kennelsTableHelper.colDigitsAfterDecimal},n.${G0<TableModel>().countriesTableHelper.colDigitsAfterDecimal}) as ${G0<TableModel>().countriesTableHelper.colDigitsAfterDecimal},
-          COALESCE(k.${G0<TableModel>().kennelsTableHelper.colCurrencySymbol},n.${G0<TableModel>().countriesTableHelper.colCurrencySymbol}) as ${G0<TableModel>().countriesTableHelper.colCurrencySymbol},
-          COALESCE(k.${G0<TableModel>().kennelsTableHelper.colDistancePreference},n.${G0<TableModel>().countriesTableHelper.colDistancePreference},0) as distanceUnitsPref,
-          COALESCE(k.${G0<TableModel>().kennelsTableHelper.colKennelLatitude},c.${G0<TableModel>().citiesTableHelper.colLatitude},$DEFAULT_LATITUDE) as cityLat,
-          COALESCE(k.${G0<TableModel>().kennelsTableHelper.colKennelLongitude},c.${G0<TableModel>().citiesTableHelper.colLongitude},$DEFAULT_LONGITUDE) as cityLon,
+          h.${tableModel.hashersTableHelper.colPhoto} as originalProfilePhoto,
+          h.${tableModel.hashersTableHelper.colDispName} as originalDisplayName,
+          case when datetime(coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate},"2000-01-01")) <= datetime('now') then 0 else 1 end as isKennelMember,
+          COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colFollowing},0) as following,
+          COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colAppAccessFlags},0) as appAccessFlags,
+          c.${tableModel.citiesTableHelper.colCityName} || ', ' || CASE WHEN n.${tableModel.countriesTableHelper.colShowRegion} = 1 THEN r.${tableModel.regionsTableHelper.colRegionName} || ', ' ELSE '' END || n.${tableModel.countriesTableHelper.colCountryName} as location,
+          c.${tableModel.citiesTableHelper.colCityName} as cityName,
+          r.${tableModel.regionsTableHelper.colRegionName} as regionName,
+          r.${tableModel.regionsTableHelper.colRegionAbbreviation} as regionAbbreviation,
+          n.${tableModel.countriesTableHelper.colCountryName} as countryName,
+          (SELECT min(${tableModel.eventsTableHelper.colEventStartDatetime}) from narrowEvents e where e.${tableModel.eventsTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId} and datetime(e.${tableModel.eventsTableHelper.colEventStartDatetime}) >= datetime('now') and e.${tableModel.eventsTableHelper.colIsVisible} != 0 ) as nextRunDate,
+          (SELECT max(${tableModel.eventsTableHelper.colEventStartDatetime}) from narrowEvents e where e.${tableModel.eventsTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId} and datetime(e.${tableModel.eventsTableHelper.colEventStartDatetime}) <= datetime('now') and e.${tableModel.eventsTableHelper.colIsVisible} != 0 ) as lastRunDate,
+          COALESCE(k.${tableModel.kennelsTableHelper.colDigitsAfterDecimal},n.${tableModel.countriesTableHelper.colDigitsAfterDecimal}) as ${tableModel.countriesTableHelper.colDigitsAfterDecimal},
+          COALESCE(k.${tableModel.kennelsTableHelper.colCurrencySymbol},n.${tableModel.countriesTableHelper.colCurrencySymbol}) as ${tableModel.countriesTableHelper.colCurrencySymbol},
+          COALESCE(k.${tableModel.kennelsTableHelper.colDistancePreference},n.${tableModel.countriesTableHelper.colDistancePreference},0) as distanceUnitsPref,
+          COALESCE(k.${tableModel.kennelsTableHelper.colKennelLatitude},c.${tableModel.citiesTableHelper.colLatitude},$DEFAULT_LATITUDE) as cityLat,
+          COALESCE(k.${tableModel.kennelsTableHelper.colKennelLongitude},c.${tableModel.citiesTableHelper.colLongitude},$DEFAULT_LONGITUDE) as cityLon,
           $searchKennelsField
-          FROM ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k
-          INNER JOIN ${G0<TableModel>().citiesTableHelper.getTableName(AppDomainType.user)} c on c.${G0<TableModel>().citiesTableHelper.colCityId} = k.${G0<TableModel>().kennelsTableHelper.colCityId}
-          INNER JOIN ${G0<TableModel>().regionsTableHelper.getTableName(AppDomainType.user)} r on r.${G0<TableModel>().regionsTableHelper.colRegionId} = k.${G0<TableModel>().kennelsTableHelper.colRegionId}
-          INNER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} n on n.${G0<TableModel>().countriesTableHelper.colCountryId} = k.${G0<TableModel>().kennelsTableHelper.colCountryId}
-          INNER JOIN ${G0<TableModel>().hashersTableHelper.getTableName(AppDomainType.user)} h on h.hasherId = "$hasherId"
-          LEFT OUTER JOIN $hkmTable hkm on hkm.${G0<TableModel>().hasherKennelMapTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId} and hkm.${G0<TableModel>().hasherKennelMapTableHelper.colUserId} = "$hasherId"
-          WHERE k.${G0<TableModel>().kennelsTableHelper.colRemoved} = 0
+          FROM ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} k
+          INNER JOIN ${tableModel.citiesTableHelper.getTableName(AppDomainType.user)} c on c.${tableModel.citiesTableHelper.colCityId} = k.${tableModel.kennelsTableHelper.colCityId}
+          INNER JOIN ${tableModel.regionsTableHelper.getTableName(AppDomainType.user)} r on r.${tableModel.regionsTableHelper.colRegionId} = k.${tableModel.kennelsTableHelper.colRegionId}
+          INNER JOIN ${tableModel.countriesTableHelper.getTableName(AppDomainType.user)} n on n.${tableModel.countriesTableHelper.colCountryId} = k.${tableModel.kennelsTableHelper.colCountryId}
+          INNER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h on h.hasherId = "$hasherId"
+          LEFT OUTER JOIN $hkmTable hkm on hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId} and hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = "$hasherId"
+          WHERE k.${tableModel.kennelsTableHelper.colRemoved} = 0
           ''';
 
-    final String whereClauseForSingleKenenel = kennelId == null
-        ? ''
-        : '''
-            AND k.${G0<TableModel>().kennelsTableHelper.colKennelId} = "$kennelId" 
+    final String whereClauseForSingleKenenel =
+        kennelId == null
+            ? ''
+            : '''
+            AND k.${tableModel.kennelsTableHelper.colKennelId} = "$kennelId" 
             
           ''';
 
@@ -319,54 +327,55 @@ class QueryKennels {
       assert(false);
     }
 
-    return G0<Database>().rawQuery(query);
+    return database.rawQuery(query);
   }
 
   static Future<List<Map<String, dynamic>>> queryKennelGallery(
-      String kennelId) async {
+    String kennelId,
+  ) async {
     final String query = '''
       
         SELECT  
-          k.${G0<TableModel>().kennelsTableHelper.colKennelId},
-          evt.${G0<TableModel>().eventsTableHelper.colEventImage},
-          evt.${G0<TableModel>().eventsTableHelper.colEventNumber},
-          evt.${G0<TableModel>().eventsTableHelper.colEventName},          
-          evt.${G0<TableModel>().eventsTableHelper.colEventId},
-          evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime}
-          FROM ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k
-          INNER JOIN ${G0<TableModel>().eventsTableHelper.getTableName(AppDomainType.user)} evt
-          ON evt.${G0<TableModel>().eventsTableHelper.colKennelId} = k.${G0<TableModel>().kennelsTableHelper.colKennelId}
-          WHERE k.${G0<TableModel>().kennelsTableHelper.colKennelId} = "$kennelId"
-          AND k.${G0<TableModel>().kennelsTableHelper.colRemoved} = 0 
-          ORDER BY evt.${G0<TableModel>().eventsTableHelper.colEventStartDatetime} desc
+          k.${tableModel.kennelsTableHelper.colKennelId},
+          evt.${tableModel.eventsTableHelper.colEventImage},
+          evt.${tableModel.eventsTableHelper.colEventNumber},
+          evt.${tableModel.eventsTableHelper.colEventName},          
+          evt.${tableModel.eventsTableHelper.colEventId},
+          evt.${tableModel.eventsTableHelper.colEventStartDatetime}
+          FROM ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} k
+          INNER JOIN ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} evt
+          ON evt.${tableModel.eventsTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId}
+          WHERE k.${tableModel.kennelsTableHelper.colKennelId} = "$kennelId"
+          AND k.${tableModel.kennelsTableHelper.colRemoved} = 0 
+          ORDER BY evt.${tableModel.eventsTableHelper.colEventStartDatetime} desc
           ''';
 
-    return G0<Database>().rawQuery(query);
+    return database.rawQuery(query);
   }
 
   static Future<List<Map<String, dynamic>>> queryKennelDetails() async {
     String searchKennelsField = '''
-               "~ "  || coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelShortName},"") 
-            || " " || coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelName},"")   
+               "~ "  || coalesce(k.${tableModel.kennelsTableHelper.colKennelShortName},"") 
+            || " " || coalesce(k.${tableModel.kennelsTableHelper.colKennelName},"")   
             
-            || " " || c.${G0<TableModel>().citiesTableHelper.colCityName} 
-            || " " || r.${G0<TableModel>().regionsTableHelper.colRegionName}
-            || " " || coalesce(r.${G0<TableModel>().regionsTableHelper.colRegionAbbreviation},"") 
-            || " " || n.${G0<TableModel>().countriesTableHelper.colCountryName} 
-            || " " || n.${G0<TableModel>().countriesTableHelper.colCountryCode} 
-            || " " || replace(coalesce(c.${G0<TableModel>().citiesTableHelper.colCitySearchTags},""),","," ") 
-            || " " || replace(coalesce(r.${G0<TableModel>().regionsTableHelper.colRegionSearchTags},""),","," ") 
-            || " " || replace(coalesce(n.${G0<TableModel>().countriesTableHelper.colCountrySearchTags},""),","," ") 
-            || " " || replace(coalesce(k.${G0<TableModel>().kennelsTableHelper.colKennelSearchTags},""),","," ") 
+            || " " || c.${tableModel.citiesTableHelper.colCityName} 
+            || " " || r.${tableModel.regionsTableHelper.colRegionName}
+            || " " || coalesce(r.${tableModel.regionsTableHelper.colRegionAbbreviation},"") 
+            || " " || n.${tableModel.countriesTableHelper.colCountryName} 
+            || " " || n.${tableModel.countriesTableHelper.colCountryCode} 
+            || " " || replace(coalesce(c.${tableModel.citiesTableHelper.colCitySearchTags},""),","," ") 
+            || " " || replace(coalesce(r.${tableModel.regionsTableHelper.colRegionSearchTags},""),","," ") 
+            || " " || replace(coalesce(n.${tableModel.countriesTableHelper.colCountrySearchTags},""),","," ") 
+            || " " || replace(coalesce(k.${tableModel.kennelsTableHelper.colKennelSearchTags},""),","," ") 
             || " " || 
               case 
-              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "EU" then "europe" 
-              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "AF" then "africa" 
-              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "AS" then "asia" 
-              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "NA" then "north america" 
-              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "SA" then "south america" 
-              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "OC" then "oceania" 
-              when n.${G0<TableModel>().countriesTableHelper.colContinentCode} = "AN" then "antarctica" 
+              when n.${tableModel.countriesTableHelper.colContinentCode} = "EU" then "europe" 
+              when n.${tableModel.countriesTableHelper.colContinentCode} = "AF" then "africa" 
+              when n.${tableModel.countriesTableHelper.colContinentCode} = "AS" then "asia" 
+              when n.${tableModel.countriesTableHelper.colContinentCode} = "NA" then "north america" 
+              when n.${tableModel.countriesTableHelper.colContinentCode} = "SA" then "south america" 
+              when n.${tableModel.countriesTableHelper.colContinentCode} = "OC" then "oceania" 
+              when n.${tableModel.countriesTableHelper.colContinentCode} = "AN" then "antarctica" 
               else "" 
               end || " ~" 
           as searchText
@@ -375,20 +384,20 @@ class QueryKennels {
     final String query = '''
       
         SELECT  
-          k.${G0<TableModel>().kennelsTableHelper.colKennelId},
-          k.${G0<TableModel>().kennelsTableHelper.colKennelName},
-          k.${G0<TableModel>().kennelsTableHelper.colKennelShortName},
+          k.${tableModel.kennelsTableHelper.colKennelId},
+          k.${tableModel.kennelsTableHelper.colKennelName},
+          k.${tableModel.kennelsTableHelper.colKennelShortName},
           $searchKennelsField
-          FROM ${G0<TableModel>().kennelsTableHelper.getTableName(AppDomainType.user)} k
-          INNER JOIN ${G0<TableModel>().citiesTableHelper.getTableName(AppDomainType.user)} c
-          ON k.${G0<TableModel>().kennelsTableHelper.colCityId} = c.${G0<TableModel>().citiesTableHelper.colCityId}
-          INNER JOIN ${G0<TableModel>().regionsTableHelper.getTableName(AppDomainType.user)} r
-          ON c.${G0<TableModel>().citiesTableHelper.colRegionId} = r.${G0<TableModel>().regionsTableHelper.colRegionId}
-          INNER JOIN ${G0<TableModel>().countriesTableHelper.getTableName(AppDomainType.user)} n
-          ON r.${G0<TableModel>().regionsTableHelper.colCountryId} = n.${G0<TableModel>().countriesTableHelper.colCountryId}
-          WHERE k.${G0<TableModel>().kennelsTableHelper.colRemoved} = 0
+          FROM ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} k
+          INNER JOIN ${tableModel.citiesTableHelper.getTableName(AppDomainType.user)} c
+          ON k.${tableModel.kennelsTableHelper.colCityId} = c.${tableModel.citiesTableHelper.colCityId}
+          INNER JOIN ${tableModel.regionsTableHelper.getTableName(AppDomainType.user)} r
+          ON c.${tableModel.citiesTableHelper.colRegionId} = r.${tableModel.regionsTableHelper.colRegionId}
+          INNER JOIN ${tableModel.countriesTableHelper.getTableName(AppDomainType.user)} n
+          ON r.${tableModel.regionsTableHelper.colCountryId} = n.${tableModel.countriesTableHelper.colCountryId}
+          WHERE k.${tableModel.kennelsTableHelper.colRemoved} = 0
           ''';
 
-    return G0<Database>().rawQuery(query);
+    return database.rawQuery(query);
   }
 }

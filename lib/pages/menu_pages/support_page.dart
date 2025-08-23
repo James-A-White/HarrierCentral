@@ -229,14 +229,14 @@ class SupportPageState extends State<SupportPage> {
                               //           padding: const EdgeInsets.only(top: 25),
                               //           child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
                               //             Connection2.styleForConnected(
-                              //               G0<AppModel>().connectionStatus,
+                              //               appModel.connectionStatus,
                               //               ElevatedButton(
                               //                 style: ElevatedButton.styleFrom(
                               //                   padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
                               //                 ),
                               //                 onPressed: () async {
-                              //                   if (Connection2.checkForConnection(G0<AppModel>().connectionStatus)) {
-                              //                     await G0<TableModel>().syncUserDataService.updateFromBackend(
+                              //                   if (Connection2.checkForConnection(appModel.connectionStatus)) {
+                              //                     await tableModel.syncUserDataService.updateFromBackend(
                               //                           SyncUserDataService.flagAllMasterData,
                               //                           false,
                               //                           debugText: 'support_page: All master data',
@@ -279,14 +279,14 @@ class SupportPageState extends State<SupportPage> {
                               //           padding: const EdgeInsets.only(top: 25),
                               //           child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
                               //             Connection2.styleForConnected(
-                              //               G0<AppModel>().connectionStatus,
+                              //               appModel.connectionStatus,
                               //               ElevatedButton(
                               //                 style: ElevatedButton.styleFrom(
                               //                   padding: const EdgeInsets.only(top: 8, bottom: 8, left: 20, right: 20),
                               //                 ),
                               //                 onPressed: () async {
-                              //                   if (Connection2.checkForConnection(G0<AppModel>().connectionStatus)) {
-                              //                     await G0<TableModel>().syncUserDataService.updateFromBackend(
+                              //                   if (Connection2.checkForConnection(appModel.connectionStatus)) {
+                              //                     await tableModel.syncUserDataService.updateFromBackend(
                               //                           SyncUserDataService.flagAllMasterData,
                               //                           false,
                               //                           debugText: 'support_page: All master data 2',

@@ -66,8 +66,7 @@ class CheckInPackPage extends StatelessWidget {
                 backgroundColor: Colors.green,
                 label: 'Preset Filters',
                 labelStyle: TextStyle(
-                  fontSize:
-                      18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+                  fontSize: 18.0 * (1.0 / deviceInfo.deviceTextScaleFactor),
                 ),
                 onTap: () {
                   scaffoldController.filterOptionsPopup(context);
@@ -99,8 +98,7 @@ class CheckInPackPage extends StatelessWidget {
                 backgroundColor: hc_blue,
                 label: 'Add Virgin / Visitor',
                 labelStyle: TextStyle(
-                  fontSize:
-                      18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+                  fontSize: 18.0 * (1.0 / deviceInfo.deviceTextScaleFactor),
                 ),
                 onTap: () => scaffoldController.showVirginVisitorPopup(context),
                 //onTap: () => {},
@@ -113,8 +111,7 @@ class CheckInPackPage extends StatelessWidget {
                 backgroundColor: hc_blue,
                 label: 'Find Hasher and add',
                 labelStyle: TextStyle(
-                  fontSize:
-                      18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+                  fontSize: 18.0 * (1.0 / deviceInfo.deviceTextScaleFactor),
                 ),
                 //onTap: () async => {},
                 onTap: () async => await scaffoldController.findHasher(context),
@@ -127,8 +124,7 @@ class CheckInPackPage extends StatelessWidget {
                 backgroundColor: hc_blue,
                 label: 'Copy RSVPs from Previous run',
                 labelStyle: TextStyle(
-                  fontSize:
-                      18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+                  fontSize: 18.0 * (1.0 / deviceInfo.deviceTextScaleFactor),
                 ),
                 onTap: () => scaffoldController.copyRsvpsFromLastRun(context),
                 //onTap: () => {},
@@ -141,8 +137,7 @@ class CheckInPackPage extends StatelessWidget {
                 backgroundColor: Colors.deepOrange,
                 label: 'Toggle multi-selection',
                 labelStyle: TextStyle(
-                  fontSize:
-                      18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+                  fontSize: 18.0 * (1.0 / deviceInfo.deviceTextScaleFactor),
                 ),
                 onTap:
                     () =>
@@ -155,7 +150,7 @@ class CheckInPackPage extends StatelessWidget {
               //     backgroundColor: Colors.deepOrange,
               //     label: 'View video tutorial',
               //     labelStyle: TextStyle(
-              //       fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+              //       fontSize: 18.0 * (1.0 / deviceInfo.deviceTextScaleFactor),
               //     ),
               //     onTap: () => Navigator.push<dynamic>(
               //           context,
@@ -173,7 +168,7 @@ class CheckInPackPage extends StatelessWidget {
               //     backgroundColor: Colors.purple,
               //     label: 'Bank Transfer\r\n(Member)',
               //     labelStyle: TextStyle(
-              //       fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+              //       fontSize: 18.0 * (1.0 / deviceInfo.deviceTextScaleFactor),
               //     ),
               //     onTap:
               //         () => BankTransferQr.showBankTransferQrCode(
@@ -187,7 +182,7 @@ class CheckInPackPage extends StatelessWidget {
               //     backgroundColor: Colors.purple,
               //     label: 'Bank Transfer\r\n(Non-Member)',
               //     labelStyle: TextStyle(
-              //       fontSize: 18.0 * (1.0 / G0<DeviceInfo>().deviceTextScaleFactor),
+              //       fontSize: 18.0 * (1.0 / deviceInfo.deviceTextScaleFactor),
               //     ),
               //     onTap:
               //         () => BankTransferQr.showBankTransferQrCode(
@@ -204,7 +199,7 @@ class CheckInPackPage extends StatelessWidget {
             backgroundColor: themeAppBarBackground,
             iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
             title: TextScaleFactorClamper(
-              textScaleFactor: G0<DeviceInfo>().textClamp15,
+              textScaleFactor: deviceInfo.textClamp15,
               child: Text(
                 scaffoldController.isLoading ||
                         eventAggregate.event.eventName.isEmpty
@@ -369,7 +364,7 @@ class CheckInPackPage extends StatelessWidget {
                                                     ? Container(
                                                       color: Colors.grey,
                                                       width:
-                                                          G0<DeviceInfo>()
+                                                          deviceInfo
                                                               .deviceWidth,
                                                       child: Column(
                                                         children: <Widget>[
@@ -405,7 +400,7 @@ class CheckInPackPage extends StatelessWidget {
                                                     : Container(
                                                       color: hc_blue,
                                                       width:
-                                                          G0<DeviceInfo>()
+                                                          deviceInfo
                                                               .deviceWidth,
                                                       child: Column(
                                                         children: <Widget>[
@@ -502,7 +497,7 @@ class CheckInPackPage extends StatelessWidget {
                                                             attendenceOnIn.value
                                                         ? Container(
                                                           width:
-                                                              G0<DeviceInfo>()
+                                                              deviceInfo
                                                                   .deviceWidth,
                                                           color: Colors.grey,
                                                           child: Column(
@@ -545,7 +540,7 @@ class CheckInPackPage extends StatelessWidget {
                                                           color:
                                                               Colors.amber[800],
                                                           width:
-                                                              G0<DeviceInfo>()
+                                                              deviceInfo
                                                                   .deviceWidth,
                                                           child: Column(
                                                             mainAxisAlignment:
@@ -585,7 +580,7 @@ class CheckInPackPage extends StatelessWidget {
                                                         )
                                                     : Container(
                                                       width:
-                                                          G0<DeviceInfo>()
+                                                          deviceInfo
                                                               .deviceWidth,
                                                       color: Colors.green,
                                                       child: Column(
@@ -980,7 +975,7 @@ class CheckInPackPage extends StatelessWidget {
 
   Widget _filterBar(BuildContext context, CheckInPackController controller) {
     return TextScaleFactorClamper(
-      textScaleFactor: G0<DeviceInfo>().textClamp25,
+      textScaleFactor: deviceInfo.textClamp25,
       child: Container(
         decoration: const BoxDecoration(
           // border: new Border.all(width: 1.0, color: Colors.black),

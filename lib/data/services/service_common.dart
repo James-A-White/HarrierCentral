@@ -42,13 +42,12 @@ class ServiceCommon {
     // if the connection check is bypassed, it is because we are doing an initial
     // connection check
     if ((!bypassConnectionCheck) &&
-        G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
+        appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
       // if we were previously not connected, let's check the connection
       // and update the connection status
       await Utilities.checkForInternetConnection(false);
       // if we are still not connected, return an error
-      if (G0<AppModel>().connectionStatus ==
-          EnumConnectionStatus2.notConnected) {
+      if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
         return ERROR_NO_CONNECTION;
       }
     }
@@ -95,7 +94,7 @@ class ServiceCommon {
   //   Function? errorCallback,
   //   Client? client,
   // }) async {
-  //   if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
+  //   if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
   //     return ERROR_NO_CONNECTION;
   //   }
 
@@ -150,7 +149,7 @@ class ServiceCommon {
           response.reasonPhrase ?? '<null reason>',
           extraData: response.body,
         );
-        G0<AppModel>().connectionStatus = EnumConnectionStatus2.notConnected;
+        appModel.connectionStatus = EnumConnectionStatus2.notConnected;
       } else {
         recordError(
           requestBody,
@@ -166,7 +165,7 @@ class ServiceCommon {
         //     'Unknown Server Error',
         //     'The Harrier Central server is experiencing an unknown server error. Please send this screenshot to us at harriercentral@gmail.com so we can attempt to resolve the issue.\r\n\r\nYou may continue using the app in Offline Mode with cached data. Press the \'Offline Mode\' ribbon to find out when the last time the data was updated.\r\n\r\nServer Error Code = ${response.statusCode.toString()}',
         //     'Use Offline');
-        // G0<AppModel>().connectionStatus = EnumConnectionStatus2.notConnected;
+        // appModel.connectionStatus = EnumConnectionStatus2.notConnected;
       }
     } else if (response.body.contains('"errorId"')) {
       recordError(

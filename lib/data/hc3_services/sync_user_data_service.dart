@@ -41,7 +41,7 @@ class SyncUserDataService {
   int _narrowEventsLastUpdated = FORCE;
 
   Future<int> _getLastUpdatedTime(String colName, String tableName) async {
-    final List<Map<String, dynamic>> table = await G0<Database>().rawQuery(
+    final List<Map<String, dynamic>> table = await database.rawQuery(
       'SELECT MAX($colName) AS maxDate FROM $tableName',
     );
     final int? timeValue = table.first['maxDate'];
@@ -54,62 +54,50 @@ class SyncUserDataService {
         (flags & flagHashersTable) == 0
             ? IGNORE_REPLICATION_TIMESTAMP
             : await _getLastUpdatedTime(
-              G0<TableModel>().hashersTableHelper.colUpdatedAtValue,
-              G0<TableModel>().hashersTableHelper.getTableName(
-                AppDomainType.user,
-              ),
+              tableModel.hashersTableHelper.colUpdatedAtValue,
+              tableModel.hashersTableHelper.getTableName(AppDomainType.user),
             );
     _citiesLastUpdated =
         (flags & flagCitiesTable) == 0
             ? IGNORE_REPLICATION_TIMESTAMP
             : await _getLastUpdatedTime(
-              G0<TableModel>().citiesTableHelper.colUpdatedAtValue,
-              G0<TableModel>().citiesTableHelper.getTableName(
-                AppDomainType.user,
-              ),
+              tableModel.citiesTableHelper.colUpdatedAtValue,
+              tableModel.citiesTableHelper.getTableName(AppDomainType.user),
             );
     _regionsLastUpdated =
         (flags & flagRegionsTable) == 0
             ? IGNORE_REPLICATION_TIMESTAMP
             : await _getLastUpdatedTime(
-              G0<TableModel>().regionsTableHelper.colUpdatedAtValue,
-              G0<TableModel>().regionsTableHelper.getTableName(
-                AppDomainType.user,
-              ),
+              tableModel.regionsTableHelper.colUpdatedAtValue,
+              tableModel.regionsTableHelper.getTableName(AppDomainType.user),
             );
     _countriesLastUpdated =
         (flags & flagCountriesTable) == 0
             ? IGNORE_REPLICATION_TIMESTAMP
             : await _getLastUpdatedTime(
-              G0<TableModel>().countriesTableHelper.colUpdatedAtValue,
-              G0<TableModel>().countriesTableHelper.getTableName(
-                AppDomainType.user,
-              ),
+              tableModel.countriesTableHelper.colUpdatedAtValue,
+              tableModel.countriesTableHelper.getTableName(AppDomainType.user),
             );
     _kennelsLastUpdated =
         (flags & flagKennelsTable) == 0
             ? IGNORE_REPLICATION_TIMESTAMP
             : await _getLastUpdatedTime(
-              G0<TableModel>().kennelsTableHelper.colUpdatedAtValue,
-              G0<TableModel>().kennelsTableHelper.getTableName(
-                AppDomainType.user,
-              ),
+              tableModel.kennelsTableHelper.colUpdatedAtValue,
+              tableModel.kennelsTableHelper.getTableName(AppDomainType.user),
             );
     _paymentsLastUpdated =
         (flags & flagPaymentsTable) == 0
             ? IGNORE_REPLICATION_TIMESTAMP
             : await _getLastUpdatedTime(
-              G0<TableModel>().paymentsTableHelper.colUpdatedAtValue,
-              G0<TableModel>().paymentsTableHelper.getTableName(
-                AppDomainType.user,
-              ),
+              tableModel.paymentsTableHelper.colUpdatedAtValue,
+              tableModel.paymentsTableHelper.getTableName(AppDomainType.user),
             );
     _hasherKennelMapLastUpdated =
         (flags & flagHasherKennelMapTable) == 0
             ? IGNORE_REPLICATION_TIMESTAMP
             : await _getLastUpdatedTime(
-              G0<TableModel>().hasherKennelMapTableHelper.colUpdatedAtValue,
-              G0<TableModel>().hasherKennelMapTableHelper.getTableName(
+              tableModel.hasherKennelMapTableHelper.colUpdatedAtValue,
+              tableModel.hasherKennelMapTableHelper.getTableName(
                 AppDomainType.user,
               ),
             );
@@ -117,8 +105,8 @@ class SyncUserDataService {
         (flags & flagHasherEventMapTable) == 0
             ? IGNORE_REPLICATION_TIMESTAMP
             : await _getLastUpdatedTime(
-              G0<TableModel>().hasherEventMapTableHelper.colUpdatedAtValue,
-              G0<TableModel>().hasherEventMapTableHelper.getTableName(
+              tableModel.hasherEventMapTableHelper.colUpdatedAtValue,
+              tableModel.hasherEventMapTableHelper.getTableName(
                 AppDomainType.user,
               ),
             );
@@ -126,10 +114,8 @@ class SyncUserDataService {
         (flags & flagNarrowEventsTable) == 0
             ? IGNORE_REPLICATION_TIMESTAMP
             : await _getLastUpdatedTime(
-              G0<TableModel>().eventsTableHelper.colUpdatedAtValue,
-              G0<TableModel>().eventsTableHelper.getTableName(
-                AppDomainType.user,
-              ),
+              tableModel.eventsTableHelper.colUpdatedAtValue,
+              tableModel.eventsTableHelper.getTableName(AppDomainType.user),
             );
   }
 
@@ -145,7 +131,7 @@ class SyncUserDataService {
     Client? client,
     bool usePaging = false,
   }) async {
-    if (G0<AppModel>().connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
       return false;
     }
 
@@ -243,13 +229,13 @@ class SyncUserDataService {
 
         final List<BaseTableHelper> tables = <BaseTableHelper>[];
         if ((tablesToSync & flagCitiesTable) != 0) {
-          tables.add(G0<TableModel>().citiesTableHelper);
+          tables.add(tableModel.citiesTableHelper);
         }
         if ((tablesToSync & flagRegionsTable) != 0) {
-          tables.add(G0<TableModel>().regionsTableHelper);
+          tables.add(tableModel.regionsTableHelper);
         }
         if ((tablesToSync & flagCountriesTable) != 0) {
-          tables.add(G0<TableModel>().countriesTableHelper);
+          tables.add(tableModel.countriesTableHelper);
         }
 
         final String body = jsonEncode(params);
@@ -302,15 +288,15 @@ class SyncUserDataService {
   }
 
   final List<BaseTableHelper> _userTables = <BaseTableHelper>[
-    G0<TableModel>().hashersTableHelper,
-    G0<TableModel>().paymentsTableHelper,
-    G0<TableModel>().citiesTableHelper,
-    G0<TableModel>().regionsTableHelper,
-    G0<TableModel>().countriesTableHelper,
-    G0<TableModel>().kennelsTableHelper,
-    G0<TableModel>().eventsTableHelper,
-    G0<TableModel>().hasherKennelMapTableHelper,
-    G0<TableModel>().hasherEventMapTableHelper,
+    tableModel.hashersTableHelper,
+    tableModel.paymentsTableHelper,
+    tableModel.citiesTableHelper,
+    tableModel.regionsTableHelper,
+    tableModel.countriesTableHelper,
+    tableModel.kennelsTableHelper,
+    tableModel.eventsTableHelper,
+    tableModel.hasherKennelMapTableHelper,
+    tableModel.hasherEventMapTableHelper,
   ];
 
   Future<List<dynamic>> updateSqlTablesWithResultsFromApiWithAdHocData(
@@ -320,10 +306,10 @@ class SyncUserDataService {
     String? batchText,
     List<BaseTableHelper>? tables,
   }) async {
-    return G0<TableModel>().baseService.updateSqlTablesFromJsonWithAdHocData(
+    return tableModel.baseService.updateSqlTablesFromJsonWithAdHocData(
       jsonResults,
       tables ?? _userTables,
-      G0<Database>(),
+      database,
       AppDomainType.user,
       informUser: informUser,
       suppressDeletes: suppressDeletes,
@@ -338,10 +324,10 @@ class SyncUserDataService {
     String? batchText,
     List<BaseTableHelper>? tables,
   }) async {
-    return G0<TableModel>().baseService.updateSqlTablesFromJsonWithPaging(
+    return tableModel.baseService.updateSqlTablesFromJsonWithPaging(
       jsonResults,
       tables ?? _userTables,
-      G0<Database>(),
+      database,
       AppDomainType.user,
       informUser: informUser,
       suppressDeletes: suppressDeletes,
