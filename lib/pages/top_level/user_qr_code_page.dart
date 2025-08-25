@@ -75,26 +75,40 @@ class UserQrCodePageState extends State<UserQrCodePage>
                       ),
                       child: Padding(
                         padding: const EdgeInsets.only(left: 1.0, right: 1.0),
-                        child: TabBar(
-                          labelStyle: ts_tabSelected,
-                          unselectedLabelStyle: ts_tabUnselected,
-                          isScrollable: false,
-                          unselectedLabelColor: Colors.black,
-                          labelColor: Colors.white,
-                          labelPadding: const EdgeInsets.only(
-                            top: 5,
-                            left: 20,
-                            right: 20,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(999),
                           ),
-                          indicatorSize: TabBarIndicatorSize.tab,
-                          indicator: BubbleTabIndicator(
-                            indicatorHeight: 35.0,
-                            indicatorColor: hc_red,
-                            tabBarIndicatorSize: TabBarIndicatorSize.tab,
-                            indicatorRadius: 20.0,
+                          padding: const EdgeInsets.all(5.0),
+                          child: TabBar(
+                            labelStyle: ts_tabSelected,
+                            unselectedLabelStyle: ts_tabUnselected,
+                            isScrollable: false,
+                            unselectedLabelColor: Colors.black,
+                            labelColor: Colors.white,
+                            labelPadding: const EdgeInsets.only(
+                              top: 5,
+                              left: 20,
+                              right: 20,
+                            ),
+                            indicatorSize: TabBarIndicatorSize.tab,
+                            indicator: BoxDecoration(
+                              color: hc_red,
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            indicatorColor:
+                                Colors
+                                    .transparent, // make sure underline isn’t drawn
+                            // BubbleTabIndicator(
+                            //   indicatorHeight: 35.0,
+                            //   indicatorColor: hc_red,
+                            //   tabBarIndicatorSize: TabBarIndicatorSize.tab,
+                            //   indicatorRadius: 20.0,
+                            // ),
+                            tabs: _tabs,
+                            controller: _tabController,
                           ),
-                          tabs: _tabs,
-                          controller: _tabController,
                         ),
                       ),
                     ),

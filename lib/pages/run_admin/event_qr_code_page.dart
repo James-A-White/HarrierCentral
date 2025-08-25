@@ -30,7 +30,7 @@ class EventQrCodePage extends StatefulWidget {
 
 class EventQrCodePageState extends State<EventQrCodePage>
     with SingleTickerProviderStateMixin {
-  List<Tab> tabs = <Tab>[];
+  List<Tab> _tabs = <Tab>[];
 
   String barcode = '';
   bool isAdmin = true;
@@ -87,26 +87,32 @@ class EventQrCodePageState extends State<EventQrCodePage>
                 ),
                 child: Padding(
                   padding: const EdgeInsets.only(left: 1.0, right: 1.0),
-                  child: TabBar(
-                    labelStyle: ts_tabSelected,
-                    unselectedLabelStyle: ts_tabUnselected,
-                    isScrollable: false,
-                    unselectedLabelColor: Colors.black,
-                    labelColor: Colors.white,
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    labelPadding: const EdgeInsets.only(
-                      top: 5,
-                      left: 20,
-                      right: 20,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(999),
                     ),
-                    indicator: BubbleTabIndicator(
-                      indicatorHeight: 35.0,
-                      indicatorColor: hc_red,
-                      tabBarIndicatorSize: TabBarIndicatorSize.tab,
-                      indicatorRadius: 20.0,
+                    padding: const EdgeInsets.all(5.0),
+                    // reviewed for 2.0
+                    child: TabBar(
+                      labelStyle: ts_tabSelected,
+                      unselectedLabelStyle: ts_tabUnselected,
+                      isScrollable: false,
+                      unselectedLabelColor: Colors.black,
+                      labelColor: Colors.white,
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      labelPadding: const EdgeInsets.only(
+                        top: 5,
+                        left: 20,
+                        right: 20,
+                      ),
+                      indicator: BoxDecoration(
+                        color: hc_red,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      tabs: _tabs,
+                      controller: _tabController,
                     ),
-                    tabs: tabs,
-                    controller: _tabController,
                   ),
                 ),
               ),
@@ -182,7 +188,7 @@ class EventQrCodePageState extends State<EventQrCodePage>
     super.initState();
     _initTabs();
 
-    _tabController = TabController(vsync: this, length: tabs.length);
+    _tabController = TabController(vsync: this, length: _tabs.length);
   }
 
   Color left = Colors.white;
@@ -222,11 +228,11 @@ class EventQrCodePageState extends State<EventQrCodePage>
   // }
 
   void _initTabs() {
-    if (tabs.isEmpty) {
-      tabs.add(const Tab(text: 'Run Start'));
-      tabs.add(const Tab(text: 'Run End'));
+    if (_tabs.isEmpty) {
+      _tabs.add(const Tab(text: 'Run Start'));
+      _tabs.add(const Tab(text: 'Run End'));
       if (widget.showRunLink) {
-        tabs.add(const Tab(text: 'Run Link'));
+        _tabs.add(const Tab(text: 'Run Link'));
       }
     }
   }

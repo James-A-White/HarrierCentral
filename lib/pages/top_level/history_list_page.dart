@@ -326,7 +326,7 @@ class HistoryListPageState extends State<HistoryListPage>
     return Stack(
       children: <Widget>[
         Container(
-          margin: const EdgeInsets.only(top: 100),
+          margin: const EdgeInsets.only(top: 85),
           decoration: Backgrounds.defaultHcBackgroundLight(),
           padding: const EdgeInsets.only(top: 0.0),
           child:
@@ -349,57 +349,72 @@ class HistoryListPageState extends State<HistoryListPage>
                           ),
                           child: DefaultTabController(
                             length: 2,
-                            child: TabBar(
-                              onTap: (void _) {
-                                setState(() {});
-                              },
-                              labelStyle: ts_tabSelected,
-                              unselectedLabelStyle: ts_tabUnselected,
-                              isScrollable: false,
-                              unselectedLabelColor: Colors.white,
-                              labelColor: Colors.white,
-                              //labelPadding: const EdgeInsets.only(top: 3, left: 20, right: 20),
-                              indicatorSize: TabBarIndicatorSize.label,
-                              indicator: BubbleTabIndicator(
-                                indicatorHeight: 30.0,
-                                indicatorColor: hc_red,
-                                tabBarIndicatorSize: TabBarIndicatorSize.label,
-                                indicatorRadius: 15.0,
-                                padding: EdgeInsets.only(top: 5),
+                            child: Container(
+                              padding: const EdgeInsets.all(8.0),
+                              width: 140.0,
+                              height: 75.0,
+                              // reviewed for 2.0
+                              child: TabBar(
+                                onTap: (void _) {
+                                  setState(() {});
+                                },
+                                labelStyle: ts_tabSelected,
+                                unselectedLabelStyle: ts_tabUnselected,
+                                isScrollable: false,
+                                unselectedLabelColor: Colors.white,
+                                labelColor: Colors.white,
+                                labelPadding: const EdgeInsets.only(
+                                  top: 5,
+                                  left: 0,
+                                  right: 0,
+                                ),
+                                indicatorSize: TabBarIndicatorSize.label,
+                                // labelPadding: EdgeInsets.symmetric(
+                                //   horizontal: 20.0,
+                                // ),
+                                indicatorPadding: EdgeInsets.symmetric(
+                                  horizontal: -5.0,
+                                  vertical: 13.0,
+                                ),
+                                indicator: BoxDecoration(
+                                  color: hc_red,
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+
+                                tabs: <Tab>[
+                                  Tab(
+                                    child: Container(
+                                      alignment: Alignment.center,
+                                      width: 140,
+                                      child: Text(
+                                        'By Kennel',
+                                        style: ts_numberStyle.copyWith(
+                                          color:
+                                              _tabController.index == 0
+                                                  ? Colors.white
+                                                  : Colors.black,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Tab(
+                                    child: Container(
+                                      alignment: Alignment.center,
+                                      width: 140,
+                                      child: Text(
+                                        'By Country',
+                                        style: ts_numberStyle.copyWith(
+                                          color:
+                                              _tabController.index == 1
+                                                  ? Colors.white
+                                                  : Colors.black,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                                controller: _tabController,
                               ),
-                              tabs: <Tab>[
-                                Tab(
-                                  child: Container(
-                                    alignment: Alignment.center,
-                                    width: 140,
-                                    child: Text(
-                                      'By Kennel',
-                                      style: ts_numberStyle.copyWith(
-                                        color:
-                                            _tabController.index == 0
-                                                ? Colors.white
-                                                : Colors.black,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Tab(
-                                  child: Container(
-                                    alignment: Alignment.center,
-                                    width: 140,
-                                    child: Text(
-                                      'By Country',
-                                      style: ts_numberStyle.copyWith(
-                                        color:
-                                            _tabController.index == 1
-                                                ? Colors.white
-                                                : Colors.black,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              controller: _tabController,
                             ),
                           ),
                         ),

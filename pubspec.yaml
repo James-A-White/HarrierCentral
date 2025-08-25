@@ -15,7 +15,7 @@ dependencies:
   auto_size_text: ^3.0.0 
   avoid_keyboard: ^0.3.0
   badges: ^3.1.2
-  bubble_tab_indicator: ^0.1.6
+  # bubble_tab_indicator: ^0.1.6
   cached_network_image: ^3.2.1
   card_swiper: ^3.0.1
   # chewie: ^1.2.2  

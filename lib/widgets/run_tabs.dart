@@ -1010,27 +1010,25 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                     onTap: (void _) {
                                       setState(() {});
                                     },
+                                    isScrollable:
+                                        true, // <-- required for labelPadding
+                                    tabAlignment:
+                                        TabAlignment
+                                            .center, // Flutter 3.13+ to keep centered
 
-                                    // overlayColor: WidgetStatePropertyAll(
-                                    //   Colors.red,
-                                    // ),
-                                    // labelStyle: ts_tabSelected,
-                                    // unselectedLabelStyle: ts_tabUnselected,
-                                    isScrollable: false,
                                     unselectedLabelColor: Colors.white,
                                     labelColor: Colors.white,
-                                    //labelPadding: const EdgeInsets.only(top: 3, left: 20, right: 20),
                                     indicatorSize: TabBarIndicatorSize.label,
-
-                                    // indicatorColor: Colors.transparent,
-                                    // indicatorWeight: 0.0,
-                                    indicator: BubbleTabIndicator(
-                                      indicatorHeight: 40.0,
-                                      indicatorColor: hc_red,
-                                      tabBarIndicatorSize:
-                                          TabBarIndicatorSize.label,
-                                      indicatorRadius: 20.0,
-                                      //padding: EdgeInsets.all(10),
+                                    // labelPadding: EdgeInsets.symmetric(
+                                    //   horizontal: 20.0,
+                                    // ),
+                                    indicatorPadding: EdgeInsets.symmetric(
+                                      horizontal: -5.0,
+                                      vertical: 3.0,
+                                    ),
+                                    indicator: BoxDecoration(
+                                      color: hc_red,
+                                      borderRadius: BorderRadius.circular(999),
                                     ),
                                     tabs: const <Tab>[
                                       Tab(
@@ -1779,29 +1777,34 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
               preferredSize: const Size.fromHeight(120.0),
               child: Container(
                 width: MediaQuery.of(context).size.width,
-                height: 50.0,
+                height: 40.0,
                 decoration: BoxDecoration(
                   color: Theme.of(context).primaryColorLight,
                   borderRadius: const BorderRadius.all(Radius.circular(0.0)),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 15.0, right: 15.0),
-                  child: TextScaleFactorClamper(
-                    textScaleFactor: deviceInfo.textClamp15,
-                    child: GetBuilder<FutureRunListPageController>(
-                      id: 'chatTab',
-                      builder: (controller) {
-                        final chatCount =
-                            controller
-                                .thisEventUnseenChats[widget
-                                    .futureRun
-                                    .event
-                                    .publicEventId]
-                                ?.value;
+                child: TextScaleFactorClamper(
+                  textScaleFactor: deviceInfo.textClamp15,
+                  child: GetBuilder<FutureRunListPageController>(
+                    id: 'chatTab',
+                    builder: (controller) {
+                      final chatCount =
+                          controller
+                              .thisEventUnseenChats[widget
+                                  .futureRun
+                                  .event
+                                  .publicEventId]
+                              ?.value;
 
-                        return Row(
-                          children: [
-                            Expanded(
+                      return Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              height: 40.0,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[300],
+                                //borderRadius: BorderRadius.circular(999),
+                              ),
+                              padding: const EdgeInsets.all(5.0),
                               child: TabBar(
                                 labelStyle: ts_tabSelected,
                                 unselectedLabelStyle: ts_tabUnselected,
@@ -1814,49 +1817,45 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                 unselectedLabelColor: Colors.black,
                                 labelColor: Colors.white,
                                 indicatorSize: TabBarIndicatorSize.tab,
-                                indicator: BubbleTabIndicator(
-                                  indicatorHeight: 30.0,
-                                  indicatorColor: hc_red,
-                                  tabBarIndicatorSize: TabBarIndicatorSize.tab,
-                                  indicatorRadius: 10.0,
-                                  // bubblePadding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
-                                  // insets: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 10.0),
+                                indicator: BoxDecoration(
+                                  color: hc_red,
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                                 tabs: _tabs,
                                 controller: _tabController,
                               ),
                             ),
-                            if ((chatCount != null) &&
-                                (chatCount > 0) &&
-                                (_tabController.index != 4)) ...<Widget>[
-                              badges.Badge(
-                                position: badges.BadgePosition.topEnd(
-                                  top: 0,
-                                  end: 0,
-                                ),
-                                badgeContent: Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 2),
-                                  width: 30,
-                                  height: 13,
-                                  child: AutoSizeText(
-                                    chatCount.toString(),
-                                    textAlign: TextAlign.center,
-                                    maxLines: 1,
-                                    minFontSize: 10,
-                                    maxFontSize: 13,
-                                    style: ts_badge,
-                                  ),
-                                ),
-                                badgeStyle: badges.BadgeStyle(
-                                  badgeColor: Colors.red.shade800,
-                                  padding: const EdgeInsets.all(6),
+                          ),
+                          if ((chatCount != null) &&
+                              (chatCount > 0) &&
+                              (_tabController.index != 4)) ...<Widget>[
+                            badges.Badge(
+                              position: badges.BadgePosition.topEnd(
+                                top: 0,
+                                end: 0,
+                              ),
+                              badgeContent: Container(
+                                padding: EdgeInsets.symmetric(horizontal: 2),
+                                width: 30,
+                                height: 13,
+                                child: AutoSizeText(
+                                  chatCount.toString(),
+                                  textAlign: TextAlign.center,
+                                  maxLines: 1,
+                                  minFontSize: 10,
+                                  maxFontSize: 13,
+                                  style: ts_badge,
                                 ),
                               ),
-                            ],
+                              badgeStyle: badges.BadgeStyle(
+                                badgeColor: Colors.red.shade800,
+                                padding: const EdgeInsets.all(6),
+                              ),
+                            ),
                           ],
-                        );
-                      },
-                    ),
+                        ],
+                      );
+                    },
                   ),
                 ),
               ),

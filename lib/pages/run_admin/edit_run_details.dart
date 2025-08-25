@@ -197,10 +197,10 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
             ),
             Positioned(
               top: 20,
-              left: 20,
-              right: 20,
+              left: 10,
+              right: 10,
               child: Container(
-                width: 340.0,
+                //width: 340.0,
                 height: 45.0,
                 decoration: BoxDecoration(
                   color: Theme.of(context).primaryColorLight,
@@ -208,27 +208,37 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                 ),
                 child: Container(
                   padding: const EdgeInsets.only(left: 1.0, right: 1.0),
-                  child: TabBar(
-                    physics: const NeverScrollableScrollPhysics(),
-                    labelStyle: ts_tabSelected,
-                    unselectedLabelStyle: ts_tabUnselected,
-                    isScrollable: false,
-                    unselectedLabelColor: Colors.black,
-                    labelColor: Colors.white,
-                    labelPadding: const EdgeInsets.only(
-                      top: 5,
-                      left: 20,
-                      right: 20,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(999),
                     ),
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    indicator: BubbleTabIndicator(
-                      indicatorHeight: 35.0,
-                      indicatorColor: hc_red,
-                      tabBarIndicatorSize: TabBarIndicatorSize.tab,
-                      indicatorRadius: 20.0,
+                    padding: const EdgeInsets.all(5.0),
+                    // reviewed for 2.0
+                    child: TabBar(
+                      physics: const NeverScrollableScrollPhysics(),
+                      labelStyle: ts_tabSelected,
+                      unselectedLabelStyle: ts_tabUnselected,
+                      isScrollable: false,
+                      unselectedLabelColor: Colors.black,
+                      labelColor: Colors.white,
+                      labelPadding: const EdgeInsets.only(
+                        top: 5,
+                        left: 0,
+                        right: 0,
+                      ),
+                      indicatorPadding: EdgeInsetsGeometry.only(
+                        top: 10,
+                        bottom: 10,
+                      ),
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      indicator: BoxDecoration(
+                        color: hc_red,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      tabs: _tabs,
+                      controller: _tabController,
                     ),
-                    tabs: _tabs,
-                    controller: _tabController,
                   ),
                 ),
               ),

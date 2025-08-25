@@ -10,7 +10,6 @@ export 'dart:typed_data';
 export 'package:get/get.dart' hide HeaderValue, IterableExtensions, Response;
 export 'package:auto_size_text/auto_size_text.dart';
 export 'package:avoid_keyboard/avoid_keyboard.dart';
-export 'package:bubble_tab_indicator/bubble_tab_indicator.dart';
 export 'package:cached_network_image/cached_network_image.dart';
 export 'package:card_swiper/card_swiper.dart';
 //export 'package:chewie/chewie.dart';

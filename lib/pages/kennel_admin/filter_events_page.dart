@@ -428,7 +428,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
               ),
             ),
             Container(
-              height: 55.0,
+              height: 50.0,
               //padding: const EdgeInsets.only(top: 5),
               decoration: BoxDecoration(
                 // border: new Border.all(width: 1.0, color: Colors.black),
@@ -444,26 +444,29 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
               ),
               child: Padding(
                 padding: const EdgeInsets.only(left: 1.0, right: 1.0),
-                child: TabBar(
-                  labelStyle: ts_tabSelected,
-                  unselectedLabelStyle: ts_tabUnselected,
-                  isScrollable: false,
-                  unselectedLabelColor: Colors.black,
-                  labelColor: Colors.white,
-                  labelPadding: const EdgeInsets.only(
-                    top: 5,
-                    left: 20,
-                    right: 20,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+
+                  // reviewed for 2.0
+                  child: TabBar(
+                    labelStyle: ts_tabSelected,
+                    unselectedLabelStyle: ts_tabUnselected,
+                    isScrollable: false,
+                    unselectedLabelColor: Colors.black,
+                    labelColor: Colors.white,
+                    labelPadding: const EdgeInsets.only(top: 5),
+                    indicatorPadding: EdgeInsetsGeometry.only(
+                      top: 8,
+                      bottom: 8,
+                    ),
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    indicator: BoxDecoration(
+                      color: hc_red,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    tabs: _tabs,
+                    controller: _tabController,
                   ),
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  indicator: BubbleTabIndicator(
-                    indicatorHeight: 35.0,
-                    indicatorColor: hc_red,
-                    tabBarIndicatorSize: TabBarIndicatorSize.tab,
-                    indicatorRadius: 20.0,
-                  ),
-                  tabs: _tabs,
-                  controller: _tabController,
                 ),
               ),
             ),

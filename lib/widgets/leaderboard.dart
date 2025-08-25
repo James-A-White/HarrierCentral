@@ -333,7 +333,7 @@ class LeaderboardState extends State<Leaderboard>
                               slivers: <Widget>[
                                 SliverAppBar(
                                   toolbarHeight:
-                                      widget.kennelId == null ? 155.0 : 106.0,
+                                      widget.kennelId == null ? 150.0 : 101.0,
                                   floating: true,
                                   backgroundColor: Colors.grey.shade400,
                                   shadowColor: Colors.transparent,
@@ -342,12 +342,15 @@ class LeaderboardState extends State<Leaderboard>
                                     children: <Widget>[
                                       _searchBar(),
                                       Container(
-                                        padding: const EdgeInsets.only(
-                                          left: 20.0,
-                                          right: 20.0,
-                                          top: 7.0,
-                                        ),
-                                        color: Colors.grey.shade400,
+                                        // decoration: BoxDecoration(
+                                        //   color: Colors.grey[300],
+                                        //   borderRadius: BorderRadius.circular(
+                                        //     999,
+                                        //   ),
+                                        // ),
+                                        height: 50.0,
+                                        padding: const EdgeInsets.all(5.0),
+                                        // reviewed for 2.0
                                         child: TabBar(
                                           onTap: (void _) {
                                             _sortLeaderboard(
@@ -356,33 +359,30 @@ class LeaderboardState extends State<Leaderboard>
                                             );
                                             setState(() {});
                                           },
-                                          labelStyle: const TextStyle(
-                                            fontFamily:
-                                                'AvenirNextCondensedBold',
-                                            fontStyle: FontStyle.normal,
-                                            fontSize: 18.0,
-                                            height: 1.0,
-                                          ),
-                                          unselectedLabelStyle: const TextStyle(
-                                            fontFamily:
-                                                'AvenirNextCondensedMedium',
-                                            fontStyle: FontStyle.normal,
-                                            fontSize: 18.0,
-                                            height: 1.0,
-                                          ),
+                                          physics:
+                                              const NeverScrollableScrollPhysics(),
+                                          labelStyle: ts_tabSelected,
+                                          unselectedLabelStyle:
+                                              ts_tabUnselected,
                                           isScrollable: false,
                                           unselectedLabelColor: Colors.black,
                                           labelColor: Colors.white,
+                                          labelPadding: const EdgeInsets.only(
+                                            top: 5,
+                                            left: 0,
+                                            right: 0,
+                                          ),
+                                          indicatorPadding:
+                                              EdgeInsetsGeometry.only(
+                                                top: 3,
+                                                bottom: 3,
+                                              ),
                                           indicatorSize:
                                               TabBarIndicatorSize.tab,
-                                          indicator: BubbleTabIndicator(
-                                            indicatorHeight: 25.0,
-                                            indicatorColor: hc_red,
-                                            tabBarIndicatorSize:
-                                                TabBarIndicatorSize.label,
-                                            indicatorRadius: 10.0,
-                                            padding: const EdgeInsets.only(
-                                              top: 5.0,
+                                          indicator: BoxDecoration(
+                                            color: hc_red,
+                                            borderRadius: BorderRadius.circular(
+                                              999,
                                             ),
                                           ),
                                           tabs: <Tab>[

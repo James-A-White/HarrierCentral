@@ -599,60 +599,71 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
             Container(
               // color: Colors.red,
               width: 100,
-              padding: const EdgeInsets.only(left: 60, right: 60, top: 10.0),
+              padding: const EdgeInsets.only(left: 60, right: 60, top: 0.0),
               child: DefaultTabController(
                 length: 2,
-                child: TabBar(
-                  onTap: (void _) {
-                    setState(() {});
-                  },
-                  labelStyle: ts_tabSelected,
-                  unselectedLabelStyle: ts_tabUnselected,
-                  isScrollable: false,
-                  unselectedLabelColor: Colors.white,
-                  labelColor: Colors.white,
-                  //labelPadding: const EdgeInsets.only(top: 3, left: 20, right: 20),
-                  indicatorSize: TabBarIndicatorSize.label,
-                  indicator: BubbleTabIndicator(
-                    indicatorHeight: 30.0,
-                    indicatorColor: hc_red,
-                    tabBarIndicatorSize: TabBarIndicatorSize.label,
-                    indicatorRadius: 15.0,
-                    padding: EdgeInsets.only(top: 5),
+                child: Container(
+                  padding: const EdgeInsets.all(8.0),
+                  width: 140.0,
+                  height: 70.0,
+                  // reviewed for 2.0
+                  child: TabBar(
+                    onTap: (void _) {
+                      setState(() {});
+                    },
+                    labelStyle: ts_tabSelected,
+                    unselectedLabelStyle: ts_tabUnselected,
+                    isScrollable: false,
+                    unselectedLabelColor: Colors.white,
+                    labelColor: Colors.white,
+                    indicatorSize: TabBarIndicatorSize.label,
+                    labelPadding: const EdgeInsets.only(
+                      top: 5,
+                      left: 0,
+                      right: 0,
+                    ),
+                    indicatorPadding: EdgeInsetsGeometry.only(
+                      top: 10,
+                      bottom: 10,
+                    ),
+                    indicator: BoxDecoration(
+                      color: hc_red,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    tabs: <Tab>[
+                      Tab(
+                        child: Container(
+                          alignment: Alignment.center,
+                          width: 120,
+                          child: Text(
+                            'My Runs',
+                            style: ts_numberStyle.copyWith(
+                              color:
+                                  _tabController.index == 0
+                                      ? Colors.white
+                                      : Colors.black,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Tab(
+                        child: Container(
+                          alignment: Alignment.center,
+                          width: 120,
+                          child: Text(
+                            'All Runs',
+                            style: ts_numberStyle.copyWith(
+                              color:
+                                  _tabController.index == 1
+                                      ? Colors.white
+                                      : Colors.black,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                    controller: _tabController,
                   ),
-                  tabs: <Tab>[
-                    Tab(
-                      child: Container(
-                        alignment: Alignment.center,
-                        width: 120,
-                        child: Text(
-                          'My Runs',
-                          style: ts_numberStyle.copyWith(
-                            color:
-                                _tabController.index == 0
-                                    ? Colors.white
-                                    : Colors.black,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Tab(
-                      child: Container(
-                        alignment: Alignment.center,
-                        width: 120,
-                        child: Text(
-                          'All Runs',
-                          style: ts_numberStyle.copyWith(
-                            color:
-                                _tabController.index == 1
-                                    ? Colors.white
-                                    : Colors.black,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                  controller: _tabController,
                 ),
               ),
             ),
