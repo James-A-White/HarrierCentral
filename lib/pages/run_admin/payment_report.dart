@@ -378,7 +378,7 @@ SELECT
       ),
       body:
           (_isLoading || (_paymentTotals.isEmpty))
-              ? const HcCircularProgressIndicator(key: Key('112209596'))
+              ? const HcAppCircularProgressIndicator(key: Key('112209596'))
               : Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: <Widget>[

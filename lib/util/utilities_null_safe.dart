@@ -621,7 +621,7 @@ class Utilities {
                         child: SizedBox(
                           height: 20,
                           width: 20,
-                          child: HcCircularProgressIndicator(
+                          child: HcAppCircularProgressIndicator(
                             key: Key('1396562'),
                           ),
                         ),

@@ -71,7 +71,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
         child:
             _isLoading
                 ? const Center(
-                  child: HcCircularProgressIndicator(key: Key('532270149')),
+                  child: HcAppCircularProgressIndicator(key: Key('532270149')),
                 )
                 : _isLoggedIn
                 ? _displayUserData(_profileData)

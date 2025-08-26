@@ -64,10 +64,10 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
         ((_facebookProfileUrl ?? '').isNotEmpty)) {
       _facebookProfileImage = CachedNetworkImage(
         imageUrl: _facebookProfileUrl!,
-        //placeholder: HcCircularProgressIndicator(key: Key('yyyyyyy')),
+        //placeholder: HcAppCircularProgressIndicator(key: Key('yyyyyyy')),
         //errorWidget: const  Icon(Icons.error),
         // placeholder: (BuildContext context, String url) =>
-        //     HcCircularProgressIndicator(key: Key('yyyyyyy')),
+        //     HcAppCircularProgressIndicator(key: Key('yyyyyyy')),
         // errorWidget: (BuildContext context, String url, Exception error) =>
         //     const  Icon(Icons.error),
         //fadeOutDuration:  Duration(seconds: 1),
@@ -363,7 +363,9 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
           child: _getPreviewImage(),
         ),
         const SizedBox(height: 20, width: 20),
-        const Center(child: HcCircularProgressIndicator(key: Key('1387562'))),
+        const Center(
+          child: HcAppCircularProgressIndicator(key: Key('1387562')),
+        ),
       ],
     );
   }

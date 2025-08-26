@@ -51,7 +51,7 @@ class SupportPageState extends State<SupportPage> {
             textAlign: TextAlign.center,
           ),
           Container(height: 30),
-          const HcCircularProgressIndicator(key: Key('68462')),
+          const HcAppCircularProgressIndicator(key: Key('68462')),
         ],
       ),
     );

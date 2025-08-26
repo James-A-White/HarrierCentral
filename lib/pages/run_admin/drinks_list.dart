@@ -184,7 +184,7 @@ class DrinksListState extends State<DrinksList>
           decoration: Backgrounds.defaultHcBackgroundLight(),
           child:
               _isLoading
-                  ? const HcCircularProgressIndicator(key: Key('52039320'))
+                  ? const HcAppCircularProgressIndicator(key: Key('52039320'))
                   : _awards.isEmpty
                   ? Center(
                     child: Padding(

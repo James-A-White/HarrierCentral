@@ -160,7 +160,7 @@ export 'package:harrier_central/util/styles.dart';
 export 'package:harrier_central/util/text_styles.dart';
 export 'package:harrier_central/util/utilities_null_safe.dart';
 export 'package:harrier_central/widgets/add_virgin_visitor_popup.dart';
-export 'package:harrier_central/widgets/bubble_tab_indicator.dart';
+export 'package:harrier_central/widgets/circular_progress_indicator.dart';
 export 'package:harrier_central/widgets/confirm_auto_checkin_popup.dart';
 export 'package:harrier_central/widgets/connected_widget.dart';
 export 'package:harrier_central/widgets/customize_profile.dart';

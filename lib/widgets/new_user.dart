@@ -71,7 +71,7 @@
 //       body: Container(
 //         decoration: Backgrounds.defaultHcBackground(),
 //         child: isLoading
-//             ? HcCircularProgressIndicator(key: Key('yyyyyyy'))
+//             ? HcAppCircularProgressIndicator(key: Key('yyyyyyy'))
 //             : Stack(
 //                 alignment: AlignmentDirectional.center,
 //                 children: <Widget>[

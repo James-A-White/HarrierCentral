@@ -845,7 +845,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                         ? const SizedBox(
                           height: 70.0,
                           width: 70.0,
-                          child: HcCircularProgressIndicator(
+                          child: HcAppCircularProgressIndicator(
                             key: Key('112096562'),
                           ),
                         )
@@ -1080,7 +1080,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
               ? const SizedBox(
                 height: 70.0,
                 width: 70.0,
-                child: HcCircularProgressIndicator(key: Key('6669001123')),
+                child: HcAppCircularProgressIndicator(key: Key('6669001123')),
               )
               : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -1487,7 +1487,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                         ? const SizedBox(
                           height: 70.0,
                           width: 70.0,
-                          child: HcCircularProgressIndicator(
+                          child: HcAppCircularProgressIndicator(
                             key: Key('655931031'),
                           ),
                         )
@@ -2268,7 +2268,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                               ? const SizedBox(
                                 height: 70.0,
                                 width: 70.0,
-                                child: HcCircularProgressIndicator(
+                                child: HcAppCircularProgressIndicator(
                                   key: Key('3444910299'),
                                 ),
                               )

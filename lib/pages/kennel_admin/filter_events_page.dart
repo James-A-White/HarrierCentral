@@ -324,7 +324,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
       ),
       body:
           _isLoading
-              ? const HcCircularProgressIndicator(key: Key('9844430132'))
+              ? const HcAppCircularProgressIndicator(key: Key('9844430132'))
               : _buildListView(),
     );
   }
@@ -723,7 +723,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
           child: Stack(
             children: <Widget>[
               if (_itemBeingUpdatedId == event.eventId) ...<Widget>[
-                const HcCircularProgressIndicator(key: Key('5050202')),
+                const HcAppCircularProgressIndicator(key: Key('5050202')),
               ],
               Opacity(
                 opacity: _itemBeingUpdatedId == event.eventId ? 0.4 : 1,

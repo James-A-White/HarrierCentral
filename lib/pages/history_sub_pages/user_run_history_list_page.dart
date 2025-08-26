@@ -327,7 +327,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
 
   Widget _buildCircularProgressIndicator() {
     return const Center(
-      child: HcCircularProgressIndicator(key: Key('88230302')),
+      child: HcAppCircularProgressIndicator(key: Key('88230302')),
     );
   }
 
@@ -437,7 +437,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
 
   // Widget _buildCircularProgressIndicator() {
   //   return const Center(
-  //     child: HcCircularProgressIndicator(key: Key('yyyyyyy')),
+  //     child: HcAppCircularProgressIndicator(key: Key('yyyyyyy')),
   //   );
   // }
 

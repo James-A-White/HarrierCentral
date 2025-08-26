@@ -62,7 +62,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
             textAlign: TextAlign.center,
           ),
           Container(height: 30),
-          const HcCircularProgressIndicator(key: Key('12662')),
+          const HcAppCircularProgressIndicator(key: Key('12662')),
         ],
       ),
     );

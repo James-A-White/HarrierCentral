@@ -343,7 +343,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             textAlign: TextAlign.center,
           ),
           Container(height: 30),
-          const HcCircularProgressIndicator(key: Key('887262')),
+          const HcAppCircularProgressIndicator(key: Key('887262')),
         ],
       ),
     );

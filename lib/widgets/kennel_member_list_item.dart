@@ -120,9 +120,9 @@ class KennelMemberListItem extends StatelessWidget {
                             kennelMember.photo!.startsWith('http')
                                 ? CachedNetworkImage(
                                   imageUrl: kennelMember.photo!,
-                                  //placeholder: HcCircularProgressIndicator(key: Key('yyyyyyy')),
+                                  //placeholder: HcAppCircularProgressIndicator(key: Key('yyyyyyy')),
                                   //errorWidget: const  Icon(Icons.error),
-                                  // placeholder: (BuildContext context,String url) => HcCircularProgressIndicator(key: Key('yyyyyyy')),
+                                  // placeholder: (BuildContext context,String url) => HcAppCircularProgressIndicator(key: Key('yyyyyyy')),
 
                                   // TODO(James): Replace avatar icon with missing image icon
                                   errorWidget:

@@ -111,7 +111,9 @@ class FindHasherPageState extends State<FindHasherPage> {
             child:
                 (_isLoading == true)
                     ? const Center(
-                      child: HcCircularProgressIndicator(key: Key('559501910')),
+                      child: HcAppCircularProgressIndicator(
+                        key: Key('559501910'),
+                      ),
                     )
                     : HasherListView(
                       hasherList: _filteredList,
@@ -327,7 +329,7 @@ class HasherListView extends StatelessWidget {
                             child: SizedBox(
                               height: 20,
                               width: 20,
-                              child: HcCircularProgressIndicator(
+                              child: HcAppCircularProgressIndicator(
                                 key: Key('1393262'),
                               ),
                             ),
@@ -600,7 +602,9 @@ class HasherListView extends StatelessWidget {
                 child: const Padding(
                   padding: EdgeInsets.all(5.0),
                   child: Center(
-                    child: HcCircularProgressIndicator(key: Key('3330495910')),
+                    child: HcAppCircularProgressIndicator(
+                      key: Key('3330495910'),
+                    ),
                   ),
                 ),
               )

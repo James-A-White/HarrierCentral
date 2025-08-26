@@ -36,7 +36,7 @@ class ChatPage extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.max,
                       children: [
-                        HcCircularProgressIndicator(
+                        HcAppCircularProgressIndicator(
                           key: ValueKey('1313515234'),
                         ),
                       ],

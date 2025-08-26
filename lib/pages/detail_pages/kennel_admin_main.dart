@@ -176,7 +176,9 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
             body:
                 _isLoading
                     ? const Center(
-                      child: HcCircularProgressIndicator(key: Key('16637721')),
+                      child: HcAppCircularProgressIndicator(
+                        key: Key('16637721'),
+                      ),
                     )
                     : Container(
                       height: MediaQuery.of(context).size.height,

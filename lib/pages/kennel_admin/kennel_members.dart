@@ -395,7 +395,7 @@ class KennelMemberListState extends State<KennelMembersList>
                   AsyncSnapshot<List<dynamic>> snapshot,
                 ) {
                   if (snapshot.data == null) {
-                    return const HcCircularProgressIndicator(
+                    return const HcAppCircularProgressIndicator(
                       key: Key('75223930'),
                     );
                   } else {

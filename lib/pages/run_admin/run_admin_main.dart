@@ -190,7 +190,7 @@ class RunAdminPageState extends State<RunAdminPage> {
           ),
           child:
               _isLoading
-                  ? const HcCircularProgressIndicator(key: Key('16093026'))
+                  ? const HcAppCircularProgressIndicator(key: Key('16093026'))
                   : _eventAggregate == null
                   ? Container()
                   : SingleChildScrollView(

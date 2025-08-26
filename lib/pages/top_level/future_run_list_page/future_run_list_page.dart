@@ -22,7 +22,7 @@ class FutureRunsListPage extends StatelessWidget {
           id: 'runList',
           builder: (listController) {
             return listController.allRuns == null
-                ? HcCircularProgressIndicator(key: UniqueKey())
+                ? HcAppCircularProgressIndicator(key: UniqueKey())
                 : _buildListView(listController);
           },
         ),
@@ -34,7 +34,7 @@ class FutureRunsListPage extends StatelessWidget {
   // Widget build(BuildContext context) {
   //   return Scaffold(
   //       body: controller.allRuns == null
-  //           ? HcCircularProgressIndicator(key: UniqueKey())
+  //           ? HcAppCircularProgressIndicator(key: UniqueKey())
   //           : _buildListView(controller));
   // }
 

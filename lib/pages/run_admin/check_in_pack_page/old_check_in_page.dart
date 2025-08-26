@@ -1357,7 +1357,7 @@
 //       ),
 //       body:
 //           _isLoading
-//               ? const HcCircularProgressIndicator(key: Key('430320291'))
+//               ? const HcAppCircularProgressIndicator(key: Key('430320291'))
 //               : Stack(
 //                 fit: StackFit.loose,
 //                 alignment: AlignmentDirectional.topStart,

@@ -407,7 +407,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           AsyncSnapshot<List<PackListAggregate>?> snapshot,
         ) {
           if ((!snapshot.hasData) || (snapshot.data == null)) {
-            return const HcCircularProgressIndicator(key: Key('42223995'));
+            return const HcAppCircularProgressIndicator(key: Key('42223995'));
           } else {
             return Center(
               child: Column(
@@ -780,7 +780,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                               child: Padding(
                                 padding: EdgeInsets.all(5.0),
                                 child: Center(
-                                  child: HcCircularProgressIndicator(
+                                  child: HcAppCircularProgressIndicator(
                                     key: Key('22030392'),
                                   ),
                                 ),
@@ -1666,7 +1666,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
   List<Widget> _getRsvpButtons() {
     if (_rsvpRequested != rsvpUnknown) {
-      return <Widget>[const HcCircularProgressIndicator(key: Key('3920394'))];
+      return <Widget>[
+        const HcAppCircularProgressIndicator(key: Key('3920394')),
+      ];
     } else {
       return <Widget>[
         const SizedBox(height: 30.0),

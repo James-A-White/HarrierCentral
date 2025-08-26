@@ -426,7 +426,7 @@ class KennelsListPageState extends State<KennelsListPage> {
       body:
           tableModel.globalKennelMainPageList == null
               ? const Center(
-                child: HcCircularProgressIndicator(key: Key('3320159590')),
+                child: HcAppCircularProgressIndicator(key: Key('3320159590')),
               )
               : Container(
                 decoration: Backgrounds.defaultHcBackground(),

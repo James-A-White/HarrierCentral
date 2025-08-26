@@ -212,7 +212,7 @@ class CheckInPackPage extends StatelessWidget {
 
           body:
               scaffoldController.isLoading
-                  ? const HcCircularProgressIndicator(key: Key('430320291'))
+                  ? const HcAppCircularProgressIndicator(key: Key('430320291'))
                   : Stack(
                     fit: StackFit.loose,
                     alignment: AlignmentDirectional.topStart,
@@ -859,9 +859,22 @@ class CheckInPackPage extends StatelessWidget {
                   top: 3,
                   child: Row(
                     children: [
+                      if (hasher.isMember == 1)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 2.0),
+                          child: Icon(
+                            MaterialCommunityIcons.star_circle,
+                            color: Colors.green.shade800,
+                            size: 23,
+                          ),
+                        ),
                       Text(
                         hasher.nameForDisplay,
                         style: TextStyle(
+                          color:
+                              hasher.isMember == 1
+                                  ? Colors.green.shade800
+                                  : Colors.black,
                           fontFamily:
                               hasher.isMember != 0
                                   ? 'AvenirNextCondensedDemiBold'
@@ -879,6 +892,10 @@ class CheckInPackPage extends StatelessWidget {
                             fontFamily: 'AvenirNextCondensedMedium',
                             fontSize: 18.0,
                             height: 1.0,
+                            color:
+                                hasher.isMember == 1
+                                    ? Colors.green.shade900
+                                    : Colors.black,
                           ),
                         ),
                     ],

@@ -317,7 +317,7 @@ class LeaderboardState extends State<Leaderboard>
                       child: Padding(
                         padding: EdgeInsets.all(5.0),
                         child: Center(
-                          child: HcCircularProgressIndicator(
+                          child: HcAppCircularProgressIndicator(
                             key: Key('22030392'),
                           ),
                         ),
