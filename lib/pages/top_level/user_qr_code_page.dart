@@ -81,6 +81,7 @@ class UserQrCodePageState extends State<UserQrCodePage>
                             borderRadius: BorderRadius.circular(999),
                           ),
                           padding: const EdgeInsets.all(5.0),
+                          // Reviewed for 2.0+
                           child: TabBar(
                             labelStyle: ts_tabSelected,
                             unselectedLabelStyle: ts_tabUnselected,

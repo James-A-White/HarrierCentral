@@ -180,7 +180,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
               right: 0,
               child: Container(
                 //color: Colors.white,
-                height: 85,
+                height: 45,
                 decoration: BoxDecoration(
                   // border: new Border.all(width: 1.0, color: Colors.black),
                   //shape: BoxShape.circle,
@@ -196,49 +196,47 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
               ),
             ),
             Positioned(
-              top: 20,
+              top: -25,
               left: 10,
               right: 10,
               child: Container(
-                //width: 340.0,
-                height: 45.0,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColorLight,
-                  borderRadius: const BorderRadius.all(Radius.circular(35.0)),
-                ),
+                //color: Colors.red,
+                width: 200,
+                padding: const EdgeInsets.only(left: 30, right: 30, top: 10.0),
                 child: Container(
-                  padding: const EdgeInsets.only(left: 1.0, right: 1.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
+                  padding: const EdgeInsets.all(8.0),
+                  width: 140.0,
+                  height: 75.0,
+                  // reviewed for 2.0+
+                  child: TabBar(
+                    onTap: (void _) {
+                      setState(() {});
+                    },
+                    labelStyle: ts_tabSelected,
+                    unselectedLabelStyle: ts_tabUnselected,
+                    isScrollable: false,
+                    unselectedLabelColor: Colors.black,
+                    labelColor: Colors.white,
+                    labelPadding: const EdgeInsets.only(
+                      top: 5,
+                      left: 0,
+                      right: 0,
+                    ),
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    // labelPadding: EdgeInsets.symmetric(
+                    //   horizontal: 20.0,
+                    // ),
+                    indicatorPadding: EdgeInsets.symmetric(
+                      horizontal: -5.0,
+                      vertical: 13.0,
+                    ),
+                    indicator: BoxDecoration(
+                      color: hc_red,
                       borderRadius: BorderRadius.circular(999),
                     ),
-                    padding: const EdgeInsets.all(5.0),
-                    // reviewed for 2.0
-                    child: TabBar(
-                      physics: const NeverScrollableScrollPhysics(),
-                      labelStyle: ts_tabSelected,
-                      unselectedLabelStyle: ts_tabUnselected,
-                      isScrollable: false,
-                      unselectedLabelColor: Colors.black,
-                      labelColor: Colors.white,
-                      labelPadding: const EdgeInsets.only(
-                        top: 5,
-                        left: 0,
-                        right: 0,
-                      ),
-                      indicatorPadding: EdgeInsetsGeometry.only(
-                        top: 10,
-                        bottom: 10,
-                      ),
-                      indicatorSize: TabBarIndicatorSize.tab,
-                      indicator: BoxDecoration(
-                        color: hc_red,
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      tabs: _tabs,
-                      controller: _tabController,
-                    ),
+
+                    tabs: _tabs,
+                    controller: _tabController,
                   ),
                 ),
               ),

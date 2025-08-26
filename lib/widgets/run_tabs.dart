@@ -1005,7 +1005,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                 Container(
                                   padding: const EdgeInsets.all(8.0),
                                   width: 140.0,
-
+                                  // Reviewed for 2.0+
                                   child: TabBar(
                                     onTap: (void _) {
                                       setState(() {});
@@ -1819,7 +1819,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                 indicatorSize: TabBarIndicatorSize.tab,
                                 indicator: BoxDecoration(
                                   color: hc_red,
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(999),
                                 ),
                                 tabs: _tabs,
                                 controller: _tabController,

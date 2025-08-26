@@ -447,7 +447,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
 
-                  // reviewed for 2.0
+                  // reviewed for 2.0+
                   child: TabBar(
                     labelStyle: ts_tabSelected,
                     unselectedLabelStyle: ts_tabUnselected,

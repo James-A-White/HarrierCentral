@@ -353,7 +353,7 @@ class HistoryListPageState extends State<HistoryListPage>
                               padding: const EdgeInsets.all(8.0),
                               width: 140.0,
                               height: 75.0,
-                              // reviewed for 2.0
+                              // reviewed for 2.0+
                               child: TabBar(
                                 onTap: (void _) {
                                   setState(() {});

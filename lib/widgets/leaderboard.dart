@@ -350,7 +350,7 @@ class LeaderboardState extends State<Leaderboard>
                                         // ),
                                         height: 50.0,
                                         padding: const EdgeInsets.all(5.0),
-                                        // reviewed for 2.0
+                                        // reviewed for 2.0+
                                         child: TabBar(
                                           onTap: (void _) {
                                             _sortLeaderboard(

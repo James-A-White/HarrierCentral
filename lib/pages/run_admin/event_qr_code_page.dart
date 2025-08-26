@@ -93,14 +93,12 @@ class EventQrCodePageState extends State<EventQrCodePage>
                       borderRadius: BorderRadius.circular(999),
                     ),
                     padding: const EdgeInsets.all(5.0),
-                    // reviewed for 2.0
+                    // reviewed for 2.0+
                     child: TabBar(
-                      labelStyle: ts_tabSelected,
-                      unselectedLabelStyle: ts_tabUnselected,
                       isScrollable: false,
                       unselectedLabelColor: Colors.black,
                       labelColor: Colors.white,
-                      indicatorSize: TabBarIndicatorSize.tab,
+
                       labelPadding: const EdgeInsets.only(
                         top: 5,
                         left: 20,
@@ -110,6 +108,10 @@ class EventQrCodePageState extends State<EventQrCodePage>
                         color: hc_red,
                         borderRadius: BorderRadius.circular(999),
                       ),
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      labelStyle: ts_tabSelected,
+                      unselectedLabelStyle: ts_tabUnselected,
+
                       tabs: _tabs,
                       controller: _tabController,
                     ),
