@@ -45,7 +45,10 @@ class ServiceCommon {
         appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
       // if we were previously not connected, let's check the connection
       // and update the connection status
-      await Utilities.checkForInternetConnection(false);
+      await Utilities.checkForInternetConnection(
+        false,
+        performHcServerCheck: false,
+      );
       // if we are still not connected, return an error
       if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
         return ERROR_NO_CONNECTION;
@@ -151,16 +154,31 @@ class ServiceCommon {
         );
         appModel.connectionStatus = EnumConnectionStatus2.notConnected;
       } else {
-        recordError(
-          requestBody,
-          response.reasonPhrase ?? '<null reason>',
-          extraData: response.body,
+        // bypass the Harrier Central backend server check and
+        // check the internet connection using other services.
+        // This is done to prevent an infinite loop
+        await Utilities.checkForInternetConnection(
+          false,
+          performHcServerCheck: false,
         );
-        await Utilities.showAlert(
-          'Unknown Server Error',
-          response.reasonPhrase ?? ' - ${response.body}',
-          'Continue',
-        );
+        if (appModel.connectionStatus == EnumConnectionStatus2.connected) {
+          recordError(
+            requestBody,
+            response.reasonPhrase ?? '<null reason>',
+            extraData: response.body,
+          );
+
+          Get.closeAllSnackbars();
+
+          Get.showSnackbar(
+            GetSnackBar(
+              title: 'Unknown Server Error',
+              message: response.reasonPhrase ?? ' - ${response.body}',
+              duration: const Duration(seconds: 5),
+              backgroundColor: Colors.blue,
+            ),
+          );
+        }
         // await Utilities.showAlert(
         //     'Unknown Server Error',
         //     'The Harrier Central server is experiencing an unknown server error. Please send this screenshot to us at harriercentral@gmail.com so we can attempt to resolve the issue.\r\n\r\nYou may continue using the app in Offline Mode with cached data. Press the \'Offline Mode\' ribbon to find out when the last time the data was updated.\r\n\r\nServer Error Code = ${response.statusCode.toString()}',

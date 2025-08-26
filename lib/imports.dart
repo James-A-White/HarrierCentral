@@ -153,7 +153,7 @@ export 'package:harrier_central/util/connection2.dart';
 export 'package:harrier_central/util/constants.dart';
 export 'package:harrier_central/util/globals.dart';
 export 'package:harrier_central/util/hc_enums.dart';
-export 'package:harrier_central/util/offline_mode_ribbon.dart';
+export 'package:harrier_central/widgets/offline_mode_ribbon.dart';
 export 'package:harrier_central/util/routes.dart';
 export 'package:harrier_central/util/get_storage.dart';
 export 'package:harrier_central/util/styles.dart';

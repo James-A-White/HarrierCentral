@@ -1696,210 +1696,224 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     //getPack(false);
 
-    return Scaffold(
-      key: _scaffoldKey,
-      floatingActionButton:
-          (!_fabIsVisible)
-              ? null
-              : AnimatedOpacity(
-                duration: const Duration(milliseconds: 500),
-                opacity: _fabIsVisible ? 1.0 : 0.0,
-                child: SpeedDial(
-                  // both default to 16
-                  // marginEnd: 18,
-                  // marginBottom: 20,
-                  animatedIcon: AnimatedIcons.menu_close,
-                  animatedIconTheme: const IconThemeData(size: 22.0),
-                  // this is ignored if animatedIcon is non null
-                  // child:const  Icon(Icons.add),
-                  visible: true,
-                  curve: Curves.bounceIn,
-                  overlayColor: Colors.black,
-                  overlayOpacity: 0.5,
-                  onOpen: () {
-                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                  },
-                  //onClose: () => //print('DIAL CLOSED'),
-                  tooltip: 'Speed Dial',
-                  heroTag: 'speed-dial-hero-tag-722526',
-                  backgroundColor: hc_red,
-                  foregroundColor: Colors.white,
-                  elevation: 8.0,
-                  shape: const CircleBorder(),
-                  children: <SpeedDialChild>[
-                    SpeedDialChild(
-                      child: const Icon(Feather.x),
+    return Stack(
+      children: <Widget>[
+        Scaffold(
+          key: _scaffoldKey,
+          floatingActionButton:
+              (!_fabIsVisible)
+                  ? null
+                  : AnimatedOpacity(
+                    duration: const Duration(milliseconds: 500),
+                    opacity: _fabIsVisible ? 1.0 : 0.0,
+                    child: SpeedDial(
+                      // both default to 16
+                      // marginEnd: 18,
+                      // marginBottom: 20,
+                      animatedIcon: AnimatedIcons.menu_close,
+                      animatedIconTheme: const IconThemeData(size: 22.0),
+                      // this is ignored if animatedIcon is non null
+                      // child:const  Icon(Icons.add),
+                      visible: true,
+                      curve: Curves.bounceIn,
+                      overlayColor: Colors.black,
+                      overlayOpacity: 0.5,
+                      onOpen: () {
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      },
+                      //onClose: () => //print('DIAL CLOSED'),
+                      tooltip: 'Speed Dial',
+                      heroTag: 'speed-dial-hero-tag-722526',
                       backgroundColor: hc_red,
-                      label: 'I\'m not coming',
-                      labelStyle: const TextStyle(fontSize: 18.0),
-                      onTap: () async {
-                        await _setRsvpState(rsvpNo);
-                      },
-                    ),
-                    SpeedDialChild(
-                      child: const Icon(AntDesign.question),
-                      backgroundColor: Colors.orange,
-                      label: 'I might come',
-                      labelStyle: const TextStyle(fontSize: 18.0),
-                      onTap: () async {
-                        await _setRsvpState(rsvpMaybe);
-                      },
-                    ),
-                    SpeedDialChild(
-                      child: const Icon(Feather.check),
-                      backgroundColor: Colors.green,
-                      label: 'I\'m coming',
-                      labelStyle: const TextStyle(fontSize: 18.0),
-                      onTap: () async {
-                        await _setRsvpState(rsvpYes);
-                      },
-                    ),
-                    // SpeedDialChild(
-                    //   child: const ImageIcon(
-                    //       AssetImage('images/icons/hare_icon.png'),
-                    //       color: Colors.deepPurple),
-                    //   backgroundColor: Colors.white,
-                    //   label: 'I will hare',
-                    //   labelStyle: const TextStyle(fontSize: 18.0),
-                    //   onTap: () async {
-                    //     await _setRsvpHare();
-                    //   },
-                    // ),
-                  ],
-                ),
-              ),
-      body: Container(
-        decoration: Backgrounds.defaultHcBackground(),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            PreferredSize(
-              preferredSize: const Size.fromHeight(120.0),
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                height: 40.0,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColorLight,
-                  borderRadius: const BorderRadius.all(Radius.circular(0.0)),
-                ),
-                child: TextScaleFactorClamper(
-                  textScaleFactor: deviceInfo.textClamp15,
-                  child: GetBuilder<FutureRunListPageController>(
-                    id: 'chatTab',
-                    builder: (controller) {
-                      final chatCount =
-                          controller
-                              .thisEventUnseenChats[widget
-                                  .futureRun
-                                  .event
-                                  .publicEventId]
-                              ?.value;
-
-                      return Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              height: 40.0,
-                              decoration: BoxDecoration(
-                                color: Colors.grey[300],
-                                //borderRadius: BorderRadius.circular(999),
-                              ),
-                              padding: const EdgeInsets.all(5.0),
-                              child: TabBar(
-                                labelStyle: ts_tabSelected,
-                                unselectedLabelStyle: ts_tabUnselected,
-                                isScrollable: false,
-                                labelPadding: const EdgeInsets.only(
-                                  top: 5,
-                                  left: 0,
-                                  right: 0,
-                                ),
-                                unselectedLabelColor: Colors.black,
-                                labelColor: Colors.white,
-                                indicatorSize: TabBarIndicatorSize.tab,
-                                indicator: BoxDecoration(
-                                  color: hc_red,
-                                  borderRadius: BorderRadius.circular(999),
-                                ),
-                                tabs: _tabs,
-                                controller: _tabController,
-                              ),
-                            ),
-                          ),
-                          if ((chatCount != null) &&
-                              (chatCount > 0) &&
-                              (_tabController.index != 4)) ...<Widget>[
-                            badges.Badge(
-                              position: badges.BadgePosition.topEnd(
-                                top: 0,
-                                end: 0,
-                              ),
-                              badgeContent: Container(
-                                padding: EdgeInsets.symmetric(horizontal: 2),
-                                width: 30,
-                                height: 13,
-                                child: AutoSizeText(
-                                  chatCount.toString(),
-                                  textAlign: TextAlign.center,
-                                  maxLines: 1,
-                                  minFontSize: 10,
-                                  maxFontSize: 13,
-                                  style: ts_badge,
-                                ),
-                              ),
-                              badgeStyle: badges.BadgeStyle(
-                                badgeColor: Colors.red.shade800,
-                                padding: const EdgeInsets.all(6),
-                              ),
-                            ),
-                          ],
-                        ],
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: <Widget>[
-                  _buildRunDetailsView(),
-                  _buildRsvpView(),
-                  _buildMapView(),
-                  ConnectedWidget(
-                    refreshFunction: () {
-                      setState(() {});
-                    },
-                    showConnectButton: true,
-                    disconnectedChild: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Center(
-                        child: Text(
-                          '"Get a life" leaderboards require a connection to the Internet',
-                          style: ts_headingLarge,
-                          textAlign: TextAlign.center,
+                      foregroundColor: Colors.white,
+                      elevation: 8.0,
+                      shape: const CircleBorder(),
+                      children: <SpeedDialChild>[
+                        SpeedDialChild(
+                          child: const Icon(Feather.x),
+                          backgroundColor: hc_red,
+                          label: 'I\'m not coming',
+                          labelStyle: const TextStyle(fontSize: 18.0),
+                          onTap: () async {
+                            await _setRsvpState(rsvpNo);
+                          },
                         ),
+                        SpeedDialChild(
+                          child: const Icon(AntDesign.question),
+                          backgroundColor: Colors.orange,
+                          label: 'I might come',
+                          labelStyle: const TextStyle(fontSize: 18.0),
+                          onTap: () async {
+                            await _setRsvpState(rsvpMaybe);
+                          },
+                        ),
+                        SpeedDialChild(
+                          child: const Icon(Feather.check),
+                          backgroundColor: Colors.green,
+                          label: 'I\'m coming',
+                          labelStyle: const TextStyle(fontSize: 18.0),
+                          onTap: () async {
+                            await _setRsvpState(rsvpYes);
+                          },
+                        ),
+                        // SpeedDialChild(
+                        //   child: const ImageIcon(
+                        //       AssetImage('images/icons/hare_icon.png'),
+                        //       color: Colors.deepPurple),
+                        //   backgroundColor: Colors.white,
+                        //   label: 'I will hare',
+                        //   labelStyle: const TextStyle(fontSize: 18.0),
+                        //   onTap: () async {
+                        //     await _setRsvpHare();
+                        //   },
+                        // ),
+                      ],
+                    ),
+                  ),
+          body: Container(
+            decoration: Backgrounds.defaultHcBackground(),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                PreferredSize(
+                  preferredSize: const Size.fromHeight(120.0),
+                  child: Container(
+                    width: MediaQuery.of(context).size.width,
+                    height: 40.0,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColorLight,
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(0.0),
                       ),
                     ),
-                    child: Leaderboard(
-                      kennelId: widget.futureRun.kennel.kennelId,
+                    child: TextScaleFactorClamper(
+                      textScaleFactor: deviceInfo.textClamp15,
+                      child: GetBuilder<FutureRunListPageController>(
+                        id: 'chatTab',
+                        builder: (controller) {
+                          final chatCount =
+                              controller
+                                  .thisEventUnseenChats[widget
+                                      .futureRun
+                                      .event
+                                      .publicEventId]
+                                  ?.value;
+
+                          return Row(
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  height: 40.0,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[300],
+                                    //borderRadius: BorderRadius.circular(999),
+                                  ),
+                                  padding: const EdgeInsets.all(5.0),
+                                  child: TabBar(
+                                    labelStyle: ts_tabSelected,
+                                    unselectedLabelStyle: ts_tabUnselected,
+                                    isScrollable: false,
+                                    labelPadding: const EdgeInsets.only(
+                                      top: 5,
+                                      left: 0,
+                                      right: 0,
+                                    ),
+                                    unselectedLabelColor: Colors.black,
+                                    labelColor: Colors.white,
+                                    indicatorSize: TabBarIndicatorSize.tab,
+                                    indicator: BoxDecoration(
+                                      color: hc_red,
+                                      borderRadius: BorderRadius.circular(999),
+                                    ),
+                                    tabs: _tabs,
+                                    controller: _tabController,
+                                  ),
+                                ),
+                              ),
+                              if ((chatCount != null) &&
+                                  (chatCount > 0) &&
+                                  (_tabController.index != 4)) ...<Widget>[
+                                badges.Badge(
+                                  position: badges.BadgePosition.topEnd(
+                                    top: 0,
+                                    end: 0,
+                                  ),
+                                  badgeContent: Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 2,
+                                    ),
+                                    width: 30,
+                                    height: 13,
+                                    child: AutoSizeText(
+                                      chatCount.toString(),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 1,
+                                      minFontSize: 10,
+                                      maxFontSize: 13,
+                                      style: ts_badge,
+                                    ),
+                                  ),
+                                  badgeStyle: badges.BadgeStyle(
+                                    badgeColor: Colors.red.shade800,
+                                    padding: const EdgeInsets.all(6),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          );
+                        },
+                      ),
                     ),
                   ),
-                  _buildChatView(),
-                ],
-                // children: tabs.map((Tab tab) {
-                //   return Center(
-                //       child: Text(
-                //     tab.text,
-                //     style: const TextStyle(fontSize: 20.0),
-                //   ));
-                // }).toList(),
-              ),
+                ),
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: <Widget>[
+                      _buildRunDetailsView(),
+                      _buildRsvpView(),
+                      _buildMapView(),
+                      ConnectedWidget(
+                        refreshFunction: () {
+                          setState(() {});
+                        },
+                        showConnectButton: true,
+                        disconnectedChild: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Center(
+                            child: Text(
+                              '"Get a life" leaderboards require a connection to the Internet',
+                              style: ts_headingLarge,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                        child: Leaderboard(
+                          kennelId: widget.futureRun.kennel.kennelId,
+                        ),
+                      ),
+                      _buildChatView(),
+                    ],
+                    // children: tabs.map((Tab tab) {
+                    //   return Center(
+                    //       child: Text(
+                    //     tab.text,
+                    //     style: const TextStyle(fontSize: 20.0),
+                    //   ));
+                    // }).toList(),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
-      ),
+        OfflineModeRibbon(
+          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+          ribbonImage: 'images/icons/offline_mode.png',
+          refreshFunction: () {},
+          //refreshFunction: () => controller.initialize(),
+        ),
+      ],
     );
   }
 

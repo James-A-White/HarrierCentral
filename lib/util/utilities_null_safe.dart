@@ -782,45 +782,50 @@ class Utilities {
     );
   }
 
-  static Future<void> checkForInternetConnection(bool reconnectAttempt) async {
-    final String? userId = getStringPref(StringPrefsEnum.userId);
-    if (userId != null) {
-      final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-      final String deviceSecret =
-          getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+  static Future<void> checkForInternetConnection(
+    bool reconnectAttempt, {
+    bool performHcServerCheck = true,
+  }) async {
+    if (performHcServerCheck) {
+      final String? userId = getStringPref(StringPrefsEnum.userId);
+      if (userId != null) {
+        final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+        final String deviceSecret =
+            getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-      // NOTE: Eventually refactor the internet connectivity checks into a GetX service
+        // NOTE: Eventually refactor the internet connectivity checks into a GetX service
 
-      // The first check should be a simple end-to-end check with the Harrier Central backend
-      final String accessToken = Utilities.generateToken(
-        userId,
-        'hcapp_checkConnection',
-        paramString: deviceSecret,
-      );
+        // The first check should be a simple end-to-end check with the Harrier Central backend
+        final String accessToken = Utilities.generateToken(
+          userId,
+          'hcapp_checkConnection',
+          paramString: deviceSecret,
+        );
 
-      final Map<String, String?> bodyMap = <String, String?>{
-        'queryType': 'checkConnection',
-        'deviceId': deviceId,
-        'accessToken': accessToken,
-      };
+        final Map<String, String?> bodyMap = <String, String?>{
+          'queryType': 'checkConnection',
+          'deviceId': deviceId,
+          'accessToken': accessToken,
+        };
 
-      final String body = jsonEncode(bodyMap);
+        final String body = jsonEncode(bodyMap);
 
-      final String responseBody = await ServiceCommon.sendHttpPostV2(
-        body,
-        bypassConnectionCheck: true,
-      );
+        final String responseBody = await ServiceCommon.sendHttpPostV2(
+          body,
+          bypassConnectionCheck: true,
+        );
 
-      if (!responseBody.startsWith(ERROR_PREFIX)) {
-        if (jsonDecode(responseBody)[0][0]['result'] == 'Connected') {
-          appModel.connectionStatus = EnumConnectionStatus2.connected;
-          // check against the Harrier Central backend succeeded
-          return;
+        if (!responseBody.startsWith(ERROR_PREFIX)) {
+          if (jsonDecode(responseBody)[0][0]['result'] == 'Connected') {
+            appModel.connectionStatus = EnumConnectionStatus2.connected;
+            // check against the Harrier Central backend succeeded
+            return;
+          }
         }
       }
     }
 
-    // check against the Harrier Central backend failed, let's check the internet connection
+    // check against the Harrier Central backend failed or was bypassed, let's check the internet connection
     // using the InternetConnection package
 
     final backendChecker = InternetConnection.createInstance(
@@ -856,18 +861,7 @@ class Utilities {
         appModel.connectionStatus = EnumConnectionStatus2.notConnected;
         return;
       } else {
-        // No internet at all — retry dialog
-        final bool? useOffline = await Utilities.showAlert(
-          'Check Network',
-          'Harrier Central is unable to detect a network connection.\n\nPlease check the network connection on your phone and try again, or you can continue to use the app in Offline Mode.',
-          'Use Offline',
-          showCancelButton: true,
-          cancelButtonText: 'Try again',
-        );
-        if (useOffline ?? true) {
-          appModel.connectionStatus = EnumConnectionStatus2.notConnected;
-          return;
-        }
+        appModel.connectionStatus = EnumConnectionStatus2.notConnected;
 
         await Future<void>.delayed(const Duration(seconds: 2));
         backendAvailable = await backendChecker.hasInternetAccess;

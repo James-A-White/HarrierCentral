@@ -27,26 +27,27 @@ class Connection2 {
     Widget w, {
     num borderRadius = 0.0,
   }) {
-    return Container(
-      foregroundDecoration:
-          status == EnumConnectionStatus2.connected
-              ? const BoxDecoration()
-              : BoxDecoration(
-                borderRadius: BorderRadius.circular(borderRadius.toDouble()),
-                color: Colors.grey,
-                backgroundBlendMode: BlendMode.lighten,
-              ),
-      child: Container(
-        foregroundDecoration:
-            status == EnumConnectionStatus2.connected
-                ? const BoxDecoration()
-                : const BoxDecoration(
-                  color: Colors.grey,
-                  backgroundBlendMode: BlendMode.saturation,
-                ),
+    final network = Get.find<NetworkService>();
+    return Obx(() {
+      if (network.isOnline) {
+        return w;
+      }
+      // return ColorFiltered(
+      //   colorFilter: const ColorFilter.mode(
+      //     Colors.grey,
+      //     BlendMode.saturation, // greys out colors but keeps transparency
+      //   ),
+      //   child: w,
+      // );
+
+      return Container(
+        foregroundDecoration: const BoxDecoration(
+          color: Colors.grey,
+          backgroundBlendMode: BlendMode.saturation,
+        ),
         child: w,
-      ),
-    );
+      );
+    });
   }
 
   static bool checkForConnection(
