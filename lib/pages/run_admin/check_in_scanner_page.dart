@@ -333,6 +333,11 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
     // //NOTE: Unawaited future is OK
     // audioPlayer.play(AssetSource('sounds/camera.mp3'));
 
+    final player = AudioPlayer();
+    await player.setAsset('sounds/camera.mp3'); // or setFilePath/setUrl
+    //NOTE: Unawaited future is OK
+    player.play();
+
     final Map<String, String> result = Utilities.validateScan(
       scanResult,
       Utilities.qrScanTypeFlag_user,

@@ -485,6 +485,11 @@ class QrScannerTabState extends State<QrScannerTab>
     // // ignore: unawaited_futures
     // audioPlayer.play(AssetSource('assets/sounds/camera.mp3'));
 
+    final player = AudioPlayer();
+    await player.setAsset('sounds/camera.mp3'); // or setFilePath/setUrl
+    //NOTE: Unawaited future is OK
+    player.play();
+
     setState(() {
       _onScreenMessage = 'Processing QR Scan';
       _state = EQrScannerState.isProcessing;

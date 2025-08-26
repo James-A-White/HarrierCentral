@@ -19,11 +19,13 @@ dependencies:
   cached_network_image: ^3.2.1
   card_swiper: ^3.0.1
   # chewie: ^1.2.2  
+  connectivity_plus: ^6.1.5
   crypto: ^3.0.1  
   cupertino_icons: ^1.0.3  
   dart_ipify: ^1.1.1
   diacritic: ^0.1.6
   device_info_plus: ^11.4.0
+  eventide: ^0.10.2
   fancy_bottom_navigation_2: ^0.3.5
   firebase_core: ^4.0.0 #^3.13.0
   firebase_messaging: ^16.0.0 #^15.2.5
@@ -69,6 +71,7 @@ dependencies:
       url: https://github.com/InnoVet-Europe/ive_flutter_core_mobile.git
       ref: b2e6621515de5e19b834b68257777c502ec33c41 # Version 1.2.8
   json_annotation: ^4.9.0
+  just_audio: ^0.10.4
   keyboard_actions: ^4.0.0 
   latlong2: ^0.9.0
   # manage_calendar_events: ^2.0.3
@@ -102,7 +105,7 @@ dependencies:
   uuid: ^4.5.1
   # video_player: ^2.4.10
   visibility_detector: ^0.4.0+2
-  connectivity_plus: ^6.1.5
+
   
   
 # dependency_overrides:

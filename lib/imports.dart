@@ -205,6 +205,7 @@ export 'package:ive_flutter_core/widgets/multiple_choice_popup.dart';
 export 'package:ive_flutter_core/widgets/qr_popup.dart';
 export 'package:ive_flutter_core/widgets/zoomable_image_page.dart';
 export 'package:json_annotation/json_annotation.dart';
+export 'package:just_audio/just_audio.dart';
 export 'package:keyboard_actions/keyboard_actions.dart';
 export 'package:mobile_scanner/mobile_scanner.dart';
 export 'package:package_info_plus/package_info_plus.dart';

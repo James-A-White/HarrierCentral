@@ -6,6 +6,7 @@ import 'package:badges/badges.dart' as badges;
 import 'package:harrier_central/imports.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 import 'package:map_launcher/map_launcher.dart' as maps;
+import 'package:eventide/eventide.dart';
 // import 'package:manage_calendar_events/manage_calendar_events.dart' as calendar;
 
 /// Chat tabs with their corresponding integer IDs.
@@ -900,6 +901,28 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                           oneLineLocForDesc = '';
                                           oneLineLocForTitle = '';
                                         }
+
+                                        var eventide = Eventide();
+
+                                        // Create an event in the default calendar (iOS write-only access)
+                                        await eventide.createEventInDefaultCalendar(
+                                          title:
+                                              widget.futureRun.event.eventName +
+                                              oneLineLocForTitle,
+                                          description:
+                                              oneLineLocForDesc +
+                                              (widget
+                                                      .futureRun
+                                                      .event
+                                                      .eventDescription ??
+                                                  ''),
+                                          startDate: localTime,
+                                          endDate: localTime.add(
+                                            Duration(hours: 4),
+                                          ),
+                                          url:
+                                              'https://www.hashruns.org/#/RID?publicEventId=${widget.futureRun.event.publicEventId}&textTheme=light',
+                                        );
 
                                         // calendar.CalendarEvent
                                         // newEvent = calendar.CalendarEvent(
