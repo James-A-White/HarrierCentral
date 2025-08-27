@@ -7,6 +7,7 @@ import 'package:harrier_central/imports.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 import 'package:map_launcher/map_launcher.dart' as maps;
 import 'package:eventide/eventide.dart';
+
 // import 'package:manage_calendar_events/manage_calendar_events.dart' as calendar;
 
 /// Chat tabs with their corresponding integer IDs.
@@ -869,18 +870,21 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                       ),
                                       onPressed: () async {
                                         // THIS IS A H@CK: strip the "Z" timezone character off of the time so it imports as local time and not GMT
-                                        String time =
+                                        String url =
+                                            'https://www.hashruns.org/${widget.futureRun.kennel.kennelUniqueShortName}/${widget.futureRun.event.eventNumber}';
+
+                                        String startTime =
                                             widget
                                                 .futureRun
                                                 .event
                                                 .eventStartDatetime
                                                 .toString();
-                                        time = time.substring(
+                                        startTime = startTime.substring(
                                           0,
-                                          time.length - 1,
+                                          startTime.length - 1,
                                         );
                                         DateTime localTime = DateTime.parse(
-                                          time,
+                                          startTime,
                                         );
 
                                         String? oneLineLocForDesc =
@@ -905,24 +909,43 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                         var eventide = Eventide();
 
                                         // Create an event in the default calendar (iOS write-only access)
-                                        await eventide.createEventInDefaultCalendar(
-                                          title:
-                                              widget.futureRun.event.eventName +
-                                              oneLineLocForTitle,
-                                          description:
-                                              oneLineLocForDesc +
-                                              (widget
+                                        await eventide
+                                            .createEventInDefaultCalendar(
+                                              title:
+                                                  widget
                                                       .futureRun
                                                       .event
-                                                      .eventDescription ??
-                                                  ''),
-                                          startDate: localTime,
-                                          endDate: localTime.add(
-                                            Duration(hours: 4),
+                                                      .eventName +
+                                                  oneLineLocForTitle,
+                                              description:
+                                                  oneLineLocForDesc +
+                                                  (widget
+                                                          .futureRun
+                                                          .event
+                                                          .eventDescription ??
+                                                      ''),
+                                              startDate: localTime,
+                                              endDate: localTime.add(
+                                                Duration(hours: 4),
+                                              ),
+                                              url: url,
+                                            );
+
+                                        Get.closeAllSnackbars();
+
+                                        Get.showSnackbar(
+                                          GetSnackBar(
+                                            title: 'Calendar',
+                                            message:
+                                                '${widget.futureRun.event.eventName}$oneLineLocForTitle has been added to your calendar',
+                                            duration: const Duration(
+                                              seconds: 5,
+                                            ),
+                                            backgroundColor: Colors.blue,
                                           ),
-                                          url:
-                                              'https://www.hashruns.org/#/RID?publicEventId=${widget.futureRun.event.publicEventId}&textTheme=light',
                                         );
+
+                                        // if (success) {
 
                                         // calendar.CalendarEvent
                                         // newEvent = calendar.CalendarEvent(

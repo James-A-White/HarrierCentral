@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 
 class RunDetailsController extends GetxController {
   RunDetailsController({required this.event, required this.kennel}) {
@@ -869,11 +870,11 @@ class RunDetails extends StatelessWidget {
             return runDetailsController.showQrCodes.value
                 ? Column(
                   children: [
-                    Text(
-                      'QR Codes for Sharing Runs',
-                      style: ts_headingLarge,
-                      //textScaleFactor: deviceInfo.textClamp50,
-                    ),
+                    // Text(
+                    //   'QR Codes for Sharing Runs',
+                    //   style: ts_headingLarge,
+                    //   //textScaleFactor: deviceInfo.textClamp50,
+                    // ),
                     const SizedBox(height: 20),
                     OverflowBar(
                       spacing: 80,
@@ -881,94 +882,38 @@ class RunDetails extends StatelessWidget {
                       alignment: MainAxisAlignment.center,
                       overflowAlignment: OverflowBarAlignment.center,
                       children: <Widget>[
-                        Column(
-                          children: <Widget>[
-                            Text('This Run', style: ts_title),
-                            const SizedBox(height: 20),
-                            Container(
-                              color: Colors.white,
-                              padding: const EdgeInsets.all(10),
-                              child: QrImageView(
-                                data: runDetailsController.thisRunUrlForQr,
-                                version: QrVersions.auto,
-                                size: math.min(
-                                  200,
-                                  MediaQuery.of(context).size.width / 2,
-                                ),
-                              ),
-                            ),
-                          ],
+                        qrGroup(
+                          context,
+                          'This Run',
+                          'this run',
+                          runDetailsController.thisRunUrlForQr,
                         ),
-                        Column(
-                          children: <Widget>[
-                            Text(
-                              'Next ${kennel.kennelShortName} Run',
-                              style: ts_title,
-                            ),
-                            const SizedBox(height: 20),
-                            Container(
-                              color: Colors.white,
-                              padding: const EdgeInsets.all(10),
-                              child: QrImageView(
-                                data: runDetailsController.nextRunUrlForQr,
-                                version: QrVersions.auto,
-                                size: math.min(
-                                  200,
-                                  MediaQuery.of(context).size.width / 2,
-                                ),
-                              ),
-                            ),
-                          ],
+                        qrGroup(
+                          context,
+                          'Next ${kennel.kennelShortName} Run',
+                          'next ${kennel.kennelShortName} run',
+                          runDetailsController.nextRunUrlForQr,
                         ),
+
                         if (runDetailsController
                             .kennelUrlForQr
                             .isNotEmpty) ...<Widget>[
-                          Column(
-                            children: <Widget>[
-                              Text(
-                                '${kennel.kennelShortName} upcoming runs list',
-                                style: ts_title,
-                              ),
-                              const SizedBox(height: 20),
-                              Container(
-                                color: Colors.white,
-                                padding: const EdgeInsets.all(10),
-                                child: QrImageView(
-                                  data: runDetailsController.kennelUrlForQr,
-                                  version: QrVersions.auto,
-                                  size: math.min(
-                                    200,
-                                    MediaQuery.of(context).size.width / 2,
-                                  ),
-                                ),
-                              ),
-                            ],
+                          qrGroup(
+                            context,
+                            '${kennel.kennelShortName} upcoming runs list',
+                            '${kennel.kennelName} upcoming runs list',
+                            runDetailsController.kennelUrlForQr,
                           ),
                         ],
                         if (((kennel.kennelWebsiteUrl ?? '').isNotEmpty) &&
                             (kennel.kennelWebsiteUrl!.toLowerCase().startsWith(
                               'http',
                             ))) ...<Widget>[
-                          Column(
-                            children: <Widget>[
-                              Text(
-                                '${kennel.kennelShortName} Website',
-                                style: ts_title,
-                              ),
-                              const SizedBox(height: 20),
-                              Container(
-                                color: Colors.white,
-                                padding: const EdgeInsets.all(10),
-                                child: QrImageView(
-                                  data: kennel.kennelWebsiteUrl!,
-                                  version: QrVersions.auto,
-                                  size: math.min(
-                                    200,
-                                    MediaQuery.of(context).size.width / 2,
-                                  ),
-                                ),
-                              ),
-                            ],
+                          qrGroup(
+                            context,
+                            '${kennel.kennelShortName} Website',
+                            '${kennel.kennelName} Website',
+                            kennel.kennelWebsiteUrl!,
                           ),
                         ],
                       ],
@@ -978,71 +923,71 @@ class RunDetails extends StatelessWidget {
                 )
                 : const SizedBox.shrink();
           }),
-          if ((event.evtDisseminateAllowWebLinks == 1) ||
-              (kennel.disseminateAllowWebLinks == 1)) ...<Widget>[
-            Padding(
-              padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
-              child: ElevatedButton(
-                // style: ButtonStyle(shadowColor: WidgetStateProperty.all(Colors.transparent), backgroundColor: WidgetStateProperty.all(Colors.transparent)),
-                child: Text(
-                  'Copy HC Web link',
-                  style: ts_button,
-                  textAlign: TextAlign.center,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  //textScaleFactor: deviceInfo.textClamp50,
-                ),
-                onPressed: () async {
-                  await Clipboard.setData(
-                    ClipboardData(
-                      text:
-                          'https://www.hashruns.org/#/RID?publicEventId=${event.publicEventId}&textTheme=light',
-                    ),
-                  );
+          // if ((event.evtDisseminateAllowWebLinks == 1) ||
+          //     (kennel.disseminateAllowWebLinks == 1)) ...<Widget>[
+          //   Padding(
+          //     padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
+          //     child: ElevatedButton(
+          //       // style: ButtonStyle(shadowColor: WidgetStateProperty.all(Colors.transparent), backgroundColor: WidgetStateProperty.all(Colors.transparent)),
+          //       child: Text(
+          //         'Copy HC Web link',
+          //         style: ts_button,
+          //         textAlign: TextAlign.center,
+          //         maxLines: 3,
+          //         overflow: TextOverflow.ellipsis,
+          //         //textScaleFactor: deviceInfo.textClamp50,
+          //       ),
+          //       onPressed: () async {
+          //         await Clipboard.setData(
+          //           ClipboardData(
+          //             text:
+          //                 'https://www.hashruns.org/#/RID?publicEventId=${event.publicEventId}&textTheme=light',
+          //           ),
+          //         );
 
-                  await Utilities.showAlert(
-                    'Link copied',
-                    'A link to the event on Harrier Central has been copied to you clipboard',
-                    'OK',
-                  );
-                },
-              ),
-            ),
-          ],
-          if (!(((event.eventFacebookId ?? '') != '') &&
-                  (event.eventInboundIntegrationId ==
-                      INBOUND_INTEGRATION_FACEBOOK)) &&
-              (eventUrlWithKennelBackup != null) &&
-              (eventUrlWithKennelBackup!.isNotEmpty)) ...<Widget>[
-            Padding(
-              padding: const EdgeInsets.only(top: 15.0, bottom: 40.0),
-              child: ElevatedButton(
-                style: ButtonStyle(
-                  shadowColor: WidgetStateProperty.all(Colors.transparent),
-                  backgroundColor: WidgetStateProperty.all(Colors.transparent),
-                ),
-                child: Image.asset(
-                  'images/icons/visit_run_on_web.png',
-                  height: 60.0,
-                  width: 325.0,
-                ),
-                onPressed: () async {
-                  if (Utilities.isValidUrl(eventUrlWithKennelBackup!)) {
-                    await launchUrl(
-                      Uri.parse(eventUrlWithKennelBackup!),
-                      mode: LaunchMode.externalApplication,
-                    );
-                  } else {
-                    await Utilities.showAlert(
-                      'Unable to open link',
-                      'Harrier Central was unable to open $eventUrlWithKennelBackup',
-                      'OK',
-                    );
-                  }
-                },
-              ),
-            ),
-          ],
+          //         await Utilities.showAlert(
+          //           'Link copied',
+          //           'A link to the event on Harrier Central has been copied to you clipboard',
+          //           'OK',
+          //         );
+          //       },
+          //     ),
+          //   ),
+          // ],
+          // if (!(((event.eventFacebookId ?? '') != '') &&
+          //         (event.eventInboundIntegrationId ==
+          //             INBOUND_INTEGRATION_FACEBOOK)) &&
+          //     (eventUrlWithKennelBackup != null) &&
+          //     (eventUrlWithKennelBackup!.isNotEmpty)) ...<Widget>[
+          //   Padding(
+          //     padding: const EdgeInsets.only(top: 15.0, bottom: 40.0),
+          //     child: ElevatedButton(
+          //       style: ButtonStyle(
+          //         shadowColor: WidgetStateProperty.all(Colors.transparent),
+          //         backgroundColor: WidgetStateProperty.all(Colors.transparent),
+          //       ),
+          //       child: Image.asset(
+          //         'images/icons/visit_run_on_web.png',
+          //         height: 60.0,
+          //         width: 325.0,
+          //       ),
+          //       onPressed: () async {
+          //         if (Utilities.isValidUrl(eventUrlWithKennelBackup!)) {
+          //           await launchUrl(
+          //             Uri.parse(eventUrlWithKennelBackup!),
+          //             mode: LaunchMode.externalApplication,
+          //           );
+          //         } else {
+          //           await Utilities.showAlert(
+          //             'Unable to open link',
+          //             'Harrier Central was unable to open $eventUrlWithKennelBackup',
+          //             'OK',
+          //           );
+          //         }
+          //       },
+          //     ),
+          //   ),
+          // ],
           if ((event.eventDescription ?? '') != '') ...<Widget>[
             FancyDivider(
               key: UniqueKey(),
@@ -1168,6 +1113,74 @@ class RunDetails extends StatelessWidget {
     return AdaptiveTextSelectionToolbar.buttonItems(
       anchors: editableTextState.contextMenuAnchors,
       buttonItems: buttonItems,
+    );
+  }
+
+  Widget qrGroup(
+    BuildContext context,
+    String title,
+    String description,
+    String url,
+  ) {
+    return Column(
+      children: [
+        Text(title, style: ts_title),
+        const SizedBox(height: 20),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            GestureDetector(
+              onTap: () {
+                Clipboard.setData(ClipboardData(text: url));
+
+                Utilities.showAlert(
+                  'Link copied',
+                  'A link to $description has been copied to your clipboard',
+                  'OK',
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(right: 20.0),
+                child: const Icon(
+                  FontAwesome.copy,
+                  color: Colors.white,
+                  size: 36.0,
+                ),
+              ),
+            ),
+            Container(
+              color: Colors.white,
+              padding: const EdgeInsets.all(10),
+              child: QrImageView(
+                data: url,
+                version: QrVersions.auto,
+                size: math.min(200, MediaQuery.of(context).size.width / 2),
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                SharePlus.instance.share(ShareParams(text: url));
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(left: 20.0),
+                child:
+                    Platform.isAndroid
+                        ? const Icon(
+                          MaterialIcons.share,
+                          color: Colors.white,
+                          size: 36.0,
+                        )
+                        : const Icon(
+                          MaterialIcons.ios_share,
+                          color: Colors.white,
+                          size: 36.0,
+                        ),
+              ),
+            ),
+          ],
+        ),
+        //const SizedBox(height: 40),
+      ],
     );
   }
 }
