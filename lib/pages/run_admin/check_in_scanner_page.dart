@@ -334,9 +334,10 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
     // audioPlayer.play(AssetSource('sounds/camera.mp3'));
 
     final player = AudioPlayer();
-    await player.setAsset('sounds/camera.mp3'); // or setFilePath/setUrl
+    await player.setAsset('assets/sounds/camera.mp3'); // or setFilePath/setUrl
     //NOTE: Unawaited future is OK
-    player.play();
+    await player.play();
+    await player.dispose();
 
     final Map<String, String> result = Utilities.validateScan(
       scanResult,

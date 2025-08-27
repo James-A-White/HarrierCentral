@@ -100,7 +100,7 @@ class RootApp extends StatelessWidget {
         primaryColor: Colors.grey,
         primaryColorDark: Colors.black87,
         primaryColorLight: Colors.black45,
-        bottomAppBarTheme: const BottomAppBarTheme(color: Colors.grey),
+        bottomAppBarTheme: const BottomAppBarThemeData(color: Colors.grey),
         highlightColor: Colors.yellow,
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(

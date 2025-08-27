@@ -9,6 +9,10 @@
     raised when there is no connection, but wanted to push Intermediate
     version to TestFlight.
 
+2.0.0+980
+    Added audio back in on QR scan. Added "add to calendar" back in. 
+    Fixed issues relating to automated internet connection monitoring.
+
 
 
 
