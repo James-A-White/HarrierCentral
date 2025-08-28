@@ -27,7 +27,7 @@ class AuthorizeDeviceService {
     final String hcVersion =
         getStringPref(StringPrefsEnum.harrierCentralVersionAndBuild) ??
         '<no HC version>';
-        
+
     if (hcVersion.isEmpty) {
       final PackageInfo p = await PackageInfo.fromPlatform();
       final String hcVersion =
@@ -60,17 +60,19 @@ class AuthorizeDeviceService {
       params['userId'] = userId;
     }
 
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
-    // Ensure APNs token is set
-    String? apnsToken = await messaging.getAPNSToken();
-    String? fcmToken = await messaging.getToken();
+    if (Firebase.apps.isNotEmpty) {
+      FirebaseMessaging messaging = FirebaseMessaging.instance;
+      // Ensure APNs token is set
+      String? apnsToken = await messaging.getAPNSToken();
+      String? fcmToken = await messaging.getToken();
 
-    if (apnsToken != null) {
-      params.addAll({'apnsToken': apnsToken});
-    }
+      if (apnsToken != null) {
+        params.addAll({'apnsToken': apnsToken});
+      }
 
-    if (fcmToken != null) {
-      params.addAll({'fcmToken': fcmToken});
+      if (fcmToken != null) {
+        params.addAll({'fcmToken': fcmToken});
+      }
     }
 
     final String body = jsonEncode(params);

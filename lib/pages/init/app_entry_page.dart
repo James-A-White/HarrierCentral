@@ -14,10 +14,6 @@ class AppEntryPageState extends State<AppEntryPage>
 
   Future<void> _handleStartup(BuildContext context) async {
     print('App startup called...');
-    // await G0.allReady();
-    // print('GetX registered...');
-    // G0.registerSingleton<AppModel>(AppModel());
-    // print('AppModel registered...');
 
     String? userId = getStringPref(StringPrefsEnum.userId);
     final String? deviceId = getStringPref(StringPrefsEnum.deviceId);
@@ -46,12 +42,16 @@ class AppEntryPageState extends State<AppEntryPage>
       // now tear down the database GetIt instance and Get data
       await DBProvider.deleteDb(DB_NAME);
       await Get.deleteAll(force: true);
-      Get.reset(clearRouteBindings: true);
 
-      // and re-run the app.
-      await Future.microtask(() {
-        Get.offAll(() => AppEntryPage());
-      });
+      // Now let's rebuild the services and then re-run the app
+      await initPrefs(); // if services read prefs during init()
+      await initServices(); // GetX DI registration (see services_init.dart)
+
+      // Use Navigator with context since Get.offAll() now lacks a key
+      Navigator.of(navigatorKey.currentContext!).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const AppEntryPage()),
+        (route) => false,
+      );
 
       // stop it from falling through and continuing to run.
       // this shouldn't be needed, but I'll put it in for now for testing
@@ -227,15 +227,16 @@ class AppEntryPageState extends State<AppEntryPage>
               // have not been requested at this point,
               // go ahead and ask for them. This could happen
               // on a profile reload
-              bool? notificationsConfigured = getBoolPref(
-                BoolPrefsEnum.notificationPreferencesRequested,
-              );
 
-              if (notificationsConfigured == null || !notificationsConfigured) {
-                await Get.putAsync(
-                  () => NotificationService().init(),
-                ); // Initialize and wait for the notification service
-              }
+              // bool? notificationsConfigured = getBoolPref(
+              //   BoolPrefsEnum.notificationPreferencesRequested,
+              // );
+
+              // if (notificationsConfigured == null || !notificationsConfigured) {
+              //   await Get.putAsync(
+              //     () => NotificationService().init(),
+              //   ); // Initialize and wait for the notification service
+              // }
 
               // app has been run before... let's check the DB version.
               final int installedDbVersion =
@@ -275,9 +276,21 @@ class AppEntryPageState extends State<AppEntryPage>
 
                     await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
 
+                    String dialogTitle = 'Profile Load Successful';
+                    String dialogMessage =
+                        'The app has been successfully updated for $userName.';
+
+                    final PackageInfo p = await PackageInfo.fromPlatform();
+                    if (p.version.startsWith('2.0.0')) {
+                      dialogTitle = 'Upgraded to Harrier Central 2.0';
+                      dialogMessage =
+                          'Congratulations $userName. You'
+                          'v just received the long awaited 2.0 version upgrade of Harrier Central! We hope you enjoy the many new features and improvements.';
+                    }
+
                     await Utilities.showAlert(
-                      'Profile Load Successful',
-                      'The app has been successfully updated for $userName.',
+                      dialogTitle,
+                      dialogMessage,
                       'OK',
                     ).then((void _) {
                       Get.off(() => MainNavigationPage(), routeName: '/main');

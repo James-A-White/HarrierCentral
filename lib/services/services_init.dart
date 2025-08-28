@@ -14,6 +14,17 @@ Future<void> initServices() async {
 
   Get.put<AppModel>(AppModel(), permanent: true);
 
+  // AppModel must be first, as other services may read from it during init()
+  if (Get.isRegistered<NetworkService>()) {
+    await Get.delete<NetworkService>(); // or await if you prefer
+  }
+
+  // Make it live for the app lifetime
+  await Get.putAsync<NetworkService>(
+    () async => (await NetworkService().init()),
+    permanent: true,
+  );
+
   if (Get.isRegistered<TableModel>()) {
     await Get.delete<TableModel>(); // or await if you prefer
   }

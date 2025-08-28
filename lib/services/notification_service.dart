@@ -1,16 +1,31 @@
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/firebase_options.dart';
 
 class NotificationService extends GetxService with WidgetsBindingObserver {
-  final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+  FirebaseMessaging? _messaging;
   StreamSubscription<RemoteMessage>? _fcmSubscription;
 
   Future<NotificationService> init() async {
     WidgetsBinding.instance.addObserver(this);
 
-    await _requestPermission();
-    await _setupInitialMessage();
-    _setupFirebaseListeners();
-    _ensureFcmListener();
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
+
+    if (Firebase.apps.isNotEmpty) {
+      _messaging = FirebaseMessaging.instance;
+
+      if (!(getBoolPref(BoolPrefsEnum.notificationPreferencesRequested) ??
+          false)) {
+        await _requestPermission();
+      }
+
+      await _setupInitialMessage();
+      _setupFirebaseListeners();
+      _ensureFcmListener();
+    }
 
     return this;
   }
@@ -37,22 +52,73 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   }
 
   Future<void> _requestPermission() async {
-    NotificationSettings settings = await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    if (Firebase.apps.isNotEmpty) {
+      _messaging ??= FirebaseMessaging.instance;
 
-    setBoolPref(BoolPrefsEnum.notificationPreferencesRequested, true);
+      if (_messaging != null) {
+        NotificationSettings settings = await _messaging!.requestPermission(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
 
-    print('Notification permission status: ${settings.authorizationStatus}');
+        String? apnsToken = await _messaging!.getAPNSToken();
+        String? fcmToken = await _messaging!.getToken();
+
+        final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+        final String deviceSecret =
+            getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+        final String userId = getStringPref(StringPrefsEnum.userId)!;
+        final String accessToken = Utilities.generateToken(
+          userId,
+          'hcapp_setFcmTokens',
+          paramString: deviceSecret,
+        );
+
+        Map<String, String> params = (<String, String>{
+          'queryType': 'setFcmTokens',
+          'deviceId': deviceId,
+          'accessToken': accessToken,
+        });
+
+        if (apnsToken != null) {
+          params.addAll({'apnsToken': apnsToken});
+        }
+
+        if (fcmToken != null) {
+          params.addAll({'fcmToken': fcmToken});
+        }
+
+        final String body = jsonEncode(params);
+
+        try {
+          await ServiceCommon.sendHttpPostV2(body);
+        } catch (e) {
+          print('Connection error: ${e.toString()}');
+        }
+
+        setBoolPref(BoolPrefsEnum.notificationPreferencesRequested, true);
+
+        print(
+          'Notification permission status: ${settings.authorizationStatus}',
+        );
+      } else {
+        setBoolPref(BoolPrefsEnum.notificationPreferencesRequested, false);
+        print(
+          'Firebase not initialized, cannot request notification permission.',
+        );
+      }
+    }
   }
 
   Future<void> _setupInitialMessage() async {
-    RemoteMessage? initialMessage = await _messaging.getInitialMessage();
-    if (initialMessage != null) {
-      _handleNotificationClick(initialMessage);
-      print('Initial message received: ${initialMessage.data}');
+    if (_messaging != null) {
+      RemoteMessage? initialMessage = await _messaging!.getInitialMessage();
+      if (initialMessage != null) {
+        _handleNotificationClick(initialMessage);
+        print('Initial message received: ${initialMessage.data}');
+      }
     }
   }
 

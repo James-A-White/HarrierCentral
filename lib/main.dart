@@ -1,5 +1,4 @@
 import 'package:harrier_central/imports.dart';
-import 'firebase_options.dart';
 
 // this prevents exceptions being thrown on iOS when
 // the app is in the background and location services
@@ -48,7 +47,6 @@ Future<void> main() async {
   await SystemChrome.setPreferredOrientations(<DeviceOrientation>[
     DeviceOrientation.portraitUp,
   ]);
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // App-level init — safe to re-run on an in-app “restart”
   await initPrefs(); // if services read prefs during init()

@@ -1863,10 +1863,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                               DB_NAME,
                                                             );
 
-                                                            Get.reset(
-                                                              clearRouteBindings:
-                                                                  true,
-                                                            );
+                                                            // Get.reset(
+                                                            //   clearRouteBindings:
+                                                            //       true,
+                                                            // );
                                                             await initServices();
                                                             Get.offAll(
                                                               () =>
@@ -2101,10 +2101,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                               DB_NAME,
                                                             );
 
-                                                            Get.reset(
-                                                              clearRouteBindings:
-                                                                  true,
-                                                            );
+                                                            // Get.reset(
+                                                            //   clearRouteBindings:
+                                                            //       true,
+                                                            // );
 
                                                             Get.offAll(
                                                               () =>
@@ -2268,7 +2268,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
     await DBProvider.deleteDb(DB_NAME);
     await Get.deleteAll(force: true);
-    Get.reset(clearRouteBindings: true);
+    // Get.reset(clearRouteBindings: true);
 
     // and re-run the app.
     await Future.microtask(() {
