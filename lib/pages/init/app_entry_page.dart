@@ -35,7 +35,7 @@ class AppEntryPageState extends State<AppEntryPage>
       // the DeviceId so that we can maintain separate FCN tokens on the server, and
       // so we can implement a deviceSecret for increased security
 
-      // call Authorize device first to get the device secret and device ID
+      // // call Authorize device first to get the device secret and device ID
       final AuthorizeDeviceService srv = AuthorizeDeviceService();
       await srv.authorizeDevice(userId: userId);
 
@@ -48,22 +48,12 @@ class AppEntryPageState extends State<AppEntryPage>
       await initServices(); // GetX DI registration (see services_init.dart)
 
       // Use Navigator with context since Get.offAll() now lacks a key
-      Navigator.of(navigatorKey.currentContext!).pushAndRemoveUntil(
+      await Navigator.of(navigatorKey.currentContext!).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const AppEntryPage()),
         (route) => false,
       );
 
-      // stop it from falling through and continuing to run.
-      // this shouldn't be needed, but I'll put it in for now for testing
-      await Future.delayed(const Duration(milliseconds: 5000));
-
-      // if (result.isNotEmpty) {
-      //   await Utilities.showAlert(
-      //     'Upgraded to 2.0',
-      //     'Congratulations! Your app has been successfully upgraded to Harrier Central 2.0.',
-      //     'OK',
-      //   );
-      // }
+      return;
     }
 
     final PackageInfo p = await PackageInfo.fromPlatform();
@@ -258,12 +248,29 @@ class AppEntryPageState extends State<AppEntryPage>
                   //bool isLoading = true;
                   String userName;
 
-                  final AuthorizeDeviceService srv = AuthorizeDeviceService();
+                  final Map<String, String> result = <String, String>{
+                    'result': 'sicceeded',
+                  };
 
-                  if (!mounted) return;
-                  final Map<String, String> result = await srv.authorizeDevice(
-                    scanText: resetCode.toUpperCase(),
+                  // this logic is a bit messy. We want to ensure that we only
+                  // call authorize device once. On an upgrade to 2.0 it will
+                  // have been called above to get the deviceId and deviceSecret
+                  // so we only call it here if the deviceId is not already set.
+                  // If the deviceId is set, we can just continue to use it.
+
+                  final String? deviceId = getStringPref(
+                    StringPrefsEnum.deviceId,
                   );
+
+                  if (deviceId == null) {
+                    final AuthorizeDeviceService srv = AuthorizeDeviceService();
+
+                    if (!mounted) return;
+                    var r = await srv.authorizeDevice(
+                      scanText: resetCode.toUpperCase(),
+                    );
+                    result['result'] = r['result'] ?? 'failed';
+                  }
 
                   setState(() {
                     //isLoading = false;
@@ -284,25 +291,23 @@ class AppEntryPageState extends State<AppEntryPage>
                     if (p.version.startsWith('2.0.0')) {
                       dialogTitle = 'Upgraded to Harrier Central 2.0';
                       dialogMessage =
-                          'Congratulations $userName. You'
-                          'v just received the long awaited 2.0 version upgrade of Harrier Central! We hope you enjoy the many new features and improvements.';
+                          'Congratulations $userName. You have just received the long awaited 2.0 version upgrade of Harrier Central!\r\n\r\nWe hope you enjoy the many new features and improvements.';
                     }
 
-                    await Utilities.showAlert(
-                      dialogTitle,
-                      dialogMessage,
-                      'OK',
-                    ).then((void _) {
-                      Get.off(() => MainNavigationPage(), routeName: '/main');
+                    await Utilities.showAlert(dialogTitle, dialogMessage, 'OK');
 
-                      // Navigator.pushReplacement<dynamic, dynamic>(
-                      //   navigatorKey.currentContext!,
-                      //   MaterialPageRoute<dynamic>(
-                      //     builder:
-                      //         (BuildContext context) => MainNavigationPage(),
-                      //   ),
-                      // );
-                    });
+                    await Get.off(
+                      () => MainNavigationPage(),
+                      routeName: '/main',
+                    );
+
+                    // Navigator.pushReplacement<dynamic, dynamic>(
+                    //   navigatorKey.currentContext!,
+                    //   MaterialPageRoute<dynamic>(
+                    //     builder:
+                    //         (BuildContext context) => MainNavigationPage(),
+                    //   ),
+                    // );
                   } else {
                     // TODO(James): Do something here if the auth device fails
                   }

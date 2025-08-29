@@ -2,7 +2,6 @@ import 'package:badges/badges.dart' as badges;
 import 'package:fancy_bottom_navigation_2/fancy_bottom_navigation.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
-import 'package:harrier_central/firebase_options.dart';
 
 class MainNavigationPage extends StatelessWidget {
   const MainNavigationPage({super.key});
