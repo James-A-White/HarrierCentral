@@ -19,7 +19,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
 
       if (!(getBoolPref(BoolPrefsEnum.notificationPreferencesRequested) ??
           false)) {
-        await _requestPermission();
+        await requestPermission();
       }
 
       await _setupInitialMessage();
@@ -51,7 +51,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     }
   }
 
-  Future<void> _requestPermission() async {
+  Future<void> requestPermission() async {
     if (Firebase.apps.isNotEmpty) {
       _messaging ??= FirebaseMessaging.instance;
 
@@ -65,37 +65,50 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
         String? apnsToken = await _messaging!.getAPNSToken();
         String? fcmToken = await _messaging!.getToken();
 
+        if ((apnsToken != null) && apnsToken.isNotEmpty) {
+          await setStringPref(StringPrefsEnum.apnsToken, apnsToken);
+        }
+
+        if (fcmToken != null && fcmToken.isNotEmpty) {
+          await setStringPref(StringPrefsEnum.fcmToken, fcmToken);
+        }
+
         final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
         final String deviceSecret =
             getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+        final String userId = getStringPref(StringPrefsEnum.userId) ?? '';
 
-        final String userId = getStringPref(StringPrefsEnum.userId)!;
-        final String accessToken = Utilities.generateToken(
-          userId,
-          'hcapp_setFcmTokens',
-          paramString: deviceSecret,
-        );
+        if ((deviceId.isNotEmpty) &&
+            (deviceSecret.isNotEmpty) &&
+            (userId.isNotEmpty)) {
+          final String accessToken = Utilities.generateToken(
+            userId,
+            'hcapp_setFcmTokens',
+            paramString: deviceSecret,
+          );
 
-        Map<String, String> params = (<String, String>{
-          'queryType': 'setFcmTokens',
-          'deviceId': deviceId,
-          'accessToken': accessToken,
-        });
+          Map<String, String> params = (<String, String>{
+            'queryType': 'setFcmTokens',
+            'deviceId': deviceId,
+            'accessToken': accessToken,
+          });
 
-        if (apnsToken != null) {
-          params.addAll({'apnsToken': apnsToken});
-        }
+          if (apnsToken != null) {
+            params.addAll({'apnsToken': apnsToken});
+          }
 
-        if (fcmToken != null) {
-          params.addAll({'fcmToken': fcmToken});
-        }
+          if (fcmToken != null) {
+            params.addAll({'fcmToken': fcmToken});
+          }
 
-        final String body = jsonEncode(params);
+          final String body = jsonEncode(params);
 
-        try {
-          await ServiceCommon.sendHttpPostV2(body);
-        } catch (e) {
-          print('Connection error: ${e.toString()}');
+          try {
+            await ServiceCommon.sendHttpPostV2(body);
+            await setBoolPref(BoolPrefsEnum.fcmTokenSavedToServer, true);
+          } catch (e) {
+            print('Connection error: ${e.toString()}');
+          }
         }
 
         setBoolPref(BoolPrefsEnum.notificationPreferencesRequested, true);

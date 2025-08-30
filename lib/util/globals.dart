@@ -12,6 +12,7 @@ AppModel get appModel => Get.find<AppModel>();
 DeviceInfo get deviceInfo => Get.find<DeviceInfo>();
 TableModel get tableModel => Get.find<TableModel>();
 Database get database => Get.find<Database>();
+NetworkService get networkService => Get.find<NetworkService>();
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 

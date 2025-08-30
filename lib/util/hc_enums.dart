@@ -16,12 +16,15 @@ enum StringPrefsEnum {
   adminEventId,
   adminKennelId,
   androidDownloadLink,
+  apnsToken,
+  bootType,
   customEmailBody,
   deviceId,
   deviceSecret,
   displayName,
   email,
   facebookProfilePhoto,
+  fcmToken,
   firstName,
   gender,
   harrierCentralPreviousVersion,
@@ -61,7 +64,7 @@ enum NumPrefsEnum {
   homeKennelLon,
 }
 
-enum BoolPrefsEnum { notificationPreferencesRequested }
+enum BoolPrefsEnum { notificationPreferencesRequested, fcmTokenSavedToServer }
 
 enum IntPrefsEnum {
   databaseVersion,

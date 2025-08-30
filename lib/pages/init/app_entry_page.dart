@@ -13,7 +13,104 @@ class AppEntryPageState extends State<AppEntryPage>
   late CurvedAnimation _iconAnimation;
 
   Future<void> _handleStartup(BuildContext context) async {
+    await initPrefs(); // if services read prefs during init()
+
+    String bootType =
+        getStringPref(StringPrefsEnum.bootType) ?? BOOT_TYPE_UNKNOWN;
+
+    if (bootType != BOOT_TYPE_RELOAD_DATA) {
+      // at this point, we still don't know what type of boot type we have
+      // so we will set it to unknown. Later on, if we determine that
+      // it is a first time boot, or an upgrade, we will set it to
+      // the appropriate value.
+      await setStringPref(StringPrefsEnum.bootType, BOOT_TYPE_UNKNOWN);
+    } else {
+      final String? userId = getStringPref(StringPrefsEnum.userId);
+      final String? deviceId = getStringPref(StringPrefsEnum.deviceId);
+      final String? resetCode = getStringPref(StringPrefsEnum.resetCode);
+      final String? deviceSecret = getStringPref(StringPrefsEnum.deviceSecret);
+      final String? displayName = getStringPref(StringPrefsEnum.displayName);
+      final int? timeWindow = getIntPref(IntPrefsEnum.timeWindow);
+
+      final String? thirdPartyAccessToken = getStringPref(
+        StringPrefsEnum.thirdPartyAccessToken,
+      );
+      final String? thirdPartyAuthorizationCode = getStringPref(
+        StringPrefsEnum.thirdPartyAuthorizationCode,
+      );
+      final String? thirdPartyEmail = getStringPref(
+        StringPrefsEnum.thirdPartyEmail,
+      );
+      final String? thirdPartyForceTokenRefresh = getStringPref(
+        StringPrefsEnum.thirdPartyForceTokenRefresh,
+      );
+      final String? thirdPartyLoginEmail = getStringPref(
+        StringPrefsEnum.thirdPartyLoginEmail,
+      );
+      final String? thirdPartyLoginType = getStringPref(
+        StringPrefsEnum.thirdPartyLoginType,
+      );
+      final String? thirdPartyUserId = getStringPref(
+        StringPrefsEnum.thirdPartyUserId,
+      );
+
+      final DateTime? thirdPartyTokenLastUpdated = getDatePref(
+        DatePrefsEnum.thirdPartyTokenLastUpdated,
+      );
+      final DateTime? thirdPartyTokenExpires = getDatePref(
+        DatePrefsEnum.thirdPartyTokenExpires,
+      );
+
+      await clearPrefs();
+
+      await setStringPref(StringPrefsEnum.userId, userId);
+      await setStringPref(StringPrefsEnum.resetCode, resetCode);
+      await setStringPref(StringPrefsEnum.deviceId, deviceId);
+      await setStringPref(StringPrefsEnum.deviceSecret, deviceSecret);
+      await setStringPref(StringPrefsEnum.displayName, displayName);
+      await setIntPref(IntPrefsEnum.timeWindow, timeWindow);
+
+      await setStringPref(
+        StringPrefsEnum.thirdPartyAccessToken,
+        thirdPartyAccessToken,
+      );
+      await setStringPref(
+        StringPrefsEnum.thirdPartyAuthorizationCode,
+        thirdPartyAuthorizationCode,
+      );
+      await setStringPref(StringPrefsEnum.thirdPartyEmail, thirdPartyEmail);
+      await setStringPref(
+        StringPrefsEnum.thirdPartyForceTokenRefresh,
+        thirdPartyForceTokenRefresh,
+      );
+      await setStringPref(
+        StringPrefsEnum.thirdPartyLoginEmail,
+        thirdPartyLoginEmail,
+      );
+      await setStringPref(
+        StringPrefsEnum.thirdPartyLoginType,
+        thirdPartyLoginType,
+      );
+      await setStringPref(StringPrefsEnum.thirdPartyUserId, thirdPartyUserId);
+
+      await setDatePref(
+        DatePrefsEnum.thirdPartyTokenExpires,
+        thirdPartyTokenExpires,
+      );
+
+      await setDatePref(
+        DatePrefsEnum.thirdPartyTokenLastUpdated,
+        thirdPartyTokenLastUpdated,
+      );
+
+      await DBProvider.deleteDb(DB_NAME);
+      await Get.deleteAll(force: true);
+    }
+
     print('App startup called...');
+
+    // Let's rebuild the services and then re-run the app
+    await initServices(); // GetX DI registration (see services_init.dart)
 
     String? userId = getStringPref(StringPrefsEnum.userId);
     final String? deviceId = getStringPref(StringPrefsEnum.deviceId);
@@ -35,6 +132,8 @@ class AppEntryPageState extends State<AppEntryPage>
       // the DeviceId so that we can maintain separate FCN tokens on the server, and
       // so we can implement a deviceSecret for increased security
 
+      await setStringPref(StringPrefsEnum.bootType, BOOT_TYPE_UPGRADE_1_2);
+
       // // call Authorize device first to get the device secret and device ID
       final AuthorizeDeviceService srv = AuthorizeDeviceService();
       await srv.authorizeDevice(userId: userId);
@@ -42,10 +141,6 @@ class AppEntryPageState extends State<AppEntryPage>
       // now tear down the database GetIt instance and Get data
       await DBProvider.deleteDb(DB_NAME);
       await Get.deleteAll(force: true);
-
-      // Now let's rebuild the services and then re-run the app
-      await initPrefs(); // if services read prefs during init()
-      await initServices(); // GetX DI registration (see services_init.dart)
 
       // Use Navigator with context since Get.offAll() now lacks a key
       await Navigator.of(navigatorKey.currentContext!).pushAndRemoveUntil(
@@ -185,7 +280,6 @@ class AppEntryPageState extends State<AppEntryPage>
 
       return;
     } else {
-      // No userId was present, this must be the first time the app has been run
       const bool allowContinueFromMessage = true;
 
       if (loginResult.messageDisplayType != loginMessageTypeNone.value) {
@@ -206,28 +300,16 @@ class AppEntryPageState extends State<AppEntryPage>
             if (((userId == null) ||
                 (userId.isEmpty) ||
                 (userId == GUID_EMPTY))) {
-              // first time the app has run
+              await setStringPref(
+                StringPrefsEnum.bootType,
+                BOOT_TYPE_FIRST_TIME,
+              );
+              // No userId was present, this must be the first time the app has been run
               if (!mounted) return;
               await Navigator.of(
                 navigatorKey.currentContext!,
               ).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
             } else {
-              // it is not normal for this condition to happen
-              // but if for some reason, notification permissions
-              // have not been requested at this point,
-              // go ahead and ask for them. This could happen
-              // on a profile reload
-
-              // bool? notificationsConfigured = getBoolPref(
-              //   BoolPrefsEnum.notificationPreferencesRequested,
-              // );
-
-              // if (notificationsConfigured == null || !notificationsConfigured) {
-              //   await Get.putAsync(
-              //     () => NotificationService().init(),
-              //   ); // Initialize and wait for the notification service
-              // }
-
               // app has been run before... let's check the DB version.
               final int installedDbVersion =
                   getIntPref(IntPrefsEnum.databaseVersion) ?? 0;
@@ -237,6 +319,11 @@ class AppEntryPageState extends State<AppEntryPage>
                 // the installed DB version is not up to date
                 // if the version numbers are greater than 10 apart,
                 // reload the entire DB.
+
+                await setStringPref(
+                  StringPrefsEnum.bootType,
+                  BOOT_TYPE_UPGRADE_DB,
+                );
 
                 final String resetCode =
                     getStringPref(StringPrefsEnum.resetCode) ?? '';
@@ -249,7 +336,7 @@ class AppEntryPageState extends State<AppEntryPage>
                   String userName;
 
                   final Map<String, String> result = <String, String>{
-                    'result': 'sicceeded',
+                    'result': 'succeeded',
                   };
 
                   // this logic is a bit messy. We want to ensure that we only
@@ -287,9 +374,9 @@ class AppEntryPageState extends State<AppEntryPage>
                     String dialogMessage =
                         'The app has been successfully updated for $userName.';
 
-                    final PackageInfo p = await PackageInfo.fromPlatform();
-                    if (p.version.startsWith('2.0.0')) {
-                      dialogTitle = 'Upgraded to Harrier Central 2.0';
+                    if (getStringPref(StringPrefsEnum.bootType) ==
+                        BOOT_TYPE_UPGRADE_1_2) {
+                      dialogTitle = 'Upgrade to Harrier Central 2.0';
                       dialogMessage =
                           'Congratulations $userName. You have just received the long awaited 2.0 version upgrade of Harrier Central!\r\n\r\nWe hope you enjoy the many new features and improvements.';
                     }
@@ -300,28 +387,16 @@ class AppEntryPageState extends State<AppEntryPage>
                       () => MainNavigationPage(),
                       routeName: '/main',
                     );
-
-                    // Navigator.pushReplacement<dynamic, dynamic>(
-                    //   navigatorKey.currentContext!,
-                    //   MaterialPageRoute<dynamic>(
-                    //     builder:
-                    //         (BuildContext context) => MainNavigationPage(),
-                    //   ),
-                    // );
+                    return;
                   } else {
                     // TODO(James): Do something here if the auth device fails
                   }
                 }
               } else {
-                Get.off(() => MainNavigationPage(), routeName: '/main');
-
-                // if (!mounted) return;
-                // await Navigator.pushReplacement<dynamic, dynamic>(
-                //   navigatorKey.currentContext!,
-                //   MaterialPageRoute<dynamic>(
-                //     builder: (BuildContext context) => MainNavigationPage(),
-                //   ),
-                // );
+                // DB version is up to date, just continue with a normal boot
+                await setStringPref(StringPrefsEnum.bootType, BOOT_TYPE_NORMAL);
+                await Get.off(() => MainNavigationPage(), routeName: '/main');
+                return;
               }
             }
           } else {

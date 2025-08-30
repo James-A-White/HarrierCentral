@@ -133,6 +133,10 @@ class FutureRunListPageController extends GetxController {
     await refreshFromTable(true);
     chatSummaryMap = await getEventChatMessageCounts();
 
+    if (Firebase.apps.isEmpty) {
+      await Get.putAsync(() => NotificationService().init());
+    }
+
     final msg = await FirebaseMessaging.instance.getInitialMessage();
     if (msg != null) {
       await _processMessage(msg.data);

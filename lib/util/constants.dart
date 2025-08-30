@@ -125,7 +125,7 @@ const String GUID_9 = '99999999-9999-9999-9999-999999999999';
 const String GUID_MAX = 'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF';
 
 const String DB_NAME = 'HcDb.db';
-const int DB_VERSION = 480;
+const int DB_VERSION = 490;
 
 const double CLEAR_LATLONG = -2.0;
 
@@ -287,6 +287,13 @@ const int specialRun100 = 100;
 const int specialRun250 = 250;
 const int specialRun1000 = 1000;
 const int specialRunPalindrome = 969;
+
+const String BOOT_TYPE_FIRST_TIME = 'firstTime';
+const String BOOT_TYPE_NORMAL = 'normal';
+const String BOOT_TYPE_UPGRADE_1_2 = 'upgrade1.2';
+const String BOOT_TYPE_UPGRADE_DB = 'upgradeDb';
+const String BOOT_TYPE_RELOAD_DATA = 'reloadData';
+const String BOOT_TYPE_UNKNOWN = 'unknown';
 
 class Mismanagement {
   Mismanagement(this.mismanagementFlags);

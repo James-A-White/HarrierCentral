@@ -1,69 +1,66 @@
 import 'package:harrier_central/imports.dart';
 
-late GetStorage _box;
-
 Future<void> initPrefs() async {
   await GetStorage.init();
-  _box = GetStorage();
 }
 
 Future<void> clearPrefs() async {
-  return _box.erase();
+  return GetStorage().erase();
 }
 
 // STRING
 
 String? getStringPref(StringPrefsEnum key) {
-  return _box.read(key.toString());
+  return GetStorage().read(key.toString());
 }
 
 Future<void> setStringPref(StringPrefsEnum key, String? value) async {
-  return _box.write(key.toString(), value);
+  return GetStorage().write(key.toString(), value);
 }
 
 // NUM
 
 num? getNumPref(NumPrefsEnum key) {
-  return _box.read(key.toString());
+  return GetStorage().read(key.toString());
 }
 
 double? getDoublePref(dynamic key) {
-  return _box.read(key.toString());
+  return GetStorage().read(key.toString());
 }
 
 Future<void> setNumPref(NumPrefsEnum key, num? value) async {
   if (value == null) {
-    return await _box.remove(key.toString());
+    return await GetStorage().remove(key.toString());
   }
 
-  return await _box.write(key.toString(), value.toDouble());
+  return await GetStorage().write(key.toString(), value.toDouble());
 }
 
 // INT
 
 int? getIntPref(IntPrefsEnum key) {
-  return _box.read(key.toString());
+  return GetStorage().read(key.toString());
 }
 
 Future<void> setIntPref(IntPrefsEnum key, int? value) async {
   if (value == null) {
-    return await _box.remove(key.toString());
+    return await GetStorage().remove(key.toString());
   }
-  return await _box.write(key.toString(), value);
+  return await GetStorage().write(key.toString(), value);
 }
 
 // DATE
 
 Future<void> setDatePref(DatePrefsEnum key, DateTime? value) async {
   if (value == null) {
-    return await _box.remove(key.toString());
+    return await GetStorage().remove(key.toString());
   }
 
-  return await _box.write(key.toString(), value.millisecondsSinceEpoch);
+  return await GetStorage().write(key.toString(), value.millisecondsSinceEpoch);
 }
 
 DateTime? getDatePref(DatePrefsEnum key) {
-  final int? ms = _box.read(key.toString());
+  final int? ms = GetStorage().read(key.toString());
   if (ms == null) {
     return null;
   }
@@ -74,14 +71,14 @@ DateTime? getDatePref(DatePrefsEnum key) {
 
 Future<void> setBoolPref(BoolPrefsEnum key, bool? value) async {
   if (value == null) {
-    return await _box.remove(key.toString());
+    return await GetStorage().remove(key.toString());
   }
 
-  return await _box.write(key.toString(), value == true ? 1 : 0);
+  return await GetStorage().write(key.toString(), value == true ? 1 : 0);
 }
 
 bool? getBoolPref(BoolPrefsEnum key) {
-  final int? val = _box.read(key.toString());
+  final int? val = GetStorage().read(key.toString());
   if (val == null) {
     return null;
   }
@@ -97,16 +94,16 @@ Future<void> setMapIntPref(dynamic key, Map<String, int>? value) async {
   }
 
   if (value == null) {
-    return await _box.remove(key.toString());
+    return await GetStorage().remove(key.toString());
   }
 
   final jsonString = jsonEncode(value);
 
-  return await _box.write(key.toString(), jsonString);
+  return await GetStorage().write(key.toString(), jsonString);
 }
 
 Map<String, int> getMapIntPref(dynamic key) {
-  final jsonString = _box.read(key.toString());
+  final jsonString = GetStorage().read(key.toString());
   if (jsonString != null) {
     final Map<String, dynamic> decoded = jsonDecode(jsonString);
     return decoded.map((key, value) => MapEntry(key, value as int));
@@ -120,16 +117,16 @@ Future<void> setMapDynamicPref(dynamic key, Map<String, dynamic>? value) async {
   }
 
   if (value == null) {
-    return await _box.remove(key.toString());
+    return await GetStorage().remove(key.toString());
   }
 
   final jsonString = jsonEncode(value);
 
-  return await _box.write(key.toString(), jsonString);
+  return await GetStorage().write(key.toString(), jsonString);
 }
 
 Map<String, dynamic>? getMapDynamicPref(dynamic key) {
-  final jsonString = _box.read(key.toString());
+  final jsonString = GetStorage().read(key.toString());
   if (jsonString != null) {
     final Map<String, dynamic> decoded = jsonDecode(jsonString);
     return decoded;
@@ -138,7 +135,7 @@ Map<String, dynamic>? getMapDynamicPref(dynamic key) {
 }
 
 Future<void> removePref(dynamic key) async {
-  return _box.remove(key.toString());
+  return GetStorage().remove(key.toString());
 }
 
 // Legacy code here for 1.x to 2.x migration

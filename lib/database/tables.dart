@@ -278,6 +278,13 @@ class Tables {
       ''',
       appliedAtInt: 0,
     ),
+    MigrationsModel(
+      dbVersion: 490,
+      migrationText: '''
+        -- Bump DB Version to test that DB rebuild works correctly in 2.0
+      ''',
+      appliedAtInt: 0,
+    ),
   ];
 
   static Future<void> createTables(

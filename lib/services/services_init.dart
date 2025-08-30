@@ -9,29 +9,27 @@ Future<void> initServices() async {
   // 1) Synchronous singletons first
 
   if (Get.isRegistered<AppModel>()) {
-    await Get.delete<AppModel>(); // or await if you prefer
+    await Get.delete<AppModel>(force: true); // or await if you prefer
   }
 
   Get.put<AppModel>(AppModel(), permanent: true);
 
   // AppModel must be first, as other services may read from it during init()
   if (Get.isRegistered<NetworkService>()) {
-    await Get.delete<NetworkService>(); // or await if you prefer
+    await Get.delete<NetworkService>(force: true); // or await if you prefer
   }
 
-  // Make it live for the app lifetime
-  await Get.putAsync<NetworkService>(
-    () async => (await NetworkService().init()),
-    permanent: true,
-  );
+  // NetworkService: lazy + fenix, then explicitly init once now
+  Get.lazyPut<NetworkService>(() => NetworkService(), fenix: true);
+  await networkService.init(); // first init
 
   if (Get.isRegistered<TableModel>()) {
-    await Get.delete<TableModel>(); // or await if you prefer
+    await Get.delete<TableModel>(force: true); // or await if you prefer
   }
 
   // 3) Models/services that (may) depend on the DB
   // If your TableModel takes a Database, prefer: Get.put(TableModel(db), permanent: true);
-  Get.put<TableModel>(TableModel(), permanent: true);
+  Get.lazyPut<TableModel>(() => TableModel(), fenix: true);
 
   tableModel.tablesForRemoteSync.clear();
 
@@ -49,21 +47,20 @@ Future<void> initServices() async {
     tableModel.hasherKennelMapTableHelper,
   ]);
 
-  if (Get.isRegistered<DeviceInfo>()) {
-    await Get.delete<DeviceInfo>(); // or await if you prefer
+  if (!Get.isRegistered<DeviceInfo>()) {
+    // immediately initialize the first time you register
+    final view = WidgetsBinding.instance.platformDispatcher.views.first;
+    final mq = MediaQueryData.fromView(view);
+
+    await Get.putAsync<DeviceInfo>(
+      () async => DeviceInfo().init(
+        mq.size.width,
+        mq.size.height,
+        mq.textScaler.scale(1.0),
+      ),
+      permanent: true,
+    );
   }
-
-  final view = WidgetsBinding.instance.platformDispatcher.views.first;
-  final mq = MediaQueryData.fromView(view);
-
-  await Get.putAsync<DeviceInfo>(
-    () async => DeviceInfo().init(
-      mq.size.width,
-      mq.size.height,
-      mq.textScaler.scale(1.0),
-    ),
-    permanent: true,
-  );
 
   // 5) If you have other async services, await them here similarly with putAsync.
   // No Get.allReady() needed on newer GetX—just await each putAsync you call.
