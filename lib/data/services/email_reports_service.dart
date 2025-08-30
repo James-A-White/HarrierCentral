@@ -7,18 +7,26 @@ class EmailReportsService {
     required int digitsAfterDecimal,
     required String currencySymbol,
   }) async {
-    final String? userId = getStringPref(StringPrefsEnum.userId);
+    // final String? userId = getStringPref(StringPrefsEnum.userId);
     final String userName = getStringPref(StringPrefsEnum.displayName) ?? '';
     final String? emailAddress = getStringPref(StringPrefsEnum.email);
+
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    final String? userId = getStringPref(StringPrefsEnum.userId);
 
     if (((userId ?? '').isNotEmpty) && ((emailAddress ?? '').isNotEmpty)) {
       final String accessToken = Utilities.generateToken(
         userId!,
-        'rptKennelRunStats',
+        'hcapp_rptKennelRunStats',
+        paramString: deviceSecret,
       );
 
       final String body = jsonEncode(<String, String>{
-        'userId': userId,
+        'queryType': 'rptKennelRunStats',
+        'deviceId': deviceId,
         'accessToken': accessToken,
         'kennelId': kennelId,
         'kennelName': kennelName,

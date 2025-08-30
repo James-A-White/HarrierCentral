@@ -17,6 +17,12 @@
     Fixed the upgrade flow from 1.xx to 2.0.0. Still need to test the
     reload data option from the user profile page.
 
+2.0.0+982
+    Fixed deprecated code that resulted from a Flutter upgrade to 3.35.2
+
+2.0.0+983
+    Updated the Kennel Run Stats report to HC5 with deviceId security.
+
 
 
 
