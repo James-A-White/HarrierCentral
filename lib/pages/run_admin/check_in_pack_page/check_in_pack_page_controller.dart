@@ -782,7 +782,7 @@ class CheckInPackController extends GetxController
     int index,
     int paymentType, {
     double? otherAmount = -1,
-    EnumPayForExtras<int> doPayForExtras = payForRunOnly,
+    EnumPayForExtras doPayForExtras = payForRunOnly,
     double? specialRunPrice,
     String? specialRunPriceReason,
     bool? useSpecialPriceAsDefault = false,
@@ -1176,7 +1176,7 @@ class CheckInPackController extends GetxController
       final String email = x['email'] ?? '';
       final String phoneNumber = x['phone'] ?? '';
 
-      EnumVirginVisitor<int> evv = enumVirgin;
+      EnumVirginVisitor evv = enumVirgin;
       if (type == enumAnonymousVisitor.value.toString()) {
         evv = enumAnonymousVisitor;
       }

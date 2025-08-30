@@ -823,8 +823,8 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
                                 showCountry: false,
                                 showKennel: true,
                                 setAttendenceStateCallback: (
-                                  EnumAttendenceState<int> attendenceState,
-                                  EnumIsHare<int> isHare,
+                                  EnumAttendenceState attendenceState,
+                                  EnumIsHare isHare,
                                 ) async {
                                   setState(() {
                                     _runCountsList[index] =
@@ -894,9 +894,9 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
 
   Future<void> _setAttendenceState(
     UserRunHistoryModel item,
-    EnumRsvpState<int> rsvpState,
-    EnumAttendenceState<int> attendenceState,
-    EnumIsHare<int> isHare,
+    EnumRsvpState rsvpState,
+    EnumAttendenceState attendenceState,
+    EnumIsHare isHare,
     AppDomainType appDomain,
   ) async {
     await tableModel.hasherEventMapService.setEventAttendence(

@@ -230,7 +230,7 @@ SELECT
     PaymentAggregate item,
     int paymentType,
     double amount, {
-    EnumPayForExtras<int> doPayForExtras = payForRunOnly,
+    EnumPayForExtras doPayForExtras = payForRunOnly,
     OtherPaymentPopupResult? otherPaymentPopupResult,
   }) {
     final PaymentsService paySrv = PaymentsService();

@@ -173,7 +173,7 @@ class PaymentTotalsCell extends StatelessWidget {
     required this.onTap,
   });
 
-  final EnumPaymentType<int> paymentRecordType;
+  final EnumPaymentType paymentRecordType;
   final Color color;
   final String currencySymbol;
   final int digitsAfterDecimal;

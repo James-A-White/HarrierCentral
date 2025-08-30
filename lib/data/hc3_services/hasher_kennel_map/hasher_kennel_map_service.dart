@@ -152,7 +152,7 @@ class HasherKennelMapService {
     String hasherId,
     AppDomainType appDomainType,
     NotificationState notificationPreference,
-    EnumEmailAlertState<int> emailPreference,
+    EnumEmailAlertState emailPreference,
   ) async {
     if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
       return <dynamic>[];

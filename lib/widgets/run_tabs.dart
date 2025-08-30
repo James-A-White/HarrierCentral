@@ -384,7 +384,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     color: Colors.white,
   );
 
-  EnumRsvpState<int> _rsvpRequested = rsvpUnknown;
+  EnumRsvpState _rsvpRequested = rsvpUnknown;
 
   Widget _buildRsvpView() {
     return ConnectedWidget(
@@ -1414,7 +1414,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   //   }
   // }
 
-  Future<void> _setRsvpState(EnumRsvpState<int> rsvpState) async {
+  Future<void> _setRsvpState(EnumRsvpState rsvpState) async {
     List<PackListAggregate>? lPla = await _thePackList;
     if (lPla != null) {
       setState(() {
@@ -1674,7 +1674,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     IconData iconData,
     Color iconColor,
     String text,
-    EnumRsvpState<int> rsvpState,
+    EnumRsvpState rsvpState,
   ) {
     return ElevatedButton(
       child: SizedBox(

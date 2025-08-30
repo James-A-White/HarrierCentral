@@ -725,55 +725,50 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         5.0,
                                                       ),
                                                 ),
-                                                child: Column(
-                                                  children: <Widget>[
-                                                    const SizedBox(
-                                                      height: 10,
-                                                      width: 10,
-                                                    ),
-                                                    Text(
-                                                      'Name Preference',
-                                                      style: ts_headingBlack,
-                                                    ),
-                                                    const SizedBox(
-                                                      height: 10,
-                                                      width: 10,
-                                                    ),
-                                                    Row(
-                                                      children: <Widget>[
-                                                        Radio<int>(
-                                                          value: 1,
-                                                          groupValue:
-                                                              _nameDisplayPreference,
-                                                          onChanged:
-                                                              _handleRadioValueChange0,
-                                                        ),
-                                                        const Text(
-                                                          'Use Hash name',
-                                                          style: TextStyle(
-                                                            fontSize: 16.0,
+                                                child: RadioGroup(
+                                                  groupValue:
+                                                      _nameDisplayPreference,
+                                                  onChanged:
+                                                      _handleRadioValueChange0,
+                                                  child: Column(
+                                                    children: <Widget>[
+                                                      const SizedBox(
+                                                        height: 10,
+                                                        width: 10,
+                                                      ),
+                                                      Text(
+                                                        'Name Preference',
+                                                        style: ts_headingBlack,
+                                                      ),
+                                                      const SizedBox(
+                                                        height: 10,
+                                                        width: 10,
+                                                      ),
+
+                                                      Row(
+                                                        children: <Widget>[
+                                                          Radio<int>(value: 1),
+                                                          const Text(
+                                                            'Use Hash name',
+                                                            style: TextStyle(
+                                                              fontSize: 16.0,
+                                                            ),
                                                           ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    Row(
-                                                      children: <Widget>[
-                                                        Radio<int>(
-                                                          value: 2,
-                                                          groupValue:
-                                                              _nameDisplayPreference,
-                                                          onChanged:
-                                                              _handleRadioValueChange0,
-                                                        ),
-                                                        const Text(
-                                                          'Use mortal name',
-                                                          style: TextStyle(
-                                                            fontSize: 16.0,
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        children: <Widget>[
+                                                          Radio<int>(value: 2),
+                                                          const Text(
+                                                            'Use mortal name',
+                                                            style: TextStyle(
+                                                              fontSize: 16.0,
+                                                            ),
                                                           ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ],
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
                                               ),
                                               const FancyDivider(
@@ -908,85 +903,76 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                 5.0,
                                                               ),
                                                         ),
-                                                        child: Column(
-                                                          children: <Widget>[
-                                                            const SizedBox(
-                                                              height: 10,
-                                                              width: 10,
-                                                            ),
-                                                            Text(
-                                                              'Distance Preference',
-                                                              style:
-                                                                  ts_headingBlack,
-                                                            ),
-                                                            const SizedBox(
-                                                              height: 10,
-                                                              width: 10,
-                                                            ),
-                                                            Row(
-                                                              children: <
-                                                                Widget
-                                                              >[
-                                                                Radio<int>(
-                                                                  value: 0,
-                                                                  groupValue:
-                                                                      _distancePreference,
-                                                                  onChanged:
-                                                                      _handleRadioValueChange1,
-                                                                ),
-                                                                const Text(
-                                                                  'Auto',
-                                                                  style:
-                                                                      TextStyle(
-                                                                        fontSize:
-                                                                            16.0,
-                                                                      ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            Row(
-                                                              children: <
-                                                                Widget
-                                                              >[
-                                                                Radio<int>(
-                                                                  value: 2,
-                                                                  groupValue:
-                                                                      _distancePreference,
-                                                                  onChanged:
-                                                                      _handleRadioValueChange1,
-                                                                ),
-                                                                const Text(
-                                                                  'Kilometers',
-                                                                  style:
-                                                                      TextStyle(
-                                                                        fontSize:
-                                                                            16.0,
-                                                                      ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            Row(
-                                                              children: <
-                                                                Widget
-                                                              >[
-                                                                Radio<int>(
-                                                                  value: 3,
-                                                                  groupValue:
-                                                                      _distancePreference,
-                                                                  onChanged:
-                                                                      _handleRadioValueChange1,
-                                                                ),
-                                                                const Text(
-                                                                  'Miles',
-                                                                  style:
-                                                                      TextStyle(
-                                                                        fontSize:
-                                                                            16.0,
-                                                                      ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ],
+                                                        child: RadioGroup(
+                                                          groupValue:
+                                                              _distancePreference,
+                                                          onChanged:
+                                                              _handleRadioValueChange1,
+                                                          child: Column(
+                                                            children: <Widget>[
+                                                              const SizedBox(
+                                                                height: 10,
+                                                                width: 10,
+                                                              ),
+                                                              Text(
+                                                                'Distance Preference',
+                                                                style:
+                                                                    ts_headingBlack,
+                                                              ),
+                                                              const SizedBox(
+                                                                height: 10,
+                                                                width: 10,
+                                                              ),
+                                                              Row(
+                                                                children: <
+                                                                  Widget
+                                                                >[
+                                                                  Radio<int>(
+                                                                    value: 0,
+                                                                  ),
+                                                                  const Text(
+                                                                    'Auto',
+                                                                    style: TextStyle(
+                                                                      fontSize:
+                                                                          16.0,
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              Row(
+                                                                children: <
+                                                                  Widget
+                                                                >[
+                                                                  Radio<int>(
+                                                                    value: 2,
+                                                                  ),
+                                                                  const Text(
+                                                                    'Kilometers',
+                                                                    style: TextStyle(
+                                                                      fontSize:
+                                                                          16.0,
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              Row(
+                                                                children: <
+                                                                  Widget
+                                                                >[
+                                                                  Radio<int>(
+                                                                    value: 3,
+                                                                  ),
+                                                                  const Text(
+                                                                    'Miles',
+                                                                    style: TextStyle(
+                                                                      fontSize:
+                                                                          16.0,
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ],
+                                                          ),
                                                         ),
                                                       ),
                                                     ],
@@ -1017,213 +1003,185 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                   5.0,
                                                                 ),
                                                           ),
-                                                          child: Column(
-                                                            children: <Widget>[
-                                                              const SizedBox(
-                                                                height: 20,
-                                                                width: 10,
-                                                              ),
-                                                              Row(
-                                                                children: <
-                                                                  Widget
-                                                                >[
-                                                                  Radio<int>(
-                                                                    value: 0,
-                                                                    groupValue:
-                                                                        _autoRunPreference,
-                                                                    onChanged:
-                                                                        _handleRadioValueChange2,
-                                                                  ),
-                                                                  const Text(
-                                                                    'Do not auto show runs',
-                                                                    style: TextStyle(
-                                                                      fontSize:
-                                                                          16.0,
+                                                          child: RadioGroup(
+                                                            groupValue:
+                                                                _autoRunPreference,
+                                                            onChanged:
+                                                                _handleRadioValueChange2,
+                                                            child: Column(
+                                                              children: <
+                                                                Widget
+                                                              >[
+                                                                const SizedBox(
+                                                                  height: 20,
+                                                                  width: 10,
+                                                                ),
+                                                                Row(
+                                                                  children: <
+                                                                    Widget
+                                                                  >[
+                                                                    Radio<int>(
+                                                                      value: 0,
                                                                     ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              Text(
-                                                                'Or...\r\n...Automatically Show\r\nAll Runs Within...',
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .center,
-                                                                style:
-                                                                    ts_headingBlack,
-                                                              ),
-                                                              const SizedBox(
-                                                                height: 10,
-                                                                width: 10,
-                                                              ),
-                                                              Row(
-                                                                children: <
-                                                                  Widget
-                                                                >[
-                                                                  Radio<int>(
-                                                                    value:
-                                                                        hasherPref_10,
-                                                                    groupValue:
-                                                                        _autoRunPreference,
-                                                                    onChanged:
-                                                                        _handleRadioValueChange2,
-                                                                  ),
-                                                                  Text(
-                                                                    '10 ${getDistancePreferenceAsString(_distancePreference)}',
-                                                                    style: const TextStyle(
-                                                                      fontSize:
-                                                                          16.0,
+                                                                    const Text(
+                                                                      'Do not auto show runs',
+                                                                      style: TextStyle(
+                                                                        fontSize:
+                                                                            16.0,
+                                                                      ),
                                                                     ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              Row(
-                                                                children: <
-                                                                  Widget
-                                                                >[
-                                                                  Radio<int>(
-                                                                    value:
-                                                                        hasherPref_25,
-                                                                    groupValue:
-                                                                        _autoRunPreference,
-                                                                    onChanged:
-                                                                        _handleRadioValueChange2,
-                                                                  ),
-                                                                  Text(
-                                                                    '25 ${getDistancePreferenceAsString(_distancePreference)}',
-                                                                    style: const TextStyle(
-                                                                      fontSize:
-                                                                          16.0,
+                                                                  ],
+                                                                ),
+                                                                Text(
+                                                                  'Or...\r\n...Automatically Show\r\nAll Runs Within...',
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .center,
+                                                                  style:
+                                                                      ts_headingBlack,
+                                                                ),
+                                                                const SizedBox(
+                                                                  height: 10,
+                                                                  width: 10,
+                                                                ),
+                                                                Row(
+                                                                  children: <
+                                                                    Widget
+                                                                  >[
+                                                                    Radio<int>(
+                                                                      value:
+                                                                          hasherPref_10,
                                                                     ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              Row(
-                                                                children: <
-                                                                  Widget
-                                                                >[
-                                                                  Radio<int>(
-                                                                    value:
-                                                                        hasherPref_50,
-                                                                    groupValue:
-                                                                        _autoRunPreference,
-                                                                    onChanged:
-                                                                        _handleRadioValueChange2,
-                                                                  ),
-                                                                  Text(
-                                                                    '50 ${getDistancePreferenceAsString(_distancePreference)}',
-                                                                    style: const TextStyle(
-                                                                      fontSize:
-                                                                          16.0,
+                                                                    Text(
+                                                                      '10 ${getDistancePreferenceAsString(_distancePreference)}',
+                                                                      style: const TextStyle(
+                                                                        fontSize:
+                                                                            16.0,
+                                                                      ),
                                                                     ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              Row(
-                                                                children: <
-                                                                  Widget
-                                                                >[
-                                                                  Radio<int>(
-                                                                    value:
-                                                                        hasherPref_75,
-                                                                    groupValue:
-                                                                        _autoRunPreference,
-                                                                    onChanged:
-                                                                        _handleRadioValueChange2,
-                                                                  ),
-                                                                  Text(
-                                                                    '75 ${getDistancePreferenceAsString(_distancePreference)}',
-                                                                    style: const TextStyle(
-                                                                      fontSize:
-                                                                          16.0,
+                                                                  ],
+                                                                ),
+                                                                Row(
+                                                                  children: <
+                                                                    Widget
+                                                                  >[
+                                                                    Radio<int>(
+                                                                      value:
+                                                                          hasherPref_25,
                                                                     ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              Row(
-                                                                children: <
-                                                                  Widget
-                                                                >[
-                                                                  Radio<int>(
-                                                                    value:
-                                                                        hasherPref_100,
-                                                                    groupValue:
-                                                                        _autoRunPreference,
-                                                                    onChanged:
-                                                                        _handleRadioValueChange2,
-                                                                  ),
-                                                                  Text(
-                                                                    '100 ${getDistancePreferenceAsString(_distancePreference)}',
-                                                                    style: const TextStyle(
-                                                                      fontSize:
-                                                                          16.0,
+                                                                    Text(
+                                                                      '25 ${getDistancePreferenceAsString(_distancePreference)}',
+                                                                      style: const TextStyle(
+                                                                        fontSize:
+                                                                            16.0,
+                                                                      ),
                                                                     ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              Row(
-                                                                children: <
-                                                                  Widget
-                                                                >[
-                                                                  Radio<int>(
-                                                                    value:
-                                                                        hasherPref_150,
-                                                                    groupValue:
-                                                                        _autoRunPreference,
-                                                                    onChanged:
-                                                                        _handleRadioValueChange2,
-                                                                  ),
-                                                                  Text(
-                                                                    '150 ${getDistancePreferenceAsString(_distancePreference)}',
-                                                                    style: const TextStyle(
-                                                                      fontSize:
-                                                                          16.0,
+                                                                  ],
+                                                                ),
+                                                                Row(
+                                                                  children: <
+                                                                    Widget
+                                                                  >[
+                                                                    Radio<int>(
+                                                                      value:
+                                                                          hasherPref_50,
                                                                     ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              Row(
-                                                                children: <
-                                                                  Widget
-                                                                >[
-                                                                  Radio<int>(
-                                                                    value:
-                                                                        hasherPref_250,
-                                                                    groupValue:
-                                                                        _autoRunPreference,
-                                                                    onChanged:
-                                                                        _handleRadioValueChange2,
-                                                                  ),
-                                                                  Text(
-                                                                    '250 ${getDistancePreferenceAsString(_distancePreference)}',
-                                                                    style: const TextStyle(
-                                                                      fontSize:
-                                                                          16.0,
+                                                                    Text(
+                                                                      '50 ${getDistancePreferenceAsString(_distancePreference)}',
+                                                                      style: const TextStyle(
+                                                                        fontSize:
+                                                                            16.0,
+                                                                      ),
                                                                     ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              Row(
-                                                                children: <
-                                                                  Widget
-                                                                >[
-                                                                  Radio<int>(
-                                                                    value:
-                                                                        hasherPref_500,
-                                                                    groupValue:
-                                                                        _autoRunPreference,
-                                                                    onChanged:
-                                                                        _handleRadioValueChange2,
-                                                                  ),
-                                                                  Text(
-                                                                    '500 ${getDistancePreferenceAsString(_distancePreference)}',
-                                                                    style: const TextStyle(
-                                                                      fontSize:
-                                                                          16.0,
+                                                                  ],
+                                                                ),
+                                                                Row(
+                                                                  children: <
+                                                                    Widget
+                                                                  >[
+                                                                    Radio<int>(
+                                                                      value:
+                                                                          hasherPref_75,
                                                                     ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ],
+                                                                    Text(
+                                                                      '75 ${getDistancePreferenceAsString(_distancePreference)}',
+                                                                      style: const TextStyle(
+                                                                        fontSize:
+                                                                            16.0,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                Row(
+                                                                  children: <
+                                                                    Widget
+                                                                  >[
+                                                                    Radio<int>(
+                                                                      value:
+                                                                          hasherPref_100,
+                                                                    ),
+                                                                    Text(
+                                                                      '100 ${getDistancePreferenceAsString(_distancePreference)}',
+                                                                      style: const TextStyle(
+                                                                        fontSize:
+                                                                            16.0,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                Row(
+                                                                  children: <
+                                                                    Widget
+                                                                  >[
+                                                                    Radio<int>(
+                                                                      value:
+                                                                          hasherPref_150,
+                                                                    ),
+                                                                    Text(
+                                                                      '150 ${getDistancePreferenceAsString(_distancePreference)}',
+                                                                      style: const TextStyle(
+                                                                        fontSize:
+                                                                            16.0,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                Row(
+                                                                  children: <
+                                                                    Widget
+                                                                  >[
+                                                                    Radio<int>(
+                                                                      value:
+                                                                          hasherPref_250,
+                                                                    ),
+                                                                    Text(
+                                                                      '250 ${getDistancePreferenceAsString(_distancePreference)}',
+                                                                      style: const TextStyle(
+                                                                        fontSize:
+                                                                            16.0,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                Row(
+                                                                  children: <
+                                                                    Widget
+                                                                  >[
+                                                                    Radio<int>(
+                                                                      value:
+                                                                          hasherPref_500,
+                                                                    ),
+                                                                    Text(
+                                                                      '500 ${getDistancePreferenceAsString(_distancePreference)}',
+                                                                      style: const TextStyle(
+                                                                        fontSize:
+                                                                            16.0,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ],
+                                                            ),
                                                           ),
                                                         ),
                                                       if (!appModel

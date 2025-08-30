@@ -625,11 +625,11 @@ class RunListItem extends StatelessWidget {
       );
 
       if (retVal is EnumEmailAlertState) {
-        _setEmailAlertState(retVal as EnumEmailAlertState<int>);
+        _setEmailAlertState(retVal);
       } else if (retVal is NotificationState) {
         _setNotificationState(retVal);
       } else if (retVal is EnumRsvpState) {
-        await _setRsvpState(retVal as EnumRsvpState<int>);
+        await _setRsvpState(retVal);
       }
 
       // else if (retVal is EnumIsHare) {
@@ -830,7 +830,7 @@ class RunListItem extends StatelessWidget {
 
       dynamic retVal = await Get.dialog<dynamic>(popup);
 
-      if (retVal is EnumRsvpState<int>) {
+      if (retVal is EnumRsvpState) {
         await _setRsvpState(retVal);
       } else if (retVal is EnumIsHare) {
         // final bool willHare =
@@ -841,7 +841,7 @@ class RunListItem extends StatelessWidget {
     }
   }
 
-  Future<void> _setRsvpState(EnumRsvpState<int> rsvpState) async {
+  Future<void> _setRsvpState(EnumRsvpState rsvpState) async {
     rliController.rsvpState.value = -1;
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
@@ -1010,12 +1010,12 @@ class RunListItem extends StatelessWidget {
     await _setNotificationState(retVal);
   }
 
-  Future<void> _setEmailAlertState(EnumEmailAlertState<int> retVal) async {
+  Future<void> _setEmailAlertState(EnumEmailAlertState retVal) async {
     if ((retVal == emailAlertsOn) ||
         (retVal == emailAlertsOff) ||
         (retVal == emailAlertsAuto)) {
       final String userId = getStringPref(StringPrefsEnum.userId)!;
-      final EnumEmailAlertState<int> nState = retVal;
+      final EnumEmailAlertState nState = retVal;
       rliController.setEmailState(-1);
 
       List<dynamic> results = await tableModel.hasherEventMapService

@@ -978,14 +978,13 @@ class Utilities {
           cancelButtonTitle: 'No',
         );
 
-        final EnumCheckinOptions<int>? retVal =
-            await showDialog<EnumCheckinOptions<int>>(
-              context: navigatorKey.currentContext!,
-              barrierDismissible: false, // user must tap button!
-              builder: (BuildContext context) {
-                return popup;
-              },
-            );
+        final EnumCheckinOptions? retVal = await showDialog<EnumCheckinOptions>(
+          context: navigatorKey.currentContext!,
+          barrierDismissible: false, // user must tap button!
+          builder: (BuildContext context) {
+            return popup;
+          },
+        );
 
         if (retVal == enumCheckInOption_Yes) {
           await tableModel.hasherEventMapService.setEventAttendence(

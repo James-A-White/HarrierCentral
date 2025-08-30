@@ -129,19 +129,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
               mainAxisAlignment: MainAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Radio<int>(
-                  activeColor: hc_red,
-                  value: selectedImageType.index,
-                  groupValue: _selectedRadioValue,
-                  onChanged: (_) {
-                    if (!disabled) {
-                      _handleRadioValueChange(
-                        selectedImageType,
-                        forceOpen: false,
-                      );
-                    }
-                  },
-                ),
+                Radio<int>(activeColor: hc_red, value: selectedImageType.index),
                 Expanded(
                   child: Opacity(
                     opacity: disabled ? 0.5 : 1.0,
@@ -220,45 +208,57 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
                           padding: const EdgeInsets.only(top: 10, bottom: 30),
                           height: 260,
                           width: 260,
-                          child: Stack(
-                            alignment: AlignmentDirectional.center,
-                            children: <Widget>[
-                              Positioned(
-                                top: 0,
-                                left: 0,
-                                child: getImageSourceButton(
-                                  label: 'Camera',
-                                  iosIcon: 'images/icons/ios_camera.png',
-                                  androidIcon:
-                                      'images/icons/android_camera.png',
-                                  selectedImageType:
-                                      SelectedImageTypeEnum.fromCamera,
+                          child: RadioGroup(
+                            groupValue: _selectedRadioValue,
+                            onChanged: (int? value) {
+                              if (value != null) {
+                                _handleRadioValueChange(
+                                  SelectedImageTypeEnum.values[value],
+                                  forceOpen: false,
+                                );
+                              }
+                            },
+
+                            child: Stack(
+                              alignment: AlignmentDirectional.center,
+                              children: <Widget>[
+                                Positioned(
+                                  top: 0,
+                                  left: 0,
+                                  child: getImageSourceButton(
+                                    label: 'Camera',
+                                    iosIcon: 'images/icons/ios_camera.png',
+                                    androidIcon:
+                                        'images/icons/android_camera.png',
+                                    selectedImageType:
+                                        SelectedImageTypeEnum.fromCamera,
+                                  ),
                                 ),
-                              ),
-                              Positioned(
-                                top: 0,
-                                right: 0,
-                                child: getImageSourceButton(
-                                  label: 'Gallery',
-                                  iosIcon: 'images/icons/ios_gallery.png',
-                                  androidIcon:
-                                      'images/icons/android_gallery.png',
-                                  selectedImageType:
-                                      SelectedImageTypeEnum.fromGallery,
+                                Positioned(
+                                  top: 0,
+                                  right: 0,
+                                  child: getImageSourceButton(
+                                    label: 'Gallery',
+                                    iosIcon: 'images/icons/ios_gallery.png',
+                                    androidIcon:
+                                        'images/icons/android_gallery.png',
+                                    selectedImageType:
+                                        SelectedImageTypeEnum.fromGallery,
+                                  ),
                                 ),
-                              ),
-                              Positioned(
-                                bottom: 0,
-                                left: 0,
-                                child: getImageSourceButton(
-                                  label: 'Avatar',
-                                  iosIcon: 'images/icons/avatar.png',
-                                  androidIcon: 'images/icons/avatar.png',
-                                  selectedImageType:
-                                      SelectedImageTypeEnum.avatar,
+                                Positioned(
+                                  bottom: 0,
+                                  left: 0,
+                                  child: getImageSourceButton(
+                                    label: 'Avatar',
+                                    iosIcon: 'images/icons/avatar.png',
+                                    androidIcon: 'images/icons/avatar.png',
+                                    selectedImageType:
+                                        SelectedImageTypeEnum.avatar,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),

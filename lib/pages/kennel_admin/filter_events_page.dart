@@ -731,7 +731,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
                   event: event,
                   kennelShortName: widget.kennel.kennel.kennelShortName,
                   updateEvent: (dynamic retVal) async {
-                    final EnumEventFilterType<int> ft = retVal;
+                    final EnumEventFilterType ft = retVal;
                     //print(ft);
                     setState(() {
                       _itemBeingUpdatedId = event.eventId;

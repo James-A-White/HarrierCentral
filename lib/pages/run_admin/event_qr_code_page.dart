@@ -30,7 +30,7 @@ class EventQrCodePage extends StatefulWidget {
 
 class EventQrCodePageState extends State<EventQrCodePage>
     with SingleTickerProviderStateMixin {
-  List<Tab> _tabs = <Tab>[];
+  final List<Tab> _tabs = <Tab>[];
 
   String barcode = '';
   bool isAdmin = true;

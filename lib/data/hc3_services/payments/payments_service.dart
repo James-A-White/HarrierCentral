@@ -224,7 +224,7 @@ class PaymentsService {
     int paymentType,
     double paymentAmount,
     int minimumAttendenceValue,
-    EnumPayForExtras<int> doPayForExtras,
+    EnumPayForExtras doPayForExtras,
     AppDomainType appDomainType, {
     double? surcharge,
     String? paymentProvider,

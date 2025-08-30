@@ -57,127 +57,111 @@ class PaymentPopupState extends State<PaymentPopup> {
       content: SingleChildScrollView(
         child: ListBody(
           children: <Widget>[
-            Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Radio<int>(
-                      value: 1,
-                      groupValue: _selectedValue,
-                      onChanged: _handleRadioValueChange1,
-                    ),
-                    Text('Not paid', style: ts_alertDialogBodyMedium),
-                  ],
-                ),
-                Row(
-                  children: <Widget>[
-                    Radio<int>(
-                      value: 2,
-                      groupValue: _selectedValue,
-                      onChanged: _handleRadioValueChange1,
-                    ),
-                    Text('Free run', style: ts_alertDialogBodyMedium),
-                  ],
-                ),
-                Row(
-                  children: <Widget>[
-                    Radio<int>(
-                      value: 3,
-                      groupValue: _selectedValue,
-                      onChanged: _handleRadioValueChange1,
-                    ),
-                    Text(
-                      'Cash (${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
-                      style: ts_alertDialogBodyMedium,
-                    ),
-                  ],
-                ),
-                Row(
-                  children: <Widget>[
-                    Radio<int>(
-                      value: 4,
-                      groupValue: _selectedValue,
-                      onChanged: _handleRadioValueChange1,
-                    ),
-                    Text(
-                      'Bank transfer (${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
-                      style: ts_alertDialogBodyMedium,
-                    ),
-                  ],
-                ),
-                if (widget.creditAllowed == 0) ...<Widget>[_otherAmountRow()],
-                if (widget.creditAllowed != 0) ...<Widget>[
+            RadioGroup(
+              groupValue: _selectedValue,
+              onChanged: _handleRadioValueChange1,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
-                      Radio<int>(
-                        value: 6,
-                        groupValue: _selectedValue,
-                        onChanged: _handleRadioValueChange1,
-                      ),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            'Credit (${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
-                            style: ts_alertDialogBodyMedium,
-                          ),
-                          Text(
-                            '${IveCoreUtilities.getFormattedMoney((widget.creditRemaining).abs(), widget.decimalDigits, widget.currencySymbol)} ${(widget.creditRemaining >= 0) ? 'remaining' : 'owed'}',
-                            style: ts_alertDialogBodyMedium.copyWith(
-                              color:
-                                  (widget.creditRemaining >= 0)
-                                      ? Colors.green[800]
-                                      : hc_red,
-                            ),
-                          ),
-                        ],
+                      Radio<int>(value: 1),
+                      Text('Not paid', style: ts_alertDialogBodyMedium),
+                    ],
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Radio<int>(value: 2),
+                      Text('Free run', style: ts_alertDialogBodyMedium),
+                    ],
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Radio<int>(value: 3),
+                      Text(
+                        'Cash (${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
+                        style: ts_alertDialogBodyMedium,
                       ),
                     ],
                   ),
+                  Row(
+                    children: <Widget>[
+                      Radio<int>(value: 4),
+                      Text(
+                        'Bank transfer (${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
+                        style: ts_alertDialogBodyMedium,
+                      ),
+                    ],
+                  ),
+                  if (widget.creditAllowed == 0) ...<Widget>[_otherAmountRow()],
+                  if (widget.creditAllowed != 0) ...<Widget>[
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Radio<int>(value: 6),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              'Credit (${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)})',
+                              style: ts_alertDialogBodyMedium,
+                            ),
+                            Text(
+                              '${IveCoreUtilities.getFormattedMoney((widget.creditRemaining).abs(), widget.decimalDigits, widget.currencySymbol)} ${(widget.creditRemaining >= 0) ? 'remaining' : 'owed'}',
+                              style: ts_alertDialogBodyMedium.copyWith(
+                                color:
+                                    (widget.creditRemaining >= 0)
+                                        ? Colors.green[800]
+                                        : hc_red,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                  _otherAmountRow(),
+                  // Row(
+                  //     //crossAxisAlignment: CrossAxisAlignment.start,
+                  //     children: <Widget>[
+                  //       Radio<int>(
+                  //         value: 5,
+                  //         groupValue: selectedValue,
+                  //         onChanged: _handleRadioValueChange1,
+                  //       ),
+                  //       Column(
+                  //         mainAxisAlignment: MainAxisAlignment.start,
+                  //         crossAxisAlignment: CrossAxisAlignment.start,
+                  //         children: <Widget>[
+                  //           Text(
+                  //             'Pay ${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)} & top up',
+                  //             style: const TextStyle(fontSize: 16.0),
+                  //           ),
+
+                  //           //         TextField(
+
+                  //           //   keyboardType: TextInputType.number,
+                  //           //   style: const TextStyle(
+                  //           //       fontFamily: 'WorkSansSemiBold',
+                  //           //       fontSize: 16.0,
+                  //           //       color: Colors.black),
+                  //           //   decoration: const InputDecoration(
+                  //           //     border: InputBorder.none,
+                  //           //     icon:const  Icon(
+                  //           //       FontAwesomeIcons.moneyBill,
+                  //           //       color: Colors.black,
+                  //           //     ),
+                  //           //     hintText: 'Amount',
+                  //           //     hintStyle: TextStyle(
+                  //           //         fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
+                  //           //   ),
+                  //           // ),
+                  //         ],
+                  //       ),
+                  //     ]),
                 ],
-                _otherAmountRow(),
-                // Row(
-                //     //crossAxisAlignment: CrossAxisAlignment.start,
-                //     children: <Widget>[
-                //       Radio<int>(
-                //         value: 5,
-                //         groupValue: selectedValue,
-                //         onChanged: _handleRadioValueChange1,
-                //       ),
-                //       Column(
-                //         mainAxisAlignment: MainAxisAlignment.start,
-                //         crossAxisAlignment: CrossAxisAlignment.start,
-                //         children: <Widget>[
-                //           Text(
-                //             'Pay ${IveCoreUtilities.getFormattedMoney(widget.amount, widget.decimalDigits, widget.currencySymbol)} & top up',
-                //             style: const TextStyle(fontSize: 16.0),
-                //           ),
-
-                //           //         TextField(
-
-                //           //   keyboardType: TextInputType.number,
-                //           //   style: const TextStyle(
-                //           //       fontFamily: 'WorkSansSemiBold',
-                //           //       fontSize: 16.0,
-                //           //       color: Colors.black),
-                //           //   decoration: const InputDecoration(
-                //           //     border: InputBorder.none,
-                //           //     icon:const  Icon(
-                //           //       FontAwesomeIcons.moneyBill,
-                //           //       color: Colors.black,
-                //           //     ),
-                //           //     hintText: 'Amount',
-                //           //     hintStyle: TextStyle(
-                //           //         fontFamily: 'WorkSansSemiBold', fontSize: 16.0),
-                //           //   ),
-                //           // ),
-                //         ],
-                //       ),
-                //     ]),
-              ],
+              ),
             ),
           ],
         ),
@@ -243,11 +227,7 @@ class PaymentPopupState extends State<PaymentPopup> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          Radio<int>(
-            value: PaymentPopup.otherAmountRowId,
-            groupValue: _selectedValue,
-            onChanged: _handleRadioValueChange1,
-          ),
+          Radio<int>(value: PaymentPopup.otherAmountRowId),
           Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,

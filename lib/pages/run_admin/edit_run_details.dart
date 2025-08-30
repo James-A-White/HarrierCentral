@@ -2131,126 +2131,71 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                           Radius.circular(10),
                         ),
                       ),
-                      child: Column(
-                        children: <Widget>[
-                          ListTile(
-                            title: Text(
-                              'Local (normal run)',
-                              style: ts_regularBlack,
+                      child: RadioGroup(
+                        groupValue: _eventGeographicScope,
+                        onChanged: (int? value) {
+                          setState(() {
+                            _eventGeographicScope = value ?? 0;
+                          });
+                        },
+
+                        child: Column(
+                          children: <Widget>[
+                            ListTile(
+                              title: Text(
+                                'Local (normal run)',
+                                style: ts_regularBlack,
+                              ),
+                              leading: Radio<int>(value: 1),
                             ),
-                            leading: Radio<int>(
-                              value: 1,
-                              groupValue: _eventGeographicScope,
-                              onChanged: (int? value) {
-                                setState(() {
-                                  _eventGeographicScope = value ?? 0;
-                                });
-                              },
+                            ListTile(
+                              title: Text(
+                                'Local (special event)',
+                                style: ts_regularBlack,
+                              ),
+                              leading: Radio<int>(value: 2),
                             ),
-                          ),
-                          ListTile(
-                            title: Text(
-                              'Local (special event)',
-                              style: ts_regularBlack,
+                            ListTile(
+                              title: Text(
+                                'Regional / State',
+                                style: ts_regularBlack,
+                              ),
+                              leading: Radio<int>(value: 3),
                             ),
-                            leading: Radio<int>(
-                              value: 2,
-                              groupValue: _eventGeographicScope,
-                              onChanged: (int? value) {
-                                setState(() {
-                                  _eventGeographicScope = value ?? 0;
-                                });
-                              },
+                            ListTile(
+                              title: Text(
+                                'Nash Hash (national)',
+                                style: ts_regularBlack,
+                              ),
+                              leading: Radio<int>(value: 4),
                             ),
-                          ),
-                          ListTile(
-                            title: Text(
-                              'Regional / State',
-                              style: ts_regularBlack,
+                            ListTile(
+                              title: Text(
+                                'Interhash / Continent',
+                                style: ts_regularBlack,
+                              ),
+                              leading: Radio<int>(value: 5),
                             ),
-                            leading: Radio<int>(
-                              value: 3,
-                              groupValue: _eventGeographicScope,
-                              onChanged: (int? value) {
-                                setState(() {
-                                  _eventGeographicScope = value ?? 0;
-                                });
-                              },
+                            ListTile(
+                              title: Text(
+                                'World Interhash / Global',
+                                style: ts_regularBlack,
+                              ),
+                              leading: Radio<int>(value: 6),
                             ),
-                          ),
-                          ListTile(
-                            title: Text(
-                              'Nash Hash (national)',
-                              style: ts_regularBlack,
+                            ListTile(
+                              title: Text('Other', style: ts_regularBlack),
+                              leading: Radio<int>(value: 7),
                             ),
-                            leading: Radio<int>(
-                              value: 4,
-                              groupValue: _eventGeographicScope,
-                              onChanged: (int? value) {
-                                setState(() {
-                                  _eventGeographicScope = value ?? 0;
-                                });
-                              },
+                            ListTile(
+                              title: Text(
+                                'Not specified',
+                                style: ts_regularBlack,
+                              ),
+                              leading: Radio<int>(value: 0),
                             ),
-                          ),
-                          ListTile(
-                            title: Text(
-                              'Interhash / Continent',
-                              style: ts_regularBlack,
-                            ),
-                            leading: Radio<int>(
-                              value: 5,
-                              groupValue: _eventGeographicScope,
-                              onChanged: (int? value) {
-                                setState(() {
-                                  _eventGeographicScope = value ?? 0;
-                                });
-                              },
-                            ),
-                          ),
-                          ListTile(
-                            title: Text(
-                              'World Interhash / Global',
-                              style: ts_regularBlack,
-                            ),
-                            leading: Radio<int>(
-                              value: 6,
-                              groupValue: _eventGeographicScope,
-                              onChanged: (int? value) {
-                                setState(() {
-                                  _eventGeographicScope = value ?? 0;
-                                });
-                              },
-                            ),
-                          ),
-                          ListTile(
-                            title: Text('Other', style: ts_regularBlack),
-                            leading: Radio<int>(
-                              value: 7,
-                              groupValue: _eventGeographicScope,
-                              onChanged: (int? value) {
-                                setState(() {
-                                  _eventGeographicScope = value ?? 0;
-                                });
-                              },
-                            ),
-                          ),
-                          ListTile(
-                            title: Text(
-                              'Not specified',
-                              style: ts_regularBlack,
-                            ),
-                            leading: Radio<int>(
-                              value: 0,
-                              groupValue: _eventGeographicScope,
-                              onChanged: (int? value) {
-                                setState(() {
-                                  _eventGeographicScope = value ?? 0;
-                                });
-                              },
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                     Container(
