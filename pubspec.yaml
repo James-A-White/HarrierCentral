@@ -75,7 +75,7 @@ dependencies:
   keyboard_actions: ^4.0.0 
   latlong2: ^0.9.0
   # manage_calendar_events: ^2.0.3
-  map_launcher: ^4.0.0 #^3.5.0
+  map_launcher: ^4.4.1 #^3.5.0
   # meta: ^1.16.0
   mobile_scanner: ^7.0.1
   package_info_plus: ^8.0.2

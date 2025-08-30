@@ -1270,10 +1270,10 @@ packages:
     dependency: "direct main"
     description:
       name: map_launcher
-      sha256: "75e2742879228eb3147edb6604cc0dc105da1357eb6b4c1b938c52bc474f6088"
+      sha256: "7f69f0ac7559f46e75b70b75c0de9b0fcb4bef46ff28dc5756e3ed568b2a13ec"
       url: "https://pub.dev"
     source: hosted
-    version: "4.4.0"
+    version: "4.4.1"
   matcher:
     dependency: transitive
     description:
