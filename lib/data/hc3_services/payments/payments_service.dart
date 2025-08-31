@@ -348,20 +348,27 @@ class PaymentsService {
     required String eventId,
     required String eventName,
   }) async {
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String? emailAddress = getStringPref(StringPrefsEnum.email);
     final String userName =
         getStringPref(StringPrefsEnum.displayName) ?? '<no name>';
-    final String? emailAddress = getStringPref(StringPrefsEnum.email);
+    final String? deviceId = getStringPref(StringPrefsEnum.deviceId);
+    final String? deviceSecret = getStringPref(StringPrefsEnum.deviceSecret);
 
-    final String accessToken = Utilities.generateToken(
-      userId,
-      'getPaymentReport',
-    );
+    final String? userId = getStringPref(StringPrefsEnum.userId);
 
-    if ((emailAddress ?? '').isNotEmpty) {
+    if (((userId ?? '').isNotEmpty) &&
+        ((emailAddress ?? '').isNotEmpty) &&
+        ((deviceId ?? '').isNotEmpty) &&
+        ((deviceSecret ?? '').isNotEmpty)) {
+      final String accessToken = Utilities.generateToken(
+        userId!,
+        'hcapp_getPaymentReport',
+        paramString: deviceSecret!,
+      );
+
       final String body = jsonEncode(<String, String?>{
-        //'code': EMAIL_PAYMENT_API_KEY,
-        'userId': userId,
+        'queryType': 'getPaymentReport',
+        'deviceId': deviceId,
         'accessToken': accessToken,
         'eventId': eventId,
         'eventName': eventName,

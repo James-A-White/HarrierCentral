@@ -11,22 +11,24 @@ class EmailReportsService {
     final String userName = getStringPref(StringPrefsEnum.displayName) ?? '';
     final String? emailAddress = getStringPref(StringPrefsEnum.email);
 
-    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-    final String deviceSecret =
-        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+    final String? deviceId = getStringPref(StringPrefsEnum.deviceId);
+    final String? deviceSecret = getStringPref(StringPrefsEnum.deviceSecret);
 
     final String? userId = getStringPref(StringPrefsEnum.userId);
 
-    if (((userId ?? '').isNotEmpty) && ((emailAddress ?? '').isNotEmpty)) {
+    if (((userId ?? '').isNotEmpty) &&
+        ((emailAddress ?? '').isNotEmpty) &&
+        ((deviceId ?? '').isNotEmpty) &&
+        ((deviceSecret ?? '').isNotEmpty)) {
       final String accessToken = Utilities.generateToken(
         userId!,
         'hcapp_rptKennelRunStats',
-        paramString: deviceSecret,
+        paramString: deviceSecret!,
       );
 
       final String body = jsonEncode(<String, String>{
         'queryType': 'rptKennelRunStats',
-        'deviceId': deviceId,
+        'deviceId': deviceId!,
         'accessToken': accessToken,
         'kennelId': kennelId,
         'kennelName': kennelName,

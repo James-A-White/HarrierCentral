@@ -72,13 +72,16 @@ const String EMAIL_KENNEL_RUN_STATS_API_URL =
 const String EMAIL_INVITE_CODE_API_URL =
     'https://$BASE_AF_URL/api/EmailInviteCode';
 
+const String EMAIL_PAYMENT_API_URL =
+    'https://$BASE_AF_URL/api/SendPaymentReport';
+
 // old APIs below
 
 const String EMAIL_RUN_DETAILS_TO_PACK_API_URL =
     'https://hcazurefunctions7.azurewebsites.net/api/SendRunDetailEmails';
 
-const String EMAIL_PAYMENT_API_URL =
-    'https://hcazurefunctions7.azurewebsites.net/api/SendPaymentReport';
+// const String EMAIL_PAYMENT_API_URL =
+//     'https://hcazurefunctions7.azurewebsites.net/api/SendPaymentReport';
 
 const String EMAIL_RUN_REPORT_API_URL =
     'https://hcazurefunctions7.azurewebsites.net/api/SendRunCountsReport';

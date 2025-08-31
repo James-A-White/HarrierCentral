@@ -23,6 +23,9 @@
 2.0.0+983
     Updated the Kennel Run Stats report to HC5 with deviceId security.
 
+2.0.0+984
+    Migrated Payment Report to new API.
+
 
 
 
