@@ -148,20 +148,33 @@ class HasherEventMapService {
     required String kennelId,
     required String kennelName,
   }) async {
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
-    final String userName = getStringPref(StringPrefsEnum.displayName)!;
     final String? emailAddress = getStringPref(StringPrefsEnum.email);
+    final String userName =
+        getStringPref(StringPrefsEnum.displayName) ?? '<no name>';
+    final String? deviceId = getStringPref(StringPrefsEnum.deviceId);
+    final String? deviceSecret = getStringPref(StringPrefsEnum.deviceSecret);
 
-    final String accessToken1 = Utilities.generateToken(userId, 'getRuns');
+    final String? userId = getStringPref(StringPrefsEnum.userId);
 
-    final String accessToken2 = Utilities.generateToken(
-      userId,
-      'getMyKennelRunTotals',
-    );
+    if (((userId ?? '').isNotEmpty) &&
+        ((emailAddress ?? '').isNotEmpty) &&
+        ((deviceId ?? '').isNotEmpty) &&
+        ((deviceSecret ?? '').isNotEmpty)) {
+      final String accessToken1 = Utilities.generateToken(
+        userId!,
+        'hcapp_getRuns',
+        paramString: deviceSecret!,
+      );
 
-    if ((emailAddress ?? '').isNotEmpty) {
+      final String accessToken2 = Utilities.generateToken(
+        userId,
+        'hcapp_getMyKennelRunTotals',
+        paramString: deviceSecret,
+      );
+
       final String body = jsonEncode(<String, String>{
-        'userId': userId,
+        'queryType': 'SendRunCountsReport',
+        'deviceId': deviceId!,
         'accessToken1': accessToken1,
         'accessToken2': accessToken2,
         'kennelId': kennelId,

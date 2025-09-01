@@ -26,7 +26,8 @@
 2.0.0+984
     Migrated Payment Report to new API.
 
-
+2.0.0+985
+    Migrated User Run Count report to new API.
 
 
 ======
