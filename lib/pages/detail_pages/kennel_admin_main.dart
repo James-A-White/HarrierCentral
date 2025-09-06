@@ -737,129 +737,130 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                             ),
                                           ),
 
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                              top: 15,
-                                              bottom: 15,
-                                            ),
-                                            child: SizedBox(
-                                              width: 110,
-                                              height: 110,
-                                              child: Connection2.styleForConnected(
-                                                appModel.connectionStatus,
-                                                ElevatedButton(
-                                                  style: ElevatedButton.styleFrom(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                          top: 8.0,
-                                                          bottom: 0.0,
-                                                        ),
-                                                  ),
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .center,
-                                                    children: <Widget>[
-                                                      const Padding(
-                                                        padding:
-                                                            EdgeInsets.only(
-                                                              left: 0,
-                                                              top: 4,
-                                                            ),
-                                                        child: Icon(
-                                                          MaterialCommunityIcons
-                                                              .email_newsletter,
-                                                          color: Colors.white,
-                                                          size: 55,
-                                                        ),
-                                                      ),
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets.only(
-                                                              left: 10,
-                                                              right: 10,
-                                                              top: 7,
-                                                            ),
-                                                        child: Text(
-                                                          'Email invite codes',
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          style:
-                                                              ts_buttonLabelMedium,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  onPressed: () async {
-                                                    if (Connection2.checkForConnection(
-                                                      appModel.connectionStatus,
-                                                    )) {
-                                                      final bool?
-                                                      isPreviewBool =
-                                                          await _promptForSending(
-                                                            context,
-                                                          );
+                                          // TODO: Re-implement email run details
+                                          // Padding(
+                                          //   padding: const EdgeInsets.only(
+                                          //     top: 15,
+                                          //     bottom: 15,
+                                          //   ),
+                                          //   child: SizedBox(
+                                          //     width: 110,
+                                          //     height: 110,
+                                          //     child: Connection2.styleForConnected(
+                                          //       appModel.connectionStatus,
+                                          //       ElevatedButton(
+                                          //         style: ElevatedButton.styleFrom(
+                                          //           padding:
+                                          //               const EdgeInsets.only(
+                                          //                 top: 8.0,
+                                          //                 bottom: 0.0,
+                                          //               ),
+                                          //         ),
+                                          //         child: Column(
+                                          //           crossAxisAlignment:
+                                          //               CrossAxisAlignment
+                                          //                   .center,
+                                          //           children: <Widget>[
+                                          //             const Padding(
+                                          //               padding:
+                                          //                   EdgeInsets.only(
+                                          //                     left: 0,
+                                          //                     top: 4,
+                                          //                   ),
+                                          //               child: Icon(
+                                          //                 MaterialCommunityIcons
+                                          //                     .email_newsletter,
+                                          //                 color: Colors.white,
+                                          //                 size: 55,
+                                          //               ),
+                                          //             ),
+                                          //             Padding(
+                                          //               padding:
+                                          //                   const EdgeInsets.only(
+                                          //                     left: 10,
+                                          //                     right: 10,
+                                          //                     top: 7,
+                                          //                   ),
+                                          //               child: Text(
+                                          //                 'Email invite codes',
+                                          //                 textAlign:
+                                          //                     TextAlign.center,
+                                          //                 style:
+                                          //                     ts_buttonLabelMedium,
+                                          //               ),
+                                          //             ),
+                                          //           ],
+                                          //         ),
+                                          //         onPressed: () async {
+                                          //           if (Connection2.checkForConnection(
+                                          //             appModel.connectionStatus,
+                                          //           )) {
+                                          //             final bool?
+                                          //             isPreviewBool =
+                                          //                 await _promptForSending(
+                                          //                   context,
+                                          //                 );
 
-                                                      if (isPreviewBool !=
-                                                          null) {
-                                                        IveCoreUtilities.showInSnackBar(
-                                                          navigatorKey
-                                                              .currentContext!,
-                                                          _scaffoldKey,
-                                                          'Invite codes being sent...',
-                                                          durationInSeconds: 10,
-                                                        );
+                                          //             if (isPreviewBool !=
+                                          //                 null) {
+                                          //               IveCoreUtilities.showInSnackBar(
+                                          //                 navigatorKey
+                                          //                     .currentContext!,
+                                          //                 _scaffoldKey,
+                                          //                 'Invite codes being sent...',
+                                          //                 durationInSeconds: 10,
+                                          //               );
 
-                                                        final EmailReportsService
-                                                        svc =
-                                                            EmailReportsService();
-                                                        final Map<
-                                                          String,
-                                                          String
-                                                        >
-                                                        result = await svc
-                                                            .sendKennelInvitesByEmail(
-                                                              kennelId:
-                                                                  widget
-                                                                      .kennelAggregateItem
-                                                                      .kennel
-                                                                      .kennelId,
-                                                              kennelName:
-                                                                  widget
-                                                                      .kennelAggregateItem
-                                                                      .kennel
-                                                                      .kennelName,
-                                                              isPreview:
-                                                                  isPreviewBool
-                                                                      ? 'Yes'
-                                                                      : 'No',
-                                                            );
+                                          //               final EmailReportsService
+                                          //               svc =
+                                          //                   EmailReportsService();
+                                          //               final Map<
+                                          //                 String,
+                                          //                 String
+                                          //               >
+                                          //               result = await svc
+                                          //                   .sendKennelInvitesByEmail(
+                                          //                     kennelId:
+                                          //                         widget
+                                          //                             .kennelAggregateItem
+                                          //                             .kennel
+                                          //                             .kennelId,
+                                          //                     kennelName:
+                                          //                         widget
+                                          //                             .kennelAggregateItem
+                                          //                             .kennel
+                                          //                             .kennelName,
+                                          //                     isPreview:
+                                          //                         isPreviewBool
+                                          //                             ? 'Yes'
+                                          //                             : 'No',
+                                          //                   );
 
-                                                        ScaffoldMessenger.of(
-                                                          navigatorKey
-                                                              .currentContext!,
-                                                        ).hideCurrentSnackBar();
+                                          //               ScaffoldMessenger.of(
+                                          //                 navigatorKey
+                                          //                     .currentContext!,
+                                          //               ).hideCurrentSnackBar();
 
-                                                        await Utilities.showAlert(
-                                                          (result['result'] ??
-                                                                      '')
-                                                                  .toLowerCase()
-                                                                  .startsWith(
-                                                                    'fail',
-                                                                  )
-                                                              ? 'Failed'
-                                                              : 'Success',
-                                                          (result['result'] ??
-                                                              ''),
-                                                          'OK',
-                                                        );
-                                                      }
-                                                    }
-                                                  },
-                                                ),
-                                              ),
-                                            ),
-                                          ),
+                                          //               await Utilities.showAlert(
+                                          //                 (result['result'] ??
+                                          //                             '')
+                                          //                         .toLowerCase()
+                                          //                         .startsWith(
+                                          //                           'fail',
+                                          //                         )
+                                          //                     ? 'Failed'
+                                          //                     : 'Success',
+                                          //                 (result['result'] ??
+                                          //                     ''),
+                                          //                 'OK',
+                                          //               );
+                                          //             }
+                                          //           }
+                                          //         },
+                                          //       ),
+                                          //     ),
+                                          //   ),
+                                          // ),
 
                                           // Padding(
                                           //   padding: const EdgeInsets.only(top: 15, bottom: 15),
@@ -2123,50 +2124,50 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
     );
   }
 
-  static Future<bool?> _promptForSending(BuildContext context) async {
-    return showDialog<bool>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Send invite codes', style: ts_alertDialogTitle),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(
-                  'This feature allows you to send Invite Codes to all users in the Harrier Central system that have an account, but have not yet logged in using their mobile device.\r\n\r\nWe recommend that you first test before sending to see if the number of accounts appears correct.',
-                  style: ts_alertDialogBody,
-                ),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              style: text_button_style,
-              child: Text('Cancel', style: ts_button),
-              onPressed: () {
-                Navigator.of(context).pop(null);
-              },
-            ),
-            TextButton(
-              style: text_button_style,
-              child: Text('Preview', style: ts_button),
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-            ),
-            TextButton(
-              style: text_button_style,
-              child: Text('Send', style: ts_button),
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+  // static Future<bool?> _promptForSending(BuildContext context) async {
+  //   return showDialog<bool>(
+  //     context: context,
+  //     barrierDismissible: false, // user must tap button!
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: Text('Send invite codes', style: ts_alertDialogTitle),
+  //         content: SingleChildScrollView(
+  //           child: ListBody(
+  //             children: <Widget>[
+  //               Text(
+  //                 'This feature allows you to send Invite Codes to all users in the Harrier Central system that have an account, but have not yet logged in using their mobile device.\r\n\r\nWe recommend that you first test before sending to see if the number of accounts appears correct.',
+  //                 style: ts_alertDialogBody,
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //         actions: <Widget>[
+  //           TextButton(
+  //             style: text_button_style,
+  //             child: Text('Cancel', style: ts_button),
+  //             onPressed: () {
+  //               Navigator.of(context).pop(null);
+  //             },
+  //           ),
+  //           TextButton(
+  //             style: text_button_style,
+  //             child: Text('Preview', style: ts_button),
+  //             onPressed: () {
+  //               Navigator.of(context).pop(true);
+  //             },
+  //           ),
+  //           TextButton(
+  //             style: text_button_style,
+  //             child: Text('Send', style: ts_button),
+  //             onPressed: () {
+  //               Navigator.of(context).pop(false);
+  //             },
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   Widget _mmRow(String s) {
     if (s.isEmpty) {

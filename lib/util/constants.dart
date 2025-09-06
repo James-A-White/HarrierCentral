@@ -80,8 +80,9 @@ const String EMAIL_RUN_REPORT_API_URL =
 
 // old APIs below
 
-const String EMAIL_RUN_DETAILS_TO_PACK_API_URL =
-    'https://hcazurefunctions7.azurewebsites.net/api/SendRunDetailEmails';
+// TODO: Re-implement email run details
+// const String EMAIL_RUN_DETAILS_TO_PACK_API_URL =
+//     'https://hcazurefunctions7.azurewebsites.net/api/SendRunDetailEmails';
 
 // const String EMAIL_PAYMENT_API_URL =
 //     'https://hcazurefunctions7.azurewebsites.net/api/SendPaymentReport';
@@ -89,8 +90,9 @@ const String EMAIL_RUN_DETAILS_TO_PACK_API_URL =
 // const String EMAIL_RUN_REPORT_API_URL =
 //     'https://hcazurefunctions7.azurewebsites.net/api/SendRunCountsReport';
 
-const String EMAIL_KENNEL_INVITE_CODES_API_URL =
-    'https://hcazurefunctions7.azurewebsites.net/api/SendKennelInviteCodes';
+// TODO: Re-implement email run details
+// const String EMAIL_KENNEL_INVITE_CODES_API_URL =
+//     'https://hcazurefunctions7.azurewebsites.net/api/SendKennelInviteCodes';
 
 // const String EMAIL_KENNEL_RUN_STATS_API_URL =
 //     'https://hcazurefunctions7.azurewebsites.net/api/SendKennelRunStatsReport';

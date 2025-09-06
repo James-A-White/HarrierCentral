@@ -54,45 +54,47 @@ class EmailReportsService {
     };
   }
 
-  Future<Map<String, String>> sendKennelInvitesByEmail({
-    required String kennelId,
-    required String kennelName,
-    required String isPreview,
-  }) async {
-    final String? userId = getStringPref(StringPrefsEnum.userId);
-    final String userName = getStringPref(StringPrefsEnum.displayName) ?? '';
-    final String? emailAddress = getStringPref(StringPrefsEnum.email);
+  // TODO: Re-implement email run invites
 
-    if (((userId ?? '').isNotEmpty) && ((emailAddress ?? '').isNotEmpty)) {
-      final String accessToken = Utilities.generateToken(
-        userId!,
-        'rptApi_emailKennelInviteCodes',
-        paramString: kennelId,
-      );
+  // Future<Map<String, String>> sendKennelInvitesByEmail({
+  //   required String kennelId,
+  //   required String kennelName,
+  //   required String isPreview,
+  // }) async {
+  //   final String? userId = getStringPref(StringPrefsEnum.userId);
+  //   final String userName = getStringPref(StringPrefsEnum.displayName) ?? '';
+  //   final String? emailAddress = getStringPref(StringPrefsEnum.email);
 
-      final String body = jsonEncode(<String, String>{
-        'userId': userId,
-        'accessToken': accessToken,
-        'kennelId': kennelId,
-        'kennelName': kennelName,
-        'userName': userName,
-        'emailAddress': emailAddress!,
-        'isPreview': isPreview,
-      });
+  //   if (((userId ?? '').isNotEmpty) && ((emailAddress ?? '').isNotEmpty)) {
+  //     final String accessToken = Utilities.generateToken(
+  //       userId!,
+  //       'rptApi_emailKennelInviteCodes',
+  //       paramString: kennelId,
+  //     );
 
-      final Response response = await post(
-        Uri.parse(EMAIL_KENNEL_INVITE_CODES_API_URL),
-        headers: <String, String>{'content-type': 'application/json'},
-        body: body,
-      ).catchError((dynamic error) {
-        return Future<Response>.value(Response('error', 500));
-      });
+  //     final String body = jsonEncode(<String, String>{
+  //       'userId': userId,
+  //       'accessToken': accessToken,
+  //       'kennelId': kennelId,
+  //       'kennelName': kennelName,
+  //       'userName': userName,
+  //       'emailAddress': emailAddress!,
+  //       'isPreview': isPreview,
+  //     });
 
-      return <String, String>{'result': response.body};
-    }
-    return <String, String>{
-      'result': 'No valid email address found',
-      'email': '',
-    };
-  }
+  //     final Response response = await post(
+  //       Uri.parse(EMAIL_KENNEL_INVITE_CODES_API_URL),
+  //       headers: <String, String>{'content-type': 'application/json'},
+  //       body: body,
+  //     ).catchError((dynamic error) {
+  //       return Future<Response>.value(Response('error', 500));
+  //     });
+
+  //     return <String, String>{'result': response.body};
+  //   }
+  //   return <String, String>{
+  //     'result': 'No valid email address found',
+  //     'email': '',
+  //   };
+  // }
 }

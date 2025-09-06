@@ -593,60 +593,61 @@ class RunAdminPageState extends State<RunAdminPage> {
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: 15, bottom: 15),
-                child: SizedBox(
-                  width: 110,
-                  height: 110,
-                  child: ElevatedButton(
-                    // shape: RoundedRectangleBorder(
-                    //     borderRadius: BorderRadius.circular(10.0)),
-                    // padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.only(
-                        top: 2.0,
-                        left: 0.0,
-                        bottom: 0.0,
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.only(left: 3, top: 5),
-                          child: Image.asset(
-                            'images/icons/email_icon.png',
-                            height: 55.0,
-                            width: 55.0,
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            left: 10,
-                            right: 10,
-                            top: 10,
-                          ),
-                          child: Text(
-                            'Email Run Details',
-                            style: ts_buttonLabelSmallCompressedLines,
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ],
-                    ),
-                    onPressed: () {
-                      Navigator.push<dynamic>(
-                        context,
-                        MaterialPageRoute<dynamic>(
-                          builder:
-                              (BuildContext context) =>
-                                  EmailEditorPage(eventId: widget.eventId),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
+              // TODO: Re-implement email run details
+              // Padding(
+              //   padding: const EdgeInsets.only(top: 15, bottom: 15),
+              //   child: SizedBox(
+              //     width: 110,
+              //     height: 110,
+              //     child: ElevatedButton(
+              //       // shape: RoundedRectangleBorder(
+              //       //     borderRadius: BorderRadius.circular(10.0)),
+              //       // padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
+              //       style: ElevatedButton.styleFrom(
+              //         padding: const EdgeInsets.only(
+              //           top: 2.0,
+              //           left: 0.0,
+              //           bottom: 0.0,
+              //         ),
+              //       ),
+              //       child: Column(
+              //         crossAxisAlignment: CrossAxisAlignment.center,
+              //         children: <Widget>[
+              //           Padding(
+              //             padding: const EdgeInsets.only(left: 3, top: 5),
+              //             child: Image.asset(
+              //               'images/icons/email_icon.png',
+              //               height: 55.0,
+              //               width: 55.0,
+              //             ),
+              //           ),
+              //           Padding(
+              //             padding: const EdgeInsets.only(
+              //               left: 10,
+              //               right: 10,
+              //               top: 10,
+              //             ),
+              //             child: Text(
+              //               'Email Run Details',
+              //               style: ts_buttonLabelSmallCompressedLines,
+              //               textAlign: TextAlign.center,
+              //             ),
+              //           ),
+              //         ],
+              //       ),
+              //       onPressed: () {
+              //         Navigator.push<dynamic>(
+              //           context,
+              //           MaterialPageRoute<dynamic>(
+              //             builder:
+              //                 (BuildContext context) =>
+              //                     EmailEditorPage(eventId: widget.eventId),
+              //           ),
+              //         );
+              //       },
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         );
