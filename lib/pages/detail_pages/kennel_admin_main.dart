@@ -601,315 +601,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           ),
                                         ],
                                       ),
-                                    if (widget
-                                            .kennelAggregateItem
-                                            .hkm
-                                            ?.appAccess
-                                            .canManageMembers ??
-                                        false)
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceAround,
-                                        children: <Widget>[
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                              top: 15,
-                                              bottom: 15,
-                                            ),
-                                            child: SizedBox(
-                                              width: 110,
-                                              height: 110,
-                                              child: Connection2.styleForConnected(
-                                                appModel.connectionStatus,
-                                                ElevatedButton(
-                                                  style: ElevatedButton.styleFrom(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                          top: 8.0,
-                                                          bottom: 0.0,
-                                                        ),
-                                                  ),
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .center,
-                                                    children: <Widget>[
-                                                      const Padding(
-                                                        padding:
-                                                            EdgeInsets.only(
-                                                              left: 0,
-                                                            ),
-                                                        child: Icon(
-                                                          Ionicons.md_people,
-                                                          color: Colors.white,
-                                                          size: 60,
-                                                        ),
-                                                      ),
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets.only(
-                                                              left: 10,
-                                                              right: 10,
-                                                              top: 4,
-                                                            ),
-                                                        child: Text(
-                                                          'Manage Members',
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          style:
-                                                              ts_buttonLabelMedium,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  onPressed: () {
-                                                    if (Connection2.checkForConnection(
-                                                      appModel.connectionStatus,
-                                                    )) {
-                                                      _kennelMembersList =
-                                                          KennelMembersList(
-                                                            kennelListAggregate:
-                                                                widget
-                                                                    .kennelAggregateItem,
-                                                          );
-                                                      Navigator.push<dynamic>(
-                                                        context,
-                                                        MaterialPageRoute<
-                                                          dynamic
-                                                        >(
-                                                          builder:
-                                                              (
-                                                                BuildContext
-                                                                context,
-                                                              ) =>
-                                                                  _kennelMembersList ??
-                                                                  Container(),
-                                                        ),
-                                                      ).then((void _) async {
-                                                        final KennelListAggregate?
-                                                        kennelAggregate =
-                                                            await QueryKennels.getSingleKennel(
-                                                              widget
-                                                                  .kennelAggregateItem
-                                                                  .kennel
-                                                                  .kennelId,
-                                                            );
 
-                                                        setState(() {
-                                                          if ((kennelAggregate
-                                                                      ?.kennel
-                                                                      .kennelMismanagementTeam ==
-                                                                  null) ||
-                                                              (kennelAggregate!
-                                                                  .kennel
-                                                                  .kennelMismanagementTeam!
-                                                                  .trim()
-                                                                  .isEmpty)) {
-                                                            _mismanagement =
-                                                                null;
-                                                          } else {
-                                                            _mismanagement =
-                                                                kennelAggregate
-                                                                        .kennel
-                                                                        .kennelMismanagementTeam!
-                                                                        .contains(
-                                                                          '\r',
-                                                                        )
-                                                                    ? kennelAggregate
-                                                                        .kennel
-                                                                        .kennelMismanagementTeam!
-                                                                        .split(
-                                                                          '\r',
-                                                                        )
-                                                                    : kennelAggregate
-                                                                        .kennel
-                                                                        .kennelMismanagementTeam!
-                                                                        .split(
-                                                                          '\n',
-                                                                        );
-                                                          }
-                                                        });
-                                                      });
-                                                    }
-                                                  },
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-
-                                          // TODO: Re-implement email run details
-                                          // Padding(
-                                          //   padding: const EdgeInsets.only(
-                                          //     top: 15,
-                                          //     bottom: 15,
-                                          //   ),
-                                          //   child: SizedBox(
-                                          //     width: 110,
-                                          //     height: 110,
-                                          //     child: Connection2.styleForConnected(
-                                          //       appModel.connectionStatus,
-                                          //       ElevatedButton(
-                                          //         style: ElevatedButton.styleFrom(
-                                          //           padding:
-                                          //               const EdgeInsets.only(
-                                          //                 top: 8.0,
-                                          //                 bottom: 0.0,
-                                          //               ),
-                                          //         ),
-                                          //         child: Column(
-                                          //           crossAxisAlignment:
-                                          //               CrossAxisAlignment
-                                          //                   .center,
-                                          //           children: <Widget>[
-                                          //             const Padding(
-                                          //               padding:
-                                          //                   EdgeInsets.only(
-                                          //                     left: 0,
-                                          //                     top: 4,
-                                          //                   ),
-                                          //               child: Icon(
-                                          //                 MaterialCommunityIcons
-                                          //                     .email_newsletter,
-                                          //                 color: Colors.white,
-                                          //                 size: 55,
-                                          //               ),
-                                          //             ),
-                                          //             Padding(
-                                          //               padding:
-                                          //                   const EdgeInsets.only(
-                                          //                     left: 10,
-                                          //                     right: 10,
-                                          //                     top: 7,
-                                          //                   ),
-                                          //               child: Text(
-                                          //                 'Email invite codes',
-                                          //                 textAlign:
-                                          //                     TextAlign.center,
-                                          //                 style:
-                                          //                     ts_buttonLabelMedium,
-                                          //               ),
-                                          //             ),
-                                          //           ],
-                                          //         ),
-                                          //         onPressed: () async {
-                                          //           if (Connection2.checkForConnection(
-                                          //             appModel.connectionStatus,
-                                          //           )) {
-                                          //             final bool?
-                                          //             isPreviewBool =
-                                          //                 await _promptForSending(
-                                          //                   context,
-                                          //                 );
-
-                                          //             if (isPreviewBool !=
-                                          //                 null) {
-                                          //               IveCoreUtilities.showInSnackBar(
-                                          //                 navigatorKey
-                                          //                     .currentContext!,
-                                          //                 _scaffoldKey,
-                                          //                 'Invite codes being sent...',
-                                          //                 durationInSeconds: 10,
-                                          //               );
-
-                                          //               final EmailReportsService
-                                          //               svc =
-                                          //                   EmailReportsService();
-                                          //               final Map<
-                                          //                 String,
-                                          //                 String
-                                          //               >
-                                          //               result = await svc
-                                          //                   .sendKennelInvitesByEmail(
-                                          //                     kennelId:
-                                          //                         widget
-                                          //                             .kennelAggregateItem
-                                          //                             .kennel
-                                          //                             .kennelId,
-                                          //                     kennelName:
-                                          //                         widget
-                                          //                             .kennelAggregateItem
-                                          //                             .kennel
-                                          //                             .kennelName,
-                                          //                     isPreview:
-                                          //                         isPreviewBool
-                                          //                             ? 'Yes'
-                                          //                             : 'No',
-                                          //                   );
-
-                                          //               ScaffoldMessenger.of(
-                                          //                 navigatorKey
-                                          //                     .currentContext!,
-                                          //               ).hideCurrentSnackBar();
-
-                                          //               await Utilities.showAlert(
-                                          //                 (result['result'] ??
-                                          //                             '')
-                                          //                         .toLowerCase()
-                                          //                         .startsWith(
-                                          //                           'fail',
-                                          //                         )
-                                          //                     ? 'Failed'
-                                          //                     : 'Success',
-                                          //                 (result['result'] ??
-                                          //                     ''),
-                                          //                 'OK',
-                                          //               );
-                                          //             }
-                                          //           }
-                                          //         },
-                                          //       ),
-                                          //     ),
-                                          //   ),
-                                          // ),
-
-                                          // Padding(
-                                          //   padding: const EdgeInsets.only(top: 15, bottom: 15),
-                                          //   child: Container(
-                                          //     width: 110,
-                                          //     height: 110,
-                                          //     child: Connection2.styleForConnected(
-                                          //       appModel.connectionStatus,
-                                          //       ElevatedButton(
-                                          //         style: ElevatedButton.styleFrom(
-                                          //           padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
-                                          //         ),
-                                          //         child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-                                          //           const Padding(
-                                          //             padding: EdgeInsets.only(left: 0),
-                                          //             child: Icon(MaterialCommunityIcons.run_fast, color: Colors.white, size: 60),
-                                          //           ),
-                                          //           Padding(
-                                          //             padding: const EdgeInsets.only(left: 10, right: 10, top: 5),
-                                          //             child: Text(
-                                          //               'Add & Edit\r\nruns',
-                                          //               textAlign: TextAlign.center,
-                                          //               style: buttonLabelStyleSmall,
-                                          //             ),
-                                          //           ),
-                                          //         ]),
-                                          //         onPressed: () {
-                                          //           if (Connection2.checkForConnection(context, appModel.connectionStatus)) {
-                                          //             Navigator.push<dynamic>(
-                                          //               context,
-                                          //               MaterialPageRoute<dynamic>(
-                                          //                 builder: (BuildContext context) => AddEditEventsPage(
-                                          //                   kennel: widget.kennelAggregateItem,
-                                          //                   pageType: FilterEventsPageType.future,
-                                          //                 ),
-                                          //               ),
-                                          //             ).then((void _) {
-                                          //               _refreshFromTable(true).then((void _) {
-                                          //                 setState(() {});
-                                          //               });
-                                          //             });
-                                          //           }
-                                          //         },
-                                          //       ),
-                                          //     ),
-                                          //   ),
-                                          // ),
-                                        ],
-                                      ),
                                     if (widget
                                             .kennelAggregateItem
                                             .hkm
@@ -1089,16 +781,195 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           ),
                                         ],
                                       ),
-                                    if (widget
-                                            .kennelAggregateItem
-                                            .hkm
-                                            ?.appAccess
-                                            .canManageRuns ??
-                                        false)
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceAround,
-                                        children: <Widget>[
+
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                      children: <Widget>[
+                                        // TODO: Re-implement email run details
+                                        // Padding(
+                                        //   padding: const EdgeInsets.only(
+                                        //     top: 15,
+                                        //     bottom: 15,
+                                        //   ),
+                                        //   child: SizedBox(
+                                        //     width: 110,
+                                        //     height: 110,
+                                        //     child: Connection2.styleForConnected(
+                                        //       appModel.connectionStatus,
+                                        //       ElevatedButton(
+                                        //         style: ElevatedButton.styleFrom(
+                                        //           padding:
+                                        //               const EdgeInsets.only(
+                                        //                 top: 8.0,
+                                        //                 bottom: 0.0,
+                                        //               ),
+                                        //         ),
+                                        //         child: Column(
+                                        //           crossAxisAlignment:
+                                        //               CrossAxisAlignment
+                                        //                   .center,
+                                        //           children: <Widget>[
+                                        //             const Padding(
+                                        //               padding:
+                                        //                   EdgeInsets.only(
+                                        //                     left: 0,
+                                        //                     top: 4,
+                                        //                   ),
+                                        //               child: Icon(
+                                        //                 MaterialCommunityIcons
+                                        //                     .email_newsletter,
+                                        //                 color: Colors.white,
+                                        //                 size: 55,
+                                        //               ),
+                                        //             ),
+                                        //             Padding(
+                                        //               padding:
+                                        //                   const EdgeInsets.only(
+                                        //                     left: 10,
+                                        //                     right: 10,
+                                        //                     top: 7,
+                                        //                   ),
+                                        //               child: Text(
+                                        //                 'Email invite codes',
+                                        //                 textAlign:
+                                        //                     TextAlign.center,
+                                        //                 style:
+                                        //                     ts_buttonLabelMedium,
+                                        //               ),
+                                        //             ),
+                                        //           ],
+                                        //         ),
+                                        //         onPressed: () async {
+                                        //           if (Connection2.checkForConnection(
+                                        //             appModel.connectionStatus,
+                                        //           )) {
+                                        //             final bool?
+                                        //             isPreviewBool =
+                                        //                 await _promptForSending(
+                                        //                   context,
+                                        //                 );
+
+                                        //             if (isPreviewBool !=
+                                        //                 null) {
+                                        //               IveCoreUtilities.showInSnackBar(
+                                        //                 navigatorKey
+                                        //                     .currentContext!,
+                                        //                 _scaffoldKey,
+                                        //                 'Invite codes being sent...',
+                                        //                 durationInSeconds: 10,
+                                        //               );
+
+                                        //               final EmailReportsService
+                                        //               svc =
+                                        //                   EmailReportsService();
+                                        //               final Map<
+                                        //                 String,
+                                        //                 String
+                                        //               >
+                                        //               result = await svc
+                                        //                   .sendKennelInvitesByEmail(
+                                        //                     kennelId:
+                                        //                         widget
+                                        //                             .kennelAggregateItem
+                                        //                             .kennel
+                                        //                             .kennelId,
+                                        //                     kennelName:
+                                        //                         widget
+                                        //                             .kennelAggregateItem
+                                        //                             .kennel
+                                        //                             .kennelName,
+                                        //                     isPreview:
+                                        //                         isPreviewBool
+                                        //                             ? 'Yes'
+                                        //                             : 'No',
+                                        //                   );
+
+                                        //               ScaffoldMessenger.of(
+                                        //                 navigatorKey
+                                        //                     .currentContext!,
+                                        //               ).hideCurrentSnackBar();
+
+                                        //               await Utilities.showAlert(
+                                        //                 (result['result'] ??
+                                        //                             '')
+                                        //                         .toLowerCase()
+                                        //                         .startsWith(
+                                        //                           'fail',
+                                        //                         )
+                                        //                     ? 'Failed'
+                                        //                     : 'Success',
+                                        //                 (result['result'] ??
+                                        //                     ''),
+                                        //                 'OK',
+                                        //               );
+                                        //             }
+                                        //           }
+                                        //         },
+                                        //       ),
+                                        //     ),
+                                        //   ),
+                                        // ),
+
+                                        // Padding(
+                                        //   padding: const EdgeInsets.only(top: 15, bottom: 15),
+                                        //   child: Container(
+                                        //     width: 110,
+                                        //     height: 110,
+                                        //     child: Connection2.styleForConnected(
+                                        //       appModel.connectionStatus,
+                                        //       ElevatedButton(
+                                        //         style: ElevatedButton.styleFrom(
+                                        //           padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
+                                        //         ),
+                                        //         child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                                        //           const Padding(
+                                        //             padding: EdgeInsets.only(left: 0),
+                                        //             child: Icon(MaterialCommunityIcons.run_fast, color: Colors.white, size: 60),
+                                        //           ),
+                                        //           Padding(
+                                        //             padding: const EdgeInsets.only(left: 10, right: 10, top: 5),
+                                        //             child: Text(
+                                        //               'Add & Edit\r\nruns',
+                                        //               textAlign: TextAlign.center,
+                                        //               style: buttonLabelStyleSmall,
+                                        //             ),
+                                        //           ),
+                                        //         ]),
+                                        //         onPressed: () {
+                                        //           if (Connection2.checkForConnection(context, appModel.connectionStatus)) {
+                                        //             Navigator.push<dynamic>(
+                                        //               context,
+                                        //               MaterialPageRoute<dynamic>(
+                                        //                 builder: (BuildContext context) => AddEditEventsPage(
+                                        //                   kennel: widget.kennelAggregateItem,
+                                        //                   pageType: FilterEventsPageType.future,
+                                        //                 ),
+                                        //               ),
+                                        //             ).then((void _) {
+                                        //               _refreshFromTable(true).then((void _) {
+                                        //                 setState(() {});
+                                        //               });
+                                        //             });
+                                        //           }
+                                        //         },
+                                        //       ),
+                                        //     ),
+                                        //   ),
+                                        // ),
+                                      ],
+                                    ),
+
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                      children: <Widget>[
+                                        if (widget
+                                                .kennelAggregateItem
+                                                .hkm
+                                                ?.appAccess
+                                                .canManageRuns ??
+                                            false)
                                           Container(
                                             margin: const EdgeInsets.only(
                                               top: 20,
@@ -1211,8 +1082,140 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                               ),
                                             ),
                                           ),
-                                        ],
-                                      ),
+
+                                        if (widget
+                                                .kennelAggregateItem
+                                                .hkm
+                                                ?.appAccess
+                                                .canManageMembers ??
+                                            false)
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              top: 15,
+                                              bottom: 15,
+                                            ),
+                                            child: SizedBox(
+                                              width: 110,
+                                              height: 110,
+                                              child: Connection2.styleForConnected(
+                                                appModel.connectionStatus,
+                                                ElevatedButton(
+                                                  style: ElevatedButton.styleFrom(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                          top: 8.0,
+                                                          bottom: 0.0,
+                                                        ),
+                                                  ),
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
+                                                    children: <Widget>[
+                                                      const Padding(
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                              left: 0,
+                                                            ),
+                                                        child: Icon(
+                                                          Ionicons.md_people,
+                                                          color: Colors.white,
+                                                          size: 60,
+                                                        ),
+                                                      ),
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets.only(
+                                                              left: 10,
+                                                              right: 10,
+                                                              top: 4,
+                                                            ),
+                                                        child: Text(
+                                                          'Manage Members',
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style:
+                                                              ts_buttonLabelMedium,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  onPressed: () {
+                                                    if (Connection2.checkForConnection(
+                                                      appModel.connectionStatus,
+                                                    )) {
+                                                      _kennelMembersList =
+                                                          KennelMembersList(
+                                                            kennelListAggregate:
+                                                                widget
+                                                                    .kennelAggregateItem,
+                                                          );
+                                                      Navigator.push<dynamic>(
+                                                        context,
+                                                        MaterialPageRoute<
+                                                          dynamic
+                                                        >(
+                                                          builder:
+                                                              (
+                                                                BuildContext
+                                                                context,
+                                                              ) =>
+                                                                  _kennelMembersList ??
+                                                                  Container(),
+                                                        ),
+                                                      ).then((void _) async {
+                                                        final KennelListAggregate?
+                                                        kennelAggregate =
+                                                            await QueryKennels.getSingleKennel(
+                                                              widget
+                                                                  .kennelAggregateItem
+                                                                  .kennel
+                                                                  .kennelId,
+                                                            );
+
+                                                        setState(() {
+                                                          if ((kennelAggregate
+                                                                      ?.kennel
+                                                                      .kennelMismanagementTeam ==
+                                                                  null) ||
+                                                              (kennelAggregate!
+                                                                  .kennel
+                                                                  .kennelMismanagementTeam!
+                                                                  .trim()
+                                                                  .isEmpty)) {
+                                                            _mismanagement =
+                                                                null;
+                                                          } else {
+                                                            _mismanagement =
+                                                                kennelAggregate
+                                                                        .kennel
+                                                                        .kennelMismanagementTeam!
+                                                                        .contains(
+                                                                          '\r',
+                                                                        )
+                                                                    ? kennelAggregate
+                                                                        .kennel
+                                                                        .kennelMismanagementTeam!
+                                                                        .split(
+                                                                          '\r',
+                                                                        )
+                                                                    : kennelAggregate
+                                                                        .kennel
+                                                                        .kennelMismanagementTeam!
+                                                                        .split(
+                                                                          '\n',
+                                                                        );
+                                                          }
+                                                        });
+                                                      });
+                                                    }
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
                                     const Padding(
                                       padding: EdgeInsets.only(
                                         top: 50.0,

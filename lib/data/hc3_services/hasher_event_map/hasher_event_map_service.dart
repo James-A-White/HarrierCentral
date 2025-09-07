@@ -288,6 +288,7 @@ class HasherEventMapService {
     int rsvpState, {
     int? isHare,
     String? hemId,
+    bool? autoSetNotifications,
   }) async {
     if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
       return <dynamic>[];
@@ -336,6 +337,12 @@ class HasherEventMapService {
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
       'hasherKennelMapUpdatedAfter': hasherKennelMapUpdatedAfter.toString(),
       'hemId': hemId,
+      'autoSetNotifications':
+          (autoSetNotifications ??
+                  getBoolPref(BoolPrefsEnum.automaticallySetNotifiationPrefs) ??
+                  true)
+              ? 1
+              : 0,
     };
 
     if (isHare != null) {

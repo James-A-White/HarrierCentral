@@ -551,6 +551,130 @@ class RunAdminPageState extends State<RunAdminPage> {
                         Padding(
                           padding: const EdgeInsets.only(left: 3, top: 5),
                           child: Image.asset(
+                            'images/icons/edit_run_icon.png',
+                            height: 55.0,
+                            width: 55.0,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 10,
+                            right: 10,
+                            top: 10,
+                          ),
+                          child: Text(
+                            'Edit run details',
+                            style: ts_buttonLabelSmallCompressedLines,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    ),
+                    onPressed: () async {
+                      await Navigator.push<dynamic>(
+                        context,
+                        MaterialPageRoute<dynamic>(
+                          builder:
+                              (
+                                BuildContext context,
+                              ) => EditRunDetailsPage(false, _eventAggregate!, (
+                                String eventId,
+                              ) async {
+                                _eventAggregate =
+                                    await CommonQueries.getEventAdminInfoFromLocalCache(
+                                      eventId,
+                                      _userId,
+                                    );
+                                _isLoading = false;
+                                return _eventAggregate!;
+                              }),
+                        ),
+                      );
+                      _getRunDetails(widget.eventId);
+                    },
+                  ),
+                ),
+              ),
+              if (_eventAggregate!.extensions.appAccess.canManageAwards)
+                Container(
+                  margin: const EdgeInsets.only(top: 20, bottom: 15),
+                  width: 110,
+                  height: 110,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
+                    ),
+                    child: Column(
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.only(left: 3, top: 1),
+                          child: Image.asset(
+                            'images/icons/run_awards.png',
+                            height: 55.0,
+                            width: 55.0,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 10,
+                            right: 10,
+                            top: 8,
+                          ),
+                          child: Text(
+                            'Award\r\nlist',
+                            textAlign: TextAlign.center,
+                            style: ts_buttonLabelMedium,
+                          ),
+                        ),
+                      ],
+                    ),
+                    onPressed: () {
+                      Navigator.push<dynamic>(
+                        context,
+                        MaterialPageRoute<dynamic>(
+                          builder:
+                              (BuildContext context) =>
+                                  DrinksList(eventAggregate: _eventAggregate!),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+            ],
+          ),
+        );
+
+        kiddies.add(
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.only(top: 15, bottom: 15),
+                child: SizedBox(
+                  width: 110,
+                  height: 110,
+                  // foregroundDecoration: BoxDecoration(
+                  //   color: Colors.grey,
+                  //   backgroundBlendMode: BlendMode.saturation,
+                  // ),
+                  child: ElevatedButton(
+                    // shape: RoundedRectangleBorder(
+                    //     borderRadius: BorderRadius.circular(10.0)),
+                    // padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.only(
+                        top: 2.0,
+                        left: 0.0,
+                        bottom: 0.0,
+                      ),
+                      //primary: Colors.grey,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.only(left: 3, top: 5),
+                          child: Image.asset(
                             'images/icons/print_qr_icon.png',
                             height: 55.0,
                             width: 55.0,
@@ -648,130 +772,6 @@ class RunAdminPageState extends State<RunAdminPage> {
               //     ),
               //   ),
               // ),
-            ],
-          ),
-        );
-
-        kiddies.add(
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(top: 15, bottom: 15),
-                child: SizedBox(
-                  width: 110,
-                  height: 110,
-                  // foregroundDecoration: BoxDecoration(
-                  //   color: Colors.grey,
-                  //   backgroundBlendMode: BlendMode.saturation,
-                  // ),
-                  child: ElevatedButton(
-                    // shape: RoundedRectangleBorder(
-                    //     borderRadius: BorderRadius.circular(10.0)),
-                    // padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.only(
-                        top: 2.0,
-                        left: 0.0,
-                        bottom: 0.0,
-                      ),
-                      //primary: Colors.grey,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.only(left: 3, top: 5),
-                          child: Image.asset(
-                            'images/icons/edit_run_icon.png',
-                            height: 55.0,
-                            width: 55.0,
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            left: 10,
-                            right: 10,
-                            top: 10,
-                          ),
-                          child: Text(
-                            'Edit run details',
-                            style: ts_buttonLabelSmallCompressedLines,
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ],
-                    ),
-                    onPressed: () async {
-                      await Navigator.push<dynamic>(
-                        context,
-                        MaterialPageRoute<dynamic>(
-                          builder:
-                              (
-                                BuildContext context,
-                              ) => EditRunDetailsPage(false, _eventAggregate!, (
-                                String eventId,
-                              ) async {
-                                _eventAggregate =
-                                    await CommonQueries.getEventAdminInfoFromLocalCache(
-                                      eventId,
-                                      _userId,
-                                    );
-                                _isLoading = false;
-                                return _eventAggregate!;
-                              }),
-                        ),
-                      );
-                      _getRunDetails(widget.eventId);
-                    },
-                  ),
-                ),
-              ),
-              if (_eventAggregate!.extensions.appAccess.canManageAwards)
-                Container(
-                  margin: const EdgeInsets.only(top: 20, bottom: 15),
-                  width: 110,
-                  height: 110,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
-                    ),
-                    child: Column(
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.only(left: 3, top: 1),
-                          child: Image.asset(
-                            'images/icons/run_awards.png',
-                            height: 55.0,
-                            width: 55.0,
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            left: 10,
-                            right: 10,
-                            top: 8,
-                          ),
-                          child: Text(
-                            'Award\r\nlist',
-                            textAlign: TextAlign.center,
-                            style: ts_buttonLabelMedium,
-                          ),
-                        ),
-                      ],
-                    ),
-                    onPressed: () {
-                      Navigator.push<dynamic>(
-                        context,
-                        MaterialPageRoute<dynamic>(
-                          builder:
-                              (BuildContext context) =>
-                                  DrinksList(eventAggregate: _eventAggregate!),
-                        ),
-                      );
-                    },
-                  ),
-                ),
             ],
           ),
         );

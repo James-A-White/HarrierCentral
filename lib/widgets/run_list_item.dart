@@ -24,6 +24,9 @@ class RunListItemController extends GetxController {
   final Rx<NotificationState> notificationPreference;
   final Rx<int> isPaid;
   final Rx<String> hares;
+  final Rx<bool> automaticallySetNotifiationPrefs =
+      getBoolPref(BoolPrefsEnum.automaticallySetNotifiationPrefs)?.obs ??
+      true.obs;
 
   void setRsvpState(int state) => rsvpState.value = state;
   void setEmailState(int state) => emailAlertPreference.value = state;
@@ -617,6 +620,44 @@ class RunListItem extends StatelessWidget {
         buttons: buttons,
         cancelButtonTitle: 'Cancel',
         cancelButtonReturnValue: followTypeCancel,
+        otherControls: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10.0),
+            child: Row(
+              children: <Widget>[
+                Container(
+                  margin: const EdgeInsets.only(right: 10),
+                  height: 25,
+                  width: 25,
+                  color: Colors.yellow[100],
+                  child: Obx(
+                    () => Checkbox(
+                      value:
+                          rliController.automaticallySetNotifiationPrefs.value,
+                      onChanged: (bool? value) {
+                        rliController.automaticallySetNotifiationPrefs.value =
+                            value ?? true;
+                        setBoolPref(
+                          BoolPrefsEnum.automaticallySetNotifiationPrefs,
+                          value ?? true,
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    'Automatically set email and notification preferences for this run',
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: ts_headingBlack,
+                    textAlign: TextAlign.left,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       );
 
       dynamic retVal = await Get.dialog<dynamic>(
@@ -826,6 +867,44 @@ class RunListItem extends StatelessWidget {
         buttons: buttons,
         cancelButtonTitle: 'Cancel',
         cancelButtonReturnValue: followTypeCancel,
+        otherControls: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10.0),
+            child: Row(
+              children: <Widget>[
+                Container(
+                  margin: const EdgeInsets.only(right: 10),
+                  height: 25,
+                  width: 25,
+                  color: Colors.yellow[100],
+                  child: Obx(
+                    () => Checkbox(
+                      value:
+                          rliController.automaticallySetNotifiationPrefs.value,
+                      onChanged: (bool? value) {
+                        rliController.automaticallySetNotifiationPrefs.value =
+                            value ?? true;
+                        setBoolPref(
+                          BoolPrefsEnum.automaticallySetNotifiationPrefs,
+                          value ?? true,
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    'Automatically set email and notification preferences for this run',
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: ts_headingBlack,
+                    textAlign: TextAlign.left,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       );
 
       dynamic retVal = await Get.dialog<dynamic>(popup);
@@ -851,15 +930,32 @@ class RunListItem extends StatelessWidget {
           userId,
           AppDomainType.user,
           rsvpState.value,
+          autoSetNotifications:
+              rliController.automaticallySetNotifiationPrefs.value,
         );
 
     final int rsvpResult = adHocData[0]['rsvpState'];
     final int willHareResult = adHocData[0]['willHareState'];
     final String hares = adHocData[0]['hares'] ?? '';
     final String serverMessage = adHocData[0]['serverMessage'] ?? '';
+    final int? eventNotificationPreference =
+        adHocData[0]['eventNotificationPreference'];
+    final int? emailAlertPreference = adHocData[0]['emailAlertPreference'];
 
     rliController.rsvpState.value = rsvpResult;
     rliController.isHareState.value = willHareResult;
+
+    NotificationState? ns;
+
+    if (eventNotificationPreference != null) {
+      ns = NotificationState.fromInt(eventNotificationPreference);
+      rliController.notificationPreference.value =
+          ns ?? rliController.notificationPreference.value;
+    }
+
+    if (emailAlertPreference != null) {
+      rliController.emailAlertPreference.value = emailAlertPreference;
+    }
 
     if (rliController.hares.value != hares) {
       rliController.hares.value = hares;

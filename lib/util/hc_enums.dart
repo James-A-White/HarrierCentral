@@ -64,7 +64,11 @@ enum NumPrefsEnum {
   homeKennelLon,
 }
 
-enum BoolPrefsEnum { notificationPreferencesRequested, fcmTokenSavedToServer }
+enum BoolPrefsEnum {
+  notificationPreferencesRequested,
+  fcmTokenSavedToServer,
+  automaticallySetNotifiationPrefs,
+}
 
 enum IntPrefsEnum {
   databaseVersion,
@@ -202,11 +206,11 @@ const EnumVirginVisitor enumKnownVisitor = EnumVirginVisitor(3);
 
 enum NotificationState {
   unchanged(-1),
-  auto(0),
-  on(1),
-  ignore(2),
-  mute(3),
-  onBeforeRun(4);
+  auto(0), // use the kennel default setting
+  on(1), // always notify
+  ignore(2), // never notify
+  mute(3), //
+  onBeforeRun(4); // notify only before the run starts
 
   final int value;
 

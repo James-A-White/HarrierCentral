@@ -29,6 +29,9 @@
 2.0.0+985
     Migrated User Run Count report to new API.
 
+2.0.0+986
+    Added change that sets the email and notification preference based on the RSVP
+
 
 ======
 
