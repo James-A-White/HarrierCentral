@@ -679,9 +679,13 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
           final KennelsModel kennelItem = tableModel.kennelsTableHelper.fromMap(
             results[0],
           );
-          final HasherKennelMapModel hkmItem = tableModel
-              .hasherKennelMapTableHelper
-              .fromMap(results[0]);
+
+          HasherKennelMapModel? hkmItem;
+
+          if (results[0]['hkmId'] != null) {
+            hkmItem = tableModel.hasherKennelMapTableHelper.fromMap(results[0]);
+          }
+
           final KennelListQueryExtenstions extensionsItem =
               KennelListQueryExtenstions.fromMap(results[0]);
           extensionsItem.distToKennel = dist;
@@ -902,8 +906,9 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                     ),
                     MarkerClusterLayerWidget(
                       options: MarkerClusterLayerOptions(
-                        maxClusterRadius: 90,
+                        maxClusterRadius: 40,
                         size: const Size(40, 40),
+                        spiderfyCircleRadius: 100,
                         // fitBoundsOptions: const FitBoundsOptions(
                         //   padding: EdgeInsets.all(50),
                         // ),
@@ -931,7 +936,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                     ),
                     MarkerClusterLayerWidget(
                       options: MarkerClusterLayerOptions(
-                        maxClusterRadius: 90,
+                        maxClusterRadius: 40,
                         size: const Size(30, 30),
                         // fitBoundsOptions: const FitBoundsOptions(
                         //   padding: EdgeInsets.all(50),
