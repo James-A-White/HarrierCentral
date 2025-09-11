@@ -18,13 +18,7 @@ class AppEntryPageState extends State<AppEntryPage>
     String bootType =
         getStringPref(StringPrefsEnum.bootType) ?? BOOT_TYPE_UNKNOWN;
 
-    if (bootType != BOOT_TYPE_RELOAD_DATA) {
-      // at this point, we still don't know what type of boot type we have
-      // so we will set it to unknown. Later on, if we determine that
-      // it is a first time boot, or an upgrade, we will set it to
-      // the appropriate value.
-      await setStringPref(StringPrefsEnum.bootType, BOOT_TYPE_UNKNOWN);
-    } else {
+    if (bootType == BOOT_TYPE_RELOAD_DATA) {
       final String? userId = getStringPref(StringPrefsEnum.userId);
       final String? deviceId = getStringPref(StringPrefsEnum.deviceId);
       final String? resetCode = getStringPref(StringPrefsEnum.resetCode);
@@ -122,6 +116,7 @@ class AppEntryPageState extends State<AppEntryPage>
       // old SharedPreferences.
 
       userId = await getStringPrefLegacy(StringPrefsEnum.userId);
+      // userId = '0cdbb109-215e-4b5f-a405-f6c9fbcb18ec'; // TEMP FOR TESTING
     }
 
     await Utilities.checkForInternetConnection(false);
@@ -320,10 +315,17 @@ class AppEntryPageState extends State<AppEntryPage>
                 // if the version numbers are greater than 10 apart,
                 // reload the entire DB.
 
-                await setStringPref(
-                  StringPrefsEnum.bootType,
-                  BOOT_TYPE_UPGRADE_DB,
-                );
+                if (installedDbVersion != 0) {
+                  // this is an upgrade of an existing DB
+                  // if installedDbVersion is 0, it means
+                  // that the DB was never initialized, so
+                  // it is a first time boot and we won't
+                  // set the boot type to upgrade.
+                  await setStringPref(
+                    StringPrefsEnum.bootType,
+                    BOOT_TYPE_UPGRADE_DB,
+                  );
+                }
 
                 final String resetCode =
                     getStringPref(StringPrefsEnum.resetCode) ?? '';
@@ -373,6 +375,8 @@ class AppEntryPageState extends State<AppEntryPage>
                     String dialogTitle = 'Profile Load Successful';
                     String dialogMessage =
                         'The app has been successfully updated for $userName.';
+
+                    //String? loadType = getStringPref(StringPrefsEnum.bootType);
 
                     if (getStringPref(StringPrefsEnum.bootType) ==
                         BOOT_TYPE_UPGRADE_1_2) {

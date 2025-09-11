@@ -210,12 +210,11 @@ class MainNavigationPage extends StatelessWidget {
                                     );
                                   }).toList(),
                               onDonePress: () async {
-                                // if (Firebase.apps.isEmpty) {
-                                //   await Firebase.initializeApp(
-                                //     options:
-                                //         DefaultFirebaseOptions.currentPlatform,
-                                //   );
-                                // }
+                                // once the Done button is pressed, we now consider this a normal boot
+                                await setStringPref(
+                                  StringPrefsEnum.bootType,
+                                  BOOT_TYPE_NORMAL,
+                                );
 
                                 if (Get.isRegistered<NotificationService>()) {
                                   await Get.delete<NotificationService>();

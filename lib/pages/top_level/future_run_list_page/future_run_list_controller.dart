@@ -137,9 +137,11 @@ class FutureRunListPageController extends GetxController {
       await Get.putAsync(() => NotificationService().init());
     }
 
-    final msg = await FirebaseMessaging.instance.getInitialMessage();
-    if (msg != null) {
-      await _processMessage(msg.data);
+    if (Firebase.apps.isNotEmpty) {
+      final msg = await FirebaseMessaging.instance.getInitialMessage();
+      if (msg != null) {
+        await _processMessage(msg.data);
+      }
     }
   }
 

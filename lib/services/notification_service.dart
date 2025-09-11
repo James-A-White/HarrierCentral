@@ -8,6 +8,10 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   Future<NotificationService> init() async {
     WidgetsBinding.instance.addObserver(this);
 
+    if (getStringPref(StringPrefsEnum.bootType) == BOOT_TYPE_UPGRADE_1_2) {
+      return this;
+    }
+
     if (Firebase.apps.isEmpty) {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
