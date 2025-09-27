@@ -85,7 +85,9 @@ class RunListItem extends StatelessWidget {
     // }
 
     String eventName = futureRun.event.eventName;
-    print('Event Name: $eventName');
+    if (kDebugMode) {
+      print('Event Name: $eventName');
+    }
 
     num daysUntilEvent =
         futureRun.extensions.eventJulian.toInt() -

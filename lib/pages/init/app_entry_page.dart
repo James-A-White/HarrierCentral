@@ -101,7 +101,9 @@ class AppEntryPageState extends State<AppEntryPage>
       await Get.deleteAll(force: true);
     }
 
-    print('App startup called...');
+    if (kDebugMode) {
+      print('App startup called...');
+    }
 
     // Let's rebuild the services and then re-run the app
     await initServices(); // GetX DI registration (see services_init.dart)

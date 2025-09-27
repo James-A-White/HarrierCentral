@@ -44,7 +44,9 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   }
 
   void refreshFcmListenerOnResume() {
-    print("App resumed – refreshing FCM listener");
+    if (kDebugMode) {
+      print("App resumed – refreshing FCM listener");
+    }
     _ensureFcmListener();
   }
 
@@ -111,20 +113,26 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
             await ServiceCommon.sendHttpPostV2(body);
             await setBoolPref(BoolPrefsEnum.fcmTokenSavedToServer, true);
           } catch (e) {
-            print('Connection error: ${e.toString()}');
+            if (kDebugMode) {
+              print('Connection error: ${e.toString()}');
+            }
           }
         }
 
         setBoolPref(BoolPrefsEnum.notificationPreferencesRequested, true);
 
-        print(
-          'Notification permission status: ${settings.authorizationStatus}',
-        );
+        if (kDebugMode) {
+          print(
+            'Notification permission status: ${settings.authorizationStatus}',
+          );
+        }
       } else {
         setBoolPref(BoolPrefsEnum.notificationPreferencesRequested, false);
-        print(
-          'Firebase not initialized, cannot request notification permission.',
-        );
+        if (kDebugMode) {
+          print(
+            'Firebase not initialized, cannot request notification permission.',
+          );
+        }
       }
     }
   }
@@ -134,7 +142,9 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       RemoteMessage? initialMessage = await _messaging!.getInitialMessage();
       if (initialMessage != null) {
         _handleNotificationClick(initialMessage);
-        print('Initial message received: ${initialMessage.data}');
+        if (kDebugMode) {
+          print('Initial message received: ${initialMessage.data}');
+        }
       }
     }
   }
@@ -142,12 +152,16 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   void _setupFirebaseListeners() {
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       _handleNotificationClick(message);
-      print('Initial message received: ${message.data}');
+      if (kDebugMode) {
+        print('Initial message received: ${message.data}');
+      }
     });
   }
 
   void _handleForegroundMessage(RemoteMessage message) {
-    print("Foreground message received: ${message.data}");
+    if (kDebugMode) {
+      print("Foreground message received: ${message.data}");
+    }
     _dispatchMessageToControllers(message);
   }
 
@@ -160,9 +174,11 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
         message,
       );
     } else {
-      print(
-        "FutureRunListPageController not found, cannot process notification click.",
-      );
+      if (kDebugMode) {
+        print(
+          "FutureRunListPageController not found, cannot process notification click.",
+        );
+      }
     }
   }
 
@@ -184,14 +200,20 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
             Get.find<ChatPageController>().notificationReceived(message);
           }
 
-          print('Handling chat message: ${message.data}');
+          if (kDebugMode) {
+            print('Handling chat message: ${message.data}');
+          }
         } catch (e) {
-          print("ChatController not found: $e");
+          if (kDebugMode) {
+            print("ChatController not found: $e");
+          }
         }
         break;
 
       default:
-        print("Unhandled message type: $messageType");
+        if (kDebugMode) {
+          print("Unhandled message type: $messageType");
+        }
     }
   }
 
