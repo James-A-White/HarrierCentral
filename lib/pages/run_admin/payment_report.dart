@@ -71,7 +71,7 @@ class PaymentReportState extends State<PaymentReportPage> {
   }
 
   Future<void> _refreshListsFromTable() async {
-    final offsetString = Utilities.getSqfliteTimeOffset();
+    final offsetFromGmtToLocal = Utilities.getSqfliteTimeOffset();
 
     final String sql = '''
 SELECT
@@ -94,7 +94,7 @@ SELECT
     ) AS paidByName,
     COALESCE(paidTo.dispName, '<hasher not found>') AS paidToName,
     CASE
-        WHEN ((hkm.membershipExpirationDate IS NOT NULL) AND (julianday(hkm.membershipExpirationDate) >= julianday('now', '$offsetString'))) THEN 1
+        WHEN ((hkm.membershipExpirationDate IS NOT NULL) AND (julianday(hkm.membershipExpirationDate) >= julianday('now', '$offsetFromGmtToLocal'))) THEN 1
         ELSE 0
     END AS isMember,
     COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colDiscountAmount}, 0) AS discountAmountAvailable,

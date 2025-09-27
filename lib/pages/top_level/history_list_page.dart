@@ -66,7 +66,7 @@ class HistoryListPageState extends State<HistoryListPage>
   }
 
   Future<void> refreshStatsFromTable(bool forceRefresh) async {
-    final offsetString = Utilities.getSqfliteTimeOffset();
+    final offsetFromGmtToLocal = Utilities.getSqfliteTimeOffset();
 
     final String hcRunsQuery = '''
           SELECT
@@ -81,7 +81,7 @@ class HistoryListPageState extends State<HistoryListPage>
           WHERE evt.${tableModel.eventsTableHelper.colRemoved} = 0 
           AND evt.${tableModel.eventsTableHelper.colIsCountedRun} != 0
           AND evt.${tableModel.eventsTableHelper.colIsVisible} != 0
-          AND julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetime}) <= julianday('now','$offsetString') 
+          AND julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetime}) <= julianday('now','$offsetFromGmtToLocal') 
           GROUP BY countries.${tableModel.countriesTableHelper.colCountryName}, countries.${tableModel.countriesTableHelper.colFlagFile}
           ORDER BY runCount desc
           ''';

@@ -10,7 +10,9 @@ abstract class RunQueryExtensionsModel
     with _$RunQueryExtensionsModel
     implements BaseModel {
   factory RunQueryExtensionsModel({
-    @Default(0) int daysUntilEvent,
+    // @Default(0) int daysUntilEvent,
+    @Default(0) num nowJulian,
+    @Default(0) num eventJulian,
     @Default(0) int appAccessFlags,
     @Default(2) int digitsAfterDecimal,
     @Default(r'$^') String currencySymbol,
@@ -32,7 +34,8 @@ abstract class RunQueryExtensionsModel
     double? distToEvent,
     @Default(0) int isMapAndDistanceValid,
     @Default(3)
-    int runClassification, // 1 if the run is from a Kennel user is following, 2 if the run is close by, 3 if it's another run
+    int
+    runClassification, // 1 if the run is from a Kennel user is following, 2 if the run is close by, 3 if it's another run
     String? userFriendlyLocation,
   }) = _RunQueryExtensionsModel;
 
@@ -58,7 +61,7 @@ abstract class RunQueryExtensionsModel
     if (meters != null) {
       final int userDistPrefs =
           (getIntPref(IntPrefsEnum.hasherPreferences) ?? 0) &
-              hasherPref_distanceForAutoDisplay;
+          hasherPref_distanceForAutoDisplay;
 
       // if the user has set their preferences to miles or
       // the user has set their preferences to "auto" and the
@@ -84,13 +87,12 @@ abstract class RunQueryExtensionsModel
     }
 
     m = m.copyWith(
-        runClassification: runClassification,
-        distToEvent: distanceToEvent,
-        userFriendlyLocation: userFriendlyLocation,
-        searchRunsText: m.searchRunsText +
-            getSearchDateString(
-              eventStartDateTime,
-            ));
+      runClassification: runClassification,
+      distToEvent: distanceToEvent,
+      userFriendlyLocation: userFriendlyLocation,
+      searchRunsText:
+          m.searchRunsText + getSearchDateString(eventStartDateTime),
+    );
 
     return m;
   }
@@ -101,15 +103,16 @@ abstract class RunQueryExtensionsModel
     }
 
     final DateFormat df = DateFormat(
-        "' is' y ' is' EEEE ' is' LLLL d y ' is' LLL d y h:mm aaa HH:mm",
-        'en_US');
+      "' is' y ' is' EEEE ' is' LLLL d y ' is' LLL d y h:mm aaa HH:mm",
+      'en_US',
+    );
     String days = '';
     String weekend = '';
     String thisDay = '';
 
     final int deltaDays =
         eventStartDateTime.millisecondsSinceEpoch ~/ (86400 * 1000) -
-            DateTime.now().millisecondsSinceEpoch ~/ (86400 * 1000);
+        DateTime.now().millisecondsSinceEpoch ~/ (86400 * 1000);
     if (deltaDays < 0) {
       if (deltaDays == 1) {
         days = ' 1 day ago is yesterday ';

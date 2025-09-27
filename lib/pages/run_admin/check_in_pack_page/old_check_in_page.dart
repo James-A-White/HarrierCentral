@@ -144,7 +144,7 @@
 //               null as hemId,
 //               coalesce(
 //                   CASE 
-//                       WHEN (julianday(hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate}) >= julianday('now','$offsetString')) THEN 1 
+//                       WHEN (julianday(hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate}) >= julianday('now','$offsetFromGmtToLocal')) THEN 1 
 //                       ELSE 0 
 //                   END, 0) as isMember,
 //               coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colFollowing}, 0) as isFollowing,
@@ -203,7 +203,7 @@
 //           h.${tableModel.hashersTableHelper.colHasherId} AS hasherId,
 //           hem.${tableModel.hasherEventMapTableHelper.colHemId} AS hemId,
 //           CASE 
-//               WHEN (julianday(hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate}) >= julianday('now', '$offsetString')) 
+//               WHEN (julianday(hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate}) >= julianday('now', '$offsetFromGmtToLocal')) 
 //               THEN 1 
 //               ELSE 0 
 //           END AS isMember,
@@ -253,8 +253,8 @@
 //           OR (
 //             hkm.isKennelFollowing = 0
 //             AND (
-//               julianday(hkm.membershipExpirationDate) >= julianday('now', '$offsetString')
-//               OR julianday(hkm.dateOfLastRun) >= julianday('now', '$offsetString', '-2 months')
+//               julianday(hkm.membershipExpirationDate) >= julianday('now', '$offsetFromGmtToLocal')
+//               OR julianday(hkm.dateOfLastRun) >= julianday('now', '$offsetFromGmtToLocal', '-2 months')
 //             )
 //           )
 //         )
@@ -348,7 +348,7 @@
 //       FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem3
 //       INNER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h3 ON h3.hasherId = hem3.userId
 //       LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay3 ON pay3.hemId = hem3.hemId AND pay3.cancelledBy IS NULL
-//       LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm3 ON hkm3.userId = h3.hasherId AND hkm3.kennelId = "${widget.eventAggregate.event.kennelId}" AND julianday(hkm3.membershipExpirationDate) >= julianday('now', '$offsetString')
+//       LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm3 ON hkm3.userId = h3.hasherId AND hkm3.kennelId = "${widget.eventAggregate.event.kennelId}" AND julianday(hkm3.membershipExpirationDate) >= julianday('now', '$offsetFromGmtToLocal')
 //       LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm4 ON hkm4.userId = h3.hasherId AND hkm4.kennelId = "${widget.eventAggregate.event.kennelId}" 
 //       WHERE hem3.eventId = "${widget.eventAggregate.event.eventId}" 
 //         AND hem3.virginVisitorType = 0 
@@ -360,8 +360,8 @@
 //             OR (
 //               hkm4.isKennelFollowing = 0
 //               AND (
-//                 julianday(COALESCE(hkm4.membershipExpirationDate, '2000-01-01T01:00:00.000Z')) >= julianday('now', '$offsetString') 
-//                 OR julianday(COALESCE(hkm4.dateOfLastRun, '2000-01-01T01:00:00.000Z')) >= julianday('now', '$offsetString', '-2 months')
+//                 julianday(COALESCE(hkm4.membershipExpirationDate, '2000-01-01T01:00:00.000Z')) >= julianday('now', '$offsetFromGmtToLocal') 
+//                 OR julianday(COALESCE(hkm4.dateOfLastRun, '2000-01-01T01:00:00.000Z')) >= julianday('now', '$offsetFromGmtToLocal', '-2 months')
 //               )
 //             )
 //           )

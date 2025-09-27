@@ -1,6 +1,5 @@
-// dart format width=80
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -129,6 +128,136 @@ as DateTime?,
 
 }
 
+
+/// Adds pattern-matching-related methods to [EventModel].
+extension EventModelPatterns on EventModel {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _EventModel value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _EventModel() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _EventModel value)  $default,){
+final _that = this;
+switch (_that) {
+case _EventModel():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _EventModel value)?  $default,){
+final _that = this;
+switch (_that) {
+case _EventModel() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String eventId,  String publicEventId,  DateTime eventStartDatetime,  String kennelId,  int isVisible,  int isCountedRun,  int isPromotedEvent,  int eventGeographicScope,  int eventInboundIntegrationId,  int eventNumber,  String eventName,  String countryId,  double? hcLatitude,  double? hcLongitude,  double? fbLatitude,  double? fbLongitude,  double? eventPriceForMembers,  double? eventPriceForNonMembers,  int? evtDisseminateAllowWebLinks,  String? eventFacebookId,  int? absoluteEventNumber,  int? canEditRunAttendence,  String? eventImage,  String? eventDescription,  String? eventUrl,  String? locationOneLineDesc,  String? locationPostCode,  String? locationCity,  String? locationStreet,  String? locationCountry,  String? locationRegion,  String? locationSubRegion,  String? hares,  String? eventPaymentScheme,  String? eventPaymentUrl,  DateTime? eventPaymentUrlExpires,  int? unconfirmedBankXferCount,  double? eventPriceForExtras,  String? extrasDescription,  int doTrackHashCash,  int tags1,  int tags2,  int tags3,  int useFbLocation,  int useFbLatLon,  int useFbRunDetails,  int useFbImage,  int? removed,  DateTime? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _EventModel() when $default != null:
+return $default(_that.eventId,_that.publicEventId,_that.eventStartDatetime,_that.kennelId,_that.isVisible,_that.isCountedRun,_that.isPromotedEvent,_that.eventGeographicScope,_that.eventInboundIntegrationId,_that.eventNumber,_that.eventName,_that.countryId,_that.hcLatitude,_that.hcLongitude,_that.fbLatitude,_that.fbLongitude,_that.eventPriceForMembers,_that.eventPriceForNonMembers,_that.evtDisseminateAllowWebLinks,_that.eventFacebookId,_that.absoluteEventNumber,_that.canEditRunAttendence,_that.eventImage,_that.eventDescription,_that.eventUrl,_that.locationOneLineDesc,_that.locationPostCode,_that.locationCity,_that.locationStreet,_that.locationCountry,_that.locationRegion,_that.locationSubRegion,_that.hares,_that.eventPaymentScheme,_that.eventPaymentUrl,_that.eventPaymentUrlExpires,_that.unconfirmedBankXferCount,_that.eventPriceForExtras,_that.extrasDescription,_that.doTrackHashCash,_that.tags1,_that.tags2,_that.tags3,_that.useFbLocation,_that.useFbLatLon,_that.useFbRunDetails,_that.useFbImage,_that.removed,_that.updatedAt);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String eventId,  String publicEventId,  DateTime eventStartDatetime,  String kennelId,  int isVisible,  int isCountedRun,  int isPromotedEvent,  int eventGeographicScope,  int eventInboundIntegrationId,  int eventNumber,  String eventName,  String countryId,  double? hcLatitude,  double? hcLongitude,  double? fbLatitude,  double? fbLongitude,  double? eventPriceForMembers,  double? eventPriceForNonMembers,  int? evtDisseminateAllowWebLinks,  String? eventFacebookId,  int? absoluteEventNumber,  int? canEditRunAttendence,  String? eventImage,  String? eventDescription,  String? eventUrl,  String? locationOneLineDesc,  String? locationPostCode,  String? locationCity,  String? locationStreet,  String? locationCountry,  String? locationRegion,  String? locationSubRegion,  String? hares,  String? eventPaymentScheme,  String? eventPaymentUrl,  DateTime? eventPaymentUrlExpires,  int? unconfirmedBankXferCount,  double? eventPriceForExtras,  String? extrasDescription,  int doTrackHashCash,  int tags1,  int tags2,  int tags3,  int useFbLocation,  int useFbLatLon,  int useFbRunDetails,  int useFbImage,  int? removed,  DateTime? updatedAt)  $default,) {final _that = this;
+switch (_that) {
+case _EventModel():
+return $default(_that.eventId,_that.publicEventId,_that.eventStartDatetime,_that.kennelId,_that.isVisible,_that.isCountedRun,_that.isPromotedEvent,_that.eventGeographicScope,_that.eventInboundIntegrationId,_that.eventNumber,_that.eventName,_that.countryId,_that.hcLatitude,_that.hcLongitude,_that.fbLatitude,_that.fbLongitude,_that.eventPriceForMembers,_that.eventPriceForNonMembers,_that.evtDisseminateAllowWebLinks,_that.eventFacebookId,_that.absoluteEventNumber,_that.canEditRunAttendence,_that.eventImage,_that.eventDescription,_that.eventUrl,_that.locationOneLineDesc,_that.locationPostCode,_that.locationCity,_that.locationStreet,_that.locationCountry,_that.locationRegion,_that.locationSubRegion,_that.hares,_that.eventPaymentScheme,_that.eventPaymentUrl,_that.eventPaymentUrlExpires,_that.unconfirmedBankXferCount,_that.eventPriceForExtras,_that.extrasDescription,_that.doTrackHashCash,_that.tags1,_that.tags2,_that.tags3,_that.useFbLocation,_that.useFbLatLon,_that.useFbRunDetails,_that.useFbImage,_that.removed,_that.updatedAt);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String eventId,  String publicEventId,  DateTime eventStartDatetime,  String kennelId,  int isVisible,  int isCountedRun,  int isPromotedEvent,  int eventGeographicScope,  int eventInboundIntegrationId,  int eventNumber,  String eventName,  String countryId,  double? hcLatitude,  double? hcLongitude,  double? fbLatitude,  double? fbLongitude,  double? eventPriceForMembers,  double? eventPriceForNonMembers,  int? evtDisseminateAllowWebLinks,  String? eventFacebookId,  int? absoluteEventNumber,  int? canEditRunAttendence,  String? eventImage,  String? eventDescription,  String? eventUrl,  String? locationOneLineDesc,  String? locationPostCode,  String? locationCity,  String? locationStreet,  String? locationCountry,  String? locationRegion,  String? locationSubRegion,  String? hares,  String? eventPaymentScheme,  String? eventPaymentUrl,  DateTime? eventPaymentUrlExpires,  int? unconfirmedBankXferCount,  double? eventPriceForExtras,  String? extrasDescription,  int doTrackHashCash,  int tags1,  int tags2,  int tags3,  int useFbLocation,  int useFbLatLon,  int useFbRunDetails,  int useFbImage,  int? removed,  DateTime? updatedAt)?  $default,) {final _that = this;
+switch (_that) {
+case _EventModel() when $default != null:
+return $default(_that.eventId,_that.publicEventId,_that.eventStartDatetime,_that.kennelId,_that.isVisible,_that.isCountedRun,_that.isPromotedEvent,_that.eventGeographicScope,_that.eventInboundIntegrationId,_that.eventNumber,_that.eventName,_that.countryId,_that.hcLatitude,_that.hcLongitude,_that.fbLatitude,_that.fbLongitude,_that.eventPriceForMembers,_that.eventPriceForNonMembers,_that.evtDisseminateAllowWebLinks,_that.eventFacebookId,_that.absoluteEventNumber,_that.canEditRunAttendence,_that.eventImage,_that.eventDescription,_that.eventUrl,_that.locationOneLineDesc,_that.locationPostCode,_that.locationCity,_that.locationStreet,_that.locationCountry,_that.locationRegion,_that.locationSubRegion,_that.hares,_that.eventPaymentScheme,_that.eventPaymentUrl,_that.eventPaymentUrlExpires,_that.unconfirmedBankXferCount,_that.eventPriceForExtras,_that.extrasDescription,_that.doTrackHashCash,_that.tags1,_that.tags2,_that.tags3,_that.useFbLocation,_that.useFbLatLon,_that.useFbRunDetails,_that.useFbImage,_that.removed,_that.updatedAt);case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 @JsonSerializable()

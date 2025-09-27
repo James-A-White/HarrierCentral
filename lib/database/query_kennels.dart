@@ -251,7 +251,7 @@ class QueryKennels {
         break;
     }
 
-    final offsetString = Utilities.getSqfliteTimeOffset();
+    final offsetFromGmtToLocal = Utilities.getSqfliteTimeOffset();
 
     final String queryBase = '''
       
@@ -287,7 +287,7 @@ class QueryKennels {
 
           h.${tableModel.hashersTableHelper.colPhoto} as originalProfilePhoto,
           h.${tableModel.hashersTableHelper.colDispName} as originalDisplayName,
-          case when julianday(coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate},"2000-01-01")) <= julianday('now','$offsetString') then 0 else 1 end as isKennelMember,
+          case when julianday(coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate},"2000-01-01")) <= julianday('now','$offsetFromGmtToLocal') then 0 else 1 end as isKennelMember,
           COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colFollowing},0) as following,
           COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colAppAccessFlags},0) as appAccessFlags,
           c.${tableModel.citiesTableHelper.colCityName} || ', ' || CASE WHEN n.${tableModel.countriesTableHelper.colShowRegion} = 1 THEN r.${tableModel.regionsTableHelper.colRegionName} || ', ' ELSE '' END || n.${tableModel.countriesTableHelper.colCountryName} as location,
@@ -295,8 +295,8 @@ class QueryKennels {
           r.${tableModel.regionsTableHelper.colRegionName} as regionName,
           r.${tableModel.regionsTableHelper.colRegionAbbreviation} as regionAbbreviation,
           n.${tableModel.countriesTableHelper.colCountryName} as countryName,
-          (SELECT min(${tableModel.eventsTableHelper.colEventStartDatetime}) from narrowEvents e where e.${tableModel.eventsTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId} and julianday(e.${tableModel.eventsTableHelper.colEventStartDatetime}) >= julianday('now','$offsetString') and e.${tableModel.eventsTableHelper.colIsVisible} != 0 ) as nextRunDate,
-          (SELECT max(${tableModel.eventsTableHelper.colEventStartDatetime}) from narrowEvents e where e.${tableModel.eventsTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId} and julianday(e.${tableModel.eventsTableHelper.colEventStartDatetime}) <= julianday('now','$offsetString') and e.${tableModel.eventsTableHelper.colIsVisible} != 0 ) as lastRunDate,
+          (SELECT min(${tableModel.eventsTableHelper.colEventStartDatetime}) from narrowEvents e where e.${tableModel.eventsTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId} and julianday(e.${tableModel.eventsTableHelper.colEventStartDatetime}) >= julianday('now','$offsetFromGmtToLocal') and e.${tableModel.eventsTableHelper.colIsVisible} != 0 ) as nextRunDate,
+          (SELECT max(${tableModel.eventsTableHelper.colEventStartDatetime}) from narrowEvents e where e.${tableModel.eventsTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId} and julianday(e.${tableModel.eventsTableHelper.colEventStartDatetime}) <= julianday('now','$offsetFromGmtToLocal') and e.${tableModel.eventsTableHelper.colIsVisible} != 0 ) as lastRunDate,
           COALESCE(k.${tableModel.kennelsTableHelper.colDigitsAfterDecimal},n.${tableModel.countriesTableHelper.colDigitsAfterDecimal}) as ${tableModel.countriesTableHelper.colDigitsAfterDecimal},
           COALESCE(k.${tableModel.kennelsTableHelper.colCurrencySymbol},n.${tableModel.countriesTableHelper.colCurrencySymbol}) as ${tableModel.countriesTableHelper.colCurrencySymbol},
           COALESCE(k.${tableModel.kennelsTableHelper.colDistancePreference},n.${tableModel.countriesTableHelper.colDistancePreference},0) as distanceUnitsPref,

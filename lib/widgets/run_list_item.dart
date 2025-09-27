@@ -84,6 +84,13 @@ class RunListItem extends StatelessWidget {
     //   rliController.setIsPaid(futureRun.extensions.isPaid);
     // }
 
+    String eventName = futureRun.event.eventName;
+    print('Event Name: $eventName');
+
+    num daysUntilEvent =
+        futureRun.extensions.eventJulian.toInt() -
+        (futureRun.extensions.nowJulian.toInt() + 1);
+
     return GestureDetector(
       onTap: () {
         onItemTapped();
@@ -274,40 +281,19 @@ class RunListItem extends StatelessWidget {
                                       (futureRun.event.isCountedRun == 1
                                               ? 'Run #${futureRun.event.eventNumber}, '
                                               : 'Run / Event ') +
-                                          (futureRun
-                                                      .extensions
-                                                      .daysUntilEvent <=
-                                                  14
-                                              ? futureRun
-                                                          .extensions
-                                                          .daysUntilEvent
-                                                          .toInt() ==
-                                                      -1
+                                          (daysUntilEvent <= 14
+                                              ? daysUntilEvent.toInt() == -1
                                                   ? 'Yesterday'
-                                                  : futureRun
-                                                          .extensions
-                                                          .daysUntilEvent
-                                                          .toInt() ==
-                                                      0
+                                                  : daysUntilEvent.toInt() == 0
                                                   ? 'TODAY'
-                                                  : futureRun
-                                                          .extensions
-                                                          .daysUntilEvent
-                                                          .toInt() ==
-                                                      1
+                                                  : daysUntilEvent.toInt() == 1
                                                   ? 'Tomorrow'
-                                                  : 'in ${futureRun.extensions.daysUntilEvent.toInt().toString()} days'
-                                              : (futureRun
-                                                      .extensions
-                                                      .daysUntilEvent <=
-                                                  30)
-                                              ? 'in ${futureRun.extensions.daysUntilEvent ~/ 7.0}${(futureRun.extensions.daysUntilEvent ~/ 7.0) == 1 ? ' week' : ' weeks'}'
-                                              : futureRun
-                                                      .extensions
-                                                      .daysUntilEvent <=
-                                                  365
-                                              ? 'in ${futureRun.extensions.daysUntilEvent ~/ 30.0}${(futureRun.extensions.daysUntilEvent ~/ 30.0) == 1 ? ' month' : ' months'}'
-                                              : 'in ${futureRun.extensions.daysUntilEvent ~/ 365.0}${(futureRun.extensions.daysUntilEvent ~/ 365.0) == 1 ? ' year' : ' years'}'),
+                                                  : 'in ${daysUntilEvent.toInt().toString()} days'
+                                              : (daysUntilEvent <= 30)
+                                              ? 'in ${daysUntilEvent ~/ 7.0}${(daysUntilEvent ~/ 7.0) == 1 ? ' week' : ' weeks'}'
+                                              : daysUntilEvent <= 365
+                                              ? 'in ${daysUntilEvent ~/ 30.0}${(daysUntilEvent ~/ 30.0) == 1 ? ' month' : ' months'}'
+                                              : 'in ${daysUntilEvent ~/ 365.0}${(daysUntilEvent ~/ 365.0) == 1 ? ' year' : ' years'}'),
                                       style: ts_titleMediumBlack,
                                       textAlign: TextAlign.left,
                                       overflow: TextOverflow.ellipsis,

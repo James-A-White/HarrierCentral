@@ -40,17 +40,17 @@ class CommonQueries {
   static Future<String> getClosestEventInTime(String kennelId) async {
     String result = EMPTY_RESULT;
 
-    final offsetString = Utilities.getSqfliteTimeOffset();
+    final offsetFromGmtToLocal = Utilities.getSqfliteTimeOffset();
 
     try {
       final String sql = '''
 
           SELECT e.eventId,
           e.eventName,
-          (julianday(eventStartDatetime) - julianday('now','$offsetString')) * 24 as deltaHours
+          (julianday(eventStartDatetime) - julianday('now','$offsetFromGmtToLocal')) * 24 as deltaHours
           FROM ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} e
           WHERE e.kennelId = "$kennelId"
-          ORDER BY abs(julianday('now','$offsetString') - julianday(eventStartDatetime)) ASC
+          ORDER BY abs(julianday('now','$offsetFromGmtToLocal') - julianday(eventStartDatetime)) ASC
           
           ''';
 
@@ -89,7 +89,7 @@ class CommonQueries {
       final String? userId = getStringPref(StringPrefsEnum.userId);
       const String dollarSign = r'$^';
 
-      final offsetString = Utilities.getSqfliteTimeOffset();
+      final offsetFromGmtToLocal = Utilities.getSqfliteTimeOffset();
 
       String sql = '''
           SELECT e.${tableModel.eventsTableHelper.colEventId},
@@ -112,7 +112,7 @@ class CommonQueries {
           coalesce(e.${tableModel.eventsTableHelper.colExtrasDescription},'') as extrasDescription,
           coalesce(e.${tableModel.eventsTableHelper.colEventPriceForMembers},k.${tableModel.kennelsTableHelper.colDefaultPriceForMembers},0) as memberPrice,
           coalesce(e.${tableModel.eventsTableHelper.colEventPriceForNonMembers},k.${tableModel.kennelsTableHelper.colDefaultPriceForNonMembers},0) as nonMemberPrice,
-          (julianday(${tableModel.eventsTableHelper.colEventStartDatetime}) - julianday('now','$offsetString')) * 24 as deltaHours,
+          (julianday(${tableModel.eventsTableHelper.colEventStartDatetime}) - julianday('now','$offsetFromGmtToLocal')) * 24 as deltaHours,
           coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) as attendenceState
           FROM ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} e
           INNER JOIN ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} k on e.${tableModel.eventsTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId}
@@ -120,8 +120,8 @@ class CommonQueries {
           LEFT OUTER JOIN ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.user)} hem on hem.${tableModel.hasherEventMapTableHelper.colUserId} = "$userId" AND hem.${tableModel.hasherEventMapTableHelper.colEventId} = e.${tableModel.eventsTableHelper.colEventId}
           LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = "$userId" AND hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = e.${tableModel.eventsTableHelper.colKennelId}
           WHERE 
-          ((julianday(${tableModel.eventsTableHelper.colEventStartDatetime}) - julianday('now','$offsetString')) * 24) <= $ALLOW_AUTO_CHECKIN_HOURS_BEFORE_EVENT
-          AND ((julianday(${tableModel.eventsTableHelper.colEventStartDatetime}) - julianday('now','$offsetString')) * 24) >= ${-ALLOW_AUTO_CHECKIN_HOURS_AFTER_EVENT}
+          ((julianday(${tableModel.eventsTableHelper.colEventStartDatetime}) - julianday('now','$offsetFromGmtToLocal')) * 24) <= $ALLOW_AUTO_CHECKIN_HOURS_BEFORE_EVENT
+          AND ((julianday(${tableModel.eventsTableHelper.colEventStartDatetime}) - julianday('now','$offsetFromGmtToLocal')) * 24) >= ${-ALLOW_AUTO_CHECKIN_HOURS_AFTER_EVENT}
           AND e.${tableModel.eventsTableHelper.colIsVisible} = 1
           AND e.${tableModel.eventsTableHelper.colRemoved} = 0
           ''';
@@ -133,7 +133,7 @@ class CommonQueries {
       }
 
       sql += '''
-          ORDER BY abs(julianday('now','$offsetString') - julianday(${tableModel.eventsTableHelper.colEventStartDatetime})) ASC
+          ORDER BY abs(julianday('now','$offsetFromGmtToLocal') - julianday(${tableModel.eventsTableHelper.colEventStartDatetime})) ASC
         ''';
 
       final List<Map<String, dynamic>> queryResults = await database.rawQuery(

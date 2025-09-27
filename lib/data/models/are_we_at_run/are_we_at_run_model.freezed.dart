@@ -1,6 +1,5 @@
-// dart format width=80
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -101,6 +100,136 @@ as String?,
 
 }
 
+
+/// Adds pattern-matching-related methods to [AreWeAtRunModel].
+extension AreWeAtRunModelPatterns on AreWeAtRunModel {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _AreWeAtRunModel value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _AreWeAtRunModel() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _AreWeAtRunModel value)  $default,){
+final _that = this;
+switch (_that) {
+case _AreWeAtRunModel():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _AreWeAtRunModel value)?  $default,){
+final _that = this;
+switch (_that) {
+case _AreWeAtRunModel() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String eventId,  String eventName,  String? eventImage,  String kennelId,  String kennelLogo,  String kennelShortName,  int eventNumber,  double distanceInMeters,  double deltaHours,  double kennelCredit,  double memberPrice,  double nonMemberPrice,  double extrasCost,  double discountAmount,  double discountPercent,  int attendenceState,  int digitsAfterDecimal,  int allowSelfPayment,  String currencySymbol,  DateTime membershipExpirationDate,  String? extrasDescription)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _AreWeAtRunModel() when $default != null:
+return $default(_that.eventId,_that.eventName,_that.eventImage,_that.kennelId,_that.kennelLogo,_that.kennelShortName,_that.eventNumber,_that.distanceInMeters,_that.deltaHours,_that.kennelCredit,_that.memberPrice,_that.nonMemberPrice,_that.extrasCost,_that.discountAmount,_that.discountPercent,_that.attendenceState,_that.digitsAfterDecimal,_that.allowSelfPayment,_that.currencySymbol,_that.membershipExpirationDate,_that.extrasDescription);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String eventId,  String eventName,  String? eventImage,  String kennelId,  String kennelLogo,  String kennelShortName,  int eventNumber,  double distanceInMeters,  double deltaHours,  double kennelCredit,  double memberPrice,  double nonMemberPrice,  double extrasCost,  double discountAmount,  double discountPercent,  int attendenceState,  int digitsAfterDecimal,  int allowSelfPayment,  String currencySymbol,  DateTime membershipExpirationDate,  String? extrasDescription)  $default,) {final _that = this;
+switch (_that) {
+case _AreWeAtRunModel():
+return $default(_that.eventId,_that.eventName,_that.eventImage,_that.kennelId,_that.kennelLogo,_that.kennelShortName,_that.eventNumber,_that.distanceInMeters,_that.deltaHours,_that.kennelCredit,_that.memberPrice,_that.nonMemberPrice,_that.extrasCost,_that.discountAmount,_that.discountPercent,_that.attendenceState,_that.digitsAfterDecimal,_that.allowSelfPayment,_that.currencySymbol,_that.membershipExpirationDate,_that.extrasDescription);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String eventId,  String eventName,  String? eventImage,  String kennelId,  String kennelLogo,  String kennelShortName,  int eventNumber,  double distanceInMeters,  double deltaHours,  double kennelCredit,  double memberPrice,  double nonMemberPrice,  double extrasCost,  double discountAmount,  double discountPercent,  int attendenceState,  int digitsAfterDecimal,  int allowSelfPayment,  String currencySymbol,  DateTime membershipExpirationDate,  String? extrasDescription)?  $default,) {final _that = this;
+switch (_that) {
+case _AreWeAtRunModel() when $default != null:
+return $default(_that.eventId,_that.eventName,_that.eventImage,_that.kennelId,_that.kennelLogo,_that.kennelShortName,_that.eventNumber,_that.distanceInMeters,_that.deltaHours,_that.kennelCredit,_that.memberPrice,_that.nonMemberPrice,_that.extrasCost,_that.discountAmount,_that.discountPercent,_that.attendenceState,_that.digitsAfterDecimal,_that.allowSelfPayment,_that.currencySymbol,_that.membershipExpirationDate,_that.extrasDescription);case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 @JsonSerializable()

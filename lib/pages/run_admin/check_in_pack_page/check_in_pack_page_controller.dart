@@ -91,7 +91,7 @@ class CheckInPackController extends GetxController
   Future<void> _getAllHashers() async {
     allHashers.clear();
 
-    final offsetString = Utilities.getSqfliteTimeOffset();
+    final offsetFromGmtToLocal = Utilities.getSqfliteTimeOffset();
 
     try {
       final String sql = '''
@@ -99,7 +99,7 @@ class CheckInPackController extends GetxController
           h.${tableModel.hashersTableHelper.colHasherId} AS hasherId,
           hem.${tableModel.hasherEventMapTableHelper.colHemId} AS hemId,
           CASE 
-              WHEN (julianday(COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate},'1/1/2020')) >= julianday('now', '$offsetString')) 
+              WHEN (julianday(COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate},'1/1/2020')) >= julianday('now', '$offsetFromGmtToLocal')) 
               THEN 1 
               ELSE 0 
           END AS isMember,
@@ -241,7 +241,7 @@ class CheckInPackController extends GetxController
   }
 
   Future<void> refreshPackListFromTables(bool forceRefresh) async {
-    final offsetString = Utilities.getSqfliteTimeOffset();
+    final offsetFromGmtToLocal = Utilities.getSqfliteTimeOffset();
 
     try {
       final String sql = '''
@@ -249,7 +249,7 @@ class CheckInPackController extends GetxController
           h.${tableModel.hashersTableHelper.colHasherId} AS hasherId,
           hem.${tableModel.hasherEventMapTableHelper.colHemId} AS hemId,
           CASE 
-              WHEN (julianday(hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate}) >= julianday('now', '$offsetString')) 
+              WHEN (julianday(hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate}) >= julianday('now', '$offsetFromGmtToLocal')) 
               THEN 1 
               ELSE 0 
           END AS isMember,
@@ -304,8 +304,8 @@ class CheckInPackController extends GetxController
           OR (
             hkm.isKennelFollowing = 0
             AND (
-              julianday(hkm.membershipExpirationDate) >= julianday('now', '$offsetString')
-              OR julianday(hkm.dateOfLastRun) >= julianday('now', '$offsetString', '-2 months')
+              julianday(hkm.membershipExpirationDate) >= julianday('now', '$offsetFromGmtToLocal')
+              OR julianday(hkm.dateOfLastRun) >= julianday('now', '$offsetFromGmtToLocal', '-2 months')
             )
           )
         )
@@ -407,7 +407,7 @@ class CheckInPackController extends GetxController
       FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem3
       INNER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h3 ON h3.hasherId = hem3.userId
       LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay3 ON pay3.hemId = hem3.hemId AND pay3.cancelledBy IS NULL
-      LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm3 ON hkm3.userId = h3.hasherId AND hkm3.kennelId = "${eventAggregate.event.kennelId}" AND julianday(hkm3.membershipExpirationDate) >= julianday('now', '$offsetString')
+      LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm3 ON hkm3.userId = h3.hasherId AND hkm3.kennelId = "${eventAggregate.event.kennelId}" AND julianday(hkm3.membershipExpirationDate) >= julianday('now', '$offsetFromGmtToLocal')
       LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm4 ON hkm4.userId = h3.hasherId AND hkm4.kennelId = "${eventAggregate.event.kennelId}" 
       LEFT OUTER JOIN ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} ken3 on h3.${tableModel.hashersTableHelper.colHomeKennelId} = ken3.${tableModel.kennelsTableHelper.colKennelId}
       WHERE hem3.eventId = "${eventAggregate.event.eventId}" 
@@ -420,8 +420,8 @@ class CheckInPackController extends GetxController
             OR (
               hkm4.isKennelFollowing = 0
               AND (
-                julianday(COALESCE(hkm4.membershipExpirationDate, '2000-01-01T01:00:00.000Z')) >= julianday('now', '$offsetString') 
-                OR julianday(COALESCE(hkm4.dateOfLastRun, '2000-01-01T01:00:00.000Z')) >= julianday('now', '$offsetString', '-2 months')
+                julianday(COALESCE(hkm4.membershipExpirationDate, '2000-01-01T01:00:00.000Z')) >= julianday('now', '$offsetFromGmtToLocal') 
+                OR julianday(COALESCE(hkm4.dateOfLastRun, '2000-01-01T01:00:00.000Z')) >= julianday('now', '$offsetFromGmtToLocal', '-2 months')
               )
             )
           )

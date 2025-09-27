@@ -951,11 +951,11 @@ class Utilities {
     // Local offset relative to UTC (can include half-hours, etc.)
     final tzOffsetMinutes =
         DateTime.now().timeZoneOffset.inMinutes + offsetInMinutes;
-    final offsetString =
+    final offsetFromGmtToLocal =
         tzOffsetMinutes >= 0
             ? '+$tzOffsetMinutes minutes'
             : '$tzOffsetMinutes minutes';
-    return offsetString;
+    return offsetFromGmtToLocal;
   }
 
   static Future<void> checkAreWeAtRunStart({String? eventId}) async {

@@ -9,7 +9,8 @@ part of 'run_query_extensions_model.dart';
 _RunQueryExtensionsModel _$RunQueryExtensionsModelFromJson(
   Map<String, dynamic> json,
 ) => _RunQueryExtensionsModel(
-  daysUntilEvent: (json['daysUntilEvent'] as num?)?.toInt() ?? 0,
+  nowJulian: json['nowJulian'] as num? ?? 0,
+  eventJulian: json['eventJulian'] as num? ?? 0,
   appAccessFlags: (json['appAccessFlags'] as num?)?.toInt() ?? 0,
   digitsAfterDecimal: (json['digitsAfterDecimal'] as num?)?.toInt() ?? 2,
   currencySymbol: json['currencySymbol'] as String? ?? r'$^',
@@ -37,7 +38,8 @@ _RunQueryExtensionsModel _$RunQueryExtensionsModelFromJson(
 Map<String, dynamic> _$RunQueryExtensionsModelToJson(
   _RunQueryExtensionsModel instance,
 ) => <String, dynamic>{
-  'daysUntilEvent': instance.daysUntilEvent,
+  'nowJulian': instance.nowJulian,
+  'eventJulian': instance.eventJulian,
   'appAccessFlags': instance.appAccessFlags,
   'digitsAfterDecimal': instance.digitsAfterDecimal,
   'currencySymbol': instance.currencySymbol,

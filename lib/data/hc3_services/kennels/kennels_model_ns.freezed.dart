@@ -1,6 +1,5 @@
-// dart format width=80
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -137,6 +136,136 @@ as int?,
 
 }
 
+
+/// Adds pattern-matching-related methods to [KennelsModel].
+extension KennelsModelPatterns on KennelsModel {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _KennelsModel value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _KennelsModel() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _KennelsModel value)  $default,){
+final _that = this;
+switch (_that) {
+case _KennelsModel():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _KennelsModel value)?  $default,){
+final _that = this;
+switch (_that) {
+case _KennelsModel() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String kennelId,  String publicKennelId,  String cityId,  String regionId,  String countryId,  String kennelName,  String? kennelSearchTags,  String kennelShortName,  String kennelUniqueShortName,  String? kennelDescription,  String kennelLogo,  int kennelPinColor,  int disseminateAllowWebLinks,  String? kennelCoverPhoto,  String? kennelWebsiteUrl,  String? defaultEventCurrencyType,  String? integrationType,  int? kennelInboundIntegrationId,  String? kennelEventsUrl,  int kennelStatus,  int canEditRunAttendence,  int allowNegativeCredit,  int allowSelfPayment,  double? kennelLatitude,  double? kennelLongitude,  double defaultPriceForMembers,  double defaultPriceForNonMembers,  int membershipDurationInMonths,  DateTime defaultRunStartTime,  String? currencyCode,  String? primaryCultureCode,  String? currencySymbol,  int? digitsAfterDecimal,  String? bankScheme,  String? bankAccountNumber,  String? bankBic,  String? bankBeneficiary,  String? kennelPaymentScheme,  String? kennelPaymentUrl,  DateTime? kennelPaymentUrlExpires,  double? kennelPaymentMemberSurcharge,  double? kennelPaymentNonMemberSurcharge,  String? kennelPaymentScheme2,  String? kennelPaymentUrl2,  DateTime? kennelPaymentUrlExpires2,  double? kennelPaymentMemberSurcharge2,  double? kennelPaymentNonMemberSurcharge2,  String? kennelPaymentScheme3,  String? kennelPaymentUrl3,  DateTime? kennelPaymentUrlExpires3,  double? kennelPaymentMemberSurcharge3,  double? kennelPaymentNonMemberSurcharge3,  DateTime? runCountStartDate,  String? kennelMismanagementTeam,  int? distancePreference,  DateTime? updatedAt,  int? removed)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _KennelsModel() when $default != null:
+return $default(_that.kennelId,_that.publicKennelId,_that.cityId,_that.regionId,_that.countryId,_that.kennelName,_that.kennelSearchTags,_that.kennelShortName,_that.kennelUniqueShortName,_that.kennelDescription,_that.kennelLogo,_that.kennelPinColor,_that.disseminateAllowWebLinks,_that.kennelCoverPhoto,_that.kennelWebsiteUrl,_that.defaultEventCurrencyType,_that.integrationType,_that.kennelInboundIntegrationId,_that.kennelEventsUrl,_that.kennelStatus,_that.canEditRunAttendence,_that.allowNegativeCredit,_that.allowSelfPayment,_that.kennelLatitude,_that.kennelLongitude,_that.defaultPriceForMembers,_that.defaultPriceForNonMembers,_that.membershipDurationInMonths,_that.defaultRunStartTime,_that.currencyCode,_that.primaryCultureCode,_that.currencySymbol,_that.digitsAfterDecimal,_that.bankScheme,_that.bankAccountNumber,_that.bankBic,_that.bankBeneficiary,_that.kennelPaymentScheme,_that.kennelPaymentUrl,_that.kennelPaymentUrlExpires,_that.kennelPaymentMemberSurcharge,_that.kennelPaymentNonMemberSurcharge,_that.kennelPaymentScheme2,_that.kennelPaymentUrl2,_that.kennelPaymentUrlExpires2,_that.kennelPaymentMemberSurcharge2,_that.kennelPaymentNonMemberSurcharge2,_that.kennelPaymentScheme3,_that.kennelPaymentUrl3,_that.kennelPaymentUrlExpires3,_that.kennelPaymentMemberSurcharge3,_that.kennelPaymentNonMemberSurcharge3,_that.runCountStartDate,_that.kennelMismanagementTeam,_that.distancePreference,_that.updatedAt,_that.removed);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String kennelId,  String publicKennelId,  String cityId,  String regionId,  String countryId,  String kennelName,  String? kennelSearchTags,  String kennelShortName,  String kennelUniqueShortName,  String? kennelDescription,  String kennelLogo,  int kennelPinColor,  int disseminateAllowWebLinks,  String? kennelCoverPhoto,  String? kennelWebsiteUrl,  String? defaultEventCurrencyType,  String? integrationType,  int? kennelInboundIntegrationId,  String? kennelEventsUrl,  int kennelStatus,  int canEditRunAttendence,  int allowNegativeCredit,  int allowSelfPayment,  double? kennelLatitude,  double? kennelLongitude,  double defaultPriceForMembers,  double defaultPriceForNonMembers,  int membershipDurationInMonths,  DateTime defaultRunStartTime,  String? currencyCode,  String? primaryCultureCode,  String? currencySymbol,  int? digitsAfterDecimal,  String? bankScheme,  String? bankAccountNumber,  String? bankBic,  String? bankBeneficiary,  String? kennelPaymentScheme,  String? kennelPaymentUrl,  DateTime? kennelPaymentUrlExpires,  double? kennelPaymentMemberSurcharge,  double? kennelPaymentNonMemberSurcharge,  String? kennelPaymentScheme2,  String? kennelPaymentUrl2,  DateTime? kennelPaymentUrlExpires2,  double? kennelPaymentMemberSurcharge2,  double? kennelPaymentNonMemberSurcharge2,  String? kennelPaymentScheme3,  String? kennelPaymentUrl3,  DateTime? kennelPaymentUrlExpires3,  double? kennelPaymentMemberSurcharge3,  double? kennelPaymentNonMemberSurcharge3,  DateTime? runCountStartDate,  String? kennelMismanagementTeam,  int? distancePreference,  DateTime? updatedAt,  int? removed)  $default,) {final _that = this;
+switch (_that) {
+case _KennelsModel():
+return $default(_that.kennelId,_that.publicKennelId,_that.cityId,_that.regionId,_that.countryId,_that.kennelName,_that.kennelSearchTags,_that.kennelShortName,_that.kennelUniqueShortName,_that.kennelDescription,_that.kennelLogo,_that.kennelPinColor,_that.disseminateAllowWebLinks,_that.kennelCoverPhoto,_that.kennelWebsiteUrl,_that.defaultEventCurrencyType,_that.integrationType,_that.kennelInboundIntegrationId,_that.kennelEventsUrl,_that.kennelStatus,_that.canEditRunAttendence,_that.allowNegativeCredit,_that.allowSelfPayment,_that.kennelLatitude,_that.kennelLongitude,_that.defaultPriceForMembers,_that.defaultPriceForNonMembers,_that.membershipDurationInMonths,_that.defaultRunStartTime,_that.currencyCode,_that.primaryCultureCode,_that.currencySymbol,_that.digitsAfterDecimal,_that.bankScheme,_that.bankAccountNumber,_that.bankBic,_that.bankBeneficiary,_that.kennelPaymentScheme,_that.kennelPaymentUrl,_that.kennelPaymentUrlExpires,_that.kennelPaymentMemberSurcharge,_that.kennelPaymentNonMemberSurcharge,_that.kennelPaymentScheme2,_that.kennelPaymentUrl2,_that.kennelPaymentUrlExpires2,_that.kennelPaymentMemberSurcharge2,_that.kennelPaymentNonMemberSurcharge2,_that.kennelPaymentScheme3,_that.kennelPaymentUrl3,_that.kennelPaymentUrlExpires3,_that.kennelPaymentMemberSurcharge3,_that.kennelPaymentNonMemberSurcharge3,_that.runCountStartDate,_that.kennelMismanagementTeam,_that.distancePreference,_that.updatedAt,_that.removed);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String kennelId,  String publicKennelId,  String cityId,  String regionId,  String countryId,  String kennelName,  String? kennelSearchTags,  String kennelShortName,  String kennelUniqueShortName,  String? kennelDescription,  String kennelLogo,  int kennelPinColor,  int disseminateAllowWebLinks,  String? kennelCoverPhoto,  String? kennelWebsiteUrl,  String? defaultEventCurrencyType,  String? integrationType,  int? kennelInboundIntegrationId,  String? kennelEventsUrl,  int kennelStatus,  int canEditRunAttendence,  int allowNegativeCredit,  int allowSelfPayment,  double? kennelLatitude,  double? kennelLongitude,  double defaultPriceForMembers,  double defaultPriceForNonMembers,  int membershipDurationInMonths,  DateTime defaultRunStartTime,  String? currencyCode,  String? primaryCultureCode,  String? currencySymbol,  int? digitsAfterDecimal,  String? bankScheme,  String? bankAccountNumber,  String? bankBic,  String? bankBeneficiary,  String? kennelPaymentScheme,  String? kennelPaymentUrl,  DateTime? kennelPaymentUrlExpires,  double? kennelPaymentMemberSurcharge,  double? kennelPaymentNonMemberSurcharge,  String? kennelPaymentScheme2,  String? kennelPaymentUrl2,  DateTime? kennelPaymentUrlExpires2,  double? kennelPaymentMemberSurcharge2,  double? kennelPaymentNonMemberSurcharge2,  String? kennelPaymentScheme3,  String? kennelPaymentUrl3,  DateTime? kennelPaymentUrlExpires3,  double? kennelPaymentMemberSurcharge3,  double? kennelPaymentNonMemberSurcharge3,  DateTime? runCountStartDate,  String? kennelMismanagementTeam,  int? distancePreference,  DateTime? updatedAt,  int? removed)?  $default,) {final _that = this;
+switch (_that) {
+case _KennelsModel() when $default != null:
+return $default(_that.kennelId,_that.publicKennelId,_that.cityId,_that.regionId,_that.countryId,_that.kennelName,_that.kennelSearchTags,_that.kennelShortName,_that.kennelUniqueShortName,_that.kennelDescription,_that.kennelLogo,_that.kennelPinColor,_that.disseminateAllowWebLinks,_that.kennelCoverPhoto,_that.kennelWebsiteUrl,_that.defaultEventCurrencyType,_that.integrationType,_that.kennelInboundIntegrationId,_that.kennelEventsUrl,_that.kennelStatus,_that.canEditRunAttendence,_that.allowNegativeCredit,_that.allowSelfPayment,_that.kennelLatitude,_that.kennelLongitude,_that.defaultPriceForMembers,_that.defaultPriceForNonMembers,_that.membershipDurationInMonths,_that.defaultRunStartTime,_that.currencyCode,_that.primaryCultureCode,_that.currencySymbol,_that.digitsAfterDecimal,_that.bankScheme,_that.bankAccountNumber,_that.bankBic,_that.bankBeneficiary,_that.kennelPaymentScheme,_that.kennelPaymentUrl,_that.kennelPaymentUrlExpires,_that.kennelPaymentMemberSurcharge,_that.kennelPaymentNonMemberSurcharge,_that.kennelPaymentScheme2,_that.kennelPaymentUrl2,_that.kennelPaymentUrlExpires2,_that.kennelPaymentMemberSurcharge2,_that.kennelPaymentNonMemberSurcharge2,_that.kennelPaymentScheme3,_that.kennelPaymentUrl3,_that.kennelPaymentUrlExpires3,_that.kennelPaymentMemberSurcharge3,_that.kennelPaymentNonMemberSurcharge3,_that.runCountStartDate,_that.kennelMismanagementTeam,_that.distancePreference,_that.updatedAt,_that.removed);case _:
+  return null;
+
+}
+}
+
+}
 
 /// @nodoc
 @JsonSerializable()
