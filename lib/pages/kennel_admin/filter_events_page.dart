@@ -154,13 +154,14 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
 
     //       (SELECT COUNT(*) FROM ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} evt2 where kennelId = "${widget.kennel.kennel.kennelId}" AND isVisible = 1) as publishedRunCount//
 
+    final offsetString = Utilities.getSqfliteTimeOffset();
     try {
       final String sql = '''
 
           SELECT COUNT(*) as publishedRunCount  
           FROM ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} evt 
           WHERE kennelId = "${widget.kennel.kennel.kennelId}" AND isVisible = 1
-          AND date(datetime(evt.eventStartDatetime)) $dateComparer date(datetime('now'))
+          AND date(datetime(evt.eventStartDatetime)) $dateComparer date(datetime('now','$offsetString'))
           ''';
 
       _publishedRunCountSqlResult = await database.rawQuery(sql);
@@ -186,7 +187,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
           FROM ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} evt
           INNER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = "${widget.kennel.kennel.kennelId}" and hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = "$userId"
           WHERE evt.${tableModel.eventsTableHelper.colKennelId} = "${widget.kennel.kennel.kennelId}"
-          AND date(datetime(evt.${tableModel.eventsTableHelper.colEventStartDatetime})) $dateComparer date(datetime('now'))
+          AND date(datetime(evt.${tableModel.eventsTableHelper.colEventStartDatetime})) $dateComparer date(datetime('now','$offsetString'))
           ORDER BY evt.${tableModel.eventsTableHelper.colEventStartDatetime} $sortOrder, evt.${tableModel.eventsTableHelper.colEventNumber} $sortOrder
         
           ''';

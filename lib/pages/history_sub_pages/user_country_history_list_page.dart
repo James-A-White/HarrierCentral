@@ -70,6 +70,8 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
 
     const String dollarSign = r'$^';
 
+    final offsetString = Utilities.getSqfliteTimeOffset();
+
     String query = '''
           SELECT
           hem.${tableModel.hasherEventMapTableHelper.colTotalRunsThisKennel} as totalRunsThisKennel,
@@ -107,7 +109,7 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
           AND e.${tableModel.eventsTableHelper.colRemoved} = 0
           AND e.${tableModel.eventsTableHelper.colCountryId} = "${widget.countryId}" 
           AND coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) >= $attendenceState 
-          AND DateTime(e.${tableModel.eventsTableHelper.colEventStartDatetime}) <= DateTime('now')
+          AND julianday(e.${tableModel.eventsTableHelper.colEventStartDatetime}) <= julianday('now','$offsetString')
         UNION
           -- this part of the query is for where we want to cache run details in cases
           -- where the user is not following the Kennel and the run detail information will
@@ -148,7 +150,7 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
           AND hem.${tableModel.hasherEventMapTableHelper.colRemoved} = 0 
           AND hem.${tableModel.hasherEventMapTableHelper.colCountryId} = "${widget.countryId}" 
           AND coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) >= $attendenceState 
-          AND DateTime(hem.${tableModel.hasherEventMapTableHelper.colEventStartDatetime}) <= DateTime('now') 
+          AND julianday(hem.${tableModel.hasherEventMapTableHelper.colEventStartDatetime}) <= julianday('now','$offsetString') 
           ORDER BY eventStartDatetime desc
           ''';
 

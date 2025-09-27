@@ -394,6 +394,8 @@ class QueryRuns {
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
 
+    final offsetString = Utilities.getSqfliteTimeOffset(offsetInMinutes: -240);
+
     String queryBase = '';
 
     if (queryContext == EnumRunQueryContext.kennelAdmin) {
@@ -413,15 +415,15 @@ class QueryRuns {
           coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
           0 as isPaid,
           coalesce(hem.${tableModel.hasherEventMapTableHelper.colIsHare},0) as isHare,
-          case when ((hkm.membershipExpirationDate IS NOT NULL) AND (julianday(hkm.membershipExpirationDate) >= julianday('now','localtime'))) then 1 else 0 end as isMember,
+          case when ((hkm.membershipExpirationDate IS NOT NULL) AND (julianday(hkm.membershipExpirationDate) >= julianday('now','$offsetString'))) then 1 else 0 end as isMember,
           coalesce(hkm.kennelNotificationPreference,0) as notificationPreference,
           coalesce(hkm.kennelEmailAlertPreference,0) as emailAlertPreference,
           COALESCE(k.${tableModel.kennelsTableHelper.colDigitsAfterDecimal},n.${tableModel.countriesTableHelper.colDigitsAfterDecimal}) as ${tableModel.countriesTableHelper.colDigitsAfterDecimal},
           COALESCE(k.${tableModel.kennelsTableHelper.colCurrencySymbol},n.${tableModel.countriesTableHelper.colCurrencySymbol}) as ${tableModel.countriesTableHelper.colCurrencySymbol},
           COALESCE(k.distancePreference,n.distancePreference,0) as distanceUnitsPref,
-          CAST(julianday(evt.eventStartDatetime) + 0.5 AS INT) - CAST(julianday('now','localtime') + 0.5 AS INT) as daysUntilEvent,
+          CAST(julianday(evt.eventStartDatetime) + 0.5 AS INT) - CAST(julianday('now','$offsetString') + 0.5 AS INT) as daysUntilEvent,
           julianday(evt.eventStartDatetime) + 0.5 as eventJulian,
-          julianday('now','localtime') + 0.5 as nowJulian,
+          julianday('now','$offsetString') + 0.5 as nowJulian,
           $searchRunsField
           FROM narrowEvents evt
           INNER JOIN kennels k on k.kennelId = evt.kennelId
@@ -449,15 +451,15 @@ class QueryRuns {
           coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
           CASE WHEN coalesce(pay.paymentType,0) >= 2 THEN 1 ELSE 0 END as isPaid,
           coalesce(hem.${tableModel.hasherEventMapTableHelper.colIsHare},0) as isHare,
-          case when ((hkm.membershipExpirationDate IS NOT NULL) AND (julianday(hkm.membershipExpirationDate) >= julianday('now','localtime'))) then 1 else 0 end as isMember,
+          case when ((hkm.membershipExpirationDate IS NOT NULL) AND (julianday(hkm.membershipExpirationDate) >= julianday('now','$offsetString'))) then 1 else 0 end as isMember,
           coalesce(hem.eventNotificationPreference,hkm.kennelNotificationPreference,0) as notificationPreference,
           coalesce(hem.eventEmailAlertPreference,hkm.kennelEmailAlertPreference,0) as emailAlertPreference,
           COALESCE(k.${tableModel.kennelsTableHelper.colDigitsAfterDecimal},n.${tableModel.countriesTableHelper.colDigitsAfterDecimal}) as ${tableModel.countriesTableHelper.colDigitsAfterDecimal},
           COALESCE(k.${tableModel.kennelsTableHelper.colCurrencySymbol},n.${tableModel.countriesTableHelper.colCurrencySymbol}) as ${tableModel.countriesTableHelper.colCurrencySymbol},
           COALESCE(k.distancePreference,n.distancePreference,0) as distanceUnitsPref,
-          CAST(julianday(evt.eventStartDatetime) + 0.5 AS INT) - CAST(julianday('now','localtime') + 0.5 AS INT) as daysUntilEvent,
+          CAST(julianday(evt.eventStartDatetime) + 0.5 AS INT) - CAST(julianday('now','$offsetString') + 0.5 AS INT) as daysUntilEvent,
           julianday(evt.eventStartDatetime) + 0.5 as eventJulian,
-          julianday('now','localtime') + 0.5 as nowJulian,
+          julianday('now','$offsetString') + 0.5 as nowJulian,
           $searchRunsField
           FROM narrowEvents evt
           INNER JOIN kennels k on k.kennelId = evt.kennelId
@@ -471,7 +473,7 @@ class QueryRuns {
     }
 
     final String whereClauseForTopRunsPage = '''
-            WHERE datetime(evt.${tableModel.eventsTableHelper.colEventStartDatetime}) >= datetime('now','-4 hours') and evt.${tableModel.eventsTableHelper.colIsVisible} = 1
+            WHERE julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetime}) >= julianday('now','$offsetString') and evt.${tableModel.eventsTableHelper.colIsVisible} = 1
             AND coalesce(hkm.following,0) != 2
             AND evt.${tableModel.eventsTableHelper.colRemoved} = 0
             AND (
@@ -488,7 +490,7 @@ class QueryRuns {
         kennelId == null
             ? ''
             : '''
-            WHERE datetime(evt.${tableModel.eventsTableHelper.colEventStartDatetime}) >= datetime('now','-4 hours') and evt.${tableModel.eventsTableHelper.colIsVisible} = 1
+            WHERE julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetime}) >= julianday('now','$offsetString') and evt.${tableModel.eventsTableHelper.colIsVisible} = 1
             AND evt.${tableModel.eventsTableHelper.colKennelId} = "$kennelId"
             AND evt.${tableModel.eventsTableHelper.colRemoved} = 0
             ORDER BY evt.${tableModel.eventsTableHelper.colEventStartDatetime}, evt.${tableModel.eventsTableHelper.colEventNumber}

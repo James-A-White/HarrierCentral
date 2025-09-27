@@ -66,6 +66,8 @@ class HistoryListPageState extends State<HistoryListPage>
   }
 
   Future<void> refreshStatsFromTable(bool forceRefresh) async {
+    final offsetString = Utilities.getSqfliteTimeOffset();
+
     final String hcRunsQuery = '''
           SELECT
           COUNT(case when hem.${tableModel.hasherEventMapTableHelper.colAttendenceState} >= ${attendenceAtHash.value} then 1 else null end) as runCount,
@@ -79,7 +81,7 @@ class HistoryListPageState extends State<HistoryListPage>
           WHERE evt.${tableModel.eventsTableHelper.colRemoved} = 0 
           AND evt.${tableModel.eventsTableHelper.colIsCountedRun} != 0
           AND evt.${tableModel.eventsTableHelper.colIsVisible} != 0
-          AND evt.${tableModel.eventsTableHelper.colEventStartDatetime} <= DateTime('now') 
+          AND julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetime}) <= julianday('now','$offsetString') 
           GROUP BY countries.${tableModel.countriesTableHelper.colCountryName}, countries.${tableModel.countriesTableHelper.colFlagFile}
           ORDER BY runCount desc
           ''';

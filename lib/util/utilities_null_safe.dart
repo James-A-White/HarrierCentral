@@ -947,6 +947,17 @@ class Utilities {
     return s;
   }
 
+  static String getSqfliteTimeOffset({int offsetInMinutes = 0}) {
+    // Local offset relative to UTC (can include half-hours, etc.)
+    final tzOffsetMinutes =
+        DateTime.now().timeZoneOffset.inMinutes + offsetInMinutes;
+    final offsetString =
+        tzOffsetMinutes >= 0
+            ? '+$tzOffsetMinutes minutes'
+            : '$tzOffsetMinutes minutes';
+    return offsetString;
+  }
+
   static Future<void> checkAreWeAtRunStart({String? eventId}) async {
     //final Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.lowest);
 
