@@ -117,7 +117,7 @@ abstract class RunQueryExtensionsModel
         eventStartDateTime.millisecondsSinceEpoch ~/ (86400 * 1000) -
         DateTime.now().millisecondsSinceEpoch ~/ (86400 * 1000);
     if (deltaDays < 0) {
-      if (deltaDays == 1) {
+      if (deltaDays == -1) {
         days = ' 1 day ago is yesterday ';
       } else {
         days = ' ${-deltaDays} days ago ';

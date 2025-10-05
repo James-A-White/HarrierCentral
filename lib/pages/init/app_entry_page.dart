@@ -20,10 +20,16 @@ class AppEntryPageState extends State<AppEntryPage>
 
     if (bootType == BOOT_TYPE_RELOAD_DATA) {
       final String? userId = getStringPref(StringPrefsEnum.userId);
+      final String? publicHasherId = getStringPref(
+        StringPrefsEnum.publicHasherId,
+      );
       final String? deviceId = getStringPref(StringPrefsEnum.deviceId);
       final String? resetCode = getStringPref(StringPrefsEnum.resetCode);
       final String? deviceSecret = getStringPref(StringPrefsEnum.deviceSecret);
       final String? displayName = getStringPref(StringPrefsEnum.displayName);
+      final String? profilePhotoUrl = getStringPref(
+        StringPrefsEnum.profilePhotoUrl,
+      );
       final int? timeWindow = getIntPref(IntPrefsEnum.timeWindow);
 
       final String? thirdPartyAccessToken = getStringPref(
@@ -62,6 +68,8 @@ class AppEntryPageState extends State<AppEntryPage>
       await setStringPref(StringPrefsEnum.deviceId, deviceId);
       await setStringPref(StringPrefsEnum.deviceSecret, deviceSecret);
       await setStringPref(StringPrefsEnum.displayName, displayName);
+      await setStringPref(StringPrefsEnum.publicHasherId, publicHasherId);
+      await setStringPref(StringPrefsEnum.profilePhotoUrl, profilePhotoUrl);
       await setIntPref(IntPrefsEnum.timeWindow, timeWindow);
 
       await setStringPref(
@@ -184,10 +192,12 @@ class AppEntryPageState extends State<AppEntryPage>
       deviceInfo.deviceHeightScaleFactor,
     );
 
-    deviceInfo.deviceWidth =
-        MediaQuery.of(navigatorKey.currentContext!).size.width;
-    deviceInfo.deviceHeight =
-        MediaQuery.of(navigatorKey.currentContext!).size.height;
+    deviceInfo.deviceWidth = MediaQuery.of(
+      navigatorKey.currentContext!,
+    ).size.width;
+    deviceInfo.deviceHeight = MediaQuery.of(
+      navigatorKey.currentContext!,
+    ).size.height;
 
     ApproveLoginModel? loginResult;
 

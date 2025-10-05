@@ -1,5 +1,7 @@
 
-
+2.0.5+997
+    • Still working on fixing the "TODAY", "Tomorrow" labels on Run List Items
+    • Fixed an issue that caused chats to not work after a "Reload Data" where the ProfilePhoto and HasherPublicId items were not copied forward after the reload.
 
 2.0.4+996
     • Removed navigation bar from bottom of Android

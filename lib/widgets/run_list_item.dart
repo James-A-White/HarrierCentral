@@ -89,15 +89,20 @@ class RunListItem extends StatelessWidget {
       print('Event Name: $eventName');
     }
 
-    num daysUntilEvent =
-        futureRun.extensions.eventJulianLocal -
-        futureRun.extensions.nowJulianLocal;
+    final event = DateTime.parse(
+      futureRun.event.eventStartDatetime.toIso8601String().substring(0, 10),
+    );
+    final device = DateTime.parse(
+      DateTime.now().toLocal().toIso8601String().substring(0, 10),
+    );
+
+    num daysUntilEvent = event.difference(device).inDays;
 
     // print(
-    //   'Event GMT:${futureRun.event.eventStartDatetimeGmt}, Days until event: $daysUntilEvent, Kennel: ${futureRun.kennel.kennelName}, Event: $eventName',
+    //   '${futureRun.event.eventStartDatetimeGmt},${futureRun.extensions.eventJulianLocal},Event GMT:${futureRun.event.eventStartDatetimeGmt}, Days until event: $daysUntilEvent, Kennel: ${futureRun.kennel.kennelName}, Event: $eventName',
     // );
 
-    //int xxx = 0;
+    // int xxx = 0;
 
     return GestureDetector(
       onTap: () {
