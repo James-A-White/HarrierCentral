@@ -20,15 +20,13 @@ _PaymentsModel _$PaymentsModelFromJson(Map<String, dynamic> json) =>
       paidDate: DateTime.parse(json['paidDate'] as String),
       paymentType: (json['paymentType'] as num).toInt(),
       productType: (json['productType'] as num).toInt(),
-      cancelledDate:
-          json['cancelledDate'] == null
-              ? null
-              : DateTime.parse(json['cancelledDate'] as String),
+      cancelledDate: json['cancelledDate'] == null
+          ? null
+          : DateTime.parse(json['cancelledDate'] as String),
       cancelledBy: json['cancelledBy'] as String?,
-      confirmedDate:
-          json['confirmedDate'] == null
-              ? null
-              : DateTime.parse(json['confirmedDate'] as String),
+      confirmedDate: json['confirmedDate'] == null
+          ? null
+          : DateTime.parse(json['confirmedDate'] as String),
       confirmedBy: json['confirmedBy'] as String?,
       paymentReference: json['paymentReference'] as String?,
       notes: json['notes'] as String?,
@@ -40,10 +38,9 @@ _PaymentsModel _$PaymentsModelFromJson(Map<String, dynamic> json) =>
       discountDescription: json['discountDescription'] as String,
       specialRunPriceReason: json['specialRunPriceReason'] as String,
       removed: (json['removed'] as num?)?.toInt(),
-      updatedAt:
-          json['updatedAt'] == null
-              ? null
-              : DateTime.parse(json['updatedAt'] as String),
+      updatedAt: json['updatedAt'] == null
+          ? null
+          : DateTime.parse(json['updatedAt'] as String),
     );
 
 Map<String, dynamic> _$PaymentsModelToJson(_PaymentsModel instance) =>

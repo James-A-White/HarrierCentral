@@ -17,10 +17,9 @@ _CitiesModel _$CitiesModelFromJson(Map<String, dynamic> json) => _CitiesModel(
   ianaTimeZone: json['ianaTimeZone'] as String,
   flagFile: json['flagFile'] as String?,
   removed: (json['removed'] as num?)?.toInt(),
-  updatedAt:
-      json['updatedAt'] == null
-          ? null
-          : DateTime.parse(json['updatedAt'] as String),
+  updatedAt: json['updatedAt'] == null
+      ? null
+      : DateTime.parse(json['updatedAt'] as String),
 );
 
 Map<String, dynamic> _$CitiesModelToJson(_CitiesModel instance) =>

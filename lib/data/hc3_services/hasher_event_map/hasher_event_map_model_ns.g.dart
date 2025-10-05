@@ -17,10 +17,10 @@ _HasherEventMapModel _$HasherEventMapModelFromJson(Map<String, dynamic> json) =>
       rsvpState: (json['rsvpState'] as num).toInt(),
       attendenceState: (json['attendenceState'] as num).toInt(),
       isHare: (json['isHare'] as num).toInt(),
-      eventNotificationPreference:
-          (json['eventNotificationPreference'] as num?)?.toInt(),
-      eventEmailAlertPreference:
-          (json['eventEmailAlertPreference'] as num?)?.toInt(),
+      eventNotificationPreference: (json['eventNotificationPreference'] as num?)
+          ?.toInt(),
+      eventEmailAlertPreference: (json['eventEmailAlertPreference'] as num?)
+          ?.toInt(),
       totalHaring: (json['totalHaring'] as num?)?.toInt(),
       totalHaringThisKennel: (json['totalHaringThisKennel'] as num?)?.toInt(),
       totalRuns: (json['totalRuns'] as num?)?.toInt(),
@@ -39,18 +39,17 @@ _HasherEventMapModel _$HasherEventMapModelFromJson(Map<String, dynamic> json) =>
       hemEventStartDatetimeGmt: DateTime.parse(
         json['hemEventStartDatetimeGmt'] as String,
       ),
-      hemCanEditRunAttendence:
-          (json['hemCanEditRunAttendence'] as num?)?.toInt(),
+      hemCanEditRunAttendence: (json['hemCanEditRunAttendence'] as num?)
+          ?.toInt(),
       hemEventKennelId: json['hemEventKennelId'] as String?,
-      hemEventIsCountedAndVisible:
-          (json['hemEventIsCountedAndVisible'] as num?)?.toInt(),
+      hemEventIsCountedAndVisible: (json['hemEventIsCountedAndVisible'] as num?)
+          ?.toInt(),
       hemKennelUserPhoto: json['hemKennelUserPhoto'] as String?,
       hemKennelHashName: json['hemKennelHashName'] as String?,
       removed: (json['removed'] as num?)?.toInt(),
-      updatedAt:
-          json['updatedAt'] == null
-              ? null
-              : DateTime.parse(json['updatedAt'] as String),
+      updatedAt: json['updatedAt'] == null
+          ? null
+          : DateTime.parse(json['updatedAt'] as String),
     );
 
 Map<String, dynamic> _$HasherEventMapModelToJson(
@@ -80,8 +79,8 @@ Map<String, dynamic> _$HasherEventMapModelToJson(
   'hemCountryId': instance.hemCountryId,
   'hemEventNumber': instance.hemEventNumber,
   'hemEventStartDatetime': instance.hemEventStartDatetime.toIso8601String(),
-  'hemEventStartDatetimeGmt':
-      instance.hemEventStartDatetimeGmt.toIso8601String(),
+  'hemEventStartDatetimeGmt': instance.hemEventStartDatetimeGmt
+      .toIso8601String(),
   'hemCanEditRunAttendence': instance.hemCanEditRunAttendence,
   'hemEventKennelId': instance.hemEventKennelId,
   'hemEventIsCountedAndVisible': instance.hemEventIsCountedAndVisible,

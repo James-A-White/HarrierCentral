@@ -90,8 +90,14 @@ class RunListItem extends StatelessWidget {
     }
 
     num daysUntilEvent =
-        futureRun.extensions.eventJulian.toInt() -
-        (futureRun.extensions.nowJulian.toInt() + 1);
+        futureRun.extensions.eventJulianLocal -
+        futureRun.extensions.nowJulianLocal;
+
+    // print(
+    //   'Event GMT:${futureRun.event.eventStartDatetimeGmt}, Days until event: $daysUntilEvent, Kennel: ${futureRun.kennel.kennelName}, Event: $eventName',
+    // );
+
+    //int xxx = 0;
 
     return GestureDetector(
       onTap: () {
@@ -150,14 +156,14 @@ class RunListItem extends StatelessWidget {
                     )))
                     ? Container()
                     : Container(
-                      padding: const EdgeInsets.only(right: 3),
-                      child: GestureDetector(
-                        onTap: () async {
-                          await _showNotificationPopup();
-                        },
-                        child: Obx(() => _getNotificationWidget()),
+                        padding: const EdgeInsets.only(right: 3),
+                        child: GestureDetector(
+                          onTap: () async {
+                            await _showNotificationPopup();
+                          },
+                          child: Obx(() => _getNotificationWidget()),
+                        ),
                       ),
-                    ),
                 Obx(() {
                   if ((rliController.currentChatCount.value == 0) ||
                       (rliController.notificationPreference.value ==
@@ -215,15 +221,14 @@ class RunListItem extends StatelessWidget {
                   Navigator.push<void>(
                     context,
                     MaterialPageRoute<void>(
-                      builder:
-                          (BuildContext context) => ZoomableImagePage2(
-                            key: const Key('51120331'),
-                            pageTitle: futureRun.event.eventName,
-                            imageUrl: futureRun.event.eventImage,
-                            appBarBackgroundColor: themeAppBarBackground,
-                            background: Backgrounds.defaultHcBackground(),
-                            margin: 20.0,
-                          ),
+                      builder: (BuildContext context) => ZoomableImagePage2(
+                        key: const Key('51120331'),
+                        pageTitle: futureRun.event.eventName,
+                        imageUrl: futureRun.event.eventImage,
+                        appBarBackgroundColor: themeAppBarBackground,
+                        background: Backgrounds.defaultHcBackground(),
+                        margin: 20.0,
+                      ),
                     ),
                   );
                 },
@@ -285,12 +290,14 @@ class RunListItem extends StatelessWidget {
                                               : 'Run / Event ') +
                                           (daysUntilEvent <= 14
                                               ? daysUntilEvent.toInt() == -1
-                                                  ? 'Yesterday'
-                                                  : daysUntilEvent.toInt() == 0
-                                                  ? 'TODAY'
-                                                  : daysUntilEvent.toInt() == 1
-                                                  ? 'Tomorrow'
-                                                  : 'in ${daysUntilEvent.toInt().toString()} days'
+                                                    ? 'Yesterday'
+                                                    : daysUntilEvent.toInt() ==
+                                                          0
+                                                    ? 'TODAY'
+                                                    : daysUntilEvent.toInt() ==
+                                                          1
+                                                    ? 'Tomorrow'
+                                                    : 'in ${daysUntilEvent.toInt().toString()} days'
                                               : (daysUntilEvent <= 30)
                                               ? 'in ${daysUntilEvent ~/ 7.0}${(daysUntilEvent ~/ 7.0) == 1 ? ' week' : ' weeks'}'
                                               : daysUntilEvent <= 365
@@ -398,30 +405,30 @@ class RunListItem extends StatelessWidget {
     return (rliController.isPaid.value == 1)
         ? const SizedBox()
         : PaymentIcons(
-          futureRun.event,
-          futureRun.kennel,
-          futureRun.extensions.digitsAfterDecimal,
-          futureRun.extensions.currencySymbol,
-          futureRun.extensions.distanceUnitsPref,
-          futureRun.extensions.distToEvent,
-          futureRun.paymentUrl,
-          futureRun.extensions.rsvpState,
-          futureRun.extensions.isMember,
-          futureRun.extensions.isPaid,
-          true,
-          (int r, int p) {
-            futureRun.extensions = futureRun.extensions.copyWith(
-              rsvpState: r,
-              isPaid: p != -1 ? p : futureRun.extensions.isPaid,
-            );
+            futureRun.event,
+            futureRun.kennel,
+            futureRun.extensions.digitsAfterDecimal,
+            futureRun.extensions.currencySymbol,
+            futureRun.extensions.distanceUnitsPref,
+            futureRun.extensions.distToEvent,
+            futureRun.paymentUrl,
+            futureRun.extensions.rsvpState,
+            futureRun.extensions.isMember,
+            futureRun.extensions.isPaid,
+            true,
+            (int r, int p) {
+              futureRun.extensions = futureRun.extensions.copyWith(
+                rsvpState: r,
+                isPaid: p != -1 ? p : futureRun.extensions.isPaid,
+              );
 
-            rliController.setRsvpState(futureRun.extensions.rsvpState);
+              rliController.setRsvpState(futureRun.extensions.rsvpState);
 
-            if (p != -1) {
-              rliController.setIsPaid(p);
-            }
-          },
-        );
+              if (p != -1) {
+                rliController.setIsPaid(p);
+              }
+            },
+          );
   }
 
   Future<void> _showAllOptionsPopup() async {
@@ -500,106 +507,106 @@ class RunListItem extends StatelessWidget {
         // },
         rliController.notificationPreference.value == NotificationState.ignore
             ? <String, dynamic>{
-              'title': 'Notifications on',
-              'icon': <Widget>[
-                Container(
-                  height: 30,
-                  width: 30,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const Positioned(
-                  left: 3,
-                  top: 1.5,
-                  child: Image(
-                    width: 25.0,
-                    height: 25.0,
-                    fit: BoxFit.fill,
-                    image: AssetImage('images/icons/bell_gold_50px.png'),
-                  ),
-                ),
-              ],
-              'returnValue': NotificationState.on,
-            }
-            : <String, dynamic>{
-              'title': 'Notifications off',
-              'icon': <Widget>[
-                Container(
-                  height: 30,
-                  width: 30,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const Positioned(
-                  left: 3,
-                  top: 1.5,
-                  child: Image(
-                    width: 25.0,
-                    height: 25.0,
-                    fit: BoxFit.fill,
-                    image: AssetImage(
-                      'images/icons/bell_silver_strike_out_50px.png',
+                'title': 'Notifications on',
+                'icon': <Widget>[
+                  Container(
+                    height: 30,
+                    width: 30,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
                     ),
                   ),
-                ),
-              ],
-              'returnValue': NotificationState.ignore,
-            },
+                  const Positioned(
+                    left: 3,
+                    top: 1.5,
+                    child: Image(
+                      width: 25.0,
+                      height: 25.0,
+                      fit: BoxFit.fill,
+                      image: AssetImage('images/icons/bell_gold_50px.png'),
+                    ),
+                  ),
+                ],
+                'returnValue': NotificationState.on,
+              }
+            : <String, dynamic>{
+                'title': 'Notifications off',
+                'icon': <Widget>[
+                  Container(
+                    height: 30,
+                    width: 30,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const Positioned(
+                    left: 3,
+                    top: 1.5,
+                    child: Image(
+                      width: 25.0,
+                      height: 25.0,
+                      fit: BoxFit.fill,
+                      image: AssetImage(
+                        'images/icons/bell_silver_strike_out_50px.png',
+                      ),
+                    ),
+                  ),
+                ],
+                'returnValue': NotificationState.ignore,
+              },
         rliController.emailAlertPreference.value == 2
             ? <String, dynamic>{
-              'title': 'Send e-mail',
-              'icon': <Widget>[
-                Container(
-                  height: 30,
-                  width: 30,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const Positioned(
-                  left: 3,
-                  top: 1.5,
-                  child: Image(
-                    width: 25.0,
-                    height: 25.0,
-                    fit: BoxFit.fill,
-                    image: AssetImage('images/icons/envelope_gold_50px.png'),
-                  ),
-                ),
-              ],
-              'returnValue': emailAlertsOn,
-            }
-            : <String, dynamic>{
-              'title': 'Don\'t send email',
-              'icon': <Widget>[
-                Container(
-                  height: 30,
-                  width: 30,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const Positioned(
-                  left: 3,
-                  top: 1.5,
-                  child: Image(
-                    width: 25.0,
-                    height: 25.0,
-                    fit: BoxFit.fill,
-                    image: AssetImage(
-                      'images/icons/envelope_silver_strike_out_50px.png',
+                'title': 'Send e-mail',
+                'icon': <Widget>[
+                  Container(
+                    height: 30,
+                    width: 30,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
                     ),
                   ),
-                ),
-              ],
-              'returnValue': emailAlertsOff,
-            },
+                  const Positioned(
+                    left: 3,
+                    top: 1.5,
+                    child: Image(
+                      width: 25.0,
+                      height: 25.0,
+                      fit: BoxFit.fill,
+                      image: AssetImage('images/icons/envelope_gold_50px.png'),
+                    ),
+                  ),
+                ],
+                'returnValue': emailAlertsOn,
+              }
+            : <String, dynamic>{
+                'title': 'Don\'t send email',
+                'icon': <Widget>[
+                  Container(
+                    height: 30,
+                    width: 30,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const Positioned(
+                    left: 3,
+                    top: 1.5,
+                    child: Image(
+                      width: 25.0,
+                      height: 25.0,
+                      fit: BoxFit.fill,
+                      image: AssetImage(
+                        'images/icons/envelope_silver_strike_out_50px.png',
+                      ),
+                    ),
+                  ),
+                ],
+                'returnValue': emailAlertsOff,
+              },
       ];
 
       final MultipleChoicePopupHc popup = MultipleChoicePopupHc(
@@ -673,11 +680,11 @@ class RunListItem extends StatelessWidget {
     return rliController.hares.isEmpty
         ? const SizedBox()
         : Text(
-          'Hares: ${rliController.hares}',
-          style: ts_regularMediumBlack,
-          textAlign: TextAlign.left,
-          overflow: TextOverflow.ellipsis,
-        );
+            'Hares: ${rliController.hares}',
+            style: ts_regularMediumBlack,
+            textAlign: TextAlign.left,
+            overflow: TextOverflow.ellipsis,
+          );
   }
 
   Widget _getNotificationWidget() {
@@ -708,33 +715,33 @@ class RunListItem extends StatelessWidget {
             NotificationState.unchanged
         ? Icon(delayIcon, color: hc_blue, size: 24.0)
         : Image(
-          width: 24.0,
-          height: 24.0,
-          fit: BoxFit.fill,
-          image: AssetImage(path),
-        );
+            width: 24.0,
+            height: 24.0,
+            fit: BoxFit.fill,
+            image: AssetImage(path),
+          );
   }
 
   Widget _getEmailWidget() {
     return rliController.emailAlertPreference.value == -1
         ? Icon(delayIcon, color: hc_blue, size: 24.0)
         : Image(
-          width: 24.0,
-          height: 24.0,
-          fit: BoxFit.fill,
-          image:
-              rliController.emailAlertPreference.value ==
-                      NotificationState.on.value
-                  ? const AssetImage('images/icons/envelope_gold_50px.png')
-                  : rliController.emailAlertPreference.value ==
+            width: 24.0,
+            height: 24.0,
+            fit: BoxFit.fill,
+            image:
+                rliController.emailAlertPreference.value ==
+                    NotificationState.on.value
+                ? const AssetImage('images/icons/envelope_gold_50px.png')
+                : rliController.emailAlertPreference.value ==
                       NotificationState.ignore.value
-                  ? const AssetImage(
+                ? const AssetImage(
                     'images/icons/envelope_silver_strike_out_50px.png',
                   )
-                  : const AssetImage(
+                : const AssetImage(
                     'images/icons/envelope_silver_strike_out_50px.png',
                   ),
-        );
+          );
   }
 
   Widget _getRsvpWidget() {

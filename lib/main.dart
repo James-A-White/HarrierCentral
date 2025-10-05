@@ -48,6 +48,13 @@ Future<void> main() async {
     DeviceOrientation.portraitUp,
   ]);
 
+  // ✅ Keep top status bar visible
+  // 🚫 Hide the bottom navigation bar (Android only)
+  SystemChrome.setEnabledSystemUIMode(
+    SystemUiMode.manual,
+    overlays: [SystemUiOverlay.top], // show only the top overlay
+  );
+
   // App-level init — safe to re-run on an in-app “restart”
   await initPrefs(); // if services read prefs during init()
   await initServices(); // GetX DI registration (see services_init.dart)
@@ -90,8 +97,8 @@ class RootApp extends StatelessWidget {
       theme: ThemeData(
         appBarTheme: AppBarTheme(
           systemOverlayStyle: SystemUiOverlayStyle(
-            statusBarColor: hc_red,
-            statusBarIconBrightness: Brightness.dark,
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.light,
             statusBarBrightness: Brightness.dark,
           ),
         ),

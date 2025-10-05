@@ -12,7 +12,9 @@ abstract class RunQueryExtensionsModel
   factory RunQueryExtensionsModel({
     // @Default(0) int daysUntilEvent,
     @Default(0) num nowJulian,
+    @Default(0) num nowJulianLocal,
     @Default(0) num eventJulian,
+    @Default(0) num eventJulianLocal,
     @Default(r'Europe/London') String ianaTimeZone,
     @Default(0) int appAccessFlags,
     @Default(2) int digitsAfterDecimal,

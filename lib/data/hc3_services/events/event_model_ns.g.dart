@@ -27,10 +27,10 @@ _EventModel _$EventModelFromJson(Map<String, dynamic> json) => _EventModel(
   fbLatitude: (json['fbLatitude'] as num?)?.toDouble(),
   fbLongitude: (json['fbLongitude'] as num?)?.toDouble(),
   eventPriceForMembers: (json['eventPriceForMembers'] as num?)?.toDouble(),
-  eventPriceForNonMembers:
-      (json['eventPriceForNonMembers'] as num?)?.toDouble(),
-  evtDisseminateAllowWebLinks:
-      (json['evtDisseminateAllowWebLinks'] as num?)?.toInt(),
+  eventPriceForNonMembers: (json['eventPriceForNonMembers'] as num?)
+      ?.toDouble(),
+  evtDisseminateAllowWebLinks: (json['evtDisseminateAllowWebLinks'] as num?)
+      ?.toInt(),
   eventFacebookId: json['eventFacebookId'] as String?,
   absoluteEventNumber: (json['absoluteEventNumber'] as num?)?.toInt(),
   canEditRunAttendence: (json['canEditRunAttendence'] as num?)?.toInt(),
@@ -47,10 +47,9 @@ _EventModel _$EventModelFromJson(Map<String, dynamic> json) => _EventModel(
   hares: json['hares'] as String?,
   eventPaymentScheme: json['eventPaymentScheme'] as String?,
   eventPaymentUrl: json['eventPaymentUrl'] as String?,
-  eventPaymentUrlExpires:
-      json['eventPaymentUrlExpires'] == null
-          ? null
-          : DateTime.parse(json['eventPaymentUrlExpires'] as String),
+  eventPaymentUrlExpires: json['eventPaymentUrlExpires'] == null
+      ? null
+      : DateTime.parse(json['eventPaymentUrlExpires'] as String),
   unconfirmedBankXferCount: (json['unconfirmedBankXferCount'] as num?)?.toInt(),
   eventPriceForExtras: (json['eventPriceForExtras'] as num?)?.toDouble(),
   extrasDescription: json['extrasDescription'] as String?,
@@ -63,10 +62,9 @@ _EventModel _$EventModelFromJson(Map<String, dynamic> json) => _EventModel(
   useFbRunDetails: (json['useFbRunDetails'] as num).toInt(),
   useFbImage: (json['useFbImage'] as num).toInt(),
   removed: (json['removed'] as num?)?.toInt(),
-  updatedAt:
-      json['updatedAt'] == null
-          ? null
-          : DateTime.parse(json['updatedAt'] as String),
+  updatedAt: json['updatedAt'] == null
+      ? null
+      : DateTime.parse(json['updatedAt'] as String),
 );
 
 Map<String, dynamic> _$EventModelToJson(

@@ -26,8 +26,8 @@ _KennelsModel _$KennelsModelFromJson(
   kennelWebsiteUrl: json['kennelWebsiteUrl'] as String?,
   defaultEventCurrencyType: json['defaultEventCurrencyType'] as String?,
   integrationType: json['integrationType'] as String?,
-  kennelInboundIntegrationId:
-      (json['kennelInboundIntegrationId'] as num?)?.toInt(),
+  kennelInboundIntegrationId: (json['kennelInboundIntegrationId'] as num?)
+      ?.toInt(),
   kennelEventsUrl: json['kennelEventsUrl'] as String?,
   kennelStatus: (json['kennelStatus'] as num).toInt(),
   canEditRunAttendence: (json['canEditRunAttendence'] as num).toInt(),
@@ -36,10 +36,10 @@ _KennelsModel _$KennelsModelFromJson(
   kennelLatitude: (json['kennelLatitude'] as num?)?.toDouble(),
   kennelLongitude: (json['kennelLongitude'] as num?)?.toDouble(),
   defaultPriceForMembers: (json['defaultPriceForMembers'] as num).toDouble(),
-  defaultPriceForNonMembers:
-      (json['defaultPriceForNonMembers'] as num).toDouble(),
-  membershipDurationInMonths:
-      (json['membershipDurationInMonths'] as num).toInt(),
+  defaultPriceForNonMembers: (json['defaultPriceForNonMembers'] as num)
+      .toDouble(),
+  membershipDurationInMonths: (json['membershipDurationInMonths'] as num)
+      .toInt(),
   defaultRunStartTime: DateTime.parse(json['defaultRunStartTime'] as String),
   currencyCode: json['currencyCode'] as String?,
   primaryCultureCode: json['primaryCultureCode'] as String?,
@@ -51,44 +51,39 @@ _KennelsModel _$KennelsModelFromJson(
   bankBeneficiary: json['bankBeneficiary'] as String?,
   kennelPaymentScheme: json['kennelPaymentScheme'] as String?,
   kennelPaymentUrl: json['kennelPaymentUrl'] as String?,
-  kennelPaymentUrlExpires:
-      json['kennelPaymentUrlExpires'] == null
-          ? null
-          : DateTime.parse(json['kennelPaymentUrlExpires'] as String),
-  kennelPaymentMemberSurcharge:
-      (json['kennelPaymentMemberSurcharge'] as num?)?.toDouble(),
+  kennelPaymentUrlExpires: json['kennelPaymentUrlExpires'] == null
+      ? null
+      : DateTime.parse(json['kennelPaymentUrlExpires'] as String),
+  kennelPaymentMemberSurcharge: (json['kennelPaymentMemberSurcharge'] as num?)
+      ?.toDouble(),
   kennelPaymentNonMemberSurcharge:
       (json['kennelPaymentNonMemberSurcharge'] as num?)?.toDouble(),
   kennelPaymentScheme2: json['kennelPaymentScheme2'] as String?,
   kennelPaymentUrl2: json['kennelPaymentUrl2'] as String?,
-  kennelPaymentUrlExpires2:
-      json['kennelPaymentUrlExpires2'] == null
-          ? null
-          : DateTime.parse(json['kennelPaymentUrlExpires2'] as String),
-  kennelPaymentMemberSurcharge2:
-      (json['kennelPaymentMemberSurcharge2'] as num?)?.toDouble(),
+  kennelPaymentUrlExpires2: json['kennelPaymentUrlExpires2'] == null
+      ? null
+      : DateTime.parse(json['kennelPaymentUrlExpires2'] as String),
+  kennelPaymentMemberSurcharge2: (json['kennelPaymentMemberSurcharge2'] as num?)
+      ?.toDouble(),
   kennelPaymentNonMemberSurcharge2:
       (json['kennelPaymentNonMemberSurcharge2'] as num?)?.toDouble(),
   kennelPaymentScheme3: json['kennelPaymentScheme3'] as String?,
   kennelPaymentUrl3: json['kennelPaymentUrl3'] as String?,
-  kennelPaymentUrlExpires3:
-      json['kennelPaymentUrlExpires3'] == null
-          ? null
-          : DateTime.parse(json['kennelPaymentUrlExpires3'] as String),
-  kennelPaymentMemberSurcharge3:
-      (json['kennelPaymentMemberSurcharge3'] as num?)?.toDouble(),
+  kennelPaymentUrlExpires3: json['kennelPaymentUrlExpires3'] == null
+      ? null
+      : DateTime.parse(json['kennelPaymentUrlExpires3'] as String),
+  kennelPaymentMemberSurcharge3: (json['kennelPaymentMemberSurcharge3'] as num?)
+      ?.toDouble(),
   kennelPaymentNonMemberSurcharge3:
       (json['kennelPaymentNonMemberSurcharge3'] as num?)?.toDouble(),
-  runCountStartDate:
-      json['runCountStartDate'] == null
-          ? null
-          : DateTime.parse(json['runCountStartDate'] as String),
+  runCountStartDate: json['runCountStartDate'] == null
+      ? null
+      : DateTime.parse(json['runCountStartDate'] as String),
   kennelMismanagementTeam: json['kennelMismanagementTeam'] as String?,
   distancePreference: (json['distancePreference'] as num?)?.toInt(),
-  updatedAt:
-      json['updatedAt'] == null
-          ? null
-          : DateTime.parse(json['updatedAt'] as String),
+  updatedAt: json['updatedAt'] == null
+      ? null
+      : DateTime.parse(json['updatedAt'] as String),
   removed: (json['removed'] as num?)?.toInt(),
 );
 
@@ -134,20 +129,20 @@ Map<String, dynamic> _$KennelsModelToJson(
   'bankBeneficiary': instance.bankBeneficiary,
   'kennelPaymentScheme': instance.kennelPaymentScheme,
   'kennelPaymentUrl': instance.kennelPaymentUrl,
-  'kennelPaymentUrlExpires':
-      instance.kennelPaymentUrlExpires?.toIso8601String(),
+  'kennelPaymentUrlExpires': instance.kennelPaymentUrlExpires
+      ?.toIso8601String(),
   'kennelPaymentMemberSurcharge': instance.kennelPaymentMemberSurcharge,
   'kennelPaymentNonMemberSurcharge': instance.kennelPaymentNonMemberSurcharge,
   'kennelPaymentScheme2': instance.kennelPaymentScheme2,
   'kennelPaymentUrl2': instance.kennelPaymentUrl2,
-  'kennelPaymentUrlExpires2':
-      instance.kennelPaymentUrlExpires2?.toIso8601String(),
+  'kennelPaymentUrlExpires2': instance.kennelPaymentUrlExpires2
+      ?.toIso8601String(),
   'kennelPaymentMemberSurcharge2': instance.kennelPaymentMemberSurcharge2,
   'kennelPaymentNonMemberSurcharge2': instance.kennelPaymentNonMemberSurcharge2,
   'kennelPaymentScheme3': instance.kennelPaymentScheme3,
   'kennelPaymentUrl3': instance.kennelPaymentUrl3,
-  'kennelPaymentUrlExpires3':
-      instance.kennelPaymentUrlExpires3?.toIso8601String(),
+  'kennelPaymentUrlExpires3': instance.kennelPaymentUrlExpires3
+      ?.toIso8601String(),
   'kennelPaymentMemberSurcharge3': instance.kennelPaymentMemberSurcharge3,
   'kennelPaymentNonMemberSurcharge3': instance.kennelPaymentNonMemberSurcharge3,
   'runCountStartDate': instance.runCountStartDate?.toIso8601String(),

@@ -16,8 +16,8 @@ _LiteEventModel _$LiteEventModelFromJson(Map<String, dynamic> json) =>
       eventName: json['eventName'] as String,
       eventNumber: (json['eventNumber'] as num).toInt(),
       eventStartDatetime: DateTime.parse(json['eventStartDatetime'] as String),
-      eventInboundIntegrationId:
-          (json['eventInboundIntegrationId'] as num?)?.toInt(),
+      eventInboundIntegrationId: (json['eventInboundIntegrationId'] as num?)
+          ?.toInt(),
       appAccessFlags: (json['appAccessFlags'] as num?)?.toInt() ?? 0,
       canEditRunAttendance:
           (json['canEditRunAttendance'] as num?)?.toInt() ?? 0,

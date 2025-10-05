@@ -103,7 +103,8 @@ class QueryRuns {
 
   num dummyVariableToSuppressWarning = 0;
 
-  static String searchRunsField = '''
+  static String searchRunsField =
+      '''
                "~ " || coalesce(evt.${tableModel.eventsTableHelper.colEventName},"")
             || " is " || coalesce(k.${tableModel.kennelsTableHelper.colKennelShortName},"") 
             || " is " || coalesce(k.${tableModel.kennelsTableHelper.colKennelName},"")   
@@ -403,7 +404,8 @@ class QueryRuns {
     String queryBase = '';
 
     if (queryContext == EnumRunQueryContext.kennelAdmin) {
-      queryBase = '''
+      queryBase =
+          '''
         SELECT  
           evt.*,
           k.*,
@@ -425,8 +427,10 @@ class QueryRuns {
           COALESCE(k.${tableModel.kennelsTableHelper.colDigitsAfterDecimal},n.${tableModel.countriesTableHelper.colDigitsAfterDecimal}) as ${tableModel.countriesTableHelper.colDigitsAfterDecimal},
           COALESCE(k.${tableModel.kennelsTableHelper.colCurrencySymbol},n.${tableModel.countriesTableHelper.colCurrencySymbol}) as ${tableModel.countriesTableHelper.colCurrencySymbol},
           COALESCE(k.distancePreference,n.distancePreference,0) as distanceUnitsPref,
-          julianday(evt.eventStartDatetime) as eventJulian,
-          julianday('now','$offsetFromGmtToLocal') as nowJulian,
+          julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) as eventJulian,
+          julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetime}) as eventJulianLocal,
+          julianday('now') as nowJulian,
+          julianday('now','$offsetFromGmtToLocal') as nowJulianLocal,
           $searchRunsField
           FROM narrowEvents evt
           INNER JOIN kennels k on k.kennelId = evt.kennelId
@@ -437,7 +441,8 @@ class QueryRuns {
           LEFT OUTER JOIN $hemTable hem on hem.eventId = evt.eventId and hem.userId = "$userId"
           ''';
     } else {
-      queryBase = '''
+      queryBase =
+          '''
       
         SELECT  
           evt.*,
@@ -460,8 +465,10 @@ class QueryRuns {
           COALESCE(k.${tableModel.kennelsTableHelper.colDigitsAfterDecimal},n.${tableModel.countriesTableHelper.colDigitsAfterDecimal}) as ${tableModel.countriesTableHelper.colDigitsAfterDecimal},
           COALESCE(k.${tableModel.kennelsTableHelper.colCurrencySymbol},n.${tableModel.countriesTableHelper.colCurrencySymbol}) as ${tableModel.countriesTableHelper.colCurrencySymbol},
           COALESCE(k.distancePreference,n.distancePreference,0) as distanceUnitsPref,
-          julianday(evt.eventStartDatetime) as eventJulian,
-          julianday('now','$offsetFromGmtToLocal') as nowJulian,
+          julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) as eventJulian,
+          julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetime}) as eventJulianLocal,
+          julianday('now') as nowJulian,
+          julianday('now','$offsetFromGmtToLocal') as nowJulianLocal,
           $searchRunsField
           FROM narrowEvents evt
           INNER JOIN kennels k on k.kennelId = evt.kennelId
@@ -474,7 +481,8 @@ class QueryRuns {
           ''';
     }
 
-    final String whereClauseForTopRunsPage = '''
+    final String whereClauseForTopRunsPage =
+        '''
             WHERE julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-4 hours') and evt.${tableModel.eventsTableHelper.colIsVisible} = 1
             AND coalesce(hkm.following,0) != 2
             AND evt.${tableModel.eventsTableHelper.colRemoved} = 0
@@ -488,20 +496,18 @@ class QueryRuns {
             ORDER BY evt.${tableModel.eventsTableHelper.colEventStartDatetime}, evt.${tableModel.eventsTableHelper.colEventNumber}
           ''';
 
-    final String whereClauseForKennelDetailsPage =
-        kennelId == null
-            ? ''
-            : '''
+    final String whereClauseForKennelDetailsPage = kennelId == null
+        ? ''
+        : '''
             WHERE julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-4 hours') and evt.${tableModel.eventsTableHelper.colIsVisible} = 1
             AND evt.${tableModel.eventsTableHelper.colKennelId} = "$kennelId"
             AND evt.${tableModel.eventsTableHelper.colRemoved} = 0
             ORDER BY evt.${tableModel.eventsTableHelper.colEventStartDatetime}, evt.${tableModel.eventsTableHelper.colEventNumber}
           ''';
 
-    final String whereClauseForSingleRun =
-        eventId == null
-            ? ''
-            : '''
+    final String whereClauseForSingleRun = eventId == null
+        ? ''
+        : '''
             WHERE evt.${tableModel.eventsTableHelper.colEventId} = "$eventId"
             AND evt.${tableModel.eventsTableHelper.colRemoved} = 0
           ''';
@@ -524,7 +530,8 @@ class QueryRuns {
     String? kennelId,
     DateTime eventStartDateTime,
   ) async {
-    String query = '''
+    String query =
+        '''
         SELECT  
           evt.${tableModel.eventsTableHelper.colEventName} as eventName,
           evt.${tableModel.eventsTableHelper.colEventId} as eventId

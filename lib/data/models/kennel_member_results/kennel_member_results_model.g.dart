@@ -15,10 +15,9 @@ _KennelMemberResultsModel _$KennelMemberResultsModelFromJson(
   photo: json['photo'] as String?,
   following: (json['following'] as num?)?.toInt() ?? 0,
   kennelId: json['kennelId'] as String,
-  dateOfLastRun:
-      json['dateOfLastRun'] == null
-          ? null
-          : DateTime.parse(json['dateOfLastRun'] as String),
+  dateOfLastRun: json['dateOfLastRun'] == null
+      ? null
+      : DateTime.parse(json['dateOfLastRun'] as String),
   hcTotalRunCount: (json['hcTotalRunCount'] as num?)?.toInt() ?? 0,
   hcHaringCount: (json['hcHaringCount'] as num?)?.toInt() ?? 0,
   historicalTotalRunCount:
@@ -26,14 +25,12 @@ _KennelMemberResultsModel _$KennelMemberResultsModelFromJson(
   historicalHaringCount: (json['historicalHaringCount'] as num?)?.toInt() ?? 0,
   kennelEmailAlertPreference:
       (json['kennelEmailAlertPreference'] as num?)?.toInt() ?? 0,
-  membershipExpirationDate:
-      json['membershipExpirationDate'] == null
-          ? null
-          : DateTime.parse(json['membershipExpirationDate'] as String),
-  memberSince:
-      json['memberSince'] == null
-          ? null
-          : DateTime.parse(json['memberSince'] as String),
+  membershipExpirationDate: json['membershipExpirationDate'] == null
+      ? null
+      : DateTime.parse(json['membershipExpirationDate'] as String),
+  memberSince: json['memberSince'] == null
+      ? null
+      : DateTime.parse(json['memberSince'] as String),
   membershipDurationInMonths:
       (json['membershipDurationInMonths'] as num?)?.toInt() ?? 6,
   appAccessFlags: (json['appAccessFlags'] as num?)?.toInt() ?? 0,
@@ -58,8 +55,8 @@ Map<String, dynamic> _$KennelMemberResultsModelToJson(
   'historicalTotalRunCount': instance.historicalTotalRunCount,
   'historicalHaringCount': instance.historicalHaringCount,
   'kennelEmailAlertPreference': instance.kennelEmailAlertPreference,
-  'membershipExpirationDate':
-      instance.membershipExpirationDate?.toIso8601String(),
+  'membershipExpirationDate': instance.membershipExpirationDate
+      ?.toIso8601String(),
   'memberSince': instance.memberSince?.toIso8601String(),
   'membershipDurationInMonths': instance.membershipDurationInMonths,
   'appAccessFlags': instance.appAccessFlags,

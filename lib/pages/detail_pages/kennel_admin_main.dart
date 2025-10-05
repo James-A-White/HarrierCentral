@@ -2119,98 +2119,98 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                             .extensions
                                             .isKennelMember ==
                                         1) ...<Widget>[
-                                      const FancyDivider(
-                                        key: Key('5203920'),
-                                        innerColor: Colors.white,
-                                        topMargin: 30.0,
-                                        bottomMargin: 25.0,
-                                      ),
-                                      Container(
-                                        margin: const EdgeInsets.only(
-                                          bottom: 20,
-                                        ),
-                                        width: _buttonWidth,
-                                        height: _buttonHeight,
-                                        child: Connection2.styleForConnected(
-                                          appModel.connectionStatus,
-                                          ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              padding: const EdgeInsets.only(
-                                                left: 12.0,
-                                                top: 8.0,
-                                                bottom: 8.0,
-                                              ),
-                                            ),
-                                            child: Row(
-                                              children: <Widget>[
-                                                SizedBox(
-                                                  width: 45.0,
-                                                  child: Image.asset(
-                                                    'images/icons/woman_man_profile_icon.png',
-                                                    height: 40,
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                        left: 20,
-                                                        right: 0,
-                                                      ),
-                                                  child: Text(
-                                                    'Customize profile',
-                                                    style: ts_button,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            onPressed: () async {
-                                              if (!mounted) return;
+                                      // const FancyDivider(
+                                      //   key: Key('5203920'),
+                                      //   innerColor: Colors.white,
+                                      //   topMargin: 30.0,
+                                      //   bottomMargin: 25.0,
+                                      // ),
+                                      // Container(
+                                      //   margin: const EdgeInsets.only(
+                                      //     bottom: 20,
+                                      //   ),
+                                      //   width: _buttonWidth,
+                                      //   height: _buttonHeight,
+                                      //   child: Connection2.styleForConnected(
+                                      //     appModel.connectionStatus,
+                                      //     ElevatedButton(
+                                      //       style: ElevatedButton.styleFrom(
+                                      //         padding: const EdgeInsets.only(
+                                      //           left: 12.0,
+                                      //           top: 8.0,
+                                      //           bottom: 8.0,
+                                      //         ),
+                                      //       ),
+                                      //       child: Row(
+                                      //         children: <Widget>[
+                                      //           SizedBox(
+                                      //             width: 45.0,
+                                      //             child: Image.asset(
+                                      //               'images/icons/woman_man_profile_icon.png',
+                                      //               height: 40,
+                                      //             ),
+                                      //           ),
+                                      //           Padding(
+                                      //             padding:
+                                      //                 const EdgeInsets.only(
+                                      //                   left: 20,
+                                      //                   right: 0,
+                                      //                 ),
+                                      //             child: Text(
+                                      //               'Customize profile',
+                                      //               style: ts_button,
+                                      //             ),
+                                      //           ),
+                                      //         ],
+                                      //       ),
+                                      //       onPressed: () async {
+                                      //         if (!mounted) return;
 
-                                              if ((widget
-                                                          .kennelAggregateItem
-                                                          .extensions
-                                                          .originalProfilePhoto !=
-                                                      null) &&
-                                                  (widget
-                                                          .kennelAggregateItem
-                                                          .extensions
-                                                          .originalDisplayName !=
-                                                      null)) {
-                                                await Navigator.push<void>(
-                                                  context,
-                                                  MaterialPageRoute<void>(
-                                                    builder: (BuildContext context) => GenericWidgetPage(
-                                                      key: const Key(
-                                                        '52233311',
-                                                      ),
-                                                      widget: CustomizeProfile(
-                                                        originalProfilePhoto: widget
-                                                            .kennelAggregateItem
-                                                            .extensions
-                                                            .originalProfilePhoto!,
-                                                        originalDisplayName: widget
-                                                            .kennelAggregateItem
-                                                            .extensions
-                                                            .originalDisplayName!,
-                                                        customKennelPhoto: widget
-                                                            .kennelAggregateItem
-                                                            .hkm
-                                                            ?.kennelUserPhoto,
-                                                        customKennelHashName: widget
-                                                            .kennelAggregateItem
-                                                            .hkm
-                                                            ?.kennelHashName,
-                                                      ),
-                                                      appBarTitle:
-                                                          'Customize profile',
-                                                    ),
-                                                  ),
-                                                );
-                                              }
-                                            },
-                                          ),
-                                        ),
-                                      ),
+                                      //         if ((widget
+                                      //                     .kennelAggregateItem
+                                      //                     .extensions
+                                      //                     .originalProfilePhoto !=
+                                      //                 null) &&
+                                      //             (widget
+                                      //                     .kennelAggregateItem
+                                      //                     .extensions
+                                      //                     .originalDisplayName !=
+                                      //                 null)) {
+                                      //           await Navigator.push<void>(
+                                      //             context,
+                                      //             MaterialPageRoute<void>(
+                                      //               builder: (BuildContext context) => GenericWidgetPage(
+                                      //                 key: const Key(
+                                      //                   '52233311',
+                                      //                 ),
+                                      //                 widget: CustomizeProfile(
+                                      //                   originalProfilePhoto: widget
+                                      //                       .kennelAggregateItem
+                                      //                       .extensions
+                                      //                       .originalProfilePhoto!,
+                                      //                   originalDisplayName: widget
+                                      //                       .kennelAggregateItem
+                                      //                       .extensions
+                                      //                       .originalDisplayName!,
+                                      //                   customKennelPhoto: widget
+                                      //                       .kennelAggregateItem
+                                      //                       .hkm
+                                      //                       ?.kennelUserPhoto,
+                                      //                   customKennelHashName: widget
+                                      //                       .kennelAggregateItem
+                                      //                       .hkm
+                                      //                       ?.kennelHashName,
+                                      //                 ),
+                                      //                 appBarTitle:
+                                      //                     'Customize profile',
+                                      //               ),
+                                      //             ),
+                                      //           );
+                                      //         }
+                                      //       },
+                                      //     ),
+                                      //   ),
+                                      // ),
                                     ],
                                   ],
                                 ),

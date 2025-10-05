@@ -57,13 +57,12 @@ class OtherPaymentPopupController extends GetxController {
   }
 
   void _recalculateTotal() {
-    double total =
-        specialPriceEnabled.value
-            ? double.tryParse(
-                  specialPriceTextController.text.replaceAll(',', '.'),
-                ) ??
-                0
-            : normalPrice;
+    double total = specialPriceEnabled.value
+        ? double.tryParse(
+                specialPriceTextController.text.replaceAll(',', '.'),
+              ) ??
+              0
+        : normalPrice;
 
     if (topUpCreditEnabled.value) {
       total +=
@@ -118,10 +117,9 @@ class OtherPaymentPopup extends StatelessWidget {
                             borderRadius: BorderRadius.circular(10.0),
                             color: Colors.white,
                             border: Border.all(
-                              color:
-                                  controller.specialPriceEnabled.value
-                                      ? hc_red
-                                      : Colors.grey.shade300,
+                              color: controller.specialPriceEnabled.value
+                                  ? hc_red
+                                  : Colors.grey.shade300,
                               width:
                                   2, //                   <--- border width here
                             ),
@@ -138,10 +136,9 @@ class OtherPaymentPopup extends StatelessWidget {
                                 child: Text(
                                   'If you want to offer a Hasher a special price for this run, enter that amount here. You can also enter an optional note why you offered this price.',
                                   style: TextStyle(
-                                    color:
-                                        controller.specialPriceEnabled.value
-                                            ? Colors.black
-                                            : Colors.grey.shade500,
+                                    color: controller.specialPriceEnabled.value
+                                        ? Colors.black
+                                        : Colors.grey.shade500,
                                   ),
                                 ),
                               ),
@@ -162,10 +159,9 @@ class OtherPaymentPopup extends StatelessWidget {
                                   style: TextStyle(
                                     fontFamily: 'AvenirNextDemiBold',
                                     fontSize: 20.0,
-                                    color:
-                                        controller.specialPriceEnabled.value
-                                            ? Colors.grey.shade700
-                                            : Colors.grey.shade300,
+                                    color: controller.specialPriceEnabled.value
+                                        ? Colors.grey.shade700
+                                        : Colors.grey.shade300,
                                   ),
                                   decoration: InputDecoration(
                                     border: InputBorder.none,
@@ -179,8 +175,8 @@ class OtherPaymentPopup extends StatelessWidget {
                                       fontSize: 20.0,
                                       color:
                                           controller.specialPriceEnabled.value
-                                              ? Colors.grey.shade500
-                                              : Colors.grey.shade300,
+                                          ? Colors.grey.shade500
+                                          : Colors.grey.shade300,
                                     ),
                                   ),
                                 ),
@@ -195,17 +191,15 @@ class OtherPaymentPopup extends StatelessWidget {
                                   enabled: controller.specialPriceEnabled.value,
                                   focusNode:
                                       controller.specialPriceReasonFocusNode,
-                                  controller:
-                                      controller
-                                          .specialPriceReasonTextController,
+                                  controller: controller
+                                      .specialPriceReasonTextController,
                                   keyboardType: TextInputType.text,
                                   style: TextStyle(
                                     fontFamily: 'AvenirNextDemiBold',
                                     fontSize: 20.0,
-                                    color:
-                                        controller.specialPriceEnabled.value
-                                            ? Colors.grey.shade700
-                                            : Colors.grey.shade300,
+                                    color: controller.specialPriceEnabled.value
+                                        ? Colors.grey.shade700
+                                        : Colors.grey.shade300,
                                   ),
                                   decoration: InputDecoration(
                                     border: InputBorder.none,
@@ -219,8 +213,8 @@ class OtherPaymentPopup extends StatelessWidget {
                                       fontSize: 20.0,
                                       color:
                                           controller.specialPriceEnabled.value
-                                              ? Colors.grey.shade500
-                                              : Colors.grey.shade300,
+                                          ? Colors.grey.shade500
+                                          : Colors.grey.shade300,
                                     ),
                                   ),
                                 ),
@@ -238,12 +232,12 @@ class OtherPaymentPopup extends StatelessWidget {
                                           //primarySwatch: hc_blue,
                                           unselectedWidgetColor:
                                               controller
-                                                      .specialPriceEnabled
-                                                      .value
-                                                  ? hc_red
-                                                  : Colors
-                                                      .grey
-                                                      .shade100, // Your color
+                                                  .specialPriceEnabled
+                                                  .value
+                                              ? hc_red
+                                              : Colors
+                                                    .grey
+                                                    .shade100, // Your color
                                         ),
                                         child: Checkbox(
                                           side: const BorderSide(
@@ -268,34 +262,34 @@ class OtherPaymentPopup extends StatelessWidget {
                                               }),
                                           onChanged:
                                               controller
-                                                      .specialPriceEnabled
-                                                      .value
-                                                  ? (bool? val) {
-                                                    if (val != null) {
-                                                      //setState(() {
-                                                      controller
-                                                          .paySpecialPriceWithCredit
-                                                          .value = !controller
-                                                              .paySpecialPriceWithCredit
-                                                              .value;
-                                                      if (controller
-                                                              .topUpCreditEnabled
-                                                              .value &&
-                                                          controller
-                                                              .paySpecialPriceWithCredit
-                                                              .value) {
-                                                        controller
+                                                  .specialPriceEnabled
+                                                  .value
+                                              ? (bool? val) {
+                                                  if (val != null) {
+                                                    //setState(() {
+                                                    controller
+                                                        .paySpecialPriceWithCredit
+                                                        .value = !controller
+                                                        .paySpecialPriceWithCredit
+                                                        .value;
+                                                    if (controller
                                                             .topUpCreditEnabled
-                                                            .value = false;
-                                                      }
-                                                      //});
+                                                            .value &&
+                                                        controller
+                                                            .paySpecialPriceWithCredit
+                                                            .value) {
+                                                      controller
+                                                              .topUpCreditEnabled
+                                                              .value =
+                                                          false;
                                                     }
+                                                    //});
                                                   }
-                                                  : null,
-                                          value:
-                                              controller
-                                                  .paySpecialPriceWithCredit
-                                                  .value,
+                                                }
+                                              : null,
+                                          value: controller
+                                              .paySpecialPriceWithCredit
+                                              .value,
                                         ),
                                       ),
                                       Text(
@@ -303,10 +297,10 @@ class OtherPaymentPopup extends StatelessWidget {
                                         style: TextStyle(
                                           color:
                                               controller
-                                                      .specialPriceEnabled
-                                                      .value
-                                                  ? Colors.black
-                                                  : Colors.grey.shade300,
+                                                  .specialPriceEnabled
+                                                  .value
+                                              ? Colors.black
+                                              : Colors.grey.shade300,
                                         ),
                                       ),
                                       const SizedBox(width: 10.0),
@@ -326,12 +320,12 @@ class OtherPaymentPopup extends StatelessWidget {
                                           //primarySwatch: hc_blue,
                                           unselectedWidgetColor:
                                               controller
-                                                      .specialPriceEnabled
-                                                      .value
-                                                  ? hc_red
-                                                  : Colors
-                                                      .grey
-                                                      .shade100, // Your color
+                                                  .specialPriceEnabled
+                                                  .value
+                                              ? hc_red
+                                              : Colors
+                                                    .grey
+                                                    .shade100, // Your color
                                         ),
                                         child: Checkbox(
                                           side: const BorderSide(
@@ -355,24 +349,23 @@ class OtherPaymentPopup extends StatelessWidget {
                                               }),
                                           onChanged:
                                               controller
-                                                      .specialPriceEnabled
-                                                      .value
-                                                  ? (bool? val) {
-                                                    if (val != null) {
-                                                      //setState(() {
-                                                      controller
-                                                          .specialPriceIsDefaultForUser
-                                                          .value = !controller
-                                                              .specialPriceIsDefaultForUser
-                                                              .value;
-                                                      //});
-                                                    }
+                                                  .specialPriceEnabled
+                                                  .value
+                                              ? (bool? val) {
+                                                  if (val != null) {
+                                                    //setState(() {
+                                                    controller
+                                                        .specialPriceIsDefaultForUser
+                                                        .value = !controller
+                                                        .specialPriceIsDefaultForUser
+                                                        .value;
+                                                    //});
                                                   }
-                                                  : null,
-                                          value:
-                                              controller
-                                                  .specialPriceIsDefaultForUser
-                                                  .value,
+                                                }
+                                              : null,
+                                          value: controller
+                                              .specialPriceIsDefaultForUser
+                                              .value,
                                         ),
                                       ),
                                       Text(
@@ -380,10 +373,10 @@ class OtherPaymentPopup extends StatelessWidget {
                                         style: TextStyle(
                                           color:
                                               controller
-                                                      .specialPriceEnabled
-                                                      .value
-                                                  ? Colors.black
-                                                  : Colors.grey.shade300,
+                                                  .specialPriceEnabled
+                                                  .value
+                                              ? Colors.black
+                                              : Colors.grey.shade300,
                                         ),
                                       ),
                                       const SizedBox(width: 10.0),
@@ -405,10 +398,9 @@ class OtherPaymentPopup extends StatelessWidget {
                               borderRadius: BorderRadius.circular(10.0),
                               color: Colors.white,
                               border: Border.all(
-                                color:
-                                    controller.specialPriceEnabled.value
-                                        ? hc_red
-                                        : Colors.grey.shade300,
+                                color: controller.specialPriceEnabled.value
+                                    ? hc_red
+                                    : Colors.grey.shade300,
                                 width:
                                     2, //                   <--- border width here
                               ),
@@ -475,10 +467,9 @@ class OtherPaymentPopup extends StatelessWidget {
                               borderRadius: BorderRadius.circular(10.0),
                               color: Colors.white,
                               border: Border.all(
-                                color:
-                                    controller.topUpCreditEnabled.value
-                                        ? hc_red
-                                        : Colors.grey.shade300,
+                                color: controller.topUpCreditEnabled.value
+                                    ? hc_red
+                                    : Colors.grey.shade300,
                                 width:
                                     2, //                   <--- border width here
                               ),
@@ -495,10 +486,9 @@ class OtherPaymentPopup extends StatelessWidget {
                                   child: Text(
                                     'Enter an additional amount of money here to add to a Hasher\'s credit balance.',
                                     style: TextStyle(
-                                      color:
-                                          controller.topUpCreditEnabled.value
-                                              ? Colors.black
-                                              : Colors.grey.shade500,
+                                      color: controller.topUpCreditEnabled.value
+                                          ? Colors.black
+                                          : Colors.grey.shade500,
                                     ),
                                   ),
                                 ),
@@ -519,10 +509,9 @@ class OtherPaymentPopup extends StatelessWidget {
                                     style: TextStyle(
                                       fontFamily: 'AvenirNextDemiBold',
                                       fontSize: 20.0,
-                                      color:
-                                          controller.topUpCreditEnabled.value
-                                              ? Colors.grey.shade700
-                                              : Colors.grey.shade300,
+                                      color: controller.topUpCreditEnabled.value
+                                          ? Colors.grey.shade700
+                                          : Colors.grey.shade300,
                                     ),
                                     decoration: InputDecoration(
                                       border: InputBorder.none,
@@ -536,8 +525,8 @@ class OtherPaymentPopup extends StatelessWidget {
                                         fontSize: 20.0,
                                         color:
                                             controller.topUpCreditEnabled.value
-                                                ? Colors.grey.shade500
-                                                : Colors.grey.shade300,
+                                            ? Colors.grey.shade500
+                                            : Colors.grey.shade300,
                                       ),
                                     ),
                                   ),
@@ -555,10 +544,9 @@ class OtherPaymentPopup extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(10.0),
                                 color: Colors.white,
                                 border: Border.all(
-                                  color:
-                                      controller.topUpCreditEnabled.value
-                                          ? hc_red
-                                          : Colors.grey.shade300,
+                                  color: controller.topUpCreditEnabled.value
+                                      ? hc_red
+                                      : Colors.grey.shade300,
                                   width:
                                       2, //                   <--- border width here
                                 ),
@@ -591,8 +579,9 @@ class OtherPaymentPopup extends StatelessWidget {
                                                 .topUpCreditEnabled
                                                 .value) {
                                           controller
-                                              .paySpecialPriceWithCredit
-                                              .value = false;
+                                                  .paySpecialPriceWithCredit
+                                                  .value =
+                                              false;
                                         }
                                         // setState(() {});
                                       }
@@ -679,32 +668,29 @@ class OtherPaymentPopup extends StatelessWidget {
                       style: ts_button.copyWith(fontSize: 18),
                     ),
                     onPressed: () {
-                      final OtherPaymentPopupResult result =
-                          OtherPaymentPopupResult(
-                            'process',
-                            paymentCashOtherAmount.value,
-                            controller.specialPriceEnabled.value
-                                ? double.tryParse(
-                                      controller.specialPriceTextController.text
-                                          .replaceAll(',', '.'),
-                                    ) ??
-                                    0.0
-                                : 0.0,
-                            controller.specialPriceEnabled.value
-                                ? controller
-                                    .specialPriceReasonTextController
-                                    .text
-                                : '',
-                            controller.topUpCreditEnabled.value
-                                ? double.tryParse(
-                                      controller.topUpTextController.text
-                                          .replaceAll(',', '.'),
-                                    ) ??
-                                    0.0
-                                : 0.0,
-                            controller.totalDue.value,
-                            controller.specialPriceIsDefaultForUser.value,
-                          );
+                      final OtherPaymentPopupResult
+                      result = OtherPaymentPopupResult(
+                        'process',
+                        paymentCashOtherAmount.value,
+                        controller.specialPriceEnabled.value
+                            ? double.tryParse(
+                                controller.specialPriceTextController.text
+                                    .replaceAll(',', '.'),
+                              )
+                            : null,
+                        controller.specialPriceEnabled.value
+                            ? controller.specialPriceReasonTextController.text
+                            : null,
+                        controller.topUpCreditEnabled.value
+                            ? double.tryParse(
+                                    controller.topUpTextController.text
+                                        .replaceAll(',', '.'),
+                                  ) ??
+                                  0.0
+                            : 0.0,
+                        controller.totalDue.value,
+                        controller.specialPriceIsDefaultForUser.value,
+                      );
 
                       Navigator.of(context).pop(result);
                     },
@@ -724,32 +710,30 @@ class OtherPaymentPopup extends StatelessWidget {
                       textAlign: TextAlign.center,
                     ),
                     onPressed: () {
-                      final OtherPaymentPopupResult result =
-                          OtherPaymentPopupResult(
-                            'process',
-                            paymentBankTransferOtherAmount.value,
-                            controller.specialPriceEnabled.value
-                                ? double.tryParse(
-                                      controller.specialPriceTextController.text
-                                          .replaceAll(',', '.'),
-                                    ) ??
-                                    0.0
-                                : 0.0,
-                            controller.specialPriceEnabled.value
-                                ? controller
-                                    .specialPriceReasonTextController
-                                    .text
-                                : '',
-                            controller.topUpCreditEnabled.value
-                                ? double.tryParse(
-                                      controller.topUpTextController.text
-                                          .replaceAll(',', '.'),
-                                    ) ??
-                                    0.0
-                                : 0.0,
-                            controller.totalDue.value,
-                            controller.specialPriceIsDefaultForUser.value,
-                          );
+                      final OtherPaymentPopupResult
+                      result = OtherPaymentPopupResult(
+                        'process',
+                        paymentBankTransferOtherAmount.value,
+                        controller.specialPriceEnabled.value
+                            ? double.tryParse(
+                                    controller.specialPriceTextController.text
+                                        .replaceAll(',', '.'),
+                                  ) ??
+                                  0.0
+                            : 0.0,
+                        controller.specialPriceEnabled.value
+                            ? controller.specialPriceReasonTextController.text
+                            : '',
+                        controller.topUpCreditEnabled.value
+                            ? double.tryParse(
+                                    controller.topUpTextController.text
+                                        .replaceAll(',', '.'),
+                                  ) ??
+                                  0.0
+                            : 0.0,
+                        controller.totalDue.value,
+                        controller.specialPriceIsDefaultForUser.value,
+                      );
                       Navigator.of(context).pop(result);
                     },
                   ),
@@ -774,32 +758,30 @@ class OtherPaymentPopup extends StatelessWidget {
                     ),
                     child: Text('Hash Credit', style: ts_button),
                     onPressed: () {
-                      final OtherPaymentPopupResult result =
-                          OtherPaymentPopupResult(
-                            'process',
-                            paymentHashCreditOtherAmount.value,
-                            controller.specialPriceEnabled.value
-                                ? double.tryParse(
-                                      controller.specialPriceTextController.text
-                                          .replaceAll(',', '.'),
-                                    ) ??
-                                    0.0
-                                : 0.0,
-                            controller.specialPriceEnabled.value
-                                ? controller
-                                    .specialPriceReasonTextController
-                                    .text
-                                : '',
-                            controller.topUpCreditEnabled.value
-                                ? double.tryParse(
-                                      controller.topUpTextController.text
-                                          .replaceAll(',', '.'),
-                                    ) ??
-                                    0.0
-                                : 0.0,
-                            controller.totalDue.value,
-                            controller.specialPriceIsDefaultForUser.value,
-                          );
+                      final OtherPaymentPopupResult
+                      result = OtherPaymentPopupResult(
+                        'process',
+                        paymentHashCreditOtherAmount.value,
+                        controller.specialPriceEnabled.value
+                            ? double.tryParse(
+                                    controller.specialPriceTextController.text
+                                        .replaceAll(',', '.'),
+                                  ) ??
+                                  0.0
+                            : 0.0,
+                        controller.specialPriceEnabled.value
+                            ? controller.specialPriceReasonTextController.text
+                            : '',
+                        controller.topUpCreditEnabled.value
+                            ? double.tryParse(
+                                    controller.topUpTextController.text
+                                        .replaceAll(',', '.'),
+                                  ) ??
+                                  0.0
+                            : 0.0,
+                        controller.totalDue.value,
+                        controller.specialPriceIsDefaultForUser.value,
+                      );
 
                       Navigator.of(context).pop(result);
                     },

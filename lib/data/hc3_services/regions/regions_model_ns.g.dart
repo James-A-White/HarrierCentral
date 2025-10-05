@@ -15,10 +15,9 @@ _RegionsModel _$RegionsModelFromJson(Map<String, dynamic> json) =>
       countryId: json['countryId'] as String,
       flagFile: json['flagFile'] as String?,
       removed: (json['removed'] as num?)?.toInt(),
-      updatedAt:
-          json['updatedAt'] == null
-              ? null
-              : DateTime.parse(json['updatedAt'] as String),
+      updatedAt: json['updatedAt'] == null
+          ? null
+          : DateTime.parse(json['updatedAt'] as String),
     );
 
 Map<String, dynamic> _$RegionsModelToJson(_RegionsModel instance) =>

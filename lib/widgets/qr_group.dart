@@ -116,17 +116,11 @@ class QrGroup extends StatelessWidget {
                     },
                     child: Padding(
                       padding: const EdgeInsets.only(left: 0.0),
-                      child: Platform.isAndroid
-                          ? const Icon(
-                              MaterialIcons.share,
-                              color: Colors.white,
-                              size: 36.0,
-                            )
-                          : const Icon(
-                              SimpleLineIcons.globe,
-                              color: Colors.white,
-                              size: 36.0,
-                            ),
+                      child: const Icon(
+                        SimpleLineIcons.globe,
+                        color: Colors.white,
+                        size: 36.0,
+                      ),
                     ),
                   ),
                 ],

@@ -54,7 +54,7 @@ Map<String, dynamic> _$AreWeAtRunModelToJson(_AreWeAtRunModel instance) =>
       'digitsAfterDecimal': instance.digitsAfterDecimal,
       'allowSelfPayment': instance.allowSelfPayment,
       'currencySymbol': instance.currencySymbol,
-      'membershipExpirationDate':
-          instance.membershipExpirationDate.toIso8601String(),
+      'membershipExpirationDate': instance.membershipExpirationDate
+          .toIso8601String(),
       'extrasDescription': instance.extrasDescription,
     };
