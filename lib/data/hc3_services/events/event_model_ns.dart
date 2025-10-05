@@ -9,6 +9,7 @@ abstract class EventModel with _$EventModel implements BaseModel {
     required String eventId,
     required String publicEventId,
     required DateTime eventStartDatetime,
+    required DateTime eventStartDatetimeGmt,
     required String kennelId,
     required int isVisible,
     required int isCountedRun,

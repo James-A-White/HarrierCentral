@@ -285,6 +285,33 @@ class Tables {
       ''',
       appliedAtInt: 0,
     ),
+    MigrationsModel(
+      dbVersion: 491,
+      migrationText: '''
+
+        DELETE FROM ${tableModel.citiesTableHelper.getTableName(AppDomainType.user)};
+        
+        DELETE FROM ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)};
+
+        DELETE FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.user)};
+
+        DELETE FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.kennel)};
+
+        DELETE FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)};
+
+        ALTER TABLE ${tableModel.citiesTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.citiesTableHelper.colIanaTimeZone} TEXT NOT NULL DEFAULT 'Europe/London';
+
+        ALTER TABLE ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.eventsTableHelper.colEventStartDatetimeGmt} TEXT NOT NULL;
+
+        ALTER TABLE ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.user)} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colEventStartDatetimeGmt} TEXT NOT NULL;
+
+        ALTER TABLE ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.kennel)} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colEventStartDatetimeGmt} TEXT NOT NULL;
+
+        ALTER TABLE ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colEventStartDatetimeGmt} TEXT NOT NULL;
+
+      ''',
+      appliedAtInt: 0,
+    ),
   ];
 
   static Future<void> createTables(

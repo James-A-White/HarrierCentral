@@ -35,6 +35,7 @@ abstract class HasherEventMapModel
     String? hemCountryId,
     int? hemEventNumber,
     required DateTime hemEventStartDatetime,
+    required DateTime hemEventStartDatetimeGmt,
     int? hemCanEditRunAttendence,
     String? hemEventKennelId,
     int? hemEventIsCountedAndVisible,

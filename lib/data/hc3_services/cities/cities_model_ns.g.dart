@@ -14,6 +14,7 @@ _CitiesModel _$CitiesModelFromJson(Map<String, dynamic> json) => _CitiesModel(
   latitude: (json['latitude'] as num).toDouble(),
   longitude: (json['longitude'] as num).toDouble(),
   cityAscii: json['cityAscii'] as String,
+  ianaTimeZone: json['ianaTimeZone'] as String,
   flagFile: json['flagFile'] as String?,
   removed: (json['removed'] as num?)?.toInt(),
   updatedAt:
@@ -31,6 +32,7 @@ Map<String, dynamic> _$CitiesModelToJson(_CitiesModel instance) =>
       'latitude': instance.latitude,
       'longitude': instance.longitude,
       'cityAscii': instance.cityAscii,
+      'ianaTimeZone': instance.ianaTimeZone,
       'flagFile': instance.flagFile,
       'removed': instance.removed,
       'updatedAt': instance.updatedAt?.toIso8601String(),

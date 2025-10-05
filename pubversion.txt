@@ -32,6 +32,13 @@
 2.0.0+986
     Added change that sets the email and notification preference based on the RSVP
 
+2.0.3+994
+    • Fixed timezone issues so runs disappear 4 hours after run start no matter where
+    in the world you are located.
+    • Enhanced generation of QR codes for sharing runs, website, etc.
+    • Upgrade to Flutter 3.35.5 to hopefully resolve rare iOS issue
+
+
 
 ======
 

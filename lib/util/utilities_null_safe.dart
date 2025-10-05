@@ -950,7 +950,7 @@ class Utilities {
   static String getSqfliteTimeOffset({int offsetInMinutes = 0}) {
     // Local offset relative to UTC (can include half-hours, etc.)
     final tzOffsetMinutes =
-        DateTime.now().timeZoneOffset.inMinutes + offsetInMinutes;
+        -(DateTime.now().timeZoneOffset.inMinutes + offsetInMinutes);
     final offsetFromGmtToLocal =
         tzOffsetMinutes >= 0
             ? '+$tzOffsetMinutes minutes'

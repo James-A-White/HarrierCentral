@@ -29,6 +29,7 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
   final String colEventId = 'eventId';
   final String colPublicEventId = 'publicEventId';
   final String colEventStartDatetime = 'eventStartDatetime';
+  final String colEventStartDatetimeGmt = 'eventStartDatetimeGmt';
   final String colKennelId = 'kennelId';
   final String colIsVisible = 'isVisible';
   final String colIsCountedRun = 'isCountedRun';
@@ -87,7 +88,8 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
 
             $colEventId TEXT NOT NULL,
             $colPublicEventId TEXT NOT NULL,
-            $colEventStartDatetime TEXT,
+            $colEventStartDatetime TEXT NOT NULL,
+            $colEventStartDatetimeGmt TEXT NOT NULL,
             $colKennelId TEXT NOT NULL,
             $colIsVisible INT NOT NULL,
             $colIsCountedRun INT NOT NULL,

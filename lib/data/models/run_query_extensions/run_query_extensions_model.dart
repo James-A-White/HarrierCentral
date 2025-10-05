@@ -13,6 +13,7 @@ abstract class RunQueryExtensionsModel
     // @Default(0) int daysUntilEvent,
     @Default(0) num nowJulian,
     @Default(0) num eventJulian,
+    @Default(r'Europe/London') String ianaTimeZone,
     @Default(0) int appAccessFlags,
     @Default(2) int digitsAfterDecimal,
     @Default(r'$^') String currencySymbol,

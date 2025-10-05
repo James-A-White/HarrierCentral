@@ -13,6 +13,7 @@ abstract class CitiesModel with _$CitiesModel implements BaseModel {
     required double latitude,
     required double longitude,
     required String cityAscii,
+    required String ianaTimeZone,
     String? flagFile,
     int? removed,
     DateTime? updatedAt,

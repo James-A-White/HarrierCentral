@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CitiesModel implements DiagnosticableTreeMixin {
 
- String get cityId; String get cityName; String? get citySearchTags; String get regionId; double get latitude; double get longitude; String get cityAscii; String? get flagFile; int? get removed; DateTime? get updatedAt;
+ String get cityId; String get cityName; String? get citySearchTags; String get regionId; double get latitude; double get longitude; String get cityAscii; String get ianaTimeZone; String? get flagFile; int? get removed; DateTime? get updatedAt;
 /// Create a copy of CitiesModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,21 +29,21 @@ $CitiesModelCopyWith<CitiesModel> get copyWith => _$CitiesModelCopyWithImpl<Citi
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
   properties
     ..add(DiagnosticsProperty('type', 'CitiesModel'))
-    ..add(DiagnosticsProperty('cityId', cityId))..add(DiagnosticsProperty('cityName', cityName))..add(DiagnosticsProperty('citySearchTags', citySearchTags))..add(DiagnosticsProperty('regionId', regionId))..add(DiagnosticsProperty('latitude', latitude))..add(DiagnosticsProperty('longitude', longitude))..add(DiagnosticsProperty('cityAscii', cityAscii))..add(DiagnosticsProperty('flagFile', flagFile))..add(DiagnosticsProperty('removed', removed))..add(DiagnosticsProperty('updatedAt', updatedAt));
+    ..add(DiagnosticsProperty('cityId', cityId))..add(DiagnosticsProperty('cityName', cityName))..add(DiagnosticsProperty('citySearchTags', citySearchTags))..add(DiagnosticsProperty('regionId', regionId))..add(DiagnosticsProperty('latitude', latitude))..add(DiagnosticsProperty('longitude', longitude))..add(DiagnosticsProperty('cityAscii', cityAscii))..add(DiagnosticsProperty('ianaTimeZone', ianaTimeZone))..add(DiagnosticsProperty('flagFile', flagFile))..add(DiagnosticsProperty('removed', removed))..add(DiagnosticsProperty('updatedAt', updatedAt));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CitiesModel&&(identical(other.cityId, cityId) || other.cityId == cityId)&&(identical(other.cityName, cityName) || other.cityName == cityName)&&(identical(other.citySearchTags, citySearchTags) || other.citySearchTags == citySearchTags)&&(identical(other.regionId, regionId) || other.regionId == regionId)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.cityAscii, cityAscii) || other.cityAscii == cityAscii)&&(identical(other.flagFile, flagFile) || other.flagFile == flagFile)&&(identical(other.removed, removed) || other.removed == removed)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CitiesModel&&(identical(other.cityId, cityId) || other.cityId == cityId)&&(identical(other.cityName, cityName) || other.cityName == cityName)&&(identical(other.citySearchTags, citySearchTags) || other.citySearchTags == citySearchTags)&&(identical(other.regionId, regionId) || other.regionId == regionId)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.cityAscii, cityAscii) || other.cityAscii == cityAscii)&&(identical(other.ianaTimeZone, ianaTimeZone) || other.ianaTimeZone == ianaTimeZone)&&(identical(other.flagFile, flagFile) || other.flagFile == flagFile)&&(identical(other.removed, removed) || other.removed == removed)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,cityId,cityName,citySearchTags,regionId,latitude,longitude,cityAscii,flagFile,removed,updatedAt);
+int get hashCode => Object.hash(runtimeType,cityId,cityName,citySearchTags,regionId,latitude,longitude,cityAscii,ianaTimeZone,flagFile,removed,updatedAt);
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'CitiesModel(cityId: $cityId, cityName: $cityName, citySearchTags: $citySearchTags, regionId: $regionId, latitude: $latitude, longitude: $longitude, cityAscii: $cityAscii, flagFile: $flagFile, removed: $removed, updatedAt: $updatedAt)';
+  return 'CitiesModel(cityId: $cityId, cityName: $cityName, citySearchTags: $citySearchTags, regionId: $regionId, latitude: $latitude, longitude: $longitude, cityAscii: $cityAscii, ianaTimeZone: $ianaTimeZone, flagFile: $flagFile, removed: $removed, updatedAt: $updatedAt)';
 }
 
 
@@ -54,7 +54,7 @@ abstract mixin class $CitiesModelCopyWith<$Res>  {
   factory $CitiesModelCopyWith(CitiesModel value, $Res Function(CitiesModel) _then) = _$CitiesModelCopyWithImpl;
 @useResult
 $Res call({
- String cityId, String cityName, String? citySearchTags, String regionId, double latitude, double longitude, String cityAscii, String? flagFile, int? removed, DateTime? updatedAt
+ String cityId, String cityName, String? citySearchTags, String regionId, double latitude, double longitude, String cityAscii, String ianaTimeZone, String? flagFile, int? removed, DateTime? updatedAt
 });
 
 
@@ -71,7 +71,7 @@ class _$CitiesModelCopyWithImpl<$Res>
 
 /// Create a copy of CitiesModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? cityId = null,Object? cityName = null,Object? citySearchTags = freezed,Object? regionId = null,Object? latitude = null,Object? longitude = null,Object? cityAscii = null,Object? flagFile = freezed,Object? removed = freezed,Object? updatedAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? cityId = null,Object? cityName = null,Object? citySearchTags = freezed,Object? regionId = null,Object? latitude = null,Object? longitude = null,Object? cityAscii = null,Object? ianaTimeZone = null,Object? flagFile = freezed,Object? removed = freezed,Object? updatedAt = freezed,}) {
   return _then(_self.copyWith(
 cityId: null == cityId ? _self.cityId : cityId // ignore: cast_nullable_to_non_nullable
 as String,cityName: null == cityName ? _self.cityName : cityName // ignore: cast_nullable_to_non_nullable
@@ -80,6 +80,7 @@ as String?,regionId: null == regionId ? _self.regionId : regionId // ignore: cas
 as String,latitude: null == latitude ? _self.latitude : latitude // ignore: cast_nullable_to_non_nullable
 as double,longitude: null == longitude ? _self.longitude : longitude // ignore: cast_nullable_to_non_nullable
 as double,cityAscii: null == cityAscii ? _self.cityAscii : cityAscii // ignore: cast_nullable_to_non_nullable
+as String,ianaTimeZone: null == ianaTimeZone ? _self.ianaTimeZone : ianaTimeZone // ignore: cast_nullable_to_non_nullable
 as String,flagFile: freezed == flagFile ? _self.flagFile : flagFile // ignore: cast_nullable_to_non_nullable
 as String?,removed: freezed == removed ? _self.removed : removed // ignore: cast_nullable_to_non_nullable
 as int?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
@@ -168,10 +169,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String cityId,  String cityName,  String? citySearchTags,  String regionId,  double latitude,  double longitude,  String cityAscii,  String? flagFile,  int? removed,  DateTime? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String cityId,  String cityName,  String? citySearchTags,  String regionId,  double latitude,  double longitude,  String cityAscii,  String ianaTimeZone,  String? flagFile,  int? removed,  DateTime? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CitiesModel() when $default != null:
-return $default(_that.cityId,_that.cityName,_that.citySearchTags,_that.regionId,_that.latitude,_that.longitude,_that.cityAscii,_that.flagFile,_that.removed,_that.updatedAt);case _:
+return $default(_that.cityId,_that.cityName,_that.citySearchTags,_that.regionId,_that.latitude,_that.longitude,_that.cityAscii,_that.ianaTimeZone,_that.flagFile,_that.removed,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -189,10 +190,10 @@ return $default(_that.cityId,_that.cityName,_that.citySearchTags,_that.regionId,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String cityId,  String cityName,  String? citySearchTags,  String regionId,  double latitude,  double longitude,  String cityAscii,  String? flagFile,  int? removed,  DateTime? updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String cityId,  String cityName,  String? citySearchTags,  String regionId,  double latitude,  double longitude,  String cityAscii,  String ianaTimeZone,  String? flagFile,  int? removed,  DateTime? updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _CitiesModel():
-return $default(_that.cityId,_that.cityName,_that.citySearchTags,_that.regionId,_that.latitude,_that.longitude,_that.cityAscii,_that.flagFile,_that.removed,_that.updatedAt);case _:
+return $default(_that.cityId,_that.cityName,_that.citySearchTags,_that.regionId,_that.latitude,_that.longitude,_that.cityAscii,_that.ianaTimeZone,_that.flagFile,_that.removed,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -209,10 +210,10 @@ return $default(_that.cityId,_that.cityName,_that.citySearchTags,_that.regionId,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String cityId,  String cityName,  String? citySearchTags,  String regionId,  double latitude,  double longitude,  String cityAscii,  String? flagFile,  int? removed,  DateTime? updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String cityId,  String cityName,  String? citySearchTags,  String regionId,  double latitude,  double longitude,  String cityAscii,  String ianaTimeZone,  String? flagFile,  int? removed,  DateTime? updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _CitiesModel() when $default != null:
-return $default(_that.cityId,_that.cityName,_that.citySearchTags,_that.regionId,_that.latitude,_that.longitude,_that.cityAscii,_that.flagFile,_that.removed,_that.updatedAt);case _:
+return $default(_that.cityId,_that.cityName,_that.citySearchTags,_that.regionId,_that.latitude,_that.longitude,_that.cityAscii,_that.ianaTimeZone,_that.flagFile,_that.removed,_that.updatedAt);case _:
   return null;
 
 }
@@ -224,7 +225,7 @@ return $default(_that.cityId,_that.cityName,_that.citySearchTags,_that.regionId,
 @JsonSerializable()
 
 class _CitiesModel with DiagnosticableTreeMixin implements CitiesModel {
-  const _CitiesModel({required this.cityId, required this.cityName, this.citySearchTags, required this.regionId, required this.latitude, required this.longitude, required this.cityAscii, this.flagFile, this.removed, this.updatedAt});
+  const _CitiesModel({required this.cityId, required this.cityName, this.citySearchTags, required this.regionId, required this.latitude, required this.longitude, required this.cityAscii, required this.ianaTimeZone, this.flagFile, this.removed, this.updatedAt});
   factory _CitiesModel.fromJson(Map<String, dynamic> json) => _$CitiesModelFromJson(json);
 
 @override final  String cityId;
@@ -234,6 +235,7 @@ class _CitiesModel with DiagnosticableTreeMixin implements CitiesModel {
 @override final  double latitude;
 @override final  double longitude;
 @override final  String cityAscii;
+@override final  String ianaTimeZone;
 @override final  String? flagFile;
 @override final  int? removed;
 @override final  DateTime? updatedAt;
@@ -252,21 +254,21 @@ Map<String, dynamic> toJson() {
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
   properties
     ..add(DiagnosticsProperty('type', 'CitiesModel'))
-    ..add(DiagnosticsProperty('cityId', cityId))..add(DiagnosticsProperty('cityName', cityName))..add(DiagnosticsProperty('citySearchTags', citySearchTags))..add(DiagnosticsProperty('regionId', regionId))..add(DiagnosticsProperty('latitude', latitude))..add(DiagnosticsProperty('longitude', longitude))..add(DiagnosticsProperty('cityAscii', cityAscii))..add(DiagnosticsProperty('flagFile', flagFile))..add(DiagnosticsProperty('removed', removed))..add(DiagnosticsProperty('updatedAt', updatedAt));
+    ..add(DiagnosticsProperty('cityId', cityId))..add(DiagnosticsProperty('cityName', cityName))..add(DiagnosticsProperty('citySearchTags', citySearchTags))..add(DiagnosticsProperty('regionId', regionId))..add(DiagnosticsProperty('latitude', latitude))..add(DiagnosticsProperty('longitude', longitude))..add(DiagnosticsProperty('cityAscii', cityAscii))..add(DiagnosticsProperty('ianaTimeZone', ianaTimeZone))..add(DiagnosticsProperty('flagFile', flagFile))..add(DiagnosticsProperty('removed', removed))..add(DiagnosticsProperty('updatedAt', updatedAt));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CitiesModel&&(identical(other.cityId, cityId) || other.cityId == cityId)&&(identical(other.cityName, cityName) || other.cityName == cityName)&&(identical(other.citySearchTags, citySearchTags) || other.citySearchTags == citySearchTags)&&(identical(other.regionId, regionId) || other.regionId == regionId)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.cityAscii, cityAscii) || other.cityAscii == cityAscii)&&(identical(other.flagFile, flagFile) || other.flagFile == flagFile)&&(identical(other.removed, removed) || other.removed == removed)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CitiesModel&&(identical(other.cityId, cityId) || other.cityId == cityId)&&(identical(other.cityName, cityName) || other.cityName == cityName)&&(identical(other.citySearchTags, citySearchTags) || other.citySearchTags == citySearchTags)&&(identical(other.regionId, regionId) || other.regionId == regionId)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.cityAscii, cityAscii) || other.cityAscii == cityAscii)&&(identical(other.ianaTimeZone, ianaTimeZone) || other.ianaTimeZone == ianaTimeZone)&&(identical(other.flagFile, flagFile) || other.flagFile == flagFile)&&(identical(other.removed, removed) || other.removed == removed)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,cityId,cityName,citySearchTags,regionId,latitude,longitude,cityAscii,flagFile,removed,updatedAt);
+int get hashCode => Object.hash(runtimeType,cityId,cityName,citySearchTags,regionId,latitude,longitude,cityAscii,ianaTimeZone,flagFile,removed,updatedAt);
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'CitiesModel(cityId: $cityId, cityName: $cityName, citySearchTags: $citySearchTags, regionId: $regionId, latitude: $latitude, longitude: $longitude, cityAscii: $cityAscii, flagFile: $flagFile, removed: $removed, updatedAt: $updatedAt)';
+  return 'CitiesModel(cityId: $cityId, cityName: $cityName, citySearchTags: $citySearchTags, regionId: $regionId, latitude: $latitude, longitude: $longitude, cityAscii: $cityAscii, ianaTimeZone: $ianaTimeZone, flagFile: $flagFile, removed: $removed, updatedAt: $updatedAt)';
 }
 
 
@@ -277,7 +279,7 @@ abstract mixin class _$CitiesModelCopyWith<$Res> implements $CitiesModelCopyWith
   factory _$CitiesModelCopyWith(_CitiesModel value, $Res Function(_CitiesModel) _then) = __$CitiesModelCopyWithImpl;
 @override @useResult
 $Res call({
- String cityId, String cityName, String? citySearchTags, String regionId, double latitude, double longitude, String cityAscii, String? flagFile, int? removed, DateTime? updatedAt
+ String cityId, String cityName, String? citySearchTags, String regionId, double latitude, double longitude, String cityAscii, String ianaTimeZone, String? flagFile, int? removed, DateTime? updatedAt
 });
 
 
@@ -294,7 +296,7 @@ class __$CitiesModelCopyWithImpl<$Res>
 
 /// Create a copy of CitiesModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? cityId = null,Object? cityName = null,Object? citySearchTags = freezed,Object? regionId = null,Object? latitude = null,Object? longitude = null,Object? cityAscii = null,Object? flagFile = freezed,Object? removed = freezed,Object? updatedAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? cityId = null,Object? cityName = null,Object? citySearchTags = freezed,Object? regionId = null,Object? latitude = null,Object? longitude = null,Object? cityAscii = null,Object? ianaTimeZone = null,Object? flagFile = freezed,Object? removed = freezed,Object? updatedAt = freezed,}) {
   return _then(_CitiesModel(
 cityId: null == cityId ? _self.cityId : cityId // ignore: cast_nullable_to_non_nullable
 as String,cityName: null == cityName ? _self.cityName : cityName // ignore: cast_nullable_to_non_nullable
@@ -303,6 +305,7 @@ as String?,regionId: null == regionId ? _self.regionId : regionId // ignore: cas
 as String,latitude: null == latitude ? _self.latitude : latitude // ignore: cast_nullable_to_non_nullable
 as double,longitude: null == longitude ? _self.longitude : longitude // ignore: cast_nullable_to_non_nullable
 as double,cityAscii: null == cityAscii ? _self.cityAscii : cityAscii // ignore: cast_nullable_to_non_nullable
+as String,ianaTimeZone: null == ianaTimeZone ? _self.ianaTimeZone : ianaTimeZone // ignore: cast_nullable_to_non_nullable
 as String,flagFile: freezed == flagFile ? _self.flagFile : flagFile // ignore: cast_nullable_to_non_nullable
 as String?,removed: freezed == removed ? _self.removed : removed // ignore: cast_nullable_to_non_nullable
 as int?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable

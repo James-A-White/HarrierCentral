@@ -181,6 +181,7 @@ export 'package:harrier_central/widgets/payment_icons.dart';
 export 'package:harrier_central/widgets/payment_report_list_item.dart';
 export 'package:harrier_central/widgets/payment_snackbar.dart';
 export 'package:harrier_central/widgets/profile_photo.dart';
+export 'package:harrier_central/widgets/qr_group.dart';
 export 'package:harrier_central/widgets/run_details.dart';
 export 'package:harrier_central/widgets/run_list_item.dart';
 export 'package:harrier_central/widgets/run_tabs.dart';

@@ -10,6 +10,9 @@ _EventModel _$EventModelFromJson(Map<String, dynamic> json) => _EventModel(
   eventId: json['eventId'] as String,
   publicEventId: json['publicEventId'] as String,
   eventStartDatetime: DateTime.parse(json['eventStartDatetime'] as String),
+  eventStartDatetimeGmt: DateTime.parse(
+    json['eventStartDatetimeGmt'] as String,
+  ),
   kennelId: json['kennelId'] as String,
   isVisible: (json['isVisible'] as num).toInt(),
   isCountedRun: (json['isCountedRun'] as num).toInt(),
@@ -72,6 +75,7 @@ Map<String, dynamic> _$EventModelToJson(
   'eventId': instance.eventId,
   'publicEventId': instance.publicEventId,
   'eventStartDatetime': instance.eventStartDatetime.toIso8601String(),
+  'eventStartDatetimeGmt': instance.eventStartDatetimeGmt.toIso8601String(),
   'kennelId': instance.kennelId,
   'isVisible': instance.isVisible,
   'isCountedRun': instance.isCountedRun,

@@ -330,6 +330,8 @@ class CommonQueries {
 
         final EventModel eventItem = EventModel(
           eventStartDatetime: eventStart,
+          eventStartDatetimeGmt: eventStart.toUtc(),
+          eventDescription: dollarSign,
           kennelId: kennel.kennelId,
           hcLatitude: deviceInfo.deviceLat,
           hcLongitude: deviceInfo.deviceLon,

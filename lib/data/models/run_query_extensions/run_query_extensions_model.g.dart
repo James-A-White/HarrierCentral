@@ -11,6 +11,7 @@ _RunQueryExtensionsModel _$RunQueryExtensionsModelFromJson(
 ) => _RunQueryExtensionsModel(
   nowJulian: json['nowJulian'] as num? ?? 0,
   eventJulian: json['eventJulian'] as num? ?? 0,
+  ianaTimeZone: json['ianaTimeZone'] as String? ?? r'Europe/London',
   appAccessFlags: (json['appAccessFlags'] as num?)?.toInt() ?? 0,
   digitsAfterDecimal: (json['digitsAfterDecimal'] as num?)?.toInt() ?? 2,
   currencySymbol: json['currencySymbol'] as String? ?? r'$^',
@@ -40,6 +41,7 @@ Map<String, dynamic> _$RunQueryExtensionsModelToJson(
 ) => <String, dynamic>{
   'nowJulian': instance.nowJulian,
   'eventJulian': instance.eventJulian,
+  'ianaTimeZone': instance.ianaTimeZone,
   'appAccessFlags': instance.appAccessFlags,
   'digitsAfterDecimal': instance.digitsAfterDecimal,
   'currencySymbol': instance.currencySymbol,

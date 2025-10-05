@@ -1,7 +1,5 @@
-import 'dart:math' as math;
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
-import 'package:share_plus/share_plus.dart';
 
 class RunDetailsController extends GetxController {
   RunDetailsController({required this.event, required this.kennel}) {
@@ -22,9 +20,9 @@ class RunDetailsController extends GetxController {
   void onInit() {
     super.onInit();
 
-    thisRunUrlForQr = 'https://www.hashruns.org';
-    nextRunUrlForQr = thisRunUrlForQr;
-    kennelUrlForQr = thisRunUrlForQr;
+    runUrlForCopy = 'https://www.hashruns.org';
+    nextRunUrlForQr = runUrlForCopy;
+    kennelUrlForQr = runUrlForCopy;
 
     if (event.isCountedRun != 0) {
       runUrlForCopy += '/${kennel.kennelUniqueShortName}/${event.eventNumber}';
@@ -102,58 +100,57 @@ class RunDetails extends StatelessWidget {
           ((event.eventImage ?? '').isNotEmpty &&
                   event.eventImage!.startsWith('http'))
               ? Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push<void>(
-                      context,
-                      MaterialPageRoute<void>(
-                        builder:
-                            (BuildContext context) => ZoomableImagePage2(
-                              key: const Key('50201112'),
-                              pageTitle: 'Zoomable Event Image',
-                              imageUrl: event.eventImage,
-                              appBarBackgroundColor: themeAppBarBackground,
-                              background: Backgrounds.defaultHcBackground(),
-                            ),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withAlpha(128), // shadow color
-                          spreadRadius: 2, // how much the shadow spreads
-                          blurRadius: 8, // softening the shadow
-                          offset: Offset(4, 4), // direction of the shadow
+                  padding: const EdgeInsets.all(20.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push<void>(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (BuildContext context) => ZoomableImagePage2(
+                            key: const Key('50201112'),
+                            pageTitle: 'Zoomable Event Image',
+                            imageUrl: event.eventImage,
+                            appBarBackgroundColor: themeAppBarBackground,
+                            background: Backgrounds.defaultHcBackground(),
+                          ),
                         ),
-                      ],
-                    ),
-                    child: Hero(
-                      tag: 'EventImage-${event.eventId}',
-                      child: CachedNetworkImage(
-                        imageUrl: event.eventImage!,
-                        // errorWidget:
-                        //     (BuildContext context, String url, Exception error) =>
-                        //         const  Icon(Icons.error),
+                      );
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(128), // shadow color
+                            spreadRadius: 2, // how much the shadow spreads
+                            blurRadius: 8, // softening the shadow
+                            offset: Offset(4, 4), // direction of the shadow
+                          ),
+                        ],
                       ),
+                      child: Hero(
+                        tag: 'EventImage-${event.eventId}',
+                        child: CachedNetworkImage(
+                          imageUrl: event.eventImage!,
+                          // errorWidget:
+                          //     (BuildContext context, String url, Exception error) =>
+                          //         const  Icon(Icons.error),
+                        ),
+                      ),
+                      //decoration: BoxDecoration(color: Theme.of(context).selectedRowColor),
                     ),
-                    //decoration: BoxDecoration(color: Theme.of(context).selectedRowColor),
                   ),
-                ),
-              )
+                )
               : Padding(
-                padding: const EdgeInsets.only(top: 20),
-                child: Hero(
-                  tag: 'KennelLogo-${event.eventId}',
-                  child: KennelLogo(
-                    kennelLogoUrl: kennel.kennelLogo,
-                    kennelShortName: kennel.kennelShortName,
-                    logoHeight: 200,
+                  padding: const EdgeInsets.only(top: 20),
+                  child: Hero(
+                    tag: 'KennelLogo-${event.eventId}',
+                    child: KennelLogo(
+                      kennelLogoUrl: kennel.kennelLogo,
+                      kennelShortName: kennel.kennelShortName,
+                      logoHeight: 200,
+                    ),
                   ),
                 ),
-              ),
           const Padding(
             padding: EdgeInsets.only(top: 32.0, bottom: 0.0),
             child: FancyDivider(
@@ -222,33 +219,33 @@ class RunDetails extends StatelessWidget {
                 ((event.eventNumber == 0) || (event.isCountedRun == 0))
                     ? const SizedBox(height: 0.0, width: 0.0)
                     : Row(
-                      children: <Widget>[
-                        Expanded(
-                          flex: _flexLeft,
-                          child: Text(
-                            'Run #:',
-                            style: ts_listLabelStyle,
-                            textAlign: TextAlign.right,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        children: <Widget>[
+                          Expanded(
+                            flex: _flexLeft,
+                            child: Text(
+                              'Run #:',
+                              style: ts_listLabelStyle,
+                              textAlign: TextAlign.right,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
-                        const SizedBox(
-                          height: _spaceBetweenRows,
-                          width: _spaceBetweenColumns,
-                        ),
-                        Expanded(
-                          flex: _flexRight,
-                          child: Text(
-                            '${event.eventNumber}',
-                            style: ts_listValueStyle,
-                            textAlign: TextAlign.left,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          const SizedBox(
+                            height: _spaceBetweenRows,
+                            width: _spaceBetweenColumns,
                           ),
-                        ),
-                      ],
-                    ),
+                          Expanded(
+                            flex: _flexRight,
+                            child: Text(
+                              '${event.eventNumber}',
+                              style: ts_listValueStyle,
+                              textAlign: TextAlign.left,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                 Row(
                   children: <Widget>[
                     Expanded(
@@ -340,35 +337,35 @@ class RunDetails extends StatelessWidget {
                 (event.eventGeographicScope == 0)
                     ? Container()
                     : Row(
-                      children: <Widget>[
-                        Expanded(
-                          flex: _flexLeft,
-                          child: Text(
-                            'Event:',
-                            style: ts_listLabelStyle,
-                            textAlign: TextAlign.right,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: _spaceBetweenRows,
-                          width: _spaceBetweenColumns,
-                        ),
-                        Expanded(
-                          flex: _flexRight,
-                          child: Text(
-                            Utilities.getEventScopeText(
-                              event.eventGeographicScope,
+                        children: <Widget>[
+                          Expanded(
+                            flex: _flexLeft,
+                            child: Text(
+                              'Event:',
+                              style: ts_listLabelStyle,
+                              textAlign: TextAlign.right,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            style: ts_listValueStyle,
-                            textAlign: TextAlign.left,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
-                    ),
+                          const SizedBox(
+                            height: _spaceBetweenRows,
+                            width: _spaceBetweenColumns,
+                          ),
+                          Expanded(
+                            flex: _flexRight,
+                            child: Text(
+                              Utilities.getEventScopeText(
+                                event.eventGeographicScope,
+                              ),
+                              style: ts_listValueStyle,
+                              textAlign: TextAlign.left,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                 Row(
                   children: <Widget>[
                     Expanded(
@@ -433,101 +430,102 @@ class RunDetails extends StatelessWidget {
                 (event.eventPriceForExtras ?? 0) == 0
                     ? const SizedBox(height: 0.0, width: 0.0)
                     : Row(
-                      children: <Widget>[
-                        Expanded(
-                          flex: _flexLeft,
-                          child: Text(
-                            'Extra fee:',
-                            style: ts_listLabelStyle,
-                            textAlign: TextAlign.right,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        children: <Widget>[
+                          Expanded(
+                            flex: _flexLeft,
+                            child: Text(
+                              'Extra fee:',
+                              style: ts_listLabelStyle,
+                              textAlign: TextAlign.right,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
-                        const SizedBox(
-                          height: _spaceBetweenRows,
-                          width: _spaceBetweenColumns,
-                        ),
-                        Expanded(
-                          flex: _flexRight,
-                          child: Text(
-                            ((event.eventPriceForNonMembers ??
-                                        kennel.defaultPriceForNonMembers) >
-                                    0)
-                                ? '${IveCoreUtilities.getFormattedMoney(event.eventPriceForExtras ?? 0, digitsAfterDecimal, currencySymbol)} (${event.extrasDescription})'
-                                : '',
-                            style: ts_listValueStyle,
-                            textAlign: TextAlign.left,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          const SizedBox(
+                            height: _spaceBetweenRows,
+                            width: _spaceBetweenColumns,
                           ),
-                        ),
-                      ],
-                    ),
+                          Expanded(
+                            flex: _flexRight,
+                            child: Text(
+                              ((event.eventPriceForNonMembers ??
+                                          kennel.defaultPriceForNonMembers) >
+                                      0)
+                                  ? '${IveCoreUtilities.getFormattedMoney(event.eventPriceForExtras ?? 0, digitsAfterDecimal, currencySymbol)} (${event.extrasDescription})'
+                                  : '',
+                              style: ts_listValueStyle,
+                              textAlign: TextAlign.left,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                 (event.hares ?? '') == ''
                     ? const SizedBox(height: 0.0, width: 0.0)
                     : Row(
-                      children: <Widget>[
-                        Expanded(
-                          flex: _flexLeft,
-                          child: Text(
-                            'Hares:',
-                            style: ts_listLabelStyle,
-                            textAlign: TextAlign.right,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        children: <Widget>[
+                          Expanded(
+                            flex: _flexLeft,
+                            child: Text(
+                              'Hares:',
+                              style: ts_listLabelStyle,
+                              textAlign: TextAlign.right,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
-                        const SizedBox(
-                          height: _spaceBetweenRows,
-                          width: _spaceBetweenColumns,
-                        ),
-                        Expanded(
-                          flex: _flexRight,
-                          child: Text(
-                            event.hares ?? '',
-                            style: ts_listValueStyle,
-                            textAlign: TextAlign.left,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          const SizedBox(
+                            height: _spaceBetweenRows,
+                            width: _spaceBetweenColumns,
                           ),
-                        ),
-                      ],
-                    ),
+                          Expanded(
+                            flex: _flexRight,
+                            child: Text(
+                              event.hares ?? '',
+                              style: ts_listValueStyle,
+                              textAlign: TextAlign.left,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                 (appModel.hasLocationPermissions) && isMapAndDistanceValid
                     ? Row(
-                      children: <Widget>[
-                        Expanded(
-                          flex: _flexLeft,
-                          child: Text(
-                            'Distance:',
-                            style: ts_listLabelStyle,
-                            textAlign: TextAlign.right,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        children: <Widget>[
+                          Expanded(
+                            flex: _flexLeft,
+                            child: Text(
+                              'Distance:',
+                              style: ts_listLabelStyle,
+                              textAlign: TextAlign.right,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
-                        const SizedBox(
-                          height: _spaceBetweenRows,
-                          width: _spaceBetweenColumns,
-                        ),
-                        Expanded(
-                          flex:
-                              appModel.hasLocationPermissions ? _flexRight : 0,
-                          child: Text(
-                            appModel.hasLocationPermissions
-                                ? (distToEvent ?? -1) >= 0
-                                    ? '${Utilities.getDistance(distToEvent!, isMetric: ((distancePreference) & 0x01) == 0)} from here'
-                                    : '<unknown>'
-                                : '',
-                            style: ts_listValueStyle,
-                            textAlign: TextAlign.left,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          const SizedBox(
+                            height: _spaceBetweenRows,
+                            width: _spaceBetweenColumns,
                           ),
-                        ),
-                      ],
-                    )
+                          Expanded(
+                            flex: appModel.hasLocationPermissions
+                                ? _flexRight
+                                : 0,
+                            child: Text(
+                              appModel.hasLocationPermissions
+                                  ? (distToEvent ?? -1) >= 0
+                                        ? '${Utilities.getDistance(distToEvent!, isMetric: ((distancePreference) & 0x01) == 0)} from here'
+                                        : '<unknown>'
+                                  : '',
+                              style: ts_listValueStyle,
+                              textAlign: TextAlign.left,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      )
                     : const SizedBox(height: 0.0, width: 0.0),
                 if ((event.locationStreet ?? '') != '') ...<Widget>[
                   Row(
@@ -554,12 +552,13 @@ class RunDetails extends StatelessWidget {
                           style: ts_listValueStyle,
                           textAlign: TextAlign.left,
                           maxLines: 3,
-                          contextMenuBuilder: (
-                            BuildContext context,
-                            EditableTextState editableTextState,
-                          ) {
-                            return _addressContextMenu(editableTextState);
-                          },
+                          contextMenuBuilder:
+                              (
+                                BuildContext context,
+                                EditableTextState editableTextState,
+                              ) {
+                                return _addressContextMenu(editableTextState);
+                              },
                         ),
                       ),
                     ],
@@ -596,12 +595,13 @@ class RunDetails extends StatelessWidget {
                           style: ts_listValueStyle,
                           textAlign: TextAlign.left,
                           maxLines: 1,
-                          contextMenuBuilder: (
-                            BuildContext context,
-                            EditableTextState editableTextState,
-                          ) {
-                            return _addressContextMenu(editableTextState);
-                          },
+                          contextMenuBuilder:
+                              (
+                                BuildContext context,
+                                EditableTextState editableTextState,
+                              ) {
+                                return _addressContextMenu(editableTextState);
+                              },
                           //overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -632,12 +632,13 @@ class RunDetails extends StatelessWidget {
                           style: ts_listValueStyle,
                           textAlign: TextAlign.left,
                           maxLines: 1,
-                          contextMenuBuilder: (
-                            BuildContext context,
-                            EditableTextState editableTextState,
-                          ) {
-                            return _addressContextMenu(editableTextState);
-                          },
+                          contextMenuBuilder:
+                              (
+                                BuildContext context,
+                                EditableTextState editableTextState,
+                              ) {
+                                return _addressContextMenu(editableTextState);
+                              },
                           //overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -647,197 +648,208 @@ class RunDetails extends StatelessWidget {
                 ((event.locationSubRegion ?? '') == '')
                     ? const SizedBox()
                     : Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Expanded(
-                          flex: _flexLeft,
-                          child: Text(
-                            (event.locationCountry ?? '').toLowerCase() ==
-                                    'united states'
-                                ? 'County'
-                                : 'Region:',
-                            style: ts_listLabelStyle,
-                            textAlign: TextAlign.right,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Expanded(
+                            flex: _flexLeft,
+                            child: Text(
+                              (event.locationCountry ?? '').toLowerCase() ==
+                                      'united states'
+                                  ? 'County'
+                                  : 'Region:',
+                              style: ts_listLabelStyle,
+                              textAlign: TextAlign.right,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
-                        const SizedBox(
-                          height: _spaceBetweenRows,
-                          width: _spaceBetweenColumns,
-                        ),
-                        Expanded(
-                          flex: _flexRight,
-                          child: SelectableText(
-                            event.locationSubRegion ?? '',
-                            style: ts_listValueStyle,
-                            textAlign: TextAlign.left,
-                            maxLines: 3,
-                            contextMenuBuilder: (
-                              BuildContext context,
-                              EditableTextState editableTextState,
-                            ) {
-                              return _addressContextMenu(editableTextState);
-                            },
-                            //overflow: TextOverflow.ellipsis,
+                          const SizedBox(
+                            height: _spaceBetweenRows,
+                            width: _spaceBetweenColumns,
                           ),
-                        ),
-                      ],
-                    ),
+                          Expanded(
+                            flex: _flexRight,
+                            child: SelectableText(
+                              event.locationSubRegion ?? '',
+                              style: ts_listValueStyle,
+                              textAlign: TextAlign.left,
+                              maxLines: 3,
+                              contextMenuBuilder:
+                                  (
+                                    BuildContext context,
+                                    EditableTextState editableTextState,
+                                  ) {
+                                    return _addressContextMenu(
+                                      editableTextState,
+                                    );
+                                  },
+                              //overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                 ((event.locationRegion ?? '') == '')
                     ? const SizedBox(height: 0.0, width: 0.0)
                     : Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Expanded(
-                          flex: _flexLeft,
-                          child: Text(
-                            'State:',
-                            style: ts_listLabelStyle,
-                            textAlign: TextAlign.right,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Expanded(
+                            flex: _flexLeft,
+                            child: Text(
+                              'State:',
+                              style: ts_listLabelStyle,
+                              textAlign: TextAlign.right,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
-                        const SizedBox(
-                          height: _spaceBetweenRows,
-                          width: _spaceBetweenColumns,
-                        ),
-                        Expanded(
-                          flex: _flexRight,
-                          child: SelectableText(
-                            event.locationRegion ?? '',
-                            style: ts_listValueStyle,
-                            textAlign: TextAlign.left,
-                            maxLines: 3,
-                            contextMenuBuilder: (
-                              BuildContext context,
-                              EditableTextState editableTextState,
-                            ) {
-                              return _addressContextMenu(editableTextState);
-                            },
-                            //overflow: TextOverflow.ellipsis,
+                          const SizedBox(
+                            height: _spaceBetweenRows,
+                            width: _spaceBetweenColumns,
                           ),
-                        ),
-                      ],
-                    ),
+                          Expanded(
+                            flex: _flexRight,
+                            child: SelectableText(
+                              event.locationRegion ?? '',
+                              style: ts_listValueStyle,
+                              textAlign: TextAlign.left,
+                              maxLines: 3,
+                              contextMenuBuilder:
+                                  (
+                                    BuildContext context,
+                                    EditableTextState editableTextState,
+                                  ) {
+                                    return _addressContextMenu(
+                                      editableTextState,
+                                    );
+                                  },
+                              //overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                 ((event.locationCountry ?? '') == '')
                     ? const SizedBox(height: 0.0, width: 0.0)
                     : Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Expanded(
-                          flex: _flexLeft,
-                          child: Text(
-                            'Country:',
-                            style: ts_listLabelStyle,
-                            textAlign: TextAlign.right,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Expanded(
+                            flex: _flexLeft,
+                            child: Text(
+                              'Country:',
+                              style: ts_listLabelStyle,
+                              textAlign: TextAlign.right,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
-                        const SizedBox(
-                          height: _spaceBetweenRows,
-                          width: _spaceBetweenColumns,
-                        ),
-                        Expanded(
-                          flex: _flexRight,
-                          child: SelectableText(
-                            event.locationCountry ?? '',
-                            style: ts_listValueStyle,
-                            textAlign: TextAlign.left,
-                            maxLines: 3,
-                            contextMenuBuilder: (
-                              BuildContext context,
-                              EditableTextState editableTextState,
-                            ) {
-                              return _addressContextMenu(editableTextState);
-                            },
-                            //overflow: TextOverflow.ellipsis,
+                          const SizedBox(
+                            height: _spaceBetweenRows,
+                            width: _spaceBetweenColumns,
                           ),
-                        ),
-                      ],
-                    ),
+                          Expanded(
+                            flex: _flexRight,
+                            child: SelectableText(
+                              event.locationCountry ?? '',
+                              style: ts_listValueStyle,
+                              textAlign: TextAlign.left,
+                              maxLines: 3,
+                              contextMenuBuilder:
+                                  (
+                                    BuildContext context,
+                                    EditableTextState editableTextState,
+                                  ) {
+                                    return _addressContextMenu(
+                                      editableTextState,
+                                    );
+                                  },
+                              //overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
               ],
             ),
           ),
           !showPaymentOptions
               ? Container()
               : PaymentIcons(
-                event,
-                kennel,
-                digitsAfterDecimal,
-                currencySymbol,
-                distancePreference,
-                distToEvent,
-                paymentLinkUrl,
-                rsvpState,
-                isMember,
-                isPaid,
-                false,
-                (int r, int p) {
-                  if (processPayment != null) {
-                    processPayment!(r, p);
-                  }
-                },
-              ),
+                  event,
+                  kennel,
+                  digitsAfterDecimal,
+                  currencySymbol,
+                  distancePreference,
+                  distToEvent,
+                  paymentLinkUrl,
+                  rsvpState,
+                  isMember,
+                  isPaid,
+                  false,
+                  (int r, int p) {
+                    if (processPayment != null) {
+                      processPayment!(r, p);
+                    }
+                  },
+                ),
           (event.tags1) == 0 && (event.tags2) == 0
               ? Container()
               : Column(
-                children: <Widget>[
-                  const FancyDivider(
-                    key: Key('1156920939'),
-                    innerColor: Colors.white,
-                    topMargin: 30.0,
-                    bottomMargin: 10.0,
-                  ),
-                  Text(
-                    'Event tags',
-                    style: ts_headingLarge,
-                    //textScaleFactor: deviceInfo.textClamp50,
-                  ),
-                  const SizedBox(height: 15.0),
-                  TextScaleFactorClamper(
-                    textScaleFactor: deviceInfo.textClamp50,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        SizedBox(
-                          width: deviceInfo.deviceWidth,
-                        ), // this is required to force the column to be the full width of the device
-                        for (int i = 0; i < runTags1.length; i++)
-                          if (((runTags1.values.elementAt(i)) & event.tags1) !=
-                              0)
-                            Container(
-                              margin: const EdgeInsets.only(
-                                left: 30.0,
-                                bottom: 10.0,
-                              ),
-                              child: Text(
-                                '•  ${runTags1.keys.elementAt(i)}',
-                                style: ts_listValueStyle,
-                              ),
-                            ),
-                        for (int i = 0; i < runTags2.length; i++)
-                          if (((runTags2.values.elementAt(i)) & event.tags2) !=
-                              0)
-                            Container(
-                              margin: const EdgeInsets.only(
-                                left: 30.0,
-                                bottom: 10.0,
-                              ),
-                              child: Text(
-                                '•  ${runTags2.keys.elementAt(i)}',
-                                style: ts_listValueStyle,
-                              ),
-                            ),
-
-                        //for (dynamic tag in runTags) Text(tag.key)
-                      ],
+                  children: <Widget>[
+                    const FancyDivider(
+                      key: Key('1156920939'),
+                      innerColor: Colors.white,
+                      topMargin: 30.0,
+                      bottomMargin: 10.0,
                     ),
-                  ),
-                ],
-              ),
+                    Text(
+                      'Event tags',
+                      style: ts_headingLarge,
+                      //textScaleFactor: deviceInfo.textClamp50,
+                    ),
+                    const SizedBox(height: 15.0),
+                    TextScaleFactorClamper(
+                      textScaleFactor: deviceInfo.textClamp50,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          SizedBox(
+                            width: deviceInfo.deviceWidth,
+                          ), // this is required to force the column to be the full width of the device
+                          for (int i = 0; i < runTags1.length; i++)
+                            if (((runTags1.values.elementAt(i)) &
+                                    event.tags1) !=
+                                0)
+                              Container(
+                                margin: const EdgeInsets.only(
+                                  left: 30.0,
+                                  bottom: 10.0,
+                                ),
+                                child: Text(
+                                  '•  ${runTags1.keys.elementAt(i)}',
+                                  style: ts_listValueStyle,
+                                ),
+                              ),
+                          for (int i = 0; i < runTags2.length; i++)
+                            if (((runTags2.values.elementAt(i)) &
+                                    event.tags2) !=
+                                0)
+                              Container(
+                                margin: const EdgeInsets.only(
+                                  left: 30.0,
+                                  bottom: 10.0,
+                                ),
+                                child: Text(
+                                  '•  ${runTags2.keys.elementAt(i)}',
+                                  style: ts_listValueStyle,
+                                ),
+                              ),
+
+                          //for (dynamic tag in runTags) Text(tag.key)
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
           FancyDivider(
             key: UniqueKey(),
             innerColor: Colors.white,
@@ -869,58 +881,58 @@ class RunDetails extends StatelessWidget {
           Obx(() {
             return runDetailsController.showQrCodes.value
                 ? Column(
-                  children: [
-                    // Text(
-                    //   'QR Codes for Sharing Runs',
-                    //   style: ts_headingLarge,
-                    //   //textScaleFactor: deviceInfo.textClamp50,
-                    // ),
-                    const SizedBox(height: 20),
-                    OverflowBar(
-                      spacing: 80,
-                      overflowSpacing: 40,
-                      alignment: MainAxisAlignment.center,
-                      overflowAlignment: OverflowBarAlignment.center,
-                      children: <Widget>[
-                        qrGroup(
-                          context,
-                          'This Run',
-                          'this run',
-                          runDetailsController.thisRunUrlForQr,
-                        ),
-                        qrGroup(
-                          context,
-                          'Next ${kennel.kennelShortName} Run',
-                          'next ${kennel.kennelShortName} run',
-                          runDetailsController.nextRunUrlForQr,
-                        ),
+                    children: [
+                      // Text(
+                      //   'QR Codes for Sharing Runs',
+                      //   style: ts_headingLarge,
+                      //   //textScaleFactor: deviceInfo.textClamp50,
+                      // ),
+                      const SizedBox(height: 20),
+                      OverflowBar(
+                        spacing: 80,
+                        overflowSpacing: 40,
+                        alignment: MainAxisAlignment.center,
+                        overflowAlignment: OverflowBarAlignment.center,
+                        children: <Widget>[
+                          QrGroup(
+                            context: context,
+                            title: 'This Run',
+                            description: 'this run',
+                            url: runDetailsController.thisRunUrlForQr,
+                          ),
+                          QrGroup(
+                            context: context,
+                            title: 'Next ${kennel.kennelShortName} Run',
+                            description: 'next ${kennel.kennelShortName} run',
+                            url: runDetailsController.nextRunUrlForQr,
+                          ),
 
-                        if (runDetailsController
-                            .kennelUrlForQr
-                            .isNotEmpty) ...<Widget>[
-                          qrGroup(
-                            context,
-                            '${kennel.kennelShortName} upcoming runs list',
-                            '${kennel.kennelName} upcoming runs list',
-                            runDetailsController.kennelUrlForQr,
-                          ),
+                          if (runDetailsController
+                              .kennelUrlForQr
+                              .isNotEmpty) ...<Widget>[
+                            QrGroup(
+                              context: context,
+                              title: '${kennel.kennelShortName} upcoming Runs',
+                              description: '${kennel.kennelName} upcoming runs',
+                              url: runDetailsController.kennelUrlForQr,
+                            ),
+                          ],
+                          if (((kennel.kennelWebsiteUrl ?? '').isNotEmpty) &&
+                              (kennel.kennelWebsiteUrl!
+                                  .toLowerCase()
+                                  .startsWith('http'))) ...<Widget>[
+                            QrGroup(
+                              context: context,
+                              title: '${kennel.kennelShortName} Website',
+                              description: '${kennel.kennelName} Website',
+                              url: kennel.kennelWebsiteUrl!,
+                            ),
+                          ],
                         ],
-                        if (((kennel.kennelWebsiteUrl ?? '').isNotEmpty) &&
-                            (kennel.kennelWebsiteUrl!.toLowerCase().startsWith(
-                              'http',
-                            ))) ...<Widget>[
-                          qrGroup(
-                            context,
-                            '${kennel.kennelShortName} Website',
-                            '${kennel.kennelName} Website',
-                            kennel.kennelWebsiteUrl!,
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 40),
-                  ],
-                )
+                      ),
+                      const SizedBox(height: 40),
+                    ],
+                  )
                 : const SizedBox.shrink();
           }),
           // if ((event.evtDisseminateAllowWebLinks == 1) ||
@@ -1113,74 +1125,6 @@ class RunDetails extends StatelessWidget {
     return AdaptiveTextSelectionToolbar.buttonItems(
       anchors: editableTextState.contextMenuAnchors,
       buttonItems: buttonItems,
-    );
-  }
-
-  Widget qrGroup(
-    BuildContext context,
-    String title,
-    String description,
-    String url,
-  ) {
-    return Column(
-      children: [
-        Text(title, style: ts_title),
-        const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            GestureDetector(
-              onTap: () {
-                Clipboard.setData(ClipboardData(text: url));
-
-                Utilities.showAlert(
-                  'Link copied',
-                  'A link to $description has been copied to your clipboard',
-                  'OK',
-                );
-              },
-              child: Padding(
-                padding: const EdgeInsets.only(right: 20.0),
-                child: const Icon(
-                  FontAwesome.copy,
-                  color: Colors.white,
-                  size: 36.0,
-                ),
-              ),
-            ),
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.all(10),
-              child: QrImageView(
-                data: url,
-                version: QrVersions.auto,
-                size: math.min(200, MediaQuery.of(context).size.width / 2),
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                SharePlus.instance.share(ShareParams(text: url));
-              },
-              child: Padding(
-                padding: const EdgeInsets.only(left: 20.0),
-                child:
-                    Platform.isAndroid
-                        ? const Icon(
-                          MaterialIcons.share,
-                          color: Colors.white,
-                          size: 36.0,
-                        )
-                        : const Icon(
-                          MaterialIcons.ios_share,
-                          color: Colors.white,
-                          size: 36.0,
-                        ),
-              ),
-            ),
-          ],
-        ),
-        //const SizedBox(height: 40),
-      ],
     );
   }
 }

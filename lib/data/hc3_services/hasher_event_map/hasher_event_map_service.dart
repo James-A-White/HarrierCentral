@@ -53,6 +53,7 @@ class HasherEventMapTableHelper extends BaseTableHelper with BaseFields {
   final String colEventNumber = 'hemEventNumber';
   final String colCountryId = 'hemCountryId';
   final String colEventStartDatetime = 'hemEventStartDatetime';
+  final String colEventStartDatetimeGmt = 'hemEventStartDatetimeGmt';
   final String colCanEditRunAttendence = 'hemCanEditRunAttendence';
   final String colEventKennelId = 'hemEventKennelId';
   final String colEventIsCountedAndVisible = 'hemEventIsCountedAndVisible';
@@ -96,6 +97,7 @@ class HasherEventMapTableHelper extends BaseTableHelper with BaseFields {
             $colEventNumber INT,
             $colCountryId TEXT,
             $colEventStartDatetime TEXT NOT NULL,
+            $colEventStartDatetimeGmt TEXT NOT NULL,
             $colCanEditRunAttendence NUM,
             $colEventKennelId TEXT,
             $colEventIsCountedAndVisible INT,

@@ -16,12 +16,17 @@ class KennelAdminMainPage extends StatefulWidget {
 class KennelAdminMainPageState extends State<KennelAdminMainPage> {
   double _sliderValue = 5.0;
   bool _isLoading = true;
+  bool _showShareQrs = false;
 
   @override
   void dispose() {
     _saveUserMapPreference.dispose();
     super.dispose();
   }
+
+  String runUrlForCopy = '';
+  String nextRunUrlForQr = '';
+  String kennelUrlForQr = '';
 
   @override
   void initState() {
@@ -37,12 +42,14 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
     } else {
       _mismanagement =
           widget.kennelAggregateItem.kennel.kennelMismanagementTeam!.contains(
-                '\r',
-              )
-              ? widget.kennelAggregateItem.kennel.kennelMismanagementTeam!
-                  .split('\r')
-              : widget.kennelAggregateItem.kennel.kennelMismanagementTeam!
-                  .split('\n');
+            '\r',
+          )
+          ? widget.kennelAggregateItem.kennel.kennelMismanagementTeam!.split(
+              '\r',
+            )
+          : widget.kennelAggregateItem.kennel.kennelMismanagementTeam!.split(
+              '\n',
+            );
     }
 
     tableModel.syncKennelAdminService
@@ -60,6 +67,15 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
             });
           });
         });
+
+    runUrlForCopy = 'https://www.hashruns.org';
+    nextRunUrlForQr = runUrlForCopy;
+    kennelUrlForQr = runUrlForCopy;
+
+    nextRunUrlForQr +=
+        '/${widget.kennelAggregateItem.kennel.kennelUniqueShortName}/nextrun';
+    kennelUrlForQr +=
+        '/${widget.kennelAggregateItem.kennel.kennelUniqueShortName}';
 
     super.initState();
   }
@@ -173,38 +189,35 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                 style: ts_appBarTitle,
               ),
             ),
-            body:
-                _isLoading
-                    ? const Center(
-                      child: HcAppCircularProgressIndicator(
-                        key: Key('16637721'),
-                      ),
-                    )
-                    : Container(
-                      height: MediaQuery.of(context).size.height,
-                      decoration: Backgrounds.defaultHcBackground(),
-                      child: SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                            left: 20,
-                            right: 20,
-                            top: 30.0,
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            children: <Widget>[
-                              ((widget
-                                                  .kennelAggregateItem
-                                                  .kennel
-                                                  .kennelCoverPhoto ??
-                                              '')
-                                          .isNotEmpty &&
-                                      widget
-                                          .kennelAggregateItem
-                                          .kennel
-                                          .kennelCoverPhoto!
-                                          .startsWith('http'))
-                                  ? Column(
+            body: _isLoading
+                ? const Center(
+                    child: HcAppCircularProgressIndicator(key: Key('16637721')),
+                  )
+                : Container(
+                    height: MediaQuery.of(context).size.height,
+                    decoration: Backgrounds.defaultHcBackground(),
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          left: 20,
+                          right: 20,
+                          top: 30.0,
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.max,
+                          children: <Widget>[
+                            ((widget
+                                                .kennelAggregateItem
+                                                .kennel
+                                                .kennelCoverPhoto ??
+                                            '')
+                                        .isNotEmpty &&
+                                    widget
+                                        .kennelAggregateItem
+                                        .kennel
+                                        .kennelCoverPhoto!
+                                        .startsWith('http'))
+                                ? Column(
                                     mainAxisSize: MainAxisSize.max,
                                     children: <Widget>[
                                       Container(
@@ -226,16 +239,14 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       ),
                                       KennelLogo(
                                         //kennelId: widget.kennelAggregateItem.kennel.kennelId,
-                                        kennelLogoUrl:
-                                            widget
-                                                .kennelAggregateItem
-                                                .kennel
-                                                .kennelLogo,
-                                        kennelShortName:
-                                            widget
-                                                .kennelAggregateItem
-                                                .kennel
-                                                .kennelShortName,
+                                        kennelLogoUrl: widget
+                                            .kennelAggregateItem
+                                            .kennel
+                                            .kennelLogo,
+                                        kennelShortName: widget
+                                            .kennelAggregateItem
+                                            .kennel
+                                            .kennelShortName,
                                         logoHeight: 200.0,
                                         leftPadding: 0.0,
                                         zoomGesture: KennelLogoZoomGesture.tap,
@@ -269,11 +280,10 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                       ),
                                                       pageTitle:
                                                           'Kennel Cover Photo',
-                                                      imageUrl:
-                                                          widget
-                                                              .kennelAggregateItem
-                                                              .kennel
-                                                              .kennelCoverPhoto,
+                                                      imageUrl: widget
+                                                          .kennelAggregateItem
+                                                          .kennel
+                                                          .kennelCoverPhoto,
                                                       appBarBackgroundColor:
                                                           themeAppBarBackground,
                                                       background:
@@ -284,11 +294,10 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                             );
                                           },
                                           child: CachedNetworkImage(
-                                            imageUrl:
-                                                widget
-                                                    .kennelAggregateItem
-                                                    .kennel
-                                                    .kennelCoverPhoto!,
+                                            imageUrl: widget
+                                                .kennelAggregateItem
+                                                .kennel
+                                                .kennelCoverPhoto!,
                                             // errorWidget:
                                             //     (BuildContext context, String url, Exception error) =>
                                             //         const  Icon(Icons.error),
@@ -298,7 +307,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       ),
                                     ],
                                   )
-                                  : Column(
+                                : Column(
                                     children: <Widget>[
                                       Container(
                                         margin: const EdgeInsets.only(
@@ -377,604 +386,55 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       // ),
                                       KennelLogo(
                                         //kennelId: widget.kennelAggregateItem.kennel.kennelId,
-                                        kennelLogoUrl:
-                                            widget
-                                                .kennelAggregateItem
-                                                .kennel
-                                                .kennelLogo,
-                                        kennelShortName:
-                                            widget
-                                                .kennelAggregateItem
-                                                .kennel
-                                                .kennelShortName,
+                                        kennelLogoUrl: widget
+                                            .kennelAggregateItem
+                                            .kennel
+                                            .kennelLogo,
+                                        kennelShortName: widget
+                                            .kennelAggregateItem
+                                            .kennel
+                                            .kennelShortName,
                                         logoHeight: 200.0,
                                         leftPadding: 0.0,
                                         zoomGesture: KennelLogoZoomGesture.tap,
                                       ),
                                     ],
                                   ),
-                              const Padding(
-                                padding: EdgeInsets.only(
-                                  top: 50.0,
-                                  bottom: 25.0,
-                                ),
-                                child: FancyDivider(
-                                  key: Key('16613234'),
-                                  innerColor: Colors.white,
-                                ),
+                            const Padding(
+                              padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
+                              child: FancyDivider(
+                                key: Key('16613234'),
+                                innerColor: Colors.white,
                               ),
-                              if (widget
+                            ),
+                            if (widget
+                                    .kennelAggregateItem
+                                    .hkm
+                                    ?.appAccess
+                                    .isAdmin ??
+                                false)
+                              Column(
+                                children: <Widget>[
+                                  Text(
+                                    'Kennel Admin Functions',
+                                    style: ts_headingLarge,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  if (widget
                                       .kennelAggregateItem
-                                      .hkm
-                                      ?.appAccess
-                                      .isAdmin ??
-                                  false)
-                                Column(
-                                  children: <Widget>[
-                                    Text(
-                                      'Kennel Admin Functions',
-                                      style: ts_headingLarge,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    if (widget
-                                        .kennelAggregateItem
-                                        .hkm!
-                                        .appAccess
-                                        .canManageRuns)
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceAround,
-                                        children: <Widget>[
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                              top: 15,
-                                              bottom: 15,
-                                            ),
-                                            child: SizedBox(
-                                              width: 110,
-                                              height: 110,
-                                              child: Connection2.styleForConnected(
-                                                appModel.connectionStatus,
-                                                ElevatedButton(
-                                                  style: ElevatedButton.styleFrom(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                          top: 8.0,
-                                                          bottom: 0.0,
-                                                        ),
-                                                  ),
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .center,
-                                                    children: <Widget>[
-                                                      const Padding(
-                                                        padding:
-                                                            EdgeInsets.only(
-                                                              left: 0,
-                                                            ),
-                                                        child: Icon(
-                                                          MaterialCommunityIcons
-                                                              .run_fast,
-                                                          color: Colors.white,
-                                                          size: 60,
-                                                        ),
-                                                      ),
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets.only(
-                                                              left: 10,
-                                                              right: 10,
-                                                              top: 5,
-                                                            ),
-                                                        child: Text(
-                                                          'Add & Edit\r\nruns',
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          style:
-                                                              ts_buttonLabelMedium,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  onPressed: () {
-                                                    if (Connection2.checkForConnection(
-                                                      appModel.connectionStatus,
-                                                    )) {
-                                                      Navigator.push<dynamic>(
-                                                        context,
-                                                        MaterialPageRoute<
-                                                          dynamic
-                                                        >(
-                                                          builder:
-                                                              (
-                                                                BuildContext
-                                                                context,
-                                                              ) => AddEditEventsPage(
-                                                                kennel:
-                                                                    widget
-                                                                        .kennelAggregateItem,
-                                                                pageType:
-                                                                    FilterEventsPageType
-                                                                        .future,
-                                                              ),
-                                                        ),
-                                                      ).then((void _) {
-                                                        _refreshFromTable(
-                                                          true,
-                                                        ).then((void _) {
-                                                          setState(() {});
-                                                        });
-                                                      });
-                                                    }
-                                                  },
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                              top: 15,
-                                              bottom: 15,
-                                            ),
-                                            child: SizedBox(
-                                              width: 110,
-                                              height: 110,
-                                              child: Connection2.styleForConnected(
-                                                appModel.connectionStatus,
-                                                ElevatedButton(
-                                                  style: ElevatedButton.styleFrom(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                          top: 8.0,
-                                                          bottom: 0.0,
-                                                        ),
-                                                  ),
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .center,
-                                                    children: <Widget>[
-                                                      const Padding(
-                                                        padding:
-                                                            EdgeInsets.only(
-                                                              left: 0,
-                                                            ),
-                                                        child: Icon(
-                                                          MaterialCommunityIcons
-                                                              .playlist_edit,
-                                                          color: Colors.white,
-                                                          size: 60,
-                                                        ),
-                                                      ),
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets.only(
-                                                              left: 10,
-                                                              right: 10,
-                                                              top: 5,
-                                                            ),
-                                                        child: Text(
-                                                          'Past\r\nevents',
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          style:
-                                                              ts_buttonLabelMedium,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  onPressed: () {
-                                                    if (Connection2.checkForConnection(
-                                                      appModel.connectionStatus,
-                                                    )) {
-                                                      Navigator.push<dynamic>(
-                                                        context,
-                                                        MaterialPageRoute<
-                                                          dynamic
-                                                        >(
-                                                          builder:
-                                                              (
-                                                                BuildContext
-                                                                context,
-                                                              ) => AddEditEventsPage(
-                                                                kennel:
-                                                                    widget
-                                                                        .kennelAggregateItem,
-                                                                pageType:
-                                                                    FilterEventsPageType
-                                                                        .past,
-                                                              ),
-                                                        ),
-                                                      ).then((void _) {
-                                                        _refreshFromTable(
-                                                          true,
-                                                        ).then((void _) {
-                                                          setState(() {});
-                                                        });
-                                                      });
-                                                    }
-                                                  },
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-
-                                    if (widget
-                                            .kennelAggregateItem
-                                            .hkm
-                                            ?.appAccess
-                                            .canManageRuns ??
-                                        false)
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceAround,
-                                        children: <Widget>[
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                              top: 15,
-                                              bottom: 15,
-                                            ),
-                                            child: SizedBox(
-                                              width: 110,
-                                              height: 110,
-                                              child: Connection2.styleForConnected(
-                                                appModel.connectionStatus,
-                                                ElevatedButton(
-                                                  style: ElevatedButton.styleFrom(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                          top: 8.0,
-                                                          bottom: 0.0,
-                                                        ),
-                                                  ),
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .center,
-                                                    children: <Widget>[
-                                                      const Padding(
-                                                        padding:
-                                                            EdgeInsets.only(
-                                                              left: 0,
-                                                              top: 4,
-                                                            ),
-                                                        child: Icon(
-                                                          MaterialCommunityIcons
-                                                              .qrcode,
-                                                          color: Colors.white,
-                                                          size: 55,
-                                                        ),
-                                                      ),
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets.only(
-                                                              left: 10,
-                                                              right: 10,
-                                                              top: 7,
-                                                            ),
-                                                        child: Text(
-                                                          'Print QR codes',
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          style:
-                                                              ts_buttonLabelMedium,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  onPressed: () {
-                                                    Navigator.push<dynamic>(
-                                                      context,
-                                                      MaterialPageRoute<
-                                                        dynamic
-                                                      >(
-                                                        builder:
-                                                            (
-                                                              BuildContext
-                                                              context,
-                                                            ) => EventQrCodePage(
-                                                              kennelShortName:
-                                                                  widget
-                                                                      .kennelAggregateItem
-                                                                      .kennel
-                                                                      .kennelShortName,
-                                                              qrContent:
-                                                                  widget
-                                                                      .kennelAggregateItem
-                                                                      .kennel
-                                                                      .kennelId,
-                                                              runEndPrefix:
-                                                                  QR_PREFIX_KENNEL_GENERIC_RUN_END,
-                                                              runStartPrefix:
-                                                                  QR_PREFIX_KENNEL_GENERIC_RUN_START,
-                                                              runLink: '',
-                                                              showRunLink:
-                                                                  false,
-                                                              title:
-                                                                  'Any ${widget.kennelAggregateItem.kennel.kennelShortName} run',
-                                                            ),
-                                                      ),
-                                                    );
-                                                  },
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                              top: 15,
-                                              bottom: 15,
-                                            ),
-                                            child: SizedBox(
-                                              width: 110,
-                                              height: 110,
-                                              child: Connection2.styleForConnected(
-                                                appModel.connectionStatus,
-                                                ElevatedButton(
-                                                  style: ElevatedButton.styleFrom(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                          top: 8.0,
-                                                          bottom: 0.0,
-                                                        ),
-                                                  ),
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .center,
-                                                    children: <Widget>[
-                                                      const Padding(
-                                                        padding:
-                                                            EdgeInsets.only(
-                                                              left: 0,
-                                                              top: 4,
-                                                            ),
-                                                        child: Icon(
-                                                          MaterialIcons
-                                                              .location_on,
-                                                          color: Colors.white,
-                                                          size: 55,
-                                                        ),
-                                                      ),
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets.only(
-                                                              left: 10,
-                                                              right: 10,
-                                                              top: 7,
-                                                            ),
-                                                        child: Text(
-                                                          'View run locations',
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          style:
-                                                              ts_buttonLabelMedium,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  onPressed: () {
-                                                    Navigator.push<dynamic>(
-                                                      context,
-                                                      MaterialPageRoute<
-                                                        dynamic
-                                                      >(
-                                                        builder:
-                                                            (
-                                                              BuildContext
-                                                              context,
-                                                            ) => RunAndKennelMapPage(
-                                                              kennel:
-                                                                  widget
-                                                                      .kennelAggregateItem
-                                                                      .kennel,
-                                                            ),
-                                                      ),
-                                                    );
-                                                  },
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-
+                                      .hkm!
+                                      .appAccess
+                                      .canManageRuns)
                                     Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceAround,
                                       children: <Widget>[
-                                        // TODO: Re-implement email run details
-                                        // Padding(
-                                        //   padding: const EdgeInsets.only(
-                                        //     top: 15,
-                                        //     bottom: 15,
-                                        //   ),
-                                        //   child: SizedBox(
-                                        //     width: 110,
-                                        //     height: 110,
-                                        //     child: Connection2.styleForConnected(
-                                        //       appModel.connectionStatus,
-                                        //       ElevatedButton(
-                                        //         style: ElevatedButton.styleFrom(
-                                        //           padding:
-                                        //               const EdgeInsets.only(
-                                        //                 top: 8.0,
-                                        //                 bottom: 0.0,
-                                        //               ),
-                                        //         ),
-                                        //         child: Column(
-                                        //           crossAxisAlignment:
-                                        //               CrossAxisAlignment
-                                        //                   .center,
-                                        //           children: <Widget>[
-                                        //             const Padding(
-                                        //               padding:
-                                        //                   EdgeInsets.only(
-                                        //                     left: 0,
-                                        //                     top: 4,
-                                        //                   ),
-                                        //               child: Icon(
-                                        //                 MaterialCommunityIcons
-                                        //                     .email_newsletter,
-                                        //                 color: Colors.white,
-                                        //                 size: 55,
-                                        //               ),
-                                        //             ),
-                                        //             Padding(
-                                        //               padding:
-                                        //                   const EdgeInsets.only(
-                                        //                     left: 10,
-                                        //                     right: 10,
-                                        //                     top: 7,
-                                        //                   ),
-                                        //               child: Text(
-                                        //                 'Email invite codes',
-                                        //                 textAlign:
-                                        //                     TextAlign.center,
-                                        //                 style:
-                                        //                     ts_buttonLabelMedium,
-                                        //               ),
-                                        //             ),
-                                        //           ],
-                                        //         ),
-                                        //         onPressed: () async {
-                                        //           if (Connection2.checkForConnection(
-                                        //             appModel.connectionStatus,
-                                        //           )) {
-                                        //             final bool?
-                                        //             isPreviewBool =
-                                        //                 await _promptForSending(
-                                        //                   context,
-                                        //                 );
-
-                                        //             if (isPreviewBool !=
-                                        //                 null) {
-                                        //               IveCoreUtilities.showInSnackBar(
-                                        //                 navigatorKey
-                                        //                     .currentContext!,
-                                        //                 _scaffoldKey,
-                                        //                 'Invite codes being sent...',
-                                        //                 durationInSeconds: 10,
-                                        //               );
-
-                                        //               final EmailReportsService
-                                        //               svc =
-                                        //                   EmailReportsService();
-                                        //               final Map<
-                                        //                 String,
-                                        //                 String
-                                        //               >
-                                        //               result = await svc
-                                        //                   .sendKennelInvitesByEmail(
-                                        //                     kennelId:
-                                        //                         widget
-                                        //                             .kennelAggregateItem
-                                        //                             .kennel
-                                        //                             .kennelId,
-                                        //                     kennelName:
-                                        //                         widget
-                                        //                             .kennelAggregateItem
-                                        //                             .kennel
-                                        //                             .kennelName,
-                                        //                     isPreview:
-                                        //                         isPreviewBool
-                                        //                             ? 'Yes'
-                                        //                             : 'No',
-                                        //                   );
-
-                                        //               ScaffoldMessenger.of(
-                                        //                 navigatorKey
-                                        //                     .currentContext!,
-                                        //               ).hideCurrentSnackBar();
-
-                                        //               await Utilities.showAlert(
-                                        //                 (result['result'] ??
-                                        //                             '')
-                                        //                         .toLowerCase()
-                                        //                         .startsWith(
-                                        //                           'fail',
-                                        //                         )
-                                        //                     ? 'Failed'
-                                        //                     : 'Success',
-                                        //                 (result['result'] ??
-                                        //                     ''),
-                                        //                 'OK',
-                                        //               );
-                                        //             }
-                                        //           }
-                                        //         },
-                                        //       ),
-                                        //     ),
-                                        //   ),
-                                        // ),
-
-                                        // Padding(
-                                        //   padding: const EdgeInsets.only(top: 15, bottom: 15),
-                                        //   child: Container(
-                                        //     width: 110,
-                                        //     height: 110,
-                                        //     child: Connection2.styleForConnected(
-                                        //       appModel.connectionStatus,
-                                        //       ElevatedButton(
-                                        //         style: ElevatedButton.styleFrom(
-                                        //           padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
-                                        //         ),
-                                        //         child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-                                        //           const Padding(
-                                        //             padding: EdgeInsets.only(left: 0),
-                                        //             child: Icon(MaterialCommunityIcons.run_fast, color: Colors.white, size: 60),
-                                        //           ),
-                                        //           Padding(
-                                        //             padding: const EdgeInsets.only(left: 10, right: 10, top: 5),
-                                        //             child: Text(
-                                        //               'Add & Edit\r\nruns',
-                                        //               textAlign: TextAlign.center,
-                                        //               style: buttonLabelStyleSmall,
-                                        //             ),
-                                        //           ),
-                                        //         ]),
-                                        //         onPressed: () {
-                                        //           if (Connection2.checkForConnection(context, appModel.connectionStatus)) {
-                                        //             Navigator.push<dynamic>(
-                                        //               context,
-                                        //               MaterialPageRoute<dynamic>(
-                                        //                 builder: (BuildContext context) => AddEditEventsPage(
-                                        //                   kennel: widget.kennelAggregateItem,
-                                        //                   pageType: FilterEventsPageType.future,
-                                        //                 ),
-                                        //               ),
-                                        //             ).then((void _) {
-                                        //               _refreshFromTable(true).then((void _) {
-                                        //                 setState(() {});
-                                        //               });
-                                        //             });
-                                        //           }
-                                        //         },
-                                        //       ),
-                                        //     ),
-                                        //   ),
-                                        // ),
-                                      ],
-                                    ),
-
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceAround,
-                                      children: <Widget>[
-                                        if (widget
-                                                .kennelAggregateItem
-                                                .hkm
-                                                ?.appAccess
-                                                .canManageRuns ??
-                                            false)
-                                          Container(
-                                            margin: const EdgeInsets.only(
-                                              top: 20,
-                                              bottom: 15,
-                                            ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            top: 15,
+                                            bottom: 15,
+                                          ),
+                                          child: SizedBox(
                                             width: 110,
                                             height: 110,
                                             child: Connection2.styleForConnected(
@@ -988,16 +448,18 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                       ),
                                                 ),
                                                 child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
                                                   children: <Widget>[
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                            right: 2.0,
-                                                          ),
-                                                      child: Image.asset(
-                                                        'images/icons/excel.png',
-                                                        height: 50.0,
-                                                        width: 50.0,
+                                                    const Padding(
+                                                      padding: EdgeInsets.only(
+                                                        left: 0,
+                                                      ),
+                                                      child: Icon(
+                                                        MaterialCommunityIcons
+                                                            .run_fast,
+                                                        color: Colors.white,
+                                                        size: 60,
                                                       ),
                                                     ),
                                                     Padding(
@@ -1005,10 +467,10 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                           const EdgeInsets.only(
                                                             left: 10,
                                                             right: 10,
-                                                            top: 8,
+                                                            top: 5,
                                                           ),
                                                       child: Text(
-                                                        'Email run stats',
+                                                        'Add & Edit\r\nruns',
                                                         textAlign:
                                                             TextAlign.center,
                                                         style:
@@ -1021,220 +483,736 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                   if (Connection2.checkForConnection(
                                                     appModel.connectionStatus,
                                                   )) {
-                                                    final EmailReportsService
-                                                    svc = EmailReportsService();
-                                                    svc
-                                                        .sendKennelRunStatsReportByEmail(
-                                                          kennelId:
-                                                              widget
-                                                                  .kennelAggregateItem
-                                                                  .kennel
-                                                                  .kennelId,
-                                                          kennelName:
-                                                              widget
-                                                                  .kennelAggregateItem
-                                                                  .kennel
-                                                                  .kennelName,
-                                                          digitsAfterDecimal:
-                                                              widget
-                                                                  .kennelAggregateItem
-                                                                  .extensions
-                                                                  .digitsAfterDecimal ??
-                                                              2,
-                                                          currencySymbol:
-                                                              widget
-                                                                  .kennelAggregateItem
-                                                                  .extensions
-                                                                  .currencySymbol ??
-                                                              r'$',
-                                                        )
-                                                        .then((
-                                                          Map<String, String>
-                                                          result,
-                                                        ) {
-                                                          ScaffoldMessenger.of(
-                                                            navigatorKey
-                                                                .currentContext!,
-                                                          ).hideCurrentSnackBar();
-
-                                                          if ((result['result'] ??
-                                                                  '')
-                                                              .toLowerCase()
-                                                              .startsWith(
-                                                                'success',
-                                                              )) {
-                                                            Utilities.showAlert(
-                                                              'E-mail successfully sent',
-                                                              'Your Kennel run stats report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
-                                                              'OK',
-                                                            );
-                                                          }
-                                                        });
-
-                                                    IveCoreUtilities.showInSnackBar(
+                                                    Navigator.push<dynamic>(
                                                       context,
-                                                      _scaffoldKey,
-                                                      'Run stats being processed...',
-                                                      durationInSeconds: 10,
-                                                    );
+                                                      MaterialPageRoute<
+                                                        dynamic
+                                                      >(
+                                                        builder:
+                                                            (
+                                                              BuildContext
+                                                              context,
+                                                            ) => AddEditEventsPage(
+                                                              kennel: widget
+                                                                  .kennelAggregateItem,
+                                                              pageType:
+                                                                  FilterEventsPageType
+                                                                      .future,
+                                                            ),
+                                                      ),
+                                                    ).then((void _) {
+                                                      _refreshFromTable(
+                                                        true,
+                                                      ).then((void _) {
+                                                        setState(() {});
+                                                      });
+                                                    });
                                                   }
                                                 },
                                               ),
                                             ),
                                           ),
-
-                                        if (widget
-                                                .kennelAggregateItem
-                                                .hkm
-                                                ?.appAccess
-                                                .canManageMembers ??
-                                            false)
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                              top: 15,
-                                              bottom: 15,
-                                            ),
-                                            child: SizedBox(
-                                              width: 110,
-                                              height: 110,
-                                              child: Connection2.styleForConnected(
-                                                appModel.connectionStatus,
-                                                ElevatedButton(
-                                                  style: ElevatedButton.styleFrom(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                          top: 8.0,
-                                                          bottom: 0.0,
-                                                        ),
-                                                  ),
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .center,
-                                                    children: <Widget>[
-                                                      const Padding(
-                                                        padding:
-                                                            EdgeInsets.only(
-                                                              left: 0,
-                                                            ),
-                                                        child: Icon(
-                                                          Ionicons.md_people,
-                                                          color: Colors.white,
-                                                          size: 60,
-                                                        ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            top: 15,
+                                            bottom: 15,
+                                          ),
+                                          child: SizedBox(
+                                            width: 110,
+                                            height: 110,
+                                            child: Connection2.styleForConnected(
+                                              appModel.connectionStatus,
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                        top: 8.0,
+                                                        bottom: 0.0,
                                                       ),
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets.only(
-                                                              left: 10,
-                                                              right: 10,
-                                                              top: 4,
-                                                            ),
-                                                        child: Text(
-                                                          'Manage Members',
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          style:
-                                                              ts_buttonLabelMedium,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  onPressed: () {
-                                                    if (Connection2.checkForConnection(
-                                                      appModel.connectionStatus,
-                                                    )) {
-                                                      _kennelMembersList =
-                                                          KennelMembersList(
-                                                            kennelListAggregate:
-                                                                widget
-                                                                    .kennelAggregateItem,
-                                                          );
-                                                      Navigator.push<dynamic>(
-                                                        context,
-                                                        MaterialPageRoute<
-                                                          dynamic
-                                                        >(
-                                                          builder:
-                                                              (
-                                                                BuildContext
-                                                                context,
-                                                              ) =>
-                                                                  _kennelMembersList ??
-                                                                  Container(),
-                                                        ),
-                                                      ).then((void _) async {
-                                                        final KennelListAggregate?
-                                                        kennelAggregate =
-                                                            await QueryKennels.getSingleKennel(
-                                                              widget
-                                                                  .kennelAggregateItem
-                                                                  .kennel
-                                                                  .kennelId,
-                                                            );
-
-                                                        setState(() {
-                                                          if ((kennelAggregate
-                                                                      ?.kennel
-                                                                      .kennelMismanagementTeam ==
-                                                                  null) ||
-                                                              (kennelAggregate!
-                                                                  .kennel
-                                                                  .kennelMismanagementTeam!
-                                                                  .trim()
-                                                                  .isEmpty)) {
-                                                            _mismanagement =
-                                                                null;
-                                                          } else {
-                                                            _mismanagement =
-                                                                kennelAggregate
-                                                                        .kennel
-                                                                        .kennelMismanagementTeam!
-                                                                        .contains(
-                                                                          '\r',
-                                                                        )
-                                                                    ? kennelAggregate
-                                                                        .kennel
-                                                                        .kennelMismanagementTeam!
-                                                                        .split(
-                                                                          '\r',
-                                                                        )
-                                                                    : kennelAggregate
-                                                                        .kennel
-                                                                        .kennelMismanagementTeam!
-                                                                        .split(
-                                                                          '\n',
-                                                                        );
-                                                          }
-                                                        });
-                                                      });
-                                                    }
-                                                  },
                                                 ),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: <Widget>[
+                                                    const Padding(
+                                                      padding: EdgeInsets.only(
+                                                        left: 0,
+                                                      ),
+                                                      child: Icon(
+                                                        MaterialCommunityIcons
+                                                            .playlist_edit,
+                                                        color: Colors.white,
+                                                        size: 60,
+                                                      ),
+                                                    ),
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                            left: 10,
+                                                            right: 10,
+                                                            top: 5,
+                                                          ),
+                                                      child: Text(
+                                                        'Past\r\nevents',
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        style:
+                                                            ts_buttonLabelMedium,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                onPressed: () {
+                                                  if (Connection2.checkForConnection(
+                                                    appModel.connectionStatus,
+                                                  )) {
+                                                    Navigator.push<dynamic>(
+                                                      context,
+                                                      MaterialPageRoute<
+                                                        dynamic
+                                                      >(
+                                                        builder:
+                                                            (
+                                                              BuildContext
+                                                              context,
+                                                            ) => AddEditEventsPage(
+                                                              kennel: widget
+                                                                  .kennelAggregateItem,
+                                                              pageType:
+                                                                  FilterEventsPageType
+                                                                      .past,
+                                                            ),
+                                                      ),
+                                                    ).then((void _) {
+                                                      _refreshFromTable(
+                                                        true,
+                                                      ).then((void _) {
+                                                        setState(() {});
+                                                      });
+                                                    });
+                                                  }
+                                                },
                                               ),
                                             ),
                                           ),
+                                        ),
                                       ],
                                     ),
-                                    const Padding(
-                                      padding: EdgeInsets.only(
-                                        top: 50.0,
-                                        bottom: 25.0,
-                                      ),
-                                      child: FancyDivider(
-                                        key: Key('5511334'),
-                                        innerColor: Colors.white,
-                                      ),
+
+                                  if (widget
+                                          .kennelAggregateItem
+                                          .hkm
+                                          ?.appAccess
+                                          .canManageRuns ??
+                                      false)
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                      children: <Widget>[
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            top: 15,
+                                            bottom: 15,
+                                          ),
+                                          child: SizedBox(
+                                            width: 110,
+                                            height: 110,
+                                            child: Connection2.styleForConnected(
+                                              appModel.connectionStatus,
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                        top: 8.0,
+                                                        bottom: 0.0,
+                                                      ),
+                                                ),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: <Widget>[
+                                                    const Padding(
+                                                      padding: EdgeInsets.only(
+                                                        left: 0,
+                                                        top: 4,
+                                                      ),
+                                                      child: Icon(
+                                                        MaterialCommunityIcons
+                                                            .qrcode,
+                                                        color: Colors.white,
+                                                        size: 55,
+                                                      ),
+                                                    ),
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                            left: 10,
+                                                            right: 10,
+                                                            top: 7,
+                                                          ),
+                                                      child: Text(
+                                                        'Print QR codes',
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        style:
+                                                            ts_buttonLabelMedium,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                onPressed: () {
+                                                  Navigator.push<dynamic>(
+                                                    context,
+                                                    MaterialPageRoute<dynamic>(
+                                                      builder:
+                                                          (
+                                                            BuildContext
+                                                            context,
+                                                          ) => EventQrCodePage(
+                                                            kennelShortName: widget
+                                                                .kennelAggregateItem
+                                                                .kennel
+                                                                .kennelShortName,
+                                                            qrContent: widget
+                                                                .kennelAggregateItem
+                                                                .kennel
+                                                                .kennelId,
+                                                            runEndPrefix:
+                                                                QR_PREFIX_KENNEL_GENERIC_RUN_END,
+                                                            runStartPrefix:
+                                                                QR_PREFIX_KENNEL_GENERIC_RUN_START,
+                                                            runLink: '',
+                                                            showRunLink: false,
+                                                            title:
+                                                                'Any ${widget.kennelAggregateItem.kennel.kennelShortName} run',
+                                                          ),
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            top: 15,
+                                            bottom: 15,
+                                          ),
+                                          child: SizedBox(
+                                            width: 110,
+                                            height: 110,
+                                            child: Connection2.styleForConnected(
+                                              appModel.connectionStatus,
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                        top: 8.0,
+                                                        bottom: 0.0,
+                                                      ),
+                                                ),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: <Widget>[
+                                                    const Padding(
+                                                      padding: EdgeInsets.only(
+                                                        left: 0,
+                                                        top: 4,
+                                                      ),
+                                                      child: Icon(
+                                                        MaterialIcons
+                                                            .location_on,
+                                                        color: Colors.white,
+                                                        size: 55,
+                                                      ),
+                                                    ),
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                            left: 10,
+                                                            right: 10,
+                                                            top: 7,
+                                                          ),
+                                                      child: Text(
+                                                        'View run locations',
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        style:
+                                                            ts_buttonLabelMedium,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                onPressed: () {
+                                                  Navigator.push<dynamic>(
+                                                    context,
+                                                    MaterialPageRoute<dynamic>(
+                                                      builder:
+                                                          (
+                                                            BuildContext
+                                                            context,
+                                                          ) => RunAndKennelMapPage(
+                                                            kennel: widget
+                                                                .kennelAggregateItem
+                                                                .kennel,
+                                                          ),
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                              (widget
+
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    children: <Widget>[
+                                      // TODO: Re-implement email run details
+                                      // Padding(
+                                      //   padding: const EdgeInsets.only(
+                                      //     top: 15,
+                                      //     bottom: 15,
+                                      //   ),
+                                      //   child: SizedBox(
+                                      //     width: 110,
+                                      //     height: 110,
+                                      //     child: Connection2.styleForConnected(
+                                      //       appModel.connectionStatus,
+                                      //       ElevatedButton(
+                                      //         style: ElevatedButton.styleFrom(
+                                      //           padding:
+                                      //               const EdgeInsets.only(
+                                      //                 top: 8.0,
+                                      //                 bottom: 0.0,
+                                      //               ),
+                                      //         ),
+                                      //         child: Column(
+                                      //           crossAxisAlignment:
+                                      //               CrossAxisAlignment
+                                      //                   .center,
+                                      //           children: <Widget>[
+                                      //             const Padding(
+                                      //               padding:
+                                      //                   EdgeInsets.only(
+                                      //                     left: 0,
+                                      //                     top: 4,
+                                      //                   ),
+                                      //               child: Icon(
+                                      //                 MaterialCommunityIcons
+                                      //                     .email_newsletter,
+                                      //                 color: Colors.white,
+                                      //                 size: 55,
+                                      //               ),
+                                      //             ),
+                                      //             Padding(
+                                      //               padding:
+                                      //                   const EdgeInsets.only(
+                                      //                     left: 10,
+                                      //                     right: 10,
+                                      //                     top: 7,
+                                      //                   ),
+                                      //               child: Text(
+                                      //                 'Email invite codes',
+                                      //                 textAlign:
+                                      //                     TextAlign.center,
+                                      //                 style:
+                                      //                     ts_buttonLabelMedium,
+                                      //               ),
+                                      //             ),
+                                      //           ],
+                                      //         ),
+                                      //         onPressed: () async {
+                                      //           if (Connection2.checkForConnection(
+                                      //             appModel.connectionStatus,
+                                      //           )) {
+                                      //             final bool?
+                                      //             isPreviewBool =
+                                      //                 await _promptForSending(
+                                      //                   context,
+                                      //                 );
+
+                                      //             if (isPreviewBool !=
+                                      //                 null) {
+                                      //               IveCoreUtilities.showInSnackBar(
+                                      //                 navigatorKey
+                                      //                     .currentContext!,
+                                      //                 _scaffoldKey,
+                                      //                 'Invite codes being sent...',
+                                      //                 durationInSeconds: 10,
+                                      //               );
+
+                                      //               final EmailReportsService
+                                      //               svc =
+                                      //                   EmailReportsService();
+                                      //               final Map<
+                                      //                 String,
+                                      //                 String
+                                      //               >
+                                      //               result = await svc
+                                      //                   .sendKennelInvitesByEmail(
+                                      //                     kennelId:
+                                      //                         widget
+                                      //                             .kennelAggregateItem
+                                      //                             .kennel
+                                      //                             .kennelId,
+                                      //                     kennelName:
+                                      //                         widget
+                                      //                             .kennelAggregateItem
+                                      //                             .kennel
+                                      //                             .kennelName,
+                                      //                     isPreview:
+                                      //                         isPreviewBool
+                                      //                             ? 'Yes'
+                                      //                             : 'No',
+                                      //                   );
+
+                                      //               ScaffoldMessenger.of(
+                                      //                 navigatorKey
+                                      //                     .currentContext!,
+                                      //               ).hideCurrentSnackBar();
+
+                                      //               await Utilities.showAlert(
+                                      //                 (result['result'] ??
+                                      //                             '')
+                                      //                         .toLowerCase()
+                                      //                         .startsWith(
+                                      //                           'fail',
+                                      //                         )
+                                      //                     ? 'Failed'
+                                      //                     : 'Success',
+                                      //                 (result['result'] ??
+                                      //                     ''),
+                                      //                 'OK',
+                                      //               );
+                                      //             }
+                                      //           }
+                                      //         },
+                                      //       ),
+                                      //     ),
+                                      //   ),
+                                      // ),
+
+                                      // Padding(
+                                      //   padding: const EdgeInsets.only(top: 15, bottom: 15),
+                                      //   child: Container(
+                                      //     width: 110,
+                                      //     height: 110,
+                                      //     child: Connection2.styleForConnected(
+                                      //       appModel.connectionStatus,
+                                      //       ElevatedButton(
+                                      //         style: ElevatedButton.styleFrom(
+                                      //           padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
+                                      //         ),
+                                      //         child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                                      //           const Padding(
+                                      //             padding: EdgeInsets.only(left: 0),
+                                      //             child: Icon(MaterialCommunityIcons.run_fast, color: Colors.white, size: 60),
+                                      //           ),
+                                      //           Padding(
+                                      //             padding: const EdgeInsets.only(left: 10, right: 10, top: 5),
+                                      //             child: Text(
+                                      //               'Add & Edit\r\nruns',
+                                      //               textAlign: TextAlign.center,
+                                      //               style: buttonLabelStyleSmall,
+                                      //             ),
+                                      //           ),
+                                      //         ]),
+                                      //         onPressed: () {
+                                      //           if (Connection2.checkForConnection(context, appModel.connectionStatus)) {
+                                      //             Navigator.push<dynamic>(
+                                      //               context,
+                                      //               MaterialPageRoute<dynamic>(
+                                      //                 builder: (BuildContext context) => AddEditEventsPage(
+                                      //                   kennel: widget.kennelAggregateItem,
+                                      //                   pageType: FilterEventsPageType.future,
+                                      //                 ),
+                                      //               ),
+                                      //             ).then((void _) {
+                                      //               _refreshFromTable(true).then((void _) {
+                                      //                 setState(() {});
+                                      //               });
+                                      //             });
+                                      //           }
+                                      //         },
+                                      //       ),
+                                      //     ),
+                                      //   ),
+                                      // ),
+                                    ],
+                                  ),
+
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    children: <Widget>[
+                                      if (widget
                                               .kennelAggregateItem
-                                              .kennel
-                                              .kennelDescription ??
-                                          '')
-                                      .isNotEmpty
-                                  ? Column(
+                                              .hkm
+                                              ?.appAccess
+                                              .canManageRuns ??
+                                          false)
+                                        Container(
+                                          margin: const EdgeInsets.only(
+                                            top: 20,
+                                            bottom: 15,
+                                          ),
+                                          width: 110,
+                                          height: 110,
+                                          child: Connection2.styleForConnected(
+                                            appModel.connectionStatus,
+                                            ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                padding: const EdgeInsets.only(
+                                                  top: 8.0,
+                                                  bottom: 0.0,
+                                                ),
+                                              ),
+                                              child: Column(
+                                                children: <Widget>[
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                          right: 2.0,
+                                                        ),
+                                                    child: Image.asset(
+                                                      'images/icons/excel.png',
+                                                      height: 50.0,
+                                                      width: 50.0,
+                                                    ),
+                                                  ),
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                          left: 10,
+                                                          right: 10,
+                                                          top: 8,
+                                                        ),
+                                                    child: Text(
+                                                      'Email run stats',
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      style:
+                                                          ts_buttonLabelMedium,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              onPressed: () {
+                                                if (Connection2.checkForConnection(
+                                                  appModel.connectionStatus,
+                                                )) {
+                                                  final EmailReportsService
+                                                  svc = EmailReportsService();
+                                                  svc
+                                                      .sendKennelRunStatsReportByEmail(
+                                                        kennelId: widget
+                                                            .kennelAggregateItem
+                                                            .kennel
+                                                            .kennelId,
+                                                        kennelName: widget
+                                                            .kennelAggregateItem
+                                                            .kennel
+                                                            .kennelName,
+                                                        digitsAfterDecimal:
+                                                            widget
+                                                                .kennelAggregateItem
+                                                                .extensions
+                                                                .digitsAfterDecimal ??
+                                                            2,
+                                                        currencySymbol:
+                                                            widget
+                                                                .kennelAggregateItem
+                                                                .extensions
+                                                                .currencySymbol ??
+                                                            r'$',
+                                                      )
+                                                      .then((
+                                                        Map<String, String>
+                                                        result,
+                                                      ) {
+                                                        ScaffoldMessenger.of(
+                                                          navigatorKey
+                                                              .currentContext!,
+                                                        ).hideCurrentSnackBar();
+
+                                                        if ((result['result'] ??
+                                                                '')
+                                                            .toLowerCase()
+                                                            .startsWith(
+                                                              'success',
+                                                            )) {
+                                                          Utilities.showAlert(
+                                                            'E-mail successfully sent',
+                                                            'Your Kennel run stats report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
+                                                            'OK',
+                                                          );
+                                                        }
+                                                      });
+
+                                                  IveCoreUtilities.showInSnackBar(
+                                                    context,
+                                                    _scaffoldKey,
+                                                    'Run stats being processed...',
+                                                    durationInSeconds: 10,
+                                                  );
+                                                }
+                                              },
+                                            ),
+                                          ),
+                                        ),
+
+                                      if (widget
+                                              .kennelAggregateItem
+                                              .hkm
+                                              ?.appAccess
+                                              .canManageMembers ??
+                                          false)
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            top: 15,
+                                            bottom: 15,
+                                          ),
+                                          child: SizedBox(
+                                            width: 110,
+                                            height: 110,
+                                            child: Connection2.styleForConnected(
+                                              appModel.connectionStatus,
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                        top: 8.0,
+                                                        bottom: 0.0,
+                                                      ),
+                                                ),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: <Widget>[
+                                                    const Padding(
+                                                      padding: EdgeInsets.only(
+                                                        left: 0,
+                                                      ),
+                                                      child: Icon(
+                                                        Ionicons.md_people,
+                                                        color: Colors.white,
+                                                        size: 60,
+                                                      ),
+                                                    ),
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                            left: 10,
+                                                            right: 10,
+                                                            top: 4,
+                                                          ),
+                                                      child: Text(
+                                                        'Manage Members',
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        style:
+                                                            ts_buttonLabelMedium,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                onPressed: () {
+                                                  if (Connection2.checkForConnection(
+                                                    appModel.connectionStatus,
+                                                  )) {
+                                                    _kennelMembersList =
+                                                        KennelMembersList(
+                                                          kennelListAggregate:
+                                                              widget
+                                                                  .kennelAggregateItem,
+                                                        );
+                                                    Navigator.push<dynamic>(
+                                                      context,
+                                                      MaterialPageRoute<
+                                                        dynamic
+                                                      >(
+                                                        builder:
+                                                            (
+                                                              BuildContext
+                                                              context,
+                                                            ) =>
+                                                                _kennelMembersList ??
+                                                                Container(),
+                                                      ),
+                                                    ).then((void _) async {
+                                                      final KennelListAggregate?
+                                                      kennelAggregate =
+                                                          await QueryKennels.getSingleKennel(
+                                                            widget
+                                                                .kennelAggregateItem
+                                                                .kennel
+                                                                .kennelId,
+                                                          );
+
+                                                      setState(() {
+                                                        if ((kennelAggregate
+                                                                    ?.kennel
+                                                                    .kennelMismanagementTeam ==
+                                                                null) ||
+                                                            (kennelAggregate!
+                                                                .kennel
+                                                                .kennelMismanagementTeam!
+                                                                .trim()
+                                                                .isEmpty)) {
+                                                          _mismanagement = null;
+                                                        } else {
+                                                          _mismanagement =
+                                                              kennelAggregate
+                                                                  .kennel
+                                                                  .kennelMismanagementTeam!
+                                                                  .contains(
+                                                                    '\r',
+                                                                  )
+                                                              ? kennelAggregate
+                                                                    .kennel
+                                                                    .kennelMismanagementTeam!
+                                                                    .split('\r')
+                                                              : kennelAggregate
+                                                                    .kennel
+                                                                    .kennelMismanagementTeam!
+                                                                    .split(
+                                                                      '\n',
+                                                                    );
+                                                        }
+                                                      });
+                                                    });
+                                                  }
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.only(
+                                      top: 50.0,
+                                      bottom: 25.0,
+                                    ),
+                                    child: FancyDivider(
+                                      key: Key('5511334'),
+                                      innerColor: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            (widget
+                                            .kennelAggregateItem
+                                            .kennel
+                                            .kennelDescription ??
+                                        '')
+                                    .isNotEmpty
+                                ? Column(
                                     children: <Widget>[
                                       Linkify(
                                         text: widget
@@ -1249,9 +1227,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           if (Utilities.isValidUrl(link.url)) {
                                             await launchUrl(
                                               Uri.parse(link.url),
-                                              mode:
-                                                  LaunchMode
-                                                      .externalApplication,
+                                              mode: LaunchMode
+                                                  .externalApplication,
                                             );
                                           } else {
                                             await Utilities.showAlert(
@@ -1274,435 +1251,432 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       ),
                                     ],
                                   )
-                                  : Container(),
-                              Column(
-                                children: <Widget>[
-                                  ConnectedWidget(
-                                    refreshFunction: () {
-                                      setState(() {});
-                                    },
-                                    //showConnectButton: true,
-                                    disconnectedChild: Padding(
-                                      padding: const EdgeInsets.only(
-                                        top: 1,
-                                        bottom: 30,
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          'Kennel maps require a connection to the Internet',
-                                          style: ts_headingLarge,
-                                          textAlign: TextAlign.center,
-                                        ),
+                                : Container(),
+                            Column(
+                              children: <Widget>[
+                                ConnectedWidget(
+                                  refreshFunction: () {
+                                    setState(() {});
+                                  },
+                                  //showConnectButton: true,
+                                  disconnectedChild: Padding(
+                                    padding: const EdgeInsets.only(
+                                      top: 1,
+                                      bottom: 30,
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        'Kennel maps require a connection to the Internet',
+                                        style: ts_headingLarge,
+                                        textAlign: TextAlign.center,
                                       ),
                                     ),
-                                    child: SizedBox(
-                                      width: MediaQuery.of(context).size.width,
-                                      height: 300,
-                                      //padding: const EdgeInsets.all(20.0),
-                                      child: Center(
-                                        // Map
-                                        child:
-                                            (widget
-                                                        .kennelAggregateItem
-                                                        .extensions
-                                                        .cityLat ==
-                                                    null)
-                                                ? const SizedBox()
-                                                : FlutterMap(
-                                                  mapController: _mapController,
-                                                  options: MapOptions(
-                                                    //interactive: false,
-                                                    initialCenter: latlng.LatLng(
-                                                      widget
-                                                          .kennelAggregateItem
-                                                          .extensions
-                                                          .cityLat!,
-                                                      widget
-                                                          .kennelAggregateItem
-                                                          .extensions
-                                                          .cityLon!,
-                                                    ),
-                                                    initialZoom: _sliderValue,
-                                                    minZoom: 1.0,
-                                                    maxZoom: 18.0,
-                                                  ),
-                                                  children: <Widget>[
-                                                    TileLayer(
-                                                      urlTemplate:
-                                                          //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                                          'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-                                                      //subdomains: ['a', 'b', 'c']),
-                                                      subdomains:
-                                                          const <String>[
-                                                            'mt0',
-                                                            'mt1',
-                                                            'mt2',
-                                                            'mt3',
-                                                          ],
-                                                    ),
-                                                    MarkerLayer(
-                                                      markers: <Marker>[
-                                                        Marker(
-                                                          width: 240.0,
-                                                          height: 240.0,
-                                                          point: latlng.LatLng(
-                                                            widget
-                                                                .kennelAggregateItem
-                                                                .extensions
-                                                                .cityLat!,
-                                                            widget
-                                                                .kennelAggregateItem
-                                                                .extensions
-                                                                .cityLon!,
-                                                          ),
-                                                          child: GestureDetector(
-                                                            onTap: () async {
-                                                              if ((widget
-                                                                          .kennelAggregateItem
-                                                                          .extensions
-                                                                          .cityLat !=
-                                                                      null) &&
-                                                                  (widget
-                                                                          .kennelAggregateItem
-                                                                          .extensions
-                                                                          .cityLon !=
-                                                                      null)) {
-                                                                final String?
-                                                                mapName = getStringPref(
-                                                                  StringPrefsEnum
-                                                                      .mapPreference,
-                                                                );
+                                  ),
+                                  child: SizedBox(
+                                    width: MediaQuery.of(context).size.width,
+                                    height: 300,
+                                    //padding: const EdgeInsets.all(20.0),
+                                    child: Center(
+                                      // Map
+                                      child:
+                                          (widget
+                                                  .kennelAggregateItem
+                                                  .extensions
+                                                  .cityLat ==
+                                              null)
+                                          ? const SizedBox()
+                                          : FlutterMap(
+                                              mapController: _mapController,
+                                              options: MapOptions(
+                                                //interactive: false,
+                                                initialCenter: latlng.LatLng(
+                                                  widget
+                                                      .kennelAggregateItem
+                                                      .extensions
+                                                      .cityLat!,
+                                                  widget
+                                                      .kennelAggregateItem
+                                                      .extensions
+                                                      .cityLon!,
+                                                ),
+                                                initialZoom: _sliderValue,
+                                                minZoom: 1.0,
+                                                maxZoom: 18.0,
+                                              ),
+                                              children: <Widget>[
+                                                TileLayer(
+                                                  urlTemplate:
+                                                      //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                                      'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+                                                  //subdomains: ['a', 'b', 'c']),
+                                                  subdomains: const <String>[
+                                                    'mt0',
+                                                    'mt1',
+                                                    'mt2',
+                                                    'mt3',
+                                                  ],
+                                                ),
+                                                MarkerLayer(
+                                                  markers: <Marker>[
+                                                    Marker(
+                                                      width: 240.0,
+                                                      height: 240.0,
+                                                      point: latlng.LatLng(
+                                                        widget
+                                                            .kennelAggregateItem
+                                                            .extensions
+                                                            .cityLat!,
+                                                        widget
+                                                            .kennelAggregateItem
+                                                            .extensions
+                                                            .cityLon!,
+                                                      ),
+                                                      child: GestureDetector(
+                                                        onTap: () async {
+                                                          if ((widget
+                                                                      .kennelAggregateItem
+                                                                      .extensions
+                                                                      .cityLat !=
+                                                                  null) &&
+                                                              (widget
+                                                                      .kennelAggregateItem
+                                                                      .extensions
+                                                                      .cityLon !=
+                                                                  null)) {
+                                                            final String?
+                                                            mapName = getStringPref(
+                                                              StringPrefsEnum
+                                                                  .mapPreference,
+                                                            );
 
-                                                                if (mapName ==
-                                                                    null) {
-                                                                  await Utilities.openMapsSheet(
-                                                                    context,
-                                                                    widget
-                                                                        .kennelAggregateItem
-                                                                        .kennel
-                                                                        .kennelName,
-                                                                    maps.Coords(
-                                                                      widget
-                                                                          .kennelAggregateItem
-                                                                          .extensions
-                                                                          .cityLat!
-                                                                          .toDouble(),
-                                                                      widget
-                                                                          .kennelAggregateItem
-                                                                          .extensions
-                                                                          .cityLon!
-                                                                          .toDouble(),
-                                                                    ),
-                                                                    '',
-                                                                    _saveUserMapPreference,
-                                                                  );
-                                                                } else {
-                                                                  final List<
-                                                                    maps.AvailableMap
-                                                                  >
-                                                                  availableMaps =
-                                                                      await maps
-                                                                          .MapLauncher
-                                                                          .installedMaps;
-                                                                  final maps.AvailableMap
-                                                                  activeMap =
-                                                                      availableMaps
-                                                                          .where(
-                                                                            (
-                                                                              maps.AvailableMap
-                                                                              map,
-                                                                            ) =>
-                                                                                map.mapName ==
-                                                                                mapName,
-                                                                          )
-                                                                          .first;
+                                                            if (mapName ==
+                                                                null) {
+                                                              await Utilities.openMapsSheet(
+                                                                context,
+                                                                widget
+                                                                    .kennelAggregateItem
+                                                                    .kennel
+                                                                    .kennelName,
+                                                                maps.Coords(
+                                                                  widget
+                                                                      .kennelAggregateItem
+                                                                      .extensions
+                                                                      .cityLat!
+                                                                      .toDouble(),
+                                                                  widget
+                                                                      .kennelAggregateItem
+                                                                      .extensions
+                                                                      .cityLon!
+                                                                      .toDouble(),
+                                                                ),
+                                                                '',
+                                                                _saveUserMapPreference,
+                                                              );
+                                                            } else {
+                                                              final List<
+                                                                maps.AvailableMap
+                                                              >
+                                                              availableMaps =
+                                                                  await maps
+                                                                      .MapLauncher
+                                                                      .installedMaps;
+                                                              final maps.AvailableMap
+                                                              activeMap = availableMaps
+                                                                  .where(
+                                                                    (
+                                                                      maps.AvailableMap
+                                                                      map,
+                                                                    ) =>
+                                                                        map.mapName ==
+                                                                        mapName,
+                                                                  )
+                                                                  .first;
 
-                                                                  // BUG in plugin - doesn't work when sending a title with Google maps
-                                                                  activeMap.showMarker(
-                                                                    coords: maps.Coords(
-                                                                      widget
+                                                              // BUG in plugin - doesn't work when sending a title with Google maps
+                                                              activeMap.showMarker(
+                                                                coords: maps.Coords(
+                                                                  widget
+                                                                      .kennelAggregateItem
+                                                                      .extensions
+                                                                      .cityLat!
+                                                                      .toDouble(),
+                                                                  widget
+                                                                      .kennelAggregateItem
+                                                                      .extensions
+                                                                      .cityLon!
+                                                                      .toDouble(),
+                                                                ),
+                                                                title:
+                                                                    activeMap
+                                                                        .mapName
+                                                                        .contains(
+                                                                          'Google',
+                                                                        )
+                                                                    ? ''
+                                                                    : widget
                                                                           .kennelAggregateItem
-                                                                          .extensions
-                                                                          .cityLat!
-                                                                          .toDouble(),
-                                                                      widget
-                                                                          .kennelAggregateItem
-                                                                          .extensions
-                                                                          .cityLon!
-                                                                          .toDouble(),
-                                                                    ),
-                                                                    title:
-                                                                        activeMap.mapName.contains(
-                                                                              'Google',
-                                                                            )
-                                                                            ? ''
-                                                                            : widget.kennelAggregateItem.kennel.kennelName,
-                                                                    description:
-                                                                        widget
-                                                                            .kennelAggregateItem
-                                                                            .kennel
-                                                                            .kennelName,
-                                                                  );
-                                                                }
-                                                              }
-                                                            },
-                                                            child: Container(
-                                                              margin:
-                                                                  const EdgeInsets.only(
-                                                                    bottom:
-                                                                        110.0,
-                                                                  ),
-                                                              child: Stack(
-                                                                alignment:
-                                                                    AlignmentDirectional
-                                                                        .topCenter,
-                                                                children: <
-                                                                  Widget
-                                                                >[
-                                                                  Image.asset(
-                                                                    'images/icons/grey_square_pin.png',
-                                                                  ),
-                                                                  Positioned(
-                                                                    top: 14,
-                                                                    child: KennelLogo(
-                                                                      //kennelId: widget.kennelAggregateItem.kennel.kennelId,
-                                                                      kennelLogoUrl:
-                                                                          widget
-                                                                              .kennelAggregateItem
-                                                                              .kennel
-                                                                              .kennelLogo,
-                                                                      kennelShortName:
-                                                                          widget
-                                                                              .kennelAggregateItem
-                                                                              .kennel
-                                                                              .kennelShortName,
-                                                                      logoHeight:
-                                                                          60.0,
-                                                                      leftPadding:
-                                                                          0.0,
-                                                                      zoomGesture:
-                                                                          KennelLogoZoomGesture
-                                                                              .none,
-                                                                    ),
-                                                                  ),
-                                                                ],
+                                                                          .kennel
+                                                                          .kennelName,
+                                                                description: widget
+                                                                    .kennelAggregateItem
+                                                                    .kennel
+                                                                    .kennelName,
+                                                              );
+                                                            }
+                                                          }
+                                                        },
+                                                        child: Container(
+                                                          margin:
+                                                              const EdgeInsets.only(
+                                                                bottom: 110.0,
                                                               ),
-                                                            ),
+                                                          child: Stack(
+                                                            alignment:
+                                                                AlignmentDirectional
+                                                                    .topCenter,
+                                                            children: <Widget>[
+                                                              Image.asset(
+                                                                'images/icons/grey_square_pin.png',
+                                                              ),
+                                                              Positioned(
+                                                                top: 14,
+                                                                child: KennelLogo(
+                                                                  //kennelId: widget.kennelAggregateItem.kennel.kennelId,
+                                                                  kennelLogoUrl: widget
+                                                                      .kennelAggregateItem
+                                                                      .kennel
+                                                                      .kennelLogo,
+                                                                  kennelShortName: widget
+                                                                      .kennelAggregateItem
+                                                                      .kennel
+                                                                      .kennelShortName,
+                                                                  logoHeight:
+                                                                      60.0,
+                                                                  leftPadding:
+                                                                      0.0,
+                                                                  zoomGesture:
+                                                                      KennelLogoZoomGesture
+                                                                          .none,
+                                                                ),
+                                                              ),
+                                                            ],
                                                           ),
                                                         ),
-                                                      ],
+                                                      ),
                                                     ),
                                                   ],
                                                 ),
-                                      ),
+                                              ],
+                                            ),
                                     ),
                                   ),
-                                  ConnectedWidget(
-                                    child: Container(
-                                      padding: const EdgeInsets.only(top: 10.0),
-                                      child: Slider(
-                                        value: _sliderValue,
-                                        activeColor: Colors.yellow,
-                                        inactiveColor: Colors.grey,
-                                        min: 1.0,
-                                        max: 20.0,
-                                        onChanged: (double val) {
-                                          if (widget
+                                ),
+                                ConnectedWidget(
+                                  child: Container(
+                                    padding: const EdgeInsets.only(top: 10.0),
+                                    child: Slider(
+                                      value: _sliderValue,
+                                      activeColor: Colors.yellow,
+                                      inactiveColor: Colors.grey,
+                                      min: 1.0,
+                                      max: 20.0,
+                                      onChanged: (double val) {
+                                        if (widget
+                                                .kennelAggregateItem
+                                                .extensions
+                                                .cityLat !=
+                                            null) {
+                                          _mapController.move(
+                                            latlng.LatLng(
+                                              widget
                                                   .kennelAggregateItem
                                                   .extensions
-                                                  .cityLat !=
-                                              null) {
-                                            _mapController.move(
-                                              latlng.LatLng(
-                                                widget
-                                                    .kennelAggregateItem
-                                                    .extensions
-                                                    .cityLat!,
-                                                widget
-                                                    .kennelAggregateItem
-                                                    .extensions
-                                                    .cityLon!,
-                                              ),
-                                              val,
-                                            );
+                                                  .cityLat!,
+                                              widget
+                                                  .kennelAggregateItem
+                                                  .extensions
+                                                  .cityLon!,
+                                            ),
+                                            val,
+                                          );
 
-                                            setState(() {
-                                              _sliderValue = val;
-                                            });
-                                          }
-                                        },
-                                      ),
+                                          setState(() {
+                                            _sliderValue = val;
+                                          });
+                                        }
+                                      },
                                     ),
                                   ),
-                                  Row(
-                                    children: <Widget>[
-                                      const SizedBox(height: 25.0),
-                                      Expanded(
-                                        flex: _flexLeft,
-                                        child: Text(
-                                          'Location:',
-                                          style: ts_listLabelStyle,
-                                          textAlign: TextAlign.right,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                                ),
+                                Row(
+                                  children: <Widget>[
+                                    const SizedBox(height: 25.0),
+                                    Expanded(
+                                      flex: _flexLeft,
+                                      child: Text(
+                                        'Location:',
+                                        style: ts_listLabelStyle,
+                                        textAlign: TextAlign.right,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                      Expanded(
-                                        flex: _flexRight,
-                                        child: Text(
-                                          '  ${widget.kennelAggregateItem.extensions.location ?? ''}',
-                                          style: ts_listValueStyle,
-                                          textAlign: TextAlign.left,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                                    ),
+                                    Expanded(
+                                      flex: _flexRight,
+                                      child: Text(
+                                        '  ${widget.kennelAggregateItem.extensions.location ?? ''}',
+                                        style: ts_listValueStyle,
+                                        textAlign: TextAlign.left,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                    ],
-                                  ),
-                                  Row(
-                                    children: <Widget>[
-                                      const SizedBox(height: 25.0),
-                                      Expanded(
-                                        flex: _flexLeft,
-                                        child: Text(
-                                          'Last run:',
-                                          style: ts_listLabelStyle,
-                                          textAlign: TextAlign.right,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: <Widget>[
+                                    const SizedBox(height: 25.0),
+                                    Expanded(
+                                      flex: _flexLeft,
+                                      child: Text(
+                                        'Last run:',
+                                        style: ts_listLabelStyle,
+                                        textAlign: TextAlign.right,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                      Expanded(
-                                        flex: _flexRight,
-                                        child: Text(
-                                          widget
-                                                      .kennelAggregateItem
-                                                      .extensions
-                                                      .lastRunDate !=
-                                                  null
-                                              ? '  ${DateFormat('E, MMM d,  h:mm a').format(DateTime.parse(widget.kennelAggregateItem.extensions.lastRunDate!.substring(0, 19)))}'
-                                              : '  <no run found>',
-                                          style: ts_listValueStyle,
-                                          textAlign: TextAlign.left,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                                    ),
+                                    Expanded(
+                                      flex: _flexRight,
+                                      child: Text(
+                                        widget
+                                                    .kennelAggregateItem
+                                                    .extensions
+                                                    .lastRunDate !=
+                                                null
+                                            ? '  ${DateFormat('E, MMM d,  h:mm a').format(DateTime.parse(widget.kennelAggregateItem.extensions.lastRunDate!.substring(0, 19)))}'
+                                            : '  <no run found>',
+                                        style: ts_listValueStyle,
+                                        textAlign: TextAlign.left,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                    ],
-                                  ),
-                                  Row(
-                                    children: <Widget>[
-                                      const SizedBox(height: 25.0),
-                                      Expanded(
-                                        flex: _flexLeft,
-                                        child: Text(
-                                          'Next run:',
-                                          style: ts_listLabelStyle,
-                                          textAlign: TextAlign.right,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: <Widget>[
+                                    const SizedBox(height: 25.0),
+                                    Expanded(
+                                      flex: _flexLeft,
+                                      child: Text(
+                                        'Next run:',
+                                        style: ts_listLabelStyle,
+                                        textAlign: TextAlign.right,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                      Expanded(
-                                        flex: _flexRight,
-                                        child: Text(
-                                          widget
-                                                      .kennelAggregateItem
-                                                      .extensions
-                                                      .nextRunDate !=
-                                                  null
-                                              ? '  ${DateFormat('E, MMM d,  h:mm a').format(DateTime.parse(widget.kennelAggregateItem.extensions.nextRunDate!.substring(0, 19)))}'
-                                              : '  <no run found>',
-                                          style: ts_listValueStyle,
-                                          textAlign: TextAlign.left,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                                    ),
+                                    Expanded(
+                                      flex: _flexRight,
+                                      child: Text(
+                                        widget
+                                                    .kennelAggregateItem
+                                                    .extensions
+                                                    .nextRunDate !=
+                                                null
+                                            ? '  ${DateFormat('E, MMM d,  h:mm a').format(DateTime.parse(widget.kennelAggregateItem.extensions.nextRunDate!.substring(0, 19)))}'
+                                            : '  <no run found>',
+                                        style: ts_listValueStyle,
+                                        textAlign: TextAlign.left,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                    ],
-                                  ),
-                                  Row(
-                                    children: <Widget>[
-                                      const SizedBox(height: 25.0),
-                                      Expanded(
-                                        flex: _flexLeft,
-                                        child: Text(
-                                          'Hash cash:',
-                                          style: ts_listLabelStyle,
-                                          textAlign: TextAlign.right,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: <Widget>[
+                                    const SizedBox(height: 25.0),
+                                    Expanded(
+                                      flex: _flexLeft,
+                                      child: Text(
+                                        'Hash cash:',
+                                        style: ts_listLabelStyle,
+                                        textAlign: TextAlign.right,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                      Expanded(
-                                        flex: _flexRight,
-                                        child: Text(
-                                          widget
-                                                      .kennelAggregateItem
-                                                      .kennel
-                                                      .defaultPriceForMembers <=
-                                                  0
-                                              ? ''
-                                              : '  ${IveCoreUtilities.getFormattedMoney(widget.kennelAggregateItem.kennel.defaultPriceForMembers, widget.kennelAggregateItem.extensions.digitsAfterDecimal ?? 2, widget.kennelAggregateItem.extensions.currencySymbol ?? r'$^')}    (members)',
-                                          style: ts_listValueStyle,
-                                          textAlign: TextAlign.left,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                                    ),
+                                    Expanded(
+                                      flex: _flexRight,
+                                      child: Text(
+                                        widget
+                                                    .kennelAggregateItem
+                                                    .kennel
+                                                    .defaultPriceForMembers <=
+                                                0
+                                            ? ''
+                                            : '  ${IveCoreUtilities.getFormattedMoney(widget.kennelAggregateItem.kennel.defaultPriceForMembers, widget.kennelAggregateItem.extensions.digitsAfterDecimal ?? 2, widget.kennelAggregateItem.extensions.currencySymbol ?? r'$^')}    (members)',
+                                        style: ts_listValueStyle,
+                                        textAlign: TextAlign.left,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                    ],
-                                  ),
-                                  Row(
-                                    children: <Widget>[
-                                      const SizedBox(height: 25.0),
-                                      Expanded(
-                                        flex: _flexLeft,
-                                        child: Text(
-                                          '',
-                                          style: ts_listLabelStyle,
-                                          textAlign: TextAlign.right,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: <Widget>[
+                                    const SizedBox(height: 25.0),
+                                    Expanded(
+                                      flex: _flexLeft,
+                                      child: Text(
+                                        '',
+                                        style: ts_listLabelStyle,
+                                        textAlign: TextAlign.right,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                      Expanded(
-                                        flex: _flexRight,
-                                        child: Text(
-                                          widget
-                                                      .kennelAggregateItem
-                                                      .kennel
-                                                      .defaultPriceForNonMembers <=
-                                                  0
-                                              ? ''
-                                              : '  ${IveCoreUtilities.getFormattedMoney(widget.kennelAggregateItem.kennel.defaultPriceForNonMembers, widget.kennelAggregateItem.extensions.digitsAfterDecimal ?? 2, widget.kennelAggregateItem.extensions.currencySymbol ?? r'$^')}    (non-members)',
-                                          style: ts_listValueStyle,
-                                          textAlign: TextAlign.left,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                                    ),
+                                    Expanded(
+                                      flex: _flexRight,
+                                      child: Text(
+                                        widget
+                                                    .kennelAggregateItem
+                                                    .kennel
+                                                    .defaultPriceForNonMembers <=
+                                                0
+                                            ? ''
+                                            : '  ${IveCoreUtilities.getFormattedMoney(widget.kennelAggregateItem.kennel.defaultPriceForNonMembers, widget.kennelAggregateItem.extensions.digitsAfterDecimal ?? 2, widget.kennelAggregateItem.extensions.currencySymbol ?? r'$^')}    (non-members)',
+                                        style: ts_listValueStyle,
+                                        textAlign: TextAlign.left,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                    ],
-                                  ),
-                                  ((widget
-                                                      .kennelAggregateItem
-                                                      .kennel
-                                                      .kennelMismanagementTeam ==
-                                                  null) ||
-                                              (widget
-                                                  .kennelAggregateItem
-                                                  .kennel
-                                                  .kennelMismanagementTeam!
-                                                  .trim()
-                                                  .isEmpty) ||
-                                              (widget
-                                                  .kennelAggregateItem
-                                                  .kennel
-                                                  .kennelMismanagementTeam!
-                                                  .toLowerCase()
-                                                  .contains('none listed'))) ||
-                                          (_mismanagement == null)
-                                      ? Container()
-                                      : Column(
+                                    ),
+                                  ],
+                                ),
+                                ((widget
+                                                    .kennelAggregateItem
+                                                    .kennel
+                                                    .kennelMismanagementTeam ==
+                                                null) ||
+                                            (widget
+                                                .kennelAggregateItem
+                                                .kennel
+                                                .kennelMismanagementTeam!
+                                                .trim()
+                                                .isEmpty) ||
+                                            (widget
+                                                .kennelAggregateItem
+                                                .kennel
+                                                .kennelMismanagementTeam!
+                                                .toLowerCase()
+                                                .contains('none listed'))) ||
+                                        (_mismanagement == null)
+                                    ? Container()
+                                    : Column(
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: <Widget>[
@@ -1716,9 +1690,9 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                             _mmRow(item),
                                         ],
                                       ),
-                                  (_allRuns.isEmpty)
-                                      ? Container()
-                                      : Column(
+                                (_allRuns.isEmpty)
+                                    ? Container()
+                                    : Column(
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         crossAxisAlignment:
@@ -1752,25 +1726,175 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           const SizedBox(height: 15.0),
                                         ],
                                       ),
-                                  ((widget
-                                                  .kennelAggregateItem
-                                                  .kennel
-                                                  .kennelWebsiteUrl ==
-                                              null) ||
-                                          (widget
-                                              .kennelAggregateItem
-                                              .kennel
-                                              .kennelWebsiteUrl!
-                                              .trim()
-                                              .isEmpty))
-                                      ? Container()
-                                      : Column(
+                                const FancyDivider(
+                                  key: Key('123435661'),
+                                  innerColor: Colors.white,
+                                  topMargin: 40.0,
+                                  bottomMargin: 15.0,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 15.0,
+                                    bottom: 15.0,
+                                  ),
+                                  child: Container(
+                                    margin: const EdgeInsets.only(bottom: 20),
+                                    width: _buttonWidth,
+                                    height: _buttonHeight,
+
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        padding: const EdgeInsets.only(
+                                          left: 12.0,
+                                          top: 8.0,
+                                          bottom: 8.0,
+                                        ),
+                                      ),
+                                      // style: ButtonStyle(shadowColor: WidgetStateProperty.all(Colors.transparent), backgroundColor: WidgetStateProperty.all(Colors.transparent)),
+                                      child: Row(
+                                        // mainAxisAlignment:
+                                        //     MainAxisAlignment.start,
+                                        children: <Widget>[
+                                          SizedBox(
+                                            width: 45.0,
+                                            child: Stack(
+                                              alignment:
+                                                  AlignmentDirectional.center,
+                                              children: <Widget>[
+                                                Container(
+                                                  height: 30,
+                                                  width: 30,
+                                                  decoration: BoxDecoration(
+                                                    color: hc_blue,
+                                                    shape: BoxShape.rectangle,
+                                                  ),
+                                                ),
+                                                const Positioned(
+                                                  //bottom: 1.4,
+                                                  child: Icon(
+                                                    size: 20,
+                                                    FontAwesome.qrcode,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Container(
+                                            width: 200,
+                                            //color: Colors.yellow,
+                                            padding: const EdgeInsets.only(
+                                              left: 20,
+                                              right: 0,
+                                            ),
+                                            child: AutoSizeText(
+                                              _showShareQrs
+                                                  ? 'Hide Links'
+                                                  : 'Show ${widget.kennelAggregateItem.kennel.kennelShortName} Links',
+                                              style: ts_button,
+                                              textAlign: TextAlign.left,
+                                              maxLines: 3,
+                                              overflow: TextOverflow.ellipsis,
+                                              //textScaleFactor: deviceInfo.textClamp50,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+
+                                      onPressed: () async {
+                                        setState(() {
+                                          _showShareQrs = !_showShareQrs;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                _showShareQrs
+                                    ? Column(
+                                        children: [
+                                          // Text(
+                                          //   'QR Codes for Sharing Runs',
+                                          //   style: ts_headingLarge,
+                                          //   //textScaleFactor: deviceInfo.textClamp50,
+                                          // ),
+                                          const SizedBox(height: 20),
+                                          OverflowBar(
+                                            spacing: 80,
+                                            overflowSpacing: 40,
+                                            alignment: MainAxisAlignment.center,
+                                            overflowAlignment:
+                                                OverflowBarAlignment.center,
+                                            children: <Widget>[
+                                              QrGroup(
+                                                context: context,
+                                                title:
+                                                    'Next ${widget.kennelAggregateItem.kennel.kennelShortName} Run',
+                                                description:
+                                                    'next ${widget.kennelAggregateItem.kennel.kennelShortName} run',
+                                                url: nextRunUrlForQr,
+                                              ),
+
+                                              QrGroup(
+                                                context: context,
+                                                title:
+                                                    '${widget.kennelAggregateItem.kennel.kennelShortName} upcoming Runs',
+                                                description:
+                                                    '${widget.kennelAggregateItem.kennel.kennelName} upcoming runs',
+                                                url: kennelUrlForQr,
+                                              ),
+
+                                              if (((widget
+                                                              .kennelAggregateItem
+                                                              .kennel
+                                                              .kennelWebsiteUrl ??
+                                                          '')
+                                                      .isNotEmpty) &&
+                                                  (widget
+                                                      .kennelAggregateItem
+                                                      .kennel
+                                                      .kennelWebsiteUrl!
+                                                      .toLowerCase()
+                                                      .startsWith(
+                                                        'http',
+                                                      ))) ...<Widget>[
+                                                QrGroup(
+                                                  context: context,
+                                                  title:
+                                                      '${widget.kennelAggregateItem.kennel.kennelShortName} Website',
+                                                  description:
+                                                      '${widget.kennelAggregateItem.kennel.kennelShortName} Website',
+                                                  url: widget
+                                                      .kennelAggregateItem
+                                                      .kennel
+                                                      .kennelWebsiteUrl!,
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                          const SizedBox(height: 40),
+                                        ],
+                                      )
+                                    : const SizedBox.shrink(),
+
+                                ((widget
+                                                .kennelAggregateItem
+                                                .kennel
+                                                .kennelWebsiteUrl ==
+                                            null) ||
+                                        (widget
+                                            .kennelAggregateItem
+                                            .kennel
+                                            .kennelWebsiteUrl!
+                                            .trim()
+                                            .isEmpty))
+                                    ? Container()
+                                    : Column(
                                         children: <Widget>[
                                           const FancyDivider(
                                             key: Key('123435661'),
                                             innerColor: Colors.white,
-                                            topMargin: 30.0,
-                                            bottomMargin: 15.0,
+                                            topMargin: 15.0,
+                                            bottomMargin: 30.0,
                                           ),
                                           Container(
                                             margin: const EdgeInsets.only(
@@ -1805,14 +1929,14 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                                 BoxDecoration(
                                                                   color:
                                                                       hc_blue,
-                                                                  shape:
-                                                                      BoxShape
-                                                                          .circle,
+                                                                  shape: BoxShape
+                                                                      .circle,
                                                                 ),
                                                           ),
                                                           const Positioned(
-                                                            bottom: 1.4,
+                                                            //bottom: 1.4,
                                                             child: Icon(
+                                                              size: 20,
                                                               SimpleLineIcons
                                                                   .globe,
                                                               color:
@@ -1846,9 +1970,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                             .kennel
                                                             .kennelWebsiteUrl!,
                                                       ),
-                                                      mode:
-                                                          LaunchMode
-                                                              .externalApplication,
+                                                      mode: LaunchMode
+                                                          .externalApplication,
                                                     );
                                                   }
                                                 },
@@ -1857,263 +1980,248 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           ),
                                         ],
                                       ),
-                                  Column(
-                                    children: <Widget>[
-                                      // const FancyDivider(
-                                      //   key: Key('123435661'),
-                                      //   innerColor: Colors.white,
-                                      //   topMargin: 30.0,
-                                      //   bottomMargin: 15.0,
-                                      // ),
-                                      Container(
-                                        margin: const EdgeInsets.only(
-                                          bottom: 20,
-                                        ),
-                                        width: _buttonWidth,
-                                        height: _buttonHeight,
-                                        child: Connection2.styleForConnected(
-                                          appModel.connectionStatus,
-                                          ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              padding: const EdgeInsets.only(
-                                                left: 12.0,
-                                                top: 8.0,
-                                                bottom: 8.0,
+                                Column(
+                                  children: <Widget>[
+                                    // const FancyDivider(
+                                    //   key: Key('123435661'),
+                                    //   innerColor: Colors.white,
+                                    //   topMargin: 30.0,
+                                    //   bottomMargin: 15.0,
+                                    // ),
+                                    Container(
+                                      margin: const EdgeInsets.only(bottom: 20),
+                                      width: _buttonWidth,
+                                      height: _buttonHeight,
+                                      child: Connection2.styleForConnected(
+                                        appModel.connectionStatus,
+                                        ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            padding: const EdgeInsets.only(
+                                              left: 12.0,
+                                              top: 8.0,
+                                              bottom: 8.0,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            children: <Widget>[
+                                              SizedBox(
+                                                width: 45.0,
+                                                child: Image.asset(
+                                                  'images/icons/painter_palette.png',
+                                                  height: 35,
+                                                ),
                                               ),
-                                            ),
-                                            child: Row(
-                                              children: <Widget>[
-                                                SizedBox(
-                                                  width: 45.0,
-                                                  child: Image.asset(
-                                                    'images/icons/painter_palette.png',
-                                                    height: 35,
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                        left: 20,
-                                                        right: 0,
-                                                      ),
-                                                  child: Text(
-                                                    'Run art gallery',
-                                                    style: ts_button,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            onPressed: () async {
-                                              final List<Map<String, dynamic>>
-                                              results =
-                                                  await QueryKennels.queryKennelGallery(
-                                                    widget
-                                                        .kennelAggregateItem
-                                                        .kennel
-                                                        .kennelId,
-                                                  );
-
-                                              if (!mounted) return;
-                                              await Navigator.push<void>(
-                                                navigatorKey.currentContext!,
-                                                MaterialPageRoute<void>(
-                                                  builder:
-                                                      (BuildContext context) =>
-                                                          HashRunArtGalleryPage(
-                                                            key: const Key(
-                                                              '52233311',
-                                                            ),
-                                                            items: results,
-                                                          ),
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        margin: const EdgeInsets.only(
-                                          bottom: 20,
-                                        ),
-                                        width: _buttonWidth,
-                                        height: _buttonHeight,
-                                        child: Connection2.styleForConnected(
-                                          appModel.connectionStatus,
-                                          ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              padding: const EdgeInsets.only(
-                                                left: 12.0,
-                                                top: 8.0,
-                                                bottom: 8.0,
-                                              ),
-                                            ),
-                                            child: Row(
-                                              children: <Widget>[
-                                                SizedBox(
-                                                  width: 45.0,
-                                                  child: Image.asset(
-                                                    'images/icons/leaderboard_icon.png',
-                                                    height: 35,
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                        left: 20,
-                                                        right: 0,
-                                                      ),
-                                                  child: Text(
-                                                    'Leaderboards',
-                                                    style: ts_button,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            onPressed: () async {
-                                              if (!mounted) return;
-                                              await Navigator.push<void>(
-                                                context,
-                                                MaterialPageRoute<void>(
-                                                  builder:
-                                                      (
-                                                        BuildContext context,
-                                                      ) => GenericWidgetPage(
-                                                        key: const Key(
-                                                          '52233311',
-                                                        ),
-                                                        widget: Leaderboard(
-                                                          kennelId:
-                                                              widget
-                                                                  .kennelAggregateItem
-                                                                  .kennel
-                                                                  .kennelId,
-                                                          //kennelId: null,
-                                                        ),
-                                                        appBarTitle:
-                                                            'Get a Life (Leaderboards)',
-                                                      ),
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                      ),
-                                      if (widget
-                                              .kennelAggregateItem
-                                              .extensions
-                                              .isKennelMember ==
-                                          1) ...<Widget>[
-                                        const FancyDivider(
-                                          key: Key('5203920'),
-                                          innerColor: Colors.white,
-                                          topMargin: 30.0,
-                                          bottomMargin: 25.0,
-                                        ),
-                                        Container(
-                                          margin: const EdgeInsets.only(
-                                            bottom: 20,
-                                          ),
-                                          width: _buttonWidth,
-                                          height: _buttonHeight,
-                                          child: Connection2.styleForConnected(
-                                            appModel.connectionStatus,
-                                            ElevatedButton(
-                                              style: ElevatedButton.styleFrom(
+                                              Padding(
                                                 padding: const EdgeInsets.only(
-                                                  left: 12.0,
-                                                  top: 8.0,
-                                                  bottom: 8.0,
+                                                  left: 20,
+                                                  right: 0,
+                                                ),
+                                                child: Text(
+                                                  'Run art gallery',
+                                                  style: ts_button,
                                                 ),
                                               ),
-                                              child: Row(
-                                                children: <Widget>[
-                                                  SizedBox(
-                                                    width: 45.0,
-                                                    child: Image.asset(
-                                                      'images/icons/woman_man_profile_icon.png',
-                                                      height: 40,
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                          left: 20,
-                                                          right: 0,
-                                                        ),
-                                                    child: Text(
-                                                      'Customize profile',
-                                                      style: ts_button,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              onPressed: () async {
-                                                if (!mounted) return;
+                                            ],
+                                          ),
+                                          onPressed: () async {
+                                            final List<Map<String, dynamic>>
+                                            results =
+                                                await QueryKennels.queryKennelGallery(
+                                                  widget
+                                                      .kennelAggregateItem
+                                                      .kennel
+                                                      .kennelId,
+                                                );
 
-                                                if ((widget
-                                                            .kennelAggregateItem
-                                                            .extensions
-                                                            .originalProfilePhoto !=
-                                                        null) &&
-                                                    (widget
-                                                            .kennelAggregateItem
-                                                            .extensions
-                                                            .originalDisplayName !=
-                                                        null)) {
-                                                  await Navigator.push<void>(
-                                                    context,
-                                                    MaterialPageRoute<void>(
-                                                      builder:
-                                                          (
-                                                            BuildContext
-                                                            context,
-                                                          ) => GenericWidgetPage(
-                                                            key: const Key(
-                                                              '52233311',
-                                                            ),
-                                                            widget: CustomizeProfile(
-                                                              originalProfilePhoto:
-                                                                  widget
-                                                                      .kennelAggregateItem
-                                                                      .extensions
-                                                                      .originalProfilePhoto!,
-                                                              originalDisplayName:
-                                                                  widget
-                                                                      .kennelAggregateItem
-                                                                      .extensions
-                                                                      .originalDisplayName!,
-                                                              customKennelPhoto:
-                                                                  widget
-                                                                      .kennelAggregateItem
-                                                                      .hkm
-                                                                      ?.kennelUserPhoto,
-                                                              customKennelHashName:
-                                                                  widget
-                                                                      .kennelAggregateItem
-                                                                      .hkm
-                                                                      ?.kennelHashName,
-                                                            ),
-                                                            appBarTitle:
-                                                                'Customize profile',
+                                            if (!mounted) return;
+                                            await Navigator.push<void>(
+                                              navigatorKey.currentContext!,
+                                              MaterialPageRoute<void>(
+                                                builder:
+                                                    (BuildContext context) =>
+                                                        HashRunArtGalleryPage(
+                                                          key: const Key(
+                                                            '52233311',
                                                           ),
-                                                    ),
-                                                  );
-                                                }
-                                              },
+                                                          items: results,
+                                                        ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      margin: const EdgeInsets.only(bottom: 20),
+                                      width: _buttonWidth,
+                                      height: _buttonHeight,
+                                      child: Connection2.styleForConnected(
+                                        appModel.connectionStatus,
+                                        ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            padding: const EdgeInsets.only(
+                                              left: 12.0,
+                                              top: 8.0,
+                                              bottom: 8.0,
                                             ),
                                           ),
+                                          child: Row(
+                                            children: <Widget>[
+                                              SizedBox(
+                                                width: 45.0,
+                                                child: Image.asset(
+                                                  'images/icons/leaderboard_icon.png',
+                                                  height: 35,
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                  left: 20,
+                                                  right: 0,
+                                                ),
+                                                child: Text(
+                                                  'Leaderboards',
+                                                  style: ts_button,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          onPressed: () async {
+                                            if (!mounted) return;
+                                            await Navigator.push<void>(
+                                              context,
+                                              MaterialPageRoute<void>(
+                                                builder:
+                                                    (
+                                                      BuildContext context,
+                                                    ) => GenericWidgetPage(
+                                                      key: const Key(
+                                                        '52233311',
+                                                      ),
+                                                      widget: Leaderboard(
+                                                        kennelId: widget
+                                                            .kennelAggregateItem
+                                                            .kennel
+                                                            .kennelId,
+                                                        //kennelId: null,
+                                                      ),
+                                                      appBarTitle:
+                                                          'Get a Life (Leaderboards)',
+                                                    ),
+                                              ),
+                                            );
+                                          },
                                         ),
-                                      ],
+                                      ),
+                                    ),
+                                    if (widget
+                                            .kennelAggregateItem
+                                            .extensions
+                                            .isKennelMember ==
+                                        1) ...<Widget>[
+                                      const FancyDivider(
+                                        key: Key('5203920'),
+                                        innerColor: Colors.white,
+                                        topMargin: 30.0,
+                                        bottomMargin: 25.0,
+                                      ),
+                                      Container(
+                                        margin: const EdgeInsets.only(
+                                          bottom: 20,
+                                        ),
+                                        width: _buttonWidth,
+                                        height: _buttonHeight,
+                                        child: Connection2.styleForConnected(
+                                          appModel.connectionStatus,
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              padding: const EdgeInsets.only(
+                                                left: 12.0,
+                                                top: 8.0,
+                                                bottom: 8.0,
+                                              ),
+                                            ),
+                                            child: Row(
+                                              children: <Widget>[
+                                                SizedBox(
+                                                  width: 45.0,
+                                                  child: Image.asset(
+                                                    'images/icons/woman_man_profile_icon.png',
+                                                    height: 40,
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                        left: 20,
+                                                        right: 0,
+                                                      ),
+                                                  child: Text(
+                                                    'Customize profile',
+                                                    style: ts_button,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            onPressed: () async {
+                                              if (!mounted) return;
+
+                                              if ((widget
+                                                          .kennelAggregateItem
+                                                          .extensions
+                                                          .originalProfilePhoto !=
+                                                      null) &&
+                                                  (widget
+                                                          .kennelAggregateItem
+                                                          .extensions
+                                                          .originalDisplayName !=
+                                                      null)) {
+                                                await Navigator.push<void>(
+                                                  context,
+                                                  MaterialPageRoute<void>(
+                                                    builder: (BuildContext context) => GenericWidgetPage(
+                                                      key: const Key(
+                                                        '52233311',
+                                                      ),
+                                                      widget: CustomizeProfile(
+                                                        originalProfilePhoto: widget
+                                                            .kennelAggregateItem
+                                                            .extensions
+                                                            .originalProfilePhoto!,
+                                                        originalDisplayName: widget
+                                                            .kennelAggregateItem
+                                                            .extensions
+                                                            .originalDisplayName!,
+                                                        customKennelPhoto: widget
+                                                            .kennelAggregateItem
+                                                            .hkm
+                                                            ?.kennelUserPhoto,
+                                                        customKennelHashName: widget
+                                                            .kennelAggregateItem
+                                                            .hkm
+                                                            ?.kennelHashName,
+                                                      ),
+                                                      appBarTitle:
+                                                          'Customize profile',
+                                                    ),
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                          ),
+                                        ),
+                                      ),
                                     ],
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 25.0),
-                            ],
-                          ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 25.0),
+                          ],
                         ),
                       ),
                     ),
+                  ),
           ),
         ),
         OfflineModeRibbon(
@@ -2180,30 +2288,30 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
       return (items.length < 2)
           ? Container()
           : Row(
-            children: <Widget>[
-              const SizedBox(height: 25.0),
-              Expanded(
-                flex: 50,
-                child: Text(
-                  '${items[0]}:',
-                  style: ts_listLabelStyle,
-                  textAlign: TextAlign.right,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+              children: <Widget>[
+                const SizedBox(height: 25.0),
+                Expanded(
+                  flex: 50,
+                  child: Text(
+                    '${items[0]}:',
+                    style: ts_listLabelStyle,
+                    textAlign: TextAlign.right,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
-              Expanded(
-                flex: 50,
-                child: Text(
-                  ' ${items[1]}',
-                  style: ts_listValueStyle,
-                  textAlign: TextAlign.left,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                Expanded(
+                  flex: 50,
+                  child: Text(
+                    ' ${items[1]}',
+                    style: ts_listValueStyle,
+                    textAlign: TextAlign.left,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
-            ],
-          );
+              ],
+            );
     }
   }
 

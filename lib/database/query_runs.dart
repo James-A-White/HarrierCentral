@@ -396,9 +396,9 @@ class QueryRuns {
 
     final offsetFromGmtToLocal = Utilities.getSqfliteTimeOffset();
 
-    final offsetFromGmtToLocalMinus4Hours = Utilities.getSqfliteTimeOffset(
-      offsetInMinutes: -240,
-    );
+    // final offsetFromGmtToLocalMinus4Hours = Utilities.getSqfliteTimeOffset(
+    //   offsetInMinutes: -240,
+    // );
 
     String queryBase = '';
 
@@ -475,7 +475,7 @@ class QueryRuns {
     }
 
     final String whereClauseForTopRunsPage = '''
-            WHERE julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetime}) >= julianday('now','$offsetFromGmtToLocalMinus4Hours') and evt.${tableModel.eventsTableHelper.colIsVisible} = 1
+            WHERE julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-4 hours') and evt.${tableModel.eventsTableHelper.colIsVisible} = 1
             AND coalesce(hkm.following,0) != 2
             AND evt.${tableModel.eventsTableHelper.colRemoved} = 0
             AND (
@@ -492,7 +492,7 @@ class QueryRuns {
         kennelId == null
             ? ''
             : '''
-            WHERE julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetime}) >= julianday('now','$offsetFromGmtToLocalMinus4Hours') and evt.${tableModel.eventsTableHelper.colIsVisible} = 1
+            WHERE julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-4 hours') and evt.${tableModel.eventsTableHelper.colIsVisible} = 1
             AND evt.${tableModel.eventsTableHelper.colKennelId} = "$kennelId"
             AND evt.${tableModel.eventsTableHelper.colRemoved} = 0
             ORDER BY evt.${tableModel.eventsTableHelper.colEventStartDatetime}, evt.${tableModel.eventsTableHelper.colEventNumber}
