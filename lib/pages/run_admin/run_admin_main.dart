@@ -173,27 +173,27 @@ class RunAdminPageState extends State<RunAdminPage> {
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
         padding: const EdgeInsets.only(left: 20, right: 20),
-        child: ConnectedWidget(
-          refreshFunction: () {
-            setState(() {});
-          },
-          showConnectButton: true,
-          disconnectedChild: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Center(
-              child: Text(
-                'Run admin functions require a connection to the Internet',
-                style: ts_headingLarge,
-                textAlign: TextAlign.center,
+        child: AndroidSafeArea(
+          child: ConnectedWidget(
+            refreshFunction: () {
+              setState(() {});
+            },
+            showConnectButton: true,
+            disconnectedChild: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Center(
+                child: Text(
+                  'Run admin functions require a connection to the Internet',
+                  style: ts_headingLarge,
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
-          ),
-          child:
-              _isLoading
-                  ? const HcAppCircularProgressIndicator(key: Key('16093026'))
-                  : _eventAggregate == null
-                  ? Container()
-                  : SingleChildScrollView(
+            child: _isLoading
+                ? const HcAppCircularProgressIndicator(key: Key('16093026'))
+                : _eventAggregate == null
+                ? Container()
+                : SingleChildScrollView(
                     child: Column(
                       children: <Widget>[
                         Padding(
@@ -243,6 +243,7 @@ class RunAdminPageState extends State<RunAdminPage> {
                       ],
                     ),
                   ),
+          ),
         ),
       ),
     );
@@ -371,10 +372,9 @@ class RunAdminPageState extends State<RunAdminPage> {
                     Navigator.push<dynamic>(
                       context,
                       MaterialPageRoute<dynamic>(
-                        builder:
-                            (BuildContext context) => CheckInScannerPage(
-                              eventAggregate: _eventAggregate!,
-                            ),
+                        builder: (BuildContext context) => CheckInScannerPage(
+                          eventAggregate: _eventAggregate!,
+                        ),
                       ),
                     );
                   },
@@ -395,13 +395,12 @@ class RunAdminPageState extends State<RunAdminPage> {
                 child: Container(
                   width: 110,
                   height: 110,
-                  foregroundDecoration:
-                      _isBetaTester == 1
-                          ? null
-                          : BoxDecoration(
-                            color: Colors.grey.shade100,
-                            backgroundBlendMode: BlendMode.saturation,
-                          ),
+                  foregroundDecoration: _isBetaTester == 1
+                      ? null
+                      : BoxDecoration(
+                          color: Colors.grey.shade100,
+                          backgroundBlendMode: BlendMode.saturation,
+                        ),
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.only(
@@ -441,8 +440,8 @@ class RunAdminPageState extends State<RunAdminPage> {
                         Navigator.push<dynamic>(
                           context,
                           MaterialPageRoute<dynamic>(
-                            builder:
-                                (BuildContext context) => PaymentReportPage(
+                            builder: (BuildContext context) =>
+                                PaymentReportPage(
                                   eventAggregate: _eventAggregate!,
                                 ),
                           ),
@@ -457,13 +456,12 @@ class RunAdminPageState extends State<RunAdminPage> {
                 child: Container(
                   width: 110,
                   height: 110,
-                  foregroundDecoration:
-                      _isBetaTester == 1
-                          ? null
-                          : const BoxDecoration(
-                            color: Colors.grey,
-                            backgroundBlendMode: BlendMode.saturation,
-                          ),
+                  foregroundDecoration: _isBetaTester == 1
+                      ? null
+                      : const BoxDecoration(
+                          color: Colors.grey,
+                          backgroundBlendMode: BlendMode.saturation,
+                        ),
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.only(
@@ -503,10 +501,8 @@ class RunAdminPageState extends State<RunAdminPage> {
                         Navigator.push<dynamic>(
                           context,
                           MaterialPageRoute<dynamic>(
-                            builder:
-                                (BuildContext context) => ReceiptsList(
-                                  eventAggregate: _eventAggregate!,
-                                ),
+                            builder: (BuildContext context) =>
+                                ReceiptsList(eventAggregate: _eventAggregate!),
                           ),
                         );
                       }
@@ -574,20 +570,19 @@ class RunAdminPageState extends State<RunAdminPage> {
                       await Navigator.push<dynamic>(
                         context,
                         MaterialPageRoute<dynamic>(
-                          builder:
-                              (
-                                BuildContext context,
-                              ) => EditRunDetailsPage(false, _eventAggregate!, (
-                                String eventId,
-                              ) async {
-                                _eventAggregate =
-                                    await CommonQueries.getEventAdminInfoFromLocalCache(
-                                      eventId,
-                                      _userId,
-                                    );
-                                _isLoading = false;
-                                return _eventAggregate!;
-                              }),
+                          builder: (BuildContext context) => EditRunDetailsPage(
+                            false,
+                            _eventAggregate!,
+                            (String eventId) async {
+                              _eventAggregate =
+                                  await CommonQueries.getEventAdminInfoFromLocalCache(
+                                    eventId,
+                                    _userId,
+                                  );
+                              _isLoading = false;
+                              return _eventAggregate!;
+                            },
+                          ),
                         ),
                       );
                       _getRunDetails(widget.eventId);
@@ -632,9 +627,8 @@ class RunAdminPageState extends State<RunAdminPage> {
                       Navigator.push<dynamic>(
                         context,
                         MaterialPageRoute<dynamic>(
-                          builder:
-                              (BuildContext context) =>
-                                  DrinksList(eventAggregate: _eventAggregate!),
+                          builder: (BuildContext context) =>
+                              DrinksList(eventAggregate: _eventAggregate!),
                         ),
                       );
                     },
@@ -698,19 +692,18 @@ class RunAdminPageState extends State<RunAdminPage> {
                       Navigator.push<dynamic>(
                         context,
                         MaterialPageRoute<dynamic>(
-                          builder:
-                              (BuildContext context) => EventQrCodePage(
-                                kennelShortName:
-                                    _eventAggregate!.kennel.kennelShortName,
-                                qrContent: _eventAggregate!.event.publicEventId,
-                                title: _eventAggregate!.event.eventName,
-                                runStartPrefix: QR_PREFIX_SPECIFIC_RUN_START,
-                                runEndPrefix: QR_PREFIX_SPECIFIC_RUN_END,
-                                runLink: QR_PREFIX_HASHRUNS_DOT_ORG_RUN_LINK,
-                                showRunLink: true,
-                                eventStartDatetime:
-                                    _eventAggregate!.event.eventStartDatetime,
-                              ),
+                          builder: (BuildContext context) => EventQrCodePage(
+                            kennelShortName:
+                                _eventAggregate!.kennel.kennelShortName,
+                            qrContent: _eventAggregate!.event.publicEventId,
+                            title: _eventAggregate!.event.eventName,
+                            runStartPrefix: QR_PREFIX_SPECIFIC_RUN_START,
+                            runEndPrefix: QR_PREFIX_SPECIFIC_RUN_END,
+                            runLink: QR_PREFIX_HASHRUNS_DOT_ORG_RUN_LINK,
+                            showRunLink: true,
+                            eventStartDatetime:
+                                _eventAggregate!.event.eventStartDatetime,
+                          ),
                         ),
                       );
                     },

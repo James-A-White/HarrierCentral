@@ -52,7 +52,7 @@ Future<void> main() async {
   // 🚫 Hide the bottom navigation bar (Android only)
   SystemChrome.setEnabledSystemUIMode(
     SystemUiMode.manual,
-    overlays: [SystemUiOverlay.top], // show only the top overlay
+    overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom],
   );
 
   // App-level init — safe to re-run on an in-app “restart”

@@ -44,63 +44,62 @@ class MainNavigationPage extends StatelessWidget {
                       children: [
                         IconButton(
                           icon: const Icon(Icons.menu),
-                          onPressed:
-                              () =>
-                                  controller.scaffoldKey.currentState
-                                      ?.openDrawer(),
+                          onPressed: () =>
+                              controller.scaffoldKey.currentState?.openDrawer(),
                         ),
                         controller.mainScreenReady.value
                             ? GetBuilder<FutureRunListPageController>(
-                              id: 'main_nav_page',
-                              builder: (badgeController) {
-                                return GestureDetector(
-                                  onTap:
-                                      () =>
+                                id: 'main_nav_page',
+                                builder: (badgeController) {
+                                  return GestureDetector(
+                                    onTap: () =>
+                                        badgeController
+                                            .showOnlyEventsWithMessages
+                                            .value = !(badgeController
+                                            .showOnlyEventsWithMessages
+                                            .value),
+                                    child: badges.Badge(
+                                      position: badges.BadgePosition.topEnd(
+                                        top: -10,
+                                        end: -17,
+                                      ),
+
+                                      badgeContent: Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 2,
+                                        ),
+                                        width: 30,
+                                        height: 13,
+                                        child: AutoSizeText(
                                           badgeController
-                                              .showOnlyEventsWithMessages
-                                              .value = !(badgeController
-                                                  .showOnlyEventsWithMessages
-                                                  .value),
-                                  child: badges.Badge(
-                                    position: badges.BadgePosition.topEnd(
-                                      top: -10,
-                                      end: -17,
-                                    ),
-
-                                    badgeContent: Container(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 2,
+                                              .totalNotifications
+                                              .value
+                                              .toString(),
+                                          textAlign: TextAlign.center,
+                                          maxLines: 1,
+                                          minFontSize: 10,
+                                          maxFontSize: 13,
+                                          style: ts_badge,
+                                        ),
                                       ),
-                                      width: 30,
-                                      height: 13,
-                                      child: AutoSizeText(
-                                        badgeController.totalNotifications.value
-                                            .toString(),
-                                        textAlign: TextAlign.center,
-                                        maxLines: 1,
-                                        minFontSize: 10,
-                                        maxFontSize: 13,
-                                        style: ts_badge,
-                                      ),
-                                    ),
 
-                                    showBadge:
-                                        badgeController
-                                            .totalNotifications
-                                            .value !=
-                                        0,
-                                    child:
-                                        badgeController
-                                                .showChatBubbleLoading
-                                                .value
-                                            ? const Icon(Icons.refresh)
-                                            : const Icon(
+                                      showBadge:
+                                          badgeController
+                                              .totalNotifications
+                                              .value !=
+                                          0,
+                                      child:
+                                          badgeController
+                                              .showChatBubbleLoading
+                                              .value
+                                          ? const Icon(Icons.refresh)
+                                          : const Icon(
                                               Icons.chat_bubble_outline,
                                             ),
-                                  ),
-                                );
-                              },
-                            )
+                                    ),
+                                  );
+                                },
+                              )
                             : SizedBox(),
                       ],
                     ),
@@ -113,13 +112,12 @@ class MainNavigationPage extends StatelessWidget {
                     actions: [
                       IconButton(
                         icon: const Icon(Icons.qr_code_scanner_sharp),
-                        onPressed:
-                            () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const UserQrCodePage(),
-                              ),
-                            ),
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const UserQrCodePage(),
+                          ),
+                        ),
                       ),
                       IconButton(
                         icon: Icon(
@@ -151,50 +149,52 @@ class MainNavigationPage extends StatelessWidget {
 
               body: Container(
                 decoration: Backgrounds.defaultHcBackground(),
-                child: Obx(() {
-                  switch (controller.mainScreenContent.value) {
-                    case MainPageContent.initial:
-                      return const SizedBox.expand();
+                child: AndroidSafeArea(
+                  child: Obx(() {
+                    switch (controller.mainScreenContent.value) {
+                      case MainPageContent.initial:
+                        return const SizedBox.expand();
 
-                    case MainPageContent.splashSequence:
-                      return Obx(() {
-                        return controller.isLoadingImages.value
-                            ? Center(child: CircularProgressIndicator())
-                            : IntroSlider(
-                              isShowSkipBtn: false,
-                              isShowPrevBtn: true,
+                      case MainPageContent.splashSequence:
+                        return Obx(() {
+                          return controller.isLoadingImages.value
+                              ? Center(child: CircularProgressIndicator())
+                              : IntroSlider(
+                                  isShowSkipBtn: false,
+                                  isShowPrevBtn: true,
 
-                              indicatorConfig: IndicatorConfig(
-                                sizeIndicator: 10,
-                                indicatorWidget: Container(
-                                  width: 10,
-                                  height: 10,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(4),
-                                    color: const Color.fromARGB(
-                                      255,
-                                      120,
-                                      72,
-                                      0,
+                                  indicatorConfig: IndicatorConfig(
+                                    sizeIndicator: 10,
+                                    indicatorWidget: Container(
+                                      width: 10,
+                                      height: 10,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(4),
+                                        color: const Color.fromARGB(
+                                          255,
+                                          120,
+                                          72,
+                                          0,
+                                        ),
+                                      ),
                                     ),
+                                    activeIndicatorWidget: Container(
+                                      width: 10,
+                                      height: 10,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(4),
+                                        color: Colors.orange,
+                                      ),
+                                    ),
+                                    spaceBetweenIndicator: 10,
+                                    typeIndicatorAnimation:
+                                        TypeIndicatorAnimation.sliding,
                                   ),
-                                ),
-                                activeIndicatorWidget: Container(
-                                  width: 10,
-                                  height: 10,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(4),
-                                    color: Colors.orange,
-                                  ),
-                                ),
-                                spaceBetweenIndicator: 10,
-                                typeIndicatorAnimation:
-                                    TypeIndicatorAnimation.sliding,
-                              ),
 
-                              // wrap each Image in a full-screen box, with BoxFit.cover
-                              listCustomTabs:
-                                  controller.splashImages.map((img) {
+                                  // wrap each Image in a full-screen box, with BoxFit.cover
+                                  listCustomTabs: controller.splashImages.map((
+                                    img,
+                                  ) {
                                     return Stack(
                                       children: [
                                         controller.splashBackground ??
@@ -209,34 +209,35 @@ class MainNavigationPage extends StatelessWidget {
                                       ],
                                     );
                                   }).toList(),
-                              onDonePress: () async {
-                                // once the Done button is pressed, we now consider this a normal boot
-                                await setStringPref(
-                                  StringPrefsEnum.bootType,
-                                  BOOT_TYPE_NORMAL,
+                                  onDonePress: () async {
+                                    // once the Done button is pressed, we now consider this a normal boot
+                                    await setStringPref(
+                                      StringPrefsEnum.bootType,
+                                      BOOT_TYPE_NORMAL,
+                                    );
+
+                                    if (Get.isRegistered<
+                                      NotificationService
+                                    >()) {
+                                      await Get.delete<NotificationService>();
+                                    }
+
+                                    await Get.putAsync(
+                                      () => NotificationService().init(),
+                                    ); // Initialize and wait for the notification service
+
+                                    controller.resetNewVersionPromoScreen();
+                                  },
                                 );
-
-                                if (Get.isRegistered<NotificationService>()) {
-                                  await Get.delete<NotificationService>();
-                                }
-
-                                await Get.putAsync(
-                                  () => NotificationService().init(),
-                                ); // Initialize and wait for the notification service
-
-                                controller.resetNewVersionPromoScreen();
-                              },
-                            );
-                      });
-                    case MainPageContent.loading:
-                      return _getGenericLoadingScreen(controller);
-                    default:
-                      return FlippableBox(
-                        key: Key('22342342'),
-                        front: Center(
-                          child:
-                              controller.mainScreenReady.value
-                                  ? IndexedStack(
+                        });
+                      case MainPageContent.loading:
+                        return _getGenericLoadingScreen(controller);
+                      default:
+                        return FlippableBox(
+                          key: Key('22342342'),
+                          front: Center(
+                            child: controller.mainScreenReady.value
+                                ? IndexedStack(
                                     index: controller.currentPage.value,
                                     children: [
                                       controller.futureRunsListPage,
@@ -245,132 +246,148 @@ class MainNavigationPage extends StatelessWidget {
                                       controller.historyListPage,
                                     ],
                                   )
-                                  : SizedBox(),
-                        ),
+                                : SizedBox(),
+                          ),
 
-                        back: Swiper(
-                          pagination: SwiperCustomPagination(
-                            builder: (
-                              BuildContext context,
-                              SwiperPluginConfig config,
-                            ) {
-                              return Column(
-                                mainAxisSize: MainAxisSize.max,
-                                children: <Widget>[
-                                  Expanded(child: Container()),
-                                  Row(
-                                    children: <Widget>[
-                                      Expanded(
-                                        child: Align(
-                                          alignment: Alignment.bottomCenter,
-                                          child: DotSwiperPaginationBuilder(
-                                            color: Colors.grey,
-                                            activeColor: hc_blue,
-                                            size: 10.0,
-                                            activeSize: 20.0,
-                                          ).build(context, config),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 20.0),
-                                ],
-                              );
-                            },
-                          ),
-                          itemCount:
-                              controller
-                                  .tutorials[controller.currentPage.value]
-                                  .length,
-                          control: SwiperControl(
-                            color: hc_red,
-                            disableColor: hc_blue,
-                          ),
-                          itemBuilder: (BuildContext context, int index) {
-                            // this configuration of LayoutBuilder is used to center images that do not
-                            // overflow the height of the available render area, but align images
-                            // to the top of the render space if they will overflow the available space.
-                            return LayoutBuilder(
-                              builder: (
-                                BuildContext context,
-                                BoxConstraints constraints,
-                              ) {
-                                return Stack(
-                                  clipBehavior: Clip.hardEdge,
-                                  fit: StackFit.passthrough,
-                                  alignment: AlignmentDirectional.topCenter,
-                                  children: <Widget>[
-                                    Positioned(
-                                      top: 15.0,
-                                      left: 0.0,
-                                      right: 0.0,
-                                      child: Column(
-                                        children: <Widget>[
-                                          ConstrainedBox(
-                                            constraints: BoxConstraints(
-                                              minHeight:
-                                                  constraints.maxHeight > 60
-                                                      ? constraints.maxHeight -
-                                                          60
-                                                      : constraints.maxHeight,
+                          back: Swiper(
+                            pagination: SwiperCustomPagination(
+                              builder:
+                                  (
+                                    BuildContext context,
+                                    SwiperPluginConfig config,
+                                  ) {
+                                    return Column(
+                                      mainAxisSize: MainAxisSize.max,
+                                      children: <Widget>[
+                                        Expanded(child: Container()),
+                                        Row(
+                                          children: <Widget>[
+                                            Expanded(
+                                              child: Align(
+                                                alignment:
+                                                    Alignment.bottomCenter,
+                                                child:
+                                                    DotSwiperPaginationBuilder(
+                                                      color: Colors.grey,
+                                                      activeColor: hc_blue,
+                                                      size: 10.0,
+                                                      activeSize: 20.0,
+                                                    ).build(context, config),
+                                              ),
                                             ),
-                                            child: Image.asset(
-                                              controller.tutorials[controller
-                                                  .currentPage
-                                                  .value][index],
-                                              fit: BoxFit.fitWidth,
+                                          ],
+                                        ),
+                                        const SizedBox(height: 20.0),
+                                      ],
+                                    );
+                                  },
+                            ),
+                            itemCount: controller
+                                .tutorials[controller.currentPage.value]
+                                .length,
+                            control: SwiperControl(
+                              color: hc_red,
+                              disableColor: hc_blue,
+                            ),
+                            itemBuilder: (BuildContext context, int index) {
+                              // this configuration of LayoutBuilder is used to center images that do not
+                              // overflow the height of the available render area, but align images
+                              // to the top of the render space if they will overflow the available space.
+                              return LayoutBuilder(
+                                builder:
+                                    (
+                                      BuildContext context,
+                                      BoxConstraints constraints,
+                                    ) {
+                                      return Stack(
+                                        clipBehavior: Clip.hardEdge,
+                                        fit: StackFit.passthrough,
+                                        alignment:
+                                            AlignmentDirectional.topCenter,
+                                        children: <Widget>[
+                                          Positioned(
+                                            top: 15.0,
+                                            left: 0.0,
+                                            right: 0.0,
+                                            child: Column(
+                                              children: <Widget>[
+                                                ConstrainedBox(
+                                                  constraints: BoxConstraints(
+                                                    minHeight:
+                                                        constraints.maxHeight >
+                                                            60
+                                                        ? constraints
+                                                                  .maxHeight -
+                                                              60
+                                                        : constraints.maxHeight,
+                                                  ),
+                                                  child: Image.asset(
+                                                    controller
+                                                        .tutorials[controller
+                                                        .currentPage
+                                                        .value][index],
+                                                    fit: BoxFit.fitWidth,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Positioned(
+                                            bottom: 0.0,
+                                            left: 0.0,
+                                            right: 0.0,
+                                            child: Container(
+                                              height: 60.0,
+                                              color: Colors.white,
                                             ),
                                           ),
                                         ],
-                                      ),
-                                    ),
-                                    Positioned(
-                                      bottom: 0.0,
-                                      left: 0.0,
-                                      right: 0.0,
-                                      child: Container(
-                                        height: 60.0,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                          },
-                        ),
+                                      );
+                                    },
+                              );
+                            },
+                          ),
 
-                        isFlipped: controller.isFlipped.value,
-                      );
-                  }
-                }),
+                          isFlipped: controller.isFlipped.value,
+                        );
+                    }
+                  }),
+                ),
               ),
 
-              bottomNavigationBar: Obx(() {
-                return (controller.mainScreenContent.value ==
-                        MainPageContent.appContent)
-                    ? FancyBottomNavigation(
-                      circleColor: themeButtonColors,
-                      inactiveIconColor: themeBackgroundColor,
-                      barBackgroundColor: themeNavBarBackground,
-                      tabs: [
-                        TabData(
-                          iconData: MaterialCommunityIcons.run_fast,
-                          title: 'Runs',
-                        ),
-                        TabData(iconData: FontAwesome.home, title: 'Kennels'),
-                        TabData(iconData: FontAwesome.map, title: 'Explore'),
-                        TabData(
-                          iconData: FontAwesome.list_ul,
-                          title: 'History',
-                        ),
-                      ],
-                      initialSelection: 0,
-                      //key: controller.bottomNavigationKey,
-                      onTabChangedListener: controller.onTabChanged,
-                    )
-                    : SizedBox();
-              }),
+              bottomNavigationBar: AndroidSafeArea(
+                child: Obx(() {
+                  return (controller.mainScreenContent.value ==
+                          MainPageContent.appContent)
+                      ? FancyBottomNavigation(
+                          circleColor: themeButtonColors,
+                          inactiveIconColor: themeBackgroundColor,
+                          barBackgroundColor: themeNavBarBackground,
+                          tabs: [
+                            TabData(
+                              iconData: MaterialCommunityIcons.run_fast,
+                              title: 'Runs',
+                            ),
+                            TabData(
+                              iconData: FontAwesome.home,
+                              title: 'Kennels',
+                            ),
+                            TabData(
+                              iconData: FontAwesome.map,
+                              title: 'Explore',
+                            ),
+                            TabData(
+                              iconData: FontAwesome.list_ul,
+                              title: 'History',
+                            ),
+                          ],
+                          initialSelection: 0,
+                          //key: controller.bottomNavigationKey,
+                          onTabChangedListener: controller.onTabChanged,
+                        )
+                      : SizedBox();
+                }),
+              ),
               //drawer: DrawerMenu(scaffoldKey: controller.scaffoldKey),
               drawer: DrawerMenu(key: Key('4312134')),
             ),

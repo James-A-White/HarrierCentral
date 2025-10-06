@@ -1,3 +1,5 @@
+2.0.6+998
+    • Fixed the Android navigation issue by adding a SafeArea for Android devices only.
 
 2.0.5+997
     • Still working on fixing the "TODAY", "Tomorrow" labels on Run List Items
