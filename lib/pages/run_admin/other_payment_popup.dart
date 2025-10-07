@@ -23,7 +23,7 @@ class OtherPaymentPopupResult {
 class OtherPaymentPopupController extends GetxController {
   OtherPaymentPopupController(this.normalPrice, this.decimalDigits);
 
-  final double normalPrice;
+  double normalPrice;
   final int decimalDigits;
 
   final specialPriceTextController = TextEditingController();
@@ -54,6 +54,17 @@ class OtherPaymentPopupController extends GetxController {
 
     _recalculateTotal();
     super.onInit();
+  }
+
+  void resetUi(double price) {
+    normalPrice = price;
+    specialPriceTextController.text = price.toStringAsFixed(decimalDigits);
+    topUpTextController.text = '';
+    topUpCreditEnabled.value = false;
+    specialPriceEnabled.value = false;
+    paySpecialPriceWithCredit.value = false;
+    specialPriceIsDefaultForUser.value = false;
+    _recalculateTotal();
   }
 
   void _recalculateTotal() {
@@ -94,6 +105,7 @@ class OtherPaymentPopup extends StatelessWidget {
     final controller = Get.put(
       OtherPaymentPopupController(normalPrice, decimalDigits),
     );
+    controller.resetUi(normalPrice);
     return AlertDialog(
       actionsOverflowButtonSpacing: 30.0,
       actionsOverflowAlignment: OverflowBarAlignment.start,
