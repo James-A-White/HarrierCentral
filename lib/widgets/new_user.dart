@@ -29,13 +29,13 @@
 // import 'package:ive_flutter_core/widgets/circular_progress_indicator.dart';
 
 // class NewUserWidget extends StatefulWidget {
-//   const NewUserWidget({Key key, this.eventId, this.kennelId, this.attendenceState, this.scaffoldKey}) : super(key: key);
+//   const NewUserWidget({Key key, this.eventId, this.kennelId, this.attendenceState, this.ScaffoldKey}) : super(key: key);
 
 //   final String eventId;
 //   final String kennelId;
 //   final EnumAttendenceState<int> attendenceState;
 
-//   final GlobalKey<ScaffoldState> scaffoldKey;
+//   final GlobalKey<ScaffoldState> ScaffoldKey;
 
 //   @override
 //   State<NewUserWidget> createState() {
@@ -67,7 +67,7 @@
 
 //   @override
 //   Widget build(BuildContext context) {
-//     return Scaffold(
+//     return AppScaffold(
 //       body: Container(
 //         decoration: Backgrounds.defaultHcBackground(),
 //         child: isLoading
@@ -475,12 +475,12 @@
 
 //     if (userDetailsUi != null && userDetailsUi.firstName.isEmpty) {
 //       canProcess = false;
-//       IveCoreUtilities.showInSnackBar(context, widget.scaffoldKey, 'Please enter your first name', durationInSeconds: 7);
+//       IveCoreUtilities.showInSnackBar(context, widget.ScaffoldKey, 'Please enter your first name', durationInSeconds: 7);
 //     }
 
 //     if (userDetailsUi != null && userDetailsUi.lastName.isEmpty) {
 //       canProcess = false;
-//       IveCoreUtilities.showInSnackBar(context, widget.scaffoldKey, 'Please enter your last name', durationInSeconds: 7);
+//       IveCoreUtilities.showInSnackBar(context, widget.ScaffoldKey, 'Please enter your last name', durationInSeconds: 7);
 //     }
 
 //     bool emailValid = false;
@@ -491,7 +491,7 @@
 
 //     if (canProcess && !emailValid) {
 //       canProcess = false;
-//       IveCoreUtilities.showInSnackBar(context, widget.scaffoldKey, 'Please enter a valid email address', durationInSeconds: 7);
+//       IveCoreUtilities.showInSnackBar(context, widget.ScaffoldKey, 'Please enter a valid email address', durationInSeconds: 7);
 //     }
 
 //     if (canProcess && (userDetailsUi != null)) {
@@ -600,7 +600,7 @@
 //             } else {
 //               // downloading from the cloud failed
 //               setState(() => _scanState = 2);
-//               IveCoreUtilities.showInSnackBar(context, widget.scaffoldKey, result['message'], durationInSeconds: 7);
+//               IveCoreUtilities.showInSnackBar(context, widget.ScaffoldKey, result['message'], durationInSeconds: 7);
 //             }
 //           });
 //         }
@@ -663,7 +663,7 @@
 //         setState(() {});
 //       }
 //       if (controller.value.hasError) {
-//         IveCoreUtilities.showInSnackBar(context, widget.scaffoldKey, 'Camera error ${controller.value.errorDescription}', durationInSeconds: 7);
+//         IveCoreUtilities.showInSnackBar(context, widget.ScaffoldKey, 'Camera error ${controller.value.errorDescription}', durationInSeconds: 7);
 //       }
 //     });
 
@@ -671,7 +671,7 @@
 //       await controller.initialize();
 //     } on QRReaderException catch (e) {
 //       //logError(e.code, e.description);
-//       IveCoreUtilities.showInSnackBar(context, widget.scaffoldKey, 'Error: ${e.code}\n${e.description}', durationInSeconds: 7);
+//       IveCoreUtilities.showInSnackBar(context, widget.ScaffoldKey, 'Error: ${e.code}\n${e.description}', durationInSeconds: 7);
 //     }
 
 //     if (mounted) {

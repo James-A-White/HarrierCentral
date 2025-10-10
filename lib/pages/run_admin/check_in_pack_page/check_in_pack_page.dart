@@ -28,15 +28,16 @@ class CheckInPackPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Assuming you know the tag (e.g. passed in as a property or globally available)
-    final eventAggregate =
-        Get.find<CheckInPackController>(tag: controllerTag).eventAggregate;
+    final eventAggregate = Get.find<CheckInPackController>(
+      tag: controllerTag,
+    ).eventAggregate;
 
     return GetBuilder<CheckInPackController>(
-      id: 'scaffold',
+      id: 'AppScaffold',
       tag: controllerTag,
-      builder: (scaffoldController) {
-        return Scaffold(
-          key: scaffoldController.scaffoldKey,
+      builder: (AppScaffoldController) {
+        return AppScaffold(
+          key: AppScaffoldController.ScaffoldKey,
           floatingActionButton: SpeedDial(
             // both default to 16
             // marginEnd: 18,
@@ -51,7 +52,7 @@ class CheckInPackPage extends StatelessWidget {
             overlayOpacity: 0.5,
             onOpen: () {
               ScaffoldMessenger.of(context).hideCurrentSnackBar();
-              scaffoldController.searchFocusNode.unfocus();
+              AppScaffoldController.searchFocusNode.unfocus();
             },
             //onClose: () => //print('DIAL CLOSED'),
             tooltip: 'Speed Dial',
@@ -69,7 +70,7 @@ class CheckInPackPage extends StatelessWidget {
                   fontSize: 18.0 * (1.0 / deviceInfo.deviceTextScaleFactor),
                 ),
                 onTap: () {
-                  scaffoldController.filterOptionsPopup(context);
+                  AppScaffoldController.filterOptionsPopup(context);
                 },
               ),
               // SpeedDialChild(
@@ -100,7 +101,8 @@ class CheckInPackPage extends StatelessWidget {
                 labelStyle: TextStyle(
                   fontSize: 18.0 * (1.0 / deviceInfo.deviceTextScaleFactor),
                 ),
-                onTap: () => scaffoldController.showVirginVisitorPopup(context),
+                onTap: () =>
+                    AppScaffoldController.showVirginVisitorPopup(context),
                 //onTap: () => {},
               ),
               SpeedDialChild(
@@ -114,7 +116,8 @@ class CheckInPackPage extends StatelessWidget {
                   fontSize: 18.0 * (1.0 / deviceInfo.deviceTextScaleFactor),
                 ),
                 //onTap: () async => {},
-                onTap: () async => await scaffoldController.findHasher(context),
+                onTap: () async =>
+                    await AppScaffoldController.findHasher(context),
               ),
               SpeedDialChild(
                 child: const Icon(
@@ -126,7 +129,8 @@ class CheckInPackPage extends StatelessWidget {
                 labelStyle: TextStyle(
                   fontSize: 18.0 * (1.0 / deviceInfo.deviceTextScaleFactor),
                 ),
-                onTap: () => scaffoldController.copyRsvpsFromLastRun(context),
+                onTap: () =>
+                    AppScaffoldController.copyRsvpsFromLastRun(context),
                 //onTap: () => {},
               ),
               SpeedDialChild(
@@ -139,10 +143,8 @@ class CheckInPackPage extends StatelessWidget {
                 labelStyle: TextStyle(
                   fontSize: 18.0 * (1.0 / deviceInfo.deviceTextScaleFactor),
                 ),
-                onTap:
-                    () =>
-                        scaffoldController.showMultiSelect.value =
-                            !scaffoldController.showMultiSelect.value,
+                onTap: () => AppScaffoldController.showMultiSelect.value =
+                    !AppScaffoldController.showMultiSelect.value,
                 //onTap: () => {},
               ),
               // SpeedDialChild(
@@ -201,7 +203,7 @@ class CheckInPackPage extends StatelessWidget {
             title: TextScaleFactorClamper(
               textScaleFactor: deviceInfo.textClamp15,
               child: Text(
-                scaffoldController.isLoading ||
+                AppScaffoldController.isLoading ||
                         eventAggregate.event.eventName.isEmpty
                     ? '... Loading'
                     : '${eventAggregate.event.eventName} Check In',
@@ -210,567 +212,537 @@ class CheckInPackPage extends StatelessWidget {
             ),
           ),
 
-          body:
-              scaffoldController.isLoading
-                  ? const HcAppCircularProgressIndicator(key: Key('430320291'))
-                  : Stack(
-                    fit: StackFit.loose,
-                    alignment: AlignmentDirectional.topStart,
-                    children: <Widget>[
-                      SizedBox(
-                        height: MediaQuery.of(context).size.height,
-                        width: 10,
-                      ),
-                      PositionedTransition(
-                        rect: scaffoldController.hasherListAnimation,
-                        child: RefreshIndicator(
-                          displacement: 120,
-                          onRefresh:
-                              () async => await scaffoldController
-                                  .refreshSqlTablesFromBackend(true),
-                          child: GetBuilder<CheckInPackController>(
-                            id: 'hasherList',
-                            tag: controllerTag,
-                            builder: (scaffoldController) {
-                              return ListView.separated(
-                                separatorBuilder:
-                                    (BuildContext context, int index) =>
-                                        const Divider(
-                                          height: 1.0,
-                                          color: Colors.black45,
-                                        ),
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                scrollDirection: Axis.vertical,
-                                controller: scaffoldController.scrollController,
-                                itemCount:
-                                    (scaffoldController.filteredList.length) +
-                                    2,
-                                itemBuilder: (BuildContext context, int index) {
-                                  if (index ==
-                                      (scaffoldController
-                                          .filteredList
-                                          .length)) {
-                                    return Obx(() {
-                                      if (scaffoldController
-                                          .forceShowAllHashers
-                                          .value) {
-                                        return _getAddHasherBlock(
-                                          scaffoldController,
-                                          context,
-                                        );
-                                      } else {
-                                        return _getSearchAllHashersBlock(
-                                          scaffoldController,
-                                          context,
-                                        );
-                                      }
-                                    });
-                                  } else if (index ==
-                                      (scaffoldController.filteredList.length) +
-                                          1) {
-                                    return const SizedBox(height: 120);
-                                  } else {
-                                    double amountOwed =
-                                        scaffoldController
-                                                    .filteredList[index]
-                                                    .isMember !=
-                                                1
-                                            ? eventAggregate
-                                                .extensions
-                                                .nonMemberPrice
-                                            : eventAggregate
-                                                .extensions
-                                                .memberPrice;
-
-                                    amountOwed =
-                                        scaffoldController
-                                                    .filteredList[index]
-                                                    .isMember !=
-                                                1
-                                            ? eventAggregate
-                                                .extensions
-                                                .nonMemberPrice
-                                            : eventAggregate
-                                                .extensions
-                                                .memberPrice;
-                                    amountOwed -=
-                                        scaffoldController
-                                            .filteredList[index]
-                                            .discountAmount;
-                                    amountOwed -=
-                                        amountOwed *
-                                        (scaffoldController
-                                                .filteredList[index]
-                                                .discountPercent /
-                                            100.0);
-
-                                    final String amountOwedStr =
-                                        IveCoreUtilities.getFormattedMoney(
-                                          amountOwed,
-                                          eventAggregate.extensions.digAfterDec,
-                                          eventAggregate.extensions.curSym,
-                                        );
-
-                                    CheckInPackModel packMember =
-                                        scaffoldController.filteredList[index];
-
-                                    return Slidable(
-                                      key: Key(index.toString()),
-                                      // controller: slidableController,
-
-                                      // The start action pane is the one at the left or the top side.
-                                      startActionPane: ActionPane(
-                                        motion: const BehindMotion(),
-                                        // A pane can dismiss the Slidable.
-                                        dismissible: DismissiblePane(
-                                          closeOnCancel: true,
-                                          dismissThreshold: 0.65,
-                                          dismissalDuration: const Duration(
-                                            milliseconds: 800,
-                                          ),
-                                          resizeDuration: const Duration(
-                                            milliseconds: 800,
-                                          ),
-                                          confirmDismiss: () async {
-                                            if (packMember.isPaid != 1) {
-                                              scaffoldController.payForEvent(
-                                                context,
-                                                scaffoldController
-                                                    .scaffoldKey
-                                                    .currentState!,
-                                                paymentBankTransfer.value,
-                                                index,
-                                                -1,
-                                              );
-                                            }
-                                            return false;
-                                          },
-                                          onDismissed: () {},
-                                        ),
-                                        dragDismissible: true,
-                                        children: [
-                                          CustomSlidableAction(
-                                            // An action can be bigger than the others.
-                                            flex: 2,
-                                            onPressed: _emptyFunction,
-                                            backgroundColor:
-                                                (packMember.isPaid == 1
-                                                    ? Colors.grey
-                                                    : hc_blue),
-
-                                            foregroundColor: Colors.white,
-                                            child:
-                                                packMember.isPaid == 1
-                                                    ? Container(
-                                                      color: Colors.grey,
-                                                      width:
-                                                          deviceInfo
-                                                              .deviceWidth,
-                                                      child: Column(
-                                                        children: <Widget>[
-                                                          const Padding(
-                                                            padding:
-                                                                EdgeInsets.only(
-                                                                  top: 5.0,
-                                                                ),
-                                                            child: Icon(
-                                                              FontAwesome
-                                                                  .check_circle,
-                                                              size: 30.0,
-                                                              color:
-                                                                  Colors.white,
-                                                            ),
-                                                          ),
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets.only(
-                                                                  top: 5.0,
-                                                                ),
-                                                            child: Text(
-                                                              'Already\r\npaid',
-                                                              textAlign:
-                                                                  TextAlign
-                                                                      .center,
-                                                              style: ts_title,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    )
-                                                    : Container(
-                                                      color: hc_blue,
-                                                      width:
-                                                          deviceInfo
-                                                              .deviceWidth,
-                                                      child: Column(
-                                                        children: <Widget>[
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets.only(
-                                                                  top: 8.0,
-                                                                ),
-                                                            child: Image.asset(
-                                                              'images/icons/payment_type_4.png',
-                                                              height: 27.0,
-                                                              width: 27.0,
-                                                              color:
-                                                                  Colors.white,
-                                                            ),
-                                                          ),
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets.only(
-                                                                  top: 10.0,
-                                                                ),
-                                                            child: Text(
-                                                              '${(eventAggregate.event.eventPriceForExtras) != 0 ? '' : '$amountOwedStr\r\n'}Bank Transfer',
-                                                              textAlign:
-                                                                  TextAlign
-                                                                      .center,
-                                                              style:
-                                                                  ts_titleMedium,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                          ),
-                                        ],
+          body: AppScaffoldController.isLoading
+              ? const HcAppCircularProgressIndicator(key: Key('430320291'))
+              : Stack(
+                  fit: StackFit.loose,
+                  alignment: AlignmentDirectional.topStart,
+                  children: <Widget>[
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height,
+                      width: 10,
+                    ),
+                    PositionedTransition(
+                      rect: AppScaffoldController.hasherListAnimation,
+                      child: RefreshIndicator(
+                        displacement: 120,
+                        onRefresh: () async =>
+                            await AppScaffoldController.refreshSqlTablesFromBackend(
+                              true,
+                            ),
+                        child: GetBuilder<CheckInPackController>(
+                          id: 'hasherList',
+                          tag: controllerTag,
+                          builder: (AppScaffoldController) {
+                            return ListView.separated(
+                              separatorBuilder:
+                                  (BuildContext context, int index) =>
+                                      const Divider(
+                                        height: 1.0,
+                                        color: Colors.black45,
                                       ),
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              scrollDirection: Axis.vertical,
+                              controller:
+                                  AppScaffoldController.scrollController,
+                              itemCount:
+                                  (AppScaffoldController.filteredList.length) +
+                                  2,
+                              itemBuilder: (BuildContext context, int index) {
+                                if (index ==
+                                    (AppScaffoldController
+                                        .filteredList
+                                        .length)) {
+                                  return Obx(() {
+                                    if (AppScaffoldController
+                                        .forceShowAllHashers
+                                        .value) {
+                                      return _getAddHasherBlock(
+                                        AppScaffoldController,
+                                        context,
+                                      );
+                                    } else {
+                                      return _getSearchAllHashersBlock(
+                                        AppScaffoldController,
+                                        context,
+                                      );
+                                    }
+                                  });
+                                } else if (index ==
+                                    (AppScaffoldController
+                                            .filteredList
+                                            .length) +
+                                        1) {
+                                  return const SizedBox(height: 120);
+                                } else {
+                                  double amountOwed =
+                                      AppScaffoldController
+                                              .filteredList[index]
+                                              .isMember !=
+                                          1
+                                      ? eventAggregate.extensions.nonMemberPrice
+                                      : eventAggregate.extensions.memberPrice;
 
-                                      // The end action pane is the one at the right or the bottom side.
-                                      endActionPane: ActionPane(
-                                        motion: const BehindMotion(),
-                                        // A pane can dismiss the Slidable.
-                                        dismissible: DismissiblePane(
-                                          closeOnCancel: true,
-                                          dismissThreshold: 0.65,
-                                          dismissalDuration: const Duration(
-                                            milliseconds: 800,
-                                          ),
-                                          resizeDuration: const Duration(
-                                            milliseconds: 800,
-                                          ),
-                                          confirmDismiss: () async {
-                                            if (packMember.isPaid != 1) {
-                                              scaffoldController.payForEvent(
-                                                context,
-                                                scaffoldController
-                                                    .scaffoldKey
-                                                    .currentState!,
-                                                paymentCash.value,
-                                                index,
-                                                -1,
-                                              );
-                                            } else {
-                                              scaffoldController
-                                                  .updateAttendenceState(
-                                                    packMember,
-                                                    -1,
-                                                    attendenceOnIn.value,
-                                                    -1,
-                                                  );
-                                            }
-                                            return false;
-                                          },
-                                          onDismissed: () {},
+                                  amountOwed =
+                                      AppScaffoldController
+                                              .filteredList[index]
+                                              .isMember !=
+                                          1
+                                      ? eventAggregate.extensions.nonMemberPrice
+                                      : eventAggregate.extensions.memberPrice;
+                                  amountOwed -= AppScaffoldController
+                                      .filteredList[index]
+                                      .discountAmount;
+                                  amountOwed -=
+                                      amountOwed *
+                                      (AppScaffoldController
+                                              .filteredList[index]
+                                              .discountPercent /
+                                          100.0);
+
+                                  final String amountOwedStr =
+                                      IveCoreUtilities.getFormattedMoney(
+                                        amountOwed,
+                                        eventAggregate.extensions.digAfterDec,
+                                        eventAggregate.extensions.curSym,
+                                      );
+
+                                  CheckInPackModel packMember =
+                                      AppScaffoldController.filteredList[index];
+
+                                  return Slidable(
+                                    key: Key(index.toString()),
+                                    // controller: slidableController,
+
+                                    // The start action pane is the one at the left or the top side.
+                                    startActionPane: ActionPane(
+                                      motion: const BehindMotion(),
+                                      // A pane can dismiss the Slidable.
+                                      dismissible: DismissiblePane(
+                                        closeOnCancel: true,
+                                        dismissThreshold: 0.65,
+                                        dismissalDuration: const Duration(
+                                          milliseconds: 800,
                                         ),
-                                        dragDismissible: true,
-                                        children: [
-                                          CustomSlidableAction(
-                                            // An action can be bigger than the others.
-                                            flex: 2,
-                                            onPressed: _emptyFunction,
-                                            backgroundColor:
-                                                (packMember.isPaid == 1
-                                                    ? packMember.attendenceState >=
-                                                            attendenceOnIn.value
-                                                        ? Colors.grey
-                                                        : Colors.amber[800]
-                                                    : Colors.green) ??
-                                                Colors.white,
-
-                                            foregroundColor: Colors.white,
-                                            child:
-                                                packMember.isPaid == 1
-                                                    ? packMember.attendenceState >=
-                                                            attendenceOnIn.value
-                                                        ? Container(
-                                                          width:
-                                                              deviceInfo
-                                                                  .deviceWidth,
-                                                          color: Colors.grey,
-                                                          child: Column(
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .end,
-                                                            children: <Widget>[
-                                                              const Padding(
-                                                                padding:
-                                                                    EdgeInsets.only(
-                                                                      top: 5.0,
-                                                                    ),
-                                                                child: Icon(
-                                                                  FontAwesome
-                                                                      .check_circle,
-                                                                  size: 30.0,
-                                                                  color:
-                                                                      Colors
-                                                                          .white,
-                                                                ),
-                                                              ),
-                                                              Padding(
-                                                                padding:
-                                                                    const EdgeInsets.only(
-                                                                      top: 5.0,
-                                                                    ),
-                                                                child: Text(
-                                                                  'Already\r\nOn-In',
-                                                                  textAlign:
-                                                                      TextAlign
-                                                                          .center,
-                                                                  style:
-                                                                      ts_title,
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        )
-                                                        : Container(
-                                                          color:
-                                                              Colors.amber[800],
-                                                          width:
-                                                              deviceInfo
-                                                                  .deviceWidth,
-                                                          child: Column(
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .end,
-                                                            children: <Widget>[
-                                                              const Padding(
-                                                                padding:
-                                                                    EdgeInsets.only(
-                                                                      top: 2.0,
-                                                                    ),
-                                                                child: Icon(
-                                                                  Ionicons
-                                                                      .ios_beer,
-                                                                  size: 30.0,
-                                                                  color:
-                                                                      Colors
-                                                                          .white,
-                                                                ),
-                                                              ),
-                                                              Padding(
-                                                                padding:
-                                                                    const EdgeInsets.only(
-                                                                      top: 5.0,
-                                                                    ),
-                                                                child: Text(
-                                                                  'Record as\r\nOn-In',
-                                                                  textAlign:
-                                                                      TextAlign
-                                                                          .center,
-                                                                  style:
-                                                                      ts_title,
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        )
-                                                    : Container(
-                                                      width:
-                                                          deviceInfo
-                                                              .deviceWidth,
-                                                      color: Colors.green,
-                                                      child: Column(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        mainAxisSize:
-                                                            MainAxisSize.max,
-                                                        children: <Widget>[
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets.only(
-                                                                  bottom: 5.0,
-                                                                  top: 8.0,
-                                                                ),
-                                                            child: Image.asset(
-                                                              'images/icons/payment_type_3.png',
-                                                              height: 25.0,
-                                                              width: 25.0,
-                                                              color:
-                                                                  Colors.white,
-                                                            ),
-                                                          ),
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets.only(
-                                                                  bottom: 5.0,
-                                                                ),
-                                                            child: Text(
-                                                              '${(eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '$amountOwedStr\r\n'}Cash',
-                                                              textAlign:
-                                                                  TextAlign
-                                                                      .center,
-                                                              style: ts_title,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                          ),
-                                        ],
-                                      ),
-
-                                      child: Container(
-                                        color: Colors.white,
-                                        child: Obx(
-                                          () => _listItem(
-                                            context,
-                                            index,
-                                            scaffoldController,
-                                          ),
+                                        resizeDuration: const Duration(
+                                          milliseconds: 800,
                                         ),
+                                        confirmDismiss: () async {
+                                          if (packMember.isPaid != 1) {
+                                            AppScaffoldController.payForEvent(
+                                              context,
+                                              AppScaffoldController
+                                                  .ScaffoldKey
+                                                  .currentState!,
+                                              paymentBankTransfer.value,
+                                              index,
+                                              -1,
+                                            );
+                                          }
+                                          return false;
+                                        },
+                                        onDismissed: () {},
                                       ),
-                                    );
-                                  }
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      SlideTransition(
-                        position: scaffoldController.filterPanelAnimation,
-                        child: Container(
-                          height: 120,
-                          color: Colors.white,
-                          alignment: Alignment.center,
-                          child: _filterBar(context, scaffoldController),
-                        ),
-                      ),
-                      Positioned(
-                        top: 0,
-                        child: Container(
-                          decoration: const BoxDecoration(
-                            // border: new Border.all(width: 1.0, color: Colors.black),
-                            //shape: BoxShape.circle,
-                            color: Colors.white,
-                            boxShadow: <BoxShadow>[
-                              BoxShadow(
-                                color: Color.fromARGB(70, 0, 0, 0),
-                                offset: Offset(0.0, 6.0),
-                                blurRadius: 10.0,
-                              ),
-                            ],
-                          ),
-                          height: 85,
-                          padding: const EdgeInsets.only(top: 10),
-                          width: MediaQuery.of(context).size.width,
-                          //color: Colors.white,
-                          child: Row(
-                            children: [
-                              RotationTransition(
-                                turns: scaffoldController.buttonAnimation,
-                                child: IconButton(
-                                  padding: const EdgeInsets.all(0),
-                                  onPressed:
-                                      scaffoldController.toggleFilterPanel,
-                                  icon: Icon(
-                                    FontAwesome5Solid.arrow_alt_circle_right,
-                                    size: 35,
-                                    color:
-                                        scaffoldController.showFilter.value
-                                            ? Colors.green
-                                            : Colors.grey,
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                height: 60,
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                ),
-                                decoration: const BoxDecoration(
-                                  border: Border(
-                                    left: BorderSide(
-                                      color: Colors.black,
-                                      width: 1.0,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                child: Column(
-                                  children: [
-                                    Row(
+                                      dragDismissible: true,
                                       children: [
-                                        Expanded(
-                                          child: TextField(
-                                            autocorrect: false,
-                                            onChanged:
-                                                scaffoldController
-                                                    .onSearchChanged,
-                                            focusNode:
-                                                scaffoldController
-                                                    .searchFocusNode,
-                                            controller:
-                                                scaffoldController
-                                                    .searchController,
-                                            keyboardType: TextInputType.text,
-                                            style: ts_titleMediumBlack,
-                                            decoration: InputDecoration(
-                                              border: InputBorder.none,
-                                              icon: const Icon(
-                                                FontAwesome.search,
-                                                color: Colors.black,
-                                              ),
-                                              hintText:
-                                                  'Enter Hash or mortal name',
-                                              hintStyle: ts_hint,
-                                            ),
-                                          ),
+                                        CustomSlidableAction(
+                                          // An action can be bigger than the others.
+                                          flex: 2,
+                                          onPressed: _emptyFunction,
+                                          backgroundColor:
+                                              (packMember.isPaid == 1
+                                              ? Colors.grey
+                                              : hc_blue),
+
+                                          foregroundColor: Colors.white,
+                                          child: packMember.isPaid == 1
+                                              ? Container(
+                                                  color: Colors.grey,
+                                                  width: deviceInfo.deviceWidth,
+                                                  child: Column(
+                                                    children: <Widget>[
+                                                      const Padding(
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                              top: 5.0,
+                                                            ),
+                                                        child: Icon(
+                                                          FontAwesome
+                                                              .check_circle,
+                                                          size: 30.0,
+                                                          color: Colors.white,
+                                                        ),
+                                                      ),
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets.only(
+                                                              top: 5.0,
+                                                            ),
+                                                        child: Text(
+                                                          'Already\r\npaid',
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style: ts_title,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                )
+                                              : Container(
+                                                  color: hc_blue,
+                                                  width: deviceInfo.deviceWidth,
+                                                  child: Column(
+                                                    children: <Widget>[
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets.only(
+                                                              top: 8.0,
+                                                            ),
+                                                        child: Image.asset(
+                                                          'images/icons/payment_type_4.png',
+                                                          height: 27.0,
+                                                          width: 27.0,
+                                                          color: Colors.white,
+                                                        ),
+                                                      ),
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets.only(
+                                                              top: 10.0,
+                                                            ),
+                                                        child: Text(
+                                                          '${(eventAggregate.event.eventPriceForExtras) != 0 ? '' : '$amountOwedStr\r\n'}Bank Transfer',
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style: ts_titleMedium,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
                                         ),
                                       ],
                                     ),
-                                    Obx(
-                                      () => Text(
-                                        scaffoldController.searchTypeText.value,
-                                        style:
-                                            scaffoldController
-                                                    .highlightSearchType
-                                                    .value
-                                                ? ts_footnoteSmallRed
-                                                : ts_footnoteSmall,
+
+                                    // The end action pane is the one at the right or the bottom side.
+                                    endActionPane: ActionPane(
+                                      motion: const BehindMotion(),
+                                      // A pane can dismiss the Slidable.
+                                      dismissible: DismissiblePane(
+                                        closeOnCancel: true,
+                                        dismissThreshold: 0.65,
+                                        dismissalDuration: const Duration(
+                                          milliseconds: 800,
+                                        ),
+                                        resizeDuration: const Duration(
+                                          milliseconds: 800,
+                                        ),
+                                        confirmDismiss: () async {
+                                          if (packMember.isPaid != 1) {
+                                            AppScaffoldController.payForEvent(
+                                              context,
+                                              AppScaffoldController
+                                                  .ScaffoldKey
+                                                  .currentState!,
+                                              paymentCash.value,
+                                              index,
+                                              -1,
+                                            );
+                                          } else {
+                                            AppScaffoldController.updateAttendenceState(
+                                              packMember,
+                                              -1,
+                                              attendenceOnIn.value,
+                                              -1,
+                                            );
+                                          }
+                                          return false;
+                                        },
+                                        onDismissed: () {},
+                                      ),
+                                      dragDismissible: true,
+                                      children: [
+                                        CustomSlidableAction(
+                                          // An action can be bigger than the others.
+                                          flex: 2,
+                                          onPressed: _emptyFunction,
+                                          backgroundColor:
+                                              (packMember.isPaid == 1
+                                                  ? packMember.attendenceState >=
+                                                            attendenceOnIn.value
+                                                        ? Colors.grey
+                                                        : Colors.amber[800]
+                                                  : Colors.green) ??
+                                              Colors.white,
+
+                                          foregroundColor: Colors.white,
+                                          child: packMember.isPaid == 1
+                                              ? packMember.attendenceState >=
+                                                        attendenceOnIn.value
+                                                    ? Container(
+                                                        width: deviceInfo
+                                                            .deviceWidth,
+                                                        color: Colors.grey,
+                                                        child: Column(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .end,
+                                                          children: <Widget>[
+                                                            const Padding(
+                                                              padding:
+                                                                  EdgeInsets.only(
+                                                                    top: 5.0,
+                                                                  ),
+                                                              child: Icon(
+                                                                FontAwesome
+                                                                    .check_circle,
+                                                                size: 30.0,
+                                                                color: Colors
+                                                                    .white,
+                                                              ),
+                                                            ),
+                                                            Padding(
+                                                              padding:
+                                                                  const EdgeInsets.only(
+                                                                    top: 5.0,
+                                                                  ),
+                                                              child: Text(
+                                                                'Already\r\nOn-In',
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .center,
+                                                                style: ts_title,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      )
+                                                    : Container(
+                                                        color:
+                                                            Colors.amber[800],
+                                                        width: deviceInfo
+                                                            .deviceWidth,
+                                                        child: Column(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .end,
+                                                          children: <Widget>[
+                                                            const Padding(
+                                                              padding:
+                                                                  EdgeInsets.only(
+                                                                    top: 2.0,
+                                                                  ),
+                                                              child: Icon(
+                                                                Ionicons
+                                                                    .ios_beer,
+                                                                size: 30.0,
+                                                                color: Colors
+                                                                    .white,
+                                                              ),
+                                                            ),
+                                                            Padding(
+                                                              padding:
+                                                                  const EdgeInsets.only(
+                                                                    top: 5.0,
+                                                                  ),
+                                                              child: Text(
+                                                                'Record as\r\nOn-In',
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .center,
+                                                                style: ts_title,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      )
+                                              : Container(
+                                                  width: deviceInfo.deviceWidth,
+                                                  color: Colors.green,
+                                                  child: Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    children: <Widget>[
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets.only(
+                                                              bottom: 5.0,
+                                                              top: 8.0,
+                                                            ),
+                                                        child: Image.asset(
+                                                          'images/icons/payment_type_3.png',
+                                                          height: 25.0,
+                                                          width: 25.0,
+                                                          color: Colors.white,
+                                                        ),
+                                                      ),
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets.only(
+                                                              bottom: 5.0,
+                                                            ),
+                                                        child: Text(
+                                                          '${(eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '$amountOwedStr\r\n'}Cash',
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style: ts_title,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                        ),
+                                      ],
+                                    ),
+
+                                    child: Container(
+                                      color: Colors.white,
+                                      child: Obx(
+                                        () => _listItem(
+                                          context,
+                                          index,
+                                          AppScaffoldController,
+                                        ),
                                       ),
                                     ),
-                                  ],
-                                ),
-                              ),
-                              SizedBox(
-                                width: 40,
-                                child: TextButton(
-                                  style: TextButton.styleFrom(
-                                    shape: button_shape,
-                                    backgroundColor: Colors.white,
-                                  ),
-                                  onPressed: scaffoldController.clearSearch,
-                                  child: Text(
-                                    'X',
-                                    style: ts_headingBlack.copyWith(
-                                      color: Colors.grey.shade700,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                                  );
+                                }
+                              },
+                            );
+                          },
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                    SlideTransition(
+                      position: AppScaffoldController.filterPanelAnimation,
+                      child: Container(
+                        height: 120,
+                        color: Colors.white,
+                        alignment: Alignment.center,
+                        child: _filterBar(context, AppScaffoldController),
+                      ),
+                    ),
+                    Positioned(
+                      top: 0,
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          // border: new Border.all(width: 1.0, color: Colors.black),
+                          //shape: BoxShape.circle,
+                          color: Colors.white,
+                          boxShadow: <BoxShadow>[
+                            BoxShadow(
+                              color: Color.fromARGB(70, 0, 0, 0),
+                              offset: Offset(0.0, 6.0),
+                              blurRadius: 10.0,
+                            ),
+                          ],
+                        ),
+                        height: 85,
+                        padding: const EdgeInsets.only(top: 10),
+                        width: MediaQuery.of(context).size.width,
+                        //color: Colors.white,
+                        child: Row(
+                          children: [
+                            RotationTransition(
+                              turns: AppScaffoldController.buttonAnimation,
+                              child: IconButton(
+                                padding: const EdgeInsets.all(0),
+                                onPressed:
+                                    AppScaffoldController.toggleFilterPanel,
+                                icon: Icon(
+                                  FontAwesome5Solid.arrow_alt_circle_right,
+                                  size: 35,
+                                  color: AppScaffoldController.showFilter.value
+                                      ? Colors.green
+                                      : Colors.grey,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              height: 60,
+                              margin: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                              ),
+                              decoration: const BoxDecoration(
+                                border: Border(
+                                  left: BorderSide(
+                                    color: Colors.black,
+                                    width: 1.0,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: TextField(
+                                          autocorrect: false,
+                                          onChanged: AppScaffoldController
+                                              .onSearchChanged,
+                                          focusNode: AppScaffoldController
+                                              .searchFocusNode,
+                                          controller: AppScaffoldController
+                                              .searchController,
+                                          keyboardType: TextInputType.text,
+                                          style: ts_titleMediumBlack,
+                                          decoration: InputDecoration(
+                                            border: InputBorder.none,
+                                            icon: const Icon(
+                                              FontAwesome.search,
+                                              color: Colors.black,
+                                            ),
+                                            hintText:
+                                                'Enter Hash or mortal name',
+                                            hintStyle: ts_hint,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Obx(
+                                    () => Text(
+                                      AppScaffoldController
+                                          .searchTypeText
+                                          .value,
+                                      style:
+                                          AppScaffoldController
+                                              .highlightSearchType
+                                              .value
+                                          ? ts_footnoteSmallRed
+                                          : ts_footnoteSmall,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(
+                              width: 40,
+                              child: TextButton(
+                                style: TextButton.styleFrom(
+                                  shape: button_shape,
+                                  backgroundColor: Colors.white,
+                                ),
+                                onPressed: AppScaffoldController.clearSearch,
+                                child: Text(
+                                  'X',
+                                  style: ts_headingBlack.copyWith(
+                                    color: Colors.grey.shade700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
         );
       },
     );
@@ -793,44 +765,42 @@ class CheckInPackPage extends StatelessWidget {
           width: multselectMargin,
           child:
               ((hasher.hasherId) == null ||
-                      (controller.showMultiSelect.value == false))
-                  ? null
-                  : Obx(
-                    () => Checkbox(
-                      value:
-                          controller
-                              .multiSelectValues[hasher.hasherId!]
-                              ?.value ??
-                          (controller.multiSelectValues[hasher.hasherId!] =
-                                  false.obs)
-                              .value,
+                  (controller.showMultiSelect.value == false))
+              ? null
+              : Obx(
+                  () => Checkbox(
+                    value:
+                        controller.multiSelectValues[hasher.hasherId!]?.value ??
+                        (controller.multiSelectValues[hasher.hasherId!] =
+                                false.obs)
+                            .value,
 
-                      onChanged: (bool? value) {
-                        if (value != null) {
-                          if (hasher.hasherId != null) {
-                            if (controller.multiSelectValues.containsKey(
-                              hasher.hasherId,
-                            )) {
-                              controller
-                                  .multiSelectValues[hasher.hasherId]!
-                                  .value = value;
-                            } else {
-                              controller.multiSelectValues[hasher
-                                  .hasherId!] = RxBool(value);
-                            }
+                    onChanged: (bool? value) {
+                      if (value != null) {
+                        if (hasher.hasherId != null) {
+                          if (controller.multiSelectValues.containsKey(
+                            hasher.hasherId,
+                          )) {
+                            controller
+                                    .multiSelectValues[hasher.hasherId]!
+                                    .value =
+                                value;
+                          } else {
+                            controller.multiSelectValues[hasher.hasherId!] =
+                                RxBool(value);
                           }
                         }
-                      },
-                    ),
+                      }
+                    },
                   ),
+                ),
         ),
         GestureDetector(
           onTap: () => controller.onHasherTapped(context, index),
           child: Container(
-            color:
-                controller.shouldHighlightHasher(hasher)
-                    ? Colors.amber.shade100
-                    : Colors.white,
+            color: controller.shouldHighlightHasher(hasher)
+                ? Colors.amber.shade100
+                : Colors.white,
             width: MediaQuery.of(context).size.width - multselectMargin,
 
             child: Stack(
@@ -843,13 +813,12 @@ class CheckInPackPage extends StatelessWidget {
                     color: Colors.grey.shade200,
                     image: DecorationImage(
                       fit: BoxFit.cover,
-                      image:
-                          hasher.photo.startsWith('https://')
-                              ? NetworkImage(hasher.photo)
-                              : AssetImage(
-                                    'images/avatars/${hasher.photo.replaceAll('bundle://', '')}.jpg',
-                                  )
-                                  as ImageProvider,
+                      image: hasher.photo.startsWith('https://')
+                          ? NetworkImage(hasher.photo)
+                          : AssetImage(
+                                  'images/avatars/${hasher.photo.replaceAll('bundle://', '')}.jpg',
+                                )
+                                as ImageProvider,
                     ),
                   ),
                 ),
@@ -871,14 +840,12 @@ class CheckInPackPage extends StatelessWidget {
                       Text(
                         hasher.nameForDisplay,
                         style: TextStyle(
-                          color:
-                              hasher.isMember == 1
-                                  ? Colors.green.shade800
-                                  : Colors.black,
-                          fontFamily:
-                              hasher.isMember != 0
-                                  ? 'AvenirNextCondensedDemiBold'
-                                  : 'AvenirNextCondensedMedium',
+                          color: hasher.isMember == 1
+                              ? Colors.green.shade800
+                              : Colors.black,
+                          fontFamily: hasher.isMember != 0
+                              ? 'AvenirNextCondensedDemiBold'
+                              : 'AvenirNextCondensedMedium',
                           fontSize: 25.0,
                           height: 1.0,
                         ),
@@ -892,10 +859,9 @@ class CheckInPackPage extends StatelessWidget {
                             fontFamily: 'AvenirNextCondensedMedium',
                             fontSize: 18.0,
                             height: 1.0,
-                            color:
-                                hasher.isMember == 1
-                                    ? Colors.green.shade900
-                                    : Colors.black,
+                            color: hasher.isMember == 1
+                                ? Colors.green.shade900
+                                : Colors.black,
                           ),
                         ),
                     ],
@@ -1086,18 +1052,16 @@ class CheckInPackPage extends StatelessWidget {
         Navigator.push<HashersModel>(
           context,
           MaterialPageRoute<HashersModel>(
-            builder:
-                (BuildContext context) => HasherProfilePage(
-                  dataContext: EnumDataContext.event,
-                  pageType: EnumMyProfilePageType.newHasherProfile,
-                  eventId: controller.eventAggregate.event.eventId,
-                  kennelId: controller.eventAggregate.event.kennelId,
-                  uiElementsToDisplay:
-                      HasherProfilePage.flagUiElement_followKennel,
-                  hashNameFromSearch: _capitalizeFirstLetter(
-                    controller.searchController.text,
-                  ),
-                ),
+            builder: (BuildContext context) => HasherProfilePage(
+              dataContext: EnumDataContext.event,
+              pageType: EnumMyProfilePageType.newHasherProfile,
+              eventId: controller.eventAggregate.event.eventId,
+              kennelId: controller.eventAggregate.event.kennelId,
+              uiElementsToDisplay: HasherProfilePage.flagUiElement_followKennel,
+              hashNameFromSearch: _capitalizeFirstLetter(
+                controller.searchController.text,
+              ),
+            ),
           ),
         ).then((HashersModel? result) {
           controller.forceShowAllHashers.value = false;

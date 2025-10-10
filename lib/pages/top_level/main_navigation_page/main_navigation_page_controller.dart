@@ -69,7 +69,7 @@ class MainNavigationController extends GetxController
   final timeRemaining = RxnInt();
   final currentPage = 0.obs;
 
-  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
+  final GlobalKey<ScaffoldState> ScaffoldKey = GlobalKey();
 
   // Notifications state (moved from AppBar badge)
   final totalNotifications = 0.obs;
@@ -202,7 +202,7 @@ class MainNavigationController extends GetxController
       mainScreenContent.value = MainPageContent.appContent;
     }
 
-    update(['scaffold']);
+    update(['AppScaffold']);
 
     mainScreenReady.value = true;
 
@@ -356,7 +356,7 @@ class MainNavigationController extends GetxController
       mainScreenContent.value = MainPageContent.appContent;
     }
     // make sure app bar is drawn
-    update(['scaffold']);
+    update(['AppScaffold']);
 
     // it's OK to not await this async call
     requestNotificationPermission();

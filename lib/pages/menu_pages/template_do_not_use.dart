@@ -3,9 +3,7 @@ import 'package:harrier_central/imports.dart';
 class DoNotUse extends StatefulWidget {
   //final FutureRunScopedModel futureRunsModel;
 
-  const DoNotUse({
-    super.key,
-  });
+  const DoNotUse({super.key});
 
   @override
   DoNotUseState createState() => DoNotUseState();
@@ -14,14 +12,11 @@ class DoNotUse extends StatefulWidget {
 class DoNotUseState extends State<DoNotUse> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: Theme.of(context).primaryColor,
-        iconTheme: const IconThemeData(
-          color: Colors.white,
-          size: 28.0,
-        ),
+        iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
         title: Text('My Profile', style: ts_appBarTitle),
       ),
       body: Container(
@@ -30,10 +25,11 @@ class DoNotUseState extends State<DoNotUse> {
           alignment: AlignmentDirectional.center,
           children: <Widget>[
             Positioned(
-                top: 10,
-                left: 20,
-                //width: MediaQuery.of(context).size.width,
-                child: XPageContent()),
+              top: 10,
+              left: 20,
+              //width: MediaQuery.of(context).size.width,
+              child: XPageContent(),
+            ),
           ],
         ),
       ),

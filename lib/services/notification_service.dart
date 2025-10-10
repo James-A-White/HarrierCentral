@@ -69,14 +69,17 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
         );
 
         String? apnsToken = await _messaging!.getAPNSToken();
-        String? fcmToken = await _messaging!.getToken();
+        String? fcmToken;
 
-        if ((apnsToken != null) && apnsToken.isNotEmpty) {
+        if (apnsToken != null) {
+          apnsToken = apnsToken.trim();
           await setStringPref(StringPrefsEnum.apnsToken, apnsToken);
-        }
 
-        if (fcmToken != null && fcmToken.isNotEmpty) {
-          await setStringPref(StringPrefsEnum.fcmToken, fcmToken);
+          fcmToken = await _messaging!.getToken();
+
+          if (fcmToken != null && fcmToken.isNotEmpty) {
+            await setStringPref(StringPrefsEnum.fcmToken, fcmToken);
+          }
         }
 
         final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';

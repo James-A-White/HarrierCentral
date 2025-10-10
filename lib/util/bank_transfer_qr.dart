@@ -21,16 +21,19 @@ class BankTransferQr {
         paymentReference = '${results[0]['paymentReference']}';
       }
 
-      if ((paymentType != paymentBankTransferOtherAmount.value) && (paymentType != paymentCashOtherAmount.value)) {
+      if ((paymentType != paymentBankTransferOtherAmount.value) &&
+          (paymentType != paymentCashOtherAmount.value)) {
         otherAmount = -1;
       }
 
-      if ((paymentType == paymentBankTransfer.value) || (paymentType == paymentBankTransferOtherAmount.value)) {
+      if ((paymentType == paymentBankTransfer.value) ||
+          (paymentType == paymentBankTransferOtherAmount.value)) {
         // String paidFor = 'Run fee, ${eventAggregate.event.eventStartDatetime.toString().substring(0, 10)}, ${eventAggregate.event.eventName}';
         // if (paymentType == paymentBankTransferOtherAmount.value) {
         //   paidFor += ' + credit';
         // }
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
             backgroundColor: hc_blue,
             duration: const Duration(seconds: 10),
             content: SizedBox(
@@ -44,7 +47,8 @@ class BankTransferQr {
                 ),
                 onPressed: () {
                   ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                  final String remittanceInfo = '$paymentReference-$packMemberNameForDisplay';
+                  final String remittanceInfo =
+                      '$paymentReference-$packMemberNameForDisplay';
                   BankTransferQr.showBankTransferQrCode(
                     context,
                     eventAggregate,
@@ -55,7 +59,9 @@ class BankTransferQr {
                   );
                 },
               ),
-            )));
+            ),
+          ),
+        );
       }
     }
   }
@@ -73,7 +79,9 @@ class BankTransferQr {
 
       String? runId;
 
-      runId = DateFormat('yy-MM-dd').format(eventAggregate.event.eventStartDatetime);
+      runId = DateFormat(
+        'yy-MM-dd',
+      ).format(eventAggregate.event.eventStartDatetime);
 
       if (eventAggregate.event.isCountedRun != 0) {
         runId = eventAggregate.event.eventNumber.toString();
@@ -81,8 +89,10 @@ class BankTransferQr {
 
       //runId ??= Random().nextInt(999999).toString();
 
-      String remittanceInfo = '${eventAggregate.kennel.kennelShortName}:R-$runId-';
-      String beneficiaryInfo = '${eventAggregate.kennel.kennelShortName}:R-$runId-';
+      String remittanceInfo =
+          '${eventAggregate.kennel.kennelShortName}:R-$runId-';
+      String beneficiaryInfo =
+          '${eventAggregate.kennel.kennelShortName}:R-$runId-';
 
       if (remitString != null) {
         remittanceInfo += remitString;
@@ -113,7 +123,8 @@ class BankTransferQr {
       }
 
       //print('Remittance info:$remittanceInfo');
-      final String qrPayload = '''BCD
+      final String qrPayload =
+          '''BCD
 001
 1
 SCT
@@ -129,16 +140,18 @@ $beneficiaryInfo
 
       final QrPopup pp = QrPopup(
         key: const Key('6677010439'),
-        dialogTitle: '${(packMemberNameForDisplay != null) ? '$packMemberNameForDisplay\r\n' : ''}Scan to pay by bank transfer',
+        dialogTitle:
+            '${(packMemberNameForDisplay != null) ? '$packMemberNameForDisplay\r\n' : ''}Scan to pay by bank transfer',
         qrText: qrPayload,
       );
 
       showDialog<void>(
-          context: context,
-          barrierDismissible: false, // user must tap button!
-          builder: (BuildContext context) {
-            return pp;
-          });
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return pp;
+        },
+      );
     }
   }
 }

@@ -15,19 +15,19 @@
 
 // class _LoginPageState extends State<LoginPage>
 //     with SingleTickerProviderStateMixin {
-//   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+//   final GlobalKey<ScaffoldState> _ScaffoldKey = GlobalKey<ScaffoldState>();
 
 //   @override
 //   Widget build(BuildContext context) {
-//     return Scaffold(
-//       key: _scaffoldKey,
+//     return AppScaffold(
+//       key: _ScaffoldKey,
 //       body: NotificationListener<OverscrollIndicatorNotification>(
 //         onNotification: (OverscrollIndicatorNotification overscroll) {
 //           overscroll.disallowGlow();
 // TODO(James): What shoudl the return type really be?
 //           return true;
 //         },
-//         child: NewUserWidget(scaffoldKey: _scaffoldKey),
+//         child: NewUserWidget(ScaffoldKey: _ScaffoldKey),
 //       ),
 //     );
 //   }

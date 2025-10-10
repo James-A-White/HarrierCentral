@@ -68,7 +68,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
     );
   }
 
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> _ScaffoldKey = GlobalKey<ScaffoldState>();
 
   String _upload(File imageFile, String fileName) {
     final Uri uri = Uri.parse(
@@ -121,10 +121,9 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
 
         final ReceiptsModel item = ReceiptsModel(
           userId: userId,
-          receiptId:
-              widget.receiptItem == null
-                  ? GUID_EMPTY
-                  : widget.receiptItem!['receiptId'],
+          receiptId: widget.receiptItem == null
+              ? GUID_EMPTY
+              : widget.receiptItem!['receiptId'],
           eventId: widget.eventId,
           receiptShortDesc: _shortDescription,
           receiptAmount: double.parse(_receiptAmount ?? '0.0'),
@@ -244,215 +243,204 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
       iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
       title: Text('Run Receipt', style: ts_appBarTitle),
     );
-    return Scaffold(
-      key: _scaffoldKey,
+    return AppScaffold(
+      key: _ScaffoldKey,
       appBar: appBar,
-      body:
-          _isLoading
-              ? Container(
-                height:
-                    MediaQuery.of(context).size.height -
-                    appBar.preferredSize.height,
-                decoration: Backgrounds.defaultHcBackground(),
-                child: _buildCircularProgressIndicator(),
-              )
-              : Column(
-                mainAxisSize: MainAxisSize.max,
-                children: <Widget>[
-                  Expanded(
-                    child: Container(
-                      decoration: Backgrounds.defaultHcBackground(),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: <Widget>[
-                            ConstrainedBox(
-                              constraints: const BoxConstraints(
-                                //minHeight: viewportConstraints.maxHeight,
-                              ),
-                              child: IntrinsicHeight(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(
-                                    top: 30,
-                                    left: 20,
-                                    right: 20,
-                                  ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: <Widget>[
-                                      Text(
-                                        'Receipt details',
-                                        style: ts_heading,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      //),
-                                      // Positioned(
-                                      //   top: 40,
-                                      //   //bottom: 20,
-                                      //   width: MediaQuery.of(context).size.width,
-                                      //   child:
-                                      Container(
-                                        padding: const EdgeInsets.all(30.0),
-                                        child: Center(
-                                          child: Column(
-                                            children: <Widget>[
-                                              Container(
-                                                padding: const EdgeInsets.all(
-                                                  10.0,
-                                                ),
-                                                margin: const EdgeInsets.only(
-                                                  bottom: 45,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.yellow[100],
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                        5.0,
-                                                      ),
-                                                ),
-                                                child: Form(
-                                                  key: _receiptFormKey,
-                                                  autovalidateMode:
-                                                      _autoValidate
-                                                          ? AutovalidateMode
-                                                              .always
-                                                          : AutovalidateMode
-                                                              .disabled,
-                                                  child: formUi(),
-                                                ),
+      body: _isLoading
+          ? Container(
+              height:
+                  MediaQuery.of(context).size.height -
+                  appBar.preferredSize.height,
+              decoration: Backgrounds.defaultHcBackground(),
+              child: _buildCircularProgressIndicator(),
+            )
+          : Column(
+              mainAxisSize: MainAxisSize.max,
+              children: <Widget>[
+                Expanded(
+                  child: Container(
+                    decoration: Backgrounds.defaultHcBackground(),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: <Widget>[
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(
+                              //minHeight: viewportConstraints.maxHeight,
+                            ),
+                            child: IntrinsicHeight(
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                  top: 30,
+                                  left: 20,
+                                  right: 20,
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: <Widget>[
+                                    Text(
+                                      'Receipt details',
+                                      style: ts_heading,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    //),
+                                    // Positioned(
+                                    //   top: 40,
+                                    //   //bottom: 20,
+                                    //   width: MediaQuery.of(context).size.width,
+                                    //   child:
+                                    Container(
+                                      padding: const EdgeInsets.all(30.0),
+                                      child: Center(
+                                        child: Column(
+                                          children: <Widget>[
+                                            Container(
+                                              padding: const EdgeInsets.all(
+                                                10.0,
                                               ),
-                                              const FancyDivider(
-                                                key: Key('121678443'),
-                                                innerColor: Colors.white,
+                                              margin: const EdgeInsets.only(
+                                                bottom: 45,
                                               ),
-                                              const SizedBox(height: 20),
-                                              ElevatedButton(
-                                                onPressed: () {
-                                                  onImageButtonPressed().then((
-                                                    File? imageFile,
-                                                  ) {
-                                                    setState(() {
-                                                      _imageFromCamera =
-                                                          imageFile;
-                                                    });
+                                              decoration: BoxDecoration(
+                                                color: Colors.yellow[100],
+                                                borderRadius:
+                                                    BorderRadius.circular(5.0),
+                                              ),
+                                              child: Form(
+                                                key: _receiptFormKey,
+                                                autovalidateMode: _autoValidate
+                                                    ? AutovalidateMode.always
+                                                    : AutovalidateMode.disabled,
+                                                child: formUi(),
+                                              ),
+                                            ),
+                                            const FancyDivider(
+                                              key: Key('121678443'),
+                                              innerColor: Colors.white,
+                                            ),
+                                            const SizedBox(height: 20),
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                onImageButtonPressed().then((
+                                                  File? imageFile,
+                                                ) {
+                                                  setState(() {
+                                                    _imageFromCamera =
+                                                        imageFile;
                                                   });
-                                                },
-                                                child: Text(
-                                                  'Scan Receipt',
-                                                  style: ts_button,
-                                                ),
+                                                });
+                                              },
+                                              child: Text(
+                                                'Scan Receipt',
+                                                style: ts_button,
                                               ),
-                                            ],
-                                          ),
+                                            ),
+                                          ],
                                         ),
                                       ),
+                                    ),
 
-                                      //),
-                                      //       ],
-                                      //     ),
-                                      //   ),
-                                      // ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push<void>(
-                                            context,
-                                            MaterialPageRoute<void>(
-                                              builder:
-                                                  (
-                                                    BuildContext context,
-                                                  ) => ZoomableImagePage2(
-                                                    key: const Key('66610301'),
-                                                    file:
-                                                        _imageFromCamera ??
-                                                        _imageFromCache,
-                                                    pageTitle:
-                                                        'Zoomable Receipt',
-                                                    appBarBackgroundColor:
-                                                        themeAppBarBackground,
-                                                    background:
-                                                        Backgrounds.defaultHcBackground(),
-                                                  ),
-                                            ),
-                                          );
-                                        },
-                                        child:
-                                            _imageFromCamera != null
-                                                ? Container(
-                                                  //height: 220,
-                                                  color: Colors.white,
-                                                  padding: const EdgeInsets.all(
-                                                    10.0,
-                                                  ),
-                                                  margin: const EdgeInsets.only(
-                                                    top: 20,
-                                                    bottom: 30,
-                                                  ),
-                                                  child: Image.file(
-                                                    _imageFromCamera!,
-                                                    width:
-                                                        MediaQuery.of(
-                                                          context,
-                                                        ).size.width,
-                                                  ),
-                                                )
-                                                : _receiptImageFromWeb != null
-                                                ? Container(
-                                                  //height: 220,
-                                                  color: Colors.white,
-                                                  padding: const EdgeInsets.all(
-                                                    10.0,
-                                                  ),
-                                                  margin: const EdgeInsets.only(
-                                                    top: 20,
-                                                    bottom: 30,
-                                                  ),
-                                                  child: _receiptImageFromWeb,
-                                                )
-                                                : Container(),
-                                      ),
-                                      const SizedBox(width: 40, height: 40),
-                                    ],
-                                  ),
+                                    //),
+                                    //       ],
+                                    //     ),
+                                    //   ),
+                                    // ),
+                                    GestureDetector(
+                                      onTap: () {
+                                        Navigator.push<void>(
+                                          context,
+                                          MaterialPageRoute<void>(
+                                            builder: (BuildContext context) =>
+                                                ZoomableImagePage2(
+                                                  key: const Key('66610301'),
+                                                  file:
+                                                      _imageFromCamera ??
+                                                      _imageFromCache,
+                                                  pageTitle: 'Zoomable Receipt',
+                                                  appBarBackgroundColor:
+                                                      themeAppBarBackground,
+                                                  background:
+                                                      Backgrounds.defaultHcBackground(),
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                      child: _imageFromCamera != null
+                                          ? Container(
+                                              //height: 220,
+                                              color: Colors.white,
+                                              padding: const EdgeInsets.all(
+                                                10.0,
+                                              ),
+                                              margin: const EdgeInsets.only(
+                                                top: 20,
+                                                bottom: 30,
+                                              ),
+                                              child: Image.file(
+                                                _imageFromCamera!,
+                                                width: MediaQuery.of(
+                                                  context,
+                                                ).size.width,
+                                              ),
+                                            )
+                                          : _receiptImageFromWeb != null
+                                          ? Container(
+                                              //height: 220,
+                                              color: Colors.white,
+                                              padding: const EdgeInsets.all(
+                                                10.0,
+                                              ),
+                                              margin: const EdgeInsets.only(
+                                                top: 20,
+                                                bottom: 30,
+                                              ),
+                                              child: _receiptImageFromWeb,
+                                            )
+                                          : Container(),
+                                    ),
+                                    const SizedBox(width: 40, height: 40),
+                                  ],
                                 ),
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                  Container(
-                    // padding: const EdgeInsets.all(12.0),
-                    decoration: BoxDecoration(
-                      // border: new Border.all(width: 1.0, color: Colors.black),
-                      //shape: BoxShape.circle,
-                      color: Colors.yellow[100],
-                      boxShadow: const <BoxShadow>[
-                        BoxShadow(
-                          color: Color.fromARGB(70, 0, 0, 0),
-                          offset: Offset(0.0, 6.0),
-                          blurRadius: 10.0,
-                        ),
-                      ],
-                    ),
-                    width: MediaQuery.of(context).size.width,
-                    height: 60,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        SizedBox(
-                          //margin: const EdgeInsets.only(right: 15),
-                          width: 200,
-                          child: ElevatedButton(
-                            onPressed: _uploadReceipt,
-                            child: Text('Save receipt', style: ts_button),
-                          ),
-                        ),
-                      ],
-                    ),
+                ),
+                Container(
+                  // padding: const EdgeInsets.all(12.0),
+                  decoration: BoxDecoration(
+                    // border: new Border.all(width: 1.0, color: Colors.black),
+                    //shape: BoxShape.circle,
+                    color: Colors.yellow[100],
+                    boxShadow: const <BoxShadow>[
+                      BoxShadow(
+                        color: Color.fromARGB(70, 0, 0, 0),
+                        offset: Offset(0.0, 6.0),
+                        blurRadius: 10.0,
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                  width: MediaQuery.of(context).size.width,
+                  height: 60,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      SizedBox(
+                        //margin: const EdgeInsets.only(right: 15),
+                        width: 200,
+                        child: ElevatedButton(
+                          onPressed: _uploadReceipt,
+                          child: Text('Save receipt', style: ts_button),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
     );
   }
 }

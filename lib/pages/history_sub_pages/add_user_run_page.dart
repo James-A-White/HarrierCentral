@@ -171,7 +171,7 @@
 //     );
 //   }
 
-//   GlobalKey<ScaffoldState> scaffoldKey;
+//   GlobalKey<ScaffoldState> ScaffoldKey;
 
 //   void _updateProfile() {
 // //     if (_profileFormKey.currentState.validate()) {
@@ -366,8 +366,8 @@
 //           left: 0,
 //           width: MediaQuery.of(context).size.width,
 //           height: MediaQuery.of(context).size.height,
-//           child: Scaffold(
-//             key: scaffoldKey,
+//           child: AppScaffold(
+//             key: ScaffoldKey,
 //             appBar: AppBar(
 //       centerTitle: true,
 //       backgroundColor: themeAppBarBackground,

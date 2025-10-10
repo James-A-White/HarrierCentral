@@ -6,11 +6,11 @@ import 'package:harrier_central/pages/menu_pages/add_kennel_page.dart';
 class DrawerMenu extends StatefulWidget {
   const DrawerMenu({
     super.key,
-    //required this.scaffoldKey,
+    //required this.ScaffoldKey,
     //required this.futureRunsListKey,
   });
 
-  //final GlobalKey<ScaffoldState> scaffoldKey;
+  //final GlobalKey<ScaffoldState> ScaffoldKey;
   //final GlobalKey<FutureRunListPageState> futureRunsListKey;
 
   @override
@@ -87,23 +87,20 @@ class DrawerMenuState extends State<DrawerMenu> {
                       Navigator.push<void>(
                         context,
                         MaterialPageRoute<void>(
-                          builder:
-                              (BuildContext context) => const GenericWidgetPage(
-                                key: Key('52233311'),
-                                widget: Column(
-                                  children: <Widget>[
-                                    // Padding(
-                                    //   padding: const EdgeInsets.only(top: 18.0, bottom: 10.0),
-                                    //   child: Image.asset('images/icons/leaderboard_icon.png', height: 130),
-                                    // ),
-                                    //SizedBox(height: 13.0),
-                                    Expanded(
-                                      child: Leaderboard(kennelId: null),
-                                    ),
-                                  ],
-                                ),
-                                appBarTitle: 'Get a Life (Leaderboards)',
-                              ),
+                          builder: (BuildContext context) => const GenericWidgetPage(
+                            key: Key('52233311'),
+                            widget: Column(
+                              children: <Widget>[
+                                // Padding(
+                                //   padding: const EdgeInsets.only(top: 18.0, bottom: 10.0),
+                                //   child: Image.asset('images/icons/leaderboard_icon.png', height: 130),
+                                // ),
+                                //SizedBox(height: 13.0),
+                                Expanded(child: Leaderboard(kennelId: null)),
+                              ],
+                            ),
+                            appBarTitle: 'Get a Life (Leaderboards)',
+                          ),
                         ),
                       );
                     },
@@ -236,8 +233,8 @@ class DrawerMenuState extends State<DrawerMenu> {
                         ),
                         // ).then(
                         //   (dynamic value) {
-                        //     if (widget.scaffoldKey.currentState != null) {
-                        //       widget.scaffoldKey.currentState!.setState(() {});
+                        //     if (widget.ScaffoldKey.currentState != null) {
+                        //       widget.ScaffoldKey.currentState!.setState(() {});
                         //     }
                         //   },
                       );

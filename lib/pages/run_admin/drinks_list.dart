@@ -114,7 +114,8 @@ class DrinksListState extends State<DrinksList>
   }
 
   Future<void> _refreshDrinksFromTable(bool forceRefresh) async {
-    final String query = '''
+    final String query =
+        '''
         SELECT 
           h.${tableModel.hashersTableHelper.colHasherId},
           coalesce(
@@ -172,136 +173,133 @@ class DrinksListState extends State<DrinksList>
 
   late AppBar appBar;
 
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> _ScaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       appBar: appBar,
-      key: _scaffoldKey,
+      key: _ScaffoldKey,
       body: SafeArea(
         child: Container(
           decoration: Backgrounds.defaultHcBackgroundLight(),
-          child:
-              _isLoading
-                  ? const HcAppCircularProgressIndicator(key: Key('52039320'))
-                  : _awards.isEmpty
-                  ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(30.0),
-                      child: Text(
-                        'No awards yet for this Hash',
-                        textAlign: TextAlign.center,
-                        style: ts_headingVeryLarge.copyWith(
-                          color: themeBackgroundColor,
-                        ),
+          child: _isLoading
+              ? const HcAppCircularProgressIndicator(key: Key('52039320'))
+              : _awards.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(30.0),
+                    child: Text(
+                      'No awards yet for this Hash',
+                      textAlign: TextAlign.center,
+                      style: ts_headingVeryLarge.copyWith(
+                        color: themeBackgroundColor,
                       ),
                     ),
-                  )
-                  : ListView.separated(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    itemCount: _awards.length,
-                    separatorBuilder:
-                        (BuildContext context, int index) =>
-                            const Divider(height: 1.0, color: Colors.black45),
-                    //padding: const EdgeInsets.only(top: 5),
-                    // separatorBuilder: (BuildContext context, int index) => const Divider(
-                    //   height: 1.0,
-                    //   color: Colors.black45,
-                    // ),
+                  ),
+                )
+              : ListView.separated(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: _awards.length,
+                  separatorBuilder: (BuildContext context, int index) =>
+                      const Divider(height: 1.0, color: Colors.black45),
+                  //padding: const EdgeInsets.only(top: 5),
+                  // separatorBuilder: (BuildContext context, int index) => const Divider(
+                  //   height: 1.0,
+                  //   color: Colors.black45,
+                  // ),
 
-                    //itemExtent: 58.0,
-                    //shrinkWrap: true,
-                    itemBuilder: (BuildContext context, int index) {
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          SizedBox(height: LIST_ITEM_HEIGHT, width: 10.0),
-                          Utilities.getProfilePic(
-                            _awards[index].photo,
-                            LIST_ITEM_ELEMENT_HEIGHT,
-                            LIST_ITEM_ELEMENT_HEIGHT,
-                            context,
-                            _awards[index].dispName,
-                          ),
-                          Expanded(
-                            child: Column(
-                              children: <Widget>[
+                  //itemExtent: 58.0,
+                  //shrinkWrap: true,
+                  itemBuilder: (BuildContext context, int index) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        SizedBox(height: LIST_ITEM_HEIGHT, width: 10.0),
+                        Utilities.getProfilePic(
+                          _awards[index].photo,
+                          LIST_ITEM_ELEMENT_HEIGHT,
+                          LIST_ITEM_ELEMENT_HEIGHT,
+                          context,
+                          _awards[index].dispName,
+                        ),
+                        Expanded(
+                          child: Column(
+                            children: <Widget>[
+                              FittedBox(
+                                child: Text(
+                                  _awards[index].dispName,
+                                  style: ts_titleLargeCondensedBlack,
+                                ),
+                              ),
+                              if (_awards[index].specialRunCount ==
+                                  1) ...<Widget>[
                                 FittedBox(
                                   child: Text(
-                                    _awards[index].dispName,
+                                    '1 run',
                                     style: ts_titleLargeCondensedBlack,
                                   ),
                                 ),
-                                if (_awards[index].specialRunCount ==
-                                    1) ...<Widget>[
-                                  FittedBox(
-                                    child: Text(
-                                      '1 run',
-                                      style: ts_titleLargeCondensedBlack,
-                                    ),
-                                  ),
-                                ],
-                                if (_awards[index].specialRunCount >
-                                    1) ...<Widget>[
-                                  FittedBox(
-                                    child: Text(
-                                      '${_awards[index].totalRunsThisKennel.toString()} runs',
-                                      style: ts_titleLargeCondensedBlack,
-                                    ),
-                                  ),
-                                ],
-                                if (_awards[index].specialHaringCount ==
-                                    1) ...<Widget>[
-                                  FittedBox(
-                                    child: Text(
-                                      'First time haring',
-                                      style: ts_titleLargeCondensedBlack,
-                                    ),
-                                  ),
-                                ],
-                                if (_awards[index].specialHaringCount >
-                                    1) ...<Widget>[
-                                  FittedBox(
-                                    child: Text(
-                                      '${_awards[index].totalHaringThisKennel.toString()} hared runs',
-                                      style: ts_titleLargeCondensedBlack,
-                                    ),
-                                  ),
-                                ],
                               ],
-                            ),
+                              if (_awards[index].specialRunCount >
+                                  1) ...<Widget>[
+                                FittedBox(
+                                  child: Text(
+                                    '${_awards[index].totalRunsThisKennel.toString()} runs',
+                                    style: ts_titleLargeCondensedBlack,
+                                  ),
+                                ),
+                              ],
+                              if (_awards[index].specialHaringCount ==
+                                  1) ...<Widget>[
+                                FittedBox(
+                                  child: Text(
+                                    'First time haring',
+                                    style: ts_titleLargeCondensedBlack,
+                                  ),
+                                ),
+                              ],
+                              if (_awards[index].specialHaringCount >
+                                  1) ...<Widget>[
+                                FittedBox(
+                                  child: Text(
+                                    '${_awards[index].totalHaringThisKennel.toString()} hared runs',
+                                    style: ts_titleLargeCondensedBlack,
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
-                          if (_awards[index].specialRunCount > 0) ...<Widget>[
-                            Image.asset(
-                              'images/run_count_icons/run_${_awards[index].specialRunCount}.png',
-                              height: LIST_ITEM_ELEMENT_HEIGHT,
-                              width: LIST_ITEM_ELEMENT_HEIGHT,
-                            ),
-                          ],
-                          if (_awards[index].specialHaringCount >
-                              0) ...<Widget>[
-                            Image.asset(
-                              'images/run_count_icons/rabbit_with_beer.png',
-                              height: LIST_ITEM_ELEMENT_HEIGHT,
-                              width: LIST_ITEM_ELEMENT_HEIGHT,
-                            ),
-                          ],
-                          const Divider(),
+                        ),
+                        if (_awards[index].specialRunCount > 0) ...<Widget>[
+                          Image.asset(
+                            'images/run_count_icons/run_${_awards[index].specialRunCount}.png',
+                            height: LIST_ITEM_ELEMENT_HEIGHT,
+                            width: LIST_ITEM_ELEMENT_HEIGHT,
+                          ),
                         ],
-                      );
+                        if (_awards[index].specialHaringCount > 0) ...<Widget>[
+                          Image.asset(
+                            'images/run_count_icons/rabbit_with_beer.png',
+                            height: LIST_ITEM_ELEMENT_HEIGHT,
+                            width: LIST_ITEM_ELEMENT_HEIGHT,
+                          ),
+                        ],
+                        const Divider(),
+                      ],
+                    );
 
-                      // return Container(
-                      //   height: 120.0,
-                      //   child: ListTile(
-                      //     dense: false,
-                      //     visualDensity: VisualDensity(vertical: 4), // to expand
-                      //     leading: SizedBox(height: 120.0, child: Utilities.getProfilePic(_awards[index].photo, 120.0, 120.0)),
-                      //     title: Text(_awards[index].dispName),
-                      //   ),
-                      // );
-                    },
-                  ),
+                    // return Container(
+                    //   height: 120.0,
+                    //   child: ListTile(
+                    //     dense: false,
+                    //     visualDensity: VisualDensity(vertical: 4), // to expand
+                    //     leading: SizedBox(height: 120.0, child: Utilities.getProfilePic(_awards[index].photo, 120.0, 120.0)),
+                    //     title: Text(_awards[index].dispName),
+                    //   ),
+                    // );
+                  },
+                ),
         ),
       ),
     );

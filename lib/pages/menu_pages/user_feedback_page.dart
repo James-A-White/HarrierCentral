@@ -13,7 +13,7 @@
 // class UserFeedbackPageState extends State<UserFeedbackPage> {
 //   @override
 //   Widget build(BuildContext context) {
-//     return Scaffold(
+//     return AppScaffold(
 //       appBar: AppBar(
 //         centerTitle: true,
 //         backgroundColor: Theme.of(context).primaryColor,

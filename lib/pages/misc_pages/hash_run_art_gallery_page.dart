@@ -16,8 +16,8 @@ class HashRunArtGalleryPage extends StatelessWidget {
       title: Text('Run Artwork', style: ts_appBarTitle),
     );
 
-    return Scaffold(
-      //key: scaffoldKey,
+    return AppScaffold(
+      //key: ScaffoldKey,
       appBar: appBar,
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
@@ -58,9 +58,8 @@ class HashRunArtGalleryPage extends StatelessWidget {
                           await Navigator.push<dynamic>(
                             navigatorKey.currentContext!,
                             MaterialPageRoute<dynamic>(
-                              builder:
-                                  (BuildContext context) =>
-                                      RunDetailsPage(futureRun: run),
+                              builder: (BuildContext context) =>
+                                  RunDetailsPage(futureRun: run),
                             ),
                           );
                         }
@@ -69,8 +68,8 @@ class HashRunArtGalleryPage extends StatelessWidget {
                         Navigator.push<void>(
                           context,
                           MaterialPageRoute<void>(
-                            builder:
-                                (BuildContext context) => ZoomableImagePage2(
+                            builder: (BuildContext context) =>
+                                ZoomableImagePage2(
                                   key: const Key('50201112'),
                                   pageTitle: 'Zoomable Event Image',
                                   imageUrl:
@@ -85,13 +84,14 @@ class HashRunArtGalleryPage extends StatelessWidget {
                       },
                       child: Image.network(
                         item[tableModel.eventsTableHelper.colEventImage],
-                        errorBuilder: (
-                          BuildContext context,
-                          Object error,
-                          StackTrace? stackTrace,
-                        ) {
-                          return Container();
-                        },
+                        errorBuilder:
+                            (
+                              BuildContext context,
+                              Object error,
+                              StackTrace? stackTrace,
+                            ) {
+                              return Container();
+                            },
                       ),
                     ),
                     const SizedBox(height: 10.0),
@@ -106,21 +106,21 @@ class HashRunArtGalleryPage extends StatelessWidget {
                     item[tableModel.eventsTableHelper.colEventStartDatetime] !=
                             null
                         ? Padding(
-                          padding: const EdgeInsets.only(top: 15.0),
-                          child: Text(
-                            DateFormat("E, MMM d, yyyy 'at' h:mm a").format(
-                              DateTime.parse(
-                                item[tableModel
-                                    .eventsTableHelper
-                                    .colEventStartDatetime],
+                            padding: const EdgeInsets.only(top: 15.0),
+                            child: Text(
+                              DateFormat("E, MMM d, yyyy 'at' h:mm a").format(
+                                DateTime.parse(
+                                  item[tableModel
+                                      .eventsTableHelper
+                                      .colEventStartDatetime],
+                                ),
                               ),
+                              style: ts_title.copyWith(
+                                color: Colors.grey.shade500,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
-                            style: ts_title.copyWith(
-                              color: Colors.grey.shade500,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        )
+                          )
                         : Container(),
                   ],
                 ),

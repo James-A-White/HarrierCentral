@@ -12,7 +12,7 @@ class CheckInScannerPage extends StatefulWidget {
 //final GlobalKey _qrKey = GlobalKey(debugLabel: 'QR');
 bool _isScanningAtRunStart = true;
 
-final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+final GlobalKey<ScaffoldState> _ScaffoldKey = GlobalKey<ScaffoldState>();
 
 class CheckInScannerPageState extends State<CheckInScannerPage> {
   @override
@@ -40,8 +40,8 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
+    return AppScaffold(
+      key: _ScaffoldKey,
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
@@ -87,14 +87,17 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
                                   }
                                   return null; // Use the component's default.
                                 }),
-                            textStyle: WidgetStateProperty.resolveWith<
-                              TextStyle?
-                            >((Set<WidgetState> states) {
-                              if (states.contains(WidgetState.disabled)) {
-                                return TextStyle(color: Colors.grey.shade200);
-                              }
-                              return null; // Use the component's default.
-                            }),
+                            textStyle:
+                                WidgetStateProperty.resolveWith<TextStyle?>((
+                                  Set<WidgetState> states,
+                                ) {
+                                  if (states.contains(WidgetState.disabled)) {
+                                    return TextStyle(
+                                      color: Colors.grey.shade200,
+                                    );
+                                  }
+                                  return null; // Use the component's default.
+                                }),
                           ),
                           child: Text(
                             ((_state == EQrScannerState.scanning) &&
@@ -181,14 +184,17 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
                                   }
                                   return null; // Use the component's default.
                                 }),
-                            textStyle: WidgetStateProperty.resolveWith<
-                              TextStyle?
-                            >((Set<WidgetState> states) {
-                              if (states.contains(WidgetState.disabled)) {
-                                return TextStyle(color: Colors.grey.shade200);
-                              }
-                              return null; // Use the component's default.
-                            }),
+                            textStyle:
+                                WidgetStateProperty.resolveWith<TextStyle?>((
+                                  Set<WidgetState> states,
+                                ) {
+                                  if (states.contains(WidgetState.disabled)) {
+                                    return TextStyle(
+                                      color: Colors.grey.shade200,
+                                    );
+                                  }
+                                  return null; // Use the component's default.
+                                }),
                           ),
                           onPressed: () async {
                             _isScanningAtRunStart = false;
@@ -346,10 +352,9 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
 
     if (result['validScan'] == 'false') {
       setState(() {
-        _onScreenMessage =
-            result['validHcQr'] == 'true'
-                ? 'This QR code is not valid here'
-                : 'QR code not recignized';
+        _onScreenMessage = result['validHcQr'] == 'true'
+            ? 'This QR code is not valid here'
+            : 'QR code not recignized';
       });
     } else {
       if ((result['prefix'] != null) && (result['content'] != null)) {
@@ -363,10 +368,9 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
           setState(() {
             _onScreenMessage = 'Processing QR Scan';
           });
-          final int attendenceState =
-              _isScanningAtRunStart
-                  ? attendenceAtHash.value
-                  : attendenceOnIn.value;
+          final int attendenceState = _isScanningAtRunStart
+              ? attendenceAtHash.value
+              : attendenceOnIn.value;
 
           final List<dynamic> adHocData = await tableModel.hasherEventMapService
               .setEventAttendence(
@@ -378,10 +382,9 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
               );
 
           if (adHocData.isNotEmpty) {
-            double amountOwed =
-                adHocData[0]['isMember'] == 1
-                    ? widget.eventAggregate.extensions.memberPrice
-                    : widget.eventAggregate.extensions.nonMemberPrice;
+            double amountOwed = adHocData[0]['isMember'] == 1
+                ? widget.eventAggregate.extensions.memberPrice
+                : widget.eventAggregate.extensions.nonMemberPrice;
 
             final num discountAmount = adHocData[0]['discountAmount'];
             final int discountPercent = adHocData[0]['discountPercent'];
@@ -393,7 +396,7 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
             if (!mounted) return;
             IveCoreUtilities.showInSnackBar(
               context,
-              _scaffoldKey,
+              _ScaffoldKey,
               adHocData[0]['userMessage'],
               durationInSeconds: 5,
             );

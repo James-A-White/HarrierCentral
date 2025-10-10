@@ -45,7 +45,7 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
           left: 0,
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
-          child: Scaffold(
+          child: AppScaffold(
             appBar: AppBar(
               title: Text('Privacy Policy', style: ts_appBarTitle),
               backgroundColor: themeAppBarBackground,
@@ -62,14 +62,12 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
                         'Open Privacy Policy',
                         style: ts_headingLarge,
                       ),
-                      onPressed:
-                          () => Navigator.push<dynamic>(
-                            context,
-                            MaterialPageRoute<dynamic>(
-                              builder:
-                                  (BuildContext context) => PDFScreen(pathPDF),
-                            ),
-                          ),
+                      onPressed: () => Navigator.push<dynamic>(
+                        context,
+                        MaterialPageRoute<dynamic>(
+                          builder: (BuildContext context) => PDFScreen(pathPDF),
+                        ),
+                      ),
                     ),
                     Container(
                       margin: const EdgeInsets.all(30),
@@ -109,7 +107,7 @@ class PDFScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     //return Container();
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: Text('Privacy Policy', style: ts_appBarTitle),
         backgroundColor: themeAppBarBackground,

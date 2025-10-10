@@ -18,7 +18,7 @@ class CheckInPackController extends GetxController
   CheckInPackController(this.eventAggregate);
 
   final GlobalKey packListBoxKey = GlobalKey();
-  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> ScaffoldKey = GlobalKey<ScaffoldState>();
 
   bool isLoading = true;
   final RxList<CheckInPackModel> packList = <CheckInPackModel>[].obs;
@@ -94,7 +94,8 @@ class CheckInPackController extends GetxController
     final offsetFromGmtToLocal = Utilities.getSqfliteTimeOffset();
 
     try {
-      final String sql = '''
+      final String sql =
+          '''
       SELECT 
           h.${tableModel.hashersTableHelper.colHasherId} AS hasherId,
           hem.${tableModel.hasherEventMapTableHelper.colHemId} AS hemId,
@@ -167,7 +168,7 @@ class CheckInPackController extends GetxController
 
     if (showLoadingIndicator) {
       isLoading = true;
-      update(['scaffold']);
+      update(['AppScaffold']);
     }
 
     await tableModel.syncEventAdminService.updateFromBackend(
@@ -185,7 +186,8 @@ class CheckInPackController extends GetxController
 
   Future<void> _refreshCounters({bool forceRefresh = false}) async {
     try {
-      final String sql = '''
+      final String sql =
+          '''
       SELECT 
         COUNT(CASE WHEN attendenceState >= 20 THEN 1 ELSE NULL END) as atHash,
         COUNT(CASE WHEN pay.paymentType >= 2 THEN 1 ELSE NULL END) as paid,
@@ -212,28 +214,27 @@ class CheckInPackController extends GetxController
       }
 
       // Calculate drinkCount based on packList
-      final specialRunNumbers =
-          packList.where((a) {
-            final atHash = a.attendenceState >= attendenceAtHash.value;
-            final specialRun =
-                Utilities.checkSpecialRun(
-                  a.totalRunsThisKennel + a.historicalTotalRunCount,
+      final specialRunNumbers = packList.where((a) {
+        final atHash = a.attendenceState >= attendenceAtHash.value;
+        final specialRun =
+            Utilities.checkSpecialRun(
+              a.totalRunsThisKennel + a.historicalTotalRunCount,
+            ) !=
+            0;
+        final specialHaring =
+            a.isHare == 1 &&
+            Utilities.checkSpecialHaring(
+                  a.totalHaringThisKennel + a.historicalHaringCount,
                 ) !=
                 0;
-            final specialHaring =
-                a.isHare == 1 &&
-                Utilities.checkSpecialHaring(
-                      a.totalHaringThisKennel + a.historicalHaringCount,
-                    ) !=
-                    0;
-            return atHash && (specialRun || specialHaring);
-          }).toList();
+        return atHash && (specialRun || specialHaring);
+      }).toList();
 
       drinkCount.value = specialRunNumbers.length;
 
       if (forceRefresh) {
         isLoading = false;
-        update(['scaffold']);
+        update(['AppScaffold']);
       }
     } catch (e) {
       debugPrint('Error in _refreshCounters: $e');
@@ -244,7 +245,8 @@ class CheckInPackController extends GetxController
     final offsetFromGmtToLocal = Utilities.getSqfliteTimeOffset();
 
     try {
-      final String sql = '''
+      final String sql =
+          '''
       SELECT 
           h.${tableModel.hashersTableHelper.colHasherId} AS hasherId,
           hem.${tableModel.hasherEventMapTableHelper.colHemId} AS hemId,
@@ -451,7 +453,7 @@ class CheckInPackController extends GetxController
 
       if (forceRefresh) {
         isLoading = false;
-        update(['scaffold']);
+        update(['AppScaffold']);
       }
 
       filterPackListResults();
@@ -472,60 +474,56 @@ class CheckInPackController extends GetxController
     List<CheckInPackModel> results = [...packList];
 
     if (applyFilters) {
-      results =
-          results.where((a) {
-            return ((filterValues[0].value == 0) ||
-                    (filterValues[0].value == -1 && a.rsvpState <= 1) ||
-                    (filterValues[0].value == 1 && a.rsvpState >= 2)) &&
-                ((filterValues[1].value == 0) ||
-                    (filterValues[1].value == 1 &&
-                        a.attendenceState < 20 &&
-                        a.rsvpState >= 2)) &&
-                ((filterValues[2].value == 0) ||
-                    (filterValues[2].value == -1 && a.attendenceState < 20) ||
-                    (filterValues[2].value == 1 && a.attendenceState >= 20)) &&
-                ((filterValues[3].value == 0) ||
-                    (filterValues[3].value == -1 &&
-                        (a.isPaid == 0 || a.isPaid == null)) ||
-                    (filterValues[3].value == 1 && a.isPaid == 1)) &&
-                ((filterValues[4].value == 0) ||
-                    (filterValues[4].value == -1 && a.attendenceState < 30) ||
-                    (filterValues[4].value == 1 && a.attendenceState >= 30)) &&
-                ((filterValues[5].value == 0) ||
-                    (filterValues[5].value == -1 && a.isMember == 0) ||
-                    (filterValues[5].value == 1 && a.isMember == 1)) &&
-                ((filterValues[6].value == 0) ||
-                    (filterValues[6].value == -1) ||
-                    (filterValues[6].value == 1 &&
-                        a.attendenceState >= attendenceAtHash.value &&
-                        (Utilities.checkSpecialRun(
-                                  a.totalRunsThisKennel +
-                                      a.historicalTotalRunCount,
+      results = results.where((a) {
+        return ((filterValues[0].value == 0) ||
+                (filterValues[0].value == -1 && a.rsvpState <= 1) ||
+                (filterValues[0].value == 1 && a.rsvpState >= 2)) &&
+            ((filterValues[1].value == 0) ||
+                (filterValues[1].value == 1 &&
+                    a.attendenceState < 20 &&
+                    a.rsvpState >= 2)) &&
+            ((filterValues[2].value == 0) ||
+                (filterValues[2].value == -1 && a.attendenceState < 20) ||
+                (filterValues[2].value == 1 && a.attendenceState >= 20)) &&
+            ((filterValues[3].value == 0) ||
+                (filterValues[3].value == -1 &&
+                    (a.isPaid == 0 || a.isPaid == null)) ||
+                (filterValues[3].value == 1 && a.isPaid == 1)) &&
+            ((filterValues[4].value == 0) ||
+                (filterValues[4].value == -1 && a.attendenceState < 30) ||
+                (filterValues[4].value == 1 && a.attendenceState >= 30)) &&
+            ((filterValues[5].value == 0) ||
+                (filterValues[5].value == -1 && a.isMember == 0) ||
+                (filterValues[5].value == 1 && a.isMember == 1)) &&
+            ((filterValues[6].value == 0) ||
+                (filterValues[6].value == -1) ||
+                (filterValues[6].value == 1 &&
+                    a.attendenceState >= attendenceAtHash.value &&
+                    (Utilities.checkSpecialRun(
+                              a.totalRunsThisKennel + a.historicalTotalRunCount,
+                            ) !=
+                            0 ||
+                        (a.isHare == 1 &&
+                            Utilities.checkSpecialHaring(
+                                  a.totalHaringThisKennel +
+                                      a.historicalHaringCount,
                                 ) !=
-                                0 ||
-                            (a.isHare == 1 &&
-                                Utilities.checkSpecialHaring(
-                                      a.totalHaringThisKennel +
-                                          a.historicalHaringCount,
-                                    ) !=
-                                    0))));
-          }).toList();
+                                0))));
+      }).toList();
     }
 
     if (hasSearch || forceShowAllHashers.value) {
-      final List<CheckInPackModel> filteredByName =
-          results
-              .where((a) => a.nameForSort.toLowerCase().contains(query))
-              .toList();
+      final List<CheckInPackModel> filteredByName = results
+          .where((a) => a.nameForSort.toLowerCase().contains(query))
+          .toList();
 
       if ((filteredByName.isNotEmpty) && (!forceShowAllHashers.value)) {
         filteredList.assignAll(filteredByName);
         searchTypeText.value = searchKennel;
       } else {
-        final fallback =
-            allHashers
-                .where((a) => a.nameForSort.toLowerCase().contains(query))
-                .toList();
+        final fallback = allHashers
+            .where((a) => a.nameForSort.toLowerCase().contains(query))
+            .toList();
         filteredList.assignAll(fallback);
         searchTypeText.value = searchAllHashers;
       }
@@ -570,10 +568,9 @@ class CheckInPackController extends GetxController
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
     if (eventAggregate.extensions.appAccess.canManageRuns) {
-      final double baseAmount =
-          hasher.isMember != 1
-              ? eventAggregate.extensions.nonMemberPrice
-              : eventAggregate.extensions.memberPrice;
+      final double baseAmount = hasher.isMember != 1
+          ? eventAggregate.extensions.nonMemberPrice
+          : eventAggregate.extensions.memberPrice;
 
       double amountOwed = baseAmount - hasher.discountAmount;
       amountOwed -= amountOwed * (hasher.discountPercent / 100.0);
@@ -584,32 +581,33 @@ class CheckInPackController extends GetxController
         packMember: hasher,
         amountOwed: amountOwed,
         multiSelectEnabled: showMultiSelect.value,
-        onRsvpCallback: (
-          updated, {
-          rsvpState = -1,
-          attendenceState = -1,
-          isHare = -1,
-        }) async {
-          ScaffoldMessenger.of(
-            context,
-          ).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
-          if (rsvpState != -1 && attendenceState == -1) {
-            rsvpIndexUpdating.value = index;
-            await updateRsvpState(updated, rsvpState, isHare);
-            rsvpIndexUpdating.value = null;
-          } else if (attendenceState != -1) {
-            attendanceIndexUpdating.value = index;
-            await updateAttendenceState(
-              updated,
-              rsvpState,
-              attendenceState,
-              isHare,
-            );
-            attendanceIndexUpdating.value = null;
-          }
-          await refreshPackListFromTables(false);
-          await _refreshCounters(forceRefresh: true);
-        },
+        onRsvpCallback:
+            (
+              updated, {
+              rsvpState = -1,
+              attendenceState = -1,
+              isHare = -1,
+            }) async {
+              ScaffoldMessenger.of(
+                context,
+              ).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
+              if (rsvpState != -1 && attendenceState == -1) {
+                rsvpIndexUpdating.value = index;
+                await updateRsvpState(updated, rsvpState, isHare);
+                rsvpIndexUpdating.value = null;
+              } else if (attendenceState != -1) {
+                attendanceIndexUpdating.value = index;
+                await updateAttendenceState(
+                  updated,
+                  rsvpState,
+                  attendenceState,
+                  isHare,
+                );
+                attendanceIndexUpdating.value = null;
+              }
+              await refreshPackListFromTables(false);
+              await _refreshCounters(forceRefresh: true);
+            },
         onPaidCallback: (updated, paymentType, {userInput}) async {
           ScaffoldMessenger.of(
             context,
@@ -619,13 +617,13 @@ class CheckInPackController extends GetxController
           if (showMultiSelect.value) {
             await bulkPayForEvent(
               context,
-              scaffoldKey.currentState!,
+              ScaffoldKey.currentState!,
               paymentType,
             );
           } else {
             await payForEvent(
               context,
-              scaffoldKey.currentState!,
+              ScaffoldKey.currentState!,
               paymentType,
               index,
               userInput?.totalAmount,
@@ -648,7 +646,7 @@ class CheckInPackController extends GetxController
 
   Future<void> bulkPayForEvent(
     BuildContext context,
-    ScaffoldState scaffoldState,
+    ScaffoldState ScaffoldState,
     int paymentType,
   ) async {
     ScaffoldMessenger.of(
@@ -666,7 +664,7 @@ class CheckInPackController extends GetxController
 
   Future<void> payForEvent(
     BuildContext context,
-    ScaffoldState scaffoldState,
+    ScaffoldState ScaffoldState,
     int paymentType,
     int index,
     double? otherAmount, {
@@ -805,10 +803,9 @@ class CheckInPackController extends GetxController
 
     final String? hemId = filteredList[index].hemId;
     final String? hasherId = filteredList[index].hasherId;
-    double amount =
-        filteredList[index].isMember != 0
-            ? eventAggregate.extensions.memberPrice
-            : eventAggregate.extensions.nonMemberPrice;
+    double amount = filteredList[index].isMember != 0
+        ? eventAggregate.extensions.memberPrice
+        : eventAggregate.extensions.nonMemberPrice;
     if ((otherAmount != null) && (otherAmount != -1)) {
       amount = otherAmount;
     }
@@ -935,18 +932,18 @@ class CheckInPackController extends GetxController
   bool shouldHighlightHasher(CheckInPackModel hasher) {
     var doHighlightRow =
         ((eventAggregate.event.isCountedRun == 1) &&
-            (hasher.attendenceState >= attendenceAtHash.value) &&
-            ((Utilities.checkSpecialRun(
-                      (hasher.totalRunsThisKennel) +
-                          (hasher.historicalTotalRunCount),
+        (hasher.attendenceState >= attendenceAtHash.value) &&
+        ((Utilities.checkSpecialRun(
+                  (hasher.totalRunsThisKennel) +
+                      (hasher.historicalTotalRunCount),
+                ) !=
+                specialRunNo) ||
+            ((hasher.isHare == 1) &&
+                (Utilities.checkSpecialRun(
+                      (hasher.totalHaringThisKennel) +
+                          (hasher.historicalHaringCount),
                     ) !=
-                    specialRunNo) ||
-                ((hasher.isHare == 1) &&
-                    (Utilities.checkSpecialRun(
-                          (hasher.totalHaringThisKennel) +
-                              (hasher.historicalHaringCount),
-                        ) !=
-                        specialRunNo))));
+                    specialRunNo))));
 
     return doHighlightRow;
   }
@@ -1021,40 +1018,40 @@ class CheckInPackController extends GetxController
                 //         : Colors.white)
                 //     : Colors.white,
                 ((attendanceState == null) ||
-                        (attendanceState == attendenceUnknown.value) ||
-                        (rsvpState == rsvpNo.value))
-                    ? attendanceIndexUpdating.value != index
-                        ? Colors.grey[350]
-                        : Colors.white
-                    : Colors.white,
+                    (attendanceState == attendenceUnknown.value) ||
+                    (rsvpState == rsvpNo.value))
+                ? attendanceIndexUpdating.value != index
+                      ? Colors.grey[350]
+                      : Colors.white
+                : Colors.white,
             radius: 14.0,
           ),
           index == attendanceIndexUpdating.value
               ? Icon(delayIcon, color: hc_blue)
               : ((attendanceState == attendenceUnknown.value) ||
-                  (rsvpState == rsvpNo.value))
+                    (rsvpState == rsvpNo.value))
               ? Container()
               : attendanceState == attendenceNo.value
               ? Image.asset(
-                'images/icons/not_at_hash_icon.png',
-                height: 24.0,
-                width: 24.0,
-                color: hc_red,
-              )
+                  'images/icons/not_at_hash_icon.png',
+                  height: 24.0,
+                  width: 24.0,
+                  color: hc_red,
+                )
               : attendanceState == attendenceAtHash.value
               ? Image.asset(
-                'images/icons/runner_icon.png',
-                height: 24.0,
-                width: 24.0,
-                color: Colors.orange,
-              )
+                  'images/icons/runner_icon.png',
+                  height: 24.0,
+                  width: 24.0,
+                  color: Colors.orange,
+                )
               : attendanceState! >= attendenceOnIn.value
               ? Image.asset(
-                'images/icons/beer_icon.png',
-                height: 24.0,
-                width: 24.0,
-                color: Colors.green,
-              )
+                  'images/icons/beer_icon.png',
+                  height: 24.0,
+                  width: 24.0,
+                  color: Colors.green,
+                )
               : Container(),
         ],
       ),
@@ -1082,12 +1079,11 @@ class CheckInPackController extends GetxController
         children: <Widget>[
           Container(height: 30, width: 30, color: Colors.transparent),
           CircleAvatar(
-            backgroundColor:
-                paymentIndexUpdating.value == index
-                    ? Colors.white
-                    : ((isPaid == null))
-                    ? Colors.grey[350]
-                    : Colors.white,
+            backgroundColor: paymentIndexUpdating.value == index
+                ? Colors.white
+                : ((isPaid == null))
+                ? Colors.grey[350]
+                : Colors.white,
             radius: 14.0,
           ),
           index == paymentIndexUpdating.value
@@ -1096,18 +1092,18 @@ class CheckInPackController extends GetxController
               ? Container()
               : isPaid == isPaidNo.value
               ? Image.asset(
-                'images/icons/dollar_sign_icon.png',
-                height: 24.0,
-                width: 24.0,
-                color: hc_red,
-              )
+                  'images/icons/dollar_sign_icon.png',
+                  height: 24.0,
+                  width: 24.0,
+                  color: hc_red,
+                )
               : isPaid == isPaidYes.value
               ? Image.asset(
-                'images/icons/payment_type_$paymentType.png',
-                height: 24.0,
-                width: 24.0,
-                color: Colors.green,
-              )
+                  'images/icons/payment_type_$paymentType.png',
+                  height: 24.0,
+                  width: 24.0,
+                  color: Colors.green,
+                )
               : Container(),
         ],
       ),
@@ -1126,10 +1122,9 @@ class CheckInPackController extends GetxController
         children: <Widget>[
           Container(height: 30, width: 30, color: Colors.transparent),
           CircleAvatar(
-            backgroundColor:
-                ((rsvpState == null) || (rsvpState == 0))
-                    ? Colors.grey[350]
-                    : Colors.white,
+            backgroundColor: ((rsvpState == null) || (rsvpState == 0))
+                ? Colors.grey[350]
+                : Colors.white,
             radius: 14.0,
           ),
           index == rsvpIndexUpdating.value
@@ -1140,22 +1135,22 @@ class CheckInPackController extends GetxController
               ? Icon(FontAwesome.times_circle, color: hc_red, size: 27.0)
               : rsvpState == rsvpMaybe.value
               ? const Icon(
-                FontAwesome.question_circle,
-                color: Colors.orange,
-                size: 27.0,
-              )
+                  FontAwesome.question_circle,
+                  color: Colors.orange,
+                  size: 27.0,
+                )
               : (isHare ?? 0) == 0
               ? const Icon(
-                FontAwesome.check_circle,
-                color: Colors.green,
-                size: 27.0,
-              )
+                  FontAwesome.check_circle,
+                  color: Colors.green,
+                  size: 27.0,
+                )
               : Image.asset(
-                'images/icons/hare_icon.png',
-                color: Colors.deepPurple,
-                height: 24.0,
-                width: 24.0,
-              ),
+                  'images/icons/hare_icon.png',
+                  color: Colors.deepPurple,
+                  height: 24.0,
+                  width: 24.0,
+                ),
         ],
       ),
     );
@@ -1223,7 +1218,7 @@ class CheckInPackController extends GetxController
         //       if (scrollIndex != null) {
         //         final SnackBar snackBar = _buildRsvpAndPaymentSnackbar(
         //           navigatorKey.currentContext!,
-        //           _scaffoldKey.currentState!,
+        //           _ScaffoldKey.currentState!,
         //           scrollIndex!,
         //         );
 

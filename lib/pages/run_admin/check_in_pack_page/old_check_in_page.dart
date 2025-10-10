@@ -737,7 +737,7 @@
 //                     if (scrollIndex != null) {
 //                       final SnackBar snackBar = _buildRsvpAndPaymentSnackbar(
 //                         navigatorKey.currentContext!,
-//                         _scaffoldKey.currentState!,
+//                         _ScaffoldKey.currentState!,
 //                         scrollIndex!,
 //                       );
 
@@ -776,7 +776,7 @@
 //     // dlg.whenComplete(action)
 //   }
 
-//   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+//   final GlobalKey<ScaffoldState> _ScaffoldKey = GlobalKey<ScaffoldState>();
 
 //   AppBar _getAppBar(String title) {
 //     return AppBar(
@@ -1198,8 +1198,8 @@
 
 //   @override
 //   Widget build(BuildContext context) {
-//     return Scaffold(
-//       key: _scaffoldKey,
+//     return AppScaffold(
+//       key: _ScaffoldKey,
 //       floatingActionButton: SpeedDial(
 //         // both default to 16
 //         // marginEnd: 18,
@@ -1394,7 +1394,7 @@
 
 //   SnackBar _buildRsvpAndPaymentSnackbar(
 //     BuildContext context,
-//     ScaffoldState scaffoldState,
+//     ScaffoldState ScaffoldState,
 //     int index,
 //   ) {
 //     double amountOwed =
@@ -1475,7 +1475,7 @@
 //         });
 //         await _payForEvent(
 //           context,
-//           scaffoldState,
+//           ScaffoldState,
 //           paymentType,
 //           index,
 //           totalDue,
@@ -1491,7 +1491,7 @@
 
 //   Future<void> _payForEvent(
 //     BuildContext context,
-//     ScaffoldState scaffoldState,
+//     ScaffoldState ScaffoldState,
 //     int paymentType,
 //     int index,
 //     double? otherAmount, {
@@ -1732,7 +1732,7 @@
 //         if (widget.eventAggregate.extensions.appAccess.canManageRuns) {
 //           final SnackBar snackBar = _buildRsvpAndPaymentSnackbar(
 //             context,
-//             _scaffoldKey.currentState!,
+//             _ScaffoldKey.currentState!,
 //             index,
 //           );
 
@@ -2162,7 +2162,7 @@
 //                         if (packMember.isPaid != 1) {
 //                           _payForEvent(
 //                             context,
-//                             _scaffoldKey.currentState!,
+//                             _ScaffoldKey.currentState!,
 //                             paymentBankTransfer.value,
 //                             index,
 //                             -1,
@@ -2256,7 +2256,7 @@
 //                         if (packMember.isPaid != 1) {
 //                           _payForEvent(
 //                             context,
-//                             _scaffoldKey.currentState!,
+//                             _ScaffoldKey.currentState!,
 //                             paymentCash.value,
 //                             index,
 //                             -1,

@@ -23,7 +23,7 @@ class NewAccountPageState extends State<NewAccountPage> {
           left: 0,
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
-          child: Scaffold(
+          child: AppScaffold(
             appBar: AppBar(
               centerTitle: true,
               backgroundColor: themeAppBarBackground,
@@ -102,9 +102,8 @@ class NewAccountPageContentState extends State<NewAccountPageContent> {
                     Navigator.pushReplacement<dynamic, dynamic>(
                       context,
                       MaterialPageRoute<dynamic>(
-                        builder:
-                            (BuildContext context) =>
-                                const CreateNewAccountPage(),
+                        builder: (BuildContext context) =>
+                            const CreateNewAccountPage(),
                       ),
                     );
                   },
@@ -159,8 +158,8 @@ class NewAccountPageContentState extends State<NewAccountPageContent> {
                     Navigator.push<dynamic>(
                       context,
                       MaterialPageRoute<dynamic>(
-                        builder:
-                            (BuildContext context) => const UseInviteCodePage(),
+                        builder: (BuildContext context) =>
+                            const UseInviteCodePage(),
                       ),
                     );
                   },
@@ -217,9 +216,8 @@ class NewAccountPageContentState extends State<NewAccountPageContent> {
                     Navigator.pushReplacement<dynamic, dynamic>(
                       context,
                       MaterialPageRoute<dynamic>(
-                        builder:
-                            (BuildContext context) =>
-                                const ThirdPartyLogin(true),
+                        builder: (BuildContext context) =>
+                            const ThirdPartyLogin(true),
                       ),
                     );
                   },

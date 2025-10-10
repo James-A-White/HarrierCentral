@@ -74,6 +74,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   bool _isLoading = true;
   bool _isDirty = false;
   bool _addAsKennelFollower = false;
+  bool _userRunHistoryLoading = false;
   String _photoPrefix = '';
   String _newPhoto = 'bundle://avatar-${Random.secure().nextInt(49) + 1}';
   late HashersModel _hasher;
@@ -87,7 +88,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   }
 
   Future<void> _refreshUserDataFromTable(bool forceRefresh) async {
-    String query = '''
+    String query =
+        '''
         SELECT 
           h.*
           FROM hashers h
@@ -130,7 +132,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           //final String resultStr = res ? 'successfully' : 'unsuccessfully';
           //print('Kennel data synchronized in hasher profile page $resultStr @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
 
-          query = '''
+          query =
+              '''
 
           SELECT 
             h.*,
@@ -172,10 +175,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         _newPhoto =
             _hasher.photo ??
             _newPhoto; // if we have returned from the photo chooser, don't overwrite
-        _previousRunCountController.text =
-            (_historicalTotalRunCount ?? 0).toString();
-        _previousHaringCountController.text =
-            (_historicalHaringCount ?? 0).toString();
+        _previousRunCountController.text = (_historicalTotalRunCount ?? 0)
+            .toString();
+        _previousHaringCountController.text = (_historicalHaringCount ?? 0)
+            .toString();
         _historicalCountIsEstimateWidget =
             (_historicalCountIsEstimate ?? false);
 
@@ -349,7 +352,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     );
   }
 
-  GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+  GlobalKey<ScaffoldState> ScaffoldKey = GlobalKey<ScaffoldState>();
 
   Future<void> _updateProfile() async {
     if (_profileFormKey.currentState!.validate()) {
@@ -628,263 +631,248 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           left: 0,
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
-          child: Scaffold(
-            key: scaffoldKey,
+          child: AppScaffold(
+            key: ScaffoldKey,
             appBar: appBar,
-            body:
-                _isLoading
-                    ? Container(
-                      height:
-                          MediaQuery.of(context).size.height -
-                          (appBar?.preferredSize.height ?? 0),
-                      decoration: Backgrounds.defaultHcBackground(),
-                      child: _buildCircularProgressIndicator(),
-                    )
-                    : Container(
-                      decoration: Backgrounds.defaultHcBackground(),
-                      height:
-                          MediaQuery.of(context).size.height -
-                          (appBar?.preferredSize.height ?? 0),
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onPanDown: (_) {
-                          FocusScope.of(context).requestFocus(FocusNode());
-                        },
-                        child: SingleChildScrollView(
-                          child: Padding(
-                            padding: const EdgeInsets.only(
-                              top: 30,
-                              left: 20,
-                              right: 20,
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: <Widget>[
-                                SizedBox(
-                                  width: MediaQuery.of(context).size.width,
-                                  child: Column(
-                                    children: <Widget>[
-                                      Text(
-                                        widget.pageType ==
-                                                EnumMyProfilePageType.myProfile
-                                            ? 'My Profile Information'
-                                            : 'Hasher Profile Information',
-                                        style: ts_headingLarge,
-                                        textAlign: TextAlign.center,
+            body: _isLoading
+                ? Container(
+                    height:
+                        MediaQuery.of(context).size.height -
+                        (appBar?.preferredSize.height ?? 0),
+                    decoration: Backgrounds.defaultHcBackground(),
+                    child: _buildCircularProgressIndicator(),
+                  )
+                : Container(
+                    decoration: Backgrounds.defaultHcBackground(),
+                    height:
+                        MediaQuery.of(context).size.height -
+                        (appBar?.preferredSize.height ?? 0),
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onPanDown: (_) {
+                        FocusScope.of(context).requestFocus(FocusNode());
+                      },
+                      child: SingleChildScrollView(
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                            top: 30,
+                            left: 20,
+                            right: 20,
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: <Widget>[
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width,
+                                child: Column(
+                                  children: <Widget>[
+                                    Text(
+                                      widget.pageType ==
+                                              EnumMyProfilePageType.myProfile
+                                          ? 'My Profile Information'
+                                          : 'Hasher Profile Information',
+                                      style: ts_headingLarge,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    Container(
+                                      padding: EdgeInsets.only(
+                                        top: 30.0,
+                                        left:
+                                            (deviceInfo.deviceWidthScaleFactor -
+                                                1) *
+                                            30,
+                                        right:
+                                            (deviceInfo.deviceWidthScaleFactor -
+                                                1) *
+                                            30,
                                       ),
-                                      Container(
-                                        padding: EdgeInsets.only(
-                                          top: 30.0,
-                                          left:
-                                              (deviceInfo
-                                                      .deviceWidthScaleFactor -
-                                                  1) *
-                                              30,
-                                          right:
-                                              (deviceInfo
-                                                      .deviceWidthScaleFactor -
-                                                  1) *
-                                              30,
-                                        ),
-                                        child: Center(
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: <Widget>[
-                                              Container(
-                                                padding: const EdgeInsets.all(
-                                                  10.0,
-                                                ),
-                                                margin: const EdgeInsets.only(
-                                                  bottom: 30,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.yellow[100],
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                        5.0,
-                                                      ),
-                                                ),
-                                                child: Form(
-                                                  key: _profileFormKey,
-                                                  autovalidateMode:
-                                                      _autoValidate
-                                                          ? AutovalidateMode
-                                                              .always
-                                                          : AutovalidateMode
-                                                              .disabled,
-                                                  child: profileFormUi(),
-                                                ),
+                                      child: Center(
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: <Widget>[
+                                            Container(
+                                              padding: const EdgeInsets.all(
+                                                10.0,
                                               ),
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                  color: Colors.yellow[100],
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                        5.0,
-                                                      ),
-                                                ),
-                                                child: RadioGroup(
-                                                  groupValue:
-                                                      _nameDisplayPreference,
-                                                  onChanged:
-                                                      _handleRadioValueChange0,
-                                                  child: Column(
-                                                    children: <Widget>[
-                                                      const SizedBox(
-                                                        height: 10,
-                                                        width: 10,
-                                                      ),
-                                                      Text(
-                                                        'Name Preference',
-                                                        style: ts_headingBlack,
-                                                      ),
-                                                      const SizedBox(
-                                                        height: 10,
-                                                        width: 10,
-                                                      ),
+                                              margin: const EdgeInsets.only(
+                                                bottom: 30,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.yellow[100],
+                                                borderRadius:
+                                                    BorderRadius.circular(5.0),
+                                              ),
+                                              child: Form(
+                                                key: _profileFormKey,
+                                                autovalidateMode: _autoValidate
+                                                    ? AutovalidateMode.always
+                                                    : AutovalidateMode.disabled,
+                                                child: profileFormUi(),
+                                              ),
+                                            ),
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                color: Colors.yellow[100],
+                                                borderRadius:
+                                                    BorderRadius.circular(5.0),
+                                              ),
+                                              child: RadioGroup(
+                                                groupValue:
+                                                    _nameDisplayPreference,
+                                                onChanged:
+                                                    _handleRadioValueChange0,
+                                                child: Column(
+                                                  children: <Widget>[
+                                                    const SizedBox(
+                                                      height: 10,
+                                                      width: 10,
+                                                    ),
+                                                    Text(
+                                                      'Name Preference',
+                                                      style: ts_headingBlack,
+                                                    ),
+                                                    const SizedBox(
+                                                      height: 10,
+                                                      width: 10,
+                                                    ),
 
-                                                      Row(
-                                                        children: <Widget>[
-                                                          Radio<int>(value: 1),
-                                                          const Text(
-                                                            'Use Hash name',
-                                                            style: TextStyle(
-                                                              fontSize: 16.0,
-                                                            ),
+                                                    Row(
+                                                      children: <Widget>[
+                                                        Radio<int>(value: 1),
+                                                        const Text(
+                                                          'Use Hash name',
+                                                          style: TextStyle(
+                                                            fontSize: 16.0,
                                                           ),
-                                                        ],
-                                                      ),
-                                                      Row(
-                                                        children: <Widget>[
-                                                          Radio<int>(value: 2),
-                                                          const Text(
-                                                            'Use mortal name',
-                                                            style: TextStyle(
-                                                              fontSize: 16.0,
-                                                            ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    Row(
+                                                      children: <Widget>[
+                                                        Radio<int>(value: 2),
+                                                        const Text(
+                                                          'Use mortal name',
+                                                          style: TextStyle(
+                                                            fontSize: 16.0,
                                                           ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
-                                              const FancyDivider(
-                                                key: Key('11203961'),
-                                                innerColor: Colors.white,
-                                                topMargin: 45.0,
-                                                bottomMargin: 5.0,
+                                            ),
+                                            const FancyDivider(
+                                              key: Key('11203961'),
+                                              innerColor: Colors.white,
+                                              topMargin: 45.0,
+                                              bottomMargin: 5.0,
+                                            ),
+                                            Container(
+                                              height: 220,
+                                              color: Colors.white,
+                                              padding: const EdgeInsets.all(
+                                                10.0,
                                               ),
-                                              Container(
-                                                height: 220,
-                                                color: Colors.white,
-                                                padding: const EdgeInsets.all(
-                                                  10.0,
+                                              margin: const EdgeInsets.only(
+                                                top: 20,
+                                                bottom: 30,
+                                              ),
+                                              child: _newPhoto.isEmpty
+                                                  ? Image.asset(
+                                                      'images/icons/create_profile_photo.png',
+                                                    )
+                                                  : Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                            left: 0,
+                                                            right: 0,
+                                                          ),
+                                                      child: AspectRatio(
+                                                        aspectRatio: 1.0,
+                                                        child: ProfilePhoto(
+                                                          profilePhotoUrl:
+                                                              _newPhoto,
+                                                          photoHeight: 200.0,
+                                                          //leftPadding: 0.0,
+                                                        ),
+
+                                                        // Container(
+                                                        //   decoration: BoxDecoration(
+                                                        //     shape: BoxShape.rectangle,
+                                                        //     borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                                                        //     image: DecorationImage(
+                                                        //       fit: BoxFit.fill,
+                                                        //       image: NetworkImage(
+                                                        //         newPhoto,
+                                                        //       ),
+                                                        //     ),
+                                                        //   ),
+                                                        // ),
+                                                      ),
+                                                    ),
+                                            ),
+                                            Connection2.styleForConnected(
+                                              appModel.connectionStatus,
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                        top: 8,
+                                                        bottom: 8,
+                                                        left: 20,
+                                                        right: 20,
+                                                      ),
                                                 ),
-                                                margin: const EdgeInsets.only(
-                                                  top: 20,
-                                                  bottom: 30,
-                                                ),
-                                                child:
-                                                    _newPhoto.isEmpty
-                                                        ? Image.asset(
-                                                          'images/icons/create_profile_photo.png',
-                                                        )
-                                                        : Padding(
-                                                          padding:
-                                                              const EdgeInsets.only(
-                                                                left: 0,
-                                                                right: 0,
-                                                              ),
-                                                          child: AspectRatio(
-                                                            aspectRatio: 1.0,
-                                                            child: ProfilePhoto(
-                                                              profilePhotoUrl:
+                                                onPressed: () {
+                                                  if (Connection2.checkForConnection(
+                                                    appModel.connectionStatus,
+                                                  )) {
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute<String>(
+                                                        builder:
+                                                            (
+                                                              BuildContext
+                                                              context,
+                                                            ) => ChooseProfileImage(
+                                                              isForThisDevice:
+                                                                  widget
+                                                                      .pageType ==
+                                                                  EnumMyProfilePageType
+                                                                      .myProfile,
+                                                              fileNamePrefix:
+                                                                  _photoPrefix,
+                                                              currentProfileImage:
+                                                                  _hasher
+                                                                      .photo ??
                                                                   _newPhoto,
-                                                              photoHeight:
-                                                                  200.0,
-                                                              //leftPadding: 0.0,
                                                             ),
-
-                                                            // Container(
-                                                            //   decoration: BoxDecoration(
-                                                            //     shape: BoxShape.rectangle,
-                                                            //     borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-                                                            //     image: DecorationImage(
-                                                            //       fit: BoxFit.fill,
-                                                            //       image: NetworkImage(
-                                                            //         newPhoto,
-                                                            //       ),
-                                                            //     ),
-                                                            //   ),
-                                                            // ),
-                                                          ),
-                                                        ),
-                                              ),
-                                              Connection2.styleForConnected(
-                                                appModel.connectionStatus,
-                                                ElevatedButton(
-                                                  style: ElevatedButton.styleFrom(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                          top: 8,
-                                                          bottom: 8,
-                                                          left: 20,
-                                                          right: 20,
-                                                        ),
-                                                  ),
-                                                  onPressed: () {
-                                                    if (Connection2.checkForConnection(
-                                                      appModel.connectionStatus,
-                                                    )) {
-                                                      Navigator.push(
-                                                        context,
-                                                        MaterialPageRoute<
-                                                          String
-                                                        >(
-                                                          builder:
-                                                              (
-                                                                BuildContext
-                                                                context,
-                                                              ) => ChooseProfileImage(
-                                                                isForThisDevice:
-                                                                    widget
-                                                                        .pageType ==
-                                                                    EnumMyProfilePageType
-                                                                        .myProfile,
-                                                                fileNamePrefix:
-                                                                    _photoPrefix,
-                                                                currentProfileImage:
-                                                                    _hasher
-                                                                        .photo ??
-                                                                    _newPhoto,
-                                                              ),
-                                                        ),
-                                                      ).then<void>((result) {
-                                                        if ((result != null) &&
-                                                            (result
-                                                                .isNotEmpty)) {
-                                                          _newPhoto = result;
-                                                          _checkDirty();
-                                                        }
-                                                      });
-                                                    }
-                                                  },
-                                                  child: Text(
-                                                    'Update Profile Image',
-                                                    style: ts_button,
-                                                  ),
+                                                      ),
+                                                    ).then<void>((result) {
+                                                      if ((result != null) &&
+                                                          (result.isNotEmpty)) {
+                                                        _newPhoto = result;
+                                                        _checkDirty();
+                                                      }
+                                                    });
+                                                  }
+                                                },
+                                                child: Text(
+                                                  'Update Profile Image',
+                                                  style: ts_button,
                                                 ),
                                               ),
-                                              const SizedBox(height: 15),
-                                              (widget.uiElementsToDisplay &
-                                                          HasherProfilePage
-                                                              .flagUiElement_distancePref ==
-                                                      0)
-                                                  ? Container()
-                                                  : Column(
+                                            ),
+                                            const SizedBox(height: 15),
+                                            (widget.uiElementsToDisplay &
+                                                        HasherProfilePage
+                                                            .flagUiElement_distancePref ==
+                                                    0)
+                                                ? Container()
+                                                : Column(
                                                     children: <Widget>[
                                                       const FancyDivider(
                                                         key: Key('422030201'),
@@ -895,9 +883,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       ),
                                                       Container(
                                                         decoration: BoxDecoration(
-                                                          color:
-                                                              Colors
-                                                                  .yellow[100],
+                                                          color: Colors
+                                                              .yellow[100],
                                                           borderRadius:
                                                               BorderRadius.circular(
                                                                 5.0,
@@ -924,9 +911,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                 width: 10,
                                                               ),
                                                               Row(
-                                                                children: <
-                                                                  Widget
-                                                                >[
+                                                                children: <Widget>[
                                                                   Radio<int>(
                                                                     value: 0,
                                                                   ),
@@ -940,9 +925,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                 ],
                                                               ),
                                                               Row(
-                                                                children: <
-                                                                  Widget
-                                                                >[
+                                                                children: <Widget>[
                                                                   Radio<int>(
                                                                     value: 2,
                                                                   ),
@@ -956,9 +939,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                 ],
                                                               ),
                                                               Row(
-                                                                children: <
-                                                                  Widget
-                                                                >[
+                                                                children: <Widget>[
                                                                   Radio<int>(
                                                                     value: 3,
                                                                   ),
@@ -977,12 +958,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       ),
                                                     ],
                                                   ),
-                                              (widget.uiElementsToDisplay &
-                                                          HasherProfilePage
-                                                              .flagUiElement_autoDisplayRunsDistance ==
-                                                      0)
-                                                  ? Container()
-                                                  : Column(
+                                            (widget.uiElementsToDisplay &
+                                                        HasherProfilePage
+                                                            .flagUiElement_autoDisplayRunsDistance ==
+                                                    0)
+                                                ? Container()
+                                                : Column(
                                                     children: <Widget>[
                                                       const FancyDivider(
                                                         key: Key('51344451'),
@@ -995,9 +976,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                           .hasLocationPermissions)
                                                         Container(
                                                           decoration: BoxDecoration(
-                                                            color:
-                                                                Colors
-                                                                    .yellow[100],
+                                                            color: Colors
+                                                                .yellow[100],
                                                             borderRadius:
                                                                 BorderRadius.circular(
                                                                   5.0,
@@ -1009,17 +989,13 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             onChanged:
                                                                 _handleRadioValueChange2,
                                                             child: Column(
-                                                              children: <
-                                                                Widget
-                                                              >[
+                                                              children: <Widget>[
                                                                 const SizedBox(
                                                                   height: 20,
                                                                   width: 10,
                                                                 ),
                                                                 Row(
-                                                                  children: <
-                                                                    Widget
-                                                                  >[
+                                                                  children: <Widget>[
                                                                     Radio<int>(
                                                                       value: 0,
                                                                     ),
@@ -1045,9 +1021,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                   width: 10,
                                                                 ),
                                                                 Row(
-                                                                  children: <
-                                                                    Widget
-                                                                  >[
+                                                                  children: <Widget>[
                                                                     Radio<int>(
                                                                       value:
                                                                           hasherPref_10,
@@ -1062,9 +1036,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                   ],
                                                                 ),
                                                                 Row(
-                                                                  children: <
-                                                                    Widget
-                                                                  >[
+                                                                  children: <Widget>[
                                                                     Radio<int>(
                                                                       value:
                                                                           hasherPref_25,
@@ -1079,9 +1051,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                   ],
                                                                 ),
                                                                 Row(
-                                                                  children: <
-                                                                    Widget
-                                                                  >[
+                                                                  children: <Widget>[
                                                                     Radio<int>(
                                                                       value:
                                                                           hasherPref_50,
@@ -1096,9 +1066,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                   ],
                                                                 ),
                                                                 Row(
-                                                                  children: <
-                                                                    Widget
-                                                                  >[
+                                                                  children: <Widget>[
                                                                     Radio<int>(
                                                                       value:
                                                                           hasherPref_75,
@@ -1113,9 +1081,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                   ],
                                                                 ),
                                                                 Row(
-                                                                  children: <
-                                                                    Widget
-                                                                  >[
+                                                                  children: <Widget>[
                                                                     Radio<int>(
                                                                       value:
                                                                           hasherPref_100,
@@ -1130,9 +1096,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                   ],
                                                                 ),
                                                                 Row(
-                                                                  children: <
-                                                                    Widget
-                                                                  >[
+                                                                  children: <Widget>[
                                                                     Radio<int>(
                                                                       value:
                                                                           hasherPref_150,
@@ -1147,9 +1111,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                   ],
                                                                 ),
                                                                 Row(
-                                                                  children: <
-                                                                    Widget
-                                                                  >[
+                                                                  children: <Widget>[
                                                                     Radio<int>(
                                                                       value:
                                                                           hasherPref_250,
@@ -1164,9 +1126,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                   ],
                                                                 ),
                                                                 Row(
-                                                                  children: <
-                                                                    Widget
-                                                                  >[
+                                                                  children: <Widget>[
                                                                     Radio<int>(
                                                                       value:
                                                                           hasherPref_500,
@@ -1197,9 +1157,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             'Distance to Runs',
                                                             style:
                                                                 ts_headingLarge,
-                                                            textAlign:
-                                                                TextAlign
-                                                                    .center,
+                                                            textAlign: TextAlign
+                                                                .center,
                                                           ),
                                                         ),
                                                         Padding(
@@ -1210,9 +1169,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                           child: Text(
                                                             'Harrier Central can help you find runs that are nearby. In order to do this, the app needs to have access to the phone\'s current location, but currently location is disabled for this app.\r\n\r\nTo start using the distance features of Harrier Central please press the "Use Location" button below and follow the prompts.',
                                                             style: ts_body,
-                                                            textAlign:
-                                                                TextAlign
-                                                                    .center,
+                                                            textAlign: TextAlign
+                                                                .center,
                                                           ),
                                                         ),
                                                         Padding(
@@ -1243,20 +1201,20 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       ],
                                                     ],
                                                   ),
-                                              const SizedBox(
-                                                height: 20,
-                                                width: 40,
-                                              ),
-                                            ],
-                                          ),
+                                            const SizedBox(
+                                              height: 20,
+                                              width: 40,
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      (widget.uiElementsToDisplay &
-                                                  HasherProfilePage
-                                                      .flagUiElement_followKennel ==
-                                              0)
-                                          ? Container()
-                                          : Column(
+                                    ),
+                                    (widget.uiElementsToDisplay &
+                                                HasherProfilePage
+                                                    .flagUiElement_followKennel ==
+                                            0)
+                                        ? Container()
+                                        : Column(
                                             children: <Widget>[
                                               const FancyDivider(
                                                 key: Key('882552302'),
@@ -1290,9 +1248,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       child: Checkbox(
                                                         value:
                                                             _addAsKennelFollower,
-                                                        onChanged: (
-                                                          bool? value,
-                                                        ) {
+                                                        onChanged: (bool? value) {
                                                           setState(() {
                                                             _addAsKennelFollower =
                                                                 value ?? false;
@@ -1311,12 +1267,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               ),
                                             ],
                                           ),
-                                      (widget.uiElementsToDisplay &
-                                                  HasherProfilePage
-                                                      .flagUiElement_previousRunCount ==
-                                              0)
-                                          ? Container()
-                                          : Column(
+                                    (widget.uiElementsToDisplay &
+                                                HasherProfilePage
+                                                    .flagUiElement_previousRunCount ==
+                                            0)
+                                        ? Container()
+                                        : Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.stretch,
                                             children: <Widget>[
@@ -1356,21 +1312,20 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                   key: _runCountFormKey,
                                                   autovalidateMode:
                                                       _autoValidate
-                                                          ? AutovalidateMode
-                                                              .always
-                                                          : AutovalidateMode
-                                                              .disabled,
+                                                      ? AutovalidateMode.always
+                                                      : AutovalidateMode
+                                                            .disabled,
                                                   child: runCountUi(),
                                                 ),
                                               ),
                                             ],
                                           ),
-                                      (widget.uiElementsToDisplay &
-                                                  HasherProfilePage
-                                                      .flagUiElement_getInviteCodeButton ==
-                                              0)
-                                          ? Container()
-                                          : Column(
+                                    (widget.uiElementsToDisplay &
+                                                HasherProfilePage
+                                                    .flagUiElement_getInviteCodeButton ==
+                                            0)
+                                        ? Container()
+                                        : Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.stretch,
                                             children: <Widget>[
@@ -1424,25 +1379,24 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                               ),
                                                               dialogTitle:
                                                                   'The invite code for ${_hasher.dispName} is: \r\n\r\n${result!.result!.replaceAll(QR_PREFIX_USER_RESET_CODE, '')}',
-                                                              qrText:
-                                                                  result
-                                                                      .result!,
+                                                              qrText: result
+                                                                  .result!,
                                                             );
 
                                                             await showDialog<
                                                               void
                                                             >(
-                                                              context:
-                                                                  navigatorKey
-                                                                      .currentContext!,
+                                                              context: navigatorKey
+                                                                  .currentContext!,
                                                               barrierDismissible:
                                                                   false, // user must tap button!
-                                                              builder: (
-                                                                BuildContext
-                                                                context,
-                                                              ) {
-                                                                return pp;
-                                                              },
+                                                              builder:
+                                                                  (
+                                                                    BuildContext
+                                                                    context,
+                                                                  ) {
+                                                                    return pp;
+                                                                  },
                                                             );
                                                           } else {
                                                             await Utilities.showAlert(
@@ -1463,12 +1417,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               ),
                                             ],
                                           ),
-                                      (widget.uiElementsToDisplay &
-                                                  HasherProfilePage
-                                                      .flagUiElement_getUserRunHistory ==
-                                              0)
-                                          ? Container()
-                                          : Column(
+                                    (widget.uiElementsToDisplay &
+                                                HasherProfilePage
+                                                    .flagUiElement_getUserRunHistory ==
+                                            0)
+                                        ? Container()
+                                        : Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.stretch,
                                             children: <Widget>[
@@ -1500,80 +1454,122 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                 right: 20,
                                                               ),
                                                         ),
-                                                        onPressed: () async {
-                                                          final runHistory =
-                                                              await RunHistoryQueries.getRunHistory(
-                                                                widget.hasherId,
-                                                                widget.kennelId,
-                                                              );
+                                                        onPressed:
+                                                            _userRunHistoryLoading
+                                                            ? null
+                                                            : () async {
+                                                                setState(() {
+                                                                  _userRunHistoryLoading =
+                                                                      true;
+                                                                });
+                                                                final runHistory =
+                                                                    await RunHistoryQueries.getRunHistory(
+                                                                      widget
+                                                                          .hasherId,
+                                                                      widget
+                                                                          .kennelId,
+                                                                    );
 
-                                                          await tableModel
-                                                              .syncKennelAdminService
-                                                              .clearEventData();
+                                                                await tableModel
+                                                                    .syncKennelAdminService
+                                                                    .clearEventData();
 
-                                                          await tableModel
-                                                              .syncKennelAdminService
-                                                              .updateFromBackend(
-                                                                SyncKennelAdminService
-                                                                        .flagHasherEventMapTable |
-                                                                    SyncKennelAdminService
-                                                                        .flagPaymentsTable,
-                                                                false,
-                                                                widget.kennelId,
-                                                                targetHasherId:
-                                                                    widget
-                                                                        .hasherId,
-                                                              );
-
-                                                          if (context.mounted) {
-                                                            Navigator.of(
-                                                                  context,
-                                                                )
-                                                                .push<dynamic>(
-                                                                  MaterialPageRoute<
-                                                                    dynamic
-                                                                  >(
-                                                                    builder: (
-                                                                      BuildContext
-                                                                      context,
-                                                                    ) {
-                                                                      return UserRunHistoryListPage(
-                                                                        appDomain:
-                                                                            AppDomainType.kennel,
-                                                                        hashName:
-                                                                            widget.hashNameFromSearch,
-                                                                        hasherId:
-                                                                            widget.hasherId,
-                                                                        kennelInfo:
-                                                                            runHistory[0],
-                                                                        refreshKennelInfo:
-                                                                            () {},
-                                                                      );
-                                                                    },
-                                                                  ),
-                                                                )
-                                                                .then(
-                                                                  (void _) {},
+                                                                await tableModel.syncKennelAdminService.updateFromBackend(
+                                                                  SyncKennelAdminService
+                                                                          .flagHasherEventMapTable |
+                                                                      SyncKennelAdminService
+                                                                          .flagPaymentsTable,
+                                                                  false,
+                                                                  widget
+                                                                      .kennelId,
+                                                                  targetHasherId:
+                                                                      widget
+                                                                          .hasherId,
                                                                 );
-                                                          }
-                                                          //                                              Navigator.of(context).push<dynamic>(
-                                                          //   MaterialPageRoute<dynamic>(
-                                                          //     builder: (BuildContext context) {
-                                                          //       return UserRunHistoryListPage(
-                                                          //           kennelInfo: kennelInfo,
-                                                          //           refreshKennelInfo: () {
-                                                          //             return refreshCounters(kennelInfo.kennelId);
-                                                          //           });
-                                                          //     },
-                                                          //   ),
-                                                          // ).then((void _) {
-                                                          //   refreshCounters(kennelInfo.kennelId);
-                                                          // });
-                                                        },
-                                                        child: Text(
-                                                          'View Run History',
-                                                          style: ts_button,
-                                                        ),
+
+                                                                setState(() {
+                                                                  _userRunHistoryLoading =
+                                                                      false;
+                                                                });
+
+                                                                if (context
+                                                                    .mounted) {
+                                                                  Navigator.of(
+                                                                        context,
+                                                                      )
+                                                                      .push<
+                                                                        dynamic
+                                                                      >(
+                                                                        MaterialPageRoute<
+                                                                          dynamic
+                                                                        >(
+                                                                          builder:
+                                                                              (
+                                                                                BuildContext
+                                                                                context,
+                                                                              ) {
+                                                                                return UserRunHistoryListPage(
+                                                                                  appDomain: AppDomainType.kennel,
+                                                                                  hashName: widget.hashNameFromSearch,
+                                                                                  hasherId: widget.hasherId,
+                                                                                  kennelInfo: runHistory[0],
+                                                                                  refreshKennelInfo: () {},
+                                                                                );
+                                                                              },
+                                                                        ),
+                                                                      )
+                                                                      .then(
+                                                                        (
+                                                                          void
+                                                                          _,
+                                                                        ) {},
+                                                                      );
+                                                                }
+                                                                //                                              Navigator.of(context).push<dynamic>(
+                                                                //   MaterialPageRoute<dynamic>(
+                                                                //     builder: (BuildContext context) {
+                                                                //       return UserRunHistoryListPage(
+                                                                //           kennelInfo: kennelInfo,
+                                                                //           refreshKennelInfo: () {
+                                                                //             return refreshCounters(kennelInfo.kennelId);
+                                                                //           });
+                                                                //     },
+                                                                //   ),
+                                                                // ).then((void _) {
+                                                                //   refreshCounters(kennelInfo.kennelId);
+                                                                // });
+                                                              },
+                                                        child:
+                                                            _userRunHistoryLoading
+                                                            ? Row(
+                                                                children: [
+                                                                  Text(
+                                                                    'Please wait...',
+                                                                    style:
+                                                                        ts_button,
+                                                                  ),
+                                                                  const SizedBox(
+                                                                    width: 20,
+                                                                  ),
+                                                                  SizedBox(
+                                                                    height: 20,
+                                                                    width: 20,
+
+                                                                    child: HcAppCircularProgressIndicator(
+                                                                      color1: Colors
+                                                                          .white,
+                                                                      size: 20,
+                                                                      key:
+                                                                          UniqueKey(),
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              )
+                                                            : Text(
+                                                                'View Run History',
+                                                                style:
+                                                                    ts_button,
+                                                              ),
                                                       ),
                                                     ),
                                                   ],
@@ -1581,441 +1577,391 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               ),
                                             ],
                                           ),
-                                      if (_externalMapProvider !=
-                                          null) ...<Widget>[
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.stretch,
-                                          children: <Widget>[
-                                            const FancyDivider(
-                                              key: Key('8552133039'),
-                                              innerColor: Colors.white,
-                                              topMargin: 30.0,
-                                              bottomMargin: 20.0,
+                                    if (_externalMapProvider !=
+                                        null) ...<Widget>[
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        children: <Widget>[
+                                          const FancyDivider(
+                                            key: Key('8552133039'),
+                                            innerColor: Colors.white,
+                                            topMargin: 30.0,
+                                            bottomMargin: 20.0,
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              'Clear Map Preference',
+                                              style: ts_headingLarge,
+                                              textAlign: TextAlign.center,
                                             ),
-                                            Padding(
-                                              padding: const EdgeInsets.all(
-                                                8.0,
-                                              ),
-                                              child: Text(
-                                                'Clear Map Preference',
-                                                style: ts_headingLarge,
-                                                textAlign: TextAlign.center,
-                                              ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              'You have set your map preference to $_externalMapProvider. Click below to clear this preference. The next time you open an external map app, you will again be asked to indicate a preference.',
+                                              style: ts_body,
+                                              textAlign: TextAlign.center,
                                             ),
-                                            Padding(
-                                              padding: const EdgeInsets.all(
-                                                8.0,
-                                              ),
-                                              child: Text(
-                                                'You have set your map preference to $_externalMapProvider. Click below to clear this preference. The next time you open an external map app, you will again be asked to indicate a preference.',
-                                                style: ts_body,
-                                                textAlign: TextAlign.center,
-                                              ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 15.0,
                                             ),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    vertical: 15.0,
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceAround,
+                                              children: <Widget>[
+                                                ElevatedButton(
+                                                  style: ElevatedButton.styleFrom(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          vertical: 8.0,
+                                                          horizontal: 15.0,
+                                                        ),
                                                   ),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceAround,
-                                                children: <Widget>[
+                                                  onPressed: () async {
+                                                    await Utilities.showAlert(
+                                                      'Map preferences cleared',
+                                                      'Your map preference has been cleared. Next time you access an external map application, you will be prompted again to select a map preference.',
+                                                      'OK',
+                                                      showCancelButton: false,
+                                                    );
+
+                                                    await removePref(
+                                                      StringPrefsEnum
+                                                          .mapPreference,
+                                                    );
+
+                                                    setState(() {
+                                                      _externalMapProvider =
+                                                          null;
+                                                    });
+                                                  },
+                                                  child: Text(
+                                                    'Clear map preference',
+                                                    style: ts_button,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                    if (widget.uiElementsToDisplay &
+                                            HasherProfilePage
+                                                .flagUiElement_logOutAndRefreshButton !=
+                                        0) ...<Widget>[
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        children: <Widget>[
+                                          const FancyDivider(
+                                            key: Key('8552133039'),
+                                            innerColor: Colors.white,
+                                            topMargin: 30.0,
+                                            bottomMargin: 20.0,
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              'Reload Data',
+                                              style: ts_headingLarge,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              'To maximize performance and support the ability to operate when not on a network, Harrier Central stores data relevant to your Hash experience on your phone.\r\n\r\nOn rare occasionions, this data may become out of sync with the master data stored in our central servers. To reload your Hash data, press the "Reload Data" button below. This will clear the existing data, restart Harrier Central, and reload the data from our servers.',
+                                              style: ts_body,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 15,
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceAround,
+                                              children: <Widget>[
+                                                Connection2.styleForConnected(
+                                                  appModel.connectionStatus,
                                                   ElevatedButton(
                                                     style: ElevatedButton.styleFrom(
                                                       padding:
-                                                          const EdgeInsets.symmetric(
-                                                            vertical: 8.0,
-                                                            horizontal: 15.0,
+                                                          const EdgeInsets.only(
+                                                            top: 8,
+                                                            bottom: 8,
+                                                            left: 20,
+                                                            right: 20,
                                                           ),
                                                     ),
                                                     onPressed: () async {
                                                       await Utilities.showAlert(
-                                                        'Map preferences cleared',
-                                                        'Your map preference has been cleared. Next time you access an external map application, you will be prompted again to select a map preference.',
-                                                        'OK',
-                                                        showCancelButton: false,
-                                                      );
-
-                                                      await removePref(
-                                                        StringPrefsEnum
-                                                            .mapPreference,
-                                                      );
-
-                                                      setState(() {
-                                                        _externalMapProvider =
-                                                            null;
+                                                        'Reload Data',
+                                                        'Refreshing the cache removes all of the data stored on your phone by the Harrier Central app and reloads your profile from our backend servers.\r\n\r\nNormally you will only need to do this when asked to do so by our support team.',
+                                                        'Reload data',
+                                                        showCancelButton: true,
+                                                        cancelButtonText:
+                                                            'Cancel',
+                                                      ).then((
+                                                        bool? result,
+                                                      ) async {
+                                                        if (result ?? false) {
+                                                          await _reloadData();
+                                                        }
                                                       });
                                                     },
                                                     child: Text(
-                                                      'Clear map preference',
+                                                      'Reload Data',
                                                       style: ts_button,
                                                     ),
                                                   ),
-                                                ],
-                                              ),
+                                                ),
+                                              ],
                                             ),
-                                          ],
-                                        ),
-                                      ],
-                                      if (widget.uiElementsToDisplay &
-                                              HasherProfilePage
-                                                  .flagUiElement_logOutAndRefreshButton !=
-                                          0) ...<Widget>[
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.stretch,
-                                          children: <Widget>[
-                                            const FancyDivider(
-                                              key: Key('8552133039'),
-                                              innerColor: Colors.white,
-                                              topMargin: 30.0,
-                                              bottomMargin: 20.0,
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                    if (widget.uiElementsToDisplay &
+                                            HasherProfilePage
+                                                .flagUiElement_logOutButton !=
+                                        0) ...<Widget>[
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        children: <Widget>[
+                                          const FancyDivider(
+                                            key: Key('655522013'),
+                                            innerColor: Colors.white,
+                                            topMargin: 30.0,
+                                            bottomMargin: 20.0,
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              'Log out of Harrier Central',
+                                              style: ts_heading,
+                                              textAlign: TextAlign.center,
                                             ),
-                                            Padding(
-                                              padding: const EdgeInsets.all(
-                                                8.0,
-                                              ),
-                                              child: Text(
-                                                'Reload Data',
-                                                style: ts_headingLarge,
-                                                textAlign: TextAlign.center,
-                                              ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              'This app is currently logged in to Harrier Central.\r\n\r\nPress the Log Out button if you would like to log out from your Harrier Central account on this device. Your data will remain on our servers and you can log in again in the future without the loss of any data.',
+                                              style: ts_body,
+                                              textAlign: TextAlign.center,
                                             ),
-                                            Padding(
-                                              padding: const EdgeInsets.all(
-                                                8.0,
-                                              ),
-                                              child: Text(
-                                                'To maximize performance and support the ability to operate when not on a network, Harrier Central stores data relevant to your Hash experience on your phone.\r\n\r\nOn rare occasionions, this data may become out of sync with the master data stored in our central servers. To reload your Hash data, press the "Reload Data" button below. This will clear the existing data, restart Harrier Central, and reload the data from our servers.',
-                                                style: ts_body,
-                                                textAlign: TextAlign.center,
-                                              ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              top: 15,
+                                              bottom: 15,
                                             ),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    vertical: 15,
-                                                  ),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceAround,
-                                                children: <Widget>[
-                                                  Connection2.styleForConnected(
-                                                    appModel.connectionStatus,
-                                                    ElevatedButton(
-                                                      style: ElevatedButton.styleFrom(
-                                                        padding:
-                                                            const EdgeInsets.only(
-                                                              top: 8,
-                                                              bottom: 8,
-                                                              left: 20,
-                                                              right: 20,
-                                                            ),
-                                                      ),
-                                                      onPressed: () async {
-                                                        await Utilities.showAlert(
-                                                          'Reload Data',
-                                                          'Refreshing the cache removes all of the data stored on your phone by the Harrier Central app and reloads your profile from our backend servers.\r\n\r\nNormally you will only need to do this when asked to do so by our support team.',
-                                                          'Reload data',
-                                                          showCancelButton:
-                                                              true,
-                                                          cancelButtonText:
-                                                              'Cancel',
-                                                        ).then((
-                                                          bool? result,
-                                                        ) async {
-                                                          if (result ?? false) {
-                                                            await _reloadData();
-                                                          }
-                                                        });
-                                                      },
-                                                      child: Text(
-                                                        'Reload Data',
-                                                        style: ts_button,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                      if (widget.uiElementsToDisplay &
-                                              HasherProfilePage
-                                                  .flagUiElement_logOutButton !=
-                                          0) ...<Widget>[
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.stretch,
-                                          children: <Widget>[
-                                            const FancyDivider(
-                                              key: Key('655522013'),
-                                              innerColor: Colors.white,
-                                              topMargin: 30.0,
-                                              bottomMargin: 20.0,
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.all(
-                                                8.0,
-                                              ),
-                                              child: Text(
-                                                'Log out of Harrier Central',
-                                                style: ts_heading,
-                                                textAlign: TextAlign.center,
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.all(
-                                                8.0,
-                                              ),
-                                              child: Text(
-                                                'This app is currently logged in to Harrier Central.\r\n\r\nPress the Log Out button if you would like to log out from your Harrier Central account on this device. Your data will remain on our servers and you can log in again in the future without the loss of any data.',
-                                                style: ts_body,
-                                                textAlign: TextAlign.center,
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                top: 15,
-                                                bottom: 15,
-                                              ),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceAround,
-                                                children: <Widget>[
-                                                  Connection2.styleForConnected(
-                                                    appModel.connectionStatus,
-                                                    ElevatedButton(
-                                                      style: ElevatedButton.styleFrom(
-                                                        padding:
-                                                            const EdgeInsets.only(
-                                                              top: 8,
-                                                              bottom: 8,
-                                                              left: 20,
-                                                              right: 20,
-                                                            ),
-                                                      ),
-                                                      onPressed: () async {
-                                                        await IveCoreUtilities.showAlert(
-                                                          context,
-                                                          'Log out?',
-                                                          'You will be logged out of Harrier Central and all of your data will be erased from this device, although your preferences and run information are safely stored on our servers.\r\n\r\nWhen choosing to log out the app will restart itself automatically.',
-                                                          'Log out',
-                                                          showCancelButton:
-                                                              true,
-                                                          cancelButtonText:
-                                                              'Stay logged in',
-                                                        ).then((
-                                                          bool? result,
-                                                        ) async {
-                                                          if (result ?? false) {
-                                                            await clearPrefs();
-
-                                                            await DBProvider.deleteDb(
-                                                              DB_NAME,
-                                                            );
-
-                                                            // Get.reset(
-                                                            //   clearRouteBindings:
-                                                            //       true,
-                                                            // );
-                                                            await initServices();
-                                                            Get.offAll(
-                                                              () =>
-                                                                  AppEntryPage(),
-                                                              binding:
-                                                                  InitialBindings(),
-                                                            );
-                                                          }
-                                                        });
-                                                      },
-                                                      child: Text(
-                                                        'Log out of Harrier Central',
-                                                        style: ts_button,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                      if (widget.uiElementsToDisplay &
-                                              HasherProfilePage
-                                                  .flagUiElement_refresh3rdPartyLogin !=
-                                          0) ...<Widget>[
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.stretch,
-                                          children: <Widget>[
-                                            const FancyDivider(
-                                              key: Key('655522013'),
-                                              innerColor: Colors.white,
-                                              topMargin: 30.0,
-                                              bottomMargin: 20.0,
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.all(
-                                                8.0,
-                                              ),
-                                              child: Text(
-                                                'Third Party Login',
-                                                style: ts_headingLarge,
-                                                textAlign: TextAlign.center,
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.all(
-                                                8.0,
-                                              ),
-                                              child: Text(
-                                                'For Kennels that are using integration with backends such as Facebook, it is required that we have permission to access the group\'s data. This is done by logging into that third party service using your phone.\r\n\r\nIf you are the administrator of a group that is using third party integration, please ensure your account is up to date by pressing the "Login with 3rd Party" button below.',
-                                                style: ts_body,
-                                                textAlign: TextAlign.center,
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                top: 15,
-                                                bottom: 15,
-                                              ),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceAround,
-                                                children: <Widget>[
-                                                  Connection2.styleForConnected(
-                                                    appModel.connectionStatus,
-                                                    ElevatedButton(
-                                                      style: ElevatedButton.styleFrom(
-                                                        padding:
-                                                            const EdgeInsets.only(
-                                                              top: 8,
-                                                              bottom: 8,
-                                                              left: 20,
-                                                              right: 20,
-                                                            ),
-                                                      ),
-                                                      onPressed: () async {
-                                                        await Navigator.push<
-                                                          dynamic
-                                                        >(
-                                                          context,
-                                                          MaterialPageRoute<
-                                                            dynamic
-                                                          >(
-                                                            builder:
-                                                                (
-                                                                  BuildContext
-                                                                  context,
-                                                                ) =>
-                                                                    const ThirdPartyLogin(
-                                                                      false,
-                                                                    ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceAround,
+                                              children: <Widget>[
+                                                Connection2.styleForConnected(
+                                                  appModel.connectionStatus,
+                                                  ElevatedButton(
+                                                    style: ElevatedButton.styleFrom(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                            top: 8,
+                                                            bottom: 8,
+                                                            left: 20,
+                                                            right: 20,
                                                           ),
-                                                        );
-                                                      },
-                                                      child: Text(
-                                                        'Login with 3rd Party',
-                                                        style: ts_button,
-                                                      ),
                                                     ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                      if (widget.uiElementsToDisplay &
-                                              HasherProfilePage
-                                                  .flagUiElement_gdprDeleteAccount !=
-                                          0) ...<Widget>[
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.stretch,
-                                          children: <Widget>[
-                                            const FancyDivider(
-                                              key: Key('655522013'),
-                                              innerColor: Colors.white,
-                                              topMargin: 30.0,
-                                              bottomMargin: 20.0,
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.all(
-                                                8.0,
-                                              ),
-                                              child: Text(
-                                                'Delete Account',
-                                                style: ts_headingLarge,
-                                                textAlign: TextAlign.center,
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.all(
-                                                8.0,
-                                              ),
-                                              child: Text(
-                                                'In order to protect your privacy and ensure compliance with various national and international regulations, we offer you the ability to permanently delete your account. THIS ACTION CANNOT BE UNDONE.\r\n\r\nPerhaps instead you would like to keep your app and run counts but wish to anonymize your personal information? If so, scroll upwards and change your name and email address to anything you desire, understanding that your Kennel will not be able to email you through the app if you provide a fake email address. Click on Save Changes when you are done.',
-                                                style: ts_body,
-                                                textAlign: TextAlign.center,
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                top: 15,
-                                                bottom: 15,
-                                              ),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceAround,
-                                                children: <Widget>[
-                                                  Connection2.styleForConnected(
-                                                    appModel.connectionStatus,
-                                                    ElevatedButton(
-                                                      style: ElevatedButton.styleFrom(
-                                                        padding:
-                                                            const EdgeInsets.only(
-                                                              top: 8,
-                                                              bottom: 8,
-                                                              left: 20,
-                                                              right: 20,
-                                                            ),
-                                                      ),
-                                                      onPressed: () async {
-                                                        bool? result =
-                                                            await Utilities.showAlert(
-                                                              'Delete Account',
-                                                              'Deleting your account will permanently remove your personal information from Harrier Central. Information associated with financial transactions and run attendence will be retained on behalf of the respective Kennels, but will be fully anonymized.\r\n\r\nWARNING:\r\nTHIS ACTION IS PERMANENT AND CANNOT BE REVERSED. Please proceed with caution.',
-                                                              'Delete Account',
-                                                              showCancelButton:
-                                                                  true,
-                                                              cancelButtonText:
-                                                                  'Keep Account',
-                                                            );
-
+                                                    onPressed: () async {
+                                                      await IveCoreUtilities.showAlert(
+                                                        context,
+                                                        'Log out?',
+                                                        'You will be logged out of Harrier Central and all of your data will be erased from this device, although your preferences and run information are safely stored on our servers.\r\n\r\nWhen choosing to log out the app will restart itself automatically.',
+                                                        'Log out',
+                                                        showCancelButton: true,
+                                                        cancelButtonText:
+                                                            'Stay logged in',
+                                                      ).then((
+                                                        bool? result,
+                                                      ) async {
                                                         if (result ?? false) {
-                                                          await Future<
-                                                            void
-                                                          >.delayed(
-                                                            const Duration(
-                                                              milliseconds:
-                                                                  1500,
-                                                            ),
+                                                          await clearPrefs();
+
+                                                          await DBProvider.deleteDb(
+                                                            DB_NAME,
                                                           );
 
-                                                          bool?
-                                                          result2 = await Utilities.showAlert(
+                                                          // Get.reset(
+                                                          //   clearRouteBindings:
+                                                          //       true,
+                                                          // );
+                                                          await initServices();
+                                                          Get.offAll(
+                                                            () =>
+                                                                AppEntryPage(),
+                                                            binding:
+                                                                InitialBindings(),
+                                                          );
+                                                        }
+                                                      });
+                                                    },
+                                                    child: Text(
+                                                      'Log out of Harrier Central',
+                                                      style: ts_button,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                    if (widget.uiElementsToDisplay &
+                                            HasherProfilePage
+                                                .flagUiElement_refresh3rdPartyLogin !=
+                                        0) ...<Widget>[
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        children: <Widget>[
+                                          const FancyDivider(
+                                            key: Key('655522013'),
+                                            innerColor: Colors.white,
+                                            topMargin: 30.0,
+                                            bottomMargin: 20.0,
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              'Third Party Login',
+                                              style: ts_headingLarge,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              'For Kennels that are using integration with backends such as Facebook, it is required that we have permission to access the group\'s data. This is done by logging into that third party service using your phone.\r\n\r\nIf you are the administrator of a group that is using third party integration, please ensure your account is up to date by pressing the "Login with 3rd Party" button below.',
+                                              style: ts_body,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              top: 15,
+                                              bottom: 15,
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceAround,
+                                              children: <Widget>[
+                                                Connection2.styleForConnected(
+                                                  appModel.connectionStatus,
+                                                  ElevatedButton(
+                                                    style: ElevatedButton.styleFrom(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                            top: 8,
+                                                            bottom: 8,
+                                                            left: 20,
+                                                            right: 20,
+                                                          ),
+                                                    ),
+                                                    onPressed: () async {
+                                                      await Navigator.push<
+                                                        dynamic
+                                                      >(
+                                                        context,
+                                                        MaterialPageRoute<
+                                                          dynamic
+                                                        >(
+                                                          builder:
+                                                              (
+                                                                BuildContext
+                                                                context,
+                                                              ) =>
+                                                                  const ThirdPartyLogin(
+                                                                    false,
+                                                                  ),
+                                                        ),
+                                                      );
+                                                    },
+                                                    child: Text(
+                                                      'Login with 3rd Party',
+                                                      style: ts_button,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                    if (widget.uiElementsToDisplay &
+                                            HasherProfilePage
+                                                .flagUiElement_gdprDeleteAccount !=
+                                        0) ...<Widget>[
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        children: <Widget>[
+                                          const FancyDivider(
+                                            key: Key('655522013'),
+                                            innerColor: Colors.white,
+                                            topMargin: 30.0,
+                                            bottomMargin: 20.0,
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              'Delete Account',
+                                              style: ts_headingLarge,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              'In order to protect your privacy and ensure compliance with various national and international regulations, we offer you the ability to permanently delete your account. THIS ACTION CANNOT BE UNDONE.\r\n\r\nPerhaps instead you would like to keep your app and run counts but wish to anonymize your personal information? If so, scroll upwards and change your name and email address to anything you desire, understanding that your Kennel will not be able to email you through the app if you provide a fake email address. Click on Save Changes when you are done.',
+                                              style: ts_body,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              top: 15,
+                                              bottom: 15,
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceAround,
+                                              children: <Widget>[
+                                                Connection2.styleForConnected(
+                                                  appModel.connectionStatus,
+                                                  ElevatedButton(
+                                                    style: ElevatedButton.styleFrom(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                            top: 8,
+                                                            bottom: 8,
+                                                            left: 20,
+                                                            right: 20,
+                                                          ),
+                                                    ),
+                                                    onPressed: () async {
+                                                      bool? result =
+                                                          await Utilities.showAlert(
                                                             'Delete Account',
-                                                            'Just to double check since this cannot be undone. Are you sure you want to PERMANENTLY DELETE your account?',
+                                                            'Deleting your account will permanently remove your personal information from Harrier Central. Information associated with financial transactions and run attendence will be retained on behalf of the respective Kennels, but will be fully anonymized.\r\n\r\nWARNING:\r\nTHIS ACTION IS PERMANENT AND CANNOT BE REVERSED. Please proceed with caution.',
                                                             'Delete Account',
                                                             showCancelButton:
                                                                 true,
@@ -2023,76 +1969,94 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                 'Keep Account',
                                                           );
 
-                                                          if (result2 ??
-                                                              false) {
-                                                            // String? tpLoginType = getStringPref(StringPrefsEnum.thirdPartyLoginType);
-                                                            // if ((tpLoginType != null) && (tpLoginType == ThirdPartyLoginType.facebook.name)) {
-                                                            //   await FacebookAuth.instance.logOut();
-                                                            // }
+                                                      if (result ?? false) {
+                                                        await Future<
+                                                          void
+                                                        >.delayed(
+                                                          const Duration(
+                                                            milliseconds: 1500,
+                                                          ),
+                                                        );
 
-                                                            final GdprDeleteService
-                                                            svc =
-                                                                GdprDeleteService();
-                                                            final SingleResultModel?
-                                                            result =
-                                                                await svc
-                                                                    .gdprDelete();
-
-                                                            if ((result?.result ??
-                                                                    '') ==
-                                                                'success') {
-                                                              await Utilities.showAlert(
-                                                                'Successful',
-                                                                'Your account has been deleted. Thanks for using Harrier Central. We hope to see you back one day in the future!\r\n\r\nPlease note, the Harrier Central app must restart after you hit OK. We suggest closing the app and deleting it as it is useless without an account.',
-                                                                'OK',
-                                                              );
-                                                            } else {
-                                                              await Utilities.showAlert(
-                                                                'Contact us',
-                                                                'For some reason, we were unable to delete your account. Please contact us at harriercentral@gmail.com to request us to manually delete your account. Our apologies for the inconvenience. Meanwhile, we will remove all of your personal information related to Harrier Central from your phone.\r\n\r\nOnce the information has been deleted, the Harrier Central app will restart. We suggest closing the app and deleting it as it is useless without an account.',
-                                                                'OK',
-                                                              );
-                                                            }
-
-                                                            await clearPrefs();
-                                                            await DBProvider.deleteDb(
-                                                              DB_NAME,
+                                                        bool? result2 =
+                                                            await Utilities.showAlert(
+                                                              'Delete Account',
+                                                              'Just to double check since this cannot be undone. Are you sure you want to PERMANENTLY DELETE your account?',
+                                                              'Delete Account',
+                                                              showCancelButton:
+                                                                  true,
+                                                              cancelButtonText:
+                                                                  'Keep Account',
                                                             );
 
-                                                            // Get.reset(
-                                                            //   clearRouteBindings:
-                                                            //       true,
-                                                            // );
+                                                        if (result2 ?? false) {
+                                                          // String? tpLoginType = getStringPref(StringPrefsEnum.thirdPartyLoginType);
+                                                          // if ((tpLoginType != null) && (tpLoginType == ThirdPartyLoginType.facebook.name)) {
+                                                          //   await FacebookAuth.instance.logOut();
+                                                          // }
 
-                                                            Get.offAll(
-                                                              () =>
-                                                                  AppEntryPage(),
+                                                          final GdprDeleteService
+                                                          svc =
+                                                              GdprDeleteService();
+                                                          final SingleResultModel?
+                                                          result = await svc
+                                                              .gdprDelete();
+
+                                                          if ((result?.result ??
+                                                                  '') ==
+                                                              'success') {
+                                                            await Utilities.showAlert(
+                                                              'Successful',
+                                                              'Your account has been deleted. Thanks for using Harrier Central. We hope to see you back one day in the future!\r\n\r\nPlease note, the Harrier Central app must restart after you hit OK. We suggest closing the app and deleting it as it is useless without an account.',
+                                                              'OK',
+                                                            );
+                                                          } else {
+                                                            await Utilities.showAlert(
+                                                              'Contact us',
+                                                              'For some reason, we were unable to delete your account. Please contact us at harriercentral@gmail.com to request us to manually delete your account. Our apologies for the inconvenience. Meanwhile, we will remove all of your personal information related to Harrier Central from your phone.\r\n\r\nOnce the information has been deleted, the Harrier Central app will restart. We suggest closing the app and deleting it as it is useless without an account.',
+                                                              'OK',
                                                             );
                                                           }
+
+                                                          await clearPrefs();
+                                                          await DBProvider.deleteDb(
+                                                            DB_NAME,
+                                                          );
+
+                                                          // Get.reset(
+                                                          //   clearRouteBindings:
+                                                          //       true,
+                                                          // );
+
+                                                          Get.offAll(
+                                                            () =>
+                                                                AppEntryPage(),
+                                                          );
                                                         }
-                                                      },
-                                                      child: Text(
-                                                        'Delete Account',
-                                                        style: ts_button,
-                                                      ),
+                                                      }
+                                                    },
+                                                    child: Text(
+                                                      'Delete Account',
+                                                      style: ts_button,
                                                     ),
                                                   ),
-                                                ],
-                                              ),
+                                                ),
+                                              ],
                                             ),
-                                          ],
-                                        ),
-                                      ],
+                                          ),
+                                        ],
+                                      ),
                                     ],
-                                  ),
+                                  ],
                                 ),
-                                const SizedBox(width: 70, height: 70),
-                              ],
-                            ),
+                              ),
+                              const SizedBox(width: 70, height: 70),
+                            ],
                           ),
                         ),
                       ),
                     ),
+                  ),
           ),
         ),
         Positioned(

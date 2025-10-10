@@ -79,7 +79,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     const Tab(text: LABEL_CHAT),
   ];
 
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> _ScaffoldKey = GlobalKey<ScaffoldState>();
 
   //GlobalKey packListBox = GlobalKey();
 
@@ -125,7 +125,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   Future<List<PackListAggregate>> _refreshPackListFromTable() async {
     List<PackListAggregate> pla = <PackListAggregate>[];
 
-    final String query = '''
+    final String query =
+        '''
         SELECT  
           hem.*,
           h.*,
@@ -187,7 +188,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   Future<void> _refreshPackCountFromTable(bool callSetState) async {
     _packCount = <String, dynamic>{};
 
-    final String query = '''
+    final String query =
+        '''
         SELECT  
           count(case when hem.rsvpState = 3 then 1 else null end) as rsvpYesCount,
           count(case when hem.rsvpState = 2 then 1 else null end) as rsvpMaybeCount,
@@ -313,8 +315,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         if (Get.isRegistered<FutureRunListPageController>()) {
           final controller = Get.find<FutureRunListPageController>();
           controller
-              .thisEventUnseenChats[widget.futureRun.event.publicEventId]
-              ?.value = 0;
+                  .thisEventUnseenChats[widget.futureRun.event.publicEventId]
+                  ?.value =
+              0;
           controller.update(['runList', 'chatTab', 'main_nav_page']);
         }
       }
@@ -404,10 +407,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       ),
       child: FutureBuilder(
         future: _thePackList,
-        builder: (
-          BuildContext context,
-          AsyncSnapshot<List<PackListAggregate>?> snapshot,
-        ) {
+        builder: (BuildContext context, AsyncSnapshot<List<PackListAggregate>?> snapshot) {
           if ((!snapshot.hasData) || (snapshot.data == null)) {
             return const HcAppCircularProgressIndicator(key: Key('42223995'));
           } else {
@@ -419,62 +419,57 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                     duration: Duration(milliseconds: 500),
                     curve: Curves.easeInOut,
                     alignment: Alignment.topCenter,
-                    child:
-                        !_slideTopWidget
-                            ? AnimatedOpacity(
-                              opacity: _showTopWidget ? 1.0 : 0.0,
-                              duration: Duration(milliseconds: 400),
-                              onEnd: () {
-                                setState(() {
-                                  _slideTopWidget = true;
-                                });
-                              },
-                              child: Padding(
-                                padding: EdgeInsets.only(
-                                  top: 15,
-                                  left: 20,
-                                  bottom: 0,
-                                ),
-                                child: Column(
-                                  children: [
-                                    Row(
-                                      children: [
-                                        KennelLogo(
-                                          kennelLogoUrl:
-                                              widget
-                                                  .futureRun
-                                                  .kennel
-                                                  .kennelLogo,
-                                          kennelShortName:
-                                              widget
-                                                  .futureRun
-                                                  .kennel
-                                                  .kennelShortName,
-                                          logoHeight: 70,
-                                        ),
-                                        SizedBox(width: 30),
-                                        Expanded(
-                                          child: AutoSizeText(
-                                            widget.futureRun.event.eventName,
-                                            maxLines: 3,
-                                            style: ts_tileTextLarge.copyWith(
-                                              color: Colors.white,
-                                            ),
+                    child: !_slideTopWidget
+                        ? AnimatedOpacity(
+                            opacity: _showTopWidget ? 1.0 : 0.0,
+                            duration: Duration(milliseconds: 400),
+                            onEnd: () {
+                              setState(() {
+                                _slideTopWidget = true;
+                              });
+                            },
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                top: 15,
+                                left: 20,
+                                bottom: 0,
+                              ),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      KennelLogo(
+                                        kennelLogoUrl:
+                                            widget.futureRun.kennel.kennelLogo,
+                                        kennelShortName: widget
+                                            .futureRun
+                                            .kennel
+                                            .kennelShortName,
+                                        logoHeight: 70,
+                                      ),
+                                      SizedBox(width: 30),
+                                      Expanded(
+                                        child: AutoSizeText(
+                                          widget.futureRun.event.eventName,
+                                          maxLines: 3,
+                                          style: ts_tileTextLarge.copyWith(
+                                            color: Colors.white,
                                           ),
                                         ),
-                                        SizedBox(width: 20),
-                                      ],
-                                    ),
-                                    SizedBox(height: 25),
-                                    FancyDivider(
-                                      key: ValueKey('divider2342'),
-                                      innerColor: Colors.white,
-                                    ),
-                                  ],
-                                ),
+                                      ),
+                                      SizedBox(width: 20),
+                                    ],
+                                  ),
+                                  SizedBox(height: 25),
+                                  FancyDivider(
+                                    key: ValueKey('divider2342'),
+                                    innerColor: Colors.white,
+                                  ),
+                                ],
                               ),
-                            )
-                            : SizedBox(),
+                            ),
+                          )
+                        : SizedBox(),
                   ), // Collapses cleanly
 
                   Padding(
@@ -504,23 +499,22 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                   ),
                                   IconButton(
                                     icon: const Icon(FontAwesome.check_circle),
-                                    color:
-                                        _thisUserIndex == -1
-                                            ? Colors.grey
-                                            : snapshot
-                                                    .data![_thisUserIndex]
-                                                    .hem
-                                                    .rsvpState ==
-                                                rsvpYes.value
-                                            ? Colors.green
-                                            : (snapshot
-                                                        .data![_thisUserIndex]
-                                                        .hem
-                                                        .rsvpState ==
-                                                    -1 &&
-                                                _rsvpRequested == rsvpYes)
-                                            ? hc_blue
-                                            : Colors.grey,
+                                    color: _thisUserIndex == -1
+                                        ? Colors.grey
+                                        : snapshot
+                                                  .data![_thisUserIndex]
+                                                  .hem
+                                                  .rsvpState ==
+                                              rsvpYes.value
+                                        ? Colors.green
+                                        : (snapshot
+                                                      .data![_thisUserIndex]
+                                                      .hem
+                                                      .rsvpState ==
+                                                  -1 &&
+                                              _rsvpRequested == rsvpYes)
+                                        ? hc_blue
+                                        : Colors.grey,
                                     //tooltip: 'Select to follow a Kennel',
                                     iconSize: 35.0,
                                     alignment: Alignment.topCenter,
@@ -548,7 +542,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                               Text(
                                 (_packCount['rsvpYesCount'] ?? 0) >= 0
                                     ? (_packCount['rsvpYesCount'] ?? 0)
-                                        .toString()
+                                          .toString()
                                     : '',
                                 style: rsvpTitlesView,
                               ),
@@ -583,23 +577,22 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                     icon: const Icon(
                                       FontAwesome.question_circle,
                                     ),
-                                    color:
-                                        _thisUserIndex == -1
-                                            ? Colors.grey
-                                            : snapshot
-                                                    .data![_thisUserIndex]
-                                                    .hem
-                                                    .rsvpState ==
-                                                rsvpMaybe.value
-                                            ? Colors.orange
-                                            : (snapshot
-                                                        .data![_thisUserIndex]
-                                                        .hem
-                                                        .rsvpState ==
-                                                    -1 &&
-                                                _rsvpRequested == rsvpMaybe)
-                                            ? hc_blue
-                                            : Colors.grey,
+                                    color: _thisUserIndex == -1
+                                        ? Colors.grey
+                                        : snapshot
+                                                  .data![_thisUserIndex]
+                                                  .hem
+                                                  .rsvpState ==
+                                              rsvpMaybe.value
+                                        ? Colors.orange
+                                        : (snapshot
+                                                      .data![_thisUserIndex]
+                                                      .hem
+                                                      .rsvpState ==
+                                                  -1 &&
+                                              _rsvpRequested == rsvpMaybe)
+                                        ? hc_blue
+                                        : Colors.grey,
                                     //tooltip: 'Select to follow a Kennel',
                                     iconSize: 35.0,
                                     alignment: Alignment.topCenter,
@@ -613,7 +606,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                               Text(
                                 (_packCount['rsvpMaybeCount'] ?? 0) >= 0
                                     ? (_packCount['rsvpMaybeCount'] ?? 0)
-                                        .toString()
+                                          .toString()
                                     : '',
                                 style: rsvpTitlesView,
                               ),
@@ -658,23 +651,22 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                   ),
                                   IconButton(
                                     icon: const Icon(FontAwesome.times_circle),
-                                    color:
-                                        _thisUserIndex == -1
-                                            ? Colors.grey
-                                            : snapshot
-                                                    .data![_thisUserIndex]
-                                                    .hem
-                                                    .rsvpState ==
-                                                rsvpNo.value
-                                            ? hc_red
-                                            : (snapshot
-                                                        .data![_thisUserIndex]
-                                                        .hem
-                                                        .rsvpState ==
-                                                    -1 &&
-                                                _rsvpRequested == rsvpNo)
-                                            ? hc_blue
-                                            : Colors.grey,
+                                    color: _thisUserIndex == -1
+                                        ? Colors.grey
+                                        : snapshot
+                                                  .data![_thisUserIndex]
+                                                  .hem
+                                                  .rsvpState ==
+                                              rsvpNo.value
+                                        ? hc_red
+                                        : (snapshot
+                                                      .data![_thisUserIndex]
+                                                      .hem
+                                                      .rsvpState ==
+                                                  -1 &&
+                                              _rsvpRequested == rsvpNo)
+                                        ? hc_blue
+                                        : Colors.grey,
                                     //tooltip: 'Select to follow a Kennel',
                                     iconSize: 35.0,
                                     alignment: Alignment.topCenter,
@@ -688,7 +680,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                               Text(
                                 (_packCount['rsvpNoCount'] ?? 0) >= 0
                                     ? (_packCount['rsvpNoCount'] ?? 0)
-                                        .toString()
+                                          .toString()
                                     : '',
                                 style: rsvpTitlesView,
                               ),
@@ -733,22 +725,21 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                     icon: const ImageIcon(
                                       AssetImage('images/icons/hare_icon.png'),
                                     ),
-                                    color:
-                                        _thisUserIndex == -1
-                                            ? Colors.grey
-                                            : snapshot
-                                                    .data![_thisUserIndex]
-                                                    .hem
-                                                    .isHare ==
-                                                isHareYes.value
-                                            ? Colors.deepPurple
-                                            : snapshot
-                                                    .data![_thisUserIndex]
-                                                    .hem
-                                                    .isHare ==
-                                                -1
-                                            ? hc_blue
-                                            : Colors.grey,
+                                    color: _thisUserIndex == -1
+                                        ? Colors.grey
+                                        : snapshot
+                                                  .data![_thisUserIndex]
+                                                  .hem
+                                                  .isHare ==
+                                              isHareYes.value
+                                        ? Colors.deepPurple
+                                        : snapshot
+                                                  .data![_thisUserIndex]
+                                                  .hem
+                                                  .isHare ==
+                                              -1
+                                        ? hc_blue
+                                        : Colors.grey,
                                     //tooltip: 'Select to follow a Kennel',
                                     iconSize: 30.0,
                                     alignment: Alignment.center,
@@ -762,7 +753,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                               Text(
                                 (_packCount['isHareCount'] ?? 0) >= 0
                                     ? (_packCount['isHareCount'] ?? 0)
-                                        .toString()
+                                          .toString()
                                     : '',
                                 style: rsvpTitlesView,
                               ),
@@ -773,510 +764,488 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                     ),
                   ),
                   Expanded(
-                    child:
-                        !snapshot.hasData
-                            ? const SizedBox(
-                              //color: Colors.grey[300],
-                              width: 70.0,
-                              height: 70.0,
-                              child: Padding(
-                                padding: EdgeInsets.all(5.0),
-                                child: Center(
-                                  child: HcAppCircularProgressIndicator(
-                                    key: Key('22030392'),
-                                  ),
+                    child: !snapshot.hasData
+                        ? const SizedBox(
+                            //color: Colors.grey[300],
+                            width: 70.0,
+                            height: 70.0,
+                            child: Padding(
+                              padding: EdgeInsets.all(5.0),
+                              child: Center(
+                                child: HcAppCircularProgressIndicator(
+                                  key: Key('22030392'),
                                 ),
                               ),
-                            )
-                            : ((snapshot.data!.isEmpty) &&
-                                (widget.futureRun.event.eventStartDatetime
-                                    .isAfter(
-                                      DateTime.now().subtract(
-                                        const Duration(hours: 6),
-                                      ),
-                                    )))
-                            ? Column(
-                              children: <Widget>[
+                            ),
+                          )
+                        : ((snapshot.data!.isEmpty) &&
+                              (widget.futureRun.event.eventStartDatetime
+                                  .isAfter(
+                                    DateTime.now().subtract(
+                                      const Duration(hours: 6),
+                                    ),
+                                  )))
+                        ? Column(
+                            children: <Widget>[
+                              const Expanded(flex: 40, child: SizedBox()),
+                              Text(
+                                'Be the first to RSVP\r\nfor this run!',
+                                style: ts_headingVeryLarge,
+                                textAlign: TextAlign.center,
+                              ),
+                              if (_thisUserIndex == -1) ..._getRsvpButtons(),
+                              if (_thisUserIndex == -1) ...<Widget>[
                                 const Expanded(flex: 40, child: SizedBox()),
-                                Text(
-                                  'Be the first to RSVP\r\nfor this run!',
-                                  style: ts_headingVeryLarge,
-                                  textAlign: TextAlign.center,
-                                ),
-                                if (_thisUserIndex == -1) ..._getRsvpButtons(),
-                                if (_thisUserIndex == -1) ...<Widget>[
-                                  const Expanded(flex: 40, child: SizedBox()),
-                                ],
                               ],
-                            )
-                            : Column(
-                              children: <Widget>[
-                                if ((_thisUserIndex == -1) &&
-                                    (widget.futureRun.event.eventStartDatetime
-                                        .isAfter(
-                                          DateTime.now().subtract(
-                                            const Duration(hours: 6),
-                                          ),
-                                        )))
-                                  ..._getRsvpButtons(),
-                                if (_thisUserIndex == -1) ...<Widget>[
-                                  const SizedBox(height: 10),
-                                ],
-                                if ((_thisUserIndex >= 0) &&
-                                    (snapshot
-                                            .data![_thisUserIndex]
-                                            .hem
-                                            .rsvpState >=
-                                        rsvpMaybe.value)) ...<Widget>[
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 8.0),
-                                    child: ElevatedButton(
-                                      child: SizedBox(
-                                        width: 230.0,
-                                        height: 40.0,
-                                        child: Row(
-                                          children: <Widget>[
-                                            Stack(
-                                              alignment:
-                                                  AlignmentDirectional.center,
-                                              children: <Widget>[
-                                                Container(
-                                                  height: 24,
-                                                  width: 24,
-                                                  decoration:
-                                                      const BoxDecoration(
-                                                        color: Colors.white,
-                                                        shape: BoxShape.circle,
-                                                      ),
-                                                ),
-                                                const SizedBox(
-                                                  height: 22.0,
-                                                  width: 22.0,
-                                                  child: Icon(
-                                                    Icons.calendar_month,
-                                                    size: 22.0,
-                                                    color: Colors.black,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(width: 15.0),
-                                            Text(
-                                              'Add to calendar',
-                                              style: ts_button,
-                                            ),
-                                          ],
+                            ],
+                          )
+                        : Column(
+                            children: <Widget>[
+                              if ((_thisUserIndex == -1) &&
+                                  (widget.futureRun.event.eventStartDatetime
+                                      .isAfter(
+                                        DateTime.now().subtract(
+                                          const Duration(hours: 6),
                                         ),
-                                      ),
-                                      onPressed: () async {
-                                        // THIS IS A H@CK: strip the "Z" timezone character off of the time so it imports as local time and not GMT
-                                        String url =
-                                            'https://www.hashruns.org/${widget.futureRun.kennel.kennelUniqueShortName}/${widget.futureRun.event.eventNumber}';
-
-                                        String startTime =
-                                            widget
-                                                .futureRun
-                                                .event
-                                                .eventStartDatetime
-                                                .toString();
-                                        startTime = startTime.substring(
-                                          0,
-                                          startTime.length - 1,
-                                        );
-                                        DateTime localTime = DateTime.parse(
-                                          startTime,
-                                        );
-
-                                        String? oneLineLocForDesc =
-                                            widget
-                                                .futureRun
-                                                .event
-                                                .locationOneLineDesc;
-
-                                        String? oneLineLocForTitle;
-
-                                        if ((oneLineLocForDesc != null) &&
-                                            (oneLineLocForDesc.isNotEmpty)) {
-                                          oneLineLocForTitle =
-                                              ' @ $oneLineLocForDesc';
-                                          oneLineLocForDesc =
-                                              'Location: $oneLineLocForDesc\r\n\r\n';
-                                        } else {
-                                          oneLineLocForDesc = '';
-                                          oneLineLocForTitle = '';
-                                        }
-
-                                        var eventide = Eventide();
-
-                                        // Create an event in the default calendar (iOS write-only access)
-                                        await eventide
-                                            .createEventInDefaultCalendar(
-                                              title:
-                                                  widget
-                                                      .futureRun
-                                                      .event
-                                                      .eventName +
-                                                  oneLineLocForTitle,
-                                              description:
-                                                  oneLineLocForDesc +
-                                                  (widget
-                                                          .futureRun
-                                                          .event
-                                                          .eventDescription ??
-                                                      ''),
-                                              startDate: localTime,
-                                              endDate: localTime.add(
-                                                Duration(hours: 4),
+                                      )))
+                                ..._getRsvpButtons(),
+                              if (_thisUserIndex == -1) ...<Widget>[
+                                const SizedBox(height: 10),
+                              ],
+                              if ((_thisUserIndex >= 0) &&
+                                  (snapshot
+                                          .data![_thisUserIndex]
+                                          .hem
+                                          .rsvpState >=
+                                      rsvpMaybe.value)) ...<Widget>[
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 8.0),
+                                  child: ElevatedButton(
+                                    child: SizedBox(
+                                      width: 230.0,
+                                      height: 40.0,
+                                      child: Row(
+                                        children: <Widget>[
+                                          Stack(
+                                            alignment:
+                                                AlignmentDirectional.center,
+                                            children: <Widget>[
+                                              Container(
+                                                height: 24,
+                                                width: 24,
+                                                decoration: const BoxDecoration(
+                                                  color: Colors.white,
+                                                  shape: BoxShape.circle,
+                                                ),
                                               ),
-                                              url: url,
-                                            );
-
-                                        Get.closeAllSnackbars();
-
-                                        Get.showSnackbar(
-                                          GetSnackBar(
-                                            title: 'Calendar',
-                                            message:
-                                                '${widget.futureRun.event.eventName}$oneLineLocForTitle has been added to your calendar',
-                                            duration: const Duration(
-                                              seconds: 5,
-                                            ),
-                                            backgroundColor: Colors.blue,
+                                              const SizedBox(
+                                                height: 22.0,
+                                                width: 22.0,
+                                                child: Icon(
+                                                  Icons.calendar_month,
+                                                  size: 22.0,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        );
-
-                                        // if (success) {
-
-                                        // calendar.CalendarEvent
-                                        // newEvent = calendar.CalendarEvent(
-                                        //   title:
-                                        //       widget.futureRun.event.eventName +
-                                        //       oneLineLocForTitle,
-                                        //   description:
-                                        //       oneLineLocForDesc +
-                                        //       (widget
-                                        //               .futureRun
-                                        //               .event
-                                        //               .eventDescription ??
-                                        //           ''),
-                                        //   startDate: localTime,
-                                        //   endDate: localTime.add(
-                                        //     const Duration(hours: 4),
-                                        //   ),
-                                        //   location:
-                                        //       widget
-                                        //           .futureRun
-                                        //           .extensions
-                                        //           .userFriendlyLocation,
-                                        //   url:
-                                        //       'https://www.hashruns.org/#/RID?publicEventId=${widget.futureRun.event.publicEventId}&textTheme=light',
-                                        // );
-
-                                        // final calendar.CalendarPlugin
-                                        // calendarPlugIn =
-                                        //     calendar.CalendarPlugin();
-                                        // var calendars =
-                                        //     await calendarPlugIn.getCalendars();
-
-                                        // if ((calendars?.isNotEmpty ?? false) &&
-                                        //     (calendars![0].id != null)) {
-                                        //   calendarPlugIn
-                                        //       .createEvent(
-                                        //         calendarId: calendars[0].id!,
-                                        //         event: newEvent,
-                                        //       )
-                                        //       .then((evenId) {
-                                        //         setState(() {
-                                        //           debugPrint(
-                                        //             'Event Id is: $evenId',
-                                        //           );
-                                        //         });
-                                        //       });
-                                        // }
-
-                                        // Event event = Event(
-                                        //   title:
-                                        //       widget.futureRun.event.eventName +
-                                        //       oneLineLocForTitle,
-                                        //   description:
-                                        //       oneLineLocForDesc +
-                                        //       (widget
-                                        //               .futureRun
-                                        //               .event
-                                        //               .eventDescription ??
-                                        //           ''),
-                                        //   location:
-                                        //       widget
-                                        //           .futureRun
-                                        //           .extensions
-                                        //           .userFriendlyLocation,
-                                        //   startDate: localTime,
-                                        //   endDate: localTime.add(
-                                        //     const Duration(hours: 4),
-                                        //   ),
-                                        //   iosParams: IOSParams(
-                                        //     reminder: const Duration(
-                                        //       hours: 4,
-                                        //     ), // on iOS, you can set alarm notification after your event.
-                                        //     url:
-                                        //         'https://www.hashruns.org/#/RID?publicEventId=${widget.futureRun.event.publicEventId}&textTheme=light', // on iOS, you can set url to your event.
-                                        //   ),
-                                        //   // androidParams: AndroidParams(
-                                        //   //   emailInvites: [], // on Android, you can add invite emails to your event.
-                                        //   // ),
-                                        // );
-
-                                        // PermissionStatus ps;
-
-                                        // if (!await Permission.calendarFullAccess.isGranted) {
-                                        //   ps = await Permission.calendarReadOnly.request();
-                                        //   if (ps.isGranted) {
-                                        //     ps = await Permission.calendarFullAccess.request();
-                                        //   }
-                                        // }
-
-                                        // await Add2Calendar.addEvent2Cal(event);
-
-                                        // bool success = await Add2Calendar.addEvent2Cal(event);
-
-                                        // if (success) {
-                                        //   await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Calendar', '${widget.futureRun.event.eventName} has been added to your calendar', 'OK');
-                                        // } else {
-                                        //   await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Calendar', '${widget.futureRun.event.eventName} was not added to your calendar', 'OK');
-                                        // }
-                                      },
+                                          const SizedBox(width: 15.0),
+                                          Text(
+                                            'Add to calendar',
+                                            style: ts_button,
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
-                                Container(
-                                  padding: const EdgeInsets.all(8.0),
-                                  width: 140.0,
-                                  // Reviewed for 2.0+
-                                  child: TabBar(
-                                    onTap: (void _) {
-                                      setState(() {});
+                                    onPressed: () async {
+                                      // THIS IS A H@CK: strip the "Z" timezone character off of the time so it imports as local time and not GMT
+                                      String url =
+                                          'https://www.hashruns.org/${widget.futureRun.kennel.kennelUniqueShortName}/${widget.futureRun.event.eventNumber}';
+
+                                      String startTime = widget
+                                          .futureRun
+                                          .event
+                                          .eventStartDatetime
+                                          .toString();
+                                      startTime = startTime.substring(
+                                        0,
+                                        startTime.length - 1,
+                                      );
+                                      DateTime localTime = DateTime.parse(
+                                        startTime,
+                                      );
+
+                                      String? oneLineLocForDesc = widget
+                                          .futureRun
+                                          .event
+                                          .locationOneLineDesc;
+
+                                      String? oneLineLocForTitle;
+
+                                      if ((oneLineLocForDesc != null) &&
+                                          (oneLineLocForDesc.isNotEmpty)) {
+                                        oneLineLocForTitle =
+                                            ' @ $oneLineLocForDesc';
+                                        oneLineLocForDesc =
+                                            'Location: $oneLineLocForDesc\r\n\r\n';
+                                      } else {
+                                        oneLineLocForDesc = '';
+                                        oneLineLocForTitle = '';
+                                      }
+
+                                      var eventide = Eventide();
+
+                                      // Create an event in the default calendar (iOS write-only access)
+                                      await eventide
+                                          .createEventInDefaultCalendar(
+                                            title:
+                                                widget
+                                                    .futureRun
+                                                    .event
+                                                    .eventName +
+                                                oneLineLocForTitle,
+                                            description:
+                                                oneLineLocForDesc +
+                                                (widget
+                                                        .futureRun
+                                                        .event
+                                                        .eventDescription ??
+                                                    ''),
+                                            startDate: localTime,
+                                            endDate: localTime.add(
+                                              Duration(hours: 4),
+                                            ),
+                                            url: url,
+                                          );
+
+                                      Get.closeAllSnackbars();
+
+                                      Get.showSnackbar(
+                                        GetSnackBar(
+                                          title: 'Calendar',
+                                          message:
+                                              '${widget.futureRun.event.eventName}$oneLineLocForTitle has been added to your calendar',
+                                          duration: const Duration(seconds: 5),
+                                          backgroundColor: Colors.blue,
+                                        ),
+                                      );
+
+                                      // if (success) {
+
+                                      // calendar.CalendarEvent
+                                      // newEvent = calendar.CalendarEvent(
+                                      //   title:
+                                      //       widget.futureRun.event.eventName +
+                                      //       oneLineLocForTitle,
+                                      //   description:
+                                      //       oneLineLocForDesc +
+                                      //       (widget
+                                      //               .futureRun
+                                      //               .event
+                                      //               .eventDescription ??
+                                      //           ''),
+                                      //   startDate: localTime,
+                                      //   endDate: localTime.add(
+                                      //     const Duration(hours: 4),
+                                      //   ),
+                                      //   location:
+                                      //       widget
+                                      //           .futureRun
+                                      //           .extensions
+                                      //           .userFriendlyLocation,
+                                      //   url:
+                                      //       'https://www.hashruns.org/#/RID?publicEventId=${widget.futureRun.event.publicEventId}&textTheme=light',
+                                      // );
+
+                                      // final calendar.CalendarPlugin
+                                      // calendarPlugIn =
+                                      //     calendar.CalendarPlugin();
+                                      // var calendars =
+                                      //     await calendarPlugIn.getCalendars();
+
+                                      // if ((calendars?.isNotEmpty ?? false) &&
+                                      //     (calendars![0].id != null)) {
+                                      //   calendarPlugIn
+                                      //       .createEvent(
+                                      //         calendarId: calendars[0].id!,
+                                      //         event: newEvent,
+                                      //       )
+                                      //       .then((evenId) {
+                                      //         setState(() {
+                                      //           debugPrint(
+                                      //             'Event Id is: $evenId',
+                                      //           );
+                                      //         });
+                                      //       });
+                                      // }
+
+                                      // Event event = Event(
+                                      //   title:
+                                      //       widget.futureRun.event.eventName +
+                                      //       oneLineLocForTitle,
+                                      //   description:
+                                      //       oneLineLocForDesc +
+                                      //       (widget
+                                      //               .futureRun
+                                      //               .event
+                                      //               .eventDescription ??
+                                      //           ''),
+                                      //   location:
+                                      //       widget
+                                      //           .futureRun
+                                      //           .extensions
+                                      //           .userFriendlyLocation,
+                                      //   startDate: localTime,
+                                      //   endDate: localTime.add(
+                                      //     const Duration(hours: 4),
+                                      //   ),
+                                      //   iosParams: IOSParams(
+                                      //     reminder: const Duration(
+                                      //       hours: 4,
+                                      //     ), // on iOS, you can set alarm notification after your event.
+                                      //     url:
+                                      //         'https://www.hashruns.org/#/RID?publicEventId=${widget.futureRun.event.publicEventId}&textTheme=light', // on iOS, you can set url to your event.
+                                      //   ),
+                                      //   // androidParams: AndroidParams(
+                                      //   //   emailInvites: [], // on Android, you can add invite emails to your event.
+                                      //   // ),
+                                      // );
+
+                                      // PermissionStatus ps;
+
+                                      // if (!await Permission.calendarFullAccess.isGranted) {
+                                      //   ps = await Permission.calendarReadOnly.request();
+                                      //   if (ps.isGranted) {
+                                      //     ps = await Permission.calendarFullAccess.request();
+                                      //   }
+                                      // }
+
+                                      // await Add2Calendar.addEvent2Cal(event);
+
+                                      // bool success = await Add2Calendar.addEvent2Cal(event);
+
+                                      // if (success) {
+                                      //   await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Calendar', '${widget.futureRun.event.eventName} has been added to your calendar', 'OK');
+                                      // } else {
+                                      //   await IveCoreUtilities.showAlert(navigatorKey.currentContext, 'Calendar', '${widget.futureRun.event.eventName} was not added to your calendar', 'OK');
+                                      // }
                                     },
-                                    isScrollable:
-                                        true, // <-- required for labelPadding
-                                    tabAlignment:
-                                        TabAlignment
-                                            .center, // Flutter 3.13+ to keep centered
-
-                                    unselectedLabelColor: Colors.white,
-                                    labelColor: Colors.white,
-                                    indicatorSize: TabBarIndicatorSize.label,
-                                    // labelPadding: EdgeInsets.symmetric(
-                                    //   horizontal: 20.0,
-                                    // ),
-                                    indicatorPadding: EdgeInsets.symmetric(
-                                      horizontal: -5.0,
-                                      vertical: 3.0,
-                                    ),
-                                    indicator: BoxDecoration(
-                                      color: hc_red,
-                                      borderRadius: BorderRadius.circular(999),
-                                    ),
-                                    tabs: const <Tab>[
-                                      Tab(
-                                        icon: Icon(
-                                          MaterialCommunityIcons
-                                              .format_list_bulleted_square,
-                                        ),
-                                      ),
-                                      Tab(
-                                        icon: Icon(
-                                          MaterialCommunityIcons
-                                              .view_grid_outline,
-                                        ),
-                                      ),
-                                    ],
-                                    controller: _gridListTabController,
                                   ),
                                 ),
-                                Expanded(
-                                  child: Container(
-                                    //key: packListBox,
-                                    color: const Color.fromARGB(
-                                      60,
-                                      255,
-                                      255,
-                                      255,
+                              ],
+                              Container(
+                                padding: const EdgeInsets.all(8.0),
+                                width: 140.0,
+                                // Reviewed for 2.0+
+                                child: TabBar(
+                                  onTap: (void _) {
+                                    setState(() {});
+                                  },
+                                  isScrollable:
+                                      true, // <-- required for labelPadding
+                                  tabAlignment: TabAlignment
+                                      .center, // Flutter 3.13+ to keep centered
+
+                                  unselectedLabelColor: Colors.white,
+                                  labelColor: Colors.white,
+                                  indicatorSize: TabBarIndicatorSize.label,
+                                  // labelPadding: EdgeInsets.symmetric(
+                                  //   horizontal: 20.0,
+                                  // ),
+                                  indicatorPadding: EdgeInsets.symmetric(
+                                    horizontal: -5.0,
+                                    vertical: 3.0,
+                                  ),
+                                  indicator: BoxDecoration(
+                                    color: hc_red,
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                  tabs: const <Tab>[
+                                    Tab(
+                                      icon: Icon(
+                                        MaterialCommunityIcons
+                                            .format_list_bulleted_square,
+                                      ),
                                     ),
-                                    margin: const EdgeInsets.only(
-                                      left: 16.0,
-                                      right: 16.0,
-                                      bottom: 15.0,
+                                    Tab(
+                                      icon: Icon(
+                                        MaterialCommunityIcons
+                                            .view_grid_outline,
+                                      ),
                                     ),
-                                    padding: const EdgeInsets.all(8.0),
-                                    width: MediaQuery.of(context).size.width,
-                                    child: Scrollbar(
-                                      controller: _scrollController,
-                                      child: RefreshIndicator(
-                                        onRefresh:
-                                            () => _refreshHemTableFromBackend(
-                                              true,
-                                            ),
-                                        child:
-                                            _gridListTabController.index == 0
-                                                ? ListView.separated(
-                                                  separatorBuilder:
-                                                      (
-                                                        BuildContext context,
-                                                        int index,
-                                                      ) => const Divider(
-                                                        height: 3.0,
-                                                        color: Colors.black45,
-                                                        thickness: 1.5,
-                                                      ),
-                                                  physics:
-                                                      const AlwaysScrollableScrollPhysics(),
-                                                  controller: _scrollController,
-                                                  itemCount:
-                                                      snapshot.data!.length,
-                                                  itemBuilder: (
+                                  ],
+                                  controller: _gridListTabController,
+                                ),
+                              ),
+                              Expanded(
+                                child: Container(
+                                  //key: packListBox,
+                                  color: const Color.fromARGB(
+                                    60,
+                                    255,
+                                    255,
+                                    255,
+                                  ),
+                                  margin: const EdgeInsets.only(
+                                    left: 16.0,
+                                    right: 16.0,
+                                    bottom: 15.0,
+                                  ),
+                                  padding: const EdgeInsets.all(8.0),
+                                  width: MediaQuery.of(context).size.width,
+                                  child: Scrollbar(
+                                    controller: _scrollController,
+                                    child: RefreshIndicator(
+                                      onRefresh: () =>
+                                          _refreshHemTableFromBackend(true),
+                                      child: _gridListTabController.index == 0
+                                          ? ListView.separated(
+                                              separatorBuilder:
+                                                  (
                                                     BuildContext context,
                                                     int index,
-                                                  ) {
-                                                    final PackListAggregate e =
-                                                        snapshot.data![index];
+                                                  ) => const Divider(
+                                                    height: 3.0,
+                                                    color: Colors.black45,
+                                                    thickness: 1.5,
+                                                  ),
+                                              physics:
+                                                  const AlwaysScrollableScrollPhysics(),
+                                              controller: _scrollController,
+                                              itemCount: snapshot.data!.length,
+                                              itemBuilder: (BuildContext context, int index) {
+                                                final PackListAggregate e =
+                                                    snapshot.data![index];
 
-                                                    return GestureDetector(
-                                                      onTap: () {
-                                                        if (e.hasher.photo !=
-                                                            null) {
-                                                          _getHasherZoomablePhoto(
-                                                            e.hasher.photo!,
-                                                            e.displayName,
-                                                          );
-                                                        }
-                                                      },
-                                                      child: Row(
-                                                        children: <Widget>[
-                                                          _rsvpIcon(e),
-                                                          const SizedBox(
-                                                            width: 6.0,
-                                                          ),
-                                                          Container(
-                                                            height: 60,
-                                                            width: 60,
-                                                            padding:
-                                                                const EdgeInsets.all(
-                                                                  4,
-                                                                ),
-                                                            child: _hasherPhoto(
-                                                              e,
-                                                              false,
-                                                            ),
-                                                          ),
-                                                          const SizedBox(
-                                                            width: 8.0,
-                                                          ),
-                                                          Expanded(
-                                                            child: Container(
-                                                              padding:
-                                                                  const EdgeInsets.only(
-                                                                    top: 1.0,
-                                                                  ),
-                                                              child: Column(
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .center,
-                                                                crossAxisAlignment:
-                                                                    CrossAxisAlignment
-                                                                        .start,
-                                                                children: [
-                                                                  Text(
-                                                                    e.hem.hemKennelHashName ??
-                                                                        e.displayName,
-                                                                    style:
-                                                                        ts_condensedLarge,
-                                                                  ),
-                                                                  if (e.homeKennelName !=
-                                                                      null)
-                                                                    Padding(
-                                                                      padding:
-                                                                          const EdgeInsets.only(
-                                                                            top:
-                                                                                4.0,
-                                                                          ),
-                                                                      child: Text(
-                                                                        e.homeKennelName!,
-                                                                        overflow:
-                                                                            TextOverflow.ellipsis,
-                                                                        style:
-                                                                            ts_bodySmall,
-                                                                      ),
-                                                                    ),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    );
+                                                return GestureDetector(
+                                                  onTap: () {
+                                                    if (e.hasher.photo !=
+                                                        null) {
+                                                      _getHasherZoomablePhoto(
+                                                        e.hasher.photo!,
+                                                        e.displayName,
+                                                      );
+                                                    }
                                                   },
-                                                )
-                                                : SingleChildScrollView(
-                                                  controller: _scrollController,
-                                                  child: Column(
+                                                  child: Row(
                                                     children: <Widget>[
-                                                      StaggeredGrid.count(
-                                                        mainAxisSpacing: 8.0,
-                                                        crossAxisSpacing: 8.0,
-                                                        crossAxisCount: 4,
-                                                        axisDirection:
-                                                            AxisDirection.down,
-                                                        children:
-                                                            snapshot.data!.map((
-                                                              PackListAggregate
-                                                              e,
-                                                            ) {
-                                                              return StaggeredGridTile.count(
-                                                                crossAxisCellCount:
-                                                                    (e.hem.isHare !=
-                                                                            0)
-                                                                        ? 2
-                                                                        : 1,
-                                                                mainAxisCellCount:
-                                                                    (e.hem.isHare !=
-                                                                            0)
-                                                                        ? 2
-                                                                        : 1,
-                                                                child: GestureDetector(
-                                                                  onTap: () {
-                                                                    if (e
-                                                                            .hasher
-                                                                            .photo !=
-                                                                        null) {
-                                                                      _getHasherZoomablePhoto(
-                                                                        e
-                                                                            .hasher
-                                                                            .photo!,
-                                                                        e.displayName,
-                                                                      );
-                                                                    }
-                                                                  },
-                                                                  child:
-                                                                      _hasherPhoto(
-                                                                        e,
-                                                                        true,
-                                                                      ),
-                                                                ),
-                                                              );
-                                                            }).toList(),
+                                                      _rsvpIcon(e),
+                                                      const SizedBox(
+                                                        width: 6.0,
+                                                      ),
+                                                      Container(
+                                                        height: 60,
+                                                        width: 60,
+                                                        padding:
+                                                            const EdgeInsets.all(
+                                                              4,
+                                                            ),
+                                                        child: _hasherPhoto(
+                                                          e,
+                                                          false,
+                                                        ),
                                                       ),
                                                       const SizedBox(
-                                                        height: 100.0,
+                                                        width: 8.0,
+                                                      ),
+                                                      Expanded(
+                                                        child: Container(
+                                                          padding:
+                                                              const EdgeInsets.only(
+                                                                top: 1.0,
+                                                              ),
+                                                          child: Column(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .center,
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              Text(
+                                                                e.hem.hemKennelHashName ??
+                                                                    e.displayName,
+                                                                style:
+                                                                    ts_condensedLarge,
+                                                              ),
+                                                              if (e.homeKennelName !=
+                                                                  null)
+                                                                Padding(
+                                                                  padding:
+                                                                      const EdgeInsets.only(
+                                                                        top:
+                                                                            4.0,
+                                                                      ),
+                                                                  child: Text(
+                                                                    e.homeKennelName!,
+                                                                    overflow:
+                                                                        TextOverflow
+                                                                            .ellipsis,
+                                                                    style:
+                                                                        ts_bodySmall,
+                                                                  ),
+                                                                ),
+                                                            ],
+                                                          ),
+                                                        ),
                                                       ),
                                                     ],
                                                   ),
-                                                ),
-                                      ),
+                                                );
+                                              },
+                                            )
+                                          : SingleChildScrollView(
+                                              controller: _scrollController,
+                                              child: Column(
+                                                children: <Widget>[
+                                                  StaggeredGrid.count(
+                                                    mainAxisSpacing: 8.0,
+                                                    crossAxisSpacing: 8.0,
+                                                    crossAxisCount: 4,
+                                                    axisDirection:
+                                                        AxisDirection.down,
+                                                    children: snapshot.data!.map((
+                                                      PackListAggregate e,
+                                                    ) {
+                                                      return StaggeredGridTile.count(
+                                                        crossAxisCellCount:
+                                                            (e.hem.isHare != 0)
+                                                            ? 2
+                                                            : 1,
+                                                        mainAxisCellCount:
+                                                            (e.hem.isHare != 0)
+                                                            ? 2
+                                                            : 1,
+                                                        child: GestureDetector(
+                                                          onTap: () {
+                                                            if (e
+                                                                    .hasher
+                                                                    .photo !=
+                                                                null) {
+                                                              _getHasherZoomablePhoto(
+                                                                e.hasher.photo!,
+                                                                e.displayName,
+                                                              );
+                                                            }
+                                                          },
+                                                          child: _hasherPhoto(
+                                                            e,
+                                                            true,
+                                                          ),
+                                                        ),
+                                                      );
+                                                    }).toList(),
+                                                  ),
+                                                  const SizedBox(height: 100.0),
+                                                ],
+                                              ),
+                                            ),
                                     ),
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
+                          ),
                   ),
                 ],
               ),
@@ -1291,19 +1260,17 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     await Navigator.push<void>(
       context,
       MaterialPageRoute<void>(
-        builder:
-            (BuildContext context) => ZoomableImagePage2(
-              key: const Key('39392001'),
-              pageTitle: dispName,
-              imageUrl: photo.startsWith('http') ? photo : null,
-              assetImage:
-                  photo.contains('bundle://')
-                      ? 'images/avatars/${photo.replaceAll('bundle://', '')}.jpg'
-                      : null,
-              appBarBackgroundColor: themeAppBarBackground,
-              background: Backgrounds.defaultHcBackground(),
-              margin: 20.0,
-            ),
+        builder: (BuildContext context) => ZoomableImagePage2(
+          key: const Key('39392001'),
+          pageTitle: dispName,
+          imageUrl: photo.startsWith('http') ? photo : null,
+          assetImage: photo.contains('bundle://')
+              ? 'images/avatars/${photo.replaceAll('bundle://', '')}.jpg'
+              : null,
+          appBarBackgroundColor: themeAppBarBackground,
+          background: Backgrounds.defaultHcBackground(),
+          margin: 20.0,
+        ),
       ),
     );
   }
@@ -1313,28 +1280,28 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       children: <Widget>[
         (e.hem.hemKennelUserPhoto ?? e.hasher.photo!).startsWith('http')
             ? CachedNetworkImage(
-              imageUrl: (e.hem.hemKennelUserPhoto ?? e.hasher.photo!),
-              fadeInDuration: const Duration(milliseconds: 0),
-              width: 300.0,
-              height: 300.0,
-              fit: BoxFit.fill,
-            )
+                imageUrl: (e.hem.hemKennelUserPhoto ?? e.hasher.photo!),
+                fadeInDuration: const Duration(milliseconds: 0),
+                width: 300.0,
+                height: 300.0,
+                fit: BoxFit.fill,
+              )
             : (e.hem.hemKennelUserPhoto ?? e.hasher.photo!).startsWith('bundle')
             ? Image(
-              width: 300.0,
-              height: 300.0,
-              fit: BoxFit.fill,
-              image: AssetImage(
-                ('images/avatars/${(e.hem.hemKennelUserPhoto ?? e.hasher.photo!).toLowerCase().replaceFirst('bundle://', '')}.jpg')
-                    .toLowerCase(),
-              ),
-            )
+                width: 300.0,
+                height: 300.0,
+                fit: BoxFit.fill,
+                image: AssetImage(
+                  ('images/avatars/${(e.hem.hemKennelUserPhoto ?? e.hasher.photo!).toLowerCase().replaceFirst('bundle://', '')}.jpg')
+                      .toLowerCase(),
+                ),
+              )
             : const Image(
-              width: 300.0,
-              height: 300.0,
-              fit: BoxFit.fill,
-              image: AssetImage('images/avatars/avatar-2.jpg'),
-            ),
+                width: 300.0,
+                height: 300.0,
+                fit: BoxFit.fill,
+                image: AssetImage('images/avatars/avatar-2.jpg'),
+              ),
         if (isGrid) ...<Widget>[
           Positioned(right: 1.0, bottom: 1.0, child: _rsvpIcon(e)),
         ],
@@ -1353,22 +1320,22 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
             ? Icon(FontAwesome.times_circle, color: hc_red, size: 21.0)
             : (e.hem.rsvpState == 2)
             ? const Icon(
-              FontAwesome.question_circle,
-              color: Colors.orange,
-              size: 21.0,
-            )
+                FontAwesome.question_circle,
+                color: Colors.orange,
+                size: 21.0,
+              )
             : (e.hem.isHare == 0)
             ? const Icon(
-              FontAwesome.check_circle,
-              color: Colors.green,
-              size: 21.0,
-            )
+                FontAwesome.check_circle,
+                color: Colors.green,
+                size: 21.0,
+              )
             : Image.asset(
-              'images/icons/hare_icon.png',
-              color: Colors.deepPurple,
-              height: 18.0,
-              width: 18.0,
-            ),
+                'images/icons/hare_icon.png',
+                color: Colors.deepPurple,
+                height: 18.0,
+                width: 18.0,
+              ),
       ],
     );
   }
@@ -1459,52 +1426,51 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
             duration: Duration(milliseconds: 500),
             curve: Curves.easeInOut,
             alignment: Alignment.topCenter,
-            child:
-                !_slideTopWidget
-                    ? AnimatedOpacity(
-                      opacity: _showTopWidget ? 1.0 : 0.0,
-                      duration: Duration(milliseconds: 400),
-                      onEnd: () {
-                        setState(() {
-                          _slideTopWidget = true;
-                        });
-                      },
-                      child: Padding(
-                        padding: EdgeInsets.only(top: 15, left: 20, bottom: 15),
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                KennelLogo(
-                                  kennelLogoUrl:
-                                      widget.futureRun.kennel.kennelLogo,
-                                  kennelShortName:
-                                      widget.futureRun.kennel.kennelShortName,
-                                  logoHeight: 70,
-                                ),
-                                SizedBox(width: 30),
-                                Expanded(
-                                  child: AutoSizeText(
-                                    widget.futureRun.event.eventName,
-                                    maxLines: 3,
-                                    style: ts_tileTextLarge.copyWith(
-                                      color: themeAppBarBackground,
-                                    ),
+            child: !_slideTopWidget
+                ? AnimatedOpacity(
+                    opacity: _showTopWidget ? 1.0 : 0.0,
+                    duration: Duration(milliseconds: 400),
+                    onEnd: () {
+                      setState(() {
+                        _slideTopWidget = true;
+                      });
+                    },
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 15, left: 20, bottom: 15),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              KennelLogo(
+                                kennelLogoUrl:
+                                    widget.futureRun.kennel.kennelLogo,
+                                kennelShortName:
+                                    widget.futureRun.kennel.kennelShortName,
+                                logoHeight: 70,
+                              ),
+                              SizedBox(width: 30),
+                              Expanded(
+                                child: AutoSizeText(
+                                  widget.futureRun.event.eventName,
+                                  maxLines: 3,
+                                  style: ts_tileTextLarge.copyWith(
+                                    color: themeAppBarBackground,
                                   ),
                                 ),
-                                SizedBox(width: 20),
-                              ],
-                            ),
-                            // SizedBox(height: 20),
-                            // FancyDivider(
-                            //   key: ValueKey('divider2342'),
-                            //   innerColor: Colors.black,
-                            // ),
-                          ],
-                        ),
+                              ),
+                              SizedBox(width: 20),
+                            ],
+                          ),
+                          // SizedBox(height: 20),
+                          // FancyDivider(
+                          //   key: ValueKey('divider2342'),
+                          //   innerColor: Colors.black,
+                          // ),
+                        ],
                       ),
-                    )
-                    : SizedBox(),
+                    ),
+                  )
+                : SizedBox(),
             //: SizedBox.expand(child: ColoredBox(color: Colors.white)),
           ), // Collapses cleanly
 
@@ -1557,9 +1523,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                 (widget.futureRun.extensions.evtLat ?? coords[0]) == null
                     ? null
                     : latlng.LatLng(
-                      (widget.futureRun.extensions.evtLat ?? coords[0]!),
-                      (widget.futureRun.extensions.evtLon ?? coords[1])!,
-                    ),
+                        (widget.futureRun.extensions.evtLat ?? coords[0]!),
+                        (widget.futureRun.extensions.evtLon ?? coords[1])!,
+                      ),
                 _mapCenter,
                 latlng.LatLng(
                   widget.futureRun.kennel.kennelLatitude!,
@@ -1746,78 +1712,77 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
     return Stack(
       children: <Widget>[
-        Scaffold(
-          key: _scaffoldKey,
-          floatingActionButton:
-              (!_fabIsVisible)
-                  ? null
-                  : AnimatedOpacity(
-                    duration: const Duration(milliseconds: 500),
-                    opacity: _fabIsVisible ? 1.0 : 0.0,
-                    child: SpeedDial(
-                      // both default to 16
-                      // marginEnd: 18,
-                      // marginBottom: 20,
-                      animatedIcon: AnimatedIcons.menu_close,
-                      animatedIconTheme: const IconThemeData(size: 22.0),
-                      // this is ignored if animatedIcon is non null
-                      // child:const  Icon(Icons.add),
-                      visible: true,
-                      curve: Curves.bounceIn,
-                      overlayColor: Colors.black,
-                      overlayOpacity: 0.5,
-                      onOpen: () {
-                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                      },
-                      //onClose: () => //print('DIAL CLOSED'),
-                      tooltip: 'Speed Dial',
-                      heroTag: 'speed-dial-hero-tag-722526',
-                      backgroundColor: hc_red,
-                      foregroundColor: Colors.white,
-                      elevation: 8.0,
-                      shape: const CircleBorder(),
-                      children: <SpeedDialChild>[
-                        SpeedDialChild(
-                          child: const Icon(Feather.x),
-                          backgroundColor: hc_red,
-                          label: 'I\'m not coming',
-                          labelStyle: const TextStyle(fontSize: 18.0),
-                          onTap: () async {
-                            await _setRsvpState(rsvpNo);
-                          },
-                        ),
-                        SpeedDialChild(
-                          child: const Icon(AntDesign.question),
-                          backgroundColor: Colors.orange,
-                          label: 'I might come',
-                          labelStyle: const TextStyle(fontSize: 18.0),
-                          onTap: () async {
-                            await _setRsvpState(rsvpMaybe);
-                          },
-                        ),
-                        SpeedDialChild(
-                          child: const Icon(Feather.check),
-                          backgroundColor: Colors.green,
-                          label: 'I\'m coming',
-                          labelStyle: const TextStyle(fontSize: 18.0),
-                          onTap: () async {
-                            await _setRsvpState(rsvpYes);
-                          },
-                        ),
-                        // SpeedDialChild(
-                        //   child: const ImageIcon(
-                        //       AssetImage('images/icons/hare_icon.png'),
-                        //       color: Colors.deepPurple),
-                        //   backgroundColor: Colors.white,
-                        //   label: 'I will hare',
-                        //   labelStyle: const TextStyle(fontSize: 18.0),
-                        //   onTap: () async {
-                        //     await _setRsvpHare();
-                        //   },
-                        // ),
-                      ],
-                    ),
+        AppScaffold(
+          key: _ScaffoldKey,
+          floatingActionButton: (!_fabIsVisible)
+              ? null
+              : AnimatedOpacity(
+                  duration: const Duration(milliseconds: 500),
+                  opacity: _fabIsVisible ? 1.0 : 0.0,
+                  child: SpeedDial(
+                    // both default to 16
+                    // marginEnd: 18,
+                    // marginBottom: 20,
+                    animatedIcon: AnimatedIcons.menu_close,
+                    animatedIconTheme: const IconThemeData(size: 22.0),
+                    // this is ignored if animatedIcon is non null
+                    // child:const  Icon(Icons.add),
+                    visible: true,
+                    curve: Curves.bounceIn,
+                    overlayColor: Colors.black,
+                    overlayOpacity: 0.5,
+                    onOpen: () {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                    },
+                    //onClose: () => //print('DIAL CLOSED'),
+                    tooltip: 'Speed Dial',
+                    heroTag: 'speed-dial-hero-tag-722526',
+                    backgroundColor: hc_red,
+                    foregroundColor: Colors.white,
+                    elevation: 8.0,
+                    shape: const CircleBorder(),
+                    children: <SpeedDialChild>[
+                      SpeedDialChild(
+                        child: const Icon(Feather.x),
+                        backgroundColor: hc_red,
+                        label: 'I\'m not coming',
+                        labelStyle: const TextStyle(fontSize: 18.0),
+                        onTap: () async {
+                          await _setRsvpState(rsvpNo);
+                        },
+                      ),
+                      SpeedDialChild(
+                        child: const Icon(AntDesign.question),
+                        backgroundColor: Colors.orange,
+                        label: 'I might come',
+                        labelStyle: const TextStyle(fontSize: 18.0),
+                        onTap: () async {
+                          await _setRsvpState(rsvpMaybe);
+                        },
+                      ),
+                      SpeedDialChild(
+                        child: const Icon(Feather.check),
+                        backgroundColor: Colors.green,
+                        label: 'I\'m coming',
+                        labelStyle: const TextStyle(fontSize: 18.0),
+                        onTap: () async {
+                          await _setRsvpState(rsvpYes);
+                        },
+                      ),
+                      // SpeedDialChild(
+                      //   child: const ImageIcon(
+                      //       AssetImage('images/icons/hare_icon.png'),
+                      //       color: Colors.deepPurple),
+                      //   backgroundColor: Colors.white,
+                      //   label: 'I will hare',
+                      //   labelStyle: const TextStyle(fontSize: 18.0),
+                      //   onTap: () async {
+                      //     await _setRsvpHare();
+                      //   },
+                      // ),
+                    ],
                   ),
+                ),
           body: Container(
             decoration: Backgrounds.defaultHcBackground(),
             child: Column(
@@ -1839,13 +1804,12 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                       child: GetBuilder<FutureRunListPageController>(
                         id: 'chatTab',
                         builder: (controller) {
-                          final chatCount =
-                              controller
-                                  .thisEventUnseenChats[widget
-                                      .futureRun
-                                      .event
-                                      .publicEventId]
-                                  ?.value;
+                          final chatCount = controller
+                              .thisEventUnseenChats[widget
+                                  .futureRun
+                                  .event
+                                  .publicEventId]
+                              ?.value;
 
                           return Row(
                             children: [
@@ -2280,10 +2244,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       } else {
         final List<maps.AvailableMap> availableMaps =
             await maps.MapLauncher.installedMaps;
-        final maps.AvailableMap activeMap =
-            availableMaps
-                .where((maps.AvailableMap map) => map.mapName == mapName)
-                .first;
+        final maps.AvailableMap activeMap = availableMaps
+            .where((maps.AvailableMap map) => map.mapName == mapName)
+            .first;
 
         // BUG in plugin - doesn't work when sending a title with Google maps
         activeMap.showMarker(

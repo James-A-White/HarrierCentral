@@ -53,7 +53,7 @@ class UserQrCodePageState extends State<UserQrCodePage>
           left: 0,
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
-          child: Scaffold(
+          child: AppScaffold(
             appBar: _appBar,
             body: Container(
               decoration: Backgrounds.defaultHcBackground(),
@@ -98,9 +98,8 @@ class UserQrCodePageState extends State<UserQrCodePage>
                               color: hc_red,
                               borderRadius: BorderRadius.circular(999),
                             ),
-                            indicatorColor:
-                                Colors
-                                    .transparent, // make sure underline isn’t drawn
+                            indicatorColor: Colors
+                                .transparent, // make sure underline isn’t drawn
                             // BubbleTabIndicator(
                             //   indicatorHeight: 35.0,
                             //   indicatorColor: hc_red,
@@ -154,8 +153,8 @@ class UserQrCodePageState extends State<UserQrCodePage>
                 Text(
                   _tabController.index == 0
                       ?
-                      //'This QR code allows other Hashers to quickly scan you using their Harrier Central apps.\r\n\r\nAny Hasher can scan this code to easily add you as their friend.\r\n\r\nHares and mis-management can use this code to scan you in at the beginning and end of runs in order to keep your run counts accurate and ensure that no one is left behind on trail at the end of a run.',
-                      'Mis-management can scan this code to keep your run counts accurate and ensure that no one is left behind on trail at the end of a run.\r\n\r\nThis is your unique code. If you don\'t normally carry a phone, you can //print this code as a way to be quickly checked in at Hash runs.'
+                        //'This QR code allows other Hashers to quickly scan you using their Harrier Central apps.\r\n\r\nAny Hasher can scan this code to easily add you as their friend.\r\n\r\nHares and mis-management can use this code to scan you in at the beginning and end of runs in order to keep your run counts accurate and ensure that no one is left behind on trail at the end of a run.',
+                        'Mis-management can scan this code to keep your run counts accurate and ensure that no one is left behind on trail at the end of a run.\r\n\r\nThis is your unique code. If you don\'t normally carry a phone, you can //print this code as a way to be quickly checked in at Hash runs.'
                       : 'You can use your QR scanner to check in when you arrive at runs and to check in when you are done with trail so the hares know who is still out on trail.',
                   //'You can use your QR scanner to add friends to your Harrier Central friend list simply by scanning their personal QR code.\r\n\r\nYou can also use your scanner to check in when you arrive at runs and to check in when you are done with trail so the hares know who is still out.',
                   textAlign: TextAlign.justify,
@@ -511,10 +510,9 @@ class QrScannerTabState extends State<QrScannerTab>
     if (result['validScan'] == 'false') {
       setState(() {
         _state = EQrScannerState.qrNotRecognized;
-        _onScreenMessage =
-            result['validHcQr'] == 'true'
-                ? 'This QR code is not valid here'
-                : 'QR code not recignized';
+        _onScreenMessage = result['validHcQr'] == 'true'
+            ? 'This QR code is not valid here'
+            : 'QR code not recignized';
       });
     } else {
       final String prefix = result['prefix'] ?? '';
@@ -522,10 +520,9 @@ class QrScannerTabState extends State<QrScannerTab>
 
       if ((prefix == QR_PREFIX_SPECIFIC_RUN_START) ||
           (prefix == QR_PREFIX_SPECIFIC_RUN_END)) {
-        final int attendenceState =
-            (prefix == QR_PREFIX_SPECIFIC_RUN_START)
-                ? attendenceAtHash.value
-                : attendenceOnIn.value;
+        final int attendenceState = (prefix == QR_PREFIX_SPECIFIC_RUN_START)
+            ? attendenceAtHash.value
+            : attendenceOnIn.value;
 
         final String userId = getStringPref(StringPrefsEnum.userId)!;
 
@@ -548,10 +545,9 @@ class QrScannerTabState extends State<QrScannerTab>
         });
       } else if ((prefix == QR_PREFIX_KENNEL_GENERIC_RUN_END) ||
           (prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START)) {
-        final int attendenceState =
-            prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START
-                ? attendenceAtHash.value
-                : attendenceOnIn.value;
+        final int attendenceState = prefix == QR_PREFIX_KENNEL_GENERIC_RUN_START
+            ? attendenceAtHash.value
+            : attendenceOnIn.value;
 
         // the eventId variable can either have the number of hours
         // to the closest event or an actual eventId for one event
@@ -574,9 +570,9 @@ class QrScannerTabState extends State<QrScannerTab>
                 } else {
                   _onScreenMessage =
                       'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent * 60)} minute${NumberFormat('###').format(hoursUntilNextEvent * 60)}' !=
-                              '1'
-                          ? 's'
-                          : '';
+                          '1'
+                      ? 's'
+                      : '';
                 }
               }
             });
@@ -686,7 +682,7 @@ class QrScannerTabState extends State<QrScannerTab>
   // }
 
   // void showInSnackBar(String message) {
-  //   // _scaffoldKey.currentState
+  //   // _ScaffoldKey.currentState
   //   //     .showSnackBar(SnackBar(content: Text(message)));
   // }
 

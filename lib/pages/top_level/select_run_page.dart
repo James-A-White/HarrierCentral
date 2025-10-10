@@ -40,7 +40,7 @@ class SelectRunPage extends StatelessWidget {
       SelectRunController(runList: runList, initialSelected: selected),
     );
 
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
@@ -103,10 +103,9 @@ class SelectRunPage extends StatelessWidget {
                           },
                         ),
                       ),
-                      onPressed:
-                          controller.showCheckinButton.value
-                              ? () => Navigator.of(context).pop(true)
-                              : null,
+                      onPressed: controller.showCheckinButton.value
+                          ? () => Navigator.of(context).pop(true)
+                          : null,
                       child: Padding(
                         padding: EdgeInsets.symmetric(horizontal: 10.0),
                         child: Text('Check in', style: ts_button),

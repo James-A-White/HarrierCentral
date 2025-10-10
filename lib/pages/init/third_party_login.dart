@@ -49,7 +49,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         backgroundColor: themeAppBarBackground,
         iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
@@ -68,82 +68,81 @@ class LoginPageState extends State<ThirdPartyLogin> {
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
         height: MediaQuery.of(context).size.height,
-        child:
-            _isLoading
-                ? const Center(
-                  child: HcAppCircularProgressIndicator(key: Key('532270149')),
-                )
-                : _isLoggedIn
-                ? _displayUserData(_profileData)
-                : Center(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      // GestureDetector(
-                      //   onTap: () {
-                      //     //_facebookLogin();
-                      //   },
-                      //   child: const Padding(
-                      //     padding: EdgeInsets.symmetric(
-                      //         horizontal: 0.0, vertical: 20.0),
-                      //     child: Image(
-                      //       height: 60,
-                      //       fit: BoxFit.fitWidth,
-                      //       image:
-                      //           AssetImage('images/init/facebook_login.png'),
-                      //     ),
-                      //   ),
-                      // ),
-                      // only show Apple login on iOS devices
-                      if (!Platform.isIOS) ...<Widget>[
-                        Padding(
+        child: _isLoading
+            ? const Center(
+                child: HcAppCircularProgressIndicator(key: Key('532270149')),
+              )
+            : _isLoggedIn
+            ? _displayUserData(_profileData)
+            : Center(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    // GestureDetector(
+                    //   onTap: () {
+                    //     //_facebookLogin();
+                    //   },
+                    //   child: const Padding(
+                    //     padding: EdgeInsets.symmetric(
+                    //         horizontal: 0.0, vertical: 20.0),
+                    //     child: Image(
+                    //       height: 60,
+                    //       fit: BoxFit.fitWidth,
+                    //       image:
+                    //           AssetImage('images/init/facebook_login.png'),
+                    //     ),
+                    //   ),
+                    // ),
+                    // only show Apple login on iOS devices
+                    if (!Platform.isIOS) ...<Widget>[
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 0.0,
+                          vertical: 20.0,
+                        ),
+                        child: Center(
+                          child: Text(
+                            'No third party logins are available on Android devices.',
+                            style: ts_headingVeryLarge,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ],
+
+                    if (Platform.isIOS) ...<Widget>[
+                      GestureDetector(
+                        onTap: () {
+                          _appleLogin();
+                        },
+                        child: const Padding(
                           padding: EdgeInsets.symmetric(
                             horizontal: 0.0,
                             vertical: 20.0,
                           ),
-                          child: Center(
-                            child: Text(
-                              'No third party logins are available on Android devices.',
-                              style: ts_headingVeryLarge,
-                              textAlign: TextAlign.center,
+                          child: Image(
+                            height: 60,
+                            fit: BoxFit.fitWidth,
+                            image: AssetImage(
+                              'images/init/sign_in_with_apple.png',
                             ),
                           ),
                         ),
-                      ],
-
-                      if (Platform.isIOS) ...<Widget>[
-                        GestureDetector(
-                          onTap: () {
-                            _appleLogin();
-                          },
-                          child: const Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 0.0,
-                              vertical: 20.0,
-                            ),
-                            child: Image(
-                              height: 60,
-                              fit: BoxFit.fitWidth,
-                              image: AssetImage(
-                                'images/init/sign_in_with_apple.png',
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                      // Padding(
-                      //   padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 20.0),
-                      //   child: SignInWithAppleButton(
-                      //       height: 60,
-                      //       style: SignInWithAppleButtonStyle.whiteOutlined,
-                      //       onPressed: () {
-                      //         _appleLogin();
-                      //       }),
-                      // ),
+                      ),
                     ],
-                  ),
+                    // Padding(
+                    //   padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 20.0),
+                    //   child: SignInWithAppleButton(
+                    //       height: 60,
+                    //       style: SignInWithAppleButtonStyle.whiteOutlined,
+                    //       onPressed: () {
+                    //         _appleLogin();
+                    //       }),
+                    // ),
+                  ],
                 ),
+              ),
       ),
     );
   }
@@ -633,13 +632,12 @@ class LoginPageState extends State<ThirdPartyLogin> {
                     await Navigator.pushReplacement<dynamic, dynamic>(
                       context,
                       MaterialPageRoute<dynamic>(
-                        builder:
-                            (BuildContext context) => ChooseProfileImage(
-                              isForThisDevice: true,
-                              fileNamePrefix: fileNamePrefix,
-                              currentProfileImage: null,
-                              popToCaller: false,
-                            ),
+                        builder: (BuildContext context) => ChooseProfileImage(
+                          isForThisDevice: true,
+                          fileNamePrefix: fileNamePrefix,
+                          currentProfileImage: null,
+                          popToCaller: false,
+                        ),
                       ),
                     );
                   } else {

@@ -38,7 +38,7 @@ class RunDetailsPageState extends State<RunDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
@@ -47,8 +47,12 @@ class RunDetailsPageState extends State<RunDetailsPage> {
               if (Get.isRegistered<FutureRunListPageController>()) {
                 final controller = Get.find<FutureRunListPageController>();
                 controller
-                    .thisEventUnseenChats[widget.futureRun.event.publicEventId]
-                    ?.value = 0;
+                        .thisEventUnseenChats[widget
+                            .futureRun
+                            .event
+                            .publicEventId]
+                        ?.value =
+                    0;
                 controller.update(['runList', 'main_nav_page']);
               }
             }
@@ -60,37 +64,36 @@ class RunDetailsPageState extends State<RunDetailsPage> {
           _futureRun.extensions.appAccessFlags == 0
               ? Container()
               : IconButton(
-                icon: const Icon(FontAwesome.gear, color: Colors.white),
-                onPressed: () {
-                  Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                      builder:
-                          (BuildContext context) =>
-                              RunAdminPage(eventId: _futureRun.event.eventId),
-                    ),
-                  ).then((void _) {
-                    if (widget.refreshPage != null) {
-                      setState(() {
-                        _isUpdating = true;
-                      });
-
-                      final result = widget.refreshPage!();
-
-                      if (result is Future<dynamic>) {
-                        result.then((dynamic rda) {
-                          setState(() {
-                            if (rda != null) {
-                              _futureRun = rda;
-                            }
-                            _isUpdating = false;
-                          });
+                  icon: const Icon(FontAwesome.gear, color: Colors.white),
+                  onPressed: () {
+                    Navigator.push<dynamic>(
+                      context,
+                      MaterialPageRoute<dynamic>(
+                        builder: (BuildContext context) =>
+                            RunAdminPage(eventId: _futureRun.event.eventId),
+                      ),
+                    ).then((void _) {
+                      if (widget.refreshPage != null) {
+                        setState(() {
+                          _isUpdating = true;
                         });
+
+                        final result = widget.refreshPage!();
+
+                        if (result is Future<dynamic>) {
+                          result.then((dynamic rda) {
+                            setState(() {
+                              if (rda != null) {
+                                _futureRun = rda;
+                              }
+                              _isUpdating = false;
+                            });
+                          });
+                        }
                       }
-                    }
-                  }); //_select(choices[0]);
-                },
-              ),
+                    }); //_select(choices[0]);
+                  },
+                ),
         ],
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
@@ -100,18 +103,15 @@ class RunDetailsPageState extends State<RunDetailsPage> {
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
         height: MediaQuery.of(context).size.height,
-        child:
-            _isUpdating
-                ? Center(
-                  child: HcAppCircularProgressIndicator(key: UniqueKey()),
-                )
-                : RunTabs(
-                  futureRun: _futureRun,
-                  openToTab: widget.openToTab,
-                  relayActiveTab: (int activeTab) {
-                    _activeTab = activeTab;
-                  },
-                ),
+        child: _isUpdating
+            ? Center(child: HcAppCircularProgressIndicator(key: UniqueKey()))
+            : RunTabs(
+                futureRun: _futureRun,
+                openToTab: widget.openToTab,
+                relayActiveTab: (int activeTab) {
+                  _activeTab = activeTab;
+                },
+              ),
       ),
     );
   }

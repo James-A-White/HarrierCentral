@@ -50,7 +50,7 @@
 //   //   );
 //   // }
 
-//   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+//   final GlobalKey<ScaffoldState> _ScaffoldKey = GlobalKey<ScaffoldState>();
 
 //   @override
 //   Widget build(BuildContext context) {
@@ -67,8 +67,8 @@
 //           result = true;
 //         }
 //       },
-//       child: Scaffold(
-//         key: _scaffoldKey,
+//       child: AppScaffold(
+//         key: _ScaffoldKey,
 //         resizeToAvoidBottomInset: false,
 //         appBar: appBar,
 //         body:
@@ -344,7 +344,7 @@
 
 //         IveCoreUtilities.showInSnackBar(
 //           navigatorKey.currentContext!,
-//           _scaffoldKey,
+//           _ScaffoldKey,
 //           'Run detail emails being sent ..',
 //           durationInSeconds: 10,
 //         );

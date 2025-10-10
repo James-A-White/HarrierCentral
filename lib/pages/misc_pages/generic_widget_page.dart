@@ -16,17 +16,17 @@ class GenericWidgetPage extends StatelessWidget {
     final AppBar appBar = AppBar(
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
-      iconTheme: const IconThemeData(
-        color: Colors.white,
-        size: 28.0,
-      ),
+      iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
       title: Text(appBarTitle, style: ts_appBarTitle),
     );
 
-    return Scaffold(
-      //key: scaffoldKey,
+    return AppScaffold(
+      //key: ScaffoldKey,
       appBar: appBar,
-      body: Container(decoration: Backgrounds.defaultHcBackground(), child: widget),
+      body: Container(
+        decoration: Backgrounds.defaultHcBackground(),
+        child: widget,
+      ),
     );
   }
 }

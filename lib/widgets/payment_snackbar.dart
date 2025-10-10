@@ -51,192 +51,9 @@ class PaymentSnackBar extends SnackBar {
                   multiSelectEnabled)
               ? Container()
               : Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: <Widget>[
-                  Expanded(
-                    flex: 1,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        IconButton(
-                          icon: Image.asset(
-                            'images/icons/x_icon.png',
-                            height: 30.0,
-                            width: 30.0,
-                            color:
-                                ((packMember.rsvpState == rsvpNo.value))
-                                    ? Colors.yellow
-                                    : Colors.white,
-                          ),
-
-                          //tooltip: 'Select to follow a Kennel',
-                          iconSize: 30.0,
-                          alignment: Alignment.topCenter,
-                          splashColor: Colors.greenAccent,
-                          onPressed: () {
-                            onRsvpCallback(
-                              packMember,
-                              rsvpState: rsvpNo.value,
-                              attendenceState: attendenceNoChange.value,
-                              isHare: isHareNo.value,
-                            );
-                            ScaffoldMessenger.of(context).hideCurrentSnackBar(
-                              reason: SnackBarClosedReason.hide,
-                            );
-                          },
-                        ),
-                        Text(
-                          'Not coming',
-                          textAlign: TextAlign.center,
-                          style: ts_titleSmallCondensedBold.copyWith(
-                            height: 0.7,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        IconButton(
-                          icon: Image.asset(
-                            'images/icons/question_icon.png',
-                            height: 30.0,
-                            width: 30.0,
-                            color:
-                                ((packMember.rsvpState == rsvpMaybe.value))
-                                    ? Colors.yellow
-                                    : Colors.white,
-                          ),
-
-                          //tooltip: 'Select to follow a Kennel',
-                          iconSize: 30.0,
-                          alignment: Alignment.topCenter,
-                          splashColor: Colors.greenAccent,
-                          onPressed: () {
-                            onRsvpCallback(
-                              packMember,
-                              rsvpState: rsvpMaybe.value,
-                              attendenceState: attendenceNoChange.value,
-                              isHare: isHareNo.value,
-                            );
-                            // packScopedModel.setRsvpState(
-                            //     rsvpMaybe.value,
-                            //     isHareNo.value,
-                            //     attendenceNo.value,
-                            //     packMember['']);
-                            ScaffoldMessenger.of(context).hideCurrentSnackBar(
-                              reason: SnackBarClosedReason.hide,
-                            );
-                          },
-                        ),
-                        Text(
-                          'Maybe',
-                          textAlign: TextAlign.center,
-                          style: ts_titleSmallCondensedBold,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        IconButton(
-                          icon: Image.asset(
-                            'images/icons/check_icon.png',
-                            height: 30.0,
-                            width: 30.0,
-                            color:
-                                (((packMember.rsvpState == rsvpYes.value)) &&
-                                        ((packMember.isHare == isHareNo.value)))
-                                    ? Colors.yellow
-                                    : Colors.white,
-                          ),
-
-                          //tooltip: 'Select to follow a Kennel',
-                          iconSize: 30.0,
-                          alignment: Alignment.topCenter,
-                          splashColor: Colors.greenAccent,
-                          onPressed: () {
-                            onRsvpCallback(
-                              packMember,
-                              rsvpState: rsvpYes.value,
-                              isHare: isHareNo.value,
-                              attendenceState: attendenceNoChange.value,
-                            );
-                          },
-                        ),
-                        Text(
-                          'Coming',
-                          textAlign: TextAlign.center,
-                          style: ts_titleSmallCondensedBold,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        IconButton(
-                          icon: Image.asset(
-                            'images/icons/hare_icon.png',
-                            height: 30.0,
-                            width: 30.0,
-                            color:
-                                (((packMember.rsvpState == rsvpYes.value)) &&
-                                        ((packMember.isHare ==
-                                            isHareYes.value)))
-                                    ? Colors.yellow
-                                    : Colors.white,
-                          ),
-
-                          //tooltip: 'Select to follow a Kennel',
-                          iconSize: 30.0,
-                          alignment: Alignment.topCenter,
-                          splashColor: Colors.greenAccent,
-                          onPressed: () {
-                            onRsvpCallback(
-                              packMember,
-                              rsvpState: rsvpYes.value,
-                              isHare: isHareYes.value,
-                            );
-                            // packScopedModel.setRsvpState(rsvpYes.value,
-                            //     isHareYes.value, -1, packMember['']);
-                            // ScaffoldMessenger.of(context).hideCurrentSnackBar(
-                            //     reason: SnackBarClosedReason.hide);
-                          },
-                        ),
-                        Text(
-                          'Will hare',
-                          textAlign: TextAlign.center,
-                          style: ts_titleSmallCondensedBold,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-          (!eventAggregate.extensions.appAccess.canManageRuns ||
-                  multiSelectEnabled)
-              ? Container()
-              : Padding(
-                padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
-                child: Container(color: Colors.white, height: 3.0),
-              ),
-          !eventAggregate.extensions.appAccess.canManageRuns
-              ? Container()
-              : Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: <Widget>[
-                  if (!multiSelectEnabled)
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: <Widget>[
                     Expanded(
                       flex: 1,
                       child: Column(
@@ -244,16 +61,12 @@ class PaymentSnackBar extends SnackBar {
                         children: <Widget>[
                           IconButton(
                             icon: Image.asset(
-                              'images/icons/not_at_hash_icon.png',
+                              'images/icons/x_icon.png',
                               height: 30.0,
                               width: 30.0,
-                              color:
-                                  ((packMember.attendenceState ==
-                                              attendenceNo.value) &&
-                                          ((packMember.rsvpState ==
-                                              rsvpYes.value)))
-                                      ? Colors.yellow
-                                      : Colors.white,
+                              color: ((packMember.rsvpState == rsvpNo.value))
+                                  ? Colors.yellow
+                                  : Colors.white,
                             ),
 
                             //tooltip: 'Select to follow a Kennel',
@@ -263,207 +76,310 @@ class PaymentSnackBar extends SnackBar {
                             onPressed: () {
                               onRsvpCallback(
                                 packMember,
-                                attendenceState: attendenceNo.value,
+                                rsvpState: rsvpNo.value,
+                                attendenceState: attendenceNoChange.value,
+                                isHare: isHareNo.value,
                               );
-                              // packScopedModel.setRsvpState(
-                              //     -1, -1, attendenceNo.value, packMember['']);
-                              // ScaffoldMessenger.of(context).hideCurrentSnackBar(
-                              //     reason: SnackBarClosedReason.hide);
+                              ScaffoldMessenger.of(context).hideCurrentSnackBar(
+                                reason: SnackBarClosedReason.hide,
+                              );
                             },
                           ),
                           Text(
-                            'Not at Hash',
+                            'Not coming',
+                            textAlign: TextAlign.center,
+                            style: ts_titleSmallCondensedBold.copyWith(
+                              height: 0.7,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: <Widget>[
+                          IconButton(
+                            icon: Image.asset(
+                              'images/icons/question_icon.png',
+                              height: 30.0,
+                              width: 30.0,
+                              color: ((packMember.rsvpState == rsvpMaybe.value))
+                                  ? Colors.yellow
+                                  : Colors.white,
+                            ),
+
+                            //tooltip: 'Select to follow a Kennel',
+                            iconSize: 30.0,
+                            alignment: Alignment.topCenter,
+                            splashColor: Colors.greenAccent,
+                            onPressed: () {
+                              onRsvpCallback(
+                                packMember,
+                                rsvpState: rsvpMaybe.value,
+                                attendenceState: attendenceNoChange.value,
+                                isHare: isHareNo.value,
+                              );
+                              // packScopedModel.setRsvpState(
+                              //     rsvpMaybe.value,
+                              //     isHareNo.value,
+                              //     attendenceNo.value,
+                              //     packMember['']);
+                              ScaffoldMessenger.of(context).hideCurrentSnackBar(
+                                reason: SnackBarClosedReason.hide,
+                              );
+                            },
+                          ),
+                          Text(
+                            'Maybe',
                             textAlign: TextAlign.center,
                             style: ts_titleSmallCondensedBold,
                           ),
                         ],
                       ),
                     ),
-                  Expanded(
-                    flex: 1,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        IconButton(
-                          icon: Image.asset(
-                            'images/icons/runner_icon.png',
-                            height: 30.0,
-                            width: 30.0,
-                            color:
-                                ((packMember.attendenceState ==
-                                            attendenceAtHash.value) &&
+                    Expanded(
+                      flex: 1,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: <Widget>[
+                          IconButton(
+                            icon: Image.asset(
+                              'images/icons/check_icon.png',
+                              height: 30.0,
+                              width: 30.0,
+                              color:
+                                  (((packMember.rsvpState == rsvpYes.value)) &&
+                                      ((packMember.isHare == isHareNo.value)))
+                                  ? Colors.yellow
+                                  : Colors.white,
+                            ),
+
+                            //tooltip: 'Select to follow a Kennel',
+                            iconSize: 30.0,
+                            alignment: Alignment.topCenter,
+                            splashColor: Colors.greenAccent,
+                            onPressed: () {
+                              onRsvpCallback(
+                                packMember,
+                                rsvpState: rsvpYes.value,
+                                isHare: isHareNo.value,
+                                attendenceState: attendenceNoChange.value,
+                              );
+                            },
+                          ),
+                          Text(
+                            'Coming',
+                            textAlign: TextAlign.center,
+                            style: ts_titleSmallCondensedBold,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: <Widget>[
+                          IconButton(
+                            icon: Image.asset(
+                              'images/icons/hare_icon.png',
+                              height: 30.0,
+                              width: 30.0,
+                              color:
+                                  (((packMember.rsvpState == rsvpYes.value)) &&
+                                      ((packMember.isHare == isHareYes.value)))
+                                  ? Colors.yellow
+                                  : Colors.white,
+                            ),
+
+                            //tooltip: 'Select to follow a Kennel',
+                            iconSize: 30.0,
+                            alignment: Alignment.topCenter,
+                            splashColor: Colors.greenAccent,
+                            onPressed: () {
+                              onRsvpCallback(
+                                packMember,
+                                rsvpState: rsvpYes.value,
+                                isHare: isHareYes.value,
+                              );
+                              // packScopedModel.setRsvpState(rsvpYes.value,
+                              //     isHareYes.value, -1, packMember['']);
+                              // ScaffoldMessenger.of(context).hideCurrentSnackBar(
+                              //     reason: SnackBarClosedReason.hide);
+                            },
+                          ),
+                          Text(
+                            'Will hare',
+                            textAlign: TextAlign.center,
+                            style: ts_titleSmallCondensedBold,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+          (!eventAggregate.extensions.appAccess.canManageRuns ||
+                  multiSelectEnabled)
+              ? Container()
+              : Padding(
+                  padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
+                  child: Container(color: Colors.white, height: 3.0),
+                ),
+          !eventAggregate.extensions.appAccess.canManageRuns
+              ? Container()
+              : Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: <Widget>[
+                    if (!multiSelectEnabled)
+                      Expanded(
+                        flex: 1,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            IconButton(
+                              icon: Image.asset(
+                                'images/icons/not_at_hash_icon.png',
+                                height: 30.0,
+                                width: 30.0,
+                                color:
+                                    ((packMember.attendenceState ==
+                                            attendenceNo.value) &&
                                         ((packMember.rsvpState ==
                                             rsvpYes.value)))
                                     ? Colors.yellow
                                     : Colors.white,
-                          ),
+                              ),
 
-                          //tooltip: 'Select to follow a Kennel',
-                          iconSize: 30.0,
-                          alignment: Alignment.topCenter,
-                          splashColor: Colors.greenAccent,
-                          onPressed: () {
-                            onRsvpCallback(
-                              packMember,
-                              rsvpState:
-                                  packMember.rsvpState < rsvpYes.value
-                                      ? rsvpYes.value
-                                      : -1,
-                              attendenceState: attendenceAtHash.value,
-                            );
-                            // packScopedModel.setRsvpState(rsvpYes.value, -1,
-                            //     attendenceAtHash.value, packMember['']);
-                            // ScaffoldMessenger.of(context).hideCurrentSnackBar(
-                            //     reason: SnackBarClosedReason.hide);
-                          },
+                              //tooltip: 'Select to follow a Kennel',
+                              iconSize: 30.0,
+                              alignment: Alignment.topCenter,
+                              splashColor: Colors.greenAccent,
+                              onPressed: () {
+                                onRsvpCallback(
+                                  packMember,
+                                  attendenceState: attendenceNo.value,
+                                );
+                                // packScopedModel.setRsvpState(
+                                //     -1, -1, attendenceNo.value, packMember['']);
+                                // ScaffoldMessenger.of(context).hideCurrentSnackBar(
+                                //     reason: SnackBarClosedReason.hide);
+                              },
+                            ),
+                            Text(
+                              'Not at Hash',
+                              textAlign: TextAlign.center,
+                              style: ts_titleSmallCondensedBold,
+                            ),
+                          ],
                         ),
-                        Text(
-                          'At Hash',
-                          textAlign: TextAlign.center,
-                          style: ts_titleSmallCondensedBold,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        IconButton(
-                          icon: Image.asset(
-                            'images/icons/beer_icon.png',
-                            height: 30.0,
-                            width: 30.0,
-                            color:
-                                ((packMember.attendenceState ==
-                                            attendenceOnIn.value) &&
-                                        ((packMember.rsvpState ==
-                                            rsvpYes.value)))
-                                    ? Colors.yellow
-                                    : Colors.white,
-                          ),
+                      ),
+                    Expanded(
+                      flex: 1,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: <Widget>[
+                          IconButton(
+                            icon: Image.asset(
+                              'images/icons/runner_icon.png',
+                              height: 30.0,
+                              width: 30.0,
+                              color:
+                                  ((packMember.attendenceState ==
+                                          attendenceAtHash.value) &&
+                                      ((packMember.rsvpState == rsvpYes.value)))
+                                  ? Colors.yellow
+                                  : Colors.white,
+                            ),
 
-                          //tooltip: 'Select to follow a Kennel',
-                          iconSize: 30.0,
-                          alignment: Alignment.topCenter,
-                          splashColor: Colors.greenAccent,
-                          onPressed: () {
-                            onRsvpCallback(
-                              packMember,
-                              rsvpState:
-                                  packMember.rsvpState < rsvpYes.value
-                                      ? rsvpYes.value
-                                      : -1,
-                              attendenceState: attendenceOnIn.value,
-                            );
-                            // packScopedModel.setRsvpState(rsvpYes.value, -1,
-                            //     attendenceOnIn.value, packMember['']);
-                            // ScaffoldMessenger.of(context).hideCurrentSnackBar(
-                            //     reason: SnackBarClosedReason.hide);
-                          },
-                        ),
-                        Text(
-                          'On In',
-                          textAlign: TextAlign.center,
-                          style: ts_titleSmallCondensedBold,
-                        ),
-                      ],
+                            //tooltip: 'Select to follow a Kennel',
+                            iconSize: 30.0,
+                            alignment: Alignment.topCenter,
+                            splashColor: Colors.greenAccent,
+                            onPressed: () {
+                              onRsvpCallback(
+                                packMember,
+                                rsvpState: packMember.rsvpState < rsvpYes.value
+                                    ? rsvpYes.value
+                                    : -1,
+                                attendenceState: attendenceAtHash.value,
+                              );
+                              // packScopedModel.setRsvpState(rsvpYes.value, -1,
+                              //     attendenceAtHash.value, packMember['']);
+                              // ScaffoldMessenger.of(context).hideCurrentSnackBar(
+                              //     reason: SnackBarClosedReason.hide);
+                            },
+                          ),
+                          Text(
+                            'At Hash',
+                            textAlign: TextAlign.center,
+                            style: ts_titleSmallCondensedBold,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                    Expanded(
+                      flex: 1,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: <Widget>[
+                          IconButton(
+                            icon: Image.asset(
+                              'images/icons/beer_icon.png',
+                              height: 30.0,
+                              width: 30.0,
+                              color:
+                                  ((packMember.attendenceState ==
+                                          attendenceOnIn.value) &&
+                                      ((packMember.rsvpState == rsvpYes.value)))
+                                  ? Colors.yellow
+                                  : Colors.white,
+                            ),
+
+                            //tooltip: 'Select to follow a Kennel',
+                            iconSize: 30.0,
+                            alignment: Alignment.topCenter,
+                            splashColor: Colors.greenAccent,
+                            onPressed: () {
+                              onRsvpCallback(
+                                packMember,
+                                rsvpState: packMember.rsvpState < rsvpYes.value
+                                    ? rsvpYes.value
+                                    : -1,
+                                attendenceState: attendenceOnIn.value,
+                              );
+                              // packScopedModel.setRsvpState(rsvpYes.value, -1,
+                              //     attendenceOnIn.value, packMember['']);
+                              // ScaffoldMessenger.of(context).hideCurrentSnackBar(
+                              //     reason: SnackBarClosedReason.hide);
+                            },
+                          ),
+                          Text(
+                            'On In',
+                            textAlign: TextAlign.center,
+                            style: ts_titleSmallCondensedBold,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
           !eventAggregate.extensions.appAccess.canManageRuns
               ? Container()
               : Padding(
-                padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
-                child: Container(color: Colors.white, height: 3.0),
-              ),
+                  padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
+                  child: Container(color: Colors.white, height: 3.0),
+                ),
           !eventAggregate.extensions.appAccess.canManageHashCash
               ? Container()
               : Column(
-                children: <Widget>[
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Expanded(
-                        flex: 1,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: <Widget>[
-                            IconButton(
-                              icon: Image.asset(
-                                'images/icons/payment_type_3.png',
-                                height: 30.0,
-                                width: 30.0,
-                                color:
-                                    packMember.paymentType == paymentCash.value
-                                        ? Colors.yellow
-                                        : Colors.white,
-                              ),
-                              //tooltip: 'Select to follow a Kennel',
-                              iconSize: 30.0,
-                              alignment: Alignment.topCenter,
-                              splashColor: Colors.greenAccent,
-                              onPressed: () async {
-                                await onPaidCallback(
-                                  packMember,
-                                  paymentCash.value,
-                                );
-                              },
-                            ),
-                            Text(
-                              (eventAggregate.event.eventPriceForExtras ?? 0) !=
-                                      0
-                                  ? 'Paid cash'
-                                  : 'Paid\r\n${formatMoney(amountOwed)} cash',
-                              textAlign: TextAlign.center,
-                              style: ts_titleSmallCondensedBold.copyWith(
-                                height: 0.9,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: <Widget>[
-                            IconButton(
-                              icon: Image.asset(
-                                'images/icons/payment_type_2.png',
-                                height: 30.0,
-                                width: 30.0,
-                                color:
-                                    packMember.paymentType ==
-                                            paymentFreeRun.value
-                                        ? Colors.yellow
-                                        : Colors.white,
-                              ),
-                              //tooltip: 'Select to follow a Kennel',
-                              iconSize: 30.0,
-                              alignment: Alignment.topCenter,
-                              splashColor: Colors.greenAccent,
-                              onPressed: () async {
-                                await onPaidCallback(
-                                  packMember,
-                                  paymentFreeRun.value,
-                                );
-                              },
-                            ),
-                            Text(
-                              'Free run',
-                              textAlign: TextAlign.center,
-                              style: ts_titleSmallCondensedBold.copyWith(
-                                height: 0.7,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (!multiSelectEnabled)
+                  children: <Widget>[
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
                         Expanded(
                           flex: 1,
                           child: Column(
@@ -471,102 +387,15 @@ class PaymentSnackBar extends SnackBar {
                             children: <Widget>[
                               IconButton(
                                 icon: Image.asset(
-                                  'images/icons/payment_type_5.png',
+                                  'images/icons/payment_type_3.png',
                                   height: 30.0,
                                   width: 30.0,
                                   color:
-                                      ((packMember.paymentType ==
-                                                  paymentCashOtherAmount
-                                                      .value) ||
-                                              (packMember.paymentType ==
-                                                  paymentBankTransferOtherAmount
-                                                      .value))
-                                          ? Colors.yellow
-                                          : Colors.white,
+                                      packMember.paymentType ==
+                                          paymentCash.value
+                                      ? Colors.yellow
+                                      : Colors.white,
                                 ),
-                                //tooltip: 'Select to follow a Kennel',
-                                iconSize: 30.0,
-                                alignment: Alignment.topCenter,
-                                splashColor: Colors.greenAccent,
-                                onPressed: () async {
-                                  await _payOther(packMember, context);
-                                },
-                              ),
-                              Text(
-                                'Paid other${((packMember.paymentType == paymentCashOtherAmount.value) || (packMember.paymentType == paymentBankTransferOtherAmount.value)) ? '\r\n(${formatMoney(packMember.creditAmount)}${packMember.paymentType == paymentCashOtherAmount.value ? ' cash)' : ' transfer)'}' : ''}',
-                                textAlign: TextAlign.center,
-                                style: ts_titleSmallCondensedBold.copyWith(
-                                  height: 0.9,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(width: 100, height: 10),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Expanded(
-                        flex: 1,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: <Widget>[
-                            IconButton(
-                              icon: Image.asset(
-                                'images/icons/payment_type_4.png',
-                                height: 30.0,
-                                width: 30.0,
-                                color:
-                                    packMember.paymentType ==
-                                            paymentBankTransfer.value
-                                        ? Colors.yellow
-                                        : Colors.white,
-                              ),
-                              //tooltip: 'Select to follow a Kennel',
-                              iconSize: 30.0,
-                              alignment: Alignment.topCenter,
-                              splashColor: Colors.greenAccent,
-                              onPressed: () async {
-                                await onPaidCallback(
-                                  packMember,
-                                  paymentBankTransfer.value,
-                                );
-                              },
-                            ),
-                            Text(
-                              (eventAggregate.event.eventPriceForExtras ?? 0) !=
-                                      0
-                                  ? 'Paid\r\nbank transfer'
-                                  : 'Paid ${formatMoney(amountOwed)}\r\nbank transfer',
-                              textAlign: TextAlign.center,
-                              style: ts_titleSmallCondensedBold.copyWith(
-                                height: 0.9,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (!multiSelectEnabled)
-                        Expanded(
-                          flex: 1,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: <Widget>[
-                              IconButton(
-                                icon: Image.asset(
-                                  'images/icons/payment_type_1.png',
-                                  height: 30.0,
-                                  width: 30.0,
-                                  color:
-                                      ((packMember.isPaid == 0) ||
-                                              (packMember.paymentType ==
-                                                  paymentNotPaid.value))
-                                          ? Colors.yellow
-                                          : Colors.white,
-                                ),
-
                                 //tooltip: 'Select to follow a Kennel',
                                 iconSize: 30.0,
                                 alignment: Alignment.topCenter,
@@ -574,12 +403,16 @@ class PaymentSnackBar extends SnackBar {
                                 onPressed: () async {
                                   await onPaidCallback(
                                     packMember,
-                                    paymentNotPaid.value,
+                                    paymentCash.value,
                                   );
                                 },
                               ),
                               Text(
-                                'Not paid',
+                                (eventAggregate.event.eventPriceForExtras ??
+                                            0) !=
+                                        0
+                                    ? 'Paid cash'
+                                    : 'Paid\r\n${formatMoney(amountOwed)} cash',
                                 textAlign: TextAlign.center,
                                 style: ts_titleSmallCondensedBold.copyWith(
                                   height: 0.9,
@@ -588,24 +421,147 @@ class PaymentSnackBar extends SnackBar {
                             ],
                           ),
                         ),
-                      (packMember.isMember == 0)
-                          ? Container()
-                          : Expanded(
+                        Expanded(
+                          flex: 1,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: <Widget>[
+                              IconButton(
+                                icon: Image.asset(
+                                  'images/icons/payment_type_2.png',
+                                  height: 30.0,
+                                  width: 30.0,
+                                  color:
+                                      packMember.paymentType ==
+                                          paymentFreeRun.value
+                                      ? Colors.yellow
+                                      : Colors.white,
+                                ),
+                                //tooltip: 'Select to follow a Kennel',
+                                iconSize: 30.0,
+                                alignment: Alignment.topCenter,
+                                splashColor: Colors.greenAccent,
+                                onPressed: () async {
+                                  await onPaidCallback(
+                                    packMember,
+                                    paymentFreeRun.value,
+                                  );
+                                },
+                              ),
+                              Text(
+                                'Free run',
+                                textAlign: TextAlign.center,
+                                style: ts_titleSmallCondensedBold.copyWith(
+                                  height: 0.7,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (!multiSelectEnabled)
+                          Expanded(
                             flex: 1,
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: <Widget>[
                                 IconButton(
                                   icon: Image.asset(
-                                    'images/icons/payment_type_6.png',
+                                    'images/icons/payment_type_5.png',
                                     height: 30.0,
                                     width: 30.0,
                                     color:
-                                        packMember.paymentType ==
-                                                paymentHashCredit.value
-                                            ? Colors.yellow
-                                            : Colors.white,
+                                        ((packMember.paymentType ==
+                                                paymentCashOtherAmount.value) ||
+                                            (packMember.paymentType ==
+                                                paymentBankTransferOtherAmount
+                                                    .value))
+                                        ? Colors.yellow
+                                        : Colors.white,
                                   ),
+                                  //tooltip: 'Select to follow a Kennel',
+                                  iconSize: 30.0,
+                                  alignment: Alignment.topCenter,
+                                  splashColor: Colors.greenAccent,
+                                  onPressed: () async {
+                                    await _payOther(packMember, context);
+                                  },
+                                ),
+                                Text(
+                                  'Paid other${((packMember.paymentType == paymentCashOtherAmount.value) || (packMember.paymentType == paymentBankTransferOtherAmount.value)) ? '\r\n(${formatMoney(packMember.creditAmount)}${packMember.paymentType == paymentCashOtherAmount.value ? ' cash)' : ' transfer)'}' : ''}',
+                                  textAlign: TextAlign.center,
+                                  style: ts_titleSmallCondensedBold.copyWith(
+                                    height: 0.9,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(width: 100, height: 10),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Expanded(
+                          flex: 1,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: <Widget>[
+                              IconButton(
+                                icon: Image.asset(
+                                  'images/icons/payment_type_4.png',
+                                  height: 30.0,
+                                  width: 30.0,
+                                  color:
+                                      packMember.paymentType ==
+                                          paymentBankTransfer.value
+                                      ? Colors.yellow
+                                      : Colors.white,
+                                ),
+                                //tooltip: 'Select to follow a Kennel',
+                                iconSize: 30.0,
+                                alignment: Alignment.topCenter,
+                                splashColor: Colors.greenAccent,
+                                onPressed: () async {
+                                  await onPaidCallback(
+                                    packMember,
+                                    paymentBankTransfer.value,
+                                  );
+                                },
+                              ),
+                              Text(
+                                (eventAggregate.event.eventPriceForExtras ??
+                                            0) !=
+                                        0
+                                    ? 'Paid\r\nbank transfer'
+                                    : 'Paid ${formatMoney(amountOwed)}\r\nbank transfer',
+                                textAlign: TextAlign.center,
+                                style: ts_titleSmallCondensedBold.copyWith(
+                                  height: 0.9,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (!multiSelectEnabled)
+                          Expanded(
+                            flex: 1,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                IconButton(
+                                  icon: Image.asset(
+                                    'images/icons/payment_type_1.png',
+                                    height: 30.0,
+                                    width: 30.0,
+                                    color:
+                                        ((packMember.isPaid == 0) ||
+                                            (packMember.paymentType ==
+                                                paymentNotPaid.value))
+                                        ? Colors.yellow
+                                        : Colors.white,
+                                  ),
+
                                   //tooltip: 'Select to follow a Kennel',
                                   iconSize: 30.0,
                                   alignment: Alignment.topCenter,
@@ -613,37 +569,76 @@ class PaymentSnackBar extends SnackBar {
                                   onPressed: () async {
                                     await onPaidCallback(
                                       packMember,
-                                      paymentHashCredit.value,
+                                      paymentNotPaid.value,
                                     );
                                   },
                                 ),
-                                if (multiSelectEnabled)
-                                  Text(
-                                    'Paid credit',
-                                    textAlign: TextAlign.center,
-                                    style: ts_titleSmallCondensedBold.copyWith(
-                                      height: 0.9,
-                                    ),
+                                Text(
+                                  'Not paid',
+                                  textAlign: TextAlign.center,
+                                  style: ts_titleSmallCondensedBold.copyWith(
+                                    height: 0.9,
                                   ),
-                                if (!multiSelectEnabled)
-                                  Text(
-                                    (eventAggregate.event.eventPriceForExtras ??
-                                                0) !=
-                                            0
-                                        ? 'Paid credit\r\n(${packMember.credit < 0 ? 'Owes' : 'Available'} ${IveCoreUtilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec, eventAggregate.extensions.curSym)})'
-                                        : 'Credit ${formatMoney(amountOwed)}\r\n(${packMember.credit < 0 ? 'Owes' : 'Available'} ${IveCoreUtilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec, eventAggregate.extensions.curSym)})',
-                                    textAlign: TextAlign.center,
-                                    style: ts_titleSmallCondensedBold.copyWith(
-                                      height: 0.9,
-                                    ),
-                                  ),
+                                ),
                               ],
                             ),
                           ),
-                    ],
-                  ),
-                ],
-              ),
+                        (packMember.isMember == 0)
+                            ? Container()
+                            : Expanded(
+                                flex: 1,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: <Widget>[
+                                    IconButton(
+                                      icon: Image.asset(
+                                        'images/icons/payment_type_6.png',
+                                        height: 30.0,
+                                        width: 30.0,
+                                        color:
+                                            packMember.paymentType ==
+                                                paymentHashCredit.value
+                                            ? Colors.yellow
+                                            : Colors.white,
+                                      ),
+                                      //tooltip: 'Select to follow a Kennel',
+                                      iconSize: 30.0,
+                                      alignment: Alignment.topCenter,
+                                      splashColor: Colors.greenAccent,
+                                      onPressed: () async {
+                                        await onPaidCallback(
+                                          packMember,
+                                          paymentHashCredit.value,
+                                        );
+                                      },
+                                    ),
+                                    if (multiSelectEnabled)
+                                      Text(
+                                        'Paid credit',
+                                        textAlign: TextAlign.center,
+                                        style: ts_titleSmallCondensedBold
+                                            .copyWith(height: 0.9),
+                                      ),
+                                    if (!multiSelectEnabled)
+                                      Text(
+                                        (eventAggregate
+                                                        .event
+                                                        .eventPriceForExtras ??
+                                                    0) !=
+                                                0
+                                            ? 'Paid credit\r\n(${packMember.credit < 0 ? 'Owes' : 'Available'} ${IveCoreUtilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec, eventAggregate.extensions.curSym)})'
+                                            : 'Credit ${formatMoney(amountOwed)}\r\n(${packMember.credit < 0 ? 'Owes' : 'Available'} ${IveCoreUtilities.getFormattedMoney(packMember.credit.abs(), eventAggregate.extensions.digAfterDec, eventAggregate.extensions.curSym)})',
+                                        textAlign: TextAlign.center,
+                                        style: ts_titleSmallCondensedBold
+                                            .copyWith(height: 0.9),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                      ],
+                    ),
+                  ],
+                ),
         ],
       ),
     );

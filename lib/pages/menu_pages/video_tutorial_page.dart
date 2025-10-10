@@ -54,7 +54,7 @@
 
 //   @override
 //   Widget build(BuildContext context) {
-//     return Scaffold(
+//     return AppScaffold(
 //       appBar: AppBar(
 //         centerTitle: true,
 //         backgroundColor: themeAppBarBackground,
@@ -123,7 +123,7 @@
 // //   Widget build(BuildContext context) {
 // //     return
 
-// //     Scaffold(
+// //     AppScaffold(
 // //       appBar: AppBar(
 // //         centerTitle: true,
 // //         backgroundColor: themeAppBarBackground,

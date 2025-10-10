@@ -23,7 +23,7 @@ class UseInviteCodePageState extends State<UseInviteCodePage> {
           left: 0,
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
-          child: Scaffold(
+          child: AppScaffold(
             appBar: AppBar(
               centerTitle: true,
               backgroundColor: themeAppBarBackground,
@@ -289,29 +289,29 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                           child: AspectRatio(
                             aspectRatio: 1.0,
                             child:
-                            // QRView(
-                            //   key: _qrKey,
-                            //   onQRViewCreated: _onQRViewCreated,
-                            // ),
-                            MobileScanner(
-                              controller: _scannerController,
-                              onDetect: (result) async {
-                                _result = result.barcodes.first.rawValue;
+                                // QRView(
+                                //   key: _qrKey,
+                                //   onQRViewCreated: _onQRViewCreated,
+                                // ),
+                                MobileScanner(
+                                  controller: _scannerController,
+                                  onDetect: (result) async {
+                                    _result = result.barcodes.first.rawValue;
 
-                                if ((_lastScan == null) ||
-                                    (_lastScan!
-                                            .difference(DateTime.now())
-                                            .inSeconds
-                                            .abs() >
-                                        5)) {
-                                  _lastScan = DateTime.now();
-                                  await _toggleScanning();
-                                  if (_result != null) {
-                                    await _onCodeRead(_result!);
-                                  }
-                                }
-                              },
-                            ),
+                                    if ((_lastScan == null) ||
+                                        (_lastScan!
+                                                .difference(DateTime.now())
+                                                .inSeconds
+                                                .abs() >
+                                            5)) {
+                                      _lastScan = DateTime.now();
+                                      await _toggleScanning();
+                                      if (_result != null) {
+                                        await _onCodeRead(_result!);
+                                      }
+                                    }
+                                  },
+                                ),
                           ),
                         ),
                       ),
@@ -410,75 +410,76 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
               const SizedBox(height: 35, width: 10),
               _isLoading
                   ? Text(
-                    'Please wait...',
-                    style: localHeadingStyle,
-                    textAlign: TextAlign.center,
-                  )
+                      'Please wait...',
+                      style: localHeadingStyle,
+                      textAlign: TextAlign.center,
+                    )
                   : TextButton(
-                    style: text_button_style,
-                    child: Text('Get Started!', style: ts_button),
-                    onPressed: () async {
-                      if (_formKey.currentState!.validate()) {
-                        // If the form is valid, display a snackbar. In the real world,
-                        // you'd often call a server or save the information in a database.
-                        setState(() {
-                          _isLoading = true;
-                        });
+                      style: text_button_style,
+                      child: Text('Get Started!', style: ts_button),
+                      onPressed: () async {
+                        if (_formKey.currentState!.validate()) {
+                          // If the form is valid, display a snackbar. In the real world,
+                          // you'd often call a server or save the information in a database.
+                          setState(() {
+                            _isLoading = true;
+                          });
 
-                        final AuthorizeDeviceService srv =
-                            AuthorizeDeviceService();
-                        final Map<String, String> result = await srv
-                            .authorizeDevice(
-                              scanText:
-                                  QR_PREFIX_USER_RESET_CODE +
-                                  _inviteCodeTextController.text.toUpperCase(),
+                          final AuthorizeDeviceService srv =
+                              AuthorizeDeviceService();
+                          final Map<String, String> result = await srv
+                              .authorizeDevice(
+                                scanText:
+                                    QR_PREFIX_USER_RESET_CODE +
+                                    _inviteCodeTextController.text
+                                        .toUpperCase(),
+                              );
+
+                          setState(() {
+                            _isLoading = false;
+                          });
+
+                          if (result['result'] != 'failed') {
+                            final String userName =
+                                getStringPref(StringPrefsEnum.displayName) ??
+                                '<no name>';
+
+                            String? profilePhotoUrl = getStringPref(
+                              StringPrefsEnum.profilePhotoUrl,
+                            );
+                            profilePhotoUrl ??=
+                                'bundle://avatar-${Random.secure().nextInt(49) + 1}';
+
+                            await Utilities.showAlert(
+                              'Success!',
+                              'The app has been successfully set up for $userName.',
+                              'OK',
                             );
 
-                        setState(() {
-                          _isLoading = false;
-                        });
-
-                        if (result['result'] != 'failed') {
-                          final String userName =
-                              getStringPref(StringPrefsEnum.displayName) ??
-                              '<no name>';
-
-                          String? profilePhotoUrl = getStringPref(
-                            StringPrefsEnum.profilePhotoUrl,
-                          );
-                          profilePhotoUrl ??=
-                              'bundle://avatar-${Random.secure().nextInt(49) + 1}';
-
-                          await Utilities.showAlert(
-                            'Success!',
-                            'The app has been successfully set up for $userName.',
-                            'OK',
-                          );
-
-                          Navigator.pop(navigatorKey.currentContext!);
-                          if (!mounted) return;
-                          await Navigator.pushReplacement<dynamic, dynamic>(
-                            navigatorKey.currentContext!,
-                            MaterialPageRoute<dynamic>(
-                              builder:
-                                  (BuildContext context) => ChooseProfileImage(
-                                    isForThisDevice: true,
-                                    fileNamePrefix:
-                                        getStringPref(
-                                          StringPrefsEnum.supportCode,
-                                        ) ??
-                                        '<no code>',
-                                    currentProfileImage: profilePhotoUrl,
-                                    popToCaller: false,
-                                  ),
-                            ),
-                          );
-                        } else {
-                          // TODO(James): Do something here if the auth device fails
+                            Navigator.pop(navigatorKey.currentContext!);
+                            if (!mounted) return;
+                            await Navigator.pushReplacement<dynamic, dynamic>(
+                              navigatorKey.currentContext!,
+                              MaterialPageRoute<dynamic>(
+                                builder: (BuildContext context) =>
+                                    ChooseProfileImage(
+                                      isForThisDevice: true,
+                                      fileNamePrefix:
+                                          getStringPref(
+                                            StringPrefsEnum.supportCode,
+                                          ) ??
+                                          '<no code>',
+                                      currentProfileImage: profilePhotoUrl,
+                                      popToCaller: false,
+                                    ),
+                              ),
+                            );
+                          } else {
+                            // TODO(James): Do something here if the auth device fails
+                          }
                         }
-                      }
-                    },
-                  ),
+                      },
+                    ),
               const SizedBox(height: 50, width: 10),
             ],
           ),

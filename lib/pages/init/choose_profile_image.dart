@@ -29,7 +29,7 @@ enum SelectedImageTypeEnum {
 }
 
 class ChooseProfileImageState extends State<ChooseProfileImage> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> _ScaffoldKey = GlobalKey<ScaffoldState>();
 
   SelectedImageTypeEnum _imageTypeSelection = SelectedImageTypeEnum.none;
   SelectedImageTypeEnum _previousImageTypeSelection =
@@ -168,8 +168,8 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
   Widget build(BuildContext context) {
     _isIos = Theme.of(context).platform == TargetPlatform.iOS;
 
-    return Scaffold(
-      key: _scaffoldKey,
+    return AppScaffold(
+      key: _ScaffoldKey,
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
@@ -181,109 +181,108 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
         width: MediaQuery.of(context).size.width,
         decoration: Backgrounds.defaultHcBackground(),
         child: Container(
-          child:
-              _showCircularProgressIndicator
-                  ? _buildProgressIndicator()
-                  : Stack(
-                    fit: StackFit.expand,
-                    //overflow: Overflow.visible,
-                    alignment: AlignmentDirectional.center,
-                    children: <Widget>[
-                      SizedBox(
-                        width: deviceInfo.deviceWidth,
-                        height: deviceInfo.deviceHeight,
+          child: _showCircularProgressIndicator
+              ? _buildProgressIndicator()
+              : Stack(
+                  fit: StackFit.expand,
+                  //overflow: Overflow.visible,
+                  alignment: AlignmentDirectional.center,
+                  children: <Widget>[
+                    SizedBox(
+                      width: deviceInfo.deviceWidth,
+                      height: deviceInfo.deviceHeight,
+                    ),
+                    Positioned(
+                      top: 25.0,
+                      child: Text(
+                        'Choose an image source',
+                        textAlign: TextAlign.center,
+                        style: ts_headingLarge,
                       ),
-                      Positioned(
-                        top: 25.0,
-                        child: Text(
-                          'Choose an image source',
-                          textAlign: TextAlign.center,
-                          style: ts_headingLarge,
-                        ),
-                      ),
+                    ),
 
-                      Positioned(
-                        top: 60.0,
-                        child: Container(
-                          padding: const EdgeInsets.only(top: 10, bottom: 30),
-                          height: 260,
-                          width: 260,
-                          child: RadioGroup(
-                            groupValue: _selectedRadioValue,
-                            onChanged: (int? value) {
-                              if (value != null) {
-                                _handleRadioValueChange(
-                                  SelectedImageTypeEnum.values[value],
-                                  forceOpen: false,
-                                );
-                              }
-                            },
+                    Positioned(
+                      top: 60.0,
+                      child: Container(
+                        padding: const EdgeInsets.only(top: 10, bottom: 30),
+                        height: 260,
+                        width: 260,
+                        child: RadioGroup(
+                          groupValue: _selectedRadioValue,
+                          onChanged: (int? value) {
+                            if (value != null) {
+                              _handleRadioValueChange(
+                                SelectedImageTypeEnum.values[value],
+                                forceOpen: false,
+                              );
+                            }
+                          },
 
-                            child: Stack(
-                              alignment: AlignmentDirectional.center,
-                              children: <Widget>[
-                                Positioned(
-                                  top: 0,
-                                  left: 0,
-                                  child: getImageSourceButton(
-                                    label: 'Camera',
-                                    iosIcon: 'images/icons/ios_camera.png',
-                                    androidIcon:
-                                        'images/icons/android_camera.png',
-                                    selectedImageType:
-                                        SelectedImageTypeEnum.fromCamera,
-                                  ),
+                          child: Stack(
+                            alignment: AlignmentDirectional.center,
+                            children: <Widget>[
+                              Positioned(
+                                top: 0,
+                                left: 0,
+                                child: getImageSourceButton(
+                                  label: 'Camera',
+                                  iosIcon: 'images/icons/ios_camera.png',
+                                  androidIcon:
+                                      'images/icons/android_camera.png',
+                                  selectedImageType:
+                                      SelectedImageTypeEnum.fromCamera,
                                 ),
-                                Positioned(
-                                  top: 0,
-                                  right: 0,
-                                  child: getImageSourceButton(
-                                    label: 'Gallery',
-                                    iosIcon: 'images/icons/ios_gallery.png',
-                                    androidIcon:
-                                        'images/icons/android_gallery.png',
-                                    selectedImageType:
-                                        SelectedImageTypeEnum.fromGallery,
-                                  ),
+                              ),
+                              Positioned(
+                                top: 0,
+                                right: 0,
+                                child: getImageSourceButton(
+                                  label: 'Gallery',
+                                  iosIcon: 'images/icons/ios_gallery.png',
+                                  androidIcon:
+                                      'images/icons/android_gallery.png',
+                                  selectedImageType:
+                                      SelectedImageTypeEnum.fromGallery,
                                 ),
-                                Positioned(
-                                  bottom: 0,
-                                  left: 0,
-                                  child: getImageSourceButton(
-                                    label: 'Avatar',
-                                    iosIcon: 'images/icons/avatar.png',
-                                    androidIcon: 'images/icons/avatar.png',
-                                    selectedImageType:
-                                        SelectedImageTypeEnum.avatar,
-                                  ),
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                left: 0,
+                                child: getImageSourceButton(
+                                  label: 'Avatar',
+                                  iosIcon: 'images/icons/avatar.png',
+                                  androidIcon: 'images/icons/avatar.png',
+                                  selectedImageType:
+                                      SelectedImageTypeEnum.avatar,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
+                    ),
 
-                      Positioned(
-                        top: 315,
-                        bottom: 90,
-                        left: 30,
-                        right: 30,
-                        child: Stack(
-                          fit: StackFit.loose,
-                          //clipBehavior: Clip.hardEdge,
-                          alignment: AlignmentDirectional.center,
-                          children: <Widget>[
-                            Container(
-                              margin: const EdgeInsets.all(0.0),
-                              child: Image.asset(
-                                'images/other/white_square.jpg',
-                                width: 400,
-                                height: 400,
-                                fit: BoxFit.fitHeight,
-                              ),
+                    Positioned(
+                      top: 315,
+                      bottom: 90,
+                      left: 30,
+                      right: 30,
+                      child: Stack(
+                        fit: StackFit.loose,
+                        //clipBehavior: Clip.hardEdge,
+                        alignment: AlignmentDirectional.center,
+                        children: <Widget>[
+                          Container(
+                            margin: const EdgeInsets.all(0.0),
+                            child: Image.asset(
+                              'images/other/white_square.jpg',
+                              width: 400,
+                              height: 400,
+                              fit: BoxFit.fitHeight,
                             ),
-                            (_imageTypeSelection == SelectedImageTypeEnum.none)
-                                ? Container(
+                          ),
+                          (_imageTypeSelection == SelectedImageTypeEnum.none)
+                              ? Container(
                                   margin: const EdgeInsets.all(6.0),
                                   // Positioned(
                                   // left: 30,
@@ -293,9 +292,9 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
                                     'images/icons/create_profile_photo.png',
                                   ),
                                 )
-                                //,
-                                // )
-                                : Container(
+                              //,
+                              // )
+                              : Container(
                                   margin: const EdgeInsets.all(6.0),
                                   // height: 400,
                                   // width: 400,
@@ -305,35 +304,34 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
                                   // child:
                                   child: _getPreviewImage(),
                                 ),
-                          ],
-                        ),
+                        ],
                       ),
+                    ),
 
-                      Positioned(
-                        bottom: 20.0,
-                        child: TextButton(
-                          style: TextButton.styleFrom(
-                            shape: button_shape,
-                            backgroundColor:
-                                _imageTypeSelection ==
-                                        SelectedImageTypeEnum.none
-                                    ? Colors.grey
-                                    : hc_red,
-                          ),
-                          //color: imageTypeSelection == _SelectedImageTypeEnum.none ? Colors.grey : Theme.of(context).accentColor,
-                          child: Text('Next', style: ts_button),
-                          onPressed: () {
-                            if (_imageTypeSelection !=
-                                SelectedImageTypeEnum.none) {
-                              _processAndContinue();
-                            }
-                          },
+                    Positioned(
+                      bottom: 20.0,
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          shape: button_shape,
+                          backgroundColor:
+                              _imageTypeSelection == SelectedImageTypeEnum.none
+                              ? Colors.grey
+                              : hc_red,
                         ),
+                        //color: imageTypeSelection == _SelectedImageTypeEnum.none ? Colors.grey : Theme.of(context).accentColor,
+                        child: Text('Next', style: ts_button),
+                        onPressed: () {
+                          if (_imageTypeSelection !=
+                              SelectedImageTypeEnum.none) {
+                            _processAndContinue();
+                          }
+                        },
                       ),
+                    ),
 
-                      //),
-                    ],
-                  ),
+                    //),
+                  ],
+                ),
         ),
       ),
     );
@@ -536,20 +534,20 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
         ? Image.asset('images/icons/create_profile_photo.png')
         : url.contains('bundle://')
         ? Stack(
-          alignment: Alignment.center,
-          children: <Widget>[
-            Image.asset(
-              ('images/avatars/${url.replaceAll('bundle://', '')}.jpg')
-                  .toLowerCase(),
-            ),
-          ],
-        )
+            alignment: Alignment.center,
+            children: <Widget>[
+              Image.asset(
+                ('images/avatars/${url.replaceAll('bundle://', '')}.jpg')
+                    .toLowerCase(),
+              ),
+            ],
+          )
         : CachedNetworkImage(
-          imageUrl: url,
-          //errorWidget: (BuildContext context,String url,Exception error) => const  Icon(Icons.error),
-          //errorWidget:  const  Icon(Icons.error),
-          fadeInDuration: const Duration(milliseconds: 0),
-        );
+            imageUrl: url,
+            //errorWidget: (BuildContext context,String url,Exception error) => const  Icon(Icons.error),
+            //errorWidget:  const  Icon(Icons.error),
+            fadeInDuration: const Duration(milliseconds: 0),
+          );
   }
 
   void _handleRadioValueChange(
@@ -569,9 +567,8 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
           Navigator.push<dynamic>(
             context,
             MaterialPageRoute<dynamic>(
-              builder:
-                  (BuildContext context) =>
-                      AvatarIconsPage(selectedAvatarIcon: _selectedAvatarIcon),
+              builder: (BuildContext context) =>
+                  AvatarIconsPage(selectedAvatarIcon: _selectedAvatarIcon),
             ),
           ).then((dynamic onValue) {
             if (onValue != null) {
@@ -671,12 +668,11 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
 
   Widget _previewImage() {
     return FutureBuilder<File>(
-      future:
-          (_imageTypeSelection == SelectedImageTypeEnum.fromCamera)
-              ? _imageFromCamera
-              : (_imageTypeSelection == SelectedImageTypeEnum.fromFacebook)
-              ? _imageFromFacebook
-              : _imageFromGallery,
+      future: (_imageTypeSelection == SelectedImageTypeEnum.fromCamera)
+          ? _imageFromCamera
+          : (_imageTypeSelection == SelectedImageTypeEnum.fromFacebook)
+          ? _imageFromFacebook
+          : _imageFromGallery,
       builder: (BuildContext context, AsyncSnapshot<File> snapshot) {
         if (snapshot.connectionState == ConnectionState.done &&
             snapshot.data != null) {

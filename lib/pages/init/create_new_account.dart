@@ -23,7 +23,7 @@ class CreateNewAccountPageState extends State<CreateNewAccountPage> {
           left: 0,
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
-          child: Scaffold(
+          child: AppScaffold(
             appBar: AppBar(
               centerTitle: true,
               backgroundColor: themeAppBarBackground,
@@ -232,30 +232,26 @@ class CreateNewAccountPageContentState
 
                         final String responseBody = await srv.addEditUser(
                           targetUserId: GUID_EMPTY,
-                          firstName:
-                              _myDetailsUiStateKey
-                                  .currentState!
-                                  .signupFirstNameController
-                                  .value
-                                  .text,
-                          lastName:
-                              _myDetailsUiStateKey
-                                  .currentState!
-                                  .signupLastNameController
-                                  .value
-                                  .text,
-                          email:
-                              _myDetailsUiStateKey
-                                  .currentState!
-                                  .signupEmailController
-                                  .value
-                                  .text,
-                          hashName:
-                              _myDetailsUiStateKey
-                                  .currentState!
-                                  .signupHashNameController
-                                  .value
-                                  .text,
+                          firstName: _myDetailsUiStateKey
+                              .currentState!
+                              .signupFirstNameController
+                              .value
+                              .text,
+                          lastName: _myDetailsUiStateKey
+                              .currentState!
+                              .signupLastNameController
+                              .value
+                              .text,
+                          email: _myDetailsUiStateKey
+                              .currentState!
+                              .signupEmailController
+                              .value
+                              .text,
+                          hashName: _myDetailsUiStateKey
+                              .currentState!
+                              .signupHashNameController
+                              .value
+                              .text,
                           photo: profilePhotoUrl,
                           // includeInGlobalHashDirectory: includeInGlobalHashDirectory ? 1 : 0);
                           includeInGlobalHashDirectory: 0,
@@ -270,9 +266,8 @@ class CreateNewAccountPageContentState
                           await Navigator.push<dynamic>(
                             navigatorKey.currentContext!,
                             MaterialPageRoute<dynamic>(
-                              builder:
-                                  (BuildContext context) =>
-                                      const UseInviteCodePage(),
+                              builder: (BuildContext context) =>
+                                  const UseInviteCodePage(),
                             ),
                           );
                         } else if (!responseBody.startsWith(ERROR_PREFIX)) {
@@ -338,14 +333,16 @@ class CreateNewAccountPageContentState
                                 isSuccessfulLoad = true;
 
                                 //final String profilePhotoUrl = getStringPref(StringPrefsEnum.profilePhotoUrl);
-                                final String fileNamePrefix =
-                                    getStringPref(StringPrefsEnum.supportCode)!;
+                                final String fileNamePrefix = getStringPref(
+                                  StringPrefsEnum.supportCode,
+                                )!;
                                 //profilePhotoUrl ??= 'bundle://avatar-' + (Random.secure().nextInt(49) + 1).toString();
 
                                 // call Authorize device to get the device secret and device ID. NOTE This
                                 // has to be done after the user is created.
-                                final String userId =
-                                    getStringPref(StringPrefsEnum.userId)!;
+                                final String userId = getStringPref(
+                                  StringPrefsEnum.userId,
+                                )!;
                                 final AuthorizeDeviceService srv =
                                     AuthorizeDeviceService();
                                 await srv.authorizeDevice(userId: userId);
@@ -357,14 +354,13 @@ class CreateNewAccountPageContentState
                                 >(
                                   navigatorKey.currentContext!,
                                   MaterialPageRoute<dynamic>(
-                                    builder:
-                                        (BuildContext context) =>
-                                            ChooseProfileImage(
-                                              isForThisDevice: true,
-                                              fileNamePrefix: fileNamePrefix,
-                                              currentProfileImage: null,
-                                              popToCaller: false,
-                                            ),
+                                    builder: (BuildContext context) =>
+                                        ChooseProfileImage(
+                                          isForThisDevice: true,
+                                          fileNamePrefix: fileNamePrefix,
+                                          currentProfileImage: null,
+                                          popToCaller: false,
+                                        ),
                                   ),
                                 );
                               }

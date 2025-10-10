@@ -16,7 +16,7 @@ class ReceiptsListState extends State<ReceiptsList> {
 
   List<Map<String, dynamic>> receiptsList = <Map<String, dynamic>>[];
 
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> _ScaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -48,8 +48,8 @@ class ReceiptsListState extends State<ReceiptsList> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
+    return AppScaffold(
+      key: _ScaffoldKey,
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
@@ -87,14 +87,13 @@ class ReceiptsListState extends State<ReceiptsList> {
             backgroundColor: hc_blue,
             label: 'Add Receipt',
             labelStyle: const TextStyle(fontSize: 18.0),
-            onTap:
-                () => Navigator.push<void>(
+            onTap: () =>
+                Navigator.push<void>(
                   context,
                   MaterialPageRoute<void>(
-                    builder:
-                        (BuildContext context) => ReceiptDetailPage(
-                          eventId: widget.eventAggregate.event.eventId,
-                        ),
+                    builder: (BuildContext context) => ReceiptDetailPage(
+                      eventId: widget.eventAggregate.event.eventId,
+                    ),
                   ),
                 ).then<dynamic>((void receipt) {
                   refreshFromTable();
@@ -230,214 +229,191 @@ class ReceiptsListState extends State<ReceiptsList> {
         Expanded(
           child: Padding(
             padding: const EdgeInsets.only(top: 10.0),
-            child:
-                receiptsList.isEmpty
-                    ? Center(
-                      child: Text(
-                        'No receipts available.',
-                        style: ts_titleBlack,
-                      ),
-                    )
-                    : RefreshIndicator(
-                      onRefresh: _handleRefresh,
-                      displacement: 40.0,
-                      child: ListView.separated(
-                        separatorBuilder:
-                            (BuildContext context, int index) => const Divider(
-                              height: 1.0,
-                              color: Colors.black45,
-                            ),
-                        // physics: const AlwaysScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        physics: ClampingScrollPhysics(),
-                        itemCount: receiptsList.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          final Map<String, dynamic> receipt =
-                              receiptsList[index];
+            child: receiptsList.isEmpty
+                ? Center(
+                    child: Text('No receipts available.', style: ts_titleBlack),
+                  )
+                : RefreshIndicator(
+                    onRefresh: _handleRefresh,
+                    displacement: 40.0,
+                    child: ListView.separated(
+                      separatorBuilder: (BuildContext context, int index) =>
+                          const Divider(height: 1.0, color: Colors.black45),
+                      // physics: const AlwaysScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      physics: ClampingScrollPhysics(),
+                      itemCount: receiptsList.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final Map<String, dynamic> receipt =
+                            receiptsList[index];
 
-                          return Dismissible(
-                            key: Key(receipt['receiptId']),
-                            confirmDismiss: (DismissDirection direction) {
-                              if (direction == DismissDirection.endToStart) {
-                                setReceiptReimbursementStatus(
-                                  receipt['receiptId'],
-                                  (receipt['reimbursedBy'] != null) &&
-                                      (receipt['reimbursedBy'] != GUID_EMPTY),
-                                );
-                              } else if (direction ==
-                                  DismissDirection.startToEnd) {
-                                setReceiptRemovedStatus(
-                                  receipt['receiptId'],
-                                  receipt['removed'] == 1,
-                                );
-                              }
-                              return Future<bool>.value(false);
-                            },
-                            background:
-                                receipt['removed'] == 0
-                                    ? Container(
-                                      color: hc_red,
-                                      child: Row(
-                                        children: <Widget>[
-                                          const Padding(
-                                            padding: EdgeInsets.only(
-                                              left: 10.0,
-                                            ),
-                                            child: Icon(
-                                              FontAwesome.times_circle,
-                                              color: Colors.white,
-                                              size: 35.0,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                              left: 15.0,
-                                            ),
-                                            child: Text(
-                                              // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
-                                              'Ignore receipt',
-                                              style: ts_titleMedium,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    )
-                                    : Container(
-                                      color: Colors.green,
-                                      child: Row(
-                                        children: <Widget>[
-                                          const Padding(
-                                            padding: EdgeInsets.only(
-                                              left: 10.0,
-                                            ),
-                                            child: Icon(
-                                              FontAwesome.check_circle,
-                                              color: Colors.white,
-                                              size: 35.0,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                              left: 15.0,
-                                            ),
-                                            child: Text(
-                                              // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
-                                              'Restore receipt',
-                                              style: ts_titleMedium,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                            secondaryBackground:
+                        return Dismissible(
+                          key: Key(receipt['receiptId']),
+                          confirmDismiss: (DismissDirection direction) {
+                            if (direction == DismissDirection.endToStart) {
+                              setReceiptReimbursementStatus(
+                                receipt['receiptId'],
                                 (receipt['reimbursedBy'] != null) &&
-                                        (receipt['reimbursedBy'] !=
-                                            GUID_EMPTY) &&
-                                        (receipt['reimbursedBy'] != GUID_8)
-                                    ? Container(
-                                      color: Colors.yellow,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: <Widget>[
-                                          const Padding(
-                                            padding: EdgeInsets.only(
-                                              right: 15.0,
-                                            ),
-                                            child: Icon(
-                                              FontAwesome.times_circle,
-                                              color: Colors.black,
-                                              size: 35.0,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                              right: 15.0,
-                                            ),
-                                            child: Text(
-                                              //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
-                                              'Cancel Reimbursement',
-                                              style: ts_titleMediumBlack,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    )
-                                    : Container(
-                                      color: Colors.green,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: <Widget>[
-                                          const Padding(
-                                            padding: EdgeInsets.only(
-                                              right: 15.0,
-                                            ),
-                                            child: Icon(
-                                              FontAwesome.check_circle,
-                                              color: Colors.white,
-                                              size: 35.0,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                              right: 15.0,
-                                            ),
-                                            child: Text(
-                                              //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
-                                              'Receipt reimbursed',
-                                              style: ts_titleMedium,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                            onDismissed: (DismissDirection direction) {
-                              //print(direction.toString() + ' NOTE: We should never reach this point');
-                            },
-                            child: Container(
-                              height: 50.0,
-                              padding: const EdgeInsets.all(0.0),
-                              child: ListView(
-                                scrollDirection: Axis.horizontal,
-                                children: <Widget>[
-                                  ReceiptListItem(
-                                    currencySymbol:
-                                        widget.eventAggregate.extensions.curSym,
-                                    digitsAfterDecimal:
-                                        widget
-                                            .eventAggregate
-                                            .extensions
-                                            .digAfterDec,
-                                    receipt: receiptsList[index],
-                                    itemPressed: () {
-                                      Navigator.push<void>(
-                                        context,
-                                        MaterialPageRoute<void>(
-                                          builder:
-                                              (BuildContext context) =>
-                                                  ReceiptDetailPage(
-                                                    eventId:
-                                                        widget
-                                                            .eventAggregate
-                                                            .event
-                                                            .eventId,
-                                                    receiptItem:
-                                                        receiptsList[index],
-                                                  ),
+                                    (receipt['reimbursedBy'] != GUID_EMPTY),
+                              );
+                            } else if (direction ==
+                                DismissDirection.startToEnd) {
+                              setReceiptRemovedStatus(
+                                receipt['receiptId'],
+                                receipt['removed'] == 1,
+                              );
+                            }
+                            return Future<bool>.value(false);
+                          },
+                          background: receipt['removed'] == 0
+                              ? Container(
+                                  color: hc_red,
+                                  child: Row(
+                                    children: <Widget>[
+                                      const Padding(
+                                        padding: EdgeInsets.only(left: 10.0),
+                                        child: Icon(
+                                          FontAwesome.times_circle,
+                                          color: Colors.white,
+                                          size: 35.0,
                                         ),
-                                      ).then<dynamic>((void receipt) {
-                                        refreshFromTable();
-                                      });
-                                    },
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 15.0,
+                                        ),
+                                        child: Text(
+                                          // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
+                                          'Ignore receipt',
+                                          style: ts_titleMedium,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
+                                )
+                              : Container(
+                                  color: Colors.green,
+                                  child: Row(
+                                    children: <Widget>[
+                                      const Padding(
+                                        padding: EdgeInsets.only(left: 10.0),
+                                        child: Icon(
+                                          FontAwesome.check_circle,
+                                          color: Colors.white,
+                                          size: 35.0,
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 15.0,
+                                        ),
+                                        child: Text(
+                                          // '${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Bank Transfer',
+                                          'Restore receipt',
+                                          style: ts_titleMedium,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                          secondaryBackground:
+                              (receipt['reimbursedBy'] != null) &&
+                                  (receipt['reimbursedBy'] != GUID_EMPTY) &&
+                                  (receipt['reimbursedBy'] != GUID_8)
+                              ? Container(
+                                  color: Colors.yellow,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: <Widget>[
+                                      const Padding(
+                                        padding: EdgeInsets.only(right: 15.0),
+                                        child: Icon(
+                                          FontAwesome.times_circle,
+                                          color: Colors.black,
+                                          size: 35.0,
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          right: 15.0,
+                                        ),
+                                        child: Text(
+                                          //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                          'Cancel Reimbursement',
+                                          style: ts_titleMediumBlack,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : Container(
+                                  color: Colors.green,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: <Widget>[
+                                      const Padding(
+                                        padding: EdgeInsets.only(right: 15.0),
+                                        child: Icon(
+                                          FontAwesome.check_circle,
+                                          color: Colors.white,
+                                          size: 35.0,
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          right: 15.0,
+                                        ),
+                                        child: Text(
+                                          //'${IveCoreUtilities.getFormattedMoney(filteredList[index].debitAmount, widget.digitsAfterDecimal, widget.currencySymbol)} Cash',
+                                          'Receipt reimbursed',
+                                          style: ts_titleMedium,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                          onDismissed: (DismissDirection direction) {
+                            //print(direction.toString() + ' NOTE: We should never reach this point');
+                          },
+                          child: Container(
+                            height: 50.0,
+                            padding: const EdgeInsets.all(0.0),
+                            child: ListView(
+                              scrollDirection: Axis.horizontal,
+                              children: <Widget>[
+                                ReceiptListItem(
+                                  currencySymbol:
+                                      widget.eventAggregate.extensions.curSym,
+                                  digitsAfterDecimal: widget
+                                      .eventAggregate
+                                      .extensions
+                                      .digAfterDec,
+                                  receipt: receiptsList[index],
+                                  itemPressed: () {
+                                    Navigator.push<void>(
+                                      context,
+                                      MaterialPageRoute<void>(
+                                        builder: (BuildContext context) =>
+                                            ReceiptDetailPage(
+                                              eventId: widget
+                                                  .eventAggregate
+                                                  .event
+                                                  .eventId,
+                                              receiptItem: receiptsList[index],
+                                            ),
+                                      ),
+                                    ).then<dynamic>((void receipt) {
+                                      refreshFromTable();
+                                    });
+                                  },
+                                ),
+                              ],
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        );
+                      },
                     ),
+                  ),
           ),
         ),
         Container(
@@ -485,23 +461,22 @@ class ReceiptListItem extends StatelessWidget {
                 padding: const EdgeInsets.only(left: 10.0),
                 child:
                     ((receipt['reimbursedBy'] == null) ||
-                            (receipt['reimbursedBy'] == GUID_EMPTY))
-                        ? const Icon(
-                          FontAwesome.circle_thin,
-                          size: 35.0,
-                          color: Colors.grey,
-                        )
-                        : receipt['reimbursedBy'] == GUID_8 ||
-                            receipt['reimbursedBy'] == GUID_9
-                        ? Icon(delayIcon, size: 35.0, color: hc_blue)
-                        : Icon(
-                          FontAwesome.check_circle,
-                          size: 35.0,
-                          color:
-                              receipt['removed'] == 0
-                                  ? Colors.green
-                                  : Colors.grey,
-                        ),
+                        (receipt['reimbursedBy'] == GUID_EMPTY))
+                    ? const Icon(
+                        FontAwesome.circle_thin,
+                        size: 35.0,
+                        color: Colors.grey,
+                      )
+                    : receipt['reimbursedBy'] == GUID_8 ||
+                          receipt['reimbursedBy'] == GUID_9
+                    ? Icon(delayIcon, size: 35.0, color: hc_blue)
+                    : Icon(
+                        FontAwesome.check_circle,
+                        size: 35.0,
+                        color: receipt['removed'] == 0
+                            ? Colors.green
+                            : Colors.grey,
+                      ),
               ),
             ),
             Expanded(

@@ -60,16 +60,16 @@ class FindHasherPageState extends State<FindHasherPage> {
         if (filterText.isEmpty) {
           _filteredList = _hasherList;
         } else {
-          _filteredList =
-              _hasherList
-                  .where(
-                    (dynamic user) => ((user.firstName ?? '') +
+          _filteredList = _hasherList
+              .where(
+                (dynamic user) =>
+                    ((user.firstName ?? '') +
                             '  ${(user.lastName ?? '')}' +
                             '  ${(user.dispName ?? '')}')
                         .toLowerCase()
                         .contains(filterText.toLowerCase()),
-                  )
-                  .toList();
+              )
+              .toList();
         }
       } else {
         _filteredList.clear();
@@ -83,7 +83,7 @@ class FindHasherPageState extends State<FindHasherPage> {
     findHasher();
   }
 
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> _ScaffoldKey = GlobalKey<ScaffoldState>();
 
   final FocusNode searchFocusNode = FocusNode();
   TextEditingController searchController = TextEditingController();
@@ -96,8 +96,8 @@ class FindHasherPageState extends State<FindHasherPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
+    return AppScaffold(
+      key: _ScaffoldKey,
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
@@ -108,20 +108,19 @@ class FindHasherPageState extends State<FindHasherPage> {
         children: <Widget>[
           _searchBar(),
           Expanded(
-            child:
-                (_isLoading == true)
-                    ? const Center(
-                      child: HcAppCircularProgressIndicator(
-                        key: Key('559501910'),
-                      ),
-                    )
-                    : HasherListView(
-                      hasherList: _filteredList,
-                      pageType: widget.pageType,
-                      searchController: searchController,
-                      kennelId: widget.kennelId,
-                      eventId: widget.eventId,
+            child: (_isLoading == true)
+                ? const Center(
+                    child: HcAppCircularProgressIndicator(
+                      key: Key('559501910'),
                     ),
+                  )
+                : HasherListView(
+                    hasherList: _filteredList,
+                    pageType: widget.pageType,
+                    searchController: searchController,
+                    kennelId: widget.kennelId,
+                    eventId: widget.eventId,
+                  ),
           ),
         ],
       ),
@@ -320,74 +319,71 @@ class HasherListView extends StatelessWidget {
             if (hasherList[index].photo != null) ...<Widget>[
               hasherList[index].photo!.startsWith('http')
                   ? CachedNetworkImage(
-                    imageUrl: hasherList[index].photo!,
-                    placeholder:
-                        (BuildContext context, String url) => const SizedBox(
-                          height: 70.0,
-                          width: 70.0,
-                          child: Center(
-                            child: SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: HcAppCircularProgressIndicator(
-                                key: Key('1393262'),
+                      imageUrl: hasherList[index].photo!,
+                      placeholder: (BuildContext context, String url) =>
+                          const SizedBox(
+                            height: 70.0,
+                            width: 70.0,
+                            child: Center(
+                              child: SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: HcAppCircularProgressIndicator(
+                                  key: Key('1393262'),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                    errorWidget: (
-                      BuildContext context,
-                      String url,
-                      dynamic error,
-                    ) {
-                      return Container(
-                        height: 70.0,
-                        width: 70.0,
-                        color: Colors.white,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            Text(
-                              'No Image',
-                              style: ts_mediumRed.copyWith(
-                                fontSize: 13,
-                                color: Colors.grey,
+                      errorWidget:
+                          (BuildContext context, String url, dynamic error) {
+                            return Container(
+                              height: 70.0,
+                              width: 70.0,
+                              color: Colors.white,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  Text(
+                                    'No Image',
+                                    style: ts_mediumRed.copyWith(
+                                      fontSize: 13,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  const Icon(Icons.error, color: Colors.grey),
+                                  Text(
+                                    'Available',
+                                    style: ts_mediumRed.copyWith(
+                                      fontSize: 13,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                            const Icon(Icons.error, color: Colors.grey),
-                            Text(
-                              'Available',
-                              style: ts_mediumRed.copyWith(
-                                fontSize: 13,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                    //fadeOutDuration:  Duration(seconds: 1),
-                    fadeInDuration: const Duration(milliseconds: 0),
-                    width: 70.0,
-                    height: 70.0,
-                    fit: BoxFit.fill,
-                  )
+                            );
+                          },
+                      //fadeOutDuration:  Duration(seconds: 1),
+                      fadeInDuration: const Duration(milliseconds: 0),
+                      width: 70.0,
+                      height: 70.0,
+                      fit: BoxFit.fill,
+                    )
                   : hasherList[index].photo!.startsWith('bundle')
                   ? Image(
-                    width: 70.0,
-                    height: 70.0,
-                    fit: BoxFit.fill,
-                    image: AssetImage(
-                      ('images/avatars/${hasherList[index].photo!.toLowerCase().replaceFirst('bundle://', '')}.jpg')
-                          .toLowerCase(),
-                    ),
-                  )
+                      width: 70.0,
+                      height: 70.0,
+                      fit: BoxFit.fill,
+                      image: AssetImage(
+                        ('images/avatars/${hasherList[index].photo!.toLowerCase().replaceFirst('bundle://', '')}.jpg')
+                            .toLowerCase(),
+                      ),
+                    )
                   : const Image(
-                    width: 70.0,
-                    height: 70.0,
-                    fit: BoxFit.fill,
-                    image: AssetImage('images/avatars/avatar-2.jpg'),
-                  ),
+                      width: 70.0,
+                      height: 70.0,
+                      fit: BoxFit.fill,
+                      image: AssetImage('images/avatars/avatar-2.jpg'),
+                    ),
             ],
 
             Positioned(
@@ -483,25 +479,23 @@ class HasherListView extends StatelessWidget {
           HashersModel? newHasher = await Navigator.push<HashersModel>(
             context,
             MaterialPageRoute<HashersModel>(
-              builder:
-                  (BuildContext context) => HasherProfilePage(
-                    dataContext:
-                        pageType == FindHasherPageType.addHasherToRun
-                            ? EnumDataContext.event
-                            : EnumDataContext.kennel,
-                    pageType: EnumMyProfilePageType.newHasherProfile,
-                    eventId:
-                        (pageType == FindHasherPageType.addHasherToRun
-                            ? eventId
-                            : GUID_EMPTY) ??
-                        GUID_EMPTY,
-                    kennelId: kennelId!,
-                    uiElementsToDisplay:
-                        HasherProfilePage.flagUiElement_followKennel,
-                    hashNameFromSearch: capitalizeFirstLetter(
-                      searchController.text,
-                    ),
-                  ),
+              builder: (BuildContext context) => HasherProfilePage(
+                dataContext: pageType == FindHasherPageType.addHasherToRun
+                    ? EnumDataContext.event
+                    : EnumDataContext.kennel,
+                pageType: EnumMyProfilePageType.newHasherProfile,
+                eventId:
+                    (pageType == FindHasherPageType.addHasherToRun
+                        ? eventId
+                        : GUID_EMPTY) ??
+                    GUID_EMPTY,
+                kennelId: kennelId!,
+                uiElementsToDisplay:
+                    HasherProfilePage.flagUiElement_followKennel,
+                hashNameFromSearch: capitalizeFirstLetter(
+                  searchController.text,
+                ),
+              ),
             ),
           );
 
@@ -584,9 +578,8 @@ class HasherListView extends StatelessWidget {
 
     //print(DateTime.now().millisecondsSinceEpoch.toString());
     return ListView.separated(
-      separatorBuilder:
-          (BuildContext context, int index) =>
-              const Divider(height: 1.0, color: Colors.black45),
+      separatorBuilder: (BuildContext context, int index) =>
+          const Divider(height: 1.0, color: Colors.black45),
       physics: const AlwaysScrollableScrollPhysics(),
       itemCount: hasherList.length + (searchController.text.isNotEmpty ? 1 : 0),
       itemBuilder: (BuildContext context, int index) {
@@ -596,67 +589,67 @@ class HasherListView extends StatelessWidget {
         } else {
           return (hasherList.isEmpty)
               ? Container(
-                color: Colors.grey[300],
-                width: 70.0,
-                height: 70.0,
-                child: const Padding(
-                  padding: EdgeInsets.all(5.0),
-                  child: Center(
-                    child: HcAppCircularProgressIndicator(
-                      key: Key('3330495910'),
+                  color: Colors.grey[300],
+                  width: 70.0,
+                  height: 70.0,
+                  child: const Padding(
+                    padding: EdgeInsets.all(5.0),
+                    child: Center(
+                      child: HcAppCircularProgressIndicator(
+                        key: Key('3330495910'),
+                      ),
                     ),
                   ),
-                ),
-              )
+                )
               : Dismissible(
-                key: Key(index.toString()),
-                confirmDismiss: (DismissDirection direction) {
-                  final Map<String, dynamic> result = <String, dynamic>{
-                    'hasher': hasherList[index],
-                    'virginVisitorType':
-                        direction == DismissDirection.startToEnd
-                            ? enumHasher.value
-                            : enumKnownVisitor.value,
-                  };
-                  Navigator.of(context).pop(result);
-                  return Future<bool>.value(false);
-                },
-                background: Container(
-                  color: Colors.green,
-                  child: Row(
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.only(left: 15.0),
-                        child: Icon(leftToRightIcon, color: Colors.white),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 15.0),
-                        child: Text(leftToRightTitle, style: ts_titleMedium),
-                      ),
-                    ],
+                  key: Key(index.toString()),
+                  confirmDismiss: (DismissDirection direction) {
+                    final Map<String, dynamic> result = <String, dynamic>{
+                      'hasher': hasherList[index],
+                      'virginVisitorType':
+                          direction == DismissDirection.startToEnd
+                          ? enumHasher.value
+                          : enumKnownVisitor.value,
+                    };
+                    Navigator.of(context).pop(result);
+                    return Future<bool>.value(false);
+                  },
+                  background: Container(
+                    color: Colors.green,
+                    child: Row(
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.only(left: 15.0),
+                          child: Icon(leftToRightIcon, color: Colors.white),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 15.0),
+                          child: Text(leftToRightTitle, style: ts_titleMedium),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                secondaryBackground: Container(
-                  color: Colors.purple,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.only(right: 15.0),
-                        child: Icon(rightToLeftIcon, color: Colors.white),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 15.0),
-                        child: Text(rightToLeftTitle, style: ts_titleMedium),
-                      ),
-                    ],
+                  secondaryBackground: Container(
+                    color: Colors.purple,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.only(right: 15.0),
+                          child: Icon(rightToLeftIcon, color: Colors.white),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 15.0),
+                          child: Text(rightToLeftTitle, style: ts_titleMedium),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                onDismissed: (DismissDirection direction) {
-                  //print(direction.toString() + ' NOTE: We should never reach this point');
-                },
-                child: _listItem(context, index),
-              );
+                  onDismissed: (DismissDirection direction) {
+                    //print(direction.toString() + ' NOTE: We should never reach this point');
+                  },
+                  child: _listItem(context, index),
+                );
         }
       },
     );

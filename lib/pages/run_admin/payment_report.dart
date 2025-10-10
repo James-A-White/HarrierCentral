@@ -73,7 +73,8 @@ class PaymentReportState extends State<PaymentReportPage> {
   Future<void> _refreshListsFromTable() async {
     final offsetFromGmtToLocal = Utilities.getSqfliteTimeOffset();
 
-    final String sql = '''
+    final String sql =
+        '''
 SELECT
     -- Payment table
     pay.*,
@@ -158,7 +159,8 @@ SELECT
     _paymentTotals = <Map<String, dynamic>>[];
 
     try {
-      final String sql = '''
+      final String sql =
+          '''
 
           -- start with the 'not paid' case
           select 0 as paymentType, 
@@ -295,12 +297,12 @@ SELECT
     );
   }
 
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> _ScaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
+    return AppScaffold(
+      key: _ScaffoldKey,
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
@@ -369,7 +371,7 @@ SELECT
 
                 IveCoreUtilities.showInSnackBar(
                   navigatorKey.currentContext!,
-                  _scaffoldKey,
+                  _ScaffoldKey,
                   'Payment Report being processed...',
                   durationInSeconds: 10,
                 );
@@ -378,503 +380,477 @@ SELECT
           ],
         ),
       ),
-      body:
-          (_isLoading || (_paymentTotals.isEmpty))
-              ? const HcAppCircularProgressIndicator(key: Key('112209596'))
-              : Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget>[
-                  Container(
-                    padding: const EdgeInsets.only(top: 10),
-                    decoration: const BoxDecoration(
-                      // border: new Border.all(width: 1.0, color: Colors.black),
-                      //shape: BoxShape.circle,
-                      color: Colors.white,
-                      boxShadow: <BoxShadow>[
-                        BoxShadow(
-                          color: Color.fromARGB(70, 0, 0, 0),
-                          offset: Offset(0.0, 6.0),
-                          blurRadius: 10.0,
-                        ),
-                      ],
-                    ),
-                    height: 120.0,
-                    child: Column(
-                      children: <Widget>[
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: <Widget>[
-                            PaymentTotalsCell(
-                              creditAmount: 0,
-                              counter:
-                                  _paymentTotals[0]['count'] +
-                                  _paymentTotals[paymentNotPaid.value]['count'],
-                              color:
-                                  (_filterValue & 1) != 0
-                                      ? hc_red
-                                      : Colors.black26,
-                              paymentRecordType: paymentNotPaid,
-                              currencySymbol:
-                                  widget.eventAggregate.extensions.curSym,
-                              digitsAfterDecimal:
-                                  widget.eventAggregate.extensions.digAfterDec,
-                              onTap: () {
-                                _filterTapped(1);
-                              },
-                            ),
-                            PaymentTotalsCell(
-                              creditAmount:
-                                  _paymentTotals[paymentCash
-                                          .value]['totalCollected']
-                                      ?.toDouble() ??
-                                  0.0,
-                              counter:
-                                  _paymentTotals[paymentCash.value]['count'],
-                              color:
-                                  (_filterValue & 2) != 0
-                                      ? Colors.green
-                                      : Colors.black26,
-                              paymentRecordType: paymentCash,
-                              currencySymbol:
-                                  widget.eventAggregate.extensions.curSym,
-                              digitsAfterDecimal:
-                                  widget.eventAggregate.extensions.digAfterDec,
-                              onTap: () {
-                                _filterTapped(2);
-                              },
-                            ),
-                            PaymentTotalsCell(
-                              creditAmount:
-                                  _paymentTotals[paymentBankTransfer
-                                          .value]['totalCollected']
-                                      ?.toDouble() ??
-                                  0.0,
-                              counter:
-                                  _paymentTotals[paymentBankTransfer
-                                      .value]['count'],
-                              color:
-                                  (_filterValue & 16) != 0
-                                      ? Colors.green
-                                      : Colors.black26,
-                              paymentRecordType: paymentBankTransfer,
-                              currencySymbol:
-                                  widget.eventAggregate.extensions.curSym,
-                              digitsAfterDecimal:
-                                  widget.eventAggregate.extensions.digAfterDec,
-                              onTap: () {
-                                _filterTapped(16);
-                              },
-                            ),
-                            PaymentTotalsCell(
-                              creditAmount:
-                                  _paymentTotals[paymentFreeRun
-                                          .value]['totalCollected']
-                                      ?.toDouble() ??
-                                  0.0,
-                              counter:
-                                  _paymentTotals[paymentFreeRun.value]['count'],
-                              color:
-                                  (_filterValue & 8) != 0
-                                      ? Colors.green
-                                      : Colors.black26,
-                              paymentRecordType: paymentFreeRun,
-                              currencySymbol:
-                                  widget.eventAggregate.extensions.curSym,
-                              digitsAfterDecimal:
-                                  widget.eventAggregate.extensions.digAfterDec,
-                              onTap: () {
-                                _filterTapped(8);
-                              },
-                            ),
-                            PaymentTotalsCell(
-                              creditAmount:
-                                  -((_paymentTotals[paymentHashCredit
-                                              .value]['totalDebited']
-                                          ?.toDouble()) ??
-                                      0.0),
-                              counter:
-                                  _paymentTotals[paymentHashCredit
-                                      .value]['count'],
-                              color:
-                                  (_filterValue & 64) != 0
-                                      ? Colors.green
-                                      : Colors.black26,
-                              paymentRecordType: paymentHashCredit,
-                              currencySymbol:
-                                  widget.eventAggregate.extensions.curSym,
-                              digitsAfterDecimal:
-                                  widget.eventAggregate.extensions.digAfterDec,
-                              onTap: () {
-                                _filterTapped(64);
-                              },
-                            ),
-                            PaymentTotalsCell(
-                              creditAmount:
-                                  _paymentTotals[paymentCashOtherAmount
-                                          .value]['totalCollected']
-                                      ?.toDouble() ??
-                                  0.0,
-                              counter:
-                                  _paymentTotals[paymentCashOtherAmount
-                                      .value]['count'],
-                              color:
-                                  (_filterValue & 4) != 0
-                                      ? Colors.green
-                                      : Colors.black26,
-                              paymentRecordType: paymentCashOtherAmount,
-                              currencySymbol:
-                                  widget.eventAggregate.extensions.curSym,
-                              digitsAfterDecimal:
-                                  widget.eventAggregate.extensions.digAfterDec,
-                              onTap: () {
-                                _filterTapped(4);
-                              },
-                            ),
-                            PaymentTotalsCell(
-                              creditAmount:
-                                  _paymentTotals[paymentBankTransferOtherAmount
-                                          .value]['totalCollected']
-                                      ?.toDouble() ??
-                                  0.0,
-                              counter:
-                                  _paymentTotals[paymentBankTransferOtherAmount
-                                      .value]['count'],
-                              color:
-                                  (_filterValue & 32) != 0
-                                      ? Colors.green
-                                      : Colors.black26,
-                              paymentRecordType: paymentBankTransferOtherAmount,
-                              currencySymbol:
-                                  widget.eventAggregate.extensions.curSym,
-                              digitsAfterDecimal:
-                                  widget.eventAggregate.extensions.digAfterDec,
-                              onTap: () {
-                                _filterTapped(32);
-                              },
-                            ),
-                            PaymentTotalsCell(
-                              creditAmount:
-                                  -((_paymentTotals[paymentHashCreditOtherAmount
-                                              .value]['totalDebited']
-                                          ?.toDouble()) ??
-                                      0.0),
-                              counter:
-                                  _paymentTotals[paymentHashCreditOtherAmount
-                                      .value]['count'],
-                              color:
-                                  (_filterValue & 128) != 0
-                                      ? Colors.green
-                                      : Colors.black26,
-                              paymentRecordType: paymentHashCreditOtherAmount,
-                              currencySymbol:
-                                  widget.eventAggregate.extensions.curSym,
-                              digitsAfterDecimal:
-                                  widget.eventAggregate.extensions.digAfterDec,
-                              onTap: () {
-                                _filterTapped(128);
-                              },
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+      body: (_isLoading || (_paymentTotals.isEmpty))
+          ? const HcAppCircularProgressIndicator(key: Key('112209596'))
+          : Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  padding: const EdgeInsets.only(top: 10),
+                  decoration: const BoxDecoration(
+                    // border: new Border.all(width: 1.0, color: Colors.black),
+                    //shape: BoxShape.circle,
+                    color: Colors.white,
+                    boxShadow: <BoxShadow>[
+                      BoxShadow(
+                        color: Color.fromARGB(70, 0, 0, 0),
+                        offset: Offset(0.0, 6.0),
+                        blurRadius: 10.0,
+                      ),
+                    ],
                   ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 10.0),
-                      child:
-                          _filteredList.isEmpty
-                              ? Center(
-                                child: Text(
-                                  'No transactions available.',
-                                  style: ts_titleBlack,
-                                ),
-                              )
-                              : RefreshIndicator(
-                                onRefresh: _refreshSqlTablesFromBackend,
-                                displacement: 40.0,
-                                child: ListView.separated(
-                                  separatorBuilder:
-                                      (BuildContext context, int index) =>
-                                          const Divider(
-                                            height: 1.0,
-                                            color: Colors.black45,
-                                          ),
-                                  physics:
-                                      const AlwaysScrollableScrollPhysics(),
-                                  itemCount: _filteredList.length + 1,
-                                  itemBuilder: (
-                                    BuildContext context,
-                                    int index,
-                                  ) {
-                                    if (index == _filteredList.length) {
-                                      return Container(height: 100);
-                                    }
-                                    final bool needsConfirm =
-                                        (((_filteredList[index]
-                                                        .payment
-                                                        ?.paymentType ??
-                                                    paymentTypeUnknown) ==
-                                                paymentBankTransfer.value) ||
-                                            ((_filteredList[index]
-                                                        .payment
-                                                        ?.paymentType ??
-                                                    paymentTypeUnknown) ==
-                                                paymentBankTransferOtherAmount
-                                                    .value)) &&
+                  height: 120.0,
+                  child: Column(
+                    children: <Widget>[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: <Widget>[
+                          PaymentTotalsCell(
+                            creditAmount: 0,
+                            counter:
+                                _paymentTotals[0]['count'] +
+                                _paymentTotals[paymentNotPaid.value]['count'],
+                            color: (_filterValue & 1) != 0
+                                ? hc_red
+                                : Colors.black26,
+                            paymentRecordType: paymentNotPaid,
+                            currencySymbol:
+                                widget.eventAggregate.extensions.curSym,
+                            digitsAfterDecimal:
+                                widget.eventAggregate.extensions.digAfterDec,
+                            onTap: () {
+                              _filterTapped(1);
+                            },
+                          ),
+                          PaymentTotalsCell(
+                            creditAmount:
+                                _paymentTotals[paymentCash
+                                        .value]['totalCollected']
+                                    ?.toDouble() ??
+                                0.0,
+                            counter: _paymentTotals[paymentCash.value]['count'],
+                            color: (_filterValue & 2) != 0
+                                ? Colors.green
+                                : Colors.black26,
+                            paymentRecordType: paymentCash,
+                            currencySymbol:
+                                widget.eventAggregate.extensions.curSym,
+                            digitsAfterDecimal:
+                                widget.eventAggregate.extensions.digAfterDec,
+                            onTap: () {
+                              _filterTapped(2);
+                            },
+                          ),
+                          PaymentTotalsCell(
+                            creditAmount:
+                                _paymentTotals[paymentBankTransfer
+                                        .value]['totalCollected']
+                                    ?.toDouble() ??
+                                0.0,
+                            counter:
+                                _paymentTotals[paymentBankTransfer
+                                    .value]['count'],
+                            color: (_filterValue & 16) != 0
+                                ? Colors.green
+                                : Colors.black26,
+                            paymentRecordType: paymentBankTransfer,
+                            currencySymbol:
+                                widget.eventAggregate.extensions.curSym,
+                            digitsAfterDecimal:
+                                widget.eventAggregate.extensions.digAfterDec,
+                            onTap: () {
+                              _filterTapped(16);
+                            },
+                          ),
+                          PaymentTotalsCell(
+                            creditAmount:
+                                _paymentTotals[paymentFreeRun
+                                        .value]['totalCollected']
+                                    ?.toDouble() ??
+                                0.0,
+                            counter:
+                                _paymentTotals[paymentFreeRun.value]['count'],
+                            color: (_filterValue & 8) != 0
+                                ? Colors.green
+                                : Colors.black26,
+                            paymentRecordType: paymentFreeRun,
+                            currencySymbol:
+                                widget.eventAggregate.extensions.curSym,
+                            digitsAfterDecimal:
+                                widget.eventAggregate.extensions.digAfterDec,
+                            onTap: () {
+                              _filterTapped(8);
+                            },
+                          ),
+                          PaymentTotalsCell(
+                            creditAmount:
+                                -((_paymentTotals[paymentHashCredit
+                                            .value]['totalDebited']
+                                        ?.toDouble()) ??
+                                    0.0),
+                            counter:
+                                _paymentTotals[paymentHashCredit
+                                    .value]['count'],
+                            color: (_filterValue & 64) != 0
+                                ? Colors.green
+                                : Colors.black26,
+                            paymentRecordType: paymentHashCredit,
+                            currencySymbol:
+                                widget.eventAggregate.extensions.curSym,
+                            digitsAfterDecimal:
+                                widget.eventAggregate.extensions.digAfterDec,
+                            onTap: () {
+                              _filterTapped(64);
+                            },
+                          ),
+                          PaymentTotalsCell(
+                            creditAmount:
+                                _paymentTotals[paymentCashOtherAmount
+                                        .value]['totalCollected']
+                                    ?.toDouble() ??
+                                0.0,
+                            counter:
+                                _paymentTotals[paymentCashOtherAmount
+                                    .value]['count'],
+                            color: (_filterValue & 4) != 0
+                                ? Colors.green
+                                : Colors.black26,
+                            paymentRecordType: paymentCashOtherAmount,
+                            currencySymbol:
+                                widget.eventAggregate.extensions.curSym,
+                            digitsAfterDecimal:
+                                widget.eventAggregate.extensions.digAfterDec,
+                            onTap: () {
+                              _filterTapped(4);
+                            },
+                          ),
+                          PaymentTotalsCell(
+                            creditAmount:
+                                _paymentTotals[paymentBankTransferOtherAmount
+                                        .value]['totalCollected']
+                                    ?.toDouble() ??
+                                0.0,
+                            counter:
+                                _paymentTotals[paymentBankTransferOtherAmount
+                                    .value]['count'],
+                            color: (_filterValue & 32) != 0
+                                ? Colors.green
+                                : Colors.black26,
+                            paymentRecordType: paymentBankTransferOtherAmount,
+                            currencySymbol:
+                                widget.eventAggregate.extensions.curSym,
+                            digitsAfterDecimal:
+                                widget.eventAggregate.extensions.digAfterDec,
+                            onTap: () {
+                              _filterTapped(32);
+                            },
+                          ),
+                          PaymentTotalsCell(
+                            creditAmount:
+                                -((_paymentTotals[paymentHashCreditOtherAmount
+                                            .value]['totalDebited']
+                                        ?.toDouble()) ??
+                                    0.0),
+                            counter:
+                                _paymentTotals[paymentHashCreditOtherAmount
+                                    .value]['count'],
+                            color: (_filterValue & 128) != 0
+                                ? Colors.green
+                                : Colors.black26,
+                            paymentRecordType: paymentHashCreditOtherAmount,
+                            currencySymbol:
+                                widget.eventAggregate.extensions.curSym,
+                            digitsAfterDecimal:
+                                widget.eventAggregate.extensions.digAfterDec,
+                            onTap: () {
+                              _filterTapped(128);
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 10.0),
+                    child: _filteredList.isEmpty
+                        ? Center(
+                            child: Text(
+                              'No transactions available.',
+                              style: ts_titleBlack,
+                            ),
+                          )
+                        : RefreshIndicator(
+                            onRefresh: _refreshSqlTablesFromBackend,
+                            displacement: 40.0,
+                            child: ListView.separated(
+                              separatorBuilder:
+                                  (BuildContext context, int index) =>
+                                      const Divider(
+                                        height: 1.0,
+                                        color: Colors.black45,
+                                      ),
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              itemCount: _filteredList.length + 1,
+                              itemBuilder: (BuildContext context, int index) {
+                                if (index == _filteredList.length) {
+                                  return Container(height: 100);
+                                }
+                                final bool needsConfirm =
+                                    (((_filteredList[index]
+                                                    .payment
+                                                    ?.paymentType ??
+                                                paymentTypeUnknown) ==
+                                            paymentBankTransfer.value) ||
+                                        ((_filteredList[index]
+                                                    .payment
+                                                    ?.paymentType ??
+                                                paymentTypeUnknown) ==
+                                            paymentBankTransferOtherAmount
+                                                .value)) &&
+                                    (_filteredList[index]
+                                            .payment
+                                            ?.confirmedBy ==
+                                        null);
+                                return (((_filteredList[index]
+                                                    .payment
+                                                    ?.paymentType ??
+                                                paymentTypeUnknown.value) !=
+                                            paymentTypeUnknown.value) &&
                                         (_filteredList[index]
                                                 .payment
-                                                ?.confirmedBy ==
-                                            null);
-                                    return (((_filteredList[index]
-                                                        .payment
-                                                        ?.paymentType ??
-                                                    paymentTypeUnknown.value) !=
-                                                paymentTypeUnknown.value) &&
-                                            (_filteredList[index]
-                                                    .payment
-                                                    ?.paymentType !=
-                                                paymentNotPaid.value) &&
-                                            !needsConfirm)
-                                        ? _listItem(
-                                          _filteredList[index],
-                                          context,
-                                        )
-                                        : Dismissible(
-                                          key: Key(index.toString()),
-                                          confirmDismiss: (
-                                            DismissDirection direction,
-                                          ) async {
-                                            //print(direction.toString() + ' ' + index.toString() + ' ' + widget.eventAggregate.extensions.nonMemberPrice.toString());
-                                            setState(() {
-                                              _filteredList[index].isLoading =
-                                                  true;
-                                            });
-                                            if (needsConfirm) {
-                                              await _payForEvent(
-                                                _filteredList[index],
-                                                paymentConfirmBankTransfer
-                                                    .value,
-                                                -1,
-                                              );
-                                              await _refreshListsFromTable();
-                                              await refreshTotals();
-                                              setState(() {});
-                                            } else {
-                                              final double paymentAmount =
-                                                  (_filteredList[index]
-                                                              .extensions
-                                                              .isMember !=
-                                                          0)
-                                                      ? _filteredList[index]
+                                                ?.paymentType !=
+                                            paymentNotPaid.value) &&
+                                        !needsConfirm)
+                                    ? _listItem(_filteredList[index], context)
+                                    : Dismissible(
+                                        key: Key(index.toString()),
+                                        confirmDismiss:
+                                            (DismissDirection direction) async {
+                                              //print(direction.toString() + ' ' + index.toString() + ' ' + widget.eventAggregate.extensions.nonMemberPrice.toString());
+                                              setState(() {
+                                                _filteredList[index].isLoading =
+                                                    true;
+                                              });
+                                              if (needsConfirm) {
+                                                await _payForEvent(
+                                                  _filteredList[index],
+                                                  paymentConfirmBankTransfer
+                                                      .value,
+                                                  -1,
+                                                );
+                                                await _refreshListsFromTable();
+                                                await refreshTotals();
+                                                setState(() {});
+                                              } else {
+                                                final double paymentAmount =
+                                                    (_filteredList[index]
+                                                            .extensions
+                                                            .isMember !=
+                                                        0)
+                                                    ? _filteredList[index]
                                                           .extensions
                                                           .eventPriceForMembers
-                                                      : _filteredList[index]
+                                                    : _filteredList[index]
                                                           .extensions
                                                           .eventPriceForNonMembers;
-                                              await _showExtrasDialog(
-                                                context,
-                                                _scaffoldKey.currentState!,
-                                                direction ==
-                                                        DismissDirection
-                                                            .endToStart
-                                                    ? paymentCash.value
-                                                    : paymentBankTransfer.value,
-                                                _filteredList[index],
-                                                paymentAmount,
-                                              );
-                                            }
-                                            return Future<bool>.value(false);
-                                          },
-                                          background:
-                                              needsConfirm
-                                                  ? Container(
-                                                    color: Colors.purple,
-                                                    child: Row(
-                                                      children: <Widget>[
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets.only(
-                                                                left: 15.0,
-                                                              ),
-                                                          child: Image.asset(
-                                                            'images/icons/payment_type_4.png',
-                                                            height: 25.0,
-                                                            width: 25.0,
-                                                            color: Colors.white,
+                                                await _showExtrasDialog(
+                                                  context,
+                                                  _ScaffoldKey.currentState!,
+                                                  direction ==
+                                                          DismissDirection
+                                                              .endToStart
+                                                      ? paymentCash.value
+                                                      : paymentBankTransfer
+                                                            .value,
+                                                  _filteredList[index],
+                                                  paymentAmount,
+                                                );
+                                              }
+                                              return Future<bool>.value(false);
+                                            },
+                                        background: needsConfirm
+                                            ? Container(
+                                                color: Colors.purple,
+                                                child: Row(
+                                                  children: <Widget>[
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                            left: 15.0,
                                                           ),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets.only(
-                                                                left: 15.0,
-                                                              ),
-                                                          child: Text(
-                                                            'Confirm Bank Transfer',
-                                                            style:
-                                                                ts_titleMedium,
-                                                          ),
-                                                        ),
-                                                      ],
+                                                      child: Image.asset(
+                                                        'images/icons/payment_type_4.png',
+                                                        height: 25.0,
+                                                        width: 25.0,
+                                                        color: Colors.white,
+                                                      ),
                                                     ),
-                                                  )
-                                                  : Container(
-                                                    color: hc_blue,
-                                                    child: Row(
-                                                      children: <Widget>[
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets.only(
-                                                                left: 15.0,
-                                                              ),
-                                                          child: Image.asset(
-                                                            'images/icons/payment_type_4.png',
-                                                            height: 25.0,
-                                                            width: 25.0,
-                                                            color: Colors.white,
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                            left: 15.0,
                                                           ),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets.only(
-                                                                left: 15.0,
-                                                              ),
-                                                          child: Text(
-                                                            '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '${IveCoreUtilities.getFormattedMoney((_filteredList[index].extensions.isMember != 0) ? _filteredList[index].extensions.eventPriceForMembers : _filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} '}Bank Transfer',
-                                                            style:
-                                                                ts_titleMedium,
-                                                          ),
-                                                        ),
-                                                      ],
+                                                      child: Text(
+                                                        'Confirm Bank Transfer',
+                                                        style: ts_titleMedium,
+                                                      ),
                                                     ),
-                                                  ),
-                                          secondaryBackground:
-                                              needsConfirm
-                                                  ? Container(
-                                                    color: Colors.purple,
-                                                    child: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment.end,
-                                                      children: <Widget>[
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets.only(
-                                                                right: 15.0,
-                                                              ),
-                                                          child: Image.asset(
-                                                            'images/icons/payment_type_4.png',
-                                                            height: 25.0,
-                                                            width: 25.0,
-                                                            color: Colors.white,
+                                                  ],
+                                                ),
+                                              )
+                                            : Container(
+                                                color: hc_blue,
+                                                child: Row(
+                                                  children: <Widget>[
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                            left: 15.0,
                                                           ),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets.only(
-                                                                right: 15.0,
-                                                              ),
-                                                          child: Text(
-                                                            'Confirm bank transfer',
-                                                            style:
-                                                                ts_titleMedium,
-                                                          ),
-                                                        ),
-                                                      ],
+                                                      child: Image.asset(
+                                                        'images/icons/payment_type_4.png',
+                                                        height: 25.0,
+                                                        width: 25.0,
+                                                        color: Colors.white,
+                                                      ),
                                                     ),
-                                                  )
-                                                  : Container(
-                                                    color: Colors.green,
-                                                    child: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment.end,
-                                                      children: <Widget>[
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets.only(
-                                                                right: 15.0,
-                                                              ),
-                                                          child: Image.asset(
-                                                            'images/icons/payment_type_3.png',
-                                                            height: 25.0,
-                                                            width: 25.0,
-                                                            color: Colors.white,
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                            left: 15.0,
                                                           ),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets.only(
-                                                                right: 15.0,
-                                                              ),
-                                                          child: Text(
-                                                            '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '${IveCoreUtilities.getFormattedMoney((_filteredList[index].extensions.isMember != 0) ? _filteredList[index].extensions.eventPriceForMembers : _filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} '}Cash',
-                                                            style:
-                                                                ts_titleMedium,
-                                                          ),
-                                                        ),
-                                                      ],
+                                                      child: Text(
+                                                        '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '${IveCoreUtilities.getFormattedMoney((_filteredList[index].extensions.isMember != 0) ? _filteredList[index].extensions.eventPriceForMembers : _filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} '}Bank Transfer',
+                                                        style: ts_titleMedium,
+                                                      ),
                                                     ),
-                                                  ),
-                                          onDismissed: (
-                                            DismissDirection direction,
-                                          ) {
-                                            //print(direction.toString() + ' NOTE: We should never reach this point');
-                                          },
-                                          child: _listItem(
-                                            _filteredList[index],
-                                            context,
-                                          ),
-                                        );
-                                  },
-                                ),
-                              ),
-                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                        secondaryBackground: needsConfirm
+                                            ? Container(
+                                                color: Colors.purple,
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.end,
+                                                  children: <Widget>[
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                            right: 15.0,
+                                                          ),
+                                                      child: Image.asset(
+                                                        'images/icons/payment_type_4.png',
+                                                        height: 25.0,
+                                                        width: 25.0,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                            right: 15.0,
+                                                          ),
+                                                      child: Text(
+                                                        'Confirm bank transfer',
+                                                        style: ts_titleMedium,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              )
+                                            : Container(
+                                                color: Colors.green,
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.end,
+                                                  children: <Widget>[
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                            right: 15.0,
+                                                          ),
+                                                      child: Image.asset(
+                                                        'images/icons/payment_type_3.png',
+                                                        height: 25.0,
+                                                        width: 25.0,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                            right: 15.0,
+                                                          ),
+                                                      child: Text(
+                                                        '${(widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '${IveCoreUtilities.getFormattedMoney((_filteredList[index].extensions.isMember != 0) ? _filteredList[index].extensions.eventPriceForMembers : _filteredList[index].extensions.eventPriceForNonMembers, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)} '}Cash',
+                                                        style: ts_titleMedium,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                        onDismissed: (DismissDirection direction) {
+                                          //print(direction.toString() + ' NOTE: We should never reach this point');
+                                        },
+                                        child: _listItem(
+                                          _filteredList[index],
+                                          context,
+                                        ),
+                                      );
+                              },
+                            ),
+                          ),
                   ),
-                  Container(
-                    height: 110,
-                    width: 9999.0,
-                    padding: const EdgeInsets.only(top: 14.0, left: 20.0),
-                    decoration: const BoxDecoration(
-                      // border: new Border.all(width: 1.0, color: Colors.black),
-                      //shape: BoxShape.circle,
-                      color: Colors.white,
-                      boxShadow: <BoxShadow>[
-                        BoxShadow(
-                          color: Color.fromARGB(70, 0, 0, 0),
-                          offset: Offset(0.0, -6.0),
-                          blurRadius: 10.0,
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(
-                          'Total transactions: $_transactionCount',
-                          style: ts_titleBlack,
-                        ),
-                        Text(
-                          'Run fees collected: ${IveCoreUtilities.getFormattedMoney(_totalCollected - ((widget.eventAggregate.event.eventPriceForExtras ?? 0) * _extrasPaid), widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)}',
-                          style: ts_titleBlack,
-                        ),
-                        Text(
-                          '${widget.eventAggregate.event.extrasDescription} paid: ${_extrasPaid.toInt()} for ${IveCoreUtilities.getFormattedMoney((widget.eventAggregate.event.eventPriceForExtras ?? 0) * _extrasPaid, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)}',
-                          style: ts_titleBlack,
-                        ),
-                        Text(
-                          'Total collected: ${IveCoreUtilities.getFormattedMoney(_totalCollected, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)}',
-                          style: ts_titleBlack,
-                        ),
-                      ],
-                    ),
+                ),
+                Container(
+                  height: 110,
+                  width: 9999.0,
+                  padding: const EdgeInsets.only(top: 14.0, left: 20.0),
+                  decoration: const BoxDecoration(
+                    // border: new Border.all(width: 1.0, color: Colors.black),
+                    //shape: BoxShape.circle,
+                    color: Colors.white,
+                    boxShadow: <BoxShadow>[
+                      BoxShadow(
+                        color: Color.fromARGB(70, 0, 0, 0),
+                        offset: Offset(0.0, -6.0),
+                        blurRadius: 10.0,
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        'Total transactions: $_transactionCount',
+                        style: ts_titleBlack,
+                      ),
+                      Text(
+                        'Run fees collected: ${IveCoreUtilities.getFormattedMoney(_totalCollected - ((widget.eventAggregate.event.eventPriceForExtras ?? 0) * _extrasPaid), widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)}',
+                        style: ts_titleBlack,
+                      ),
+                      Text(
+                        '${widget.eventAggregate.event.extrasDescription} paid: ${_extrasPaid.toInt()} for ${IveCoreUtilities.getFormattedMoney((widget.eventAggregate.event.eventPriceForExtras ?? 0) * _extrasPaid, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)}',
+                        style: ts_titleBlack,
+                      ),
+                      Text(
+                        'Total collected: ${IveCoreUtilities.getFormattedMoney(_totalCollected, widget.eventAggregate.extensions.digAfterDec, widget.eventAggregate.extensions.curSym)}',
+                        style: ts_titleBlack,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
     );
   }
 
   Future<void> _showExtrasDialog(
     BuildContext context,
-    ScaffoldState scaffoldState,
+    ScaffoldState ScaffoldState,
     int paymentType,
     PaymentAggregate packMember,
     double paymentAmount, {
@@ -891,10 +867,9 @@ SELECT
             (paymentType == paymentBankTransferOtherAmount.value) ||
             (paymentType == paymentHashCreditOtherAmount.value)) &&
         ((widget.eventAggregate.event.eventPriceForExtras ?? 0) != 0)) {
-      final double runOnlyPrice =
-          packMember.extensions.isMember != 0
-              ? widget.eventAggregate.extensions.memberPrice
-              : widget.eventAggregate.extensions.nonMemberPrice;
+      final double runOnlyPrice = packMember.extensions.isMember != 0
+          ? widget.eventAggregate.extensions.memberPrice
+          : widget.eventAggregate.extensions.nonMemberPrice;
       final double runPlusExtrasPrice =
           runOnlyPrice +
           (widget.eventAggregate.event.eventPriceForExtras ?? 0.0);
@@ -1012,10 +987,9 @@ SELECT
           if ((item.payment == null) ||
               (item.payment!.paymentType == paymentTypeUnknown.value) ||
               (item.payment!.paymentType == paymentNotPaid.value)) {
-            double amountOwed =
-                item.extensions.isMember != 1
-                    ? widget.eventAggregate.extensions.nonMemberPrice
-                    : widget.eventAggregate.extensions.memberPrice;
+            double amountOwed = item.extensions.isMember != 1
+                ? widget.eventAggregate.extensions.nonMemberPrice
+                : widget.eventAggregate.extensions.memberPrice;
             amountOwed -= item.extensions.discountAmountAvailable;
             amountOwed -=
                 amountOwed * (item.extensions.discountPercentAvailable / 100.0);
@@ -1055,7 +1029,7 @@ SELECT
                 if (!mounted) return;
                 await _showExtrasDialog(
                   context,
-                  _scaffoldKey.currentState!,
+                  _ScaffoldKey.currentState!,
                   ppResult.transactionType,
                   item,
                   ppResult.transactionValue,
@@ -1395,53 +1369,53 @@ SELECT
                   item.extensions.extrasPrice == 0
                       ? Container()
                       : Row(
-                        children: <Widget>[
-                          Expanded(
-                            flex: flexLeft,
-                            child: Text(
-                              'Extras:',
-                              style: ts_regularMediumBlack,
-                              textAlign: TextAlign.right,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                          children: <Widget>[
+                            Expanded(
+                              flex: flexLeft,
+                              child: Text(
+                                'Extras:',
+                                style: ts_regularMediumBlack,
+                                textAlign: TextAlign.right,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: spacer, height: 10.0),
-                          Expanded(
-                            flex: flexRight,
-                            child: Text(
-                              item.extensions.extrasDescription ?? '',
-                              style: ts_titleMediumBlack,
+                            const SizedBox(width: spacer, height: 10.0),
+                            Expanded(
+                              flex: flexRight,
+                              child: Text(
+                                item.extensions.extrasDescription ?? '',
+                                style: ts_titleMediumBlack,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
                   item.extensions.extrasPrice == 0
                       ? Container()
                       : Row(
-                        children: <Widget>[
-                          Expanded(
-                            flex: flexLeft,
-                            child: Text(
-                              'Ex. Paid:',
-                              style: ts_regularMediumBlack,
-                              textAlign: TextAlign.right,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                          children: <Widget>[
+                            Expanded(
+                              flex: flexLeft,
+                              child: Text(
+                                'Ex. Paid:',
+                                style: ts_regularMediumBlack,
+                                textAlign: TextAlign.right,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: spacer, height: 10.0),
-                          Expanded(
-                            flex: flexRight,
-                            child: Text(
-                              item.payment!.doPayForExtras == 0
-                                  ? 'No'
-                                  : extrasPriceStr,
-                              style: ts_titleMediumBlack,
+                            const SizedBox(width: spacer, height: 10.0),
+                            Expanded(
+                              flex: flexRight,
+                              child: Text(
+                                item.payment!.doPayForExtras == 0
+                                    ? 'No'
+                                    : extrasPriceStr,
+                                style: ts_titleMediumBlack,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
                   Row(
                     children: <Widget>[
                       Expanded(
@@ -1510,151 +1484,144 @@ SELECT
                   item.payment!.surcharge == 0
                       ? Container()
                       : Row(
-                        children: <Widget>[
-                          Expanded(
-                            flex: flexLeft,
-                            child: Text(
-                              'Surcharge:',
-                              style: ts_regularMediumBlack,
-                              textAlign: TextAlign.right,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: spacer, height: 10.0),
-                          Expanded(
-                            flex: flexRight,
-                            child: Text(
-                              IveCoreUtilities.getFormattedMoney(
-                                item.payment!.surcharge,
-                                widget.eventAggregate.extensions.digAfterDec,
-                                widget.eventAggregate.extensions.curSym,
+                          children: <Widget>[
+                            Expanded(
+                              flex: flexLeft,
+                              child: Text(
+                                'Surcharge:',
+                                style: ts_regularMediumBlack,
+                                textAlign: TextAlign.right,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              style: ts_titleMediumBlack,
                             ),
-                          ),
-                        ],
-                      ),
+                            const SizedBox(width: spacer, height: 10.0),
+                            Expanded(
+                              flex: flexRight,
+                              child: Text(
+                                IveCoreUtilities.getFormattedMoney(
+                                  item.payment!.surcharge,
+                                  widget.eventAggregate.extensions.digAfterDec,
+                                  widget.eventAggregate.extensions.curSym,
+                                ),
+                                style: ts_titleMediumBlack,
+                              ),
+                            ),
+                          ],
+                        ),
                   (item.payment!.paymentProvider ?? '') == ''
                       ? Container()
                       : Row(
-                        children: <Widget>[
-                          Expanded(
-                            flex: flexLeft,
-                            child: Text(
-                              'Provider:',
-                              style: ts_regularMediumBlack,
-                              textAlign: TextAlign.right,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                          children: <Widget>[
+                            Expanded(
+                              flex: flexLeft,
+                              child: Text(
+                                'Provider:',
+                                style: ts_regularMediumBlack,
+                                textAlign: TextAlign.right,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: spacer, height: 10.0),
-                          Expanded(
-                            flex: flexRight,
-                            child: Text(
-                              item.payment!.paymentProvider!,
-                              style: ts_titleMediumBlack,
+                            const SizedBox(width: spacer, height: 10.0),
+                            Expanded(
+                              flex: flexRight,
+                              child: Text(
+                                item.payment!.paymentProvider!,
+                                style: ts_titleMediumBlack,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
                   ((item.payment!.paymentType != paymentBankTransfer.value) &&
                           (item.payment!.paymentType !=
                               paymentBankTransferOtherAmount.value))
                       ? Container()
                       : Row(
-                        children: <Widget>[
-                          Expanded(
-                            flex: flexLeft,
-                            child: Text(
-                              'Confirmed:',
-                              style: ts_regularMediumBlack,
-                              textAlign: TextAlign.right,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                          children: <Widget>[
+                            Expanded(
+                              flex: flexLeft,
+                              child: Text(
+                                'Confirmed:',
+                                style: ts_regularMediumBlack,
+                                textAlign: TextAlign.right,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: spacer, height: 10.0),
-                          Expanded(
-                            flex: flexRight,
-                            child: Text(
-                              item.payment!.confirmedDate == null
-                                  ? '<not confirmed>'
-                                  : item.extensions.confByName ?? '',
-                              style:
-                                  (item.payment!.confirmedDate == null)
-                                      ? bodyStyleRed
-                                      : ts_titleMediumBlack,
+                            const SizedBox(width: spacer, height: 10.0),
+                            Expanded(
+                              flex: flexRight,
+                              child: Text(
+                                item.payment!.confirmedDate == null
+                                    ? '<not confirmed>'
+                                    : item.extensions.confByName ?? '',
+                                style: (item.payment!.confirmedDate == null)
+                                    ? bodyStyleRed
+                                    : ts_titleMediumBlack,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
                   ((item.payment!.paymentType != paymentBankTransfer.value) &&
                           (item.payment!.paymentType !=
                               paymentBankTransferOtherAmount.value))
                       ? Container()
                       : Row(
-                        children: <Widget>[
-                          Expanded(
-                            flex: flexLeft,
-                            child: Text(
-                              'Conf on:',
-                              style: ts_regularMediumBlack,
-                              textAlign: TextAlign.right,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                          children: <Widget>[
+                            Expanded(
+                              flex: flexLeft,
+                              child: Text(
+                                'Conf on:',
+                                style: ts_regularMediumBlack,
+                                textAlign: TextAlign.right,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: spacer, height: 10.0),
-                          Expanded(
-                            flex: flexRight,
-                            child: Text(
-                              (item.payment!.confirmedDate == null)
-                                  ? '<not confirmed>'
-                                  : DateFormat(
-                                    'MMM dd, yyyy kk:mm',
-                                  ).format(item.payment!.paidDate),
-                              style:
-                                  (item.payment!.confirmedDate == null)
-                                      ? bodyStyleRed
-                                      : ts_titleMediumBlack,
+                            const SizedBox(width: spacer, height: 10.0),
+                            Expanded(
+                              flex: flexRight,
+                              child: Text(
+                                (item.payment!.confirmedDate == null)
+                                    ? '<not confirmed>'
+                                    : DateFormat(
+                                        'MMM dd, yyyy kk:mm',
+                                      ).format(item.payment!.paidDate),
+                                style: (item.payment!.confirmedDate == null)
+                                    ? bodyStyleRed
+                                    : ts_titleMediumBlack,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
                   Padding(
                     padding: const EdgeInsets.only(top: 8.0),
                     child: Center(
                       child:
                           (((item.payment!.paymentType !=
-                                          paymentBankTransfer.value) &&
-                                      (item.payment!.paymentType !=
-                                          paymentBankTransferOtherAmount
-                                              .value)) ||
-                                  (item.payment!.confirmedBy != null) ||
-                                  (widget.eventAggregate.kennel.bankBic ==
-                                      null))
-                              ? Container()
-                              : ElevatedButton(
-                                onPressed: () {
-                                  final String remittanceInfo =
-                                      '${item.payment!.paymentReference}-${item.extensions.paidByName}';
-                                  BankTransferQr.showBankTransferQrCode(
-                                    context,
-                                    widget.eventAggregate,
-                                    item.extensions.isMember != 0,
-                                    packMemberNameForDisplay:
-                                        item.extensions.paidByName,
-                                    remitString: remittanceInfo,
-                                    remitAmount: item.payment!.creditAmount,
-                                  );
-                                },
-                                child: Text(
-                                  'Show Payment QR',
-                                  style: ts_button,
-                                ),
-                              ),
+                                      paymentBankTransfer.value) &&
+                                  (item.payment!.paymentType !=
+                                      paymentBankTransferOtherAmount.value)) ||
+                              (item.payment!.confirmedBy != null) ||
+                              (widget.eventAggregate.kennel.bankBic == null))
+                          ? Container()
+                          : ElevatedButton(
+                              onPressed: () {
+                                final String remittanceInfo =
+                                    '${item.payment!.paymentReference}-${item.extensions.paidByName}';
+                                BankTransferQr.showBankTransferQrCode(
+                                  context,
+                                  widget.eventAggregate,
+                                  item.extensions.isMember != 0,
+                                  packMemberNameForDisplay:
+                                      item.extensions.paidByName,
+                                  remitString: remittanceInfo,
+                                  remitAmount: item.payment!.creditAmount,
+                                );
+                              },
+                              child: Text('Show Payment QR', style: ts_button),
+                            ),
                     ),
                   ),
                   Padding(
@@ -1662,24 +1629,23 @@ SELECT
                     child: Center(
                       child:
                           (((item.payment!.paymentType !=
-                                          paymentBankTransfer.value) &&
-                                      (item.payment!.paymentType !=
-                                          paymentBankTransferOtherAmount
-                                              .value)) ||
-                                  (item.payment!.confirmedBy != null))
-                              ? Container()
-                              : ElevatedButton(
-                                onPressed: () {
-                                  Navigator.of(
-                                    context,
-                                    rootNavigator: true,
-                                  ).pop('confirm');
-                                },
-                                child: Text(
-                                  'Confirm Bank Transfer',
-                                  style: ts_button,
-                                ),
+                                      paymentBankTransfer.value) &&
+                                  (item.payment!.paymentType !=
+                                      paymentBankTransferOtherAmount.value)) ||
+                              (item.payment!.confirmedBy != null))
+                          ? Container()
+                          : ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(
+                                  context,
+                                  rootNavigator: true,
+                                ).pop('confirm');
+                              },
+                              child: Text(
+                                'Confirm Bank Transfer',
+                                style: ts_button,
                               ),
+                            ),
                     ),
                   ),
                 ],

@@ -23,7 +23,7 @@
 
 //   @override
 //   Widget build(BuildContext context) {
-//     return Scaffold(
+//     return AppScaffold(
 //       appBar: AppBar(
 //         centerTitle: true,
 //         backgroundColor: themeAppBarBackground,

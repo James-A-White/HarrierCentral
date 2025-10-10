@@ -25,7 +25,7 @@ class LegalPageState extends State<LegalPage> {
           left: 0,
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
-          child: Scaffold(
+          child: AppScaffold(
             appBar: AppBar(
               centerTitle: true,
               backgroundColor: themeAppBarBackground,

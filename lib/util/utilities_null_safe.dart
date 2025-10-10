@@ -188,10 +188,9 @@ class Utilities {
                                 // BUG in plugin - doesn't work when sending a title with Google maps
                                 await map.showMarker(
                                   coords: coords,
-                                  title:
-                                      map.mapName.contains('Google')
-                                          ? ''
-                                          : title,
+                                  title: map.mapName.contains('Google')
+                                      ? ''
+                                      : title,
                                   description: address,
                                 );
                               },
@@ -593,65 +592,58 @@ class Utilities {
         Navigator.push<void>(
           context,
           MaterialPageRoute<void>(
-            builder:
-                (BuildContext context) => ZoomableImagePage2(
-                  key: const Key('511203069'),
-                  pageTitle: pageTitle,
-                  imageUrl: image.startsWith('http') ? image : null,
-                  assetImage:
-                      image.contains('bundle://')
-                          ? 'images/avatars/${image.replaceAll('bundle://', '')}.jpg'
-                          : null,
-                  appBarBackgroundColor: themeAppBarBackground,
-                  background: Backgrounds.defaultHcBackground(),
-                  margin: 20.0,
-                ),
+            builder: (BuildContext context) => ZoomableImagePage2(
+              key: const Key('511203069'),
+              pageTitle: pageTitle,
+              imageUrl: image.startsWith('http') ? image : null,
+              assetImage: image.contains('bundle://')
+                  ? 'images/avatars/${image.replaceAll('bundle://', '')}.jpg'
+                  : null,
+              appBarBackgroundColor: themeAppBarBackground,
+              background: Backgrounds.defaultHcBackground(),
+              margin: 20.0,
+            ),
           ),
         );
       },
-      child:
-          image.startsWith('http')
-              ? CachedNetworkImage(
-                imageUrl: image,
-                placeholder:
-                    (BuildContext context, String url) => SizedBox(
-                      height: height,
-                      width: width,
-                      child: const Center(
-                        child: SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: HcAppCircularProgressIndicator(
-                            key: Key('1396562'),
-                          ),
-                        ),
-                      ),
-                    ),
-                errorWidget:
-                    (BuildContext context, String url, dynamic error) =>
-                        Icon(Icons.error, size: height, color: hc_red),
-                //fadeOutDuration:  Duration(seconds: 1),
-                fadeInDuration: const Duration(milliseconds: 0),
-                width: width,
+      child: image.startsWith('http')
+          ? CachedNetworkImage(
+              imageUrl: image,
+              placeholder: (BuildContext context, String url) => SizedBox(
                 height: height,
-                fit: BoxFit.fill,
-              )
-              : image.startsWith('bundle')
-              ? Image(
                 width: width,
-                height: height,
-                fit: BoxFit.fill,
-                image: AssetImage(
-                  ('images/avatars/${image.toLowerCase().replaceFirst('bundle://', '')}.jpg')
-                      .toLowerCase(),
+                child: const Center(
+                  child: SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: HcAppCircularProgressIndicator(key: Key('1396562')),
+                  ),
                 ),
-              )
-              : Image(
-                width: width,
-                height: height,
-                fit: BoxFit.fill,
-                image: const AssetImage('images/avatars/avatar-2.jpg'),
               ),
+              errorWidget: (BuildContext context, String url, dynamic error) =>
+                  Icon(Icons.error, size: height, color: hc_red),
+              //fadeOutDuration:  Duration(seconds: 1),
+              fadeInDuration: const Duration(milliseconds: 0),
+              width: width,
+              height: height,
+              fit: BoxFit.fill,
+            )
+          : image.startsWith('bundle')
+          ? Image(
+              width: width,
+              height: height,
+              fit: BoxFit.fill,
+              image: AssetImage(
+                ('images/avatars/${image.toLowerCase().replaceFirst('bundle://', '')}.jpg')
+                    .toLowerCase(),
+              ),
+            )
+          : Image(
+              width: width,
+              height: height,
+              fit: BoxFit.fill,
+              image: const AssetImage('images/avatars/avatar-2.jpg'),
+            ),
     );
   }
 
@@ -762,12 +754,12 @@ class Utilities {
         actions: <Widget>[
           showCancelButton == true
               ? TextButton(
-                style: text_button_style,
-                child: Text(cancelButtonText, style: ts_button),
-                onPressed: () {
-                  Get.back<bool?>(result: false, canPop: true);
-                },
-              )
+                  style: text_button_style,
+                  child: Text(cancelButtonText, style: ts_button),
+                  onPressed: () {
+                    Get.back<bool?>(result: false, canPop: true);
+                  },
+                )
               : Container(),
           TextButton(
             style: text_button_style,
@@ -782,45 +774,46 @@ class Utilities {
     );
   }
 
-  static Future<void> checkForInternetConnection(
+  static Future<bool> checkForInternetConnection(
     bool reconnectAttempt, {
     bool performHcServerCheck = true,
   }) async {
     if (performHcServerCheck) {
-      final String? userId = getStringPref(StringPrefsEnum.userId);
-      if (userId != null) {
-        final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-        final String deviceSecret =
-            getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+      final String userId = getStringPref(StringPrefsEnum.userId) ?? GUID_EMPTY;
 
-        // NOTE: Eventually refactor the internet connectivity checks into a GetX service
+      final String deviceId =
+          getStringPref(StringPrefsEnum.deviceId) ?? GUID_EMPTY;
+      final String deviceSecret =
+          getStringPref(StringPrefsEnum.deviceSecret) ??
+          'no_secret_required_here';
 
-        // The first check should be a simple end-to-end check with the Harrier Central backend
-        final String accessToken = Utilities.generateToken(
-          userId,
-          'hcapp_checkConnection',
-          paramString: deviceSecret,
-        );
+      // NOTE: Eventually refactor the internet connectivity checks into a GetX service
 
-        final Map<String, String?> bodyMap = <String, String?>{
-          'queryType': 'checkConnection',
-          'deviceId': deviceId,
-          'accessToken': accessToken,
-        };
+      // The first check should be a simple end-to-end check with the Harrier Central backend
+      final String accessToken = Utilities.generateToken(
+        userId,
+        'hcapp_checkConnection',
+        paramString: deviceSecret,
+      );
 
-        final String body = jsonEncode(bodyMap);
+      final Map<String, String?> bodyMap = <String, String?>{
+        'queryType': 'checkConnection',
+        'deviceId': deviceId,
+        'accessToken': accessToken,
+      };
 
-        final String responseBody = await ServiceCommon.sendHttpPostV2(
-          body,
-          bypassConnectionCheck: true,
-        );
+      final String body = jsonEncode(bodyMap);
 
-        if (!responseBody.startsWith(ERROR_PREFIX)) {
-          if (jsonDecode(responseBody)[0][0]['result'] == 'Connected') {
-            appModel.connectionStatus = EnumConnectionStatus2.connected;
-            // check against the Harrier Central backend succeeded
-            return;
-          }
+      final String responseBody = await ServiceCommon.sendHttpPostV2(
+        body,
+        bypassConnectionCheck: true,
+      );
+
+      if (!responseBody.startsWith(ERROR_PREFIX)) {
+        if (jsonDecode(responseBody)[0][0]['result'] == 'Connected') {
+          appModel.connectionStatus = EnumConnectionStatus2.connected;
+          // check against the Harrier Central backend succeeded
+          return true;
         }
       }
     }
@@ -859,7 +852,7 @@ class Utilities {
           'OK',
         );
         appModel.connectionStatus = EnumConnectionStatus2.notConnected;
-        return;
+        return false;
       } else {
         appModel.connectionStatus = EnumConnectionStatus2.notConnected;
 
@@ -870,6 +863,7 @@ class Utilities {
 
     // If we get here, everything is good
     appModel.connectionStatus = EnumConnectionStatus2.connected;
+    return true;
   }
 
   static String getFullLatLong(EventModel evt) {
@@ -951,10 +945,9 @@ class Utilities {
     // Local offset relative to UTC (can include half-hours, etc.)
     final tzOffsetMinutes =
         -(DateTime.now().timeZoneOffset.inMinutes + offsetInMinutes);
-    final offsetFromGmtToLocal =
-        tzOffsetMinutes >= 0
-            ? '+$tzOffsetMinutes minutes'
-            : '$tzOffsetMinutes minutes';
+    final offsetFromGmtToLocal = tzOffsetMinutes >= 0
+        ? '+$tzOffsetMinutes minutes'
+        : '$tzOffsetMinutes minutes';
     return offsetFromGmtToLocal;
   }
 

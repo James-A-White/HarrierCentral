@@ -55,10 +55,12 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
   void initState() {
     _homeKennelLat = getDoublePref(NumPrefsEnum.homeKennelLat);
     _homeKennelLon = getDoublePref(NumPrefsEnum.homeKennelLon);
-    _showFilters =
-        (getIntPref(IntPrefsEnum.mapShowSearchBar) ?? 0) == 0 ? false : true;
-    _showKennels =
-        (getIntPref(IntPrefsEnum.mapShowKennels) ?? 1) == 0 ? false : true;
+    _showFilters = (getIntPref(IntPrefsEnum.mapShowSearchBar) ?? 0) == 0
+        ? false
+        : true;
+    _showKennels = (getIntPref(IntPrefsEnum.mapShowKennels) ?? 1) == 0
+        ? false
+        : true;
 
     _mapCenterOption =
         getIntPref(IntPrefsEnum.mapCenterOption) ??
@@ -176,22 +178,21 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
 
           ////print('filtered at: ${DateTime.now().millisecondsSinceEpoch}');
 
-          _filteredKennels =
-              _filteredKennels.where((Map<String, dynamic> a) {
-                for (String orItem in orItems) {
-                  if (orItem.trim().isEmpty) {
-                    continue;
-                  }
-                  orItem = ' ${orItem.trim().toLowerCase()}';
-                  if ((a['searchKennelsText'].toLowerCase().contains(orItem)) ||
-                      (removeDiacritics(
-                        a['searchKennelsText'].toLowerCase(),
-                      ).contains(orItem))) {
-                    return !negate;
-                  }
-                }
-                return negate;
-              }).toList();
+          _filteredKennels = _filteredKennels.where((Map<String, dynamic> a) {
+            for (String orItem in orItems) {
+              if (orItem.trim().isEmpty) {
+                continue;
+              }
+              orItem = ' ${orItem.trim().toLowerCase()}';
+              if ((a['searchKennelsText'].toLowerCase().contains(orItem)) ||
+                  (removeDiacritics(
+                    a['searchKennelsText'].toLowerCase(),
+                  ).contains(orItem))) {
+                return !negate;
+              }
+            }
+            return negate;
+          }).toList();
         }
       } else {
         _filteredKennels.addAll(_allKennels);
@@ -386,7 +387,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
   Future<void> _loadEvents() async {
     final String userId = getStringPref(StringPrefsEnum.userId)!;
 
-    String query = '''
+    String query =
+        '''
 
           SELECT 
             evt.*,
@@ -517,7 +519,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
   Future<void> _loadKennels() async {
     //final String userId = getStringPref(StringPrefsEnum.userId);
 
-    String query = '''
+    String query =
+        '''
 
           SELECT 
             k.${tableModel.kennelsTableHelper.colKennelId} as kennelId,
@@ -548,8 +551,9 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
     try {
       _kennelMarkers = <Marker>[];
 
-      final String? homeKennelId =
-          getStringPref(StringPrefsEnum.homeKennelId)?.toLowerCase();
+      final String? homeKennelId = getStringPref(
+        StringPrefsEnum.homeKennelId,
+      )?.toLowerCase();
       if (_filteredKennels.isNotEmpty) {
         for (int i = 0; i < _filteredKennels.length; i++) {
           final double? lat = _filteredKennels[i]['lat'];
@@ -703,9 +707,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
           if (!mounted) return;
           await Navigator.of(context).push<dynamic>(
             MaterialPageRoute<dynamic>(
-              builder:
-                  (BuildContext context) =>
-                      KennelAdminMainPage(kennelAggregateItem: kennel),
+              builder: (BuildContext context) =>
+                  KennelAdminMainPage(kennelAggregateItem: kennel),
             ),
           );
         }
@@ -822,225 +825,233 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
               ),
             ),
             child:
-            //decoration: Backgrounds.defaultHcBackground(),
-            Stack(
-              children: <Widget>[
-                FlutterMap(
-                  mapController: _mapController,
-                  options: MapOptions(
-                    interactionOptions: InteractionOptions(
-                      flags:
-                          (_trueNorthLock
+                //decoration: Backgrounds.defaultHcBackground(),
+                Stack(
+                  children: <Widget>[
+                    FlutterMap(
+                      mapController: _mapController,
+                      options: MapOptions(
+                        interactionOptions: InteractionOptions(
+                          flags: (_trueNorthLock
                               ? InteractiveFlag.pinchZoom | InteractiveFlag.drag
                               : InteractiveFlag.pinchZoom |
-                                  InteractiveFlag.drag |
-                                  InteractiveFlag.rotate),
-                    ),
-                    initialCenter:
-                        ((_mapCenterOption == centerOnCurrentLocation.value) &&
+                                    InteractiveFlag.drag |
+                                    InteractiveFlag.rotate),
+                        ),
+                        initialCenter:
+                            ((_mapCenterOption ==
+                                    centerOnCurrentLocation.value) &&
                                 (deviceInfo.deviceLat != null) &&
                                 (deviceInfo.deviceLon != null))
                             ? latlng.LatLng(
-                              deviceInfo.deviceLat!,
-                              deviceInfo.deviceLon!,
-                            )
+                                deviceInfo.deviceLat!,
+                                deviceInfo.deviceLon!,
+                              )
                             : ((_mapCenterOption == centerOnHomeKennel.value) &&
-                                (_homeKennelLat != null) &&
-                                (_homeKennelLat != null))
+                                  (_homeKennelLat != null) &&
+                                  (_homeKennelLat != null))
                             ? latlng.LatLng(_homeKennelLat!, _homeKennelLon!)
                             : ((widget.kennel != null) &&
-                                (widget.kennel!.kennelLatitude != null) &&
-                                (widget.kennel!.kennelLongitude != null))
+                                  (widget.kennel!.kennelLatitude != null) &&
+                                  (widget.kennel!.kennelLongitude != null))
                             ? latlng.LatLng(
-                              widget.kennel!.kennelLatitude!,
-                              widget.kennel!.kennelLongitude!,
-                            )
+                                widget.kennel!.kennelLatitude!,
+                                widget.kennel!.kennelLongitude!,
+                              )
                             : latlng.LatLng(
-                              deviceInfo.deviceLat ?? DEFAULT_LATITUDE,
-                              deviceInfo.deviceLon ?? DEFAULT_LONGITUDE,
-                            ),
+                                deviceInfo.deviceLat ?? DEFAULT_LATITUDE,
+                                deviceInfo.deviceLon ?? DEFAULT_LONGITUDE,
+                              ),
 
-                    initialZoom: 10.0,
-                    minZoom: 1.0,
-                    maxZoom: 18.0,
-                    // plugins: <MarkerClusterPlugin>[
-                    //   MarkerClusterPlugin(),
-                    // ],
-                  ),
-                  children: <Widget>[
-                    TileLayer(
-                      urlTemplate:
-                          //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                          'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-                      //subdomains: ['a', 'b', 'c']),
-                      subdomains: const <String>['mt0', 'mt1', 'mt2', 'mt3'],
-                    ),
-                    MarkerLayer(
-                      markers: <Marker>[
-                        if ((appModel.hasLocationPermissions) &&
-                            (deviceInfo.deviceLat != null) &&
-                            (deviceInfo.deviceLon != null)) ...<Marker>[
-                          Marker(
-                            height: 50.0,
-                            width: 50.0,
-                            point: latlng.LatLng(
-                              deviceInfo.deviceLat!,
-                              deviceInfo.deviceLon!,
-                            ),
-                            child: Container(
-                              padding: const EdgeInsets.all(1.0),
-                              height: 50.0,
-                              width: 50.0,
-                              child: IgnorePointer(
-                                ignoring: true,
-                                child: Image.asset(
-                                  'images/other/map_current_location.png',
+                        initialZoom: 10.0,
+                        minZoom: 1.0,
+                        maxZoom: 18.0,
+                        // plugins: <MarkerClusterPlugin>[
+                        //   MarkerClusterPlugin(),
+                        // ],
+                      ),
+                      children: <Widget>[
+                        TileLayer(
+                          urlTemplate:
+                              //'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                              'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+                          //subdomains: ['a', 'b', 'c']),
+                          subdomains: const <String>[
+                            'mt0',
+                            'mt1',
+                            'mt2',
+                            'mt3',
+                          ],
+                        ),
+                        MarkerLayer(
+                          markers: <Marker>[
+                            if ((appModel.hasLocationPermissions) &&
+                                (deviceInfo.deviceLat != null) &&
+                                (deviceInfo.deviceLon != null)) ...<Marker>[
+                              Marker(
+                                height: 50.0,
+                                width: 50.0,
+                                point: latlng.LatLng(
+                                  deviceInfo.deviceLat!,
+                                  deviceInfo.deviceLon!,
+                                ),
+                                child: Container(
+                                  padding: const EdgeInsets.all(1.0),
                                   height: 50.0,
                                   width: 50.0,
+                                  child: IgnorePointer(
+                                    ignoring: true,
+                                    child: Image.asset(
+                                      'images/other/map_current_location.png',
+                                      height: 50.0,
+                                      width: 50.0,
+                                    ),
+                                  ),
                                 ),
                               ),
+                            ],
+                          ],
+                        ),
+                        MarkerClusterLayerWidget(
+                          options: MarkerClusterLayerOptions(
+                            maxClusterRadius: 40,
+                            size: const Size(40, 40),
+                            spiderfyCircleRadius: 100,
+                            // fitBoundsOptions: const FitBoundsOptions(
+                            //   padding: EdgeInsets.all(50),
+                            // ),
+                            markers: _showKennels == true
+                                ? _kennelMarkers
+                                : <Marker>[],
+                            polygonOptions: const PolygonOptions(
+                              borderColor: Colors.blueAccent,
+                              color: Colors.black12,
+                              borderStrokeWidth: 3,
                             ),
+                            builder:
+                                (BuildContext context, List<Marker> markers) {
+                                  heroCounter++;
+                                  return FloatingActionButton(
+                                    backgroundColor: Colors.purple[600],
+                                    onPressed: null,
+                                    heroTag: 'btn_$heroCounter',
+                                    child: AutoSizeText(
+                                      markers.length.toString(),
+                                      maxLines: 1,
+                                      style: ts_button,
+                                    ),
+                                  );
+                                },
                           ),
-                        ],
+                        ),
+                        MarkerClusterLayerWidget(
+                          options: MarkerClusterLayerOptions(
+                            maxClusterRadius: 40,
+                            size: const Size(30, 30),
+                            // fitBoundsOptions: const FitBoundsOptions(
+                            //   padding: EdgeInsets.all(50),
+                            // ),
+                            markers: _runLocationMarkers,
+                            polygonOptions: const PolygonOptions(
+                              borderColor: Colors.blueAccent,
+                              color: Colors.black12,
+                              borderStrokeWidth: 3,
+                            ),
+                            builder:
+                                (BuildContext context, List<Marker> markers) {
+                                  heroCounter++;
+                                  return FloatingActionButton(
+                                    backgroundColor: hc_blue,
+                                    onPressed: null,
+                                    heroTag: 'btn_$heroCounter',
+                                    child: AutoSizeText(
+                                      markers.length.toString(),
+                                      maxLines: 1,
+                                      style: ts_button,
+                                    ),
+                                  );
+                                },
+                          ),
+                        ),
+
+                        // MarkerLayerOptions(
+                        //   markers: <Marker>[for (MapMarker item in runLocations) mapMarker(item)],
+                        // )
                       ],
                     ),
-                    MarkerClusterLayerWidget(
-                      options: MarkerClusterLayerOptions(
-                        maxClusterRadius: 40,
-                        size: const Size(40, 40),
-                        spiderfyCircleRadius: 100,
-                        // fitBoundsOptions: const FitBoundsOptions(
-                        //   padding: EdgeInsets.all(50),
-                        // ),
-                        markers:
-                            _showKennels == true ? _kennelMarkers : <Marker>[],
-                        polygonOptions: const PolygonOptions(
-                          borderColor: Colors.blueAccent,
-                          color: Colors.black12,
-                          borderStrokeWidth: 3,
-                        ),
-                        builder: (BuildContext context, List<Marker> markers) {
-                          heroCounter++;
-                          return FloatingActionButton(
-                            backgroundColor: Colors.purple[600],
-                            onPressed: null,
-                            heroTag: 'btn_$heroCounter',
-                            child: AutoSizeText(
-                              markers.length.toString(),
-                              maxLines: 1,
-                              style: ts_button,
+                    if ((appModel.hasLocationPermissions) &&
+                        (deviceInfo.deviceLat != null) &&
+                        (deviceInfo.deviceLon != null)) ...<Widget>[
+                      Positioned(
+                        right: 10.0,
+                        top: 60.0,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _mapController.move(
+                                latlng.LatLng(
+                                  deviceInfo.deviceLat!,
+                                  deviceInfo.deviceLon!,
+                                ),
+                                13.0,
+                              );
+                            });
+                          },
+                          child: SizedBox(
+                            height: 50.0,
+                            width: 50.0,
+                            child: Image.asset(
+                              'images/other/set_map_to_current_location.png',
                             ),
-                          );
+                          ),
+                        ),
+                      ),
+                    ],
+                    Positioned(
+                      left: 10.0,
+                      top: 60.0,
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _trueNorthLock = !_trueNorthLock;
+                            if (_trueNorthLock) {
+                              _mapController.rotate(0.0);
+                            }
+                          });
                         },
+                        child: SizedBox(
+                          height: 50.0,
+                          width: 50.0,
+                          child: Image.asset(
+                            _trueNorthLock
+                                ? 'images/other/set_map_to_true_north_lock.png'
+                                : 'images/other/set_map_rotation_enabled.png',
+                          ),
+                        ),
                       ),
                     ),
-                    MarkerClusterLayerWidget(
-                      options: MarkerClusterLayerOptions(
-                        maxClusterRadius: 40,
-                        size: const Size(30, 30),
-                        // fitBoundsOptions: const FitBoundsOptions(
-                        //   padding: EdgeInsets.all(50),
-                        // ),
-                        markers: _runLocationMarkers,
-                        polygonOptions: const PolygonOptions(
-                          borderColor: Colors.blueAccent,
-                          color: Colors.black12,
-                          borderStrokeWidth: 3,
+                    Positioned(
+                      left: 10.0,
+                      right: 10.0,
+                      top: 10.0,
+                      child: Container(
+                        padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
+                        decoration: BoxDecoration(
+                          color: Colors.yellow[100],
+                          border: Border.all(width: 2.0),
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(10.0),
+                          ),
                         ),
-                        builder: (BuildContext context, List<Marker> markers) {
-                          heroCounter++;
-                          return FloatingActionButton(
-                            backgroundColor: hc_blue,
-                            onPressed: null,
-                            heroTag: 'btn_$heroCounter',
-                            child: AutoSizeText(
-                              markers.length.toString(),
-                              maxLines: 1,
-                              style: ts_button,
-                            ),
-                          );
-                        },
+                        child: Text(
+                          _textDescription,
+                          textAlign: TextAlign.center,
+                          style: ts_headingBlack,
+                        ),
                       ),
                     ),
-
-                    // MarkerLayerOptions(
-                    //   markers: <Marker>[for (MapMarker item in runLocations) mapMarker(item)],
-                    // )
                   ],
                 ),
-                if ((appModel.hasLocationPermissions) &&
-                    (deviceInfo.deviceLat != null) &&
-                    (deviceInfo.deviceLon != null)) ...<Widget>[
-                  Positioned(
-                    right: 10.0,
-                    top: 60.0,
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _mapController.move(
-                            latlng.LatLng(
-                              deviceInfo.deviceLat!,
-                              deviceInfo.deviceLon!,
-                            ),
-                            13.0,
-                          );
-                        });
-                      },
-                      child: SizedBox(
-                        height: 50.0,
-                        width: 50.0,
-                        child: Image.asset(
-                          'images/other/set_map_to_current_location.png',
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-                Positioned(
-                  left: 10.0,
-                  top: 60.0,
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _trueNorthLock = !_trueNorthLock;
-                        if (_trueNorthLock) {
-                          _mapController.rotate(0.0);
-                        }
-                      });
-                    },
-                    child: SizedBox(
-                      height: 50.0,
-                      width: 50.0,
-                      child: Image.asset(
-                        _trueNorthLock
-                            ? 'images/other/set_map_to_true_north_lock.png'
-                            : 'images/other/set_map_rotation_enabled.png',
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  left: 10.0,
-                  right: 10.0,
-                  top: 10.0,
-                  child: Container(
-                    padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
-                    decoration: BoxDecoration(
-                      color: Colors.yellow[100],
-                      border: Border.all(width: 2.0),
-                      borderRadius: const BorderRadius.all(
-                        Radius.circular(10.0),
-                      ),
-                    ),
-                    child: Text(
-                      _textDescription,
-                      textAlign: TextAlign.center,
-                      style: ts_headingBlack,
-                    ),
-                  ),
-                ),
-              ],
-            ),
           ),
         ),
       ],
@@ -1060,22 +1071,21 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
           left: 0,
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
-          child:
-              widget.kennel == null
-                  ? _runLocationsBody()
-                  : Scaffold(
-                    floatingActionButton: getMapFab(),
-                    appBar: AppBar(
-                      centerTitle: true,
-                      backgroundColor: themeAppBarBackground,
-                      iconTheme: const IconThemeData(
-                        color: Colors.white,
-                        size: 28.0,
-                      ),
-                      title: Text('Explore Runs', style: ts_appBarTitle),
+          child: widget.kennel == null
+              ? _runLocationsBody()
+              : AppScaffold(
+                  floatingActionButton: getMapFab(),
+                  appBar: AppBar(
+                    centerTitle: true,
+                    backgroundColor: themeAppBarBackground,
+                    iconTheme: const IconThemeData(
+                      color: Colors.white,
+                      size: 28.0,
                     ),
-                    body: _runLocationsBody(),
+                    title: Text('Explore Runs', style: ts_appBarTitle),
                   ),
+                  body: _runLocationsBody(),
+                ),
         ),
         // OfflineModeRibbon(
         //   showRibbon: appModel.connectionStatus == EnumConnectionStatus2.notConnected,

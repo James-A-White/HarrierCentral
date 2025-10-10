@@ -343,12 +343,13 @@ class KennelsListPageState extends State<KennelsListPage> {
         });
       } else if (_sortByType == EnumSortKennelListBy.countryRegionName) {
         _filteredList.sort((KennelListAggregate a, KennelListAggregate b) {
-          int result = (a.isHomeKennel
-                  ? ' '
-                  : (a.extensions.countryName ?? '').trim())
-              .compareTo(
-                b.isHomeKennel ? ' ' : (b.extensions.countryName ?? '').trim(),
-              );
+          int result =
+              (a.isHomeKennel ? ' ' : (a.extensions.countryName ?? '').trim())
+                  .compareTo(
+                    b.isHomeKennel
+                        ? ' '
+                        : (b.extensions.countryName ?? '').trim(),
+                  );
 
           if (result == 0) {
             result = (a.extensions.regionName ?? '').trim().compareTo(
@@ -377,18 +378,19 @@ class KennelsListPageState extends State<KennelsListPage> {
           int aFollow = a.hkm?.following ?? 0;
           int bFollow = b.hkm?.following ?? 0;
 
-          int result = (aFollow == 1
-                  ? 0
-                  : aFollow == 2
-                  ? 2
-                  : 1)
-              .compareTo(
-                bFollow == 1
-                    ? 0
-                    : bFollow == 2
-                    ? 2
-                    : 1,
-              );
+          int result =
+              (aFollow == 1
+                      ? 0
+                      : aFollow == 2
+                      ? 2
+                      : 1)
+                  .compareTo(
+                    bFollow == 1
+                        ? 0
+                        : bFollow == 2
+                        ? 2
+                        : 1,
+                  );
 
           if (result == 0) {
             if (appModel.hasLocationPermissions) {
@@ -420,32 +422,26 @@ class KennelsListPageState extends State<KennelsListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       extendBody: true,
       floatingActionButton: getKennelFab(),
-      body:
-          tableModel.globalKennelMainPageList == null
-              ? const Center(
-                child: HcAppCircularProgressIndicator(key: Key('3320159590')),
-              )
-              : Container(
-                decoration: Backgrounds.defaultHcBackground(),
-                padding: const EdgeInsets.only(top: 0.0),
-                child:
-                    ((tableModel.globalKennelMainPageList == null) ||
-                            (tableModel.globalKennelMainPageList!.isEmpty))
-                        ? Center(
-                          child: Text(
-                            'Loading Kennels.',
-                            style: ts_headingLarge,
-                          ),
-                        )
-                        : NestedScrollView(
-                          controller: _scrollController,
-                          headerSliverBuilder: (
-                            BuildContext context,
-                            bool innerBoxIsScrolled,
-                          ) {
+      body: tableModel.globalKennelMainPageList == null
+          ? const Center(
+              child: HcAppCircularProgressIndicator(key: Key('3320159590')),
+            )
+          : Container(
+              decoration: Backgrounds.defaultHcBackground(),
+              padding: const EdgeInsets.only(top: 0.0),
+              child:
+                  ((tableModel.globalKennelMainPageList == null) ||
+                      (tableModel.globalKennelMainPageList!.isEmpty))
+                  ? Center(
+                      child: Text('Loading Kennels.', style: ts_headingLarge),
+                    )
+                  : NestedScrollView(
+                      controller: _scrollController,
+                      headerSliverBuilder:
+                          (BuildContext context, bool innerBoxIsScrolled) {
                             return <Widget>[
                               SliverList(
                                 delegate: SliverChildListDelegate(<Widget>[
@@ -454,208 +450,218 @@ class KennelsListPageState extends State<KennelsListPage> {
                               ),
                             ];
                           },
-                          body: RefreshIndicator(
-                            onRefresh: _handleRefresh,
-                            child: ListView.builder(
-                              itemCount: _filteredList.length + 1,
-                              itemBuilder: (BuildContext context, int index) {
-                                ////print('buildListView called from kennel_list_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-                                return _filteredList.length == index
-                                    ? Container(height: 100.0)
-                                    : Padding(
-                                      padding: const EdgeInsets.only(
-                                        left: 10.0,
-                                        right: 10.0,
-                                      ),
-                                      child: KennelListItem(
-                                        kennelItem: _filteredList[index],
-                                        kennelEmailAndNotificationPrefsUpdated: (
-                                          int? notificationStatus,
-                                          int? emailAlertStatus,
-                                        ) async {
-                                          setState(() {
+                      body: RefreshIndicator(
+                        onRefresh: _handleRefresh,
+                        child: ListView.builder(
+                          itemCount: _filteredList.length + 1,
+                          itemBuilder: (BuildContext context, int index) {
+                            ////print('buildListView called from kennel_list_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+                            return _filteredList.length == index
+                                ? Container(height: 100.0)
+                                : Padding(
+                                    padding: const EdgeInsets.only(
+                                      left: 10.0,
+                                      right: 10.0,
+                                    ),
+                                    child: KennelListItem(
+                                      kennelItem: _filteredList[index],
+                                      kennelEmailAndNotificationPrefsUpdated:
+                                          (
+                                            int? notificationStatus,
+                                            int? emailAlertStatus,
+                                          ) async {
+                                            setState(() {
+                                              _filteredList[index]
+                                                      .extensions
+                                                      .notificationsRequested =
+                                                  -1;
+                                              _filteredList[index]
+                                                      .extensions
+                                                      .emailAlertRequested =
+                                                  -1;
+                                              if (notificationStatus != null) {
+                                                // _filteredList[index].hkm.kennelNotificationPreference = notificationStatus;
+
+                                                KennelListAggregate a =
+                                                    _filteredList[index];
+
+                                                _filteredList[index] =
+                                                    KennelListAggregate(
+                                                      kennel: a.kennel,
+                                                      extensions: a.extensions,
+                                                      isHomeKennel:
+                                                          a.isHomeKennel,
+                                                      hkm: a.hkm?.copyWith(
+                                                        kennelNotificationPreference:
+                                                            notificationStatus,
+                                                      ),
+                                                    );
+                                              }
+
+                                              if (emailAlertStatus != null) {
+                                                KennelListAggregate a =
+                                                    _filteredList[index];
+
+                                                _filteredList[index] =
+                                                    KennelListAggregate(
+                                                      kennel: a.kennel,
+                                                      extensions: a.extensions,
+                                                      isHomeKennel:
+                                                          a.isHomeKennel,
+                                                      hkm: a.hkm?.copyWith(
+                                                        kennelEmailAlertPreference:
+                                                            emailAlertStatus,
+                                                      ),
+                                                    );
+
+                                                // _filteredList[index].hkm.kennelEmailAlertPreference = emailAlertStatus;
+                                              }
+                                            });
+                                          },
+                                      kennelFollowingUpdated:
+                                          (
+                                            int following,
+                                            int notificationStatus,
+                                            int emailAlertStatus,
+                                            int isHomeKennel,
+                                          ) async {
                                             _filteredList[index]
-                                                .extensions
-                                                .notificationsRequested = -1;
+                                                    .extensions
+                                                    .followingRequested =
+                                                -1;
                                             _filteredList[index]
-                                                .extensions
-                                                .emailAlertRequested = -1;
-                                            if (notificationStatus != null) {
-                                              // _filteredList[index].hkm.kennelNotificationPreference = notificationStatus;
+                                                    .extensions
+                                                    .notificationsRequested =
+                                                -1;
+                                            _filteredList[index]
+                                                    .extensions
+                                                    .emailAlertRequested =
+                                                -1;
 
-                                              KennelListAggregate a =
-                                                  _filteredList[index];
+                                            KennelListAggregate a =
+                                                _filteredList[index];
 
-                                              _filteredList[index] =
-                                                  KennelListAggregate(
-                                                    kennel: a.kennel,
-                                                    extensions: a.extensions,
-                                                    isHomeKennel:
-                                                        a.isHomeKennel,
-                                                    hkm: a.hkm?.copyWith(
-                                                      kennelNotificationPreference:
-                                                          notificationStatus,
-                                                    ),
-                                                  );
-                                            }
+                                            _filteredList[index] =
+                                                KennelListAggregate(
+                                                  kennel: a.kennel,
+                                                  isHomeKennel: a.isHomeKennel,
+                                                  extensions: a.extensions,
+                                                  hkm: a.hkm?.copyWith(
+                                                    following: following,
+                                                    kennelNotificationPreference:
+                                                        notificationStatus,
+                                                    kennelEmailAlertPreference:
+                                                        emailAlertStatus,
+                                                  ),
+                                                );
 
-                                            if (emailAlertStatus != null) {
-                                              KennelListAggregate a =
-                                                  _filteredList[index];
+                                            // _filteredList[index].hkm.following = following;
+                                            // _filteredList[index].hkm.kennelNotificationPreference = notificationStatus;
+                                            // _filteredList[index].hkm.kennelEmailAlertPreference = emailAlertStatus;
 
-                                              _filteredList[index] =
-                                                  KennelListAggregate(
-                                                    kennel: a.kennel,
-                                                    extensions: a.extensions,
-                                                    isHomeKennel:
-                                                        a.isHomeKennel,
-                                                    hkm: a.hkm?.copyWith(
-                                                      kennelEmailAlertPreference:
-                                                          emailAlertStatus,
-                                                    ),
-                                                  );
+                                            if (_filteredList[index]
+                                                    .kennel
+                                                    .kennelId
+                                                    .toLowerCase() ==
+                                                getStringPref(
+                                                  StringPrefsEnum.homeKennelId,
+                                                )?.toLowerCase()) {
+                                              // if this kennel has been set as the home kennel, clear the home kennel
+                                              // flag on the rest of the kennels
 
-                                              // _filteredList[index].hkm.kennelEmailAlertPreference = emailAlertStatus;
-                                            }
-                                          });
-                                        },
-                                        kennelFollowingUpdated: (
-                                          int following,
-                                          int notificationStatus,
-                                          int emailAlertStatus,
-                                          int isHomeKennel,
-                                        ) async {
-                                          _filteredList[index]
-                                              .extensions
-                                              .followingRequested = -1;
-                                          _filteredList[index]
-                                              .extensions
-                                              .notificationsRequested = -1;
-                                          _filteredList[index]
-                                              .extensions
-                                              .emailAlertRequested = -1;
+                                              for (
+                                                int i = 0;
+                                                i < _filteredList.length;
+                                                i++
+                                              ) {
+                                                _filteredList[i].isHomeKennel =
+                                                    false;
+                                              }
 
-                                          KennelListAggregate a =
-                                              _filteredList[index];
-
-                                          _filteredList[index] =
-                                              KennelListAggregate(
-                                                kennel: a.kennel,
-                                                isHomeKennel: a.isHomeKennel,
-                                                extensions: a.extensions,
-                                                hkm: a.hkm?.copyWith(
-                                                  following: following,
-                                                  kennelNotificationPreference:
-                                                      notificationStatus,
-                                                  kennelEmailAlertPreference:
-                                                      emailAlertStatus,
-                                                ),
-                                              );
-
-                                          // _filteredList[index].hkm.following = following;
-                                          // _filteredList[index].hkm.kennelNotificationPreference = notificationStatus;
-                                          // _filteredList[index].hkm.kennelEmailAlertPreference = emailAlertStatus;
-
-                                          if (_filteredList[index]
-                                                  .kennel
-                                                  .kennelId
-                                                  .toLowerCase() ==
-                                              getStringPref(
-                                                StringPrefsEnum.homeKennelId,
-                                              )?.toLowerCase()) {
-                                            // if this kennel has been set as the home kennel, clear the home kennel
-                                            // flag on the rest of the kennels
-
-                                            for (
-                                              int i = 0;
-                                              i < _filteredList.length;
-                                              i++
-                                            ) {
-                                              _filteredList[i].isHomeKennel =
+                                              _filteredList[index]
+                                                      .isHomeKennel =
+                                                  true;
+                                            } else {
+                                              _filteredList[index]
+                                                      .isHomeKennel =
                                                   false;
                                             }
 
-                                            _filteredList[index].isHomeKennel =
-                                                true;
-                                          } else {
-                                            _filteredList[index].isHomeKennel =
-                                                false;
-                                          }
-
-                                          // delete all of the events for a kennel being followed (or unfollowed) before
-                                          // requerying for those events.
-                                          final String sql = '''
+                                            // delete all of the events for a kennel being followed (or unfollowed) before
+                                            // requerying for those events.
+                                            final String sql =
+                                                '''
                                     DELETE FROM ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)}
                                     WHERE ${tableModel.eventsTableHelper.colKennelId} = '${_filteredList[index].kennel.kennelId}'
                                     ''';
 
-                                          await database.rawQuery(sql);
+                                            await database.rawQuery(sql);
 
-                                          // when someone follows or unfollows a Kennel we need to re-sync the events to make sure that
-                                          // we have either all of the events for the kennel (if it is being followed) or only the
-                                          // events from the normal time period for unfollowed kennels (currently one year in the past)
-                                          await tableModel.syncUserDataService
-                                              .updateFromBackend(
-                                                SyncUserDataService
-                                                    .flagNarrowEventsTable,
-                                                true,
-                                                forceReplicateAllRunsForKennel:
-                                                    _filteredList[index]
-                                                        .kennel
-                                                        .kennelId,
-                                                debugText:
-                                                    'kennel_list_page: Events following delete (clear cache in App)',
-                                              );
+                                            // when someone follows or unfollows a Kennel we need to re-sync the events to make sure that
+                                            // we have either all of the events for the kennel (if it is being followed) or only the
+                                            // events from the normal time period for unfollowed kennels (currently one year in the past)
+                                            await tableModel.syncUserDataService
+                                                .updateFromBackend(
+                                                  SyncUserDataService
+                                                      .flagNarrowEventsTable,
+                                                  true,
+                                                  forceReplicateAllRunsForKennel:
+                                                      _filteredList[index]
+                                                          .kennel
+                                                          .kennelId,
+                                                  debugText:
+                                                      'kennel_list_page: Events following delete (clear cache in App)',
+                                                );
 
-                                          setState(() {});
-                                        },
-                                        kennelSelected: () {
-                                          final KennelListAggregate kennel =
-                                              _filteredList[index];
-                                          // // this is a bit of a hack where we clear the list before navigating to the
-                                          // // next page. When state changes occurred in child pages further down the
-                                          // // route tree, the list would get refreshed, which I think was causing
-                                          // // a bug where the selected Kennel itself would occasioinall change.
-                                          // // By deleting the list, I'm hoping that this bug will be fixed.
-                                          tableModel.globalKennelMainPageList!
-                                              .clear();
-                                          Navigator.of(context)
-                                              .push<dynamic>(
-                                                MaterialPageRoute<dynamic>(
-                                                  builder:
-                                                      (BuildContext context) =>
-                                                          KennelAdminMainPage(
-                                                            kennelAggregateItem:
-                                                                kennel,
-                                                          ),
-                                                ),
-                                              )
-                                              .then((void _) async {
-                                                await tableModel
-                                                    .syncUserDataService
-                                                    .updateFromBackend(
-                                                      SyncUserDataService
-                                                              .flagHasherEventMapTable |
-                                                          SyncUserDataService
-                                                              .flagHasherKennelMapTable |
-                                                          SyncUserDataService
-                                                              .flagKennelsTable,
-                                                      true,
-                                                      debugText:
-                                                          'kennel_list_page: HEM, HKM, Kennels',
-                                                    );
-                                                //final String resultStr = result ? 'successfully' : 'unsuccessfully';
-                                                //print('Pack member data synchronized $resultStr');
-                                                await _refreshFromTable(true);
-                                              });
-                                        },
-                                      ),
-                                    );
-                              },
-                            ),
-                          ),
+                                            setState(() {});
+                                          },
+                                      kennelSelected: () {
+                                        final KennelListAggregate kennel =
+                                            _filteredList[index];
+                                        // // this is a bit of a hack where we clear the list before navigating to the
+                                        // // next page. When state changes occurred in child pages further down the
+                                        // // route tree, the list would get refreshed, which I think was causing
+                                        // // a bug where the selected Kennel itself would occasioinall change.
+                                        // // By deleting the list, I'm hoping that this bug will be fixed.
+                                        tableModel.globalKennelMainPageList!
+                                            .clear();
+                                        Navigator.of(context)
+                                            .push<dynamic>(
+                                              MaterialPageRoute<dynamic>(
+                                                builder:
+                                                    (BuildContext context) =>
+                                                        KennelAdminMainPage(
+                                                          kennelAggregateItem:
+                                                              kennel,
+                                                        ),
+                                              ),
+                                            )
+                                            .then((void _) async {
+                                              await tableModel
+                                                  .syncUserDataService
+                                                  .updateFromBackend(
+                                                    SyncUserDataService
+                                                            .flagHasherEventMapTable |
+                                                        SyncUserDataService
+                                                            .flagHasherKennelMapTable |
+                                                        SyncUserDataService
+                                                            .flagKennelsTable,
+                                                    true,
+                                                    debugText:
+                                                        'kennel_list_page: HEM, HKM, Kennels',
+                                                  );
+                                              //final String resultStr = result ? 'successfully' : 'unsuccessfully';
+                                              //print('Pack member data synchronized $resultStr');
+                                              await _refreshFromTable(true);
+                                            });
+                                      },
+                                    ),
+                                  );
+                          },
                         ),
-              ),
+                      ),
+                    ),
+            ),
     );
   }
 

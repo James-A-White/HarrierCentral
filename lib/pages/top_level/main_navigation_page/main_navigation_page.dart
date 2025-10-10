@@ -12,12 +12,12 @@ class MainNavigationPage extends StatelessWidget {
     final controller = Get.put(MainNavigationController());
 
     return GetBuilder<MainNavigationController>(
-      id: 'scaffold',
-      builder: (scaffoldController) {
+      id: 'AppScaffold',
+      builder: (AppScaffoldController) {
         return Stack(
           children: <Widget>[
             Scaffold(
-              key: controller.scaffoldKey,
+              key: controller.ScaffoldKey,
               backgroundColor: Colors.white,
               appBar: PreferredSize(
                 preferredSize: Size.fromHeight(
@@ -45,7 +45,7 @@ class MainNavigationPage extends StatelessWidget {
                         IconButton(
                           icon: const Icon(Icons.menu),
                           onPressed: () =>
-                              controller.scaffoldKey.currentState?.openDrawer(),
+                              controller.ScaffoldKey.currentState?.openDrawer(),
                         ),
                         controller.mainScreenReady.value
                             ? GetBuilder<FutureRunListPageController>(
@@ -388,7 +388,7 @@ class MainNavigationPage extends StatelessWidget {
                       : SizedBox();
                 }),
               ),
-              //drawer: DrawerMenu(scaffoldKey: controller.scaffoldKey),
+              //drawer: DrawerMenu(ScaffoldKey: controller.ScaffoldKey),
               drawer: DrawerMenu(key: Key('4312134')),
             ),
             OfflineModeRibbon(

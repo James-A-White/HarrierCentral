@@ -46,8 +46,8 @@ class ZoomableImagePage2 extends StatelessWidget {
       ),
     );
 
-    return Scaffold(
-      //key: scaffoldKey,
+    return AppScaffold(
+      //key: ScaffoldKey,
       appBar: appBar,
       body: Container(
         padding: EdgeInsets.all(margin ?? 0.0),

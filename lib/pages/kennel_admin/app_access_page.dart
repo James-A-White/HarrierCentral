@@ -1,10 +1,7 @@
 import 'package:harrier_central/imports.dart';
 
 class AppAccessPage extends StatefulWidget {
-  const AppAccessPage({
-    super.key,
-    required this.appAccess,
-  });
+  const AppAccessPage({super.key, required this.appAccess});
 
   final int appAccess;
 
@@ -23,20 +20,22 @@ class AppAccessPageState extends State<AppAccessPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
-        iconTheme: const IconThemeData(
-          color: Colors.white,
-          size: 28.0,
-        ),
+        iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
         title: Text('Set HC App access', style: ts_appBarTitle),
       ),
       body: appAccess == AppAccess(0)
           ? Container()
           : Container(
-              padding: const EdgeInsets.only(top: 25.0, left: 25.0, right: 25.0, bottom: 70.0),
+              padding: const EdgeInsets.only(
+                top: 25.0,
+                left: 25.0,
+                right: 25.0,
+                bottom: 70.0,
+              ),
               decoration: Backgrounds.defaultHcBackgroundLight(),
               height: MediaQuery.of(context).size.height,
               child: SingleChildScrollView(
@@ -45,33 +44,59 @@ class AppAccessPageState extends State<AppAccessPage> {
                     // getOption('Is on mismanagement', mmRoles.getMismanagementState(mmRoleIsOnMm), (bool value) {
                     //   mmRoles.setMismanagementState(mmRoleIsOnMm, value);
                     // }),
-
-                    getOption('Is Super Admin', appAccess.getAppAccess(authIsSuperAdmin), (bool value) {
-                      appAccess.setAppAccess(authIsSuperAdmin, value);
-                    }),
-                    getOption('Manage Kennel(s)', appAccess.getAppAccess(authCanManageKennel), (bool value) {
-                      appAccess.setAppAccess(authCanManageKennel, value);
-                    }),
-                    getOption('Manage Runs', appAccess.getAppAccess(authCanManageRuns), (bool value) {
-                      appAccess.setAppAccess(authCanManageRuns, value);
-                    }),
-                    getOption('Manage Hash Cash', appAccess.getAppAccess(authCanManageHashCash), (bool value) {
-                      appAccess.setAppAccess(authCanManageHashCash, value);
-                    }),
-                    getOption('Manage Members', appAccess.getAppAccess(authCanManageMembers), (bool value) {
-                      appAccess.setAppAccess(authCanManageMembers, value);
-                    }),
-                    getOption('Manage Awards', appAccess.getAppAccess(authCanManageAwards), (bool value) {
-                      appAccess.setAppAccess(authCanManageAwards, value);
-                    }),
+                    getOption(
+                      'Is Super Admin',
+                      appAccess.getAppAccess(authIsSuperAdmin),
+                      (bool value) {
+                        appAccess.setAppAccess(authIsSuperAdmin, value);
+                      },
+                    ),
+                    getOption(
+                      'Manage Kennel(s)',
+                      appAccess.getAppAccess(authCanManageKennel),
+                      (bool value) {
+                        appAccess.setAppAccess(authCanManageKennel, value);
+                      },
+                    ),
+                    getOption(
+                      'Manage Runs',
+                      appAccess.getAppAccess(authCanManageRuns),
+                      (bool value) {
+                        appAccess.setAppAccess(authCanManageRuns, value);
+                      },
+                    ),
+                    getOption(
+                      'Manage Hash Cash',
+                      appAccess.getAppAccess(authCanManageHashCash),
+                      (bool value) {
+                        appAccess.setAppAccess(authCanManageHashCash, value);
+                      },
+                    ),
+                    getOption(
+                      'Manage Members',
+                      appAccess.getAppAccess(authCanManageMembers),
+                      (bool value) {
+                        appAccess.setAppAccess(authCanManageMembers, value);
+                      },
+                    ),
+                    getOption(
+                      'Manage Awards',
+                      appAccess.getAppAccess(authCanManageAwards),
+                      (bool value) {
+                        appAccess.setAppAccess(authCanManageAwards, value);
+                      },
+                    ),
 
                     ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: hc_red,
-                      ),
+                      style: ElevatedButton.styleFrom(backgroundColor: hc_red),
                       onPressed: () {
                         // if appAccessFlags = 1 that means this person has no admin privileges, so set all to zero while at the same time preserving the superAdmin bit, otherwise set the authIsAdmin flag
-                        final int access = ((appAccess.appAccessFlags ?? 0) & authAllFlags) <= 1 ? ((appAccess.appAccessFlags ?? 0) & authIsSuperAdmin) : (appAccess.appAccessFlags ?? 0) | authIsAdmin;
+                        final int access =
+                            ((appAccess.appAccessFlags ?? 0) & authAllFlags) <=
+                                1
+                            ? ((appAccess.appAccessFlags ?? 0) &
+                                  authIsSuperAdmin)
+                            : (appAccess.appAccessFlags ?? 0) | authIsAdmin;
                         Navigator.of(context).pop(access);
                       },
                       child: Text('Save changes', style: ts_button),
@@ -104,11 +129,7 @@ class AppAccessPageState extends State<AppAccessPage> {
               },
             ),
           ),
-          Text(
-            title,
-            style: ts_headingBlack,
-            textAlign: TextAlign.center,
-          ),
+          Text(title, style: ts_headingBlack, textAlign: TextAlign.center),
         ],
       ),
     );

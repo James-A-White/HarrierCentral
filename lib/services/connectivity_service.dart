@@ -26,7 +26,7 @@ class NetworkService extends GetxService {
     _setInterfaces(initialInterfaces);
 
     // Seed reachability
-    final hasNet = await InternetConnection().hasInternetAccess;
+    final hasNet = await Utilities.checkForInternetConnection(false);
     status.value = hasNet ? NetworkStatus.online : NetworkStatus.offline;
 
     if (hasNet) {
@@ -55,7 +55,7 @@ class NetworkService extends GetxService {
   }
 
   Future<bool> forceRecheck() async {
-    final hasInternet = await InternetConnection().hasInternetAccess;
+    final hasInternet = await Utilities.checkForInternetConnection(false);
     status.value = hasInternet ? NetworkStatus.online : NetworkStatus.offline;
     if (hasInternet) {
       appModel.connectionStatus = EnumConnectionStatus2.connected;
@@ -84,7 +84,7 @@ class NetworkService extends GetxService {
   void _recheckInternetWithDebounce() {
     _debounceTimer?.cancel();
     _debounceTimer = Timer(debounce, () async {
-      final hasInternet = await InternetConnection().hasInternetAccess;
+      final hasInternet = await Utilities.checkForInternetConnection(false);
       status.value = hasInternet ? NetworkStatus.online : NetworkStatus.offline;
       if (hasInternet) {
         appModel.connectionStatus = EnumConnectionStatus2.connected;

@@ -29,45 +29,40 @@ class SyncKennelAdminService {
   }
 
   Future<void> getLastUpdatedTimes(int flags) async {
-    _kennelLastUpdated =
-        (flags & flagKennelTable) == 0
-            ? IGNORE_REPLICATION_TIMESTAMP
-            : await _getLastUpdatedTime(
-              tableModel.kennelsTableHelper.colUpdatedAtValue,
-              tableModel.kennelsTableHelper.getTableName(AppDomainType.kennel),
-            );
-    _hashersLastUpdated =
-        (flags & flagHashersTable) == 0
-            ? IGNORE_REPLICATION_TIMESTAMP
-            : await _getLastUpdatedTime(
-              tableModel.hashersTableHelper.colUpdatedAtValue,
-              tableModel.hashersTableHelper.getTableName(AppDomainType.user),
-            );
-    _hasherKennelMapLastUpdated =
-        (flags & flagHasherKennelMapTable) == 0
-            ? IGNORE_REPLICATION_TIMESTAMP
-            : await _getLastUpdatedTime(
-              tableModel.hasherKennelMapTableHelper.colUpdatedAtValue,
-              tableModel.hasherKennelMapTableHelper.getTableName(
-                AppDomainType.kennel,
-              ),
-            );
-    _hasherEventMapLastUpdated =
-        (flags & flagHasherEventMapTable) == 0
-            ? IGNORE_REPLICATION_TIMESTAMP
-            : await _getLastUpdatedTime(
-              tableModel.hasherEventMapTableHelper.colUpdatedAtValue,
-              tableModel.hasherEventMapTableHelper.getTableName(
-                AppDomainType.kennel,
-              ),
-            );
-    _paymentsLastUpdated =
-        (flags & flagPaymentsTable) == 0
-            ? IGNORE_REPLICATION_TIMESTAMP
-            : await _getLastUpdatedTime(
-              tableModel.paymentsTableHelper.colUpdatedAtValue,
-              tableModel.paymentsTableHelper.getTableName(AppDomainType.kennel),
-            );
+    _kennelLastUpdated = (flags & flagKennelTable) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await _getLastUpdatedTime(
+            tableModel.kennelsTableHelper.colUpdatedAtValue,
+            tableModel.kennelsTableHelper.getTableName(AppDomainType.kennel),
+          );
+    _hashersLastUpdated = (flags & flagHashersTable) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await _getLastUpdatedTime(
+            tableModel.hashersTableHelper.colUpdatedAtValue,
+            tableModel.hashersTableHelper.getTableName(AppDomainType.user),
+          );
+    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await _getLastUpdatedTime(
+            tableModel.hasherKennelMapTableHelper.colUpdatedAtValue,
+            tableModel.hasherKennelMapTableHelper.getTableName(
+              AppDomainType.kennel,
+            ),
+          );
+    _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await _getLastUpdatedTime(
+            tableModel.hasherEventMapTableHelper.colUpdatedAtValue,
+            tableModel.hasherEventMapTableHelper.getTableName(
+              AppDomainType.kennel,
+            ),
+          );
+    _paymentsLastUpdated = (flags & flagPaymentsTable) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await _getLastUpdatedTime(
+            tableModel.paymentsTableHelper.colUpdatedAtValue,
+            tableModel.paymentsTableHelper.getTableName(AppDomainType.kennel),
+          );
   }
 
   Future<void> clearEventData() async {
@@ -162,8 +157,8 @@ class SyncKennelAdminService {
       }
 
       String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-      String deviceSecret =
-          (getStringPref(StringPrefsEnum.deviceSecret) ?? '').toUpperCase();
+      String deviceSecret = (getStringPref(StringPrefsEnum.deviceSecret) ?? '')
+          .toUpperCase();
 
       final String accessToken = Utilities.generateToken(
         userId,
@@ -176,26 +171,21 @@ class SyncKennelAdminService {
         'deviceId': deviceId,
         'accessToken': accessToken,
         'kennelId': kennelId,
-        'hashersUpdatedAfter':
-            (flags & flagHashersTable) == 0
-                ? 'ignore'
-                : ('${hashersUpdatedAfter}000000').substring(0, 26),
-        'kennelsUpdatedAfter':
-            (flags & flagKennelTable) == 0
-                ? 'ignore'
-                : ('${kennelsUpdatedAfter}000000').substring(0, 26),
-        'hasherKennelMapUpdatedAfter':
-            (flags & flagHasherKennelMapTable) == 0
-                ? 'ignore'
-                : ('${hasherKennelMapUpdatedAfter}000000').substring(0, 26),
-        'hasherEventMapUpdatedAfter':
-            (flags & flagHasherEventMapTable) == 0
-                ? 'ignore'
-                : ('${hasherEventMapUpdatedAfter}000000').substring(0, 26),
-        'paymentsUpdatedAfter':
-            (flags & flagPaymentsTable) == 0
-                ? 'ignore'
-                : ('${paymentsUpdatedAfter}000000').substring(0, 26),
+        'hashersUpdatedAfter': (flags & flagHashersTable) == 0
+            ? 'ignore'
+            : ('${hashersUpdatedAfter}000000').substring(0, 26),
+        'kennelsUpdatedAfter': (flags & flagKennelTable) == 0
+            ? 'ignore'
+            : ('${kennelsUpdatedAfter}000000').substring(0, 26),
+        'hasherKennelMapUpdatedAfter': (flags & flagHasherKennelMapTable) == 0
+            ? 'ignore'
+            : ('${hasherKennelMapUpdatedAfter}000000').substring(0, 26),
+        'hasherEventMapUpdatedAfter': (flags & flagHasherEventMapTable) == 0
+            ? 'ignore'
+            : ('${hasherEventMapUpdatedAfter}000000').substring(0, 26),
+        'paymentsUpdatedAfter': (flags & flagPaymentsTable) == 0
+            ? 'ignore'
+            : ('${paymentsUpdatedAfter}000000').substring(0, 26),
         'usePaging': usePaging ? '1' : '0',
       };
 

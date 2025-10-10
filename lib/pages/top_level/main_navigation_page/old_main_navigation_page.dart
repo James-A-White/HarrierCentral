@@ -428,7 +428,7 @@
 //     });
 //   }
 
-//   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+//   final GlobalKey<ScaffoldState> _ScaffoldKey = GlobalKey();
 
 //   int _currentPage = 0;
 
@@ -495,8 +495,8 @@
 //           left: 0,
 //           width: MediaQuery.of(context).size.width,
 //           height: MediaQuery.of(context).size.height,
-//           child: Scaffold(
-//             key: _scaffoldKey,
+//           child: AppScaffold(
+//             key: _ScaffoldKey,
 //             backgroundColor: Colors.white,
 //             appBar:
 //                 (!_showMainScreen)
@@ -519,7 +519,7 @@
 //                                         icon: Icon(Icons.menu),
 //                                         onPressed:
 //                                             () =>
-//                                                 Scaffold.of(
+//                                                 AppScaffold.of(
 //                                                   context,
 //                                                 ).openDrawer(),
 //                                       ),
@@ -793,7 +793,7 @@
 //                       isFlipped: _isFlipped,
 //                     ),
 //             drawer: DrawerMenu(
-//               scaffoldKey: _scaffoldKey,
+//               ScaffoldKey: _ScaffoldKey,
 //               //futureRunsListKey: futureRunsListPageKey,
 //             ),
 //           ),

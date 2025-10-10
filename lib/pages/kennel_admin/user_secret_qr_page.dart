@@ -32,7 +32,7 @@
 
 //   @override
 //   Widget build(BuildContext context) {
-//     return Scaffold(
+//     return AppScaffold(
 //       appBar: AppBar(
 //         backgroundColor: themeAppBarBackground,
 //         title: Text('Admin for: ${widget.kennelMemberModel.displayName}'),

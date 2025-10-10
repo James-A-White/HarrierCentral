@@ -147,7 +147,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Scaffold(
+    return AppScaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         centerTitle: true,
@@ -387,27 +387,22 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
           useFbRunDetails: 0,
           isCountedRun: _eventAggregate.event.isCountedRun == 1,
           kennelId: _eventAggregate.event.kennelId,
-          eventPriceForMembers:
-              _eventPriceForMembersController.text.isEmpty
-                  ? -2
-                  : double.tryParse(
-                    _eventPriceForMembersController.text.replaceAll(',', '.'),
-                  ),
+          eventPriceForMembers: _eventPriceForMembersController.text.isEmpty
+              ? -2
+              : double.tryParse(
+                  _eventPriceForMembersController.text.replaceAll(',', '.'),
+                ),
           eventPriceForNonMembers:
               _eventPriceForNonMembersController.text.isEmpty
-                  ? -2
-                  : double.tryParse(
-                    _eventPriceForNonMembersController.text.replaceAll(
-                      ',',
-                      '.',
-                    ),
-                  ),
-          eventPriceForExtras:
-              _eventPriceForExtrasController.text.isEmpty
-                  ? -2
-                  : double.tryParse(
-                    _eventPriceForExtrasController.text.replaceAll(',', '.'),
-                  ),
+              ? -2
+              : double.tryParse(
+                  _eventPriceForNonMembersController.text.replaceAll(',', '.'),
+                ),
+          eventPriceForExtras: _eventPriceForExtrasController.text.isEmpty
+              ? -2
+              : double.tryParse(
+                  _eventPriceForExtrasController.text.replaceAll(',', '.'),
+                ),
         );
 
         _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
@@ -431,37 +426,33 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
           final EventsService nSvc = EventsService();
           final String eventId = await nSvc.addEditEvent(
             eventId: _eventAggregate.event.eventId,
-            eventPriceForMembers:
-                _eventPriceForMembersController.text.isEmpty
-                    ? -2
-                    : double.tryParse(
-                      _eventPriceForMembersController.text.replaceAll(',', '.'),
-                    ),
+            eventPriceForMembers: _eventPriceForMembersController.text.isEmpty
+                ? -2
+                : double.tryParse(
+                    _eventPriceForMembersController.text.replaceAll(',', '.'),
+                  ),
             eventPriceForNonMembers:
                 _eventPriceForNonMembersController.text.isEmpty
-                    ? -2
-                    : double.tryParse(
-                      _eventPriceForNonMembersController.text.replaceAll(
-                        ',',
-                        '.',
-                      ),
+                ? -2
+                : double.tryParse(
+                    _eventPriceForNonMembersController.text.replaceAll(
+                      ',',
+                      '.',
                     ),
+                  ),
             // note for "auto" the value we send to the server is '0' because this will
             // remove any previous absoluteEventNumber that is stored there
-            absoluteEventNumber:
-                _absoluteEventNumberController.text.isEmpty
-                    ? 0
-                    : int.tryParse(_absoluteEventNumberController.text),
-            eventPriceForExtras:
-                _eventPriceForExtrasController.text.isEmpty
-                    ? -2
-                    : double.tryParse(
-                      _eventPriceForExtrasController.text.replaceAll(',', '.'),
-                    ),
-            extrasDescription:
-                _extrasDescriptionController.text.isEmpty
-                    ? '<none>'
-                    : _extrasDescriptionController.text,
+            absoluteEventNumber: _absoluteEventNumberController.text.isEmpty
+                ? 0
+                : int.tryParse(_absoluteEventNumberController.text),
+            eventPriceForExtras: _eventPriceForExtrasController.text.isEmpty
+                ? -2
+                : double.tryParse(
+                    _eventPriceForExtrasController.text.replaceAll(',', '.'),
+                  ),
+            extrasDescription: _extrasDescriptionController.text.isEmpty
+                ? '<none>'
+                : _extrasDescriptionController.text,
             hares: _haresController.text,
             isCountedRun: _isCountedRun,
             isVisible: _isVisible,
@@ -553,19 +544,18 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       child: Text(
                         _eventAggregate.event.useFbRunDetails == 1
                             ? _eventAggregate.event.eventInboundIntegrationId >=
-                                    integrationPlatformNames.length
-                                ? 'Run data from external source'
-                                : 'Run data from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
+                                      integrationPlatformNames.length
+                                  ? 'Run data from external source'
+                                  : 'Run data from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
                             : 'Run data from Harrier Central',
                         textAlign: TextAlign.center,
                         style: ts_headingBlack,
                       ),
                     ),
                     Container(
-                      color:
-                          _focusNodeEventName.hasFocus
-                              ? Colors.yellow.shade50
-                              : Colors.white,
+                      color: _focusNodeEventName.hasFocus
+                          ? Colors.yellow.shade50
+                          : Colors.white,
                       margin: const EdgeInsets.only(
                         top: 20.0,
                         bottom: 10.0,
@@ -603,10 +593,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       ),
                     ),
                     Container(
-                      color:
-                          _focusNodeEventDescription.hasFocus
-                              ? Colors.yellow.shade50
-                              : Colors.white,
+                      color: _focusNodeEventDescription.hasFocus
+                          ? Colors.yellow.shade50
+                          : Colors.white,
                       margin: const EdgeInsets.only(
                         top: 10.0,
                         bottom: 10.0,
@@ -643,10 +632,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       ),
                     ),
                     Container(
-                      color:
-                          _focusNodeLocationOneLineDesc.hasFocus
-                              ? Colors.yellow.shade50
-                              : Colors.white,
+                      color: _focusNodeLocationOneLineDesc.hasFocus
+                          ? Colors.yellow.shade50
+                          : Colors.white,
                       margin: const EdgeInsets.only(
                         top: 20.0,
                         bottom: 10.0,
@@ -684,10 +672,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       ),
                     ),
                     Container(
-                      color:
-                          _focusNodeDatetime.hasFocus
-                              ? Colors.yellow.shade50
-                              : Colors.white,
+                      color: _focusNodeDatetime.hasFocus
+                          ? Colors.yellow.shade50
+                          : Colors.white,
                       margin: const EdgeInsets.only(
                         top: 10.0,
                         bottom: 10.0,
@@ -832,9 +819,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       child: Text(
                         _eventAggregate.event.useFbRunDetails == 1
                             ? _eventAggregate.event.eventInboundIntegrationId >=
-                                    integrationPlatformNames.length
-                                ? 'Run data from external source'
-                                : 'Run data from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
+                                      integrationPlatformNames.length
+                                  ? 'Run data from external source'
+                                  : 'Run data from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
                             : 'Run data from Harrier Central',
                         textAlign: TextAlign.center,
                         style: ts_headingBlack,
@@ -843,53 +830,53 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                     const SizedBox(height: 20.0),
                     _isUpdating
                         ? const SizedBox(
-                          height: 70.0,
-                          width: 70.0,
-                          child: HcAppCircularProgressIndicator(
-                            key: Key('112096562'),
-                          ),
-                        )
+                            height: 70.0,
+                            width: 70.0,
+                            child: HcAppCircularProgressIndicator(
+                              key: Key('112096562'),
+                            ),
+                          )
                         : ElevatedButton(
-                          child: Text(
-                            widget.isNewRun
-                                ? 'Next'
-                                : 'Save changes to Harrier Central',
-                            style: ts_button,
-                          ),
-                          onPressed: () async {
-                            if (_detailsFormKey.currentState?.validate() ??
-                                false) {
-                              await _updateRunDetails(true);
+                            child: Text(
+                              widget.isNewRun
+                                  ? 'Next'
+                                  : 'Save changes to Harrier Central',
+                              style: ts_button,
+                            ),
+                            onPressed: () async {
+                              if (_detailsFormKey.currentState?.validate() ??
+                                  false) {
+                                await _updateRunDetails(true);
 
-                              if (widget.isNewRun) {
-                                // this delay is required to ensure that the _isUpdating setState
-                                // to function properly
-                                _tabController.animateTo(1);
-                              } else {
-                                final SnackBar snackBar = SnackBar(
-                                  duration: const Duration(seconds: 3),
-                                  content: Text(
-                                    'Run details have been saved',
-                                    textAlign: TextAlign.center,
-                                    style: ts_titleCondensed,
-                                  ),
-                                  backgroundColor: hc_blue,
+                                if (widget.isNewRun) {
+                                  // this delay is required to ensure that the _isUpdating setState
+                                  // to function properly
+                                  _tabController.animateTo(1);
+                                } else {
+                                  final SnackBar snackBar = SnackBar(
+                                    duration: const Duration(seconds: 3),
+                                    content: Text(
+                                      'Run details have been saved',
+                                      textAlign: TextAlign.center,
+                                      style: ts_titleCondensed,
+                                    ),
+                                    backgroundColor: hc_blue,
+                                  );
+
+                                  if (!mounted) return;
+                                  ScaffoldMessenger.of(
+                                    navigatorKey.currentContext!,
+                                  ).showSnackBar(snackBar);
+                                }
+                                await Future<void>.delayed(
+                                  const Duration(milliseconds: 500),
                                 );
-
-                                if (!mounted) return;
-                                ScaffoldMessenger.of(
-                                  navigatorKey.currentContext!,
-                                ).showSnackBar(snackBar);
+                                setState(() {
+                                  _isUpdating = false;
+                                });
                               }
-                              await Future<void>.delayed(
-                                const Duration(milliseconds: 500),
-                              );
-                              setState(() {
-                                _isUpdating = false;
-                              });
-                            }
-                          },
-                        ),
+                            },
+                          ),
                     if ((_eventAggregate.event.eventFacebookId != null) &&
                         (!_isUpdating)) ...<Widget>[
                       ElevatedButton(
@@ -1078,58 +1065,35 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
         } else {
           return _isUpdating
               ? const SizedBox(
-                height: 70.0,
-                width: 70.0,
-                child: HcAppCircularProgressIndicator(key: Key('6669001123')),
-              )
+                  height: 70.0,
+                  width: 70.0,
+                  child: HcAppCircularProgressIndicator(key: Key('6669001123')),
+                )
               : Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  if (_eventAggregate.event.eventImage != null) ...<Widget>[
-                    Expanded(
-                      child: Container(
-                        margin: const EdgeInsets.all(20.0),
-                        //height: deviceInfo.deviceHeight - 235,
-                        child: Column(
-                          //mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Expanded(
-                              child: CachedNetworkImage(
-                                imageUrl: _eventAggregate.event.eventImage!,
-                                // errorWidget:
-                                //     (BuildContext context, String url, Exception error) =>
-                                //         const  Icon(Icons.error),
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: <Widget>[
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20.0,
-                                  ),
-                                  child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      minimumSize: const Size(
-                                        double.infinity,
-                                        40,
-                                      ), // double.infinity is the width and 30 is the height
-                                    ),
-                                    child: Text(
-                                      'Select from gallery',
-                                      style: ts_button,
-                                    ),
-                                    onPressed: () {
-                                      _getImageFromGallery(ImageSource.gallery);
-                                    },
-                                  ),
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    if (_eventAggregate.event.eventImage != null) ...<Widget>[
+                      Expanded(
+                        child: Container(
+                          margin: const EdgeInsets.all(20.0),
+                          //height: deviceInfo.deviceHeight - 235,
+                          child: Column(
+                            //mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Expanded(
+                                child: CachedNetworkImage(
+                                  imageUrl: _eventAggregate.event.eventImage!,
+                                  // errorWidget:
+                                  //     (BuildContext context, String url, Exception error) =>
+                                  //         const  Icon(Icons.error),
                                 ),
-                                if ((_eventAggregate.event.eventFacebookId !=
-                                        null) &&
-                                    (!_isUpdating)) ...<Widget>[
-                                  const SizedBox(height: 10),
+                              ),
+                              const SizedBox(height: 20),
+                              Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: <Widget>[
                                   Padding(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 20.0,
@@ -1142,91 +1106,122 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                         ), // double.infinity is the width and 30 is the height
                                       ),
                                       child: Text(
-                                        'Use ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
+                                        'Select from gallery',
                                         style: ts_button,
                                       ),
-                                      onPressed: () async {
-                                        setState(() {
-                                          _isUpdating = true;
-                                        });
-                                        final EventsService nSvc =
-                                            EventsService();
-                                        final String eventId = await nSvc
-                                            .addEditEvent(
-                                              eventId:
-                                                  _eventAggregate.event.eventId,
-                                              useFbImage: 1,
-                                            );
-
-                                        _eventAggregate = await widget
-                                            .getUpdatedEventAggregate(eventId);
-                                        setState(() {
-                                          _isUpdating = false;
-                                          final SnackBar snackBar = SnackBar(
-                                            duration: const Duration(
-                                              seconds: 3,
-                                            ),
-                                            content: Text(
-                                              'Image is being synced from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
-                                              textAlign: TextAlign.center,
-                                              style: ts_titleCondensedBlack,
-                                            ),
-                                            backgroundColor: hc_blue,
-                                          );
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(snackBar);
-                                        });
+                                      onPressed: () {
+                                        _getImageFromGallery(
+                                          ImageSource.gallery,
+                                        );
                                       },
                                     ),
                                   ),
+                                  if ((_eventAggregate.event.eventFacebookId !=
+                                          null) &&
+                                      (!_isUpdating)) ...<Widget>[
+                                    const SizedBox(height: 10),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 20.0,
+                                      ),
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          minimumSize: const Size(
+                                            double.infinity,
+                                            40,
+                                          ), // double.infinity is the width and 30 is the height
+                                        ),
+                                        child: Text(
+                                          'Use ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
+                                          style: ts_button,
+                                        ),
+                                        onPressed: () async {
+                                          setState(() {
+                                            _isUpdating = true;
+                                          });
+                                          final EventsService nSvc =
+                                              EventsService();
+                                          final String eventId = await nSvc
+                                              .addEditEvent(
+                                                eventId: _eventAggregate
+                                                    .event
+                                                    .eventId,
+                                                useFbImage: 1,
+                                              );
+
+                                          _eventAggregate = await widget
+                                              .getUpdatedEventAggregate(
+                                                eventId,
+                                              );
+                                          setState(() {
+                                            _isUpdating = false;
+                                            final SnackBar snackBar = SnackBar(
+                                              duration: const Duration(
+                                                seconds: 3,
+                                              ),
+                                              content: Text(
+                                                'Image is being synced from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
+                                                textAlign: TextAlign.center,
+                                                style: ts_titleCondensedBlack,
+                                              ),
+                                              backgroundColor: hc_blue,
+                                            );
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(snackBar);
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                  ],
                                 ],
-                              ],
-                            ),
-                            const SizedBox(height: 40),
-                          ],
+                              ),
+                              const SizedBox(height: 40),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                  if (_eventAggregate.event.eventImage == null) ...<Widget>[
-                    Text(
-                      'No image provided',
-                      textAlign: TextAlign.center,
-                      style: ts_headingVeryLarge.copyWith(color: Colors.black),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20.0,
-                        vertical: 50.0,
-                      ),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(
-                            double.infinity,
-                            40,
-                          ), // double.infinity is the width and 30 is the height
+                    ],
+                    if (_eventAggregate.event.eventImage == null) ...<Widget>[
+                      Text(
+                        'No image provided',
+                        textAlign: TextAlign.center,
+                        style: ts_headingVeryLarge.copyWith(
+                          color: Colors.black,
                         ),
-                        child: Text('Select from gallery', style: ts_button),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20.0,
+                          vertical: 50.0,
+                        ),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(
+                              double.infinity,
+                              40,
+                            ), // double.infinity is the width and 30 is the height
+                          ),
+                          child: Text('Select from gallery', style: ts_button),
+                          onPressed: () {
+                            _getImageFromGallery(ImageSource.gallery);
+                          },
+                        ),
+                      ),
+                    ],
+                    if (widget.isNewRun) ...<Widget>[
+                      ElevatedButton(
+                        child: Text('Skip', style: ts_button),
                         onPressed: () {
-                          _getImageFromGallery(ImageSource.gallery);
+                          setState(() {
+                            _tabController.animateTo(3);
+                          });
                         },
                       ),
-                    ),
+                      const SizedBox(width: 20.0),
+                    ],
                   ],
-                  if (widget.isNewRun) ...<Widget>[
-                    ElevatedButton(
-                      child: Text('Skip', style: ts_button),
-                      onPressed: () {
-                        setState(() {
-                          _tabController.animateTo(3);
-                        });
-                      },
-                    ),
-                    const SizedBox(width: 20.0),
-                  ],
-                ],
-              );
+                );
         }
       },
     );
@@ -1312,9 +1307,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                 _eventAggregate.extensions.latitude == null
                     ? null
                     : latlng.LatLng(
-                      _eventAggregate.extensions.latitude!,
-                      _eventAggregate.extensions.longitude!,
-                    ),
+                        _eventAggregate.extensions.latitude!,
+                        _eventAggregate.extensions.longitude!,
+                      ),
                 _mapCenter,
                 latlng.LatLng(
                   _eventAggregate.extensions.kenlLat,
@@ -1482,177 +1477,168 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                 left: 10.0,
                 right: 10.0,
                 bottom: 80.0,
-                child:
-                    _isUpdating
-                        ? const SizedBox(
-                          height: 70.0,
-                          width: 70.0,
-                          child: HcAppCircularProgressIndicator(
-                            key: Key('655931031'),
-                          ),
-                        )
-                        : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            if (widget.isNewRun) ...<Widget>[
-                              ElevatedButton(
-                                child: Text('Skip', style: ts_button),
-                                onPressed: () {
-                                  setState(() {
-                                    _tabController.animateTo(2);
-                                  });
-                                },
-                              ),
-                              const SizedBox(width: 20.0),
-                            ],
+                child: _isUpdating
+                    ? const SizedBox(
+                        height: 70.0,
+                        width: 70.0,
+                        child: HcAppCircularProgressIndicator(
+                          key: Key('655931031'),
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          if (widget.isNewRun) ...<Widget>[
                             ElevatedButton(
-                              child: Text(
-                                ((_mapCenter.latitude == CLEAR_LATLONG) &&
-                                        (_mapCenter.longitude == CLEAR_LATLONG))
-                                    ? 'Set no location'
-                                    : 'Set Location',
-                                style: ts_button,
-                              ),
-                              onPressed: () async {
-                                if ((_eventAggregate.event.eventId.isEmpty) ||
-                                    (_eventAggregate.event.eventId ==
-                                        GUID_EMPTY)) {
-                                  await Utilities.showAlert(
-                                    'Please save details first',
-                                    'When creating a new event, please save the information on the Details tab before saving the location',
-                                    'OK',
+                              child: Text('Skip', style: ts_button),
+                              onPressed: () {
+                                setState(() {
+                                  _tabController.animateTo(2);
+                                });
+                              },
+                            ),
+                            const SizedBox(width: 20.0),
+                          ],
+                          ElevatedButton(
+                            child: Text(
+                              ((_mapCenter.latitude == CLEAR_LATLONG) &&
+                                      (_mapCenter.longitude == CLEAR_LATLONG))
+                                  ? 'Set no location'
+                                  : 'Set Location',
+                              style: ts_button,
+                            ),
+                            onPressed: () async {
+                              if ((_eventAggregate.event.eventId.isEmpty) ||
+                                  (_eventAggregate.event.eventId ==
+                                      GUID_EMPTY)) {
+                                await Utilities.showAlert(
+                                  'Please save details first',
+                                  'When creating a new event, please save the information on the Details tab before saving the location',
+                                  'OK',
+                                );
+
+                                _tabController.animateTo(0);
+                              } else {
+                                setState(() {
+                                  _isUpdating = true;
+                                });
+                                final EventsService nSvc = EventsService();
+                                // check to see if "no location" is set. If so, don't overwrite it
+                                if ((_mapCenter.latitude != CLEAR_LATLONG) &&
+                                    (_mapCenter.longitude != CLEAR_LATLONG) &&
+                                    (_mapKey.currentState?.mapController !=
+                                        null)) {
+                                  _mapCenter = _mapKey
+                                      .currentState!
+                                      .mapController
+                                      .camera
+                                      .center;
+                                }
+                                final String eventId = await nSvc.addEditEvent(
+                                  eventId: _eventAggregate.event.eventId,
+                                  lat: _mapCenter.latitude,
+                                  lon: _mapCenter.longitude,
+                                  useFbLatLon: 0,
+                                );
+                                _eventAggregate = await widget
+                                    .getUpdatedEventAggregate(eventId);
+
+                                if (widget.isNewRun) {
+                                  setState(() {
+                                    _isUpdating = false;
+                                  });
+                                  await Future<void>.delayed(
+                                    const Duration(milliseconds: 1000),
+                                  );
+                                  _tabController.animateTo(2);
+                                } else {
+                                  final SnackBar snackBar = SnackBar(
+                                    duration: const Duration(seconds: 3),
+                                    content: Text(
+                                      'Updated location saved in Harrier Central',
+                                      textAlign: TextAlign.center,
+                                      style: ts_titleCondensed,
+                                    ),
+                                    backgroundColor: hc_blue,
                                   );
 
-                                  _tabController.animateTo(0);
-                                } else {
+                                  if (!mounted) return;
+                                  ScaffoldMessenger.of(
+                                    context,
+                                  ).showSnackBar(snackBar);
+                                }
+
+                                await Future<void>.delayed(
+                                  const Duration(milliseconds: 500),
+                                );
+                                setState(() {
+                                  _isUpdating = false;
+                                });
+
+                                //_showEventPopup(_calendarController.selectedDay);
+                              }
+                            },
+                          ),
+                          if ((_eventAggregate.event.eventFacebookId != null) &&
+                              (!_isUpdating)) ...<Widget>[
+                            const SizedBox(width: 20.0),
+                            Expanded(
+                              child: ElevatedButton(
+                                child: AutoSizeText(
+                                  'Use ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
+                                  style: ts_button,
+                                  minFontSize: 3.0,
+                                  maxLines: 1,
+                                  //overflow: TextOverflow.ellipsis,
+                                ),
+                                onPressed: () async {
                                   setState(() {
                                     _isUpdating = true;
                                   });
                                   final EventsService nSvc = EventsService();
-                                  // check to see if "no location" is set. If so, don't overwrite it
-                                  if ((_mapCenter.latitude != CLEAR_LATLONG) &&
-                                      (_mapCenter.longitude != CLEAR_LATLONG) &&
-                                      (_mapKey.currentState?.mapController !=
-                                          null)) {
-                                    _mapCenter =
-                                        _mapKey
-                                            .currentState!
-                                            .mapController
-                                            .camera
-                                            .center;
-                                  }
                                   final String eventId = await nSvc
                                       .addEditEvent(
                                         eventId: _eventAggregate.event.eventId,
-                                        lat: _mapCenter.latitude,
-                                        lon: _mapCenter.longitude,
-                                        useFbLatLon: 0,
+                                        useFbLatLon: 1,
                                       );
+
                                   _eventAggregate = await widget
                                       .getUpdatedEventAggregate(eventId);
-
-                                  if (widget.isNewRun) {
-                                    setState(() {
-                                      _isUpdating = false;
-                                    });
-                                    await Future<void>.delayed(
-                                      const Duration(milliseconds: 1000),
-                                    );
-                                    _tabController.animateTo(2);
-                                  } else {
+                                  setState(() {
+                                    if ((_eventAggregate.extensions.latitude ==
+                                            null) ||
+                                        (_eventAggregate.extensions.longitude ==
+                                            null)) {
+                                      _mapCenter = latlng.LatLng(
+                                        _eventAggregate.extensions.kenlLat,
+                                        _eventAggregate.extensions.kenlLon,
+                                      );
+                                    } else {
+                                      _mapCenter = latlng.LatLng(
+                                        _eventAggregate.extensions.latitude!,
+                                        _eventAggregate.extensions.longitude!,
+                                      );
+                                    }
+                                    _isUpdating = false;
                                     final SnackBar snackBar = SnackBar(
                                       duration: const Duration(seconds: 3),
                                       content: Text(
-                                        'Updated location saved in Harrier Central',
+                                        'Location is being synced from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
                                         textAlign: TextAlign.center,
-                                        style: ts_titleCondensed,
+                                        style: ts_titleCondensedBlack,
                                       ),
                                       backgroundColor: hc_blue,
                                     );
-
-                                    if (!mounted) return;
                                     ScaffoldMessenger.of(
                                       context,
                                     ).showSnackBar(snackBar);
-                                  }
-
-                                  await Future<void>.delayed(
-                                    const Duration(milliseconds: 500),
-                                  );
-                                  setState(() {
-                                    _isUpdating = false;
                                   });
-
-                                  //_showEventPopup(_calendarController.selectedDay);
-                                }
-                              },
-                            ),
-                            if ((_eventAggregate.event.eventFacebookId !=
-                                    null) &&
-                                (!_isUpdating)) ...<Widget>[
-                              const SizedBox(width: 20.0),
-                              Expanded(
-                                child: ElevatedButton(
-                                  child: AutoSizeText(
-                                    'Use ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
-                                    style: ts_button,
-                                    minFontSize: 3.0,
-                                    maxLines: 1,
-                                    //overflow: TextOverflow.ellipsis,
-                                  ),
-                                  onPressed: () async {
-                                    setState(() {
-                                      _isUpdating = true;
-                                    });
-                                    final EventsService nSvc = EventsService();
-                                    final String eventId = await nSvc
-                                        .addEditEvent(
-                                          eventId:
-                                              _eventAggregate.event.eventId,
-                                          useFbLatLon: 1,
-                                        );
-
-                                    _eventAggregate = await widget
-                                        .getUpdatedEventAggregate(eventId);
-                                    setState(() {
-                                      if ((_eventAggregate
-                                                  .extensions
-                                                  .latitude ==
-                                              null) ||
-                                          (_eventAggregate
-                                                  .extensions
-                                                  .longitude ==
-                                              null)) {
-                                        _mapCenter = latlng.LatLng(
-                                          _eventAggregate.extensions.kenlLat,
-                                          _eventAggregate.extensions.kenlLon,
-                                        );
-                                      } else {
-                                        _mapCenter = latlng.LatLng(
-                                          _eventAggregate.extensions.latitude!,
-                                          _eventAggregate.extensions.longitude!,
-                                        );
-                                      }
-                                      _isUpdating = false;
-                                      final SnackBar snackBar = SnackBar(
-                                        duration: const Duration(seconds: 3),
-                                        content: Text(
-                                          'Location is being synced from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
-                                          textAlign: TextAlign.center,
-                                          style: ts_titleCondensedBlack,
-                                        ),
-                                        backgroundColor: hc_blue,
-                                      );
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(snackBar);
-                                    });
-                                  },
-                                ),
+                                },
                               ),
-                            ],
+                            ),
                           ],
-                        ),
+                        ],
+                      ),
               ),
             ],
           ),
@@ -1713,10 +1699,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       ),
                     ),
                     Container(
-                      color:
-                          _focusNodeHares.hasFocus
-                              ? Colors.yellow.shade50
-                              : Colors.white,
+                      color: _focusNodeHares.hasFocus
+                          ? Colors.yellow.shade50
+                          : Colors.white,
                       margin: const EdgeInsets.only(
                         top: 10.0,
                         bottom: 10.0,
@@ -1770,10 +1755,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       ),
                     ),
                     Container(
-                      color:
-                          _focusNodeAbsoluteEventNumber.hasFocus
-                              ? Colors.yellow.shade50
-                              : Colors.white,
+                      color: _focusNodeAbsoluteEventNumber.hasFocus
+                          ? Colors.yellow.shade50
+                          : Colors.white,
                       margin: const EdgeInsets.only(
                         top: 10.0,
                         bottom: 10.0,
@@ -1839,10 +1823,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                           Expanded(
                             flex: 1,
                             child: Container(
-                              color:
-                                  _focusNodeEventPriceForMembers.hasFocus
-                                      ? Colors.yellow.shade50
-                                      : Colors.white,
+                              color: _focusNodeEventPriceForMembers.hasFocus
+                                  ? Colors.yellow.shade50
+                                  : Colors.white,
                               margin: const EdgeInsets.only(right: 12.5),
                               child: TextFormField(
                                 // onChanged: (String text) {
@@ -1880,10 +1863,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                           Expanded(
                             flex: 1,
                             child: Container(
-                              color:
-                                  _focusNodeEventPriceForNonMembers.hasFocus
-                                      ? Colors.yellow.shade50
-                                      : Colors.white,
+                              color: _focusNodeEventPriceForNonMembers.hasFocus
+                                  ? Colors.yellow.shade50
+                                  : Colors.white,
                               margin: const EdgeInsets.only(left: 12.5),
                               child: TextFormField(
                                 // onChanged: (String text) {
@@ -1947,10 +1929,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                           Expanded(
                             flex: 1,
                             child: Container(
-                              color:
-                                  _focusNodeEventPriceForExtras.hasFocus
-                                      ? Colors.yellow.shade50
-                                      : Colors.white,
+                              color: _focusNodeEventPriceForExtras.hasFocus
+                                  ? Colors.yellow.shade50
+                                  : Colors.white,
                               margin: const EdgeInsets.only(right: 12.5),
                               child: TextFormField(
                                 // onChanged: (String text) {
@@ -1988,10 +1969,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                           Expanded(
                             flex: 1,
                             child: Container(
-                              color:
-                                  _focusNodeExtrasDescription.hasFocus
-                                      ? Colors.yellow.shade50
-                                      : Colors.white,
+                              color: _focusNodeExtrasDescription.hasFocus
+                                  ? Colors.yellow.shade50
+                                  : Colors.white,
                               margin: const EdgeInsets.only(left: 12.5),
                               child: TextFormField(
                                 // onChanged: (String text) {
@@ -2072,12 +2052,10 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                             ),
                             initialValue:
                                 _eventAggregate.event.canEditRunAttendence ==
-                                        null
-                                    ? false
-                                    : _eventAggregate
-                                            .event
-                                            .canEditRunAttendence ==
-                                        1,
+                                    null
+                                ? false
+                                : _eventAggregate.event.canEditRunAttendence ==
+                                      1,
                             tristate: true,
                             validator: (bool? result) {
                               if (result == null) {
@@ -2211,54 +2189,54 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                         children: <Widget>[
                           _isUpdating
                               ? const SizedBox(
-                                height: 70.0,
-                                width: 70.0,
-                                child: HcAppCircularProgressIndicator(
-                                  key: Key('3444910299'),
-                                ),
-                              )
-                              : SizedBox(
-                                width: 300.0,
-                                child: ElevatedButton(
-                                  child: Text(
-                                    widget.isNewRun
-                                        ? 'Finish'
-                                        : 'Save Other Information',
-                                    style: ts_button,
+                                  height: 70.0,
+                                  width: 70.0,
+                                  child: HcAppCircularProgressIndicator(
+                                    key: Key('3444910299'),
                                   ),
-                                  onPressed: () async {
-                                    setState(() {
-                                      _isUpdating = true;
-                                    });
-                                    await _updateRunDetails(false);
+                                )
+                              : SizedBox(
+                                  width: 300.0,
+                                  child: ElevatedButton(
+                                    child: Text(
+                                      widget.isNewRun
+                                          ? 'Finish'
+                                          : 'Save Other Information',
+                                      style: ts_button,
+                                    ),
+                                    onPressed: () async {
+                                      setState(() {
+                                        _isUpdating = true;
+                                      });
+                                      await _updateRunDetails(false);
 
-                                    if (widget.isNewRun) {
-                                      if (!mounted) return;
-                                      Navigator.of(
-                                        navigatorKey.currentContext!,
-                                      ).pop();
-                                    } else {
-                                      final SnackBar snackBar = SnackBar(
-                                        duration: const Duration(seconds: 3),
-                                        content: Text(
-                                          'Other info has been saved',
-                                          textAlign: TextAlign.center,
-                                          style: ts_titleCondensed,
-                                        ),
-                                        backgroundColor: hc_blue,
-                                      );
+                                      if (widget.isNewRun) {
+                                        if (!mounted) return;
+                                        Navigator.of(
+                                          navigatorKey.currentContext!,
+                                        ).pop();
+                                      } else {
+                                        final SnackBar snackBar = SnackBar(
+                                          duration: const Duration(seconds: 3),
+                                          content: Text(
+                                            'Other info has been saved',
+                                            textAlign: TextAlign.center,
+                                            style: ts_titleCondensed,
+                                          ),
+                                          backgroundColor: hc_blue,
+                                        );
 
-                                      if (!mounted) return;
-                                      ScaffoldMessenger.of(
-                                        navigatorKey.currentContext!,
-                                      ).showSnackBar(snackBar);
-                                    }
-                                    setState(() {
-                                      _isUpdating = false;
-                                    });
-                                  },
+                                        if (!mounted) return;
+                                        ScaffoldMessenger.of(
+                                          navigatorKey.currentContext!,
+                                        ).showSnackBar(snackBar);
+                                      }
+                                      setState(() {
+                                        _isUpdating = false;
+                                      });
+                                    },
+                                  ),
                                 ),
-                              ),
                           // if ((_eventAggregate.event.eventFacebookId != null) && (!_isUpdating)) ...<Widget>[
                           //   const SizedBox(width: 10.0),
                           //   Container(
@@ -2304,18 +2282,16 @@ class CheckboxFormField extends FormField<bool> {
              tristate: tristate,
              value: state.value,
              onChanged: state.didChange,
-             subtitle:
-                 state.hasError
-                     ? Builder(
-                       builder:
-                           (BuildContext context) => Text(
-                             state.errorText ?? '',
-                             style: TextStyle(
-                               color: Theme.of(context).colorScheme.error,
-                             ),
-                           ),
-                     )
-                     : null,
+             subtitle: state.hasError
+                 ? Builder(
+                     builder: (BuildContext context) => Text(
+                       state.errorText ?? '',
+                       style: TextStyle(
+                         color: Theme.of(context).colorScheme.error,
+                       ),
+                     ),
+                   )
+                 : null,
              controlAffinity: ListTileControlAffinity.leading,
            );
          },

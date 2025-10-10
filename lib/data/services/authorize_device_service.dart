@@ -64,14 +64,15 @@ class AuthorizeDeviceService {
       FirebaseMessaging messaging = FirebaseMessaging.instance;
       // Ensure APNs token is set
       String? apnsToken = await messaging.getAPNSToken();
-      String? fcmToken = await messaging.getToken();
 
       if (apnsToken != null) {
+        apnsToken = apnsToken.trim();
         params.addAll({'apnsToken': apnsToken});
-      }
+        String? fcmToken = await messaging.getToken();
 
-      if (fcmToken != null) {
-        params.addAll({'fcmToken': fcmToken});
+        if (fcmToken != null) {
+          params.addAll({'fcmToken': fcmToken});
+        }
       }
     }
 

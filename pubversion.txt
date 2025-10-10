@@ -1,3 +1,7 @@
+2.0.8+1000
+    • Fixed Android navigation issue by adding SafeArea to all relevant Scaffolds
+    • Fixed the User Run History feature
+
 2.0.6+998
     • Fixed the Android navigation issue by adding a SafeArea for Android devices only.
 
