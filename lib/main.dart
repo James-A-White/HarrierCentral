@@ -55,6 +55,20 @@ Future<void> main() async {
     overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom],
   );
 
+  // ✅ Apply the style after a short delay to ensure window attachment
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        systemNavigationBarColor:
+            themeAppBarBackground, // ← will actually show blue now
+        systemNavigationBarIconBrightness: Brightness.light,
+        systemNavigationBarContrastEnforced: false, // avoids auto-darkening
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+      ),
+    );
+  });
+
   // App-level init — safe to re-run on an in-app “restart”
   await initPrefs(); // if services read prefs during init()
   await initServices(); // GetX DI registration (see services_init.dart)
