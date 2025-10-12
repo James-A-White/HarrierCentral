@@ -85,8 +85,6 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
   final int _flexLeft = 3;
   final int _flexRight = 7;
 
-  final GlobalKey<ScaffoldState> _ScaffoldKey = GlobalKey<ScaffoldState>();
-
   KennelMembersList? _kennelMembersList;
 
   final ValueNotifier<bool> _saveUserMapPreference = ValueNotifier<bool>(false);
@@ -179,7 +177,6 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
           child: AppScaffold(
-            key: _ScaffoldKey,
             appBar: AppBar(
               centerTitle: true,
               backgroundColor: themeAppBarBackground,
@@ -1056,7 +1053,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
 
                                                   IveCoreUtilities.showInSnackBar(
                                                     context,
-                                                    _ScaffoldKey,
+
                                                     'Run stats being processed...',
                                                     durationInSeconds: 10,
                                                   );

@@ -18,7 +18,6 @@ class CheckInPackController extends GetxController
   CheckInPackController(this.eventAggregate);
 
   final GlobalKey packListBoxKey = GlobalKey();
-  final GlobalKey<ScaffoldState> ScaffoldKey = GlobalKey<ScaffoldState>();
 
   bool isLoading = true;
   final RxList<CheckInPackModel> packList = <CheckInPackModel>[].obs;
@@ -615,15 +614,10 @@ class CheckInPackController extends GetxController
           paymentIndexUpdating.value = index;
 
           if (showMultiSelect.value) {
-            await bulkPayForEvent(
-              context,
-              ScaffoldKey.currentState!,
-              paymentType,
-            );
+            await bulkPayForEvent(context, paymentType);
           } else {
             await payForEvent(
               context,
-              ScaffoldKey.currentState!,
               paymentType,
               index,
               userInput?.totalAmount,
@@ -644,11 +638,7 @@ class CheckInPackController extends GetxController
     }
   }
 
-  Future<void> bulkPayForEvent(
-    BuildContext context,
-    ScaffoldState ScaffoldState,
-    int paymentType,
-  ) async {
+  Future<void> bulkPayForEvent(BuildContext context, int paymentType) async {
     ScaffoldMessenger.of(
       context,
     ).removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
@@ -664,7 +654,6 @@ class CheckInPackController extends GetxController
 
   Future<void> payForEvent(
     BuildContext context,
-    ScaffoldState ScaffoldState,
     int paymentType,
     int index,
     double? otherAmount, {

@@ -181,8 +181,6 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
     }
   }
 
-  final GlobalKey<ScaffoldState> _ScaffoldKey = GlobalKey<ScaffoldState>();
-
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -197,7 +195,6 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
           child: AppScaffold(
-            key: _ScaffoldKey,
             appBar: AppBar(
               centerTitle: true,
               backgroundColor: themeAppBarBackground,
@@ -295,7 +292,6 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
                         });
                     IveCoreUtilities.showInSnackBar(
                       context,
-                      _ScaffoldKey,
                       'Run count report being processed...',
                       durationInSeconds: 10,
                     );

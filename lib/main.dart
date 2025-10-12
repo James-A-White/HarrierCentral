@@ -59,8 +59,7 @@ Future<void> main() async {
   WidgetsBinding.instance.addPostFrameCallback((_) {
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
-        systemNavigationBarColor:
-            themeAppBarBackground, // ← will actually show blue now
+        systemNavigationBarColor: themeAppBarBackground,
         systemNavigationBarIconBrightness: Brightness.light,
         systemNavigationBarContrastEnforced: false, // avoids auto-darkening
         statusBarColor: Colors.transparent,

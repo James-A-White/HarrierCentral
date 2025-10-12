@@ -83,8 +83,6 @@ class FindHasherPageState extends State<FindHasherPage> {
     findHasher();
   }
 
-  final GlobalKey<ScaffoldState> _ScaffoldKey = GlobalKey<ScaffoldState>();
-
   final FocusNode searchFocusNode = FocusNode();
   TextEditingController searchController = TextEditingController();
 
@@ -97,7 +95,6 @@ class FindHasherPageState extends State<FindHasherPage> {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      key: _ScaffoldKey,
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,

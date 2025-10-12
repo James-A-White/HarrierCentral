@@ -297,12 +297,9 @@ SELECT
     );
   }
 
-  final GlobalKey<ScaffoldState> _ScaffoldKey = GlobalKey<ScaffoldState>();
-
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      key: _ScaffoldKey,
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
@@ -371,7 +368,6 @@ SELECT
 
                 IveCoreUtilities.showInSnackBar(
                   navigatorKey.currentContext!,
-                  _ScaffoldKey,
                   'Payment Report being processed...',
                   durationInSeconds: 10,
                 );
@@ -657,7 +653,6 @@ SELECT
                                                           .eventPriceForNonMembers;
                                                 await _showExtrasDialog(
                                                   context,
-                                                  _ScaffoldKey.currentState!,
                                                   direction ==
                                                           DismissDirection
                                                               .endToStart
@@ -850,7 +845,6 @@ SELECT
 
   Future<void> _showExtrasDialog(
     BuildContext context,
-    ScaffoldState ScaffoldState,
     int paymentType,
     PaymentAggregate packMember,
     double paymentAmount, {
@@ -1029,7 +1023,6 @@ SELECT
                 if (!mounted) return;
                 await _showExtrasDialog(
                   context,
-                  _ScaffoldKey.currentState!,
                   ppResult.transactionType,
                   item,
                   ppResult.transactionValue,

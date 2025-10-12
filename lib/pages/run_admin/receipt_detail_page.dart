@@ -68,8 +68,6 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
     );
   }
 
-  final GlobalKey<ScaffoldState> _ScaffoldKey = GlobalKey<ScaffoldState>();
-
   String _upload(File imageFile, String fileName) {
     final Uri uri = Uri.parse(
       '$BASE_RECEIPTS_URL$fileName?st=2019-04-30T18%3A08%3A40Z&se=2050-05-01T18%3A08%3A00Z&sp=rw&sv=2018-03-28&sr=c&sig=8f8DFDrH7Eq2Jv1JLQ9%2Bh4igcvEZEqE1zcFvUAxsXwY%3D',
@@ -244,7 +242,6 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
       title: Text('Run Receipt', style: ts_appBarTitle),
     );
     return AppScaffold(
-      key: _ScaffoldKey,
       appBar: appBar,
       body: _isLoading
           ? Container(

@@ -352,7 +352,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     );
   }
 
-  GlobalKey<ScaffoldState> ScaffoldKey = GlobalKey<ScaffoldState>();
+  //GlobalKey<ScaffoldState> ScaffoldKey = GlobalKey<ScaffoldState>();
 
   Future<void> _updateProfile() async {
     if (_profileFormKey.currentState!.validate()) {
@@ -632,7 +632,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
           child: AppScaffold(
-            key: ScaffoldKey,
+            //key: ScaffoldKey,
             appBar: appBar,
             body: _isLoading
                 ? Container(

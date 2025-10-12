@@ -16,8 +16,6 @@ class ReceiptsListState extends State<ReceiptsList> {
 
   List<Map<String, dynamic>> receiptsList = <Map<String, dynamic>>[];
 
-  final GlobalKey<ScaffoldState> _ScaffoldKey = GlobalKey<ScaffoldState>();
-
   @override
   void initState() {
     refreshFromTable();
@@ -49,7 +47,6 @@ class ReceiptsListState extends State<ReceiptsList> {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      key: _ScaffoldKey,
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,

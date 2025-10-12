@@ -1,3 +1,10 @@
+2.0.10+1003
+    • Another attempt to fix Android navigation issue by adding SafeArea to all relevant Scaffolds and setting the bottom nav bar to opaque
+    • Fixed a problem with check-in buttons by removing unneeded Global ScaffoldKeys
+    • Slightly darkened the purple accent
+    • Increased the debounce on network detection from 350ms to 5000ms to avoid Offline mode from kicking in when there is a short network outage detected
+    
+
 2.0.8+1000
     • Fixed Android navigation issue by adding SafeArea to all relevant Scaffolds
     • Fixed the User Run History feature

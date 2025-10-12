@@ -79,8 +79,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     const Tab(text: LABEL_CHAT),
   ];
 
-  final GlobalKey<ScaffoldState> _ScaffoldKey = GlobalKey<ScaffoldState>();
-
   //GlobalKey packListBox = GlobalKey();
 
   final ScrollController _scrollController = ScrollController();
@@ -1713,7 +1711,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     return Stack(
       children: <Widget>[
         AppScaffold(
-          key: _ScaffoldKey,
           floatingActionButton: (!_fabIsVisible)
               ? null
               : AnimatedOpacity(

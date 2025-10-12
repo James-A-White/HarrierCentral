@@ -29,8 +29,6 @@ enum SelectedImageTypeEnum {
 }
 
 class ChooseProfileImageState extends State<ChooseProfileImage> {
-  final GlobalKey<ScaffoldState> _ScaffoldKey = GlobalKey<ScaffoldState>();
-
   SelectedImageTypeEnum _imageTypeSelection = SelectedImageTypeEnum.none;
   SelectedImageTypeEnum _previousImageTypeSelection =
       SelectedImageTypeEnum.none;
@@ -169,7 +167,6 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
     _isIos = Theme.of(context).platform == TargetPlatform.iOS;
 
     return AppScaffold(
-      key: _ScaffoldKey,
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,

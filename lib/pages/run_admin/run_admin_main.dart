@@ -156,12 +156,9 @@ class RunAdminPageState extends State<RunAdminPage> {
 
   final String _userId = getStringPref(StringPrefsEnum.userId) ?? '';
 
-  final GlobalKey<ScaffoldState> _ScaffoldKey = GlobalKey<ScaffoldState>();
-
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      key: _ScaffoldKey,
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,

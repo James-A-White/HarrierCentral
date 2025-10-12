@@ -37,7 +37,7 @@ class CheckInPackPage extends StatelessWidget {
       tag: controllerTag,
       builder: (AppScaffoldController) {
         return AppScaffold(
-          key: AppScaffoldController.ScaffoldKey,
+          //key: AppScaffoldController.ScaffoldKey,
           floatingActionButton: SpeedDial(
             // both default to 16
             // marginEnd: 18,
@@ -331,9 +331,7 @@ class CheckInPackPage extends StatelessWidget {
                                           if (packMember.isPaid != 1) {
                                             AppScaffoldController.payForEvent(
                                               context,
-                                              AppScaffoldController
-                                                  .ScaffoldKey
-                                                  .currentState!,
+
                                               paymentBankTransfer.value,
                                               index,
                                               -1,
@@ -441,9 +439,7 @@ class CheckInPackPage extends StatelessWidget {
                                           if (packMember.isPaid != 1) {
                                             AppScaffoldController.payForEvent(
                                               context,
-                                              AppScaffoldController
-                                                  .ScaffoldKey
-                                                  .currentState!,
+
                                               paymentCash.value,
                                               index,
                                               -1,

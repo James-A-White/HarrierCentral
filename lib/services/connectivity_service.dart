@@ -15,7 +15,7 @@ class NetworkService extends GetxService {
   late final Connectivity _connectivity;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
   StreamSubscription<InternetStatus>? _internetStatusSub;
-  final Duration debounce = const Duration(milliseconds: 350);
+  final Duration debounce = const Duration(milliseconds: 5000);
   Timer? _debounceTimer;
 
   Future<NetworkService> init() async {

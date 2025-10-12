@@ -242,7 +242,7 @@ packages:
     source: hosted
     version: "1.19.1"
   connectivity_plus:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: connectivity_plus
       sha256: "33bae12a398f841c6cda09d1064212957265869104c478e5ad51e2fb26c3973c"
@@ -1108,11 +1108,11 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "7f0379133f114642179a3ef74cd342dad4494884"
-      resolved-ref: "7f0379133f114642179a3ef74cd342dad4494884"
+      ref: "6724982081833fe57c8f939dc32ec94fa5a9c3d8"
+      resolved-ref: "6724982081833fe57c8f939dc32ec94fa5a9c3d8"
       url: "https://github.com/InnoVet-Europe/ive_flutter_core.git"
     source: git
-    version: "1.2.9"
+    version: "1.2.10"
   ive_flutter_core_mobile:
     dependency: "direct main"
     description:
@@ -2130,4 +2130,4 @@ packages:
     version: "3.1.3"
 sdks:
   dart: ">=3.9.2 <4.0.0"
-  flutter: ">=3.35.5 <4.0.0"
+  flutter: ">=3.35.6 <4.0.0"

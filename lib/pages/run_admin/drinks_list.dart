@@ -173,13 +173,10 @@ class DrinksListState extends State<DrinksList>
 
   late AppBar appBar;
 
-  final GlobalKey<ScaffoldState> _ScaffoldKey = GlobalKey<ScaffoldState>();
-
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
       appBar: appBar,
-      key: _ScaffoldKey,
       body: SafeArea(
         child: Container(
           decoration: Backgrounds.defaultHcBackgroundLight(),

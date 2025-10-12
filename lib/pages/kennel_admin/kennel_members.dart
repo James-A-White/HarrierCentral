@@ -191,8 +191,6 @@ class KennelMemberListState extends State<KennelMembersList>
     }
   }
 
-  final GlobalKey<ScaffoldState> _ScaffoldKey = GlobalKey<ScaffoldState>();
-
   // NULLSAFETODO1 - figure out why these seem to be out of order
   void setSortBySpeedDial() {
     switch (_sortBy) {
@@ -251,7 +249,6 @@ class KennelMemberListState extends State<KennelMembersList>
   Widget build(BuildContext context) {
     return AppScaffold(
       appBar: _appBar,
-      key: _ScaffoldKey,
       floatingActionButton: SpeedDial(
         // both default to 16
         // marginEnd: 18,

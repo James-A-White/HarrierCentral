@@ -12,8 +12,6 @@ class CheckInScannerPage extends StatefulWidget {
 //final GlobalKey _qrKey = GlobalKey(debugLabel: 'QR');
 bool _isScanningAtRunStart = true;
 
-final GlobalKey<ScaffoldState> _ScaffoldKey = GlobalKey<ScaffoldState>();
-
 class CheckInScannerPageState extends State<CheckInScannerPage> {
   @override
   void initState() {
@@ -41,7 +39,6 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      key: _ScaffoldKey,
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
@@ -396,7 +393,6 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
             if (!mounted) return;
             IveCoreUtilities.showInSnackBar(
               context,
-              _ScaffoldKey,
               adHocData[0]['userMessage'],
               durationInSeconds: 5,
             );

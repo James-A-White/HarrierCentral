@@ -184,8 +184,6 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
     }
   }
 
-  final GlobalKey<ScaffoldState> _ScaffoldKey = GlobalKey<ScaffoldState>();
-
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -200,7 +198,6 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
           child: AppScaffold(
-            key: _ScaffoldKey,
             appBar: AppBar(
               centerTitle: true,
               backgroundColor: themeAppBarBackground,
@@ -268,7 +265,6 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
                         });
                     IveCoreUtilities.showInSnackBar(
                       context,
-                      _ScaffoldKey,
                       'Run count report being processed...',
                       durationInSeconds: 10,
                     );
@@ -305,7 +301,6 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
                         });
                     IveCoreUtilities.showInSnackBar(
                       context,
-                      _ScaffoldKey,
                       'Run count report being processed...',
                       durationInSeconds: 10,
                     );

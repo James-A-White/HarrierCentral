@@ -10,8 +10,6 @@ class AvatarIconsPage extends StatefulWidget {
 }
 
 class _AvatarIconsPageState extends State<AvatarIconsPage> {
-  final GlobalKey<ScaffoldState> _ScaffoldKey = GlobalKey<ScaffoldState>();
-
   @override
   Widget build(BuildContext context) {
     return _buildListView();
@@ -22,7 +20,6 @@ class _AvatarIconsPageState extends State<AvatarIconsPage> {
 
   Widget _buildListView() {
     return AppScaffold(
-      key: _ScaffoldKey,
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
