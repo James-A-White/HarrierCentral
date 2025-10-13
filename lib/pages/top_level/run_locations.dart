@@ -36,7 +36,9 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
 
   String _textDescription = 'Showing recent runs';
 
-  List<dynamic> _allRuns = <dynamic>[];
+  List<RunDetailsAggregate> _allRuns = <RunDetailsAggregate>[];
+  List<RunDetailsAggregate> _preFilteredRuns = <RunDetailsAggregate>[];
+
   List<dynamic> _filteredRuns = <dynamic>[];
   List<Map<String, dynamic>> _allKennels = <Map<String, dynamic>>[];
   List<Map<String, dynamic>> _filteredKennels = <Map<String, dynamic>>[];
@@ -98,7 +100,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                       onChanged: (String text) {
                         setState(() {
                           _searchRunsAndKennelsText = text;
-                          _filterRuns();
+                          _filterRuns(true);
                           _filterKennels();
                         });
                       },
@@ -135,7 +137,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                         _searchController.text = '';
                         _searchRunsAndKennelsText = '';
                         setState(() {
-                          _filterRuns();
+                          _filterRuns(true);
                         });
                       },
                     ),
@@ -149,8 +151,20 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
     );
   }
 
-  void _filterRuns() {
-    _filteredRuns = QueryRuns.doRunsFilter(_searchRunsAndKennelsText, _allRuns);
+  void _filterRuns(bool searchTextChanged) {
+    if (!searchTextChanged) {
+      _preFilteredRuns = QueryRuns.doRunsFilter(
+        _allRuns,
+        RunsToDisplay.allRuns,
+        RunsTimeScope.future,
+      );
+    }
+
+    _filteredRuns = QueryRuns.doRunsSearchTextFilter(
+      _searchRunsAndKennelsText,
+      _preFilteredRuns,
+    );
+
     _buildRunMarkers();
     setState(() {});
   }
@@ -422,7 +436,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
 
     try {
       final List<Map<String, dynamic>> results = await database.rawQuery(query);
-      _allRuns = <dynamic>[];
+      _allRuns = <RunDetailsAggregate>[];
 
       _runLocationMarkers = <Marker>[];
       if (results.isNotEmpty) {
@@ -461,7 +475,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
           }
         }
       }
-      _filterRuns();
+      _filterRuns(false);
       setState(() {});
     } catch (e) {
       //print(e);

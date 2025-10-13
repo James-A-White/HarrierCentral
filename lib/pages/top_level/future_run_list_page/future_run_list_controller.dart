@@ -7,12 +7,15 @@ class FutureRunListPageController extends GetxController {
   RxDouble height = 0.0.obs;
 
   int pageIndex = 1;
-  List<dynamic>? allRuns;
+  List<RunDetailsAggregate>? allRuns;
+  RxList<RunDetailsAggregate> preFilteredRuns = <RunDetailsAggregate>[].obs;
   RxList<dynamic> filteredRuns = [].obs;
   String searchRunsText = '';
   Map<String, RxInt> thisEventUnseenChats = {};
   RxInt totalNotifications = 0.obs;
   RxBool showChatBubbleLoading = false.obs;
+  Rx<RunsToDisplay> runsToDisplay = RunsToDisplay.allRuns.obs;
+  Rx<RunsTimeScope> runsTimeScope = RunsTimeScope.future.obs;
 
   RxBool showOnlyEventsWithMessages = false.obs;
 
@@ -38,7 +41,7 @@ class FutureRunListPageController extends GetxController {
       // update to the main_nav_page does not get fired before the filterRuns
       // starts executing.
       await Future<void>.delayed(const Duration(milliseconds: 100));
-      filterRuns();
+      filterRuns(false);
     });
 
     IveCoreUtilities.logTiming('initState called', appModel.appStartTime);
@@ -117,8 +120,8 @@ class FutureRunListPageController extends GetxController {
         if (publicEventId != null) {
           total +=
               (thisEventUnseenChats[publicEventId]?.value ??
-                  chatSummaryMap[publicEventId]?.eventChatMessageCount ??
-                  0);
+              chatSummaryMap[publicEventId]?.eventChatMessageCount ??
+              0);
         }
       }
     }
@@ -159,10 +162,9 @@ class FutureRunListPageController extends GetxController {
       int.tryParse(data['MessageType']) ?? 0,
     );
     if ((eventId != null) && (allRuns != null)) {
-      dynamic runs =
-          allRuns!
-              .where((dynamic a) => a.event?.eventId?.toUpperCase() == eventId)
-              .toList();
+      dynamic runs = allRuns!
+          .where((dynamic a) => a.event?.eventId?.toUpperCase() == eventId)
+          .toList();
 
       if ((runs != null) && (runs.length > 0)) {
         var run = runs[0];
@@ -254,7 +256,7 @@ class FutureRunListPageController extends GetxController {
   Future<void> refreshFromTable(bool forceRefresh) async {
     if (forceRefresh || (allRuns == null) || (allRuns!.isEmpty)) {
       allRuns = await QueryRuns.getRunDetailsAggregates(true);
-      filterRuns();
+      filterRuns(false);
     }
     return;
   }
@@ -280,14 +282,13 @@ class FutureRunListPageController extends GetxController {
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       final decoded = json.decode(responseBody) as List;
-      List<EventChatSummary> chatSummary =
-          decoded.map<List<EventChatSummary>>((innerList) {
-            return (innerList as List)
-                .map<EventChatSummary>(
-                  (item) => EventChatSummary.fromJson(item),
-                )
-                .toList();
-          }).toList()[0];
+      List<EventChatSummary> chatSummary = decoded.map<List<EventChatSummary>>((
+        innerList,
+      ) {
+        return (innerList as List)
+            .map<EventChatSummary>((item) => EventChatSummary.fromJson(item))
+            .toList();
+      }).toList()[0];
 
       final chatsCounts = getMapIntPref(MapPrefsEnum.chatCounts);
 
@@ -317,75 +318,107 @@ class FutureRunListPageController extends GetxController {
   /// For example: "AH3 + FILTH, not Wednesday + Thursday" will show all
   /// Amsterdam and FILTH hashes that are not on a Wednesday or Thursday
   ///
-  void filterRuns() {
+  void filterRuns(bool searchTextChanged) {
     showRsvpInstructions = true;
-    filteredRuns.value = QueryRuns.doRunsFilter(
+
+    // if we are only changing the search text, then we don't need to
+    // re-filter the runs by time scope and runs to display
+    if (!searchTextChanged) {
+      preFilteredRuns.value = QueryRuns.doRunsFilter(
+        allRuns ?? <RunDetailsAggregate>[],
+        runsToDisplay.value,
+        runsTimeScope.value,
+      );
+    }
+
+    filteredRuns.value = QueryRuns.doRunsSearchTextFilter(
       searchRunsText,
-      allRuns ?? <dynamic>[],
+      preFilteredRuns,
     );
 
-    filteredRuns.sort((dynamic a, dynamic b) {
-      // start by sorting by run classification, closest runs should be listed first, then runs
-      // from Kennels the user is following, then the rest
-      int result = a.extensions.runClassification.compareTo(
-        b.extensions.runClassification,
-      );
+    if (runsTimeScope.value == RunsTimeScope.future) {
+      filteredRuns.sort((dynamic a, dynamic b) {
+        // start by sorting by run classification, closest runs should be listed first, then runs
+        // from Kennels the user is following, then the rest
+        int result = a.extensions.runClassification.compareTo(
+          b.extensions.runClassification,
+        );
 
-      if (result == 0) {
-        result = _toDateOnly(
-          a.event.eventStartDatetime,
-        ).compareTo(_toDateOnly(b.event.eventStartDatetime));
-        // if the runs are on the same day then try to sort by distance
-        // if there are no distances because location services are off, then sort by Kennel name
+        if (result == 0) {
+          result = _toDateOnly(
+            a.event.eventStartDatetime,
+          ).compareTo(_toDateOnly(b.event.eventStartDatetime));
+          // if the runs are on the same day then try to sort by distance
+          // if there are no distances because location services are off, then sort by Kennel name
+          if (result == 0) {
+            if ((a.extensions.distToEvent != null) &&
+                (b.extensions.distToEvent != null)) {
+              final num distA = a.extensions.latitude == null
+                  ? 99999999
+                  : a.extensions.distToEvent;
+              final num distB = b.extensions.latitude == null
+                  ? 99999999
+                  : b.extensions.distToEvent;
+              result = distA.compareTo(distB);
+            } else {
+              result = a.kennel.kennelName.compareTo(b.kennel.kennelName);
+            }
+          }
+        }
+        return result;
+      });
+
+      int lastInsertedClassification = 4;
+
+      final int listLength = filteredRuns.length;
+
+      for (int i = listLength - 1; i >= 0; i--) {
+        if (filteredRuns[i].extensions.runClassification == 1) {
+          showRsvpInstructions = false;
+        }
+
+        int currentClassification = 1;
+        if (i > 0) {
+          currentClassification =
+              filteredRuns[i - 1].extensions.runClassification ?? 1;
+        }
+
+        if (currentClassification != lastInsertedClassification) {
+          for (
+            int j = lastInsertedClassification - currentClassification - 1;
+            j >= 0;
+            j--
+          ) {
+            filteredRuns.insert(i, currentClassification + j + 1);
+          }
+
+          lastInsertedClassification = currentClassification;
+        }
+      }
+
+      filteredRuns.insert(0, 1);
+    } else {
+      filteredRuns.sort((dynamic a, dynamic b) {
+        int result = _toDateOnly(
+          b.event.eventStartDatetime,
+        ).compareTo(_toDateOnly(a.event.eventStartDatetime));
         if (result == 0) {
           if ((a.extensions.distToEvent != null) &&
               (b.extensions.distToEvent != null)) {
-            final num distA =
-                a.extensions.latitude == null
-                    ? 99999999
-                    : a.extensions.distToEvent;
-            final num distB =
-                b.extensions.latitude == null
-                    ? 99999999
-                    : b.extensions.distToEvent;
+            final num distA = a.extensions.latitude == null
+                ? 99999999
+                : a.extensions.distToEvent;
+            final num distB = b.extensions.latitude == null
+                ? 99999999
+                : b.extensions.distToEvent;
             result = distA.compareTo(distB);
           } else {
             result = a.kennel.kennelName.compareTo(b.kennel.kennelName);
           }
         }
-      }
-      return result;
-    });
-
-    int lastInsertedClassification = 4;
-
-    final int listLength = filteredRuns.length;
-
-    for (int i = listLength - 1; i >= 0; i--) {
-      if (filteredRuns[i].extensions.runClassification == 1) {
-        showRsvpInstructions = false;
-      }
-
-      int currentClassification = 1;
-      if (i > 0) {
-        currentClassification =
-            filteredRuns[i - 1].extensions.runClassification ?? 1;
-      }
-
-      if (currentClassification != lastInsertedClassification) {
-        for (
-          int j = lastInsertedClassification - currentClassification - 1;
-          j >= 0;
-          j--
-        ) {
-          filteredRuns.insert(i, currentClassification + j + 1);
-        }
-
-        lastInsertedClassification = currentClassification;
-      }
+        return result;
+      });
     }
-
-    filteredRuns.insert(0, 1);
 
     update(['runList']);
   }

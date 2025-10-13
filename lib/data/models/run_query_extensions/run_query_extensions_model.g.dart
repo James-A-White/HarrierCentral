@@ -11,6 +11,8 @@ _RunQueryExtensionsModel _$RunQueryExtensionsModelFromJson(
 ) => _RunQueryExtensionsModel(
   nowJulian: json['nowJulian'] as num? ?? 0,
   nowJulianLocal: json['nowJulianLocal'] as num? ?? 0,
+  showAsPastEvent: json['showAsPastEvent'] as num? ?? 0,
+  showAsFutureEvent: json['showAsFutureEvent'] as num? ?? 0,
   eventJulian: json['eventJulian'] as num? ?? 0,
   eventJulianLocal: json['eventJulianLocal'] as num? ?? 0,
   ianaTimeZone: json['ianaTimeZone'] as String? ?? r'Europe/London',
@@ -43,6 +45,8 @@ Map<String, dynamic> _$RunQueryExtensionsModelToJson(
 ) => <String, dynamic>{
   'nowJulian': instance.nowJulian,
   'nowJulianLocal': instance.nowJulianLocal,
+  'showAsPastEvent': instance.showAsPastEvent,
+  'showAsFutureEvent': instance.showAsFutureEvent,
   'eventJulian': instance.eventJulian,
   'eventJulianLocal': instance.eventJulianLocal,
   'ianaTimeZone': instance.ianaTimeZone,

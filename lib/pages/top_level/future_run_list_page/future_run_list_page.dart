@@ -79,7 +79,7 @@ class FutureRunsListPage extends StatelessWidget {
                       onChanged: (String text) {
                         //setState(() {
                         controller.searchRunsText = text;
-                        controller.filterRuns();
+                        controller.filterRuns(true);
                         //});
                       },
                       focusNode: controller.searchFocusNode,
@@ -115,7 +115,7 @@ class FutureRunsListPage extends StatelessWidget {
                         controller.searchController.text = '';
                         controller.searchRunsText = '';
                         //setState(() {
-                        controller.filterRuns();
+                        controller.filterRuns(true);
                         //});
                       },
                     ),
@@ -207,246 +207,346 @@ class FutureRunsListPage extends StatelessWidget {
                       ),
                     ),
                   Expanded(
-                    child: ListView.builder(
-                      padding: const EdgeInsets.only(
-                        left: 10,
-                        right: 10,
-                        top: 0,
-                        bottom: 50,
-                      ),
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      //padding: const EdgeInsets.only( bottom: 40.0),
-                      itemCount: listController.filteredRuns.length,
-                      //itemCount: 5,
-                      itemBuilder: (BuildContext context, int index) {
-                        if (listController.filteredRuns[index] is int) {
-                          return Column(
-                            children: <Widget>[
-                              Container(
-                                margin: const EdgeInsets.only(top: 10),
-                                padding: const EdgeInsets.only(top: 2.0),
-                                color: themeButtonColors,
-                                height: 40.0,
-                                alignment: Alignment.center,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: <Widget>[
-                                    if ((listController.filteredRuns[index] ==
-                                            2) &&
-                                        (appModel.connectionStatus ==
-                                            EnumConnectionStatus2
-                                                .connected)) ...<Widget>[
-                                      const SizedBox(width: 36.0),
-                                    ],
-                                    if ((listController.filteredRuns[index] ==
-                                            1) &&
-                                        listController
-                                            .showRsvpInstructions) ...<Widget>[
-                                      const SizedBox(width: 36.0),
-                                    ],
-                                    Text(
-                                      listController.filteredRuns[index] == 1
-                                          ? listController.showRsvpInstructions
-                                                ? 'Learn about RSVPs →'
-                                                : 'My upcoming runs'
-                                          : listController
+                    child: Stack(
+                      children: [
+                        ListView.builder(
+                          padding: const EdgeInsets.only(
+                            left: 10,
+                            right: 10,
+                            top: 50,
+                            bottom: 50,
+                          ),
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          //padding: const EdgeInsets.only( bottom: 40.0),
+                          itemCount: listController.filteredRuns.length,
+                          //itemCount: 5,
+                          itemBuilder: (BuildContext context, int index) {
+                            if (listController.filteredRuns[index] is int) {
+                              return Column(
+                                children: <Widget>[
+                                  Container(
+                                    margin: const EdgeInsets.only(top: 10),
+                                    padding: const EdgeInsets.only(top: 2.0),
+                                    color: themeButtonColors,
+                                    height: 40.0,
+                                    alignment: Alignment.center,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: <Widget>[
+                                        if ((listController
                                                     .filteredRuns[index] ==
-                                                2
-                                          ? _getDistancePreferenceString(
-                                              'Runs within ',
-                                            )
-                                          : listController
+                                                2) &&
+                                            (appModel.connectionStatus ==
+                                                EnumConnectionStatus2
+                                                    .connected)) ...<Widget>[
+                                          const SizedBox(width: 36.0),
+                                        ],
+                                        if ((listController
                                                     .filteredRuns[index] ==
-                                                3
-                                          ? 'Runs from Kennels I follow'
-                                          : 'All other upcoming runs',
-                                      textAlign: TextAlign.center,
-                                      //textScaleFactor: deviceInfo.textClamp15,
-                                      style: ts_titleLarge,
-                                    ),
-                                    if ((listController.filteredRuns[index] ==
-                                            1) &&
-                                        listController
-                                            .showRsvpInstructions) ...<Widget>[
-                                      GestureDetector(
-                                        onTap: () async {
-                                          await Utilities.showAlert(
-                                            'Why should I RSVP?',
-                                            'Not only does it help the hares to plan for how much beer to buy, but it helps you keep track of which trails you plan to attend. It also lets your friends know if you\'ll be there.\r\n\r\nTo RSVP, click on the three dots next to the run and click on "I\'ll be there!" on the pop-up.',
-                                            'OK',
-                                          );
-                                        },
-                                        child: const Padding(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: 8.0,
-                                          ),
-                                          child: Icon(
-                                            FontAwesome.graduation_cap,
-                                            size: 28.0,
-                                          ),
+                                                1) &&
+                                            listController
+                                                .showRsvpInstructions) ...<
+                                          Widget
+                                        >[const SizedBox(width: 36.0)],
+                                        Text(
+                                          listController.filteredRuns[index] ==
+                                                  1
+                                              ? listController
+                                                        .showRsvpInstructions
+                                                    ? 'Learn about RSVPs →'
+                                                    : 'My upcoming runs'
+                                              : listController
+                                                        .filteredRuns[index] ==
+                                                    2
+                                              ? _getDistancePreferenceString(
+                                                  'Runs within ',
+                                                )
+                                              : listController
+                                                        .filteredRuns[index] ==
+                                                    3
+                                              ? 'Runs from Kennels I follow'
+                                              : 'All other upcoming runs',
+                                          textAlign: TextAlign.center,
+                                          //textScaleFactor: deviceInfo.textClamp15,
+                                          style: ts_titleLarge,
                                         ),
-                                      ),
-                                    ],
-                                    if ((listController.filteredRuns[index] ==
-                                            2) &&
-                                        (appModel.connectionStatus ==
-                                            EnumConnectionStatus2
-                                                .connected)) ...<Widget>[
-                                      GestureDetector(
-                                        onTap: () async {
-                                          bool success = false;
-
-                                          if (!await Permission
-                                              .location
-                                              .isGranted) {
-                                            final bool?
-                                            allow = await Utilities.showAlert(
-                                              'Location Services Required',
-                                              'To show all runs near your current location you must allow Harrier Central to have access to location information from your phone.\r\n\r\nWould you like to enable location services?',
-                                              'Yes',
-                                              showCancelButton: true,
-                                              cancelButtonText: 'No',
-                                            );
-
-                                            if (allow ?? false) {
-                                              final PermissionStatus ps =
-                                                  await Permission.location
-                                                      .request();
-
-                                              if (ps.isPermanentlyDenied) {
-                                                final bool? openSettings =
-                                                    await Utilities.showAlert(
-                                                      'Phone Settings',
-                                                      'You must change the location permissions in the phone\'s settings panel for Harrier Central.\r\n\r\nOnce you have done this, please close Settings and come back to Harrier Central.',
-                                                      'Open Settings',
-                                                      showCancelButton: true,
-                                                      cancelButtonText:
-                                                          'Cancel',
-                                                    );
-                                                if (openSettings ?? false) {
-                                                  await openAppSettings();
-
-                                                  success =
-                                                      await Utilities.showAlert(
-                                                        'Success?',
-                                                        'Were you able to change the settings to enable location services?',
-                                                        'Yes',
-                                                        showCancelButton: true,
-                                                        cancelButtonText: 'No',
-                                                      ) ??
-                                                      false;
-                                                }
-                                              }
-
-                                              if ((ps.isGranted) || success) {
-                                                if (await Permission
-                                                    .location
-                                                    .serviceStatus
-                                                    .isEnabled) {
-                                                  appModel.hasLocationPermissions =
-                                                      true;
-                                                  await Utilities.subscribeToGeoLocationStream().then((
-                                                    void _,
-                                                  ) async {
-                                                    await Utilities.showAlert(
-                                                      'Location Services Enabled',
-                                                      'Location Services have been enabled.',
-                                                      'OK',
-                                                    );
-                                                    if (context.mounted) {
-                                                      _showConfigureDistancePopup(
-                                                        context,
-                                                      );
-                                                    }
-                                                  });
-                                                }
-                                              }
-                                            }
-                                          } else {
-                                            if (context.mounted) {
-                                              _showConfigureDistancePopup(
-                                                context,
+                                        if ((listController
+                                                    .filteredRuns[index] ==
+                                                1) &&
+                                            listController
+                                                .showRsvpInstructions) ...<
+                                          Widget
+                                        >[
+                                          GestureDetector(
+                                            onTap: () async {
+                                              await Utilities.showAlert(
+                                                'Why should I RSVP?',
+                                                'Not only does it help the hares to plan for how much beer to buy, but it helps you keep track of which trails you plan to attend. It also lets your friends know if you\'ll be there.\r\n\r\nTo RSVP, click on the three dots next to the run and click on "I\'ll be there!" on the pop-up.',
+                                                'OK',
                                               );
-                                            }
-                                          }
-                                        },
-                                        child: const Padding(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: 8.0,
+                                            },
+                                            child: const Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: 8.0,
+                                              ),
+                                              child: Icon(
+                                                FontAwesome.graduation_cap,
+                                                size: 28.0,
+                                              ),
+                                            ),
                                           ),
-                                          child: Icon(
-                                            FontAwesome.gear,
-                                            size: 28.0,
+                                        ],
+                                        if ((listController
+                                                    .filteredRuns[index] ==
+                                                2) &&
+                                            (appModel.connectionStatus ==
+                                                EnumConnectionStatus2
+                                                    .connected)) ...<Widget>[
+                                          GestureDetector(
+                                            onTap: () async {
+                                              bool success = false;
+
+                                              if (!await Permission
+                                                  .location
+                                                  .isGranted) {
+                                                final bool?
+                                                allow = await Utilities.showAlert(
+                                                  'Location Services Required',
+                                                  'To show all runs near your current location you must allow Harrier Central to have access to location information from your phone.\r\n\r\nWould you like to enable location services?',
+                                                  'Yes',
+                                                  showCancelButton: true,
+                                                  cancelButtonText: 'No',
+                                                );
+
+                                                if (allow ?? false) {
+                                                  final PermissionStatus ps =
+                                                      await Permission.location
+                                                          .request();
+
+                                                  if (ps.isPermanentlyDenied) {
+                                                    final bool? openSettings =
+                                                        await Utilities.showAlert(
+                                                          'Phone Settings',
+                                                          'You must change the location permissions in the phone\'s settings panel for Harrier Central.\r\n\r\nOnce you have done this, please close Settings and come back to Harrier Central.',
+                                                          'Open Settings',
+                                                          showCancelButton:
+                                                              true,
+                                                          cancelButtonText:
+                                                              'Cancel',
+                                                        );
+                                                    if (openSettings ?? false) {
+                                                      await openAppSettings();
+
+                                                      success =
+                                                          await Utilities.showAlert(
+                                                            'Success?',
+                                                            'Were you able to change the settings to enable location services?',
+                                                            'Yes',
+                                                            showCancelButton:
+                                                                true,
+                                                            cancelButtonText:
+                                                                'No',
+                                                          ) ??
+                                                          false;
+                                                    }
+                                                  }
+
+                                                  if ((ps.isGranted) ||
+                                                      success) {
+                                                    if (await Permission
+                                                        .location
+                                                        .serviceStatus
+                                                        .isEnabled) {
+                                                      appModel.hasLocationPermissions =
+                                                          true;
+                                                      await Utilities.subscribeToGeoLocationStream().then((
+                                                        void _,
+                                                      ) async {
+                                                        await Utilities.showAlert(
+                                                          'Location Services Enabled',
+                                                          'Location Services have been enabled.',
+                                                          'OK',
+                                                        );
+                                                        if (context.mounted) {
+                                                          _showConfigureDistancePopup(
+                                                            context,
+                                                          );
+                                                        }
+                                                      });
+                                                    }
+                                                  }
+                                                }
+                                              } else {
+                                                if (context.mounted) {
+                                                  _showConfigureDistancePopup(
+                                                    context,
+                                                  );
+                                                }
+                                              }
+                                            },
+                                            child: const Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: 8.0,
+                                              ),
+                                              child: Icon(
+                                                FontAwesome.gear,
+                                                size: 28.0,
+                                              ),
+                                            ),
                                           ),
-                                        ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                  // add some text if no runs are found within the distance filter
+                                  if ((listController.filteredRuns[index] ==
+                                          2) &&
+                                      (listController.filteredRuns[index + 1] ==
+                                          3)) ...<Widget>[
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        top: 22.0,
+                                        bottom: 10.0,
                                       ),
-                                    ],
+                                      child: Text(
+                                        '${_getDistancePreferenceString('[No runs found within ')}]',
+                                        style: ts_headingLarge,
+                                      ),
+                                    ),
                                   ],
+                                ],
+                              );
+                            } else {
+                              String publicEventId =
+                                  (listController.filteredRuns[index]
+                                          as RunDetailsAggregate)
+                                      .event
+                                      .publicEventId;
+                              // print(
+                              //     'chatSummaryMap = ${(chatSummaryMap[publicEventId]?.eventChatMessageCount ?? 0)} / thisEventChatCount = ${(thisEventChatCount[publicEventId] ?? 0)} ');
+
+                              // hide any runs that don't have messages
+                              if (controller.showOnlyEventsWithMessages.value &&
+                                  (((listController
+                                                  .thisEventUnseenChats[publicEventId]
+                                                  ?.value ??
+                                              listController
+                                                  .chatSummaryMap[publicEventId]
+                                                  ?.eventChatMessageCount ??
+                                              0) ==
+                                          0) ||
+                                      ((listController.filteredRuns[index]
+                                                  as RunDetailsAggregate)
+                                              .extensions
+                                              .notificationPreference ==
+                                          NotificationState.ignore.value))) {
+                                return SizedBox();
+                              } else {
+                                return RunListItem(
+                                  futureRun: listController.filteredRuns[index],
+                                  currentChatCount:
+                                      (listController
+                                          .thisEventUnseenChats[publicEventId]
+                                          ?.value ??
+                                      listController
+                                          .chatSummaryMap[publicEventId]
+                                          ?.eventChatMessageCount ??
+                                      0),
+                                  onItemTapped: () {
+                                    listController.openRun(
+                                      listController.filteredRuns[index],
+                                      openToTab: RunTab.details,
+                                    );
+                                  },
+                                );
+                              }
+                            }
+                          },
+                        ),
+
+                        Align(
+                          alignment: Alignment.topLeft,
+
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                              top: 6.0,
+                              left: 10.0,
+                            ),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.only(
+                                  top: 0.0,
+                                  bottom: 0.0,
                                 ),
                               ),
-                              // add some text if no runs are found within the distance filter
-                              if ((listController.filteredRuns[index] == 2) &&
-                                  (listController.filteredRuns[index + 1] ==
-                                      3)) ...<Widget>[
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    top: 22.0,
-                                    bottom: 10.0,
-                                  ),
-                                  child: Text(
-                                    '${_getDistancePreferenceString('[No runs found within ')}]',
-                                    style: ts_headingLarge,
+                              onPressed: () {
+                                controller.runsToDisplay.value =
+                                    RunsToDisplay.values[(controller
+                                        .runsToDisplay
+                                        .value
+                                        .next)];
+                                controller.refreshFromTable(true);
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                  left: 10,
+                                  right: 10,
+                                  top: 0,
+                                ),
+                                child: Obx(
+                                  () => Text(
+                                    controller.runsToDisplay.value.label,
+                                    textAlign: TextAlign.center,
+                                    style: ts_button,
                                   ),
                                 ),
-                              ],
-                            ],
-                          );
-                        } else {
-                          String publicEventId =
-                              (listController.filteredRuns[index]
-                                      as RunDetailsAggregate)
-                                  .event
-                                  .publicEventId;
-                          // print(
-                          //     'chatSummaryMap = ${(chatSummaryMap[publicEventId]?.eventChatMessageCount ?? 0)} / thisEventChatCount = ${(thisEventChatCount[publicEventId] ?? 0)} ');
+                              ),
+                            ),
+                          ),
+                        ),
 
-                          // hide any runs that don't have messages
-                          if (controller.showOnlyEventsWithMessages.value &&
-                              (((listController
-                                              .thisEventUnseenChats[publicEventId]
-                                              ?.value ??
-                                          listController
-                                              .chatSummaryMap[publicEventId]
-                                              ?.eventChatMessageCount ??
-                                          0) ==
-                                      0) ||
-                                  ((listController.filteredRuns[index]
-                                              as RunDetailsAggregate)
-                                          .extensions
-                                          .notificationPreference ==
-                                      NotificationState.ignore.value))) {
-                            return SizedBox();
-                          } else {
-                            return RunListItem(
-                              futureRun: listController.filteredRuns[index],
-                              currentChatCount:
-                                  (listController
-                                      .thisEventUnseenChats[publicEventId]
-                                      ?.value ??
-                                  listController
-                                      .chatSummaryMap[publicEventId]
-                                      ?.eventChatMessageCount ??
-                                  0),
-                              onItemTapped: () {
-                                listController.openRun(
-                                  listController.filteredRuns[index],
-                                  openToTab: RunTab.details,
-                                );
+                        Align(
+                          alignment: Alignment.topRight,
+
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                              top: 6.0,
+                              right: 10.0,
+                            ),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.only(
+                                  top: 0.0,
+                                  bottom: 0.0,
+                                ),
+                              ),
+                              onPressed: () {
+                                controller.runsTimeScope.value =
+                                    RunsTimeScope.values[(controller
+                                        .runsTimeScope
+                                        .value
+                                        .next)];
+                                controller.refreshFromTable(true);
                               },
-                            );
-                          }
-                        }
-                      },
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                  left: 10,
+                                  right: 10,
+                                  top: 0,
+                                ),
+                                child: Obx(
+                                  () => Text(
+                                    controller.runsTimeScope.value.label,
+                                    textAlign: TextAlign.center,
+                                    style: ts_button,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

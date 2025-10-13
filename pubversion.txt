@@ -1,3 +1,7 @@
+2.1.0+1005
+    • Adding ability to filter main run list by future / past runs, and events, my runs, etc.
+    • Added new icons to indicate that user is checked in at the run
+
 2.0.10+1003
     • Another attempt to fix Android navigation issue by adding SafeArea to all relevant Scaffolds and setting the bottom nav bar to opaque
     • Fixed a problem with check-in buttons by removing unneeded Global ScaffoldKeys

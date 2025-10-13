@@ -104,6 +104,51 @@ enum MapPrefsEnum { chatCounts }
 enum TriStateFilter { neutral, include, exclude }
 
 /// Chat tabs with their corresponding integer IDs.
+enum RunsToDisplay {
+  allRuns(0, 'All Runs', 1),
+  myRuns(1, 'My Runs', 2),
+  unreadChats(2, 'Unread Chats', 3),
+  events(3, 'Events', 0);
+
+  /// The integer ID associated with this tab.
+  final int id;
+  final String label;
+  final int next;
+
+  const RunsToDisplay(this.id, this.label, this.next);
+
+  /// Lookup a MessageType by its [id]. Throws if not found.
+  factory RunsToDisplay.fromId(int id) {
+    return RunsToDisplay.values.firstWhere(
+      (tab) => tab.id == id,
+      orElse: () => throw ArgumentError('No Run type with id $id'),
+    );
+  }
+}
+
+/// Chat tabs with their corresponding integer IDs.
+enum RunsTimeScope {
+  future(0, 'Future Runs', 1),
+  past(1, 'Past Runs', 2),
+  futureAndPast(2, 'Future & Past Runs', 0);
+
+  /// The integer ID associated with this tab.
+  final int id;
+  final String label;
+  final int next;
+
+  const RunsTimeScope(this.id, this.label, this.next);
+
+  /// Lookup a MessageType by its [id]. Throws if not found.
+  factory RunsTimeScope.fromId(int id) {
+    return RunsTimeScope.values.firstWhere(
+      (tab) => tab.id == id,
+      orElse: () => throw ArgumentError('No Run type with id $id'),
+    );
+  }
+}
+
+/// Chat tabs with their corresponding integer IDs.
 enum MessageType {
   chat(0),
   checkinReminder(1),
@@ -221,6 +266,28 @@ enum NotificationState {
   };
 
   static NotificationState? fromInt(int value) => _valueMap[value];
+}
+
+enum EventType {
+  unknown(0, 'Unknown event'), // use the kennel default setting
+  localNormal(1, 'Normal run'), // use the kennel default setting
+  localEvent(2, 'Local evvent'), // always notify
+  regional(3, 'Regional event'), // never notify
+  national(4, 'Nash Hash'), //
+  interHash(5, 'InterHash'), //
+  worldInterhash(6, 'World interhash'), // notify only before the run starts
+  other(7, 'Other event'); // notify only before the run starts
+
+  final int value;
+  final String label;
+
+  const EventType(this.value, this.label);
+
+  static final Map<int, EventType> _valueMap = {
+    for (var state in EventType.values) state.value: state,
+  };
+
+  static EventType? fromInt(int value) => _valueMap[value];
 }
 
 //////////////////////////

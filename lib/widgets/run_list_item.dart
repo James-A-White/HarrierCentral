@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 class RunListItemController extends GetxController {
   RunListItemController(RunDetailsAggregate futureRun, int ccc)
     : rsvpState = (futureRun.extensions.rsvpState).obs,
+      attendanceState = (futureRun.extensions.attendenceState).obs,
       isHareState = (futureRun.extensions.isHare).obs,
       emailAlertPreference = (futureRun.extensions.emailAlertPreference).obs,
       notificationPreference =
@@ -18,6 +19,8 @@ class RunListItemController extends GetxController {
       currentChatCount = ccc.obs;
 
   final Rx<int> rsvpState;
+  final Rx<int> attendanceState;
+
   final Rx<int> currentChatCount;
   final Rx<int> isHareState;
   final Rx<int> emailAlertPreference;
@@ -302,6 +305,8 @@ class RunListItem extends StatelessWidget {
                                                     : daysUntilEvent.toInt() ==
                                                           1
                                                     ? 'Tomorrow'
+                                                    : daysUntilEvent <= -2
+                                                    ? '${(-daysUntilEvent).toInt().toString()} days ago'
                                                     : 'in ${daysUntilEvent.toInt().toString()} days'
                                               : (daysUntilEvent <= 30)
                                               ? 'in ${daysUntilEvent ~/ 7.0}${(daysUntilEvent ~/ 7.0) == 1 ? ' week' : ' weeks'}'
@@ -312,14 +317,32 @@ class RunListItem extends StatelessWidget {
                                       textAlign: TextAlign.left,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    Text(
-                                      DateFormat("E, MMM d 'at' h:mm a").format(
-                                        futureRun.event.eventStartDatetime,
-                                      ),
-                                      style: ts_regularMediumBlack,
-                                      textAlign: TextAlign.left,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                                    futureRun.event.eventStartDatetime.year ==
+                                            DateTime.now().year
+                                        ? Text(
+                                            DateFormat(
+                                              "E, MMM d 'at' h:mm a",
+                                            ).format(
+                                              futureRun
+                                                  .event
+                                                  .eventStartDatetime,
+                                            ),
+                                            style: ts_regularMediumBlack,
+                                            textAlign: TextAlign.left,
+                                            overflow: TextOverflow.ellipsis,
+                                          )
+                                        : Text(
+                                            DateFormat(
+                                              "E, MMM d yyyy 'at' h:mm a",
+                                            ).format(
+                                              futureRun
+                                                  .event
+                                                  .eventStartDatetime,
+                                            ),
+                                            style: ts_regularMediumBlack,
+                                            textAlign: TextAlign.left,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                     Obx(() => _getHaresWidget()),
                                     if ((futureRun.extensions.evtLat != null &&
                                             futureRun
@@ -753,25 +776,46 @@ class RunListItem extends StatelessWidget {
     String iconFile = '';
 
     switch (rliController.rsvpState.value) {
-      case 0:
-        iconFile = 'images/icons/checkbox_empty.png';
-        break;
-      case 1:
-        iconFile = 'images/icons/checkbox_no.png';
-        break;
-      case 2:
-        iconFile = 'images/icons/checkbox_maybe.png';
-        break;
       case 3:
-        if (rliController.isHareState.value == isHareNo.value) {
-          iconFile = 'images/icons/checkbox_yes.png';
-        } else {
+        if (rliController.isHareState.value == isHareYes.value) {
           iconFile = 'images/icons/checkbox_hare.png';
         }
         break;
-      case -1:
-        iconFile = 'wait';
-        break;
+    }
+
+    if (iconFile.isEmpty) {
+      switch (rliController.attendanceState.value) {
+        case 20:
+          iconFile = 'images/icons/checkbox_on_trail.png';
+          break;
+        case 30:
+          iconFile = 'images/icons/checkbox_on_in.png';
+          break;
+      }
+    }
+
+    if (iconFile.isEmpty) {
+      switch (rliController.rsvpState.value) {
+        case 0:
+          iconFile = 'images/icons/checkbox_empty.png';
+          break;
+        case 1:
+          iconFile = 'images/icons/checkbox_no.png';
+          break;
+        case 2:
+          iconFile = 'images/icons/checkbox_maybe.png';
+          break;
+        case 3:
+          if (rliController.isHareState.value == isHareNo.value) {
+            iconFile = 'images/icons/checkbox_yes.png';
+          } else {
+            iconFile = 'images/icons/checkbox_hare.png';
+          }
+          break;
+        case -1:
+          iconFile = 'wait';
+          break;
+      }
     }
 
     if (iconFile == 'wait') {

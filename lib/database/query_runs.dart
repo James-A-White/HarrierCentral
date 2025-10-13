@@ -152,11 +152,113 @@ class QueryRuns {
           as searchRunsText
           ''';
 
-  static List<dynamic> doRunsFilter(
-    String searchRunsText,
-    List<dynamic> allRuns,
+  static List<RunDetailsAggregate> doRunsFilter(
+    List<RunDetailsAggregate> allRuns,
+    RunsToDisplay runsToDisplay,
+    RunsTimeScope runsTimeScope,
   ) {
-    List<dynamic> filteredRuns = <dynamic>[];
+    List<RunDetailsAggregate> timeFilteredRuns = <RunDetailsAggregate>[];
+
+    switch (runsTimeScope) {
+      case RunsTimeScope.futureAndPast:
+        timeFilteredRuns = allRuns.toList();
+        break;
+      case RunsTimeScope.future:
+        timeFilteredRuns = allRuns
+            .where(
+              (RunDetailsAggregate a) => a.extensions.showAsFutureEvent == 1,
+            )
+            .toList();
+        break;
+      case RunsTimeScope.past:
+        timeFilteredRuns = allRuns
+            .where((RunDetailsAggregate a) => a.extensions.showAsPastEvent == 1)
+            .toList();
+        break;
+    }
+
+    List<RunDetailsAggregate> scopeFilteredRuns = <RunDetailsAggregate>[];
+
+    int xxx = 0;
+
+    switch (runsToDisplay) {
+      case RunsToDisplay.allRuns:
+        scopeFilteredRuns = timeFilteredRuns.toList();
+        break;
+      case RunsToDisplay.myRuns:
+        scopeFilteredRuns = timeFilteredRuns
+            .where((RunDetailsAggregate a) => a.extensions.rsvpState >= 2)
+            .toList();
+        break;
+      case RunsToDisplay.unreadChats:
+        scopeFilteredRuns = timeFilteredRuns.toList();
+        break;
+      case RunsToDisplay.events:
+        scopeFilteredRuns = timeFilteredRuns
+            .where(
+              (RunDetailsAggregate a) =>
+                  a.event.eventGeographicScope >= EventType.localEvent.index,
+            )
+            .toList();
+        break;
+    }
+
+    return scopeFilteredRuns;
+
+    // List<RunDetailsAggregate> searchTextFilteredRuns = <RunDetailsAggregate>[];
+
+    // // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
+    // if (searchRunsText.isNotEmpty) {
+    //   // searchRunsText = '$searchRunsText , ${removeDiacritics(searchRunsText)}';
+    //   final List<String> searchItems = searchRunsText
+    //       .trim()
+    //       .toLowerCase()
+    //       .split(',');
+    //   for (String st in searchItems) {
+    //     if (st.trim().isEmpty) {
+    //       continue;
+    //     }
+    //     bool negate = false;
+    //     if (st.trim().toLowerCase().startsWith('not ')) {
+    //       negate = true;
+    //       st = st.substring(4);
+    //     }
+    //     final List<String> orItems = st.split('+');
+
+    //     ////print('filtered at: ${DateTime.now().millisecondsSinceEpoch}');
+
+    //     searchTextFilteredRuns.addAll(
+    //       scopeFilteredRuns.where((RunDetailsAggregate a) {
+    //         for (String orItem in orItems) {
+    //           if (orItem.trim().isEmpty) {
+    //             continue;
+    //           }
+    //           orItem = ' ${orItem.trim().toLowerCase()}';
+    //           if ((a.extensions.searchRunsText.toLowerCase().contains(
+    //                 orItem,
+    //               )) ||
+    //               (removeDiacritics(
+    //                 a.extensions.searchRunsText.toLowerCase(),
+    //               ).contains(orItem))) {
+    //             return !negate;
+    //           }
+    //         }
+    //         return negate;
+    //       }).toList(),
+    //     );
+    //   }
+    // } else {
+    //   searchTextFilteredRuns.addAll(scopeFilteredRuns);
+    // }
+
+    // return searchTextFilteredRuns;
+  }
+
+  static List<dynamic> doRunsSearchTextFilter(
+    String searchRunsText,
+    List<RunDetailsAggregate> runList,
+  ) {
+    List<dynamic> searchTextFilteredRuns = <dynamic>[];
 
     // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
     if (searchRunsText.isNotEmpty) {
@@ -178,8 +280,8 @@ class QueryRuns {
 
         ////print('filtered at: ${DateTime.now().millisecondsSinceEpoch}');
 
-        filteredRuns.addAll(
-          allRuns.where((dynamic a) {
+        searchTextFilteredRuns.addAll(
+          runList.where((RunDetailsAggregate a) {
             for (String orItem in orItems) {
               if (orItem.trim().isEmpty) {
                 continue;
@@ -199,13 +301,10 @@ class QueryRuns {
         );
       }
     } else {
-      filteredRuns.addAll(allRuns);
+      searchTextFilteredRuns.addAll(runList);
     }
 
-    // filteredRuns.clear();
-    // filteredRuns.addAll(allRuns);
-
-    return filteredRuns;
+    return searchTextFilteredRuns;
   }
 
   static Future<List<RunDetailsAggregate>> getRunDetailsAggregates(
@@ -469,6 +568,8 @@ class QueryRuns {
           julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetime}) as eventJulianLocal,
           julianday('now') as nowJulian,
           julianday('now','$offsetFromGmtToLocal') as nowJulianLocal,
+          case when julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-4 hours') then 1 else 0 end as showAsFutureEvent,
+          case when julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) <= julianday('now','+4 hours') then 1 else 0 end as showAsPastEvent,
           $searchRunsField
           FROM narrowEvents evt
           INNER JOIN kennels k on k.kennelId = evt.kennelId
@@ -483,7 +584,9 @@ class QueryRuns {
 
     final String whereClauseForTopRunsPage =
         '''
-            WHERE julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-4 hours') and evt.${tableModel.eventsTableHelper.colIsVisible} = 1
+            WHERE 
+            -- julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-4 hours') AND
+            evt.${tableModel.eventsTableHelper.colIsVisible} = 1
             AND coalesce(hkm.following,0) != 2
             AND evt.${tableModel.eventsTableHelper.colRemoved} = 0
             AND (
@@ -496,10 +599,27 @@ class QueryRuns {
             ORDER BY evt.${tableModel.eventsTableHelper.colEventStartDatetime}, evt.${tableModel.eventsTableHelper.colEventNumber}
           ''';
 
+    //    final String whereClauseForTopRunsPage =
+    // '''
+    //     WHERE julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-4 hours')
+    //     AND evt.${tableModel.eventsTableHelper.colIsVisible} = 1
+    //     AND coalesce(hkm.following,0) != 2
+    //     AND evt.${tableModel.eventsTableHelper.colRemoved} = 0
+    //     AND (
+    //           "${searchAllRuns.toString()}" == "true"
+    //           OR
+    //           (coalesce(hkm.following,0) <= 1)
+    //           OR
+    //           (coalesce(hem.rsvpState,0) >= 2)
+    //         )
+    //     ORDER BY evt.${tableModel.eventsTableHelper.colEventStartDatetime}, evt.${tableModel.eventsTableHelper.colEventNumber}
+    //   ''';
+
     final String whereClauseForKennelDetailsPage = kennelId == null
         ? ''
         : '''
-            WHERE julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-4 hours') and evt.${tableModel.eventsTableHelper.colIsVisible} = 1
+            WHERE julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-4 hours') 
+            AND evt.${tableModel.eventsTableHelper.colIsVisible} = 1
             AND evt.${tableModel.eventsTableHelper.colKennelId} = "$kennelId"
             AND evt.${tableModel.eventsTableHelper.colRemoved} = 0
             ORDER BY evt.${tableModel.eventsTableHelper.colEventStartDatetime}, evt.${tableModel.eventsTableHelper.colEventNumber}

@@ -13,6 +13,8 @@ abstract class RunQueryExtensionsModel
     // @Default(0) int daysUntilEvent,
     @Default(0) num nowJulian,
     @Default(0) num nowJulianLocal,
+    @Default(0) num showAsPastEvent,
+    @Default(0) num showAsFutureEvent,
     @Default(0) num eventJulian,
     @Default(0) num eventJulianLocal,
     @Default(r'Europe/London') String ianaTimeZone,
