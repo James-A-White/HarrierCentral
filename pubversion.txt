@@ -1,3 +1,6 @@
+2.1.0+1006
+    • Tweaking the Runs page UI to make it simpler and more intuitive
+    
 2.1.0+1005
     • Adding ability to filter main run list by future / past runs, and events, my runs, etc.
     • Added new icons to indicate that user is checked in at the run

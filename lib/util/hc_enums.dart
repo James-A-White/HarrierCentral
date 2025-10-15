@@ -105,17 +105,25 @@ enum TriStateFilter { neutral, include, exclude }
 
 /// Chat tabs with their corresponding integer IDs.
 enum RunsToDisplay {
-  allRuns(0, 'All Runs', 1),
-  myRuns(1, 'My Runs', 2),
-  unreadChats(2, 'Unread Chats', 3),
-  events(3, 'Events', 0);
+  allRuns(0, 'All Runs', 1, true, true),
+  myRuns(1, 'My Runs', 2, false, false),
+  unreadChats(2, 'Unread Chats', 3, false, false),
+  events(3, 'Special Events', 0, true, true);
 
   /// The integer ID associated with this tab.
   final int id;
   final String label;
   final int next;
+  final bool showFuturePastToggle;
+  final bool defaultViewIsFuture;
 
-  const RunsToDisplay(this.id, this.label, this.next);
+  const RunsToDisplay(
+    this.id,
+    this.label,
+    this.next,
+    this.showFuturePastToggle,
+    this.defaultViewIsFuture,
+  );
 
   /// Lookup a MessageType by its [id]. Throws if not found.
   factory RunsToDisplay.fromId(int id) {
@@ -128,9 +136,8 @@ enum RunsToDisplay {
 
 /// Chat tabs with their corresponding integer IDs.
 enum RunsTimeScope {
-  future(0, 'Future Runs', 1),
-  past(1, 'Past Runs', 2),
-  futureAndPast(2, 'Future & Past Runs', 0);
+  future(0, 'Future', 1),
+  past(1, 'Past', 0);
 
   /// The integer ID associated with this tab.
   final int id;

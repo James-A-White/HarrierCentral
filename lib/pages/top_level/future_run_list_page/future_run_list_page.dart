@@ -486,6 +486,14 @@ class FutureRunsListPage extends StatelessWidget {
                                         .runsToDisplay
                                         .value
                                         .next)];
+                                controller
+                                        .runsToDisplay
+                                        .value
+                                        .defaultViewIsFuture
+                                    ? controller.runsTimeScope.value =
+                                          RunsTimeScope.future
+                                    : controller.runsTimeScope.value =
+                                          RunsTimeScope.past;
                                 controller.refreshFromTable(true);
                               },
                               child: Padding(
@@ -505,47 +513,51 @@ class FutureRunsListPage extends StatelessWidget {
                             ),
                           ),
                         ),
+                        Obx(() {
+                          return !controller
+                                  .runsToDisplay
+                                  .value
+                                  .showFuturePastToggle
+                              ? SizedBox()
+                              : Align(
+                                  alignment: Alignment.topRight,
 
-                        Align(
-                          alignment: Alignment.topRight,
-
-                          child: Padding(
-                            padding: const EdgeInsets.only(
-                              top: 6.0,
-                              right: 10.0,
-                            ),
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.only(
-                                  top: 0.0,
-                                  bottom: 0.0,
-                                ),
-                              ),
-                              onPressed: () {
-                                controller.runsTimeScope.value =
-                                    RunsTimeScope.values[(controller
-                                        .runsTimeScope
-                                        .value
-                                        .next)];
-                                controller.refreshFromTable(true);
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 10,
-                                  right: 10,
-                                  top: 0,
-                                ),
-                                child: Obx(
-                                  () => Text(
-                                    controller.runsTimeScope.value.label,
-                                    textAlign: TextAlign.center,
-                                    style: ts_button,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(
+                                      top: 6.0,
+                                      right: 10.0,
+                                    ),
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        padding: const EdgeInsets.only(
+                                          top: 0.0,
+                                          bottom: 0.0,
+                                        ),
+                                      ),
+                                      onPressed: () {
+                                        controller.runsTimeScope.value =
+                                            RunsTimeScope.values[(controller
+                                                .runsTimeScope
+                                                .value
+                                                .next)];
+                                        controller.refreshFromTable(true);
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 10,
+                                          right: 10,
+                                          top: 0,
+                                        ),
+                                        child: Text(
+                                          controller.runsTimeScope.value.label,
+                                          textAlign: TextAlign.center,
+                                          style: ts_button,
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+                                );
+                        }),
                       ],
                     ),
                   ),

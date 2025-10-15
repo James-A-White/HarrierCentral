@@ -159,27 +159,28 @@ class QueryRuns {
   ) {
     List<RunDetailsAggregate> timeFilteredRuns = <RunDetailsAggregate>[];
 
-    switch (runsTimeScope) {
-      case RunsTimeScope.futureAndPast:
-        timeFilteredRuns = allRuns.toList();
-        break;
-      case RunsTimeScope.future:
-        timeFilteredRuns = allRuns
-            .where(
-              (RunDetailsAggregate a) => a.extensions.showAsFutureEvent == 1,
-            )
-            .toList();
-        break;
-      case RunsTimeScope.past:
-        timeFilteredRuns = allRuns
-            .where((RunDetailsAggregate a) => a.extensions.showAsPastEvent == 1)
-            .toList();
-        break;
+    if (runsToDisplay.showFuturePastToggle) {
+      switch (runsTimeScope) {
+        case RunsTimeScope.future:
+          timeFilteredRuns = allRuns
+              .where(
+                (RunDetailsAggregate a) => a.extensions.showAsFutureEvent == 1,
+              )
+              .toList();
+          break;
+        case RunsTimeScope.past:
+          timeFilteredRuns = allRuns
+              .where(
+                (RunDetailsAggregate a) => a.extensions.showAsPastEvent == 1,
+              )
+              .toList();
+          break;
+      }
+    } else {
+      timeFilteredRuns = allRuns.toList();
     }
 
     List<RunDetailsAggregate> scopeFilteredRuns = <RunDetailsAggregate>[];
-
-    int xxx = 0;
 
     switch (runsToDisplay) {
       case RunsToDisplay.allRuns:
