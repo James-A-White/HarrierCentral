@@ -158,7 +158,12 @@ enum SortType {
 /// Chat tabs with their corresponding integer IDs.
 enum RunsTimeScope {
   future(0, 'Future', 1),
-  past(1, 'Past', 0);
+  past(1, 'Past', 0),
+  all(
+    2,
+    'All',
+    0,
+  ); // the button rotation should never get here, but if it does revert back to future.
 
   /// The integer ID associated with this tab.
   final int id;

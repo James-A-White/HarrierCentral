@@ -452,7 +452,8 @@ class EventsService extends BaseService {
       EnumRunQueryType.singleRun,
       EnumRunQueryContext.kennelAdmin,
       eventId: eventId,
-      sortType: SortType.forFutureRuns,
+      runsTimeScope: RunsTimeScope.all,
+      runsToDisplay: RunsToDisplay.allRuns,
     );
     if (results.isNotEmpty) {
       double? dist;

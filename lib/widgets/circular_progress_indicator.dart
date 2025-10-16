@@ -17,19 +17,17 @@ class HcAppCircularProgressIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: SpinKitCircle(
-        size: size ?? 75.0,
-        itemBuilder: (_, int index) {
-          return DecoratedBox(
-            decoration: BoxDecoration(
-              color: index.isEven
-                  ? (color1 ?? themeAppBarBackground)
-                  : (color2 ?? Colors.grey.shade400),
-            ),
-          );
-        },
-      ),
+    return SpinKitCircle(
+      size: size ?? 75.0,
+      itemBuilder: (_, int index) {
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            color: index.isEven
+                ? (color1 ?? themeAppBarBackground)
+                : (color2 ?? Colors.grey.shade400),
+          ),
+        );
+      },
     );
   }
 }

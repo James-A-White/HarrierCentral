@@ -175,6 +175,9 @@ class QueryRuns {
               )
               .toList();
           break;
+        case RunsTimeScope.all:
+          timeFilteredRuns = allRuns.toList();
+          break;
       }
     } else {
       timeFilteredRuns = allRuns.toList();
@@ -312,7 +315,8 @@ class QueryRuns {
     bool searchAllRuns, {
     String? eventId,
     EnumRunQueryType queryType = EnumRunQueryType.topRunsPage,
-    required SortType sortType,
+    required RunsToDisplay runsToDisplay,
+    required RunsTimeScope runsTimeScope,
   }) async {
     final List<RunDetailsAggregate> runs = <RunDetailsAggregate>[];
 
@@ -324,7 +328,8 @@ class QueryRuns {
       EnumRunQueryContext.user,
       searchAllRuns: searchAllRuns,
       eventId: eventId,
-      sortType: sortType,
+      runsTimeScope: runsTimeScope,
+      runsToDisplay: runsToDisplay,
     );
 
     IveCoreUtilities.logTiming('Run query end', appModel.appStartTime);
@@ -348,8 +353,8 @@ class QueryRuns {
         dist = Geolocator.distanceBetween(
           deviceInfo.deviceLat!,
           deviceInfo.deviceLon!,
-          results[i]['evtLat'],
-          results[i]['evtLon'],
+          results[i]['evtLat'].toDouble(),
+          results[i]['evtLon'].toDouble(),
         );
       } else if ((kennelItem.kennelLatitude != null) &&
           (kennelItem.kennelLongitude != null) &&
@@ -456,12 +461,17 @@ class QueryRuns {
     String? kennelId,
     bool searchAllRuns = true,
     String? eventId,
-    required SortType sortType,
+    required RunsToDisplay runsToDisplay,
+    required RunsTimeScope runsTimeScope,
   }) async {
     String hkmTable;
     String hemTable;
     String paymentsTable = '';
-    String sortDirection = sortType == SortType.forFutureRuns ? 'ASC' : 'DESC';
+    String sortDirection = 'DESC';
+
+    if (runsToDisplay.showFuturePastToggle) {
+      sortDirection = runsTimeScope == RunsTimeScope.future ? 'ASC' : 'DESC';
+    }
 
     switch (queryContext) {
       case EnumRunQueryContext.user:
@@ -587,15 +597,25 @@ class QueryRuns {
           ''';
     }
 
-    final String where = sortType == SortType.forFutureRuns
-        ? '''julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-4 hours')'''
-        : '''julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) <= julianday('now','+4 hours')''';
+    var timeFilterWhereClause = '';
+
+    if (runsToDisplay.showFuturePastToggle) {
+      if (runsTimeScope == RunsTimeScope.future) {
+        // where = '''AND julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-4 hours')''';
+        timeFilterWhereClause =
+            '''AND julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-4 hours')''';
+      } else if (runsTimeScope == RunsTimeScope.past) {
+        // where = '''AND julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) <= julianday('now','+4 hours')''';
+        timeFilterWhereClause =
+            '''AND julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) <= julianday('now','+4 hours')''';
+      } // 'all' is also an option, but we don't want to apply a where clause in that case
+    }
 
     final String whereClauseForTopRunsPage =
         '''
             WHERE 
             evt.${tableModel.eventsTableHelper.colIsVisible} = 1
-            AND $where
+            $timeFilterWhereClause
             AND coalesce(hkm.following,0) != 2
             AND evt.${tableModel.eventsTableHelper.colRemoved} = 0
             AND (

@@ -16,6 +16,10 @@ class FutureRunListPageController extends GetxController {
   RxInt totalNotifications = 0.obs;
   RxBool showChatBubbleLoading = false.obs;
   Rx<RunsToDisplay> runsToDisplay = RunsToDisplay.allRuns.obs;
+  RxBool runsToDisplayLoading = false.obs;
+  RxBool showRunToDisplaySpinner = false.obs;
+  RxBool runsTimeScopeLoading = false.obs;
+  RxBool showRunsTimeScopeSpinner = false.obs;
   Rx<RunsTimeScope> runsTimeScope = RunsTimeScope.future.obs;
 
   RxBool showOnlyEventsWithMessages = false.obs;
@@ -51,6 +55,34 @@ class FutureRunListPageController extends GetxController {
       searchRunsText,
       (_) => filterRuns(true),
       time: const Duration(milliseconds: 1000),
+    );
+
+    debounce<bool>(
+      runsToDisplayLoading,
+      (isLoading) async {
+        if (isLoading) {
+          await Future.delayed(const Duration(milliseconds: 500));
+          // still loading? then show it
+          if (runsToDisplayLoading.value) showRunToDisplaySpinner.value = true;
+        } else {
+          showRunToDisplaySpinner.value = false;
+        }
+      },
+      time: const Duration(milliseconds: 0), // immediate trigger
+    );
+
+    debounce<bool>(
+      runsTimeScopeLoading,
+      (isLoading) async {
+        if (isLoading) {
+          await Future.delayed(const Duration(milliseconds: 500));
+          // still loading? then show it
+          if (runsTimeScopeLoading.value) showRunsTimeScopeSpinner.value = true;
+        } else {
+          showRunsTimeScopeSpinner.value = false;
+        }
+      },
+      time: const Duration(milliseconds: 0), // immediate trigger
     );
 
     IveCoreUtilities.logTiming('initState called', appModel.appStartTime);
@@ -266,9 +298,8 @@ class FutureRunListPageController extends GetxController {
     if (forceRefresh || (allRuns == null) || (allRuns!.isEmpty)) {
       allRuns = await QueryRuns.getRunDetailsAggregates(
         true,
-        sortType: runsTimeScope.value == RunsTimeScope.past
-            ? SortType.forPastRuns
-            : SortType.forFutureRuns,
+        runsTimeScope: runsTimeScope.value,
+        runsToDisplay: runsToDisplay.value,
       );
       filterRuns(false);
     }
@@ -414,26 +445,26 @@ class FutureRunListPageController extends GetxController {
 
       filteredRuns.insert(0, 1);
     } else {
-      filteredRuns.sort((dynamic a, dynamic b) {
-        int result = _toDateOnly(
-          b.event.eventStartDatetime,
-        ).compareTo(_toDateOnly(a.event.eventStartDatetime));
-        if (result == 0) {
-          if ((a.extensions.distToEvent != null) &&
-              (b.extensions.distToEvent != null)) {
-            final num distA = a.extensions.latitude == null
-                ? 99999999
-                : a.extensions.distToEvent;
-            final num distB = b.extensions.latitude == null
-                ? 99999999
-                : b.extensions.distToEvent;
-            result = distA.compareTo(distB);
-          } else {
-            result = a.kennel.kennelName.compareTo(b.kennel.kennelName);
-          }
-        }
-        return result;
-      });
+      // filteredRuns.sort((dynamic a, dynamic b) {
+      //   int result = _toDateOnly(
+      //     b.event.eventStartDatetime,
+      //   ).compareTo(_toDateOnly(a.event.eventStartDatetime));
+      //   if (result == 0) {
+      //     if ((a.extensions.distToEvent != null) &&
+      //         (b.extensions.distToEvent != null)) {
+      //       final num distA = a.extensions.latitude == null
+      //           ? 99999999
+      //           : a.extensions.distToEvent;
+      //       final num distB = b.extensions.latitude == null
+      //           ? 99999999
+      //           : b.extensions.distToEvent;
+      //       result = distA.compareTo(distB);
+      //     } else {
+      //       result = a.kennel.kennelName.compareTo(b.kennel.kennelName);
+      //     }
+      //   }
+      //   return result;
+      // });
       resultCount.value = filteredRuns.length;
     }
 

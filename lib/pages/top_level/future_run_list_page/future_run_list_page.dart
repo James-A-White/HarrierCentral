@@ -478,54 +478,72 @@ class FutureRunsListPage extends StatelessWidget {
                           },
                         ),
 
-                        Align(
-                          alignment: Alignment.topLeft,
+                        Obx(
+                          () => Align(
+                            alignment: Alignment.topLeft,
 
-                          child: Padding(
-                            padding: const EdgeInsets.only(
-                              top: 6.0,
-                              left: 10.0,
-                            ),
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.only(
-                                  top: 0.0,
-                                  bottom: 0.0,
-                                ),
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                top: 6.0,
+                                left: 10.0,
                               ),
-                              onPressed: () {
-                                controller.runsToDisplay.value =
-                                    RunsToDisplay.values[(controller
-                                        .runsToDisplay
-                                        .value
-                                        .next)];
-                                controller
-                                        .runsToDisplay
-                                        .value
-                                        .defaultViewIsFuture
-                                    ? controller.runsTimeScope.value =
-                                          RunsTimeScope.future
-                                    : controller.runsTimeScope.value =
-                                          RunsTimeScope.past;
-                                controller.refreshFromTable(true);
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 10,
-                                  right: 10,
-                                  top: 0,
-                                ),
-                                child: Obx(
-                                  () => Text(
-                                    controller.runsToDisplay.value.label,
-                                    textAlign: TextAlign.center,
-                                    style: ts_button,
-                                  ),
-                                ),
-                              ),
+                              child: controller.showRunToDisplaySpinner.value
+                                  ? SizedBox(
+                                      height: 49,
+                                      width: 100,
+                                      child: Center(
+                                        child: HcAppCircularProgressIndicator(
+                                          key: UniqueKey(),
+                                          color1: Colors.white,
+                                          color2: Colors.blue.shade300,
+                                          size: 35,
+                                        ),
+                                      ),
+                                    )
+                                  : ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        padding: const EdgeInsets.only(
+                                          top: 0.0,
+                                          bottom: 0.0,
+                                        ),
+                                      ),
+                                      onPressed: () async {
+                                        controller.runsToDisplay.value =
+                                            RunsToDisplay.values[(controller
+                                                .runsToDisplay
+                                                .value
+                                                .next)];
+                                        controller
+                                                .runsToDisplay
+                                                .value
+                                                .defaultViewIsFuture
+                                            ? controller.runsTimeScope.value =
+                                                  RunsTimeScope.future
+                                            : controller.runsTimeScope.value =
+                                                  RunsTimeScope.past;
+                                        controller.runsToDisplayLoading.value =
+                                            true;
+                                        await controller.refreshFromTable(true);
+                                        controller.runsToDisplayLoading.value =
+                                            false;
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 10,
+                                          right: 10,
+                                          top: 0,
+                                        ),
+                                        child: Text(
+                                          controller.runsToDisplay.value.label,
+                                          textAlign: TextAlign.center,
+                                          style: ts_button,
+                                        ),
+                                      ),
+                                    ),
                             ),
                           ),
                         ),
+
                         Obx(() {
                           return !controller
                                   .runsToDisplay
@@ -540,34 +558,66 @@ class FutureRunsListPage extends StatelessWidget {
                                       top: 6.0,
                                       right: 10.0,
                                     ),
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        padding: const EdgeInsets.only(
-                                          top: 0.0,
-                                          bottom: 0.0,
-                                        ),
-                                      ),
-                                      onPressed: () {
-                                        controller.runsTimeScope.value =
-                                            RunsTimeScope.values[(controller
-                                                .runsTimeScope
-                                                .value
-                                                .next)];
-                                        controller.refreshFromTable(true);
-                                      },
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 10,
-                                          right: 10,
-                                          top: 0,
-                                        ),
-                                        child: Text(
-                                          controller.runsTimeScope.value.label,
-                                          textAlign: TextAlign.center,
-                                          style: ts_button,
-                                        ),
-                                      ),
-                                    ),
+                                    child:
+                                        controller
+                                            .showRunsTimeScopeSpinner
+                                            .value
+                                        ? SizedBox(
+                                            height: 49,
+                                            width: 70,
+                                            child: Center(
+                                              child:
+                                                  HcAppCircularProgressIndicator(
+                                                    key: UniqueKey(),
+                                                    color1: Colors.white,
+                                                    color2:
+                                                        Colors.blue.shade300,
+                                                    size: 35,
+                                                  ),
+                                            ),
+                                          )
+                                        : ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              padding: const EdgeInsets.only(
+                                                top: 0.0,
+                                                bottom: 0.0,
+                                              ),
+                                            ),
+                                            onPressed: () async {
+                                              controller.runsTimeScope.value =
+                                                  RunsTimeScope
+                                                      .values[(controller
+                                                      .runsTimeScope
+                                                      .value
+                                                      .next)];
+                                              controller
+                                                      .runsTimeScopeLoading
+                                                      .value =
+                                                  true;
+                                              await controller.refreshFromTable(
+                                                true,
+                                              );
+                                              controller
+                                                      .runsTimeScopeLoading
+                                                      .value =
+                                                  false;
+                                            },
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(
+                                                left: 10,
+                                                right: 10,
+                                                top: 0,
+                                              ),
+                                              child: Text(
+                                                controller
+                                                    .runsTimeScope
+                                                    .value
+                                                    .label,
+                                                textAlign: TextAlign.center,
+                                                style: ts_button,
+                                              ),
+                                            ),
+                                          ),
                                   ),
                                 );
                         }),

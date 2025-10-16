@@ -1,3 +1,7 @@
+2.1.0+1009
+    • Fixed sorting issue on Tuna's phone
+    • Added debounced loading indicators when it is taking more than 500ms to load new data
+
 2.1.0+1008
     • Added a result count to the search bar
     • Debounced search bar text input by 1000ms
