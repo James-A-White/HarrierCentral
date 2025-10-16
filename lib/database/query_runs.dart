@@ -312,6 +312,7 @@ class QueryRuns {
     bool searchAllRuns, {
     String? eventId,
     EnumRunQueryType queryType = EnumRunQueryType.topRunsPage,
+    required SortType sortType,
   }) async {
     final List<RunDetailsAggregate> runs = <RunDetailsAggregate>[];
 
@@ -323,6 +324,7 @@ class QueryRuns {
       EnumRunQueryContext.user,
       searchAllRuns: searchAllRuns,
       eventId: eventId,
+      sortType: sortType,
     );
 
     IveCoreUtilities.logTiming('Run query end', appModel.appStartTime);
@@ -454,10 +456,12 @@ class QueryRuns {
     String? kennelId,
     bool searchAllRuns = true,
     String? eventId,
+    required SortType sortType,
   }) async {
     String hkmTable;
     String hemTable;
     String paymentsTable = '';
+    String sortDirection = sortType == SortType.forFutureRuns ? 'ASC' : 'DESC';
 
     switch (queryContext) {
       case EnumRunQueryContext.user:
@@ -583,11 +587,15 @@ class QueryRuns {
           ''';
     }
 
+    final String where = sortType == SortType.forFutureRuns
+        ? '''julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-4 hours')'''
+        : '''julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) <= julianday('now','+4 hours')''';
+
     final String whereClauseForTopRunsPage =
         '''
             WHERE 
-            -- julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-4 hours') AND
             evt.${tableModel.eventsTableHelper.colIsVisible} = 1
+            AND $where
             AND coalesce(hkm.following,0) != 2
             AND evt.${tableModel.eventsTableHelper.colRemoved} = 0
             AND (
@@ -597,24 +605,9 @@ class QueryRuns {
                   OR 
                   (coalesce(hem.rsvpState,0) >= 2)
                 )
-            ORDER BY evt.${tableModel.eventsTableHelper.colEventStartDatetime}, evt.${tableModel.eventsTableHelper.colEventNumber}
+            
+            ORDER BY evt.${tableModel.eventsTableHelper.colEventStartDatetime} $sortDirection, evt.${tableModel.eventsTableHelper.colEventNumber}
           ''';
-
-    //    final String whereClauseForTopRunsPage =
-    // '''
-    //     WHERE julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-4 hours')
-    //     AND evt.${tableModel.eventsTableHelper.colIsVisible} = 1
-    //     AND coalesce(hkm.following,0) != 2
-    //     AND evt.${tableModel.eventsTableHelper.colRemoved} = 0
-    //     AND (
-    //           "${searchAllRuns.toString()}" == "true"
-    //           OR
-    //           (coalesce(hkm.following,0) <= 1)
-    //           OR
-    //           (coalesce(hem.rsvpState,0) >= 2)
-    //         )
-    //     ORDER BY evt.${tableModel.eventsTableHelper.colEventStartDatetime}, evt.${tableModel.eventsTableHelper.colEventNumber}
-    //   ''';
 
     final String whereClauseForKennelDetailsPage = kennelId == null
         ? ''
@@ -623,7 +616,7 @@ class QueryRuns {
             AND evt.${tableModel.eventsTableHelper.colIsVisible} = 1
             AND evt.${tableModel.eventsTableHelper.colKennelId} = "$kennelId"
             AND evt.${tableModel.eventsTableHelper.colRemoved} = 0
-            ORDER BY evt.${tableModel.eventsTableHelper.colEventStartDatetime}, evt.${tableModel.eventsTableHelper.colEventNumber}
+            ORDER BY evt.${tableModel.eventsTableHelper.colEventStartDatetime} $sortDirection, evt.${tableModel.eventsTableHelper.colEventNumber}
           ''';
 
     final String whereClauseForSingleRun = eventId == null

@@ -43,9 +43,8 @@ class FutureRunsListPage extends StatelessWidget {
   }
 
   Widget _searchBar() {
-    return Container(
-      height: 50,
-      color: Colors.white,
+    return SizedBox(
+      height: 74.0,
       child: Column(
         mainAxisSize: MainAxisSize.max,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -76,12 +75,9 @@ class FutureRunsListPage extends StatelessWidget {
                   Expanded(
                     child: TextField(
                       autocorrect: false,
-                      onChanged: (String text) {
-                        //setState(() {
-                        controller.searchRunsText = text;
-                        controller.filterRuns(true);
-                        //});
-                      },
+                      onChanged: (text) =>
+                          controller.searchRunsText.value = text,
+
                       focusNode: controller.searchFocusNode,
                       controller: controller.searchController,
                       keyboardType: TextInputType.text,
@@ -113,7 +109,7 @@ class FutureRunsListPage extends StatelessWidget {
                       ),
                       onPressed: () {
                         controller.searchController.text = '';
-                        controller.searchRunsText = '';
+                        controller.searchRunsText.value = '';
                         //setState(() {
                         controller.filterRuns(true);
                         //});
@@ -124,6 +120,22 @@ class FutureRunsListPage extends StatelessWidget {
               ),
             ),
           ),
+          const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
+          Container(
+            color: Colors.grey.shade200,
+            height: 24.0,
+            child: Obx(() {
+              return Align(
+                alignment: Alignment.center,
+
+                child: Text(
+                  'Showing ${controller.resultCount.value} runs',
+                  style: ts_titleSmallCondensedBlack,
+                ),
+              );
+            }),
+          ),
+          const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
         ],
       ),
     );
@@ -182,8 +194,9 @@ class FutureRunsListPage extends StatelessWidget {
                 // ),
                 SliverAppBar(
                   floating: true,
+                  toolbarHeight: 74, // 👈 your desired height
                   titleSpacing: 0.0,
-                  title: SizedBox(height: 54.0, child: _searchBar()),
+                  title: _searchBar(),
                 ),
               ];
             },

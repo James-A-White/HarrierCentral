@@ -135,6 +135,27 @@ enum RunsToDisplay {
 }
 
 /// Chat tabs with their corresponding integer IDs.
+enum SortType {
+  forFutureRuns(0, 'Future', 1),
+  forPastRuns(1, 'Past', 0);
+
+  /// The integer ID associated with this tab.
+  final int id;
+  final String label;
+  final int next;
+
+  const SortType(this.id, this.label, this.next);
+
+  /// Lookup a MessageType by its [id]. Throws if not found.
+  factory SortType.fromId(int id) {
+    return SortType.values.firstWhere(
+      (tab) => tab.id == id,
+      orElse: () => throw ArgumentError('No Run type with id $id'),
+    );
+  }
+}
+
+/// Chat tabs with their corresponding integer IDs.
 enum RunsTimeScope {
   future(0, 'Future', 1),
   past(1, 'Past', 0);

@@ -296,23 +296,27 @@ class RunListItem extends StatelessWidget {
                                       (futureRun.event.isCountedRun == 1
                                               ? 'Run #${futureRun.event.eventNumber}, '
                                               : 'Run / Event ') +
-                                          (daysUntilEvent <= 14
-                                              ? daysUntilEvent.toInt() == -1
-                                                    ? 'Yesterday'
-                                                    : daysUntilEvent.toInt() ==
-                                                          0
-                                                    ? 'TODAY'
-                                                    : daysUntilEvent.toInt() ==
-                                                          1
-                                                    ? 'Tomorrow'
-                                                    : daysUntilEvent <= -2
-                                                    ? '${(-daysUntilEvent).toInt().toString()} days ago'
-                                                    : 'in ${daysUntilEvent.toInt().toString()} days'
-                                              : (daysUntilEvent <= 30)
-                                              ? 'in ${daysUntilEvent ~/ 7.0}${(daysUntilEvent ~/ 7.0) == 1 ? ' week' : ' weeks'}'
-                                              : daysUntilEvent <= 365
-                                              ? 'in ${daysUntilEvent ~/ 30.0}${(daysUntilEvent ~/ 30.0) == 1 ? ' month' : ' months'}'
-                                              : 'in ${daysUntilEvent ~/ 365.0}${(daysUntilEvent ~/ 365.0) == 1 ? ' year' : ' years'}'),
+                                          Utilities.describeDayOffset(
+                                            daysUntilEvent.toInt(),
+                                          ),
+
+                                      // (daysUntilEvent <= 14
+                                      //     ? daysUntilEvent.toInt() == -1
+                                      //           ? 'Yesterday'
+                                      //           : daysUntilEvent.toInt() ==
+                                      //                 0
+                                      //           ? 'TODAY'
+                                      //           : daysUntilEvent.toInt() ==
+                                      //                 1
+                                      //           ? 'Tomorrow'
+                                      //           : daysUntilEvent <= -2
+                                      //           ? '${(-daysUntilEvent).toInt().toString()} days ago'
+                                      //           : 'in ${daysUntilEvent.toInt().toString()} days'
+                                      //     : (daysUntilEvent <= 30)
+                                      //     ? 'in ${daysUntilEvent ~/ 7.0}${(daysUntilEvent ~/ 7.0) == 1 ? ' week' : ' weeks'}'
+                                      //     : daysUntilEvent <= 365
+                                      //     ? 'in ${daysUntilEvent ~/ 30.0}${(daysUntilEvent ~/ 30.0) == 1 ? ' month' : ' months'}'
+                                      //     : 'in ${daysUntilEvent ~/ 365.0}${(daysUntilEvent ~/ 365.0) == 1 ? ' year' : ' years'}'),
                                       style: ts_titleMediumBlack,
                                       textAlign: TextAlign.left,
                                       overflow: TextOverflow.ellipsis,

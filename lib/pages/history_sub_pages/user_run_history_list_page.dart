@@ -892,6 +892,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
                                     true,
                                     eventId: item.eventId,
                                     queryType: EnumRunQueryType.singleRun,
+                                    sortType: SortType.forFutureRuns,
                                   );
 
                               if (run.isNotEmpty) {

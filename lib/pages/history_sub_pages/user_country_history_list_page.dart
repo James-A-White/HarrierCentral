@@ -772,6 +772,7 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
                                     true,
                                     eventId: item.eventId,
                                     queryType: EnumRunQueryType.singleRun,
+                                    sortType: SortType.forFutureRuns,
                                   );
 
                               if (run.isNotEmpty) {

@@ -1,3 +1,8 @@
+2.1.0+1008
+    • Added a result count to the search bar
+    • Debounced search bar text input by 1000ms
+    • Changed backend query to return only past or future results to improve speed
+
 2.1.0+1006
     • Tweaking the Runs page UI to make it simpler and more intuitive
     

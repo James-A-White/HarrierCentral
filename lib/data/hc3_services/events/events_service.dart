@@ -163,8 +163,9 @@ class EventsTableHelper extends BaseTableHelper with BaseFields {
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
-    final Map<String, dynamic> outputMap =
-        (EventModel.fromJson(inputMap)).toJson();
+    final Map<String, dynamic> outputMap = (EventModel.fromJson(
+      inputMap,
+    )).toJson();
 
     // NOTE: Event images can either be full URLs or they can be partial URLs in the case
     // when events have been uploaded directly to the DB using the HcWeb application.
@@ -240,8 +241,8 @@ class EventsService extends BaseService {
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
     String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-    String deviceSecret =
-        (getStringPref(StringPrefsEnum.deviceSecret) ?? '').toUpperCase();
+    String deviceSecret = (getStringPref(StringPrefsEnum.deviceSecret) ?? '')
+        .toUpperCase();
 
     final String accessToken = Utilities.generateToken(
       userId,
@@ -451,6 +452,7 @@ class EventsService extends BaseService {
       EnumRunQueryType.singleRun,
       EnumRunQueryContext.kennelAdmin,
       eventId: eventId,
+      sortType: SortType.forFutureRuns,
     );
     if (results.isNotEmpty) {
       double? dist;

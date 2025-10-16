@@ -101,6 +101,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
         EnumRunQueryType.kennelDetailPage,
         EnumRunQueryContext.kennelAdmin,
         kennelId: widget.kennelAggregateItem.kennel.kennelId,
+        sortType: SortType.forFutureRuns,
       );
 
       _allRuns = <RunDetailsAggregate>[];

@@ -1079,4 +1079,62 @@ class Utilities {
       }
     }
   }
+
+  static String describeDayOffset(int dayOffset) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final eventDate = today.add(Duration(days: dayOffset));
+
+    final differenceDays = eventDate.difference(today).inDays;
+
+    // --- Short, natural phrasing first ---
+    if (differenceDays == 0) return 'Today';
+    if (differenceDays == 1) return 'Tomorrow';
+    if (differenceDays == -1) return 'Yesterday';
+
+    // Handle near-term (under a month) as "weeks and days"
+    if (differenceDays.abs() < 30) {
+      final absDays = differenceDays.abs();
+      final weeks = absDays ~/ 7;
+      final days = absDays % 7;
+
+      final parts = <String>[];
+      if (weeks > 0) parts.add('$weeks ${weeks == 1 ? "week" : "weeks"}');
+      if (days > 0) parts.add('$days ${days == 1 ? "day" : "days"}');
+
+      final phrase = parts.join(', ');
+      return differenceDays > 0 ? 'in $phrase' : '$phrase ago';
+    }
+
+    // --- Longer spans (months/years/days) ---
+    bool isFuture = differenceDays > 0;
+    DateTime earlier = isFuture ? today : eventDate;
+    DateTime later = isFuture ? eventDate : today;
+
+    int years = later.year - earlier.year;
+    int months = later.month - earlier.month;
+    int days = later.day - earlier.day;
+
+    // Adjust for negative day/month rollover
+    if (days < 0) {
+      final prevMonth = DateTime(later.year, later.month, 0);
+      days += prevMonth.day;
+      months -= 1;
+    }
+
+    if (months < 0) {
+      months += 12;
+      years -= 1;
+    }
+
+    final parts = <String>[];
+    if (years > 0) parts.add('$years ${years == 1 ? "yr" : "yrs"}');
+    if (months > 0) parts.add('$months ${months == 1 ? "m" : "m"}');
+    if (days > 0 || parts.isEmpty) {
+      parts.add('$days ${days == 1 ? "day" : "days"}');
+    }
+
+    final phrase = parts.join(', ');
+    return isFuture ? 'in $phrase' : '$phrase ago';
+  }
 }

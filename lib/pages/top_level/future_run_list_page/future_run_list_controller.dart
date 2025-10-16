@@ -10,7 +10,8 @@ class FutureRunListPageController extends GetxController {
   List<RunDetailsAggregate>? allRuns;
   RxList<RunDetailsAggregate> preFilteredRuns = <RunDetailsAggregate>[].obs;
   RxList<dynamic> filteredRuns = [].obs;
-  String searchRunsText = '';
+  RxInt resultCount = 0.obs;
+  RxString searchRunsText = ''.obs;
   Map<String, RxInt> thisEventUnseenChats = {};
   RxInt totalNotifications = 0.obs;
   RxBool showChatBubbleLoading = false.obs;
@@ -37,6 +38,7 @@ class FutureRunListPageController extends GetxController {
         showChatBubbleLoading.value = false;
         update(['main_nav_page']);
       });
+
       // for some reason,we need to put this little delay in otherwise the
       // update to the main_nav_page does not get fired before the filterRuns
       // starts executing.
@@ -44,9 +46,16 @@ class FutureRunListPageController extends GetxController {
       filterRuns(false);
     });
 
+    // 👇 Debounce: waits 400ms after last change before calling filterRuns
+    debounce<String>(
+      searchRunsText,
+      (_) => filterRuns(true),
+      time: const Duration(milliseconds: 1000),
+    );
+
     IveCoreUtilities.logTiming('initState called', appModel.appStartTime);
     searchController.text = '';
-    searchRunsText = '';
+    searchRunsText.value = '';
 
     _onInitAsync().then((_) {
       _updateTotalNotificationCounter();
@@ -255,7 +264,12 @@ class FutureRunListPageController extends GetxController {
 
   Future<void> refreshFromTable(bool forceRefresh) async {
     if (forceRefresh || (allRuns == null) || (allRuns!.isEmpty)) {
-      allRuns = await QueryRuns.getRunDetailsAggregates(true);
+      allRuns = await QueryRuns.getRunDetailsAggregates(
+        true,
+        sortType: runsTimeScope.value == RunsTimeScope.past
+            ? SortType.forPastRuns
+            : SortType.forFutureRuns,
+      );
       filterRuns(false);
     }
     return;
@@ -332,7 +346,7 @@ class FutureRunListPageController extends GetxController {
     }
 
     filteredRuns.value = QueryRuns.doRunsSearchTextFilter(
-      searchRunsText,
+      searchRunsText.value,
       preFilteredRuns,
     );
 
@@ -365,12 +379,14 @@ class FutureRunListPageController extends GetxController {
             }
           }
         }
+
         return result;
       });
 
       int lastInsertedClassification = 4;
 
       final int listLength = filteredRuns.length;
+      resultCount.value = filteredRuns.length;
 
       for (int i = listLength - 1; i >= 0; i--) {
         if (filteredRuns[i].extensions.runClassification == 1) {
@@ -418,6 +434,7 @@ class FutureRunListPageController extends GetxController {
         }
         return result;
       });
+      resultCount.value = filteredRuns.length;
     }
 
     update(['runList']);
