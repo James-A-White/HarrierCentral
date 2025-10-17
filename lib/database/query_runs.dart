@@ -1,5 +1,6 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
+import 'package:latlong2/latlong.dart';
 
 //import 'package:intl/intl.dart';
 
@@ -155,8 +156,10 @@ class QueryRuns {
   static List<RunDetailsAggregate> doRunsFilter(
     List<RunDetailsAggregate> allRuns,
     RunsToDisplay runsToDisplay,
-    RunsTimeScope runsTimeScope,
-  ) {
+    RunsTimeScope runsTimeScope, {
+    LatLng? mapCenter,
+    double? mapRadiusInKm,
+  }) {
     List<RunDetailsAggregate> timeFilteredRuns = <RunDetailsAggregate>[];
 
     if (runsToDisplay.showFuturePastToggle) {
@@ -204,6 +207,24 @@ class QueryRuns {
                   a.event.eventGeographicScope >= EventType.localEvent.index,
             )
             .toList();
+        break;
+      case RunsToDisplay.onMap:
+        scopeFilteredRuns = timeFilteredRuns.where((RunDetailsAggregate a) {
+          if ((mapCenter != null) &&
+              (mapRadiusInKm != null &&
+                  a.event.hcLatitude != null &&
+                  a.event.hcLongitude != null)) {
+            final distance = const Distance();
+            final dKm = distance.as(
+              LengthUnit.Kilometer,
+              mapCenter,
+              LatLng(a.event.hcLatitude!, a.event.hcLongitude!),
+            );
+            return dKm <= mapRadiusInKm!;
+          }
+
+          return false;
+        }).toList();
         break;
     }
 
@@ -338,6 +359,13 @@ class QueryRuns {
       final EventModel eventItem = tableModel.eventsTableHelper.fromMap(
         results[i],
       );
+      // print(
+      //   eventItem.eventName +
+      //       ' ' +
+      //       (eventItem.hcLatitude?.toString() ?? 'null') +
+      //       ',' +
+      //       (eventItem.hcLongitude?.toString() ?? 'null'),
+      // );
       final KennelsModel kennelItem = tableModel.kennelsTableHelper.fromMap(
         results[i],
       );

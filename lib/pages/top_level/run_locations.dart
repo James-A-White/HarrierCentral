@@ -55,6 +55,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
 
   @override
   void initState() {
+    super.initState();
+
     _homeKennelLat = getDoublePref(NumPrefsEnum.homeKennelLat);
     _homeKennelLon = getDoublePref(NumPrefsEnum.homeKennelLon);
     _showFilters = (getIntPref(IntPrefsEnum.mapShowSearchBar) ?? 0) == 0
@@ -77,8 +79,6 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
     _loadKennels().then((void _) {
       setState(() {});
     });
-
-    super.initState();
   }
 
   Widget _searchBar() {
@@ -152,11 +152,11 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
   }
 
   void _filterRuns(bool searchTextChanged) {
-    if (!searchTextChanged) {
+    if ((!searchTextChanged) || (_preFilteredRuns.isEmpty)) {
       _preFilteredRuns = QueryRuns.doRunsFilter(
         _allRuns,
         RunsToDisplay.allRuns,
-        RunsTimeScope.future,
+        RunsTimeScope.all,
       );
     }
 
@@ -439,6 +439,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
       _allRuns = <RunDetailsAggregate>[];
 
       _runLocationMarkers = <Marker>[];
+
       if (results.isNotEmpty) {
         for (int i = 0; i < results.length; i++) {
           final double? lat = (results[i]['lat'] as num?)?.toDouble();
@@ -453,6 +454,11 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
               final DateTime dt = DateTime.parse(
                 results[i]['eventStartDatetime'].substring(0, 19),
               );
+
+              var diff = em.eventStartDatetimeGmt.difference(
+                DateTime.now().toUtc(),
+              );
+
               final RunDetailsAggregate item = RunDetailsAggregate(
                 event: em,
                 extensions: RunQueryExtensionsModel(
@@ -460,6 +466,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                   longitude: lon,
                   evtLat: lat,
                   evtLon: lon,
+                  showAsFutureEvent: diff >= Duration(hours: 4) ? 1 : 0,
+                  showAsPastEvent: diff <= Duration(hours: 4) ? 1 : 0,
                   isMapAndDistanceValid: results[i]['isMapAndDistanceValid'],
                   rsvpState: results[i]['rsvpState'],
                   attendenceState: results[i]['attendenceState'],
@@ -844,7 +852,48 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                   children: <Widget>[
                     FlutterMap(
                       mapController: _mapController,
+
                       options: MapOptions(
+                        onMapEvent: (MapEvent mapEvent) {
+                          // Listen for movement events
+                          if (mapEvent is MapEventMoveEnd) {
+                            final camera = _mapController
+                                .camera; // ✅ use the new camera API
+                            final center = camera.center;
+                            final zoom = camera.zoom;
+
+                            final centerLat = camera.center.latitude;
+
+                            final mapWidthPx = camera.size.width;
+                            final worldWidthPx = camera.getWorldWidthAtZoom(
+                              zoom,
+                            );
+
+                            // Earth’s circumference in kilometers
+                            const earthCircumferenceKm = 40075.016686;
+
+                            // Adjust for latitude (since longitudinal distances shrink toward the poles)
+                            final widthKmAtEquator =
+                                (mapWidthPx / worldWidthPx) *
+                                earthCircumferenceKm;
+                            final widthKmAtLatitude =
+                                widthKmAtEquator * cos(centerLat * pi / 180.0);
+
+                            if (Get.isRegistered<
+                              FutureRunListPageController
+                            >()) {
+                              final ctrl =
+                                  Get.find<FutureRunListPageController>();
+                              ctrl.mapCenter = center;
+                              ctrl.mapRadiusInKm = widthKmAtLatitude / 2.0;
+                            }
+
+                            debugPrint(
+                              'Map moved! Center: ${center.latitude}, ${center.longitude}, Zoom: $zoom, Width: $widthKmAtLatitude',
+                            );
+                          }
+                        },
+
                         interactionOptions: InteractionOptions(
                           flags: (_trueNorthLock
                               ? InteractiveFlag.pinchZoom | InteractiveFlag.drag

@@ -108,7 +108,8 @@ enum RunsToDisplay {
   allRuns(0, 'All Runs', 1, true, true),
   myRuns(1, 'My Runs', 2, false, false),
   unreadChats(2, 'Unread Chats', 3, false, false),
-  events(3, 'Special Events', 0, true, true);
+  events(3, 'Special Events', 4, true, true),
+  onMap(4, 'On Map', 0, false, false);
 
   /// The integer ID associated with this tab.
   final int id;

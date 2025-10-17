@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:latlong2/latlong.dart';
 
 class FutureRunListPageController extends GetxController {
   FutureRunListPageController();
@@ -21,6 +22,9 @@ class FutureRunListPageController extends GetxController {
   RxBool runsTimeScopeLoading = false.obs;
   RxBool showRunsTimeScopeSpinner = false.obs;
   Rx<RunsTimeScope> runsTimeScope = RunsTimeScope.future.obs;
+
+  LatLng? mapCenter;
+  double? mapRadiusInKm;
 
   RxBool showOnlyEventsWithMessages = false.obs;
 
@@ -373,6 +377,8 @@ class FutureRunListPageController extends GetxController {
         allRuns ?? <RunDetailsAggregate>[],
         runsToDisplay.value,
         runsTimeScope.value,
+        mapCenter: mapCenter,
+        mapRadiusInKm: mapRadiusInKm,
       );
     }
 

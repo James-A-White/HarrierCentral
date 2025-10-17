@@ -1,3 +1,6 @@
+2.1.0+1010
+    • Added "On Map" option to runs list... still needs more work
+
 2.1.0+1009
     • Fixed sorting issue on Tuna's phone
     • Added debounced loading indicators when it is taking more than 500ms to load new data
