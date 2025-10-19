@@ -148,6 +148,21 @@ class FutureRunsListPage extends StatelessWidget {
                     // width: 100,
                   ),
                 ),
+
+                GestureDetector(
+                  onTap: () async {
+                    await Utilities.showAlert(
+                      controller.runsToDisplay.value.helpTitle,
+                      controller.runsToDisplay.value.helpText,
+                      'OK',
+                    );
+                  },
+                  child: SizedBox(
+                    height: 35,
+                    child: Image.asset('images/icons/info_button.png'),
+                  ),
+                ),
+                SizedBox(width: 10),
               ],
             ),
           ),

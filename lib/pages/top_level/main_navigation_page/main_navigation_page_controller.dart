@@ -8,9 +8,9 @@ class MainNavigationController extends GetxController
 
   // Tab titles
   static const List<String> tabTitles = <String>[
-    'Upcoming Runs',
+    'Hash Runs',
     'Kennels',
-    'Explore Runs',
+    'Hash Run Map',
     'Run Counts',
   ];
 
