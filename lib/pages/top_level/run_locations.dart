@@ -1,5 +1,6 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 
 // class MapMarker extends Marker {
@@ -75,10 +76,43 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
       setIntPref(IntPrefsEnum.mapCenterOption, _mapCenterOption);
     }
 
-    _loadEvents();
-    _loadKennels().then((void _) {
-      setState(() {});
+    _loadEvents().then((void _) {
+      _loadKennels().then((void _) {
+        setState(() {});
+      });
     });
+
+    final camera = MapCamera(
+      crs: Epsg3857(),
+      center:
+          ((_mapCenterOption == centerOnCurrentLocation.value) &&
+              (deviceInfo.deviceLat != null) &&
+              (deviceInfo.deviceLon != null))
+          ? latlng.LatLng(deviceInfo.deviceLat!, deviceInfo.deviceLon!)
+          : ((_mapCenterOption == centerOnHomeKennel.value) &&
+                (_homeKennelLat != null) &&
+                (_homeKennelLat != null))
+          ? latlng.LatLng(_homeKennelLat!, _homeKennelLon!)
+          : ((widget.kennel != null) &&
+                (widget.kennel!.kennelLatitude != null) &&
+                (widget.kennel!.kennelLongitude != null))
+          ? latlng.LatLng(
+              widget.kennel!.kennelLatitude!,
+              widget.kennel!.kennelLongitude!,
+            )
+          : latlng.LatLng(
+              deviceInfo.deviceLat ?? DEFAULT_LATITUDE,
+              deviceInfo.deviceLon ?? DEFAULT_LONGITUDE,
+            ),
+      zoom: 10.0,
+      rotation: 0.0,
+      nonRotatedSize: Size(Get.width, Get.height),
+    );
+
+    if (Get.isRegistered<FutureRunListPageController>()) {
+      final ctrl = Get.find<FutureRunListPageController>();
+      ctrl.mapBounds = camera.visibleBounds;
+    }
   }
 
   Widget _searchBar() {
@@ -509,6 +543,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
       final Marker marker = Marker(
         width: 45.0,
         height: 55.0,
+        alignment: Alignment.topCenter,
         //anchorPos: AnchorPos.exactly(Anchor(27.0, 0.0)),
         point: ll,
         child: _buildRunMarker(
@@ -857,40 +892,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                         onMapEvent: (MapEvent mapEvent) {
                           // Listen for movement events
                           if (mapEvent is MapEventMoveEnd) {
-                            final camera = _mapController
-                                .camera; // ✅ use the new camera API
-                            final center = camera.center;
-                            final zoom = camera.zoom;
-
-                            final centerLat = camera.center.latitude;
-
-                            final mapWidthPx = camera.size.width;
-                            final worldWidthPx = camera.getWorldWidthAtZoom(
-                              zoom,
-                            );
-
-                            // Earth’s circumference in kilometers
-                            const earthCircumferenceKm = 40075.016686;
-
-                            // Adjust for latitude (since longitudinal distances shrink toward the poles)
-                            final widthKmAtEquator =
-                                (mapWidthPx / worldWidthPx) *
-                                earthCircumferenceKm;
-                            final widthKmAtLatitude =
-                                widthKmAtEquator * cos(centerLat * pi / 180.0);
-
-                            if (Get.isRegistered<
-                              FutureRunListPageController
-                            >()) {
-                              final ctrl =
-                                  Get.find<FutureRunListPageController>();
-                              ctrl.mapCenter = center;
-                              ctrl.mapRadiusInKm = widthKmAtLatitude / 2.0;
-                            }
-
-                            debugPrint(
-                              'Map moved! Center: ${center.latitude}, ${center.longitude}, Zoom: $zoom, Width: $widthKmAtLatitude',
-                            );
+                            _updateMapLocationForRunList();
                           }
                         },
 
@@ -1058,6 +1060,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                                 ),
                                 13.0,
                               );
+                              _updateMapLocationForRunList();
                             });
                           },
                           child: SizedBox(
@@ -1123,39 +1126,28 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: <Widget>[
-        SizedBox(
-          height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width,
-        ),
-        Positioned(
-          top: 0,
-          left: 0,
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
-          child: widget.kennel == null
-              ? _runLocationsBody()
-              : AppScaffold(
-                  floatingActionButton: getMapFab(),
-                  appBar: AppBar(
-                    centerTitle: true,
-                    backgroundColor: themeAppBarBackground,
-                    iconTheme: const IconThemeData(
-                      color: Colors.white,
-                      size: 28.0,
-                    ),
-                    title: Text('Explore Runs', style: ts_appBarTitle),
-                  ),
-                  body: _runLocationsBody(),
-                ),
-        ),
-        // OfflineModeRibbon(
-        //   showRibbon: appModel.connectionStatus == EnumConnectionStatus2.notConnected,
-        //   lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
-        //   ribbonImage: 'images/icons/offline_mode.png',
-        // ),
-      ],
+    return AppScaffold(
+      body: widget.kennel == null
+          ? _runLocationsBody()
+          : AppScaffold(
+              floatingActionButton: getMapFab(),
+              appBar: AppBar(
+                centerTitle: true,
+                backgroundColor: themeAppBarBackground,
+                iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
+                title: Text('Explore Runs', style: ts_appBarTitle),
+              ),
+              body: _runLocationsBody(),
+            ),
     );
+  }
+
+  void _updateMapLocationForRunList() {
+    final camera = _mapController.camera;
+
+    if (Get.isRegistered<FutureRunListPageController>()) {
+      final ctrl = Get.find<FutureRunListPageController>();
+      ctrl.mapBounds = camera.visibleBounds;
+    }
   }
 }

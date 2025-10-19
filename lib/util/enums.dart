@@ -105,11 +105,46 @@ enum TriStateFilter { neutral, include, exclude }
 
 /// Chat tabs with their corresponding integer IDs.
 enum RunsToDisplay {
-  allRuns(0, 'All Runs', 1, true, true),
-  myRuns(1, 'My Runs', 2, false, false),
-  unreadChats(2, 'Unread Chats', 3, false, false),
-  events(3, 'Special Events', 4, true, true),
-  onMap(4, 'On Map', 0, false, false);
+  allRuns(
+    0,
+    'All Runs',
+    1,
+    true,
+    true,
+    'This view shows all upcoming runs and past runs for Kennels you follow.',
+  ),
+  myRuns(
+    1,
+    'My Runs',
+    2,
+    false,
+    false,
+    'This view shows only the runs you RSVPed to attend or attended.',
+  ),
+  unreadChats(
+    2,
+    'Chats',
+    3,
+    false,
+    false,
+    'This view shows only those runs that have unread chat messages',
+  ),
+  events(
+    3,
+    'Events',
+    4,
+    true,
+    true,
+    'This view shows runs that have been marked as special events.',
+  ),
+  onMap(
+    4,
+    'On Map',
+    0,
+    false,
+    false,
+    'This view shows runs that are currently visible on the map view.',
+  );
 
   /// The integer ID associated with this tab.
   final int id;
@@ -117,6 +152,7 @@ enum RunsToDisplay {
   final int next;
   final bool showFuturePastToggle;
   final bool defaultViewIsFuture;
+  final String description;
 
   const RunsToDisplay(
     this.id,
@@ -124,6 +160,7 @@ enum RunsToDisplay {
     this.next,
     this.showFuturePastToggle,
     this.defaultViewIsFuture,
+    this.description,
   );
 
   /// Lookup a MessageType by its [id]. Throws if not found.

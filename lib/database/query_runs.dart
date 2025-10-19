@@ -1,6 +1,5 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
-import 'package:latlong2/latlong.dart';
 
 //import 'package:intl/intl.dart';
 
@@ -157,8 +156,7 @@ class QueryRuns {
     List<RunDetailsAggregate> allRuns,
     RunsToDisplay runsToDisplay,
     RunsTimeScope runsTimeScope, {
-    LatLng? mapCenter,
-    double? mapRadiusInKm,
+    LatLngBounds? mapBounds,
   }) {
     List<RunDetailsAggregate> timeFilteredRuns = <RunDetailsAggregate>[];
 
@@ -210,19 +208,14 @@ class QueryRuns {
         break;
       case RunsToDisplay.onMap:
         scopeFilteredRuns = timeFilteredRuns.where((RunDetailsAggregate a) {
-          if ((mapCenter != null) &&
-              (mapRadiusInKm != null &&
-                  a.event.hcLatitude != null &&
-                  a.event.hcLongitude != null)) {
-            final distance = const Distance();
-            final dKm = distance.as(
-              LengthUnit.Kilometer,
-              mapCenter,
-              LatLng(a.event.hcLatitude!, a.event.hcLongitude!),
-            );
-            return dKm <= mapRadiusInKm!;
+          if (mapBounds != null &&
+              a.extensions.evtLat != null &&
+              a.extensions.evtLon != null) {
+            return a.extensions.evtLat! >= mapBounds.south &&
+                a.extensions.evtLat! <= mapBounds.north &&
+                a.extensions.evtLon! >= mapBounds.west &&
+                a.extensions.evtLon! <= mapBounds.east;
           }
-
           return false;
         }).toList();
         break;

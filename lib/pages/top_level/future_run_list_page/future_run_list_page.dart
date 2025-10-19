@@ -10,7 +10,7 @@ class FutureRunsListPage extends StatelessWidget {
   );
 
   final ScrollController _scrollController = ScrollController(
-    initialScrollOffset: 100.0,
+    initialScrollOffset: 0.0,
   );
 
   @override
@@ -44,31 +44,15 @@ class FutureRunsListPage extends StatelessWidget {
 
   Widget _searchBar() {
     return SizedBox(
-      height: 74.0,
+      height: 176.0,
       child: Column(
         mainAxisSize: MainAxisSize.max,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          // Row(
-          //   children: <Widget>[
-          //     Checkbox(
-          //       value: _searchcontroller.allRuns,
-          //       onChanged: (bool value) {
-          //         _searchcontroller.allRuns = !_searchcontroller.allRuns;
-          //         controller.refreshFromTable(true).then((void _) {
-          //           setState(() {});
-          //         });
-          //       },
-          //     ),
-          //     Padding(
-          //       padding: const EdgeInsets.only(top: 4.0),
-          //       child: Text('Search all runs', style: headingStyleBlack.copyWith(fontSize: 18.0)),
-          //     ),
-          //   ],
-          // ),
           const Divider(height: 2.0, thickness: 2.0),
           Expanded(
-            child: Padding(
+            child: Container(
+              color: Colors.white,
               padding: const EdgeInsets.only(left: 14.0),
               child: Row(
                 children: <Widget>[
@@ -136,6 +120,38 @@ class FutureRunsListPage extends StatelessWidget {
             }),
           ),
           const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
+          Container(
+            color: Colors.black38,
+            height: 100,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(height: 2),
+                    SizedBox(width: 125, child: _runsToDisplayButton()),
+                    SizedBox(width: 125, child: _futurePastToggle()),
+                  ],
+                ),
+                Expanded(
+                  child: Container(
+                    padding: EdgeInsets.only(right: 10),
+                    child: AutoSizeText(
+                      controller.runsToDisplay.value.description,
+                      style: ts_bodyYellow,
+                      textAlign: TextAlign.center,
+                      maxLines: 4,
+                    ),
+
+                    //height: 100,
+                    // width: 100,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 2.0, thickness: 2.0, color: Colors.black),
         ],
       ),
     );
@@ -193,10 +209,15 @@ class FutureRunsListPage extends StatelessWidget {
                 //   delegate: SliverChildListDelegate(<Widget>[_searchBar()]),
                 // ),
                 SliverAppBar(
+                  expandedHeight: 176,
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  surfaceTintColor: Colors.transparent,
                   floating: true,
-                  toolbarHeight: 74, // 👈 your desired height
+                  pinned: false,
+                  toolbarHeight: 176, // 👈 your desired height
                   titleSpacing: 0.0,
-                  title: _searchBar(),
+                  flexibleSpace: _searchBar(),
                 ),
               ];
             },
@@ -226,7 +247,7 @@ class FutureRunsListPage extends StatelessWidget {
                           padding: const EdgeInsets.only(
                             left: 10,
                             right: 10,
-                            top: 50,
+                            //top: 50,
                             bottom: 50,
                           ),
                           physics: const AlwaysScrollableScrollPhysics(),
@@ -477,150 +498,6 @@ class FutureRunsListPage extends StatelessWidget {
                             }
                           },
                         ),
-
-                        Obx(
-                          () => Align(
-                            alignment: Alignment.topLeft,
-
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                top: 6.0,
-                                left: 10.0,
-                              ),
-                              child: controller.showRunToDisplaySpinner.value
-                                  ? SizedBox(
-                                      height: 49,
-                                      width: 100,
-                                      child: Center(
-                                        child: HcAppCircularProgressIndicator(
-                                          key: UniqueKey(),
-                                          color1: Colors.white,
-                                          color2: Colors.blue.shade300,
-                                          size: 35,
-                                        ),
-                                      ),
-                                    )
-                                  : ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        padding: const EdgeInsets.only(
-                                          top: 0.0,
-                                          bottom: 0.0,
-                                        ),
-                                      ),
-                                      onPressed: () async {
-                                        controller.runsToDisplay.value =
-                                            RunsToDisplay.values[(controller
-                                                .runsToDisplay
-                                                .value
-                                                .next)];
-                                        controller
-                                                .runsToDisplay
-                                                .value
-                                                .defaultViewIsFuture
-                                            ? controller.runsTimeScope.value =
-                                                  RunsTimeScope.future
-                                            : controller.runsTimeScope.value =
-                                                  RunsTimeScope.past;
-                                        controller.runsToDisplayLoading.value =
-                                            true;
-                                        await controller.refreshFromTable(true);
-                                        controller.runsToDisplayLoading.value =
-                                            false;
-                                      },
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 10,
-                                          right: 10,
-                                          top: 0,
-                                        ),
-                                        child: Text(
-                                          controller.runsToDisplay.value.label,
-                                          textAlign: TextAlign.center,
-                                          style: ts_button,
-                                        ),
-                                      ),
-                                    ),
-                            ),
-                          ),
-                        ),
-
-                        Obx(() {
-                          return !controller
-                                  .runsToDisplay
-                                  .value
-                                  .showFuturePastToggle
-                              ? SizedBox()
-                              : Align(
-                                  alignment: Alignment.topRight,
-
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(
-                                      top: 6.0,
-                                      right: 10.0,
-                                    ),
-                                    child:
-                                        controller
-                                            .showRunsTimeScopeSpinner
-                                            .value
-                                        ? SizedBox(
-                                            height: 49,
-                                            width: 70,
-                                            child: Center(
-                                              child:
-                                                  HcAppCircularProgressIndicator(
-                                                    key: UniqueKey(),
-                                                    color1: Colors.white,
-                                                    color2:
-                                                        Colors.blue.shade300,
-                                                    size: 35,
-                                                  ),
-                                            ),
-                                          )
-                                        : ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              padding: const EdgeInsets.only(
-                                                top: 0.0,
-                                                bottom: 0.0,
-                                              ),
-                                            ),
-                                            onPressed: () async {
-                                              controller.runsTimeScope.value =
-                                                  RunsTimeScope
-                                                      .values[(controller
-                                                      .runsTimeScope
-                                                      .value
-                                                      .next)];
-                                              controller
-                                                      .runsTimeScopeLoading
-                                                      .value =
-                                                  true;
-                                              await controller.refreshFromTable(
-                                                true,
-                                              );
-                                              controller
-                                                      .runsTimeScopeLoading
-                                                      .value =
-                                                  false;
-                                            },
-                                            child: Padding(
-                                              padding: const EdgeInsets.only(
-                                                left: 10,
-                                                right: 10,
-                                                top: 0,
-                                              ),
-                                              child: Text(
-                                                controller
-                                                    .runsTimeScope
-                                                    .value
-                                                    .label,
-                                                textAlign: TextAlign.center,
-                                                style: ts_button,
-                                              ),
-                                            ),
-                                          ),
-                                  ),
-                                );
-                        }),
                       ],
                     ),
                   ),
@@ -628,6 +505,97 @@ class FutureRunsListPage extends StatelessWidget {
               ),
             ),
           );
+  }
+
+  Widget _futurePastToggle() {
+    return Obx(() {
+      return !controller.runsToDisplay.value.showFuturePastToggle
+          ? SizedBox(height: 0)
+          : Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 13.0),
+              child: controller.showRunsTimeScopeSpinner.value
+                  ? SizedBox(
+                      height: 49,
+                      width: 70,
+                      child: Center(
+                        child: HcAppCircularProgressIndicator(
+                          key: UniqueKey(),
+                          color1: Colors.white,
+                          color2: Colors.blue.shade300,
+                          size: 35,
+                        ),
+                      ),
+                    )
+                  : ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
+                      ),
+                      onPressed: () async {
+                        controller.runsTimeScope.value = RunsTimeScope
+                            .values[(controller.runsTimeScope.value.next)];
+                        controller.runsTimeScopeLoading.value = true;
+                        await controller.refreshFromTable(true);
+                        controller.runsTimeScopeLoading.value = false;
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          left: 0,
+                          right: 0,
+                          top: 0,
+                        ),
+                        child: Text(
+                          controller.runsTimeScope.value.label,
+                          textAlign: TextAlign.center,
+                          style: ts_button,
+                        ),
+                      ),
+                    ),
+            );
+    });
+  }
+
+  Widget _runsToDisplayButton() {
+    return Obx(
+      () => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 13.0),
+        child: controller.showRunToDisplaySpinner.value
+            ? SizedBox(
+                height: 49,
+                width: 100,
+                child: Center(
+                  child: HcAppCircularProgressIndicator(
+                    key: UniqueKey(),
+                    color1: Colors.white,
+                    color2: Colors.blue.shade300,
+                    size: 35,
+                  ),
+                ),
+              )
+            : ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
+                ),
+                onPressed: () async {
+                  controller.runsToDisplay.value = RunsToDisplay
+                      .values[(controller.runsToDisplay.value.next)];
+                  controller.runsToDisplay.value.defaultViewIsFuture
+                      ? controller.runsTimeScope.value = RunsTimeScope.future
+                      : controller.runsTimeScope.value = RunsTimeScope.past;
+                  controller.runsToDisplayLoading.value = true;
+                  await controller.refreshFromTable(true);
+                  controller.runsToDisplayLoading.value = false;
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 10, right: 10, top: 0),
+                  child: Text(
+                    controller.runsToDisplay.value.label,
+                    textAlign: TextAlign.center,
+                    style: ts_button,
+                  ),
+                ),
+              ),
+      ),
+    );
   }
 
   void _showConfigureDistancePopup(BuildContext context) {
