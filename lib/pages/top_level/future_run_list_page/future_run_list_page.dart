@@ -242,19 +242,19 @@ class FutureRunsListPage extends StatelessWidget {
               displacement: 40.0,
               child: Column(
                 children: [
-                  if (controller.showOnlyEventsWithMessages.value)
-                    Container(
-                      padding: EdgeInsets.only(top: 5, bottom: 5),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          controller.resetNotificationCounters();
-                        },
-                        child: Text(
-                          'Clear all notifications',
-                          style: ts_button,
-                        ),
-                      ),
-                    ),
+                  // if (controller.showOnlyEventsWithMessages.value)
+                  //   Container(
+                  //     padding: EdgeInsets.only(top: 5, bottom: 5),
+                  //     child: ElevatedButton(
+                  //       onPressed: () {
+                  //         controller.resetNotificationCounters();
+                  //       },
+                  //       child: Text(
+                  //         'Clear all notifications',
+                  //         style: ts_button,
+                  //       ),
+                  //     ),
+                  //   ),
                   Expanded(
                     child: Stack(
                       children: [
@@ -472,44 +472,24 @@ class FutureRunsListPage extends StatelessWidget {
                                           as RunDetailsAggregate)
                                       .event
                                       .publicEventId;
-                              // print(
-                              //     'chatSummaryMap = ${(chatSummaryMap[publicEventId]?.eventChatMessageCount ?? 0)} / thisEventChatCount = ${(thisEventChatCount[publicEventId] ?? 0)} ');
 
-                              // hide any runs that don't have messages
-                              if (controller.showOnlyEventsWithMessages.value &&
-                                  (((listController
-                                                  .thisEventUnseenChats[publicEventId]
-                                                  ?.value ??
-                                              listController
-                                                  .chatSummaryMap[publicEventId]
-                                                  ?.eventChatMessageCount ??
-                                              0) ==
-                                          0) ||
-                                      ((listController.filteredRuns[index]
-                                                  as RunDetailsAggregate)
-                                              .extensions
-                                              .notificationPreference ==
-                                          NotificationState.ignore.value))) {
-                                return SizedBox();
-                              } else {
-                                return RunListItem(
-                                  futureRun: listController.filteredRuns[index],
-                                  currentChatCount:
-                                      (listController
-                                          .thisEventUnseenChats[publicEventId]
-                                          ?.value ??
-                                      listController
-                                          .chatSummaryMap[publicEventId]
-                                          ?.eventChatMessageCount ??
-                                      0),
-                                  onItemTapped: () {
-                                    listController.openRun(
-                                      listController.filteredRuns[index],
-                                      openToTab: RunTab.details,
-                                    );
-                                  },
-                                );
-                              }
+                              return RunListItem(
+                                futureRun: listController.filteredRuns[index],
+                                currentChatCount:
+                                    (listController
+                                        .thisEventUnseenChats[publicEventId]
+                                        ?.value ??
+                                    listController
+                                        .chatSummaryMap[publicEventId]
+                                        ?.eventChatMessageCount ??
+                                    0),
+                                onItemTapped: () {
+                                  listController.openRun(
+                                    listController.filteredRuns[index],
+                                    openToTab: RunTab.details,
+                                  );
+                                },
+                              );
                             }
                           },
                         ),

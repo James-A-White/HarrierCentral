@@ -1,3 +1,13 @@
+2.1.0+1012
+    • Implemented the Unseen chats view
+    • Added help for run views
+    • Implemented Map List filter
+    • Added info buttons to QrGroups
+    • Fixed Run# QrGroup to have a valid URL
+    • Attempt to fix the RunDetails tab bar problem on Android
+    • Fixed automatic checkin when at run start to work properly with time zones
+    • Added beta ribbon
+
 2.1.0+1010
     • Added "On Map" option to runs list... still needs more work
 

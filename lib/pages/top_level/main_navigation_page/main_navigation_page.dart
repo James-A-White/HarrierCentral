@@ -52,12 +52,22 @@ class MainNavigationPage extends StatelessWidget {
                                 id: 'main_nav_page',
                                 builder: (badgeController) {
                                   return GestureDetector(
-                                    onTap: () =>
-                                        badgeController
-                                            .showOnlyEventsWithMessages
-                                            .value = !(badgeController
-                                            .showOnlyEventsWithMessages
-                                            .value),
+                                    onTap: () {
+                                      badgeController.runsToDisplay.value =
+                                          RunsToDisplay.unreadChats;
+                                      badgeController.runsTimeScope.value =
+                                          RunsTimeScope.all;
+                                      controller
+                                          .bottomNavigationKey
+                                          .currentState
+                                          ?.setPage(0);
+
+                                      // return badgeController
+                                      //     .showOnlyEventsWithMessages
+                                      //     .value = !(badgeController
+                                      //     .showOnlyEventsWithMessages
+                                      //     .value);
+                                    },
                                     child: badges.Badge(
                                       position: badges.BadgePosition.topEnd(
                                         top: -10,
@@ -89,13 +99,12 @@ class MainNavigationPage extends StatelessWidget {
                                               .value !=
                                           0,
                                       child:
-                                          badgeController
-                                              .showChatBubbleLoading
-                                              .value
-                                          ? const Icon(Icons.refresh)
-                                          : const Icon(
-                                              Icons.chat_bubble_outline,
-                                            ),
+                                          // badgeController
+                                          //     .showChatBubbleLoading
+                                          //     .value
+                                          // ? const Icon(Icons.refresh)
+                                          // :
+                                          const Icon(Icons.chat_bubble_outline),
                                     ),
                                   );
                                 },
@@ -360,6 +369,7 @@ class MainNavigationPage extends StatelessWidget {
                   return (controller.mainScreenContent.value ==
                           MainPageContent.appContent)
                       ? FancyBottomNavigation(
+                          key: controller.bottomNavigationKey,
                           circleColor: themeButtonColors,
                           inactiveIconColor: themeBackgroundColor,
                           barBackgroundColor: themeNavBarBackground,

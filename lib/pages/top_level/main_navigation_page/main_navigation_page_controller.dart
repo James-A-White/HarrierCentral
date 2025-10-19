@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:fancy_bottom_navigation_2/fancy_bottom_navigation.dart';
 
 enum MainPageContent { initial, loading, splashSequence, appContent, help }
 
@@ -68,6 +69,7 @@ class MainNavigationController extends GetxController
   final steps = 10.obs;
   final timeRemaining = RxnInt();
   final currentPage = 0.obs;
+  final GlobalKey<FancyBottomNavigationState> bottomNavigationKey = GlobalKey();
 
   final GlobalKey<ScaffoldState> ScaffoldKey = GlobalKey();
 

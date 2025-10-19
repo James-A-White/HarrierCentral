@@ -14,7 +14,7 @@ class FutureRunListPageController extends GetxController {
   RxString searchRunsText = ''.obs;
   Map<String, RxInt> thisEventUnseenChats = {};
   RxInt totalNotifications = 0.obs;
-  RxBool showChatBubbleLoading = false.obs;
+  //RxBool showChatBubbleLoading = false.obs;
   Rx<RunsToDisplay> runsToDisplay = RunsToDisplay.allRuns.obs;
   RxBool runsToDisplayLoading = false.obs;
   RxBool showRunToDisplaySpinner = false.obs;
@@ -24,7 +24,7 @@ class FutureRunListPageController extends GetxController {
 
   LatLngBounds? mapBounds;
 
-  RxBool showOnlyEventsWithMessages = false.obs;
+  //RxBool showOnlyEventsWithMessages = false.obs;
 
   final FocusNode searchFocusNode = FocusNode();
   final TextEditingController searchController = TextEditingController();
@@ -37,20 +37,20 @@ class FutureRunListPageController extends GetxController {
   void onInit() {
     super.onInit();
 
-    showOnlyEventsWithMessages.listen((bool value) async {
-      showChatBubbleLoading.value = true;
-      update(['main_nav_page']);
-      Future<void>.delayed(const Duration(seconds: 1)).then((value) {
-        showChatBubbleLoading.value = false;
-        update(['main_nav_page']);
-      });
+    // showOnlyEventsWithMessages.listen((bool value) async {
+    //   showChatBubbleLoading.value = true;
+    //   update(['main_nav_page']);
+    //   Future<void>.delayed(const Duration(seconds: 1)).then((value) {
+    //     showChatBubbleLoading.value = false;
+    //     update(['main_nav_page']);
+    //   });
 
-      // for some reason,we need to put this little delay in otherwise the
-      // update to the main_nav_page does not get fired before the filterRuns
-      // starts executing.
-      await Future<void>.delayed(const Duration(milliseconds: 100));
-      filterRuns(false);
-    });
+    //   // for some reason,we need to put this little delay in otherwise the
+    //   // update to the main_nav_page does not get fired before the filterRuns
+    //   // starts executing.
+    //   await Future<void>.delayed(const Duration(milliseconds: 100));
+    //   filterRuns(false);
+    // });
 
     // 👇 Debounce: waits 400ms after last change before calling filterRuns
     debounce<String>(
@@ -105,6 +105,7 @@ class FutureRunListPageController extends GetxController {
         (int.tryParse(message.data['EventChatMessageCount'] as String) ?? 0);
 
     _updateChatCountBadges(publicEventId, chatCount);
+    filterRuns(false);
   }
 
   void _updateChatCountBadges(String? publicEventId, int chatCount) {
@@ -149,7 +150,7 @@ class FutureRunListPageController extends GetxController {
 
     _updateTotalNotificationCounter();
 
-    showOnlyEventsWithMessages.value = false;
+    //showOnlyEventsWithMessages.value = false;
 
     update(['runList', 'chatTab', 'main_nav_page']);
   }
@@ -376,6 +377,7 @@ class FutureRunListPageController extends GetxController {
         runsToDisplay.value,
         runsTimeScope.value,
         mapBounds: mapBounds,
+        unseenChats: thisEventUnseenChats,
       );
     }
 

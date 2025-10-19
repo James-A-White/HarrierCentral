@@ -157,6 +157,7 @@ class QueryRuns {
     RunsToDisplay runsToDisplay,
     RunsTimeScope runsTimeScope, {
     LatLngBounds? mapBounds,
+    Map<String, RxInt>? unseenChats,
   }) {
     List<RunDetailsAggregate> timeFilteredRuns = <RunDetailsAggregate>[];
 
@@ -196,7 +197,14 @@ class QueryRuns {
             .toList();
         break;
       case RunsToDisplay.unreadChats:
-        scopeFilteredRuns = timeFilteredRuns.toList();
+        if (unseenChats != null) {
+          scopeFilteredRuns = timeFilteredRuns.where((run) {
+            final count = unseenChats[run.event.publicEventId]?.value ?? 0;
+            return count > 0;
+          }).toList();
+        } else {
+          scopeFilteredRuns = timeFilteredRuns.toList();
+        }
         break;
       case RunsToDisplay.events:
         scopeFilteredRuns = timeFilteredRuns
