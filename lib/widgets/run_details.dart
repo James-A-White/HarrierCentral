@@ -11,29 +11,24 @@ class RunDetailsController extends GetxController {
 
   RxBool showQrCodes = false.obs;
 
-  String runUrlForCopy = '';
-  String thisRunUrlForQr = '';
-  String nextRunUrlForQr = '';
-  String kennelUrlForQr = '';
+  String runUrlForCopy = BASE_HASHRUNS_DOT_ORG_URL;
+  String thisRunUrlForQr = BASE_HASHRUNS_DOT_ORG_URL;
+  String nextRunUrlForQr = BASE_HASHRUNS_DOT_ORG_URL;
+  String kennelUrlForQr = BASE_HASHRUNS_DOT_ORG_URL;
 
   @override
   void onInit() {
     super.onInit();
 
-    runUrlForCopy = 'https://www.hashruns.org';
-    nextRunUrlForQr = runUrlForCopy;
-    kennelUrlForQr = runUrlForCopy;
-
     if (event.isCountedRun != 0) {
-      runUrlForCopy += '/${kennel.kennelUniqueShortName}/${event.eventNumber}';
-      thisRunUrlForQr +=
-          '/${kennel.kennelUniqueShortName}/${event.eventNumber}';
-      nextRunUrlForQr += '/${kennel.kennelUniqueShortName}/nextrun';
-      kennelUrlForQr += '/${kennel.kennelUniqueShortName}';
+      runUrlForCopy += '${kennel.kennelUniqueShortName}/${event.eventNumber}';
+      thisRunUrlForQr += '${kennel.kennelUniqueShortName}/${event.eventNumber}';
+      nextRunUrlForQr += '${kennel.kennelUniqueShortName}/nextrun';
+      kennelUrlForQr += kennel.kennelUniqueShortName;
     } else {
-      runUrlForCopy += '/#/RID?publicEventId=${event.publicEventId}';
+      runUrlForCopy += '#/RID?publicEventId=${event.publicEventId}';
 
-      thisRunUrlForQr += '/#/RID?publicEventId=${event.publicEventId}';
+      thisRunUrlForQr += '#/RID?publicEventId=${event.publicEventId}';
 
       kennelUrlForQr = '';
     }

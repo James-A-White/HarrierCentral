@@ -68,14 +68,12 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
           });
         });
 
-    runUrlForCopy = 'https://www.hashruns.org';
-    nextRunUrlForQr = runUrlForCopy;
-    kennelUrlForQr = runUrlForCopy;
+    nextRunUrlForQr = BASE_HASHRUNS_DOT_ORG_URL;
+    kennelUrlForQr = BASE_HASHRUNS_DOT_ORG_URL;
 
     nextRunUrlForQr +=
-        '/${widget.kennelAggregateItem.kennel.kennelUniqueShortName}/nextrun';
-    kennelUrlForQr +=
-        '/${widget.kennelAggregateItem.kennel.kennelUniqueShortName}';
+        '${widget.kennelAggregateItem.kennel.kennelUniqueShortName}/nextrun';
+    kennelUrlForQr += widget.kennelAggregateItem.kennel.kennelUniqueShortName;
 
     super.initState();
   }

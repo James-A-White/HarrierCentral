@@ -55,7 +55,7 @@ const LocationAccuracy BASE_APP_LOCATION_ACCURACY = LocationAccuracy.best;
 const String BASE_HCWEB_UPLOAD_URL = 'https://hcweb.azurewebsites.net/upload/';
 const String BASE_HCWEB_MOBILE_URL = 'HTTPS://P.HC-APP.COM/#/C?';
 
-const String BASE_HASHRUNS_DOT_ORG_URL = 'https://www.hashruns.org/#/';
+const String BASE_HASHRUNS_DOT_ORG_URL = 'https://www.hashruns.org/';
 
 // const String BASE_URL = 'harrier.azurewebsites.net';
 // const String BASE_API_URL = 'https://$BASE_URL/api/';

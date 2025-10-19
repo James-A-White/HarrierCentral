@@ -213,6 +213,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
   late TabController _tabController;
   late TabController _gridListTabController;
+  bool _isTabControllerReady = false;
 
   //final GetPackService _getPackService = GetPackService();
 
@@ -228,8 +229,89 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(vsync: this, length: _tabs.length);
-    _gridListTabController = TabController(vsync: this, length: 2);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        _tabController = TabController(vsync: this, length: _tabs.length);
+        _gridListTabController = TabController(vsync: this, length: 2);
+        setState(() => _isTabControllerReady = true);
+
+        if (widget.openToTab != RunTab.details) {
+          // switch to the chat tab if a notification was tapped to open the app
+          _tabController.animateTo(widget.openToTab.id);
+        }
+
+        // else if ((widget.futureRun.extensions.rsvpState == 0) &&
+        //     (widget.futureRun.event.eventStartDatetime.isAfter(
+        //       DateTime.now().subtract(const Duration(hours: 6)),
+        //     )) &&
+        //     ((widget.futureRun.extensions.distToEvent ?? 9999999.0) < 250000)) {
+        //   _tabController.animateTo(1);
+        // }
+
+        _tabController.addListener(() async {
+          FocusScope.of(context).unfocus();
+
+          if (_fabIsVisible !=
+              (_tabs[_tabController.index].text == LABEL_RSVP)) {
+            _fabIsVisible = _tabs[_tabController.index].text == LABEL_RSVP;
+          }
+
+          if (_tabs[_tabController.index].text == LABEL_RSVP) {
+            setState(() {
+              _showTopWidget = true;
+              _slideTopWidget = false;
+            });
+
+            Future.delayed(
+              Duration(seconds: DISPLAY_LOGO_IN_RSVP_DURATION),
+            ).then((value) {
+              setState(() {
+                _showTopWidget = false;
+              });
+            });
+            //print('refreshing RSVP data from backend @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+            _refreshHemTableFromBackend(false).then((value) {
+              setState(() {});
+            });
+          }
+          if (_tabs[_tabController.index].text == LABEL_CHAT) {
+            setState(() {
+              _showTopWidget = true;
+              _slideTopWidget = false;
+            });
+            Future.delayed(
+              Duration(seconds: DISPLAY_LOGO_IN_RSVP_DURATION),
+            ).then((value) {
+              setState(() {
+                _showTopWidget = false;
+              });
+            });
+          }
+
+          if (_tabController.previousIndex == 4) {
+            if (Get.isRegistered<FutureRunListPageController>()) {
+              final controller = Get.find<FutureRunListPageController>();
+              controller
+                      .thisEventUnseenChats[widget
+                          .futureRun
+                          .event
+                          .publicEventId]
+                      ?.value =
+                  0;
+              controller.update(['runList', 'chatTab', 'main_nav_page']);
+            }
+          }
+
+          widget.relayActiveTab(_tabController.index);
+
+          setState(() {});
+        });
+      });
+    });
+
+    // _tabController = TabController(vsync: this, length: _tabs.length);
+    // _gridListTabController = TabController(vsync: this, length: 2);
 
     final List<double?> coords = Utilities.getLatLongFromString(<String?>[
       widget.futureRun.event.locationOneLineDesc,
@@ -254,74 +336,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     _mapCenter = latlng.LatLng(xLat, xLon);
 
     _saveUserMapPreference.addListener(() {
-      setState(() {});
-    });
-
-    if (widget.openToTab != RunTab.details) {
-      // switch to the chat tab if a notification was tapped to open the app
-      _tabController.animateTo(widget.openToTab.id);
-    }
-
-    // else if ((widget.futureRun.extensions.rsvpState == 0) &&
-    //     (widget.futureRun.event.eventStartDatetime.isAfter(
-    //       DateTime.now().subtract(const Duration(hours: 6)),
-    //     )) &&
-    //     ((widget.futureRun.extensions.distToEvent ?? 9999999.0) < 250000)) {
-    //   _tabController.animateTo(1);
-    // }
-
-    _tabController.addListener(() async {
-      FocusScope.of(context).unfocus();
-
-      if (_fabIsVisible != (_tabs[_tabController.index].text == LABEL_RSVP)) {
-        _fabIsVisible = _tabs[_tabController.index].text == LABEL_RSVP;
-      }
-
-      if (_tabs[_tabController.index].text == LABEL_RSVP) {
-        setState(() {
-          _showTopWidget = true;
-          _slideTopWidget = false;
-        });
-
-        Future.delayed(Duration(seconds: DISPLAY_LOGO_IN_RSVP_DURATION)).then((
-          value,
-        ) {
-          setState(() {
-            _showTopWidget = false;
-          });
-        });
-        //print('refreshing RSVP data from backend @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-        _refreshHemTableFromBackend(false).then((value) {
-          setState(() {});
-        });
-      }
-      if (_tabs[_tabController.index].text == LABEL_CHAT) {
-        setState(() {
-          _showTopWidget = true;
-          _slideTopWidget = false;
-        });
-        Future.delayed(Duration(seconds: DISPLAY_LOGO_IN_RSVP_DURATION)).then((
-          value,
-        ) {
-          setState(() {
-            _showTopWidget = false;
-          });
-        });
-      }
-
-      if (_tabController.previousIndex == 4) {
-        if (Get.isRegistered<FutureRunListPageController>()) {
-          final controller = Get.find<FutureRunListPageController>();
-          controller
-                  .thisEventUnseenChats[widget.futureRun.event.publicEventId]
-                  ?.value =
-              0;
-          controller.update(['runList', 'chatTab', 'main_nav_page']);
-        }
-      }
-
-      widget.relayActiveTab(_tabController.index);
-
       setState(() {});
     });
 
@@ -858,7 +872,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                     onPressed: () async {
                                       // THIS IS A H@CK: strip the "Z" timezone character off of the time so it imports as local time and not GMT
                                       String url =
-                                          'https://www.hashruns.org/${widget.futureRun.kennel.kennelUniqueShortName}/${widget.futureRun.event.eventNumber}';
+                                          '$BASE_HASHRUNS_DOT_ORG_URL${widget.futureRun.kennel.kennelUniqueShortName}/${widget.futureRun.event.eventNumber}';
 
                                       String startTime = widget
                                           .futureRun
@@ -1706,7 +1720,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    //getPack(false);
+    if (!_isTabControllerReady) {
+      return const SizedBox(); // or a loading spinner
+    }
 
     return Stack(
       children: <Widget>[
