@@ -6,7 +6,8 @@ class CommonQueries {
   int? unusedVariableToSuppressWarning;
 
   static Future<int> countRecords(String tableName) async {
-    final String query = '''
+    final String query =
+        '''
           SELECT COUNT(*) as Total
           FROM $tableName
           ''';
@@ -16,7 +17,8 @@ class CommonQueries {
   }
 
   static Future<int> countRemovedRecords(String tableName) async {
-    final String query = '''
+    final String query =
+        '''
           SELECT COUNT(*) as Total
           FROM $tableName
           WHERE removed != 0
@@ -27,7 +29,8 @@ class CommonQueries {
   }
 
   static Future<void> deleteRemovedRecords(String tableName) async {
-    final String query = '''
+    final String query =
+        '''
           DELETE
           FROM $tableName
           WHERE removed != 0
@@ -43,7 +46,8 @@ class CommonQueries {
     final offsetFromGmtToLocal = Utilities.getSqfliteTimeOffset();
 
     try {
-      final String sql = '''
+      final String sql =
+          '''
 
           SELECT e.eventId,
           e.eventName,
@@ -89,9 +93,10 @@ class CommonQueries {
       final String? userId = getStringPref(StringPrefsEnum.userId);
       const String dollarSign = r'$^';
 
-      final offsetFromGmtToLocal = Utilities.getSqfliteTimeOffset();
+      //final offsetFromGmtToLocal = Utilities.getSqfliteTimeOffset();
 
-      String sql = '''
+      String sql =
+          '''
           SELECT e.${tableModel.eventsTableHelper.colEventId},
           e.${tableModel.eventsTableHelper.colEventName},
           case when e.${tableModel.eventsTableHelper.colUseFbLatLon} = 0 then e.${tableModel.eventsTableHelper.colHcLatitude} else coalesce(e.${tableModel.eventsTableHelper.colFbLatitude},e.${tableModel.eventsTableHelper.colHcLatitude}) end as lat,
@@ -112,7 +117,7 @@ class CommonQueries {
           coalesce(e.${tableModel.eventsTableHelper.colExtrasDescription},'') as extrasDescription,
           coalesce(e.${tableModel.eventsTableHelper.colEventPriceForMembers},k.${tableModel.kennelsTableHelper.colDefaultPriceForMembers},0) as memberPrice,
           coalesce(e.${tableModel.eventsTableHelper.colEventPriceForNonMembers},k.${tableModel.kennelsTableHelper.colDefaultPriceForNonMembers},0) as nonMemberPrice,
-          (julianday(${tableModel.eventsTableHelper.colEventStartDatetime}) - julianday('now','$offsetFromGmtToLocal')) * 24 as deltaHours,
+          (julianday(${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) - julianday('now')) * 24 as deltaHours,
           coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) as attendenceState
           FROM ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} e
           INNER JOIN ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} k on e.${tableModel.eventsTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId}
@@ -120,20 +125,22 @@ class CommonQueries {
           LEFT OUTER JOIN ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.user)} hem on hem.${tableModel.hasherEventMapTableHelper.colUserId} = "$userId" AND hem.${tableModel.hasherEventMapTableHelper.colEventId} = e.${tableModel.eventsTableHelper.colEventId}
           LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = "$userId" AND hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = e.${tableModel.eventsTableHelper.colKennelId}
           WHERE 
-          ((julianday(${tableModel.eventsTableHelper.colEventStartDatetime}) - julianday('now','$offsetFromGmtToLocal')) * 24) <= $ALLOW_AUTO_CHECKIN_HOURS_BEFORE_EVENT
-          AND ((julianday(${tableModel.eventsTableHelper.colEventStartDatetime}) - julianday('now','$offsetFromGmtToLocal')) * 24) >= ${-ALLOW_AUTO_CHECKIN_HOURS_AFTER_EVENT}
+          ((julianday(${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) - julianday('now')) * 24) <= $ALLOW_AUTO_CHECKIN_HOURS_BEFORE_EVENT
+          AND ((julianday(${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) - julianday('now')) * 24) >= ${-ALLOW_AUTO_CHECKIN_HOURS_AFTER_EVENT}
           AND e.${tableModel.eventsTableHelper.colIsVisible} = 1
           AND e.${tableModel.eventsTableHelper.colRemoved} = 0
           ''';
 
       if (eventId != null) {
-        sql += '''
+        sql +=
+            '''
           AND e.${tableModel.eventsTableHelper.colEventId} = '${eventId.toLowerCase()}'
         ''';
       }
 
-      sql += '''
-          ORDER BY abs(julianday('now','$offsetFromGmtToLocal') - julianday(${tableModel.eventsTableHelper.colEventStartDatetime})) ASC
+      sql +=
+          '''
+          ORDER BY abs(julianday('now') - julianday(${tableModel.eventsTableHelper.colEventStartDatetimeGmt})) ASC
         ''';
 
       final List<Map<String, dynamic>> queryResults = await database.rawQuery(
@@ -184,7 +191,7 @@ class CommonQueries {
               queryResults[i]['lon'] + 0.0,
             );
 
-            //print('${queryResults[i]['eventName']} - $dist');
+            // print('${queryResults[i]['eventName']} - $dist');
 
             if (dist.abs() >
                 GEOFENCE_IN_METERS_AROUND_RUN_START_FOR_AUTO_CHECKIN) {
@@ -263,7 +270,8 @@ class CommonQueries {
     uqr = uqr.toUpperCase();
     String result = 'none';
     try {
-      final String sql = '''
+      final String sql =
+          '''
 
           SELECT h.hasherId
           FROM ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h
@@ -290,7 +298,8 @@ class CommonQueries {
     RunAdminAggregate? runDetailAggregate;
     try {
       const String dollarSign = r'$^';
-      final String sql = '''
+      final String sql =
+          '''
 
           SELECT 
           k.*,
@@ -391,7 +400,8 @@ class CommonQueries {
     RunAdminAggregate? runAdminAggregate;
     try {
       const String dollarSign = r'$^';
-      final String sql = '''
+      final String sql =
+          '''
           SELECT e.*,
           k.*,
           case when e.${tableModel.eventsTableHelper.colUseFbLatLon} = 0 then e.${tableModel.eventsTableHelper.colHcLatitude} else coalesce(e.${tableModel.eventsTableHelper.colFbLatitude},e.${tableModel.eventsTableHelper.colHcLatitude}) end as latitude,
