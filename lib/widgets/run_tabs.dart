@@ -4,6 +4,7 @@
 
 import 'package:badges/badges.dart' as badges;
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/widgets/beta_ribbon.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 import 'package:map_launcher/map_launcher.dart' as maps;
 import 'package:eventide/eventide.dart';
@@ -1487,9 +1488,18 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           ), // Collapses cleanly
 
           Expanded(
-            child: ChatPage(
-              eventId: widget.futureRun.event.eventId,
-              publicEventId: widget.futureRun.event.publicEventId,
+            child: Stack(
+              children: [
+                ChatPage(
+                  eventId: widget.futureRun.event.eventId,
+                  publicEventId: widget.futureRun.event.publicEventId,
+                ),
+                BetaRibbon(
+                  title: 'Trail Chat',
+                  text:
+                      'Trail Chat is a brand-new feature currently in beta. Over the next few releases, we’ll be continuing to improve and expand it — fixing any bugs and adding new functionality based on your feedback.\r\n\r\nYou may encounter occasional glitches as we refine the experience, but rest assured we’re actively working on updates in each release.\r\n\r\nOnce Trail Chat reaches full stability and feature completeness, this beta label will be removed.\r\n\r\nWe appreciate your patience and support as we make Trail Chat the best way to stay connected on the trail!',
+                ),
+              ],
             ),
           ),
         ],
