@@ -1829,6 +1829,9 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                 description:
                                                     'next ${widget.kennelAggregateItem.kennel.kennelShortName} run',
                                                 url: nextRunUrlForQr,
+                                                helpTitle: 'URL for Next Hash',
+                                                helpText:
+                                                    "Want to know what’s next for ${widget.kennelAggregateItem.kennel.kennelShortName}?\r\n\r\nThis link always points to the next ${widget.kennelAggregateItem.kennel.kennelShortName} Hash run — perfect for bookmarking or sharing with friends!",
                                               ),
 
                                               QrGroup(
@@ -1838,6 +1841,10 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                 description:
                                                     '${widget.kennelAggregateItem.kennel.kennelName} upcoming runs',
                                                 url: kennelUrlForQr,
+                                                helpTitle:
+                                                    'URL for upcoming ${widget.kennelAggregateItem.kennel.kennelShortName} runs',
+                                                helpText:
+                                                    "This link opens a page with all upcoming ${widget.kennelAggregateItem.kennel.kennelShortName} runs.\r\n\r\nNavigate to this page and scroll down to see everything that’s planned!",
                                               ),
 
                                               if (((widget
@@ -1864,6 +1871,10 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                       .kennelAggregateItem
                                                       .kennel
                                                       .kennelWebsiteUrl!,
+                                                  helpTitle:
+                                                      '${widget.kennelAggregateItem.kennel.kennelShortName} Website',
+                                                  helpText:
+                                                      "This link takes you to the ${widget.kennelAggregateItem.kennel.kennelName} website — your go-to place for everything about Hashing with ${widget.kennelAggregateItem.kennel.kennelShortName}!",
                                                 ),
                                               ],
                                             ],

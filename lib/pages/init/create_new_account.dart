@@ -121,7 +121,7 @@ class CreateNewAccountPageContentState
                     //   child: Container(
                     //     padding: const EdgeInsets.only(left: 20),
                     //     height: 26,
-                    //     child: Image.asset('images/icons/more_info_button.png'),
+                    //     child: Image.asset('images/icons/info_button.png'),
                     //   ),
                     // ),
                   ],
@@ -170,7 +170,7 @@ class CreateNewAccountPageContentState
                       //       child: Container(
                       //         padding: const EdgeInsets.only(left: 20),
                       //         height: 26,
-                      //         child: Image.asset('images/icons/more_info_button.png'),
+                      //         child: Image.asset('images/icons/info_button.png'),
                       //       ),
                       //     ),
                       //   ],

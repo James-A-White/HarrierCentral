@@ -891,15 +891,23 @@ class RunDetails extends StatelessWidget {
                         children: <Widget>[
                           QrGroup(
                             context: context,
-                            title: 'This Run',
+                            title:
+                                'Run #${runDetailsController.event.eventNumber}',
                             description: 'this run',
                             url: runDetailsController.thisRunUrlForQr,
+                            helpTitle:
+                                'URL for Hash #${runDetailsController.event.eventNumber}',
+                            helpText:
+                                "Here’s a permanent link to Hash #${runDetailsController.event.eventNumber} (${runDetailsController.event.eventName}).\r\n\r\nShare it with others to spread the word about this hash!",
                           ),
                           QrGroup(
                             context: context,
                             title: 'Next ${kennel.kennelShortName} Run',
                             description: 'next ${kennel.kennelShortName} run',
                             url: runDetailsController.nextRunUrlForQr,
+                            helpTitle: 'URL for Next Hash',
+                            helpText:
+                                "Want to know what’s next for ${runDetailsController.kennel.kennelShortName}?\r\n\r\nThis link always points to the next ${kennel.kennelShortName} Hash run — perfect for bookmarking or sharing with friends!",
                           ),
 
                           if (runDetailsController
@@ -910,6 +918,10 @@ class RunDetails extends StatelessWidget {
                               title: '${kennel.kennelShortName} upcoming Runs',
                               description: '${kennel.kennelName} upcoming runs',
                               url: runDetailsController.kennelUrlForQr,
+                              helpTitle:
+                                  'URL for upcoming ${runDetailsController.kennel.kennelShortName} runs',
+                              helpText:
+                                  "This link opens a page with all upcoming ${kennel.kennelShortName} runs.\r\n\r\nNavigate to this page and scroll down to see everything that’s planned!",
                             ),
                           ],
                           if (((kennel.kennelWebsiteUrl ?? '').isNotEmpty) &&
@@ -921,6 +933,9 @@ class RunDetails extends StatelessWidget {
                               title: '${kennel.kennelShortName} Website',
                               description: '${kennel.kennelName} Website',
                               url: kennel.kennelWebsiteUrl!,
+                              helpTitle: '${kennel.kennelShortName} Website',
+                              helpText:
+                                  "This link takes you to the ${kennel.kennelName} website — your go-to place for everything about Hashing with ${kennel.kennelShortName}!",
                             ),
                           ],
                         ],

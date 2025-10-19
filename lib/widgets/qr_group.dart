@@ -9,12 +9,16 @@ class QrGroup extends StatelessWidget {
     required this.title,
     required this.description,
     required this.url,
+    required this.helpTitle,
+    required this.helpText,
   });
 
   final String title;
   final String description;
   final String url;
   final BuildContext context;
+  final String helpTitle;
+  final String helpText;
 
   @override
   Widget build(BuildContext context) {
@@ -23,32 +27,46 @@ class QrGroup extends StatelessWidget {
         Text(title, style: ts_title),
         const SizedBox(height: 20),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.center,
 
           children: [
-            SizedBox(
-              width: 50,
-              child: GestureDetector(
-                onTap: () {
-                  Clipboard.setData(ClipboardData(text: url));
-
-                  Utilities.showAlert(
-                    'Link copied',
-                    'A link to $description has been copied to your clipboard',
-                    'OK',
-                  );
-                },
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 0.0),
-                  child: const Icon(
-                    FontAwesome.copy,
-                    color: Colors.white,
-                    size: 36.0,
+            Column(
+              children: [
+                GestureDetector(
+                  onTap: () async {
+                    await Utilities.showAlert(helpTitle, helpText, 'OK');
+                  },
+                  child: SizedBox(
+                    height: 35,
+                    child: Image.asset('images/icons/info_button.png'),
                   ),
                 ),
-              ),
-            ),
+                const SizedBox(height: 30),
+                SizedBox(
+                  width: 50,
+                  child: GestureDetector(
+                    onTap: () {
+                      Clipboard.setData(ClipboardData(text: url));
 
+                      Utilities.showAlert(
+                        'Link copied',
+                        'A link to $description has been copied to your clipboard',
+                        'OK',
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 0.0),
+                      child: const Icon(
+                        FontAwesome.copy,
+                        color: Colors.white,
+                        size: 36.0,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(width: 25),
             GestureDetector(
               onTap: () async {
                 await Navigator.push<void>(
@@ -72,10 +90,11 @@ class QrGroup extends StatelessWidget {
                 child: QrImageView(
                   data: url,
                   version: QrVersions.auto,
-                  size: math.min(200, MediaQuery.of(context).size.width / 2),
+                  size: math.min(160, MediaQuery.of(context).size.width / 2),
                 ),
               ),
             ),
+            SizedBox(width: 25),
             SizedBox(
               width: 50,
 
