@@ -22,6 +22,10 @@ class FutureRunListPageController extends GetxController {
   RxBool showRunsTimeScopeSpinner = false.obs;
   Rx<RunsTimeScope> runsTimeScope = RunsTimeScope.future.obs;
 
+  final ScrollController scrollController = ScrollController(
+    initialScrollOffset: 0.0,
+  );
+
   LatLngBounds? mapBounds;
 
   //RxBool showOnlyEventsWithMessages = false.obs;
@@ -232,6 +236,11 @@ class FutureRunListPageController extends GetxController {
         }
       }
     }
+  }
+
+  void openMap() {
+    final controller = Get.find<MainNavigationController>();
+    controller.bottomNavigationKey.currentState?.setPage(2);
   }
 
   Future<void> openRun(RunDetailsAggregate run, {RunTab? openToTab}) async {

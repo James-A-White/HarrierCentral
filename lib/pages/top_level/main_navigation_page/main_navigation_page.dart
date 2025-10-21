@@ -9,7 +9,9 @@ class MainNavigationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Instantiate and bind controller
-    final controller = Get.put(MainNavigationController());
+    final controller = Get.isRegistered<MainNavigationController>()
+        ? Get.find<MainNavigationController>()
+        : Get.put(MainNavigationController(), permanent: true);
 
     return GetBuilder<MainNavigationController>(
       id: 'AppScaffold',
@@ -53,14 +55,24 @@ class MainNavigationPage extends StatelessWidget {
                                 builder: (badgeController) {
                                   return GestureDetector(
                                     onTap: () {
-                                      badgeController.runsToDisplay.value =
-                                          RunsToDisplay.unreadChats;
-                                      badgeController.runsTimeScope.value =
-                                          RunsTimeScope.all;
-                                      controller
-                                          .bottomNavigationKey
-                                          .currentState
-                                          ?.setPage(0);
+                                      bool forceChatPage = getPage() != 0;
+                                      if (forceChatPage ||
+                                          (badgeController
+                                                  .runsToDisplay
+                                                  .value !=
+                                              RunsToDisplay.unreadChats)) {
+                                        badgeController.runsToDisplay.value =
+                                            RunsToDisplay.unreadChats;
+                                        badgeController.runsTimeScope.value =
+                                            RunsTimeScope.all;
+                                      } else {
+                                        badgeController.runsToDisplay.value =
+                                            RunsToDisplay.allRuns;
+                                        badgeController.runsTimeScope.value =
+                                            RunsTimeScope.future;
+                                      }
+
+                                      setPage(0);
 
                                       // return badgeController
                                       //     .showOnlyEventsWithMessages
@@ -411,6 +423,25 @@ class MainNavigationPage extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+
+  int getPage() {
+    final controller = Get.find<MainNavigationController>();
+    return controller.bottomNavigationKey.currentState?.currentSelected ?? -1;
+  }
+
+  void setPage(int page) {
+    final controller = Get.find<MainNavigationController>();
+
+    controller.bottomNavigationKey.currentState?.setPage(0);
+
+    final listController = Get.find<FutureRunListPageController>();
+
+    listController.scrollController.animateTo(
+      0.0,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
     );
   }
 

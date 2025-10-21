@@ -149,7 +149,7 @@ enum RunsToDisplay {
     4,
     'On Map',
     0,
-    false,
+    true,
     false,
     'This view shows runs that are currently visible on the map view.',
     'Map View',

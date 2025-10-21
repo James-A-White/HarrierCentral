@@ -9,10 +9,6 @@ class FutureRunsListPage extends StatelessWidget {
     // permanent: true,
   );
 
-  final ScrollController _scrollController = ScrollController(
-    initialScrollOffset: 0.0,
-  );
-
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
@@ -130,8 +126,8 @@ class FutureRunsListPage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SizedBox(height: 2),
-                    SizedBox(width: 125, child: _runsToDisplayButton()),
-                    SizedBox(width: 125, child: _futurePastToggle()),
+                    SizedBox(width: 135, child: _runsToDisplayButton()),
+                    SizedBox(width: 135, child: _futurePastButton()),
                   ],
                 ),
                 Expanded(
@@ -216,7 +212,7 @@ class FutureRunsListPage extends StatelessWidget {
             ],
           )
         : NestedScrollView(
-            controller: _scrollController,
+            controller: controller.scrollController,
             floatHeaderSlivers: true,
             headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
               return <Widget>[
@@ -502,7 +498,7 @@ class FutureRunsListPage extends StatelessWidget {
           );
   }
 
-  Widget _futurePastToggle() {
+  Widget _futurePastButton() {
     return Obx(() {
       return !controller.runsToDisplay.value.showFuturePastToggle
           ? SizedBox(height: 0)
@@ -518,6 +514,27 @@ class FutureRunsListPage extends StatelessWidget {
                           color1: Colors.white,
                           color2: Colors.blue.shade300,
                           size: 35,
+                        ),
+                      ),
+                    )
+                  : controller.runsToDisplay.value == RunsToDisplay.onMap
+                  ? ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
+                      ),
+                      onPressed: () async {
+                        controller.openMap();
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          left: 0,
+                          right: 0,
+                          top: 0,
+                        ),
+                        child: Text(
+                          'Show Map',
+                          textAlign: TextAlign.center,
+                          style: ts_button,
                         ),
                       ),
                     )

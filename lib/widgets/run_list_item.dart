@@ -779,22 +779,21 @@ class RunListItem extends StatelessWidget {
   Widget _getRsvpWidget() {
     String iconFile = '';
 
-    switch (rliController.rsvpState.value) {
-      case 3:
-        if (rliController.isHareState.value == isHareYes.value) {
+    if (rliController.rsvpState.value == 3) {
+      if (rliController.isHareState.value == isHareYes.value) {
+        if (rliController.attendanceState.value >= 20) {
+          iconFile = 'images/icons/checkbox_on_in_hare.png';
+        } else {
           iconFile = 'images/icons/checkbox_hare.png';
         }
-        break;
+      }
     }
 
     if (iconFile.isEmpty) {
-      switch (rliController.attendanceState.value) {
-        case 20:
-          iconFile = 'images/icons/checkbox_on_trail.png';
-          break;
-        case 30:
-          iconFile = 'images/icons/checkbox_on_in.png';
-          break;
+      if (rliController.attendanceState.value >= 30) {
+        iconFile = 'images/icons/checkbox_on_in.png';
+      } else if (rliController.attendanceState.value >= 20) {
+        iconFile = 'images/icons/checkbox_on_trail.png';
       }
     }
 
@@ -813,7 +812,11 @@ class RunListItem extends StatelessWidget {
           if (rliController.isHareState.value == isHareNo.value) {
             iconFile = 'images/icons/checkbox_yes.png';
           } else {
-            iconFile = 'images/icons/checkbox_hare.png';
+            if (rliController.attendanceState.value >= 20) {
+              iconFile = 'images/icons/checkbox_on_in.png';
+            } else {
+              iconFile = 'images/icons/checkbox_hare.png';
+            }
           }
           break;
         case -1:
@@ -832,6 +835,63 @@ class RunListItem extends StatelessWidget {
 
     return Image.asset(iconFile, height: 24.0, width: 24.0);
   }
+
+  // Widget _getRsvpWidget() {
+  //   String iconFile = '';
+
+  //   switch (rliController.rsvpState.value) {
+  //     case 3:
+  //       if (rliController.isHareState.value == isHareYes.value) {
+  //         iconFile = 'images/icons/checkbox_hare.png';
+  //       }
+  //       break;
+  //   }
+
+  //   if (iconFile.isEmpty) {
+  //     switch (rliController.attendanceState.value) {
+  //       case 20:
+  //         iconFile = 'images/icons/checkbox_on_trail.png';
+  //         break;
+  //       case 30:
+  //         iconFile = 'images/icons/checkbox_on_in.png';
+  //         break;
+  //     }
+  //   }
+
+  //   if (iconFile.isEmpty) {
+  //     switch (rliController.rsvpState.value) {
+  //       case 0:
+  //         iconFile = 'images/icons/checkbox_empty.png';
+  //         break;
+  //       case 1:
+  //         iconFile = 'images/icons/checkbox_no.png';
+  //         break;
+  //       case 2:
+  //         iconFile = 'images/icons/checkbox_maybe.png';
+  //         break;
+  //       case 3:
+  //         if (rliController.isHareState.value == isHareNo.value) {
+  //           iconFile = 'images/icons/checkbox_yes.png';
+  //         } else {
+  //           iconFile = 'images/icons/checkbox_hare.png';
+  //         }
+  //         break;
+  //       case -1:
+  //         iconFile = 'wait';
+  //         break;
+  //     }
+  //   }
+
+  //   if (iconFile == 'wait') {
+  //     return Icon(delayIcon, color: hc_blue, size: 24.0);
+  //   }
+
+  //   if (iconFile.isEmpty) {
+  //     return const SizedBox();
+  //   }
+
+  //   return Image.asset(iconFile, height: 24.0, width: 24.0);
+  // }
 
   void _showRsvpOptionsPopup() async {
     if (Connection2.checkForConnection(

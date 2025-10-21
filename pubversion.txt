@@ -1,3 +1,9 @@
+2.1.0+1014
+    • Chat icon in main app bar will now toggle to the Chat page and back to the runs list
+    • Added "Open Map" button to the sliver app bar
+    • Fixed Get.put(MainNavigationController(), permanent: true) so it only initializes once
+    • Added new blue RSVP icons for checkbox_on_in_hare, checkbox_on_in, checkbox_on_trail
+
 2.1.0+1012
     • Implemented the Unseen chats view
     • Added help for run views
