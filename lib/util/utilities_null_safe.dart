@@ -1,14 +1,13 @@
 // ignore_for_file: constant_identifier_names
 
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:crypto/crypto.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
-import 'package:intl/intl.dart';
-
-import 'package:crypto/crypto.dart';
-
-import 'package:map_launcher/map_launcher.dart' as maps;
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:harrier_central/pages/top_level/select_run_page.dart';
+import 'package:intl/intl.dart';
+import 'package:map_launcher/map_launcher.dart' as maps;
 
 // class LatLon {
 //   num latitude;
@@ -778,48 +777,79 @@ class Utilities {
     bool reconnectAttempt, {
     bool performHcServerCheck = true,
   }) async {
+    const Duration hcServerTimeout = Duration(milliseconds: 1500);
+    const Duration internetCheckTimeout = Duration(seconds: 3);
+    const int maxRetries = 3;
+
+    bool backendAvailable = false;
+
+    final connectivity = Connectivity();
+    List<ConnectivityResult> interfaces = [];
+
+    try {
+      interfaces = await connectivity.checkConnectivity();
+    } catch (_) {
+      interfaces = [ConnectivityResult.none];
+    }
+
+    // connectivity_plus 7.x returns List<ConnectivityResult>
+    final bool hasInterface = interfaces.any(
+      (r) =>
+          r == ConnectivityResult.wifi ||
+          r == ConnectivityResult.mobile ||
+          r == ConnectivityResult.ethernet ||
+          r == ConnectivityResult.vpn,
+    );
+
+    if (!hasInterface) {
+      // Radios off (Wi-Fi + mobile data + ethernet + VPN)
+      appModel.connectionStatus = EnumConnectionStatus2.notConnected;
+      return false;
+    }
+
     if (performHcServerCheck) {
-      final String userId = getStringPref(StringPrefsEnum.userId) ?? GUID_EMPTY;
+      try {
+        final String userId =
+            getStringPref(StringPrefsEnum.userId) ?? GUID_EMPTY;
+        final String deviceId =
+            getStringPref(StringPrefsEnum.deviceId) ?? GUID_EMPTY;
+        final String deviceSecret =
+            getStringPref(StringPrefsEnum.deviceSecret) ??
+            'no_secret_required_here';
 
-      final String deviceId =
-          getStringPref(StringPrefsEnum.deviceId) ?? GUID_EMPTY;
-      final String deviceSecret =
-          getStringPref(StringPrefsEnum.deviceSecret) ??
-          'no_secret_required_here';
+        final String accessToken = Utilities.generateToken(
+          userId,
+          'hcapp_checkConnection',
+          paramString: deviceSecret,
+        );
 
-      // NOTE: Eventually refactor the internet connectivity checks into a GetX service
+        final Map<String, String?> bodyMap = <String, String?>{
+          'queryType': 'checkConnection',
+          'deviceId': deviceId,
+          'accessToken': accessToken,
+        };
 
-      // The first check should be a simple end-to-end check with the Harrier Central backend
-      final String accessToken = Utilities.generateToken(
-        userId,
-        'hcapp_checkConnection',
-        paramString: deviceSecret,
-      );
+        final String body = jsonEncode(bodyMap);
 
-      final Map<String, String?> bodyMap = <String, String?>{
-        'queryType': 'checkConnection',
-        'deviceId': deviceId,
-        'accessToken': accessToken,
-      };
+        // 🚨 Add timeout to the backend request
+        final String responseBody = await ServiceCommon.sendHttpPostV2(
+          body,
+          bypassConnectionCheck: true,
+        ).timeout(hcServerTimeout, onTimeout: () => '${ERROR_PREFIX}Timeout');
 
-      final String body = jsonEncode(bodyMap);
-
-      final String responseBody = await ServiceCommon.sendHttpPostV2(
-        body,
-        bypassConnectionCheck: true,
-      );
-
-      if (!responseBody.startsWith(ERROR_PREFIX)) {
-        if (jsonDecode(responseBody)[0][0]['result'] == 'Connected') {
-          appModel.connectionStatus = EnumConnectionStatus2.connected;
-          // check against the Harrier Central backend succeeded
-          return true;
+        if (!responseBody.startsWith(ERROR_PREFIX)) {
+          final result = jsonDecode(responseBody)[0][0]['result'];
+          if (result == 'Connected') {
+            appModel.connectionStatus = EnumConnectionStatus2.connected;
+            return true; // ✅ success
+          }
         }
+      } catch (e) {
+        // Optional: log(e)
       }
     }
 
-    // check against the Harrier Central backend failed or was bypassed, let's check the internet connection
-    // using the InternetConnection package
+    // --- If we get here, Harrier Central backend failed or was skipped ---
 
     final backendChecker = InternetConnection.createInstance(
       customCheckOptions: [
@@ -827,10 +857,18 @@ class Utilities {
       ],
     );
 
-    bool backendAvailable = await backendChecker.hasInternetAccess;
+    // 🚨 Add timeout to the backend check
+    try {
+      backendAvailable = await backendChecker.hasInternetAccess.timeout(
+        internetCheckTimeout,
+        onTimeout: () => false,
+      );
+    } catch (_) {
+      backendAvailable = false;
+    }
 
-    // Retry logic if Harrier Central server is unavailable
-    while (!backendAvailable) {
+    if (!backendAvailable) {
+      // --- Fallback to general internet check ---
       final fallbackChecker = InternetConnection.createInstance(
         customCheckOptions: [
           InternetCheckOption(
@@ -842,29 +880,137 @@ class Utilities {
         ],
       );
 
-      final internetAvailable = await fallbackChecker.hasInternetAccess;
+      bool internetAvailable = false;
+      int attempt = 0;
 
-      if (internetAvailable) {
-        // Internet is up but our backend is down
-        await Utilities.showAlert(
-          'Server Offline',
-          'The Harrier Central App is able to access the network but is unable to connect to our backend server.\n\nThis can happen if there is a problem with the network or our service is down for maintenance.\n\nYou can use the app offline or close the app and try again later.',
-          'OK',
-        );
-        appModel.connectionStatus = EnumConnectionStatus2.notConnected;
-        return false;
-      } else {
-        appModel.connectionStatus = EnumConnectionStatus2.notConnected;
+      while (!internetAvailable && attempt < maxRetries) {
+        try {
+          internetAvailable = await fallbackChecker.hasInternetAccess.timeout(
+            internetCheckTimeout,
+            onTimeout: () => false,
+          );
+        } catch (_) {
+          internetAvailable = false;
+        }
 
-        await Future<void>.delayed(const Duration(seconds: 2));
-        backendAvailable = await backendChecker.hasInternetAccess;
+        if (internetAvailable) {
+          // Internet up, backend still down
+          if (!reconnectAttempt) {
+            await Utilities.showAlert(
+              'Server Offline',
+              'The Harrier Central App is able to access the network but cannot connect to our backend server.\n\nThis may be a temporary outage or maintenance.\n\nYou can use the app offline or try again later.',
+              'OK',
+            );
+          }
+          appModel.connectionStatus = EnumConnectionStatus2.notConnected;
+          return false;
+        }
+
+        attempt++;
+        await Future.delayed(const Duration(seconds: 2));
       }
+
+      // After retries, still no internet
+      appModel.connectionStatus = EnumConnectionStatus2.notConnected;
+      return false;
     }
 
-    // If we get here, everything is good
+    // --- Everything OK ---
     appModel.connectionStatus = EnumConnectionStatus2.connected;
     return true;
   }
+
+  // static Future<bool> checkForInternetConnection(
+  //   bool reconnectAttempt, {
+  //   bool performHcServerCheck = true,
+  // }) async {
+  //   if (performHcServerCheck) {
+  //     final String userId = getStringPref(StringPrefsEnum.userId) ?? GUID_EMPTY;
+
+  //     final String deviceId =
+  //         getStringPref(StringPrefsEnum.deviceId) ?? GUID_EMPTY;
+  //     final String deviceSecret =
+  //         getStringPref(StringPrefsEnum.deviceSecret) ??
+  //         'no_secret_required_here';
+
+  //     // NOTE: Eventually refactor the internet connectivity checks into a GetX service
+
+  //     // The first check should be a simple end-to-end check with the Harrier Central backend
+  //     final String accessToken = Utilities.generateToken(
+  //       userId,
+  //       'hcapp_checkConnection',
+  //       paramString: deviceSecret,
+  //     );
+
+  //     final Map<String, String?> bodyMap = <String, String?>{
+  //       'queryType': 'checkConnection',
+  //       'deviceId': deviceId,
+  //       'accessToken': accessToken,
+  //     };
+
+  //     final String body = jsonEncode(bodyMap);
+
+  //     final String responseBody = await ServiceCommon.sendHttpPostV2(
+  //       body,
+  //       bypassConnectionCheck: true,
+  //     );
+
+  //     if (!responseBody.startsWith(ERROR_PREFIX)) {
+  //       if (jsonDecode(responseBody)[0][0]['result'] == 'Connected') {
+  //         appModel.connectionStatus = EnumConnectionStatus2.connected;
+  //         // check against the Harrier Central backend succeeded
+  //         return true;
+  //       }
+  //     }
+  //   }
+
+  //   // check against the Harrier Central backend failed or was bypassed, let's check the internet connection
+  //   // using the InternetConnection package
+
+  //   final backendChecker = InternetConnection.createInstance(
+  //     customCheckOptions: [
+  //       InternetCheckOption(uri: Uri.parse(BASE_AF_CONNECTION_TEST_URL)),
+  //     ],
+  //   );
+
+  //   bool backendAvailable = await backendChecker.hasInternetAccess;
+
+  //   // Retry logic if Harrier Central server is unavailable
+  //   while (!backendAvailable) {
+  //     final fallbackChecker = InternetConnection.createInstance(
+  //       customCheckOptions: [
+  //         InternetCheckOption(
+  //           uri: Uri.parse('https://www.google.com/generate_204'),
+  //         ),
+  //         InternetCheckOption(
+  //           uri: Uri.parse('https://www.msftconnecttest.com/connecttest.txt'),
+  //         ),
+  //       ],
+  //     );
+
+  //     final internetAvailable = await fallbackChecker.hasInternetAccess;
+
+  //     if (internetAvailable) {
+  //       // Internet is up but our backend is down
+  //       await Utilities.showAlert(
+  //         'Server Offline',
+  //         'The Harrier Central App is able to access the network but is unable to connect to our backend server.\n\nThis can happen if there is a problem with the network or our service is down for maintenance.\n\nYou can use the app offline or close the app and try again later.',
+  //         'OK',
+  //       );
+  //       appModel.connectionStatus = EnumConnectionStatus2.notConnected;
+  //       return false;
+  //     } else {
+  //       appModel.connectionStatus = EnumConnectionStatus2.notConnected;
+
+  //       await Future<void>.delayed(const Duration(seconds: 2));
+  //       backendAvailable = await backendChecker.hasInternetAccess;
+  //     }
+  //   }
+
+  //   // If we get here, everything is good
+  //   appModel.connectionStatus = EnumConnectionStatus2.connected;
+  //   return true;
+  // }
 
   static String getFullLatLong(EventModel evt) {
     String fullLatLon = '';

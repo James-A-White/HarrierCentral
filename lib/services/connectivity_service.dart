@@ -27,6 +27,7 @@ class NetworkService extends GetxService {
 
     // Seed reachability
     final hasNet = await Utilities.checkForInternetConnection(false);
+
     status.value = hasNet ? NetworkStatus.online : NetworkStatus.offline;
 
     if (hasNet) {
