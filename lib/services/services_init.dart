@@ -12,6 +12,8 @@ Future<void> initServices() async {
     await Get.delete<AppModel>(force: true); // or await if you prefer
   }
 
+  print('Init services called: ${DateTime.now().millisecondsSinceEpoch}');
+
   Get.put<AppModel>(AppModel(), permanent: true);
 
   // AppModel must be first, as other services may read from it during init()

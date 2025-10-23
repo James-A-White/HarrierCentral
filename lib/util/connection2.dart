@@ -29,7 +29,7 @@ class Connection2 {
   }) {
     final network = Get.find<NetworkService>();
     return Obx(() {
-      if (network.isOnline) {
+      if (network.isOnline()) {
         return w;
       }
       // return ColorFiltered(

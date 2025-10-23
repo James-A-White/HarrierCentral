@@ -19,13 +19,12 @@ class OfflineModeRibbon extends StatelessWidget {
 
     return Obx(() {
       // Only show when we are OFFLINE
-      final isOffline = !network.isOnline;
-      if (!isOffline) return const SizedBox.shrink();
+      final isOnline = network.isOnline();
+      if (isOnline) return const SizedBox.shrink();
 
-      final lastSyncText =
-          lastSync != null
-              ? DateFormat("E, MMM d 'at' h:mm a").format(lastSync!)
-              : null;
+      final lastSyncText = lastSync != null
+          ? DateFormat("E, MMM d 'at' h:mm a").format(lastSync!)
+          : null;
 
       return Positioned(
         right: 0,
@@ -38,9 +37,9 @@ class OfflineModeRibbon extends StatelessWidget {
                       'Offline Mode',
                       lastSyncText != null
                           ? 'The data displayed in this app might be out of date. '
-                              'The last time the app connected to the server was $lastSyncText.'
+                                'The last time the app connected to the server was $lastSyncText.'
                           : 'The data displayed in this app might be out of date. '
-                              'There is no record indicating when the last sync occurred.',
+                                'There is no record indicating when the last sync occurred.',
                       'OK',
                       showCancelButton: true,
                       cancelButtonText: 'Try reconnect',

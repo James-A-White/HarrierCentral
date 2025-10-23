@@ -777,9 +777,11 @@ class Utilities {
     bool reconnectAttempt, {
     bool performHcServerCheck = true,
   }) async {
-    const Duration hcServerTimeout = Duration(milliseconds: 1500);
+    const Duration hcServerTimeout = Duration(milliseconds: 5000);
     const Duration internetCheckTimeout = Duration(seconds: 3);
     const int maxRetries = 3;
+
+    print('Connection check: time = ${DateTime.now().millisecondsSinceEpoch}');
 
     bool backendAvailable = false;
 
@@ -804,6 +806,7 @@ class Utilities {
     if (!hasInterface) {
       // Radios off (Wi-Fi + mobile data + ethernet + VPN)
       appModel.connectionStatus = EnumConnectionStatus2.notConnected;
+      print('No interfaces detected: ${DateTime.now().millisecondsSinceEpoch}');
       return false;
     }
 
@@ -841,8 +844,13 @@ class Utilities {
           final result = jsonDecode(responseBody)[0][0]['result'];
           if (result == 'Connected') {
             appModel.connectionStatus = EnumConnectionStatus2.connected;
+            print('HC server check successful, connected');
             return true; // ✅ success
           }
+        } else {
+          print(
+            'No HC server detected: ${DateTime.now().millisecondsSinceEpoch}',
+          );
         }
       } catch (e) {
         // Optional: log(e)
@@ -863,8 +871,12 @@ class Utilities {
         internetCheckTimeout,
         onTimeout: () => false,
       );
+      print('HC backend detected: ${DateTime.now().millisecondsSinceEpoch}');
     } catch (_) {
       backendAvailable = false;
+      print(
+        'HC backend not detected: ${DateTime.now().millisecondsSinceEpoch}',
+      );
     }
 
     if (!backendAvailable) {
@@ -891,6 +903,9 @@ class Utilities {
           );
         } catch (_) {
           internetAvailable = false;
+          print(
+            'Internet not available: ${DateTime.now().millisecondsSinceEpoch}',
+          );
         }
 
         if (internetAvailable) {
@@ -912,9 +927,13 @@ class Utilities {
 
       // After retries, still no internet
       appModel.connectionStatus = EnumConnectionStatus2.notConnected;
+      print(
+        'Retries failed.. not connected: ${DateTime.now().millisecondsSinceEpoch}',
+      );
       return false;
     }
 
+    print('Connected: ${DateTime.now().millisecondsSinceEpoch}');
     // --- Everything OK ---
     appModel.connectionStatus = EnumConnectionStatus2.connected;
     return true;

@@ -114,7 +114,7 @@ class AppEntryPageState extends State<AppEntryPage>
     }
 
     // Let's rebuild the services and then re-run the app
-    await initServices(); // GetX DI registration (see services_init.dart)
+    //await initServices(); // GetX DI registration (see services_init.dart)
 
     String? userId = getStringPref(StringPrefsEnum.userId);
     final String? deviceId = getStringPref(StringPrefsEnum.deviceId);
