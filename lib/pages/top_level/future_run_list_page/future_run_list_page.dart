@@ -126,8 +126,14 @@ class FutureRunsListPage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SizedBox(height: 2),
+                    controller.runsToDisplay.value == RunsToDisplay.onMap
+                        ? SizedBox(width: 135, child: _showMaptButton())
+                        : SizedBox.shrink(),
+
+                    controller.runsToDisplay.value != RunsToDisplay.onMap
+                        ? SizedBox(width: 135, child: _futurePastButton())
+                        : SizedBox.shrink(),
                     SizedBox(width: 135, child: _runsToDisplayButton()),
-                    SizedBox(width: 135, child: _futurePastButton()),
                   ],
                 ),
                 Expanded(
@@ -517,27 +523,6 @@ class FutureRunsListPage extends StatelessWidget {
                         ),
                       ),
                     )
-                  : controller.runsToDisplay.value == RunsToDisplay.onMap
-                  ? ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
-                      ),
-                      onPressed: () async {
-                        controller.openMap();
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                          left: 0,
-                          right: 0,
-                          top: 0,
-                        ),
-                        child: Text(
-                          'Show Map',
-                          textAlign: TextAlign.center,
-                          style: ts_button,
-                        ),
-                      ),
-                    )
                   : ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
@@ -557,6 +542,49 @@ class FutureRunsListPage extends StatelessWidget {
                         ),
                         child: Text(
                           controller.runsTimeScope.value.label,
+                          textAlign: TextAlign.center,
+                          style: ts_button,
+                        ),
+                      ),
+                    ),
+            );
+    });
+  }
+
+  Widget _showMaptButton() {
+    return Obx(() {
+      return !controller.runsToDisplay.value.showFuturePastToggle
+          ? SizedBox(height: 0)
+          : Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 13.0),
+              child: controller.showRunsTimeScopeSpinner.value
+                  ? SizedBox(
+                      height: 49,
+                      width: 70,
+                      child: Center(
+                        child: HcAppCircularProgressIndicator(
+                          key: UniqueKey(),
+                          color1: Colors.white,
+                          color2: Colors.blue.shade300,
+                          size: 35,
+                        ),
+                      ),
+                    )
+                  : ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
+                      ),
+                      onPressed: () async {
+                        controller.openMap();
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          left: 0,
+                          right: 0,
+                          top: 0,
+                        ),
+                        child: Text(
+                          'Show Map',
                           textAlign: TextAlign.center,
                           style: ts_button,
                         ),

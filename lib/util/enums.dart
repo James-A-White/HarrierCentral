@@ -147,7 +147,7 @@ enum RunsToDisplay {
   ),
   onMap(
     4,
-    'On Map',
+    'Map',
     0,
     true,
     false,

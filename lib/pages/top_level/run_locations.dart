@@ -1048,7 +1048,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                         (deviceInfo.deviceLon != null)) ...<Widget>[
                       Positioned(
                         right: 10.0,
-                        top: 60.0,
+                        top: 74.0,
                         child: GestureDetector(
                           onTap: () {
                             setState(() {
@@ -1073,8 +1073,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                       ),
                     ],
                     Positioned(
-                      left: 10.0,
-                      top: 60.0,
+                      right: 70.0,
+                      top: 74.0,
                       child: GestureDetector(
                         onTap: () {
                           setState(() {
@@ -1095,10 +1095,38 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                         ),
                       ),
                     ),
+
+                    Positioned(
+                      left: -2.0,
+                      top: 74.0,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 13.0),
+                        width: 135,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.only(
+                              top: 0.0,
+                              bottom: 0.0,
+                            ),
+                          ),
+                          onPressed: () async {
+                            final runsListController =
+                                Get.find<FutureRunListPageController>();
+                            runsListController.openList();
+                          },
+                          child: Text(
+                            'Show List',
+                            textAlign: TextAlign.center,
+                            style: ts_button,
+                          ),
+                        ),
+                      ),
+                    ),
+
                     Positioned(
                       left: 10.0,
                       right: 10.0,
-                      top: 10.0,
+                      top: 25.0,
                       child: Container(
                         padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
                         decoration: BoxDecoration(

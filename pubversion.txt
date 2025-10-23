@@ -1,3 +1,6 @@
+2.1.0+1018
+    • Added "Show List" button to map to switch to the list
+
 2.1.0+1014
     • Chat icon in main app bar will now toggle to the Chat page and back to the runs list
     • Added "Open Map" button to the sliver app bar

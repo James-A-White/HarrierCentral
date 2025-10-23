@@ -238,6 +238,14 @@ class FutureRunListPageController extends GetxController {
     }
   }
 
+  void openList() {
+    final controller = Get.find<MainNavigationController>();
+    controller.bottomNavigationKey.currentState?.setPage(0);
+    runsToDisplay.value = RunsToDisplay.onMap;
+    runsTimeScope.value = RunsTimeScope.all;
+    refreshFromTable(true);
+  }
+
   void openMap() {
     final controller = Get.find<MainNavigationController>();
     controller.bottomNavigationKey.currentState?.setPage(2);
