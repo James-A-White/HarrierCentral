@@ -1,3 +1,6 @@
+2.1.0+1020
+    • Production Release
+
 2.1.0+1018
     • Added "Show List" button to map to switch to the list
 
