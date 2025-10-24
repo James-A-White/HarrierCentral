@@ -1,3 +1,8 @@
+2.1.0+1030
+    • Production Release
+    • Bump Flutter version to 3.35.7
+    • Update dependencies  
+
 2.1.0+1021
     • More attempted fixes for the grey tab bar and search bar on certain Android phones
     • Repositioned the buttons on the Runs View to make the interface more intuitive

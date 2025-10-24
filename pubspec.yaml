@@ -1,11 +1,11 @@
 name: harrier_central
 description: A mobile app to manage your Hash House Harriers life.
-version: 2.1.0+1021 # see CHANGELOG.md for details
+version: 2.1.0+1030 # see CHANGELOG.md for details
 publish_to: none
 
 environment:
   sdk: '>=3.9.2 <4.0.0'
-  flutter: ^3.35.6
+  flutter: ^3.35.7
 
 # curved_labeled_navigation_bar 2.0.6
 
@@ -24,8 +24,8 @@ dependencies:
   cupertino_icons: ^1.0.3  
   dart_ipify: ^1.1.1
   diacritic: ^0.1.6
-  device_info_plus: ^12.0.0
-  eventide: ^0.10.2
+  device_info_plus: ^12.2.0
+  eventide: ^1.0.2
   fancy_bottom_navigation_2: ^0.3.5
   firebase_core: ^4.0.0 #^3.13.0
   firebase_messaging: ^16.0.0 #^15.2.5
@@ -40,7 +40,7 @@ dependencies:
   # flutter_localization: ^0.3.2
   flutter_map: ^8.2.1
   flutter_map_marker_cluster_plus: ^1.4.2
-  flutter_native_splash: ^2.4.6
+  flutter_native_splash: ^2.4.7
   #flutter_phoenix: ^1.0.0  
   flutter_slidable: ^4.0.0 
   flutter_speed_dial: ^7.0.0 
@@ -95,7 +95,7 @@ dependencies:
   # qr_code_scanner: ^1.0.0
   qr_flutter: ^4.0.0
   # responsive_navigation_bar: ^3.2.6 <------ new nav bar
-  share_plus: ^12.0.0
+  share_plus: ^12.0.1
   shared_preferences: ^2.0.7 
   sign_in_with_apple: ^7.0.1
   step_progress_indicator: ^1.0.2
