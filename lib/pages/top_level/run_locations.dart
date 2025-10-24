@@ -1047,7 +1047,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                         (deviceInfo.deviceLat != null) &&
                         (deviceInfo.deviceLon != null)) ...<Widget>[
                       Positioned(
-                        right: 10.0,
+                        left: 10.0,
                         top: 74.0,
                         child: GestureDetector(
                           onTap: () {
@@ -1073,7 +1073,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                       ),
                     ],
                     Positioned(
-                      right: 70.0,
+                      left: 70.0,
                       top: 74.0,
                       child: GestureDetector(
                         onTap: () {
@@ -1097,7 +1097,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                     ),
 
                     Positioned(
-                      left: -2.0,
+                      right: -2.0,
                       top: 74.0,
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 13.0),

@@ -1844,24 +1844,29 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                             child: Row(
                               children: [
                                 Expanded(
-                                  child: TabBar(
-                                    labelStyle: ts_tabSelected,
-                                    unselectedLabelStyle: ts_tabUnselected,
-                                    isScrollable: false,
-                                    labelPadding: const EdgeInsets.only(
-                                      top: 5,
-                                      left: 0,
-                                      right: 0,
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: TabBar(
+                                      labelStyle: ts_tabSelected,
+                                      unselectedLabelStyle: ts_tabUnselected,
+                                      isScrollable: false,
+                                      labelPadding: const EdgeInsets.only(
+                                        top: 5,
+                                        left: 0,
+                                        right: 0,
+                                      ),
+                                      unselectedLabelColor: Colors.black,
+                                      labelColor: Colors.white,
+                                      indicatorSize: TabBarIndicatorSize.tab,
+                                      indicator: BoxDecoration(
+                                        color: hc_red,
+                                        borderRadius: BorderRadius.circular(
+                                          999,
+                                        ),
+                                      ),
+                                      tabs: _tabs,
+                                      controller: _tabController,
                                     ),
-                                    unselectedLabelColor: Colors.black,
-                                    labelColor: Colors.white,
-                                    indicatorSize: TabBarIndicatorSize.tab,
-                                    indicator: BoxDecoration(
-                                      color: hc_red,
-                                      borderRadius: BorderRadius.circular(999),
-                                    ),
-                                    tabs: _tabs,
-                                    controller: _tabController,
                                   ),
                                 ),
                                 if ((chatCount != null) &&

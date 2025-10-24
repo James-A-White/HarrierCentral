@@ -50,53 +50,56 @@ class FutureRunsListPage extends StatelessWidget {
             child: Container(
               color: Colors.white,
               padding: const EdgeInsets.only(left: 14.0),
-              child: Row(
-                children: <Widget>[
-                  Expanded(
-                    child: TextField(
-                      autocorrect: false,
-                      onChanged: (text) =>
-                          controller.searchRunsText.value = text,
+              child: Material(
+                color: Colors.transparent,
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: TextField(
+                        autocorrect: false,
+                        onChanged: (text) =>
+                            controller.searchRunsText.value = text,
 
-                      focusNode: controller.searchFocusNode,
-                      controller: controller.searchController,
-                      keyboardType: TextInputType.text,
-                      style: ts_footnoteBlack,
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        icon: const Icon(
-                          FontAwesome.search,
-                          color: Colors.black,
-                        ),
-                        hintText: 'Search...',
-                        hintStyle: ts_searchLabel,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 40,
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        shape: button_shape,
-                        textStyle: TextStyle(color: Colors.grey.shade700),
-                        backgroundColor: Colors.white,
-                      ),
-                      child: Text(
-                        'X',
-                        style: ts_headingBlack.copyWith(
-                          color: Colors.grey.shade700,
+                        focusNode: controller.searchFocusNode,
+                        controller: controller.searchController,
+                        keyboardType: TextInputType.text,
+                        style: ts_footnoteBlack,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          icon: const Icon(
+                            FontAwesome.search,
+                            color: Colors.black,
+                          ),
+                          hintText: 'Search...',
+                          hintStyle: ts_searchLabel,
                         ),
                       ),
-                      onPressed: () {
-                        controller.searchController.text = '';
-                        controller.searchRunsText.value = '';
-                        //setState(() {
-                        controller.filterRuns(true);
-                        //});
-                      },
                     ),
-                  ),
-                ],
+                    SizedBox(
+                      width: 40,
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          shape: button_shape,
+                          textStyle: TextStyle(color: Colors.grey.shade700),
+                          backgroundColor: Colors.white,
+                        ),
+                        child: Text(
+                          'X',
+                          style: ts_headingBlack.copyWith(
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                        onPressed: () {
+                          controller.searchController.text = '';
+                          controller.searchRunsText.value = '';
+                          //setState(() {
+                          controller.filterRuns(true);
+                          //});
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -116,16 +119,21 @@ class FutureRunsListPage extends StatelessWidget {
             }),
           ),
           const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
+
           Container(
             color: Colors.black38,
             height: 100,
-            child: Row(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Column(
+                SizedBox(height: 5),
+                Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SizedBox(height: 2),
+                    SizedBox(width: 135, child: _runsToDisplayButton()),
+
+                    //Expanded(child: SizedBox.square(dimension: 10.0)),
+                    Expanded(child: SizedBox.square(dimension: 10.0)),
                     controller.runsToDisplay.value == RunsToDisplay.onMap
                         ? SizedBox(width: 135, child: _showMaptButton())
                         : SizedBox.shrink(),
@@ -133,38 +141,46 @@ class FutureRunsListPage extends StatelessWidget {
                     controller.runsToDisplay.value != RunsToDisplay.onMap
                         ? SizedBox(width: 135, child: _futurePastButton())
                         : SizedBox.shrink(),
-                    SizedBox(width: 135, child: _runsToDisplayButton()),
                   ],
                 ),
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsets.only(right: 10),
-                    child: AutoSizeText(
-                      controller.runsToDisplay.value.description,
-                      style: ts_bodyYellow,
-                      textAlign: TextAlign.center,
-                      maxLines: 4,
-                    ),
+                SizedBox(height: 5.0),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          padding: EdgeInsets.only(right: 10),
+                          child: AutoSizeText(
+                            controller.runsToDisplay.value.description,
+                            style: ts_bodyYellow,
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                          ),
 
-                    //height: 100,
-                    // width: 100,
+                          //height: 100,
+                          // width: 100,
+                        ),
+                      ),
+
+                      SizedBox(width: 10),
+
+                      GestureDetector(
+                        onTap: () async {
+                          await Utilities.showAlert(
+                            controller.runsToDisplay.value.helpTitle,
+                            controller.runsToDisplay.value.helpText,
+                            'OK',
+                          );
+                        },
+                        child: SizedBox(
+                          height: 35,
+                          child: Image.asset('images/icons/info_button.png'),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-
-                GestureDetector(
-                  onTap: () async {
-                    await Utilities.showAlert(
-                      controller.runsToDisplay.value.helpTitle,
-                      controller.runsToDisplay.value.helpText,
-                      'OK',
-                    );
-                  },
-                  child: SizedBox(
-                    height: 35,
-                    child: Image.asset('images/icons/info_button.png'),
-                  ),
-                ),
-                SizedBox(width: 10),
               ],
             ),
           ),
