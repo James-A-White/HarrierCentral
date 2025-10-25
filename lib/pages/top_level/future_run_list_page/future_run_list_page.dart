@@ -130,17 +130,30 @@ class FutureRunsListPage extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SizedBox(width: 135, child: _runsToDisplayButton()),
-
-                    //Expanded(child: SizedBox.square(dimension: 10.0)),
-                    Expanded(child: SizedBox.square(dimension: 10.0)),
+                    SizedBox(width: 10),
+                    _runsToDisplayButton(),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 7.0),
+                        child: Center(
+                          child: Text(
+                            controller.runsToDisplay.value.label.replaceAll(
+                              '~',
+                              controller.runsTimeScope.value.label,
+                            ),
+                            style: ts_titleLarge,
+                          ),
+                        ),
+                      ),
+                    ),
                     controller.runsToDisplay.value == RunsToDisplay.onMap
-                        ? SizedBox(width: 135, child: _showMaptButton())
+                        ? SizedBox(width: 70, child: _showMapButton())
                         : SizedBox.shrink(),
 
                     controller.runsToDisplay.value != RunsToDisplay.onMap
-                        ? SizedBox(width: 135, child: _futurePastButton())
+                        ? SizedBox(width: 70, child: _futurePastButton())
                         : SizedBox.shrink(),
+                    SizedBox(width: 10),
                   ],
                 ),
                 SizedBox(height: 5.0),
@@ -523,136 +536,169 @@ class FutureRunsListPage extends StatelessWidget {
   Widget _futurePastButton() {
     return Obx(() {
       return !controller.runsToDisplay.value.showFuturePastToggle
-          ? SizedBox(height: 0)
-          : Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 13.0),
-              child: controller.showRunsTimeScopeSpinner.value
-                  ? SizedBox(
-                      height: 49,
-                      width: 70,
-                      child: Center(
-                        child: HcAppCircularProgressIndicator(
-                          key: UniqueKey(),
-                          color1: Colors.white,
-                          color2: Colors.blue.shade300,
-                          size: 35,
+          ? SizedBox(height: 48)
+          : controller.showRunsTimeScopeSpinner.value
+          ? SizedBox(
+              height: 49,
+              width: 70,
+              child: Center(
+                child: HcAppCircularProgressIndicator(
+                  key: UniqueKey(),
+                  color1: Colors.white,
+                  color2: Colors.blue.shade300,
+                  size: 35,
+                ),
+              ),
+            )
+          : ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
+              ),
+              onPressed: () async {
+                controller.runsTimeScope.value =
+                    RunsTimeScope.values[(controller.runsTimeScope.value.next)];
+                controller.runsTimeScopeLoading.value = true;
+                await controller.refreshFromTable(true);
+                controller.runsTimeScopeLoading.value = false;
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(left: 0, right: 0, top: 0),
+                child: controller.runsTimeScope.value == RunsTimeScope.past
+                    ? Padding(
+                        padding: const EdgeInsets.only(left: 5.0),
+                        child: Transform.scale(
+                          scaleX: -1,
+                          child: Icon(
+                            Entypo.back_in_time,
+                            color: Colors.white,
+                            size: 30.0,
+                          ),
                         ),
+                      )
+                    : Icon(
+                        Entypo.back_in_time,
+                        color: Colors.white,
+                        size: 30.0,
                       ),
-                    )
-                  : ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
-                      ),
-                      onPressed: () async {
-                        controller.runsTimeScope.value = RunsTimeScope
-                            .values[(controller.runsTimeScope.value.next)];
-                        controller.runsTimeScopeLoading.value = true;
-                        await controller.refreshFromTable(true);
-                        controller.runsTimeScopeLoading.value = false;
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                          left: 0,
-                          right: 0,
-                          top: 0,
-                        ),
-                        child: Text(
-                          controller.runsTimeScope.value.label,
-                          textAlign: TextAlign.center,
-                          style: ts_button,
-                        ),
-                      ),
-                    ),
+              ),
             );
     });
   }
 
-  Widget _showMaptButton() {
+  Widget _showMapButton() {
     return Obx(() {
       return !controller.runsToDisplay.value.showFuturePastToggle
           ? SizedBox(height: 0)
-          : Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 13.0),
-              child: controller.showRunsTimeScopeSpinner.value
-                  ? SizedBox(
-                      height: 49,
-                      width: 70,
-                      child: Center(
-                        child: HcAppCircularProgressIndicator(
-                          key: UniqueKey(),
-                          color1: Colors.white,
-                          color2: Colors.blue.shade300,
-                          size: 35,
-                        ),
-                      ),
-                    )
-                  : ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
-                      ),
-                      onPressed: () async {
-                        controller.openMap();
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                          left: 0,
-                          right: 0,
-                          top: 0,
-                        ),
-                        child: Text(
-                          'Show Map',
-                          textAlign: TextAlign.center,
-                          style: ts_button,
-                        ),
-                      ),
-                    ),
+          : controller.showRunsTimeScopeSpinner.value
+          ? SizedBox(
+              height: 49,
+              width: 70,
+              child: Center(
+                child: HcAppCircularProgressIndicator(
+                  key: UniqueKey(),
+                  color1: Colors.white,
+                  color2: Colors.blue.shade300,
+                  size: 35,
+                ),
+              ),
+            )
+          : ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
+                // minimumSize: const Size(0, 0), // remove min size constraints
+                // tapTargetSize:
+                //     MaterialTapTargetSize.shrinkWrap, // tighter hitbox
+              ),
+              onPressed: () async {
+                controller.openMap();
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                ),
+                child: Icon(
+                  MaterialCommunityIcons.map_search,
+                  color: Colors.white,
+                  size: 30.0,
+                ),
+              ),
             );
     });
   }
 
   Widget _runsToDisplayButton() {
-    return Obx(
-      () => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 13.0),
-        child: controller.showRunToDisplaySpinner.value
-            ? SizedBox(
-                height: 49,
-                width: 100,
-                child: Center(
-                  child: HcAppCircularProgressIndicator(
-                    key: UniqueKey(),
-                    color1: Colors.white,
-                    color2: Colors.blue.shade300,
-                    size: 35,
-                  ),
-                ),
-              )
-            : ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
-                ),
-                onPressed: () async {
-                  controller.runsToDisplay.value = RunsToDisplay
-                      .values[(controller.runsToDisplay.value.next)];
-                  controller.runsToDisplay.value.defaultViewIsFuture
-                      ? controller.runsTimeScope.value = RunsTimeScope.future
-                      : controller.runsTimeScope.value = RunsTimeScope.past;
-                  controller.runsToDisplayLoading.value = true;
-                  await controller.refreshFromTable(true);
-                  controller.runsToDisplayLoading.value = false;
-                },
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 10, right: 10, top: 0),
-                  child: Text(
-                    controller.runsToDisplay.value.label,
-                    textAlign: TextAlign.center,
-                    style: ts_button,
-                  ),
-                ),
-              ),
+    return Center(
+      child: PillArrowButtons(
+        onLeftPressed: () async {
+          controller.runsToDisplay.value =
+              RunsToDisplay.values[(controller.runsToDisplay.value.previous)];
+          controller.runsToDisplay.value.defaultViewIsFuture
+              ? controller.runsTimeScope.value = RunsTimeScope.future
+              : controller.runsTimeScope.value = RunsTimeScope.past;
+          controller.runsToDisplayLoading.value = true;
+          await controller.refreshFromTable(true);
+          controller.runsToDisplayLoading.value = false;
+        },
+        onRightPressed: () async {
+          controller.runsToDisplay.value =
+              RunsToDisplay.values[(controller.runsToDisplay.value.next)];
+          controller.runsToDisplay.value.defaultViewIsFuture
+              ? controller.runsTimeScope.value = RunsTimeScope.future
+              : controller.runsTimeScope.value = RunsTimeScope.past;
+          controller.runsToDisplayLoading.value = true;
+          await controller.refreshFromTable(true);
+          controller.runsToDisplayLoading.value = false;
+        },
       ),
     );
   }
+
+  // Widget _runsToDisplayButton() {
+  //   return Obx(
+  //     () => Padding(
+  //       padding: const EdgeInsets.symmetric(horizontal: 13.0),
+  //       child: controller.showRunToDisplaySpinner.value
+  //           ? SizedBox(
+  //               height: 49,
+  //               width: 100,
+  //               child: Center(
+  //                 child: HcAppCircularProgressIndicator(
+  //                   key: UniqueKey(),
+  //                   color1: Colors.white,
+  //                   color2: Colors.blue.shade300,
+  //                   size: 35,
+  //                 ),
+  //               ),
+  //             )
+  //           : ElevatedButton(
+  //               style: ElevatedButton.styleFrom(
+  //                 padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
+  //               ),
+  //               onPressed: () async {
+  //                 controller.runsToDisplay.value = RunsToDisplay
+  //                     .values[(controller.runsToDisplay.value.next)];
+  //                 controller.runsToDisplay.value.defaultViewIsFuture
+  //                     ? controller.runsTimeScope.value = RunsTimeScope.future
+  //                     : controller.runsTimeScope.value = RunsTimeScope.past;
+  //                 controller.runsToDisplayLoading.value = true;
+  //                 await controller.refreshFromTable(true);
+  //                 controller.runsToDisplayLoading.value = false;
+  //               },
+  //               child: Padding(
+  //                 padding: const EdgeInsets.only(left: 10, right: 10, top: 0),
+  //                 child: Text(
+  //                   controller.runsToDisplay.value.label,
+  //                   textAlign: TextAlign.center,
+  //                   style: ts_button,
+  //                 ),
+  //               ),
+  //             ),
+  //     ),
+  //   );
+  // }
 
   void _showConfigureDistancePopup(BuildContext context) {
     final String units =

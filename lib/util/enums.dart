@@ -107,8 +107,9 @@ enum TriStateFilter { neutral, include, exclude }
 enum RunsToDisplay {
   allRuns(
     0,
-    'All Runs',
+    '~ Runs',
     1,
+    4,
     true,
     true,
     'This view shows all upcoming runs and past runs for Kennels you follow.',
@@ -117,18 +118,20 @@ enum RunsToDisplay {
   ),
   myRuns(
     1,
-    'My Runs',
+    'My ~ Runs',
     2,
-    false,
-    false,
+    0,
+    true,
+    true,
     'This view shows only the runs you RSVPed to attend or attended.',
     'My Runs View',
     'Want to relive your favorite trails? This view lets you scroll through all the runs you’ve RSVPed for or attended.\r\n\r\nRead the original run descriptions, see who else was there, view run artwork, and dive back into those unforgettable Hashing moments!',
   ),
   unreadChats(
     2,
-    'Chats',
+    'Unseen Chats',
     3,
+    1,
     false,
     false,
     'This view shows only those runs that have unread chat messages',
@@ -137,8 +140,9 @@ enum RunsToDisplay {
   ),
   events(
     3,
-    'Events',
+    '~ Events',
     4,
+    2,
     true,
     true,
     'This view shows runs that have been marked as special events.',
@@ -147,8 +151,9 @@ enum RunsToDisplay {
   ),
   onMap(
     4,
-    'Map',
+    'Runs on Map',
     0,
+    3,
     true,
     false,
     'This view shows runs that are currently visible on the map view.',
@@ -160,6 +165,7 @@ enum RunsToDisplay {
   final int id;
   final String label;
   final int next;
+  final int previous;
   final bool showFuturePastToggle;
   final bool defaultViewIsFuture;
   final String description;
@@ -170,6 +176,7 @@ enum RunsToDisplay {
     this.id,
     this.label,
     this.next,
+    this.previous,
     this.showFuturePastToggle,
     this.defaultViewIsFuture,
     this.description,
