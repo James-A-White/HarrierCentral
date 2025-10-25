@@ -40,7 +40,7 @@ class FutureRunsListPage extends StatelessWidget {
 
   Widget _searchBar() {
     return SizedBox(
-      height: 176.0,
+      height: 131.0,
       child: Column(
         mainAxisSize: MainAxisSize.max,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,7 +122,7 @@ class FutureRunsListPage extends StatelessWidget {
 
           Container(
             color: Colors.black38,
-            height: 100,
+            height: 55,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
@@ -147,53 +147,67 @@ class FutureRunsListPage extends StatelessWidget {
                       ),
                     ),
                     controller.runsToDisplay.value == RunsToDisplay.onMap
-                        ? SizedBox(width: 70, child: _showMapButton())
+                        ? SizedBox(width: 42, child: _showMapButton())
                         : SizedBox.shrink(),
 
                     controller.runsToDisplay.value != RunsToDisplay.onMap
-                        ? SizedBox(width: 70, child: _futurePastButton())
+                        ? SizedBox(width: 42, child: _futurePastButton())
                         : SizedBox.shrink(),
+                    SizedBox(width: 5),
+                    GestureDetector(
+                      onTap: () async {
+                        await Utilities.showAlert(
+                          controller.runsToDisplay.value.helpTitle,
+                          controller.runsToDisplay.value.helpText,
+                          'OK',
+                        );
+                      },
+                      child: SizedBox(
+                        height: 33,
+                        child: Image.asset('images/icons/info_button.png'),
+                      ),
+                    ),
                     SizedBox(width: 10),
                   ],
                 ),
-                SizedBox(height: 5.0),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          padding: EdgeInsets.only(right: 10),
-                          child: AutoSizeText(
-                            controller.runsToDisplay.value.description,
-                            style: ts_bodyYellow,
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                          ),
+                // SizedBox(height: 5.0),
+                // Padding(
+                //   padding: const EdgeInsets.symmetric(horizontal: 14.0),
+                //   child: Row(
+                //     children: [
+                //       Expanded(
+                //         child: Container(
+                //           padding: EdgeInsets.only(right: 10),
+                //           child: AutoSizeText(
+                //             controller.runsToDisplay.value.description,
+                //             style: ts_bodyYellow,
+                //             textAlign: TextAlign.center,
+                //             maxLines: 2,
+                //           ),
 
-                          //height: 100,
-                          // width: 100,
-                        ),
-                      ),
+                //           //height: 100,
+                //           // width: 100,
+                //         ),
+                //       ),
 
-                      SizedBox(width: 10),
+                //       SizedBox(width: 10),
 
-                      GestureDetector(
-                        onTap: () async {
-                          await Utilities.showAlert(
-                            controller.runsToDisplay.value.helpTitle,
-                            controller.runsToDisplay.value.helpText,
-                            'OK',
-                          );
-                        },
-                        child: SizedBox(
-                          height: 35,
-                          child: Image.asset('images/icons/info_button.png'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                //       GestureDetector(
+                //         onTap: () async {
+                //           await Utilities.showAlert(
+                //             controller.runsToDisplay.value.helpTitle,
+                //             controller.runsToDisplay.value.helpText,
+                //             'OK',
+                //           );
+                //         },
+                //         child: SizedBox(
+                //           height: 35,
+                //           child: Image.asset('images/icons/info_button.png'),
+                //         ),
+                //       ),
+                //     ],
+                //   ),
+                // ),
               ],
             ),
           ),
@@ -255,13 +269,13 @@ class FutureRunsListPage extends StatelessWidget {
                 //   delegate: SliverChildListDelegate(<Widget>[_searchBar()]),
                 // ),
                 SliverAppBar(
-                  expandedHeight: 176,
+                  expandedHeight: 131,
                   backgroundColor: Colors.transparent,
                   elevation: 0,
                   surfaceTintColor: Colors.transparent,
                   floating: true,
                   pinned: false,
-                  toolbarHeight: 176, // 👈 your desired height
+                  toolbarHeight: 131, // 👈 your desired height
                   titleSpacing: 0.0,
                   flexibleSpace: _searchBar(),
                 ),

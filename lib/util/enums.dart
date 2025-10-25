@@ -112,7 +112,6 @@ enum RunsToDisplay {
     4,
     true,
     true,
-    'This view shows all upcoming runs and past runs for Kennels you follow.',
     'All Runs View',
     'Welcome to the default view! Here you’ll find all upcoming Hash runs from across the globe, sorted so it’s easy to spot what’s happening near you — at home or while traveling.\r\n\r\nSwitch to past runs to browse your Kennels’ history: you’ll see every run from the Kennels you follow, plus the last 30 days of runs from all others. Use the search tool to dig even deeper into your Hashing adventures!',
   ),
@@ -123,7 +122,6 @@ enum RunsToDisplay {
     0,
     true,
     true,
-    'This view shows only the runs you RSVPed to attend or attended.',
     'My Runs View',
     'Want to relive your favorite trails? This view lets you scroll through all the runs you’ve RSVPed for or attended.\r\n\r\nRead the original run descriptions, see who else was there, view run artwork, and dive back into those unforgettable Hashing moments!',
   ),
@@ -134,7 +132,6 @@ enum RunsToDisplay {
     1,
     false,
     false,
-    'This view shows only those runs that have unread chat messages',
     'Unread Chats View',
     'This view shows only runs with new chat messages you haven’t read yet, keeping you up to date on the latest info — whether the run is today or months away.\r\n\r\nTrail Chat keeps everything organized: every run has its own chat thread, so no more losing important trail information inside noisy WhatsApp groups!',
   ),
@@ -145,7 +142,6 @@ enum RunsToDisplay {
     2,
     true,
     true,
-    'This view shows runs that have been marked as special events.',
     'Special Events View',
     'Ready to see what’s happening in the global Hashing world?\r\n\r\nScroll through special events hosted by Kennels everywhere. Whether you’re planning your next trip or just curious what’s coming up, this is your ticket to unforgettable Hash experiences!',
   ),
@@ -156,7 +152,6 @@ enum RunsToDisplay {
     3,
     true,
     false,
-    'This view shows runs that are currently visible on the map view.',
     'Map View',
     'Want to find runs in a specific area? The Map View is just what you need.\r\n\r\nYou can zoom and scroll to any location — from a single city block to an entire continent — and when you switch back to the runs list, it will display all runs within that area.\r\n\r\nIt’s also a great tool for planning your next trail by spotting places that haven’t seen a Hash run in a while.',
   );
@@ -168,7 +163,7 @@ enum RunsToDisplay {
   final int previous;
   final bool showFuturePastToggle;
   final bool defaultViewIsFuture;
-  final String description;
+
   final String helpTitle;
   final String helpText;
 
@@ -179,7 +174,7 @@ enum RunsToDisplay {
     this.previous,
     this.showFuturePastToggle,
     this.defaultViewIsFuture,
-    this.description,
+
     this.helpTitle,
     this.helpText,
   );

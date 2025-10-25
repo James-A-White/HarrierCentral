@@ -1,3 +1,6 @@
+2.1.1+1031
+    • Cleaned up the UI on the Runs List page
+
 2.1.0+1030
     • Production Release
     • Bump Flutter version to 3.35.7
