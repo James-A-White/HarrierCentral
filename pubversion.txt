@@ -1,4 +1,15 @@
+2.1.2+1040
+    • Production Release
+    • On the map made pins semi-transparent for past runs
+    • Added date filter to Runs List
+
+2.1.2+1032
+    • Removed unused locales from GetMaterialApp
+    • Report locale back to server for debugging / statistics
+    • Added a BetaFeaturesEnabled capability
+
 2.1.1+1031
+    • Production Release
     • Cleaned up the UI on the Runs List page
 
 2.1.0+1030

@@ -17,6 +17,7 @@ enum StringPrefsEnum {
   adminKennelId,
   androidDownloadLink,
   apnsToken,
+  betaFeaturesEnabled,
   bootType,
   customEmailBody,
   deviceId,
@@ -107,7 +108,7 @@ enum TriStateFilter { neutral, include, exclude }
 enum RunsToDisplay {
   allRuns(
     0,
-    '~ Runs',
+    '~Runs',
     1,
     4,
     true,
@@ -117,7 +118,7 @@ enum RunsToDisplay {
   ),
   myRuns(
     1,
-    'My ~ Runs',
+    'My ~Runs',
     2,
     0,
     true,
@@ -137,7 +138,7 @@ enum RunsToDisplay {
   ),
   events(
     3,
-    '~ Events',
+    '~Events',
     4,
     2,
     true,
@@ -212,9 +213,10 @@ enum SortType {
 /// Chat tabs with their corresponding integer IDs.
 enum RunsTimeScope {
   future(0, 'Future', 1),
-  past(1, 'Past', 0),
+  past(1, 'Past', 2),
+  range(2, '', 0),
   all(
-    2,
+    3,
     'All',
     0,
   ); // the button rotation should never get here, but if it does revert back to future.

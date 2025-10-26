@@ -95,12 +95,7 @@ class RootApp extends StatelessWidget {
       },
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey, // or Get.key if you prefer
-      supportedLocales: const <Locale>[
-        Locale('en', 'US'),
-        Locale('es', 'ES'),
-        Locale('pt', 'PT'),
-        Locale('de', 'DE'),
-      ],
+      supportedLocales: const <Locale>[Locale('en', 'US')],
       home: AppEntryPage(),
       getPages: [
         GetPage(name: '/main', page: () => MainNavigationPage()),

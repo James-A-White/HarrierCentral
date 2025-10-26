@@ -54,6 +54,10 @@ class AppEntryPageState extends State<AppEntryPage>
         StringPrefsEnum.thirdPartyUserId,
       );
 
+      final String? betaFeaturesEnabled = getStringPref(
+        StringPrefsEnum.betaFeaturesEnabled,
+      );
+
       final DateTime? thirdPartyTokenLastUpdated = getDatePref(
         DatePrefsEnum.thirdPartyTokenLastUpdated,
       );
@@ -70,6 +74,10 @@ class AppEntryPageState extends State<AppEntryPage>
       await setStringPref(StringPrefsEnum.displayName, displayName);
       await setStringPref(StringPrefsEnum.publicHasherId, publicHasherId);
       await setStringPref(StringPrefsEnum.profilePhotoUrl, profilePhotoUrl);
+      await setStringPref(
+        StringPrefsEnum.betaFeaturesEnabled,
+        betaFeaturesEnabled,
+      );
       await setIntPref(IntPrefsEnum.timeWindow, timeWindow);
 
       await setStringPref(
@@ -249,6 +257,11 @@ class AppEntryPageState extends State<AppEntryPage>
       await setStringPref(
         StringPrefsEnum.imageRootUrl,
         loginResult.imageRootUrl,
+      );
+
+      await setStringPref(
+        StringPrefsEnum.betaFeaturesEnabled,
+        loginResult.betaFeaturesEnabled,
       );
       await setIntPref(
         IntPrefsEnum.isBetaTester,

@@ -537,7 +537,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
         run.extensions.evtLat!,
         run.extensions.evtLon!,
       );
-      final DateTime dt = run.event.eventStartDatetime;
+      final DateTime dt = run.event.eventStartDatetimeGmt;
 
       final Marker marker = Marker(
         width: 45.0,
@@ -545,16 +545,19 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
         alignment: Alignment.topCenter,
         //anchorPos: AnchorPos.exactly(Anchor(27.0, 0.0)),
         point: ll,
-        child: _buildRunMarker(
-          run.event.eventId,
-          dt,
-          run.event.eventName,
-          rsvpState: run.extensions.rsvpState,
-          attendenceState: run.extensions.attendenceState,
-          isHare: run.extensions.isHare,
-          kennelPinColor: run.kennel.kennelPinColor,
-          eventScope: run.event.eventGeographicScope,
-          isCountedRun: run.event.isCountedRun,
+        child: Opacity(
+          opacity: dt.isBefore(DateTime.now()) ? 0.66 : 1.0,
+          child: _buildRunMarker(
+            run.event.eventId,
+            dt,
+            run.event.eventName,
+            rsvpState: run.extensions.rsvpState,
+            attendenceState: run.extensions.attendenceState,
+            isHare: run.extensions.isHare,
+            kennelPinColor: run.kennel.kennelPinColor,
+            eventScope: run.event.eventGeographicScope,
+            isCountedRun: run.event.isCountedRun,
+          ),
         ),
       );
 
@@ -664,7 +667,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
 
   Widget _buildRunMarker(
     String eventId,
-    DateTime? eventStartDatetime,
+    DateTime? eventStartDatetimeGmt,
     String eventName, {
     int? attendenceState,
     int? rsvpState,
@@ -688,7 +691,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
       },
       child: Image.asset(
         _getPin(
-          eventStartDatetime ?? DateTime.now(),
+          eventStartDatetimeGmt ?? DateTime.now(),
           rsvpState,
           attendenceState,
           isHare,
@@ -803,7 +806,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
   ];
 
   String _getPin(
-    DateTime eventStartDatetime,
+    DateTime eventStartDatetimeGmt,
     int? rsvpState,
     int? attendenceState,
     int? isHare,
@@ -823,7 +826,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
       isEvent = 'event';
     }
 
-    if (eventStartDatetime.isAfter(DateTime.now())) {
+    if (eventStartDatetimeGmt.isAfter(DateTime.now())) {
       // run is in the future
       if (((attendenceState ?? 0) >= attendenceAtHash.value) ||
           ((rsvpState ?? 0) >= rsvpYes.value)) {

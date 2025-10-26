@@ -158,6 +158,9 @@ class QueryRuns {
     RunsTimeScope runsTimeScope, {
     LatLngBounds? mapBounds,
     Map<String, RxInt>? unseenChats,
+    DateTime? dateRangeStart,
+    DateTime? dateRangeEnd,
+    bool? useDatesForAllYears,
   }) {
     List<RunDetailsAggregate> timeFilteredRuns = <RunDetailsAggregate>[];
 
@@ -176,6 +179,50 @@ class QueryRuns {
                 (RunDetailsAggregate a) => a.extensions.showAsPastEvent == 1,
               )
               .toList();
+          break;
+        case RunsTimeScope.range:
+          if ((useDatesForAllYears ?? false) &&
+              (dateRangeStart != null) &&
+              (dateRangeEnd != null)) {
+            DateTime startDate = _stripYear(dateRangeStart);
+            DateTime endDate = _stripYear(
+              dateRangeEnd,
+            ).add(const Duration(days: 1));
+
+            if (startDate.isAfter(endDate)) {
+              DateTime temp = startDate;
+              startDate = endDate;
+              endDate = temp;
+            }
+
+            print('start = $startDate, end = $endDate');
+
+            timeFilteredRuns = allRuns
+                .where(
+                  (RunDetailsAggregate a) =>
+                      (_stripYear(
+                        a.event.eventStartDatetime,
+                      ).isAfter(startDate) &&
+                      (_stripYear(
+                        a.event.eventStartDatetime,
+                      ).isBefore(endDate))),
+                )
+                .toList();
+          } else {
+            timeFilteredRuns = allRuns
+                .where(
+                  (RunDetailsAggregate a) =>
+                      (a.event.eventStartDatetime.isAfter(
+                        dateRangeStart ??
+                            DateTime.now().subtract(const Duration(days: 7)),
+                      ) &&
+                      (a.event.eventStartDatetime.isBefore(
+                        dateRangeEnd?.add(const Duration(days: 1)) ??
+                            DateTime.now().add(const Duration(days: 30)),
+                      ))),
+                )
+                .toList();
+          }
           break;
         case RunsTimeScope.all:
           timeFilteredRuns = allRuns.toList();
@@ -278,6 +325,17 @@ class QueryRuns {
     // }
 
     // return searchTextFilteredRuns;
+  }
+
+  static DateTime _stripYear(DateTime input) {
+    return DateTime(
+      2000,
+      input.month,
+      input.day,
+      input.hour,
+      input.minute,
+      input.second,
+    );
   }
 
   static List<dynamic> doRunsSearchTextFilter(

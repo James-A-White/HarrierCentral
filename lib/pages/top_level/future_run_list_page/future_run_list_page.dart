@@ -1,4 +1,6 @@
+import 'package:calendar_date_picker2/calendar_date_picker2.dart' as calendar;
 import 'package:harrier_central/imports.dart';
+import 'package:intl/intl.dart';
 
 class FutureRunsListPage extends StatelessWidget {
   FutureRunsListPage() : super(key: UniqueKey());
@@ -38,7 +40,7 @@ class FutureRunsListPage extends StatelessWidget {
     await controller.refreshFromTable(true);
   }
 
-  Widget _searchBar() {
+  Widget _searchBar(BuildContext context) {
     return SizedBox(
       height: 131.0,
       child: Column(
@@ -136,12 +138,49 @@ class FutureRunsListPage extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.only(top: 7.0),
                         child: Center(
-                          child: Text(
-                            controller.runsToDisplay.value.label.replaceAll(
-                              '~',
-                              controller.runsTimeScope.value.label,
-                            ),
-                            style: ts_titleLarge,
+                          child: Column(
+                            children: [
+                              AutoSizeText(
+                                minFontSize: 5,
+                                maxFontSize: 24,
+                                maxLines: 1,
+                                controller.runsToDisplay.value.label.replaceAll(
+                                  '~',
+                                  '${controller.runsTimeScope.value.label} ',
+                                ),
+                                style: ts_titleLarge,
+                              ),
+                              if (controller.runsTimeScope.value ==
+                                  RunsTimeScope.range)
+                                AutoSizeText(
+                                  ((controller.dateFilterStart.value ==
+                                              controller.dateFilterEnd.value) &&
+                                          (controller
+                                              .multiYearDateFilter
+                                              .value))
+                                      ? DateFormat('d MMM').format(
+                                          controller.dateFilterStart.value,
+                                        )
+                                      : ((controller.dateFilterStart.value ==
+                                                controller
+                                                    .dateFilterEnd
+                                                    .value) &&
+                                            (!controller
+                                                .multiYearDateFilter
+                                                .value))
+                                      ? DateFormat('d MMM yy').format(
+                                          controller.dateFilterStart.value,
+                                        )
+                                      : controller.multiYearDateFilter.value
+                                      ? '${DateFormat('d MMM').format(controller.dateFilterStart.value)} \u2794 ${DateFormat('d MMM').format(controller.dateFilterEnd.value)}'
+                                      : '${DateFormat('d MMM yy').format(controller.dateFilterStart.value)} \u2794 ${DateFormat('d MMM yy').format(controller.dateFilterEnd.value)}',
+                                  minFontSize: 5,
+                                  maxFontSize: 16,
+                                  maxLines: 1,
+
+                                  style: ts_titleLarge,
+                                ),
+                            ],
                           ),
                         ),
                       ),
@@ -154,19 +193,24 @@ class FutureRunsListPage extends StatelessWidget {
                         ? SizedBox(width: 42, child: _futurePastButton())
                         : SizedBox.shrink(),
                     SizedBox(width: 5),
-                    GestureDetector(
-                      onTap: () async {
-                        await Utilities.showAlert(
-                          controller.runsToDisplay.value.helpTitle,
-                          controller.runsToDisplay.value.helpText,
-                          'OK',
-                        );
-                      },
-                      child: SizedBox(
-                        height: 33,
-                        child: Image.asset('images/icons/info_button.png'),
+                    if (controller.runsTimeScope.value != RunsTimeScope.range)
+                      GestureDetector(
+                        onTap: () async {
+                          await Utilities.showAlert(
+                            controller.runsToDisplay.value.helpTitle,
+                            controller.runsToDisplay.value.helpText,
+                            'OK',
+                          );
+                        },
+                        child: SizedBox(
+                          height: 33,
+                          width: 42,
+                          child: Image.asset('images/icons/info_button.png'),
+                        ),
                       ),
-                    ),
+
+                    if (controller.runsTimeScope.value == RunsTimeScope.range)
+                      SizedBox(width: 42, child: _showCalendarButton(context)),
                     SizedBox(width: 10),
                   ],
                 ),
@@ -277,7 +321,7 @@ class FutureRunsListPage extends StatelessWidget {
                   pinned: false,
                   toolbarHeight: 131, // 👈 your desired height
                   titleSpacing: 0.0,
-                  flexibleSpace: _searchBar(),
+                  flexibleSpace: _searchBar(context),
                 ),
               ];
             },
@@ -577,7 +621,7 @@ class FutureRunsListPage extends StatelessWidget {
               },
               child: Padding(
                 padding: const EdgeInsets.only(left: 0, right: 0, top: 0),
-                child: controller.runsTimeScope.value == RunsTimeScope.past
+                child: controller.runsTimeScope.value == RunsTimeScope.range
                     ? Padding(
                         padding: const EdgeInsets.only(left: 5.0),
                         child: Transform.scale(
@@ -589,10 +633,12 @@ class FutureRunsListPage extends StatelessWidget {
                           ),
                         ),
                       )
+                    : controller.runsTimeScope.value == RunsTimeScope.future
+                    ? Icon(Entypo.back_in_time, color: Colors.white, size: 30.0)
                     : Icon(
-                        Entypo.back_in_time,
+                        Ionicons.calendar_outline,
                         color: Colors.white,
-                        size: 30.0,
+                        size: 28.0,
                       ),
               ),
             );
@@ -635,6 +681,69 @@ class FutureRunsListPage extends StatelessWidget {
                 ),
                 child: Icon(
                   MaterialCommunityIcons.map_search,
+                  color: Colors.white,
+                  size: 30.0,
+                ),
+              ),
+            );
+    });
+  }
+
+  Widget _showCalendarButton(BuildContext context) {
+    return Obx(() {
+      return !controller.runsToDisplay.value.showFuturePastToggle
+          ? SizedBox(height: 0)
+          : ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
+                // minimumSize: const Size(0, 0), // remove min size constraints
+                // tapTargetSize:
+                //     MaterialTapTargetSize.shrinkWrap, // tighter hitbox
+              ),
+              onPressed: () async {
+                // var results = await calendar.showCalendarDatePicker2Dialog(
+                //   context: context,
+                //   config: calendar.CalendarDatePicker2WithActionButtonsConfig(
+                //     firstDayOfWeek: 1,
+                //     calendarType: calendar.CalendarDatePicker2Type.range,
+                //     selectedDayTextStyle: TextStyle(
+                //       color: Colors.white,
+                //       fontWeight: FontWeight.w700,
+                //     ),
+                //     selectedDayHighlightColor: Colors.purple[800],
+                //     centerAlignModePicker: true,
+                //     customModePickerIcon: SizedBox(),
+                //     calendarViewMode: calendar.CalendarDatePicker2Mode.scroll,
+                //   ),
+                //   dialogSize: Size(Get.width - 30, Get.height - 200),
+                //   value: [
+                //     controller.dateFilterStart.value,
+                //     controller.dateFilterEnd.value,
+                //   ],
+                //   borderRadius: BorderRadius.circular(15),
+                // );
+
+                var results = await _showCalendarDialog(context);
+
+                if (results.length == 1) {
+                  controller.dateFilterStart.value = results[0];
+                  controller.dateFilterEnd.value = results[0];
+                  controller.filterRuns(false);
+                } else if (results.length == 2) {
+                  controller.dateFilterStart.value = results[0];
+                  controller.dateFilterEnd.value = results[1];
+                  controller.filterRuns(false);
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                ),
+                child: Icon(
+                  MaterialCommunityIcons.calendar_search,
                   color: Colors.white,
                   size: 30.0,
                 ),
@@ -1005,6 +1114,92 @@ class FutureRunsListPage extends StatelessWidget {
     }
 
     return precursorText;
+  }
+
+  Future<List<DateTime>> _showCalendarDialog(BuildContext context) async {
+    List<DateTime> result = [
+      controller.dateFilterStart.value,
+      controller.dateFilterEnd.value,
+    ];
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          contentPadding: const EdgeInsets.all(16),
+          content: SizedBox(
+            width: Get.width - 30,
+            height: Get.height - 200,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Expanded(
+                  child: calendar.CalendarDatePicker2(
+                    config: calendar.CalendarDatePicker2WithActionButtonsConfig(
+                      firstDayOfWeek: 1,
+                      calendarType: calendar.CalendarDatePicker2Type.range,
+                      selectedDayTextStyle: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      selectedDayHighlightColor: Colors.purple[800],
+                      centerAlignModePicker: true,
+                      customModePickerIcon: SizedBox(),
+                      calendarViewMode: calendar.CalendarDatePicker2Mode.scroll,
+                    ),
+                    value: [
+                      controller.dateFilterStart.value,
+                      controller.dateFilterEnd.value,
+                    ],
+                    onValueChanged: (dates) => result = dates,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Obx(
+                  () => CheckboxListTile(
+                    dense: true,
+                    controlAffinity: ListTileControlAffinity
+                        .trailing, // 👈 moves checkbox to right
+                    contentPadding: EdgeInsets.zero,
+                    title: Align(
+                      alignment: AlignmentGeometry.centerRight,
+                      child: const Text('Use these dates every year'),
+                    ),
+                    value: controller.multiYearDateFilter.value,
+                    onChanged: (val) {
+                      controller.multiYearDateFilter.value = (val ?? false);
+                    },
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(child: SizedBox.shrink()),
+                    TextButton(
+                      onPressed: () {
+                        result = [];
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Cancel'),
+                    ),
+                    SizedBox(width: 20),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('OK'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    return result;
   }
 }
 
