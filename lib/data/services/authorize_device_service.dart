@@ -158,6 +158,10 @@ class AuthorizeDeviceService {
             items['thirdPartyForceTokenRefresh'],
           );
           await setStringPref(
+            StringPrefsEnum.betaFeaturesEnabled,
+            items['betaFeaturesEnabled'],
+          );
+          await setStringPref(
             StringPrefsEnum.thirdPartyLoginType,
             items['thirdPartyLoginType'],
           );

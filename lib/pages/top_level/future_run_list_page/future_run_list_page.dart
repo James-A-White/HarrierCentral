@@ -1,4 +1,6 @@
+import 'package:calendar_date_picker2/calendar_date_picker2.dart' as calendar;
 import 'package:harrier_central/imports.dart';
+import 'package:intl/intl.dart';
 
 class FutureRunsListPage extends StatelessWidget {
   FutureRunsListPage() : super(key: UniqueKey());
@@ -38,9 +40,9 @@ class FutureRunsListPage extends StatelessWidget {
     await controller.refreshFromTable(true);
   }
 
-  Widget _searchBar() {
+  Widget _searchBar(BuildContext context) {
     return SizedBox(
-      height: 176.0,
+      height: 131.0,
       child: Column(
         mainAxisSize: MainAxisSize.max,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,53 +52,56 @@ class FutureRunsListPage extends StatelessWidget {
             child: Container(
               color: Colors.white,
               padding: const EdgeInsets.only(left: 14.0),
-              child: Row(
-                children: <Widget>[
-                  Expanded(
-                    child: TextField(
-                      autocorrect: false,
-                      onChanged: (text) =>
-                          controller.searchRunsText.value = text,
+              child: Material(
+                color: Colors.transparent,
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: TextField(
+                        autocorrect: false,
+                        onChanged: (text) =>
+                            controller.searchRunsText.value = text,
 
-                      focusNode: controller.searchFocusNode,
-                      controller: controller.searchController,
-                      keyboardType: TextInputType.text,
-                      style: ts_footnoteBlack,
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        icon: const Icon(
-                          FontAwesome.search,
-                          color: Colors.black,
-                        ),
-                        hintText: 'Search...',
-                        hintStyle: ts_searchLabel,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 40,
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        shape: button_shape,
-                        textStyle: TextStyle(color: Colors.grey.shade700),
-                        backgroundColor: Colors.white,
-                      ),
-                      child: Text(
-                        'X',
-                        style: ts_headingBlack.copyWith(
-                          color: Colors.grey.shade700,
+                        focusNode: controller.searchFocusNode,
+                        controller: controller.searchController,
+                        keyboardType: TextInputType.text,
+                        style: ts_footnoteBlack,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          icon: const Icon(
+                            FontAwesome.search,
+                            color: Colors.black,
+                          ),
+                          hintText: 'Search...',
+                          hintStyle: ts_searchLabel,
                         ),
                       ),
-                      onPressed: () {
-                        controller.searchController.text = '';
-                        controller.searchRunsText.value = '';
-                        //setState(() {
-                        controller.filterRuns(true);
-                        //});
-                      },
                     ),
-                  ),
-                ],
+                    SizedBox(
+                      width: 40,
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          shape: button_shape,
+                          textStyle: TextStyle(color: Colors.grey.shade700),
+                          backgroundColor: Colors.white,
+                        ),
+                        child: Text(
+                          'X',
+                          style: ts_headingBlack.copyWith(
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                        onPressed: () {
+                          controller.searchController.text = '';
+                          controller.searchRunsText.value = '';
+                          //setState(() {
+                          controller.filterRuns(true);
+                          //});
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -116,49 +121,137 @@ class FutureRunsListPage extends StatelessWidget {
             }),
           ),
           const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
+
           Container(
             color: Colors.black38,
-            height: 100,
-            child: Row(
+            height: 55,
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Column(
+                SizedBox(height: 5),
+                Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SizedBox(height: 2),
-                    SizedBox(width: 135, child: _runsToDisplayButton()),
-                    SizedBox(width: 135, child: _futurePastButton()),
+                    SizedBox(width: 10),
+                    _runsToDisplayButton(),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 7.0),
+                        child: Center(
+                          child: Column(
+                            children: [
+                              AutoSizeText(
+                                minFontSize: 5,
+                                maxFontSize: 24,
+                                maxLines: 1,
+                                controller.runsToDisplay.value.label.replaceAll(
+                                  '~',
+                                  '${controller.runsTimeScope.value.label} ',
+                                ),
+                                style: ts_titleLarge,
+                              ),
+                              if (controller.runsTimeScope.value ==
+                                  RunsTimeScope.range)
+                                AutoSizeText(
+                                  ((controller.dateFilterStart.value ==
+                                              controller.dateFilterEnd.value) &&
+                                          (controller
+                                              .multiYearDateFilter
+                                              .value))
+                                      ? DateFormat('d MMM').format(
+                                          controller.dateFilterStart.value,
+                                        )
+                                      : ((controller.dateFilterStart.value ==
+                                                controller
+                                                    .dateFilterEnd
+                                                    .value) &&
+                                            (!controller
+                                                .multiYearDateFilter
+                                                .value))
+                                      ? DateFormat('d MMM yy').format(
+                                          controller.dateFilterStart.value,
+                                        )
+                                      : controller.multiYearDateFilter.value
+                                      ? '${DateFormat('d MMM').format(controller.dateFilterStart.value)} \u2794 ${DateFormat('d MMM').format(controller.dateFilterEnd.value)}'
+                                      : '${DateFormat('d MMM yy').format(controller.dateFilterStart.value)} \u2794 ${DateFormat('d MMM yy').format(controller.dateFilterEnd.value)}',
+                                  minFontSize: 5,
+                                  maxFontSize: 16,
+                                  maxLines: 1,
+
+                                  style: ts_titleLarge,
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    controller.runsToDisplay.value == RunsToDisplay.onMap
+                        ? SizedBox(width: 42, child: _showMapButton())
+                        : SizedBox.shrink(),
+
+                    controller.runsToDisplay.value != RunsToDisplay.onMap
+                        ? SizedBox(width: 42, child: _futurePastButton())
+                        : SizedBox.shrink(),
+                    SizedBox(width: 5),
+                    if (controller.runsTimeScope.value != RunsTimeScope.range)
+                      GestureDetector(
+                        onTap: () async {
+                          await Utilities.showAlert(
+                            controller.runsToDisplay.value.helpTitle,
+                            controller.runsToDisplay.value.helpText,
+                            'OK',
+                          );
+                        },
+                        child: SizedBox(
+                          height: 33,
+                          width: 42,
+                          child: Image.asset('images/icons/info_button.png'),
+                        ),
+                      ),
+
+                    if (controller.runsTimeScope.value == RunsTimeScope.range)
+                      SizedBox(width: 42, child: _showCalendarButton(context)),
+                    SizedBox(width: 10),
                   ],
                 ),
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsets.only(right: 10),
-                    child: AutoSizeText(
-                      controller.runsToDisplay.value.description,
-                      style: ts_bodyYellow,
-                      textAlign: TextAlign.center,
-                      maxLines: 4,
-                    ),
+                // SizedBox(height: 5.0),
+                // Padding(
+                //   padding: const EdgeInsets.symmetric(horizontal: 14.0),
+                //   child: Row(
+                //     children: [
+                //       Expanded(
+                //         child: Container(
+                //           padding: EdgeInsets.only(right: 10),
+                //           child: AutoSizeText(
+                //             controller.runsToDisplay.value.description,
+                //             style: ts_bodyYellow,
+                //             textAlign: TextAlign.center,
+                //             maxLines: 2,
+                //           ),
 
-                    //height: 100,
-                    // width: 100,
-                  ),
-                ),
+                //           //height: 100,
+                //           // width: 100,
+                //         ),
+                //       ),
 
-                GestureDetector(
-                  onTap: () async {
-                    await Utilities.showAlert(
-                      controller.runsToDisplay.value.helpTitle,
-                      controller.runsToDisplay.value.helpText,
-                      'OK',
-                    );
-                  },
-                  child: SizedBox(
-                    height: 35,
-                    child: Image.asset('images/icons/info_button.png'),
-                  ),
-                ),
-                SizedBox(width: 10),
+                //       SizedBox(width: 10),
+
+                //       GestureDetector(
+                //         onTap: () async {
+                //           await Utilities.showAlert(
+                //             controller.runsToDisplay.value.helpTitle,
+                //             controller.runsToDisplay.value.helpText,
+                //             'OK',
+                //           );
+                //         },
+                //         child: SizedBox(
+                //           height: 35,
+                //           child: Image.asset('images/icons/info_button.png'),
+                //         ),
+                //       ),
+                //     ],
+                //   ),
+                // ),
               ],
             ),
           ),
@@ -220,15 +313,15 @@ class FutureRunsListPage extends StatelessWidget {
                 //   delegate: SliverChildListDelegate(<Widget>[_searchBar()]),
                 // ),
                 SliverAppBar(
-                  expandedHeight: 176,
+                  expandedHeight: 131,
                   backgroundColor: Colors.transparent,
                   elevation: 0,
                   surfaceTintColor: Colors.transparent,
                   floating: true,
                   pinned: false,
-                  toolbarHeight: 176, // 👈 your desired height
+                  toolbarHeight: 131, // 👈 your desired height
                   titleSpacing: 0.0,
-                  flexibleSpace: _searchBar(),
+                  flexibleSpace: _searchBar(context),
                 ),
               ];
             },
@@ -501,114 +594,234 @@ class FutureRunsListPage extends StatelessWidget {
   Widget _futurePastButton() {
     return Obx(() {
       return !controller.runsToDisplay.value.showFuturePastToggle
+          ? SizedBox(height: 48)
+          : controller.showRunsTimeScopeSpinner.value
+          ? SizedBox(
+              height: 49,
+              width: 70,
+              child: Center(
+                child: HcAppCircularProgressIndicator(
+                  key: UniqueKey(),
+                  color1: Colors.white,
+                  color2: Colors.blue.shade300,
+                  size: 35,
+                ),
+              ),
+            )
+          : ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
+              ),
+              onPressed: () async {
+                controller.runsTimeScope.value =
+                    RunsTimeScope.values[(controller.runsTimeScope.value.next)];
+                controller.runsTimeScopeLoading.value = true;
+                await controller.refreshFromTable(true);
+                controller.runsTimeScopeLoading.value = false;
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(left: 0, right: 0, top: 0),
+                child: controller.runsTimeScope.value == RunsTimeScope.range
+                    ? Padding(
+                        padding: const EdgeInsets.only(left: 5.0),
+                        child: Transform.scale(
+                          scaleX: -1,
+                          child: Icon(
+                            Entypo.back_in_time,
+                            color: Colors.white,
+                            size: 30.0,
+                          ),
+                        ),
+                      )
+                    : controller.runsTimeScope.value == RunsTimeScope.future
+                    ? Icon(Entypo.back_in_time, color: Colors.white, size: 30.0)
+                    : Icon(
+                        Ionicons.calendar_outline,
+                        color: Colors.white,
+                        size: 28.0,
+                      ),
+              ),
+            );
+    });
+  }
+
+  Widget _showMapButton() {
+    return Obx(() {
+      return !controller.runsToDisplay.value.showFuturePastToggle
           ? SizedBox(height: 0)
-          : Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 13.0),
-              child: controller.showRunsTimeScopeSpinner.value
-                  ? SizedBox(
-                      height: 49,
-                      width: 70,
-                      child: Center(
-                        child: HcAppCircularProgressIndicator(
-                          key: UniqueKey(),
-                          color1: Colors.white,
-                          color2: Colors.blue.shade300,
-                          size: 35,
-                        ),
-                      ),
-                    )
-                  : controller.runsToDisplay.value == RunsToDisplay.onMap
-                  ? ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
-                      ),
-                      onPressed: () async {
-                        controller.openMap();
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                          left: 0,
-                          right: 0,
-                          top: 0,
-                        ),
-                        child: Text(
-                          'Show Map',
-                          textAlign: TextAlign.center,
-                          style: ts_button,
-                        ),
-                      ),
-                    )
-                  : ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
-                      ),
-                      onPressed: () async {
-                        controller.runsTimeScope.value = RunsTimeScope
-                            .values[(controller.runsTimeScope.value.next)];
-                        controller.runsTimeScopeLoading.value = true;
-                        await controller.refreshFromTable(true);
-                        controller.runsTimeScopeLoading.value = false;
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                          left: 0,
-                          right: 0,
-                          top: 0,
-                        ),
-                        child: Text(
-                          controller.runsTimeScope.value.label,
-                          textAlign: TextAlign.center,
-                          style: ts_button,
-                        ),
-                      ),
-                    ),
+          : controller.showRunsTimeScopeSpinner.value
+          ? SizedBox(
+              height: 49,
+              width: 70,
+              child: Center(
+                child: HcAppCircularProgressIndicator(
+                  key: UniqueKey(),
+                  color1: Colors.white,
+                  color2: Colors.blue.shade300,
+                  size: 35,
+                ),
+              ),
+            )
+          : ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
+                // minimumSize: const Size(0, 0), // remove min size constraints
+                // tapTargetSize:
+                //     MaterialTapTargetSize.shrinkWrap, // tighter hitbox
+              ),
+              onPressed: () async {
+                controller.openMap();
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                ),
+                child: Icon(
+                  MaterialCommunityIcons.map_search,
+                  color: Colors.white,
+                  size: 30.0,
+                ),
+              ),
+            );
+    });
+  }
+
+  Widget _showCalendarButton(BuildContext context) {
+    return Obx(() {
+      return !controller.runsToDisplay.value.showFuturePastToggle
+          ? SizedBox(height: 0)
+          : ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
+                // minimumSize: const Size(0, 0), // remove min size constraints
+                // tapTargetSize:
+                //     MaterialTapTargetSize.shrinkWrap, // tighter hitbox
+              ),
+              onPressed: () async {
+                // var results = await calendar.showCalendarDatePicker2Dialog(
+                //   context: context,
+                //   config: calendar.CalendarDatePicker2WithActionButtonsConfig(
+                //     firstDayOfWeek: 1,
+                //     calendarType: calendar.CalendarDatePicker2Type.range,
+                //     selectedDayTextStyle: TextStyle(
+                //       color: Colors.white,
+                //       fontWeight: FontWeight.w700,
+                //     ),
+                //     selectedDayHighlightColor: Colors.purple[800],
+                //     centerAlignModePicker: true,
+                //     customModePickerIcon: SizedBox(),
+                //     calendarViewMode: calendar.CalendarDatePicker2Mode.scroll,
+                //   ),
+                //   dialogSize: Size(Get.width - 30, Get.height - 200),
+                //   value: [
+                //     controller.dateFilterStart.value,
+                //     controller.dateFilterEnd.value,
+                //   ],
+                //   borderRadius: BorderRadius.circular(15),
+                // );
+
+                var results = await _showCalendarDialog(context);
+
+                if (results.length == 1) {
+                  controller.dateFilterStart.value = results[0];
+                  controller.dateFilterEnd.value = results[0];
+                  controller.filterRuns(false);
+                } else if (results.length == 2) {
+                  controller.dateFilterStart.value = results[0];
+                  controller.dateFilterEnd.value = results[1];
+                  controller.filterRuns(false);
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                ),
+                child: Icon(
+                  MaterialCommunityIcons.calendar_search,
+                  color: Colors.white,
+                  size: 30.0,
+                ),
+              ),
             );
     });
   }
 
   Widget _runsToDisplayButton() {
-    return Obx(
-      () => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 13.0),
-        child: controller.showRunToDisplaySpinner.value
-            ? SizedBox(
-                height: 49,
-                width: 100,
-                child: Center(
-                  child: HcAppCircularProgressIndicator(
-                    key: UniqueKey(),
-                    color1: Colors.white,
-                    color2: Colors.blue.shade300,
-                    size: 35,
-                  ),
-                ),
-              )
-            : ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
-                ),
-                onPressed: () async {
-                  controller.runsToDisplay.value = RunsToDisplay
-                      .values[(controller.runsToDisplay.value.next)];
-                  controller.runsToDisplay.value.defaultViewIsFuture
-                      ? controller.runsTimeScope.value = RunsTimeScope.future
-                      : controller.runsTimeScope.value = RunsTimeScope.past;
-                  controller.runsToDisplayLoading.value = true;
-                  await controller.refreshFromTable(true);
-                  controller.runsToDisplayLoading.value = false;
-                },
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 10, right: 10, top: 0),
-                  child: Text(
-                    controller.runsToDisplay.value.label,
-                    textAlign: TextAlign.center,
-                    style: ts_button,
-                  ),
-                ),
-              ),
+    return Center(
+      child: PillArrowButtons(
+        onLeftPressed: () async {
+          controller.runsToDisplay.value =
+              RunsToDisplay.values[(controller.runsToDisplay.value.previous)];
+          controller.runsToDisplay.value.defaultViewIsFuture
+              ? controller.runsTimeScope.value = RunsTimeScope.future
+              : controller.runsTimeScope.value = RunsTimeScope.past;
+          controller.runsToDisplayLoading.value = true;
+          await controller.refreshFromTable(true);
+          controller.runsToDisplayLoading.value = false;
+        },
+        onRightPressed: () async {
+          controller.runsToDisplay.value =
+              RunsToDisplay.values[(controller.runsToDisplay.value.next)];
+          controller.runsToDisplay.value.defaultViewIsFuture
+              ? controller.runsTimeScope.value = RunsTimeScope.future
+              : controller.runsTimeScope.value = RunsTimeScope.past;
+          controller.runsToDisplayLoading.value = true;
+          await controller.refreshFromTable(true);
+          controller.runsToDisplayLoading.value = false;
+        },
       ),
     );
   }
+
+  // Widget _runsToDisplayButton() {
+  //   return Obx(
+  //     () => Padding(
+  //       padding: const EdgeInsets.symmetric(horizontal: 13.0),
+  //       child: controller.showRunToDisplaySpinner.value
+  //           ? SizedBox(
+  //               height: 49,
+  //               width: 100,
+  //               child: Center(
+  //                 child: HcAppCircularProgressIndicator(
+  //                   key: UniqueKey(),
+  //                   color1: Colors.white,
+  //                   color2: Colors.blue.shade300,
+  //                   size: 35,
+  //                 ),
+  //               ),
+  //             )
+  //           : ElevatedButton(
+  //               style: ElevatedButton.styleFrom(
+  //                 padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
+  //               ),
+  //               onPressed: () async {
+  //                 controller.runsToDisplay.value = RunsToDisplay
+  //                     .values[(controller.runsToDisplay.value.next)];
+  //                 controller.runsToDisplay.value.defaultViewIsFuture
+  //                     ? controller.runsTimeScope.value = RunsTimeScope.future
+  //                     : controller.runsTimeScope.value = RunsTimeScope.past;
+  //                 controller.runsToDisplayLoading.value = true;
+  //                 await controller.refreshFromTable(true);
+  //                 controller.runsToDisplayLoading.value = false;
+  //               },
+  //               child: Padding(
+  //                 padding: const EdgeInsets.only(left: 10, right: 10, top: 0),
+  //                 child: Text(
+  //                   controller.runsToDisplay.value.label,
+  //                   textAlign: TextAlign.center,
+  //                   style: ts_button,
+  //                 ),
+  //               ),
+  //             ),
+  //     ),
+  //   );
+  // }
 
   void _showConfigureDistancePopup(BuildContext context) {
     final String units =
@@ -901,6 +1114,92 @@ class FutureRunsListPage extends StatelessWidget {
     }
 
     return precursorText;
+  }
+
+  Future<List<DateTime>> _showCalendarDialog(BuildContext context) async {
+    List<DateTime> result = [
+      controller.dateFilterStart.value,
+      controller.dateFilterEnd.value,
+    ];
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          contentPadding: const EdgeInsets.all(16),
+          content: SizedBox(
+            width: Get.width - 30,
+            height: Get.height - 200,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Expanded(
+                  child: calendar.CalendarDatePicker2(
+                    config: calendar.CalendarDatePicker2WithActionButtonsConfig(
+                      firstDayOfWeek: 1,
+                      calendarType: calendar.CalendarDatePicker2Type.range,
+                      selectedDayTextStyle: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      selectedDayHighlightColor: Colors.purple[800],
+                      centerAlignModePicker: true,
+                      customModePickerIcon: SizedBox(),
+                      calendarViewMode: calendar.CalendarDatePicker2Mode.scroll,
+                    ),
+                    value: [
+                      controller.dateFilterStart.value,
+                      controller.dateFilterEnd.value,
+                    ],
+                    onValueChanged: (dates) => result = dates,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Obx(
+                  () => CheckboxListTile(
+                    dense: true,
+                    controlAffinity: ListTileControlAffinity
+                        .trailing, // 👈 moves checkbox to right
+                    contentPadding: EdgeInsets.zero,
+                    title: Align(
+                      alignment: AlignmentGeometry.centerRight,
+                      child: const Text('Use these dates every year'),
+                    ),
+                    value: controller.multiYearDateFilter.value,
+                    onChanged: (val) {
+                      controller.multiYearDateFilter.value = (val ?? false);
+                    },
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(child: SizedBox.shrink()),
+                    TextButton(
+                      onPressed: () {
+                        result = [];
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Cancel'),
+                    ),
+                    SizedBox(width: 20),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('OK'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    return result;
   }
 }
 

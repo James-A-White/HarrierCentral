@@ -81,6 +81,7 @@ class RootApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
+      themeMode: ThemeMode.light, // ✅ force light mode
       builder: (BuildContext context, Widget? child) {
         final mediaQueryData = MediaQuery.of(context);
         final scale = mediaQueryData.textScaler.clamp(
@@ -94,12 +95,7 @@ class RootApp extends StatelessWidget {
       },
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey, // or Get.key if you prefer
-      supportedLocales: const <Locale>[
-        Locale('en', 'US'),
-        Locale('es', 'ES'),
-        Locale('pt', 'PT'),
-        Locale('de', 'DE'),
-      ],
+      supportedLocales: const <Locale>[Locale('en', 'US')],
       home: AppEntryPage(),
       getPages: [
         GetPage(name: '/main', page: () => MainNavigationPage()),
@@ -108,7 +104,10 @@ class RootApp extends StatelessWidget {
       initialBinding: InitialBindings(), // controllers, etc.
       routes: routes,
       theme: ThemeData(
+        useMaterial3: false, // ✅ disable M3 dynamic surfaces
         appBarTheme: AppBarTheme(
+          surfaceTintColor:
+              Colors.transparent, // ✅ fix grey overlay on Android 12+
           systemOverlayStyle: SystemUiOverlayStyle(
             statusBarColor: Colors.transparent,
             statusBarIconBrightness: Brightness.light,

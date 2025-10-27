@@ -21,6 +21,11 @@ class FutureRunListPageController extends GetxController {
   RxBool runsTimeScopeLoading = false.obs;
   RxBool showRunsTimeScopeSpinner = false.obs;
   Rx<RunsTimeScope> runsTimeScope = RunsTimeScope.future.obs;
+  Rx<DateTime> dateFilterStart = DateTime.now()
+      .subtract(const Duration(days: 7))
+      .obs;
+  Rx<DateTime> dateFilterEnd = DateTime.now().add(const Duration(days: 7)).obs;
+  RxBool multiYearDateFilter = false.obs;
 
   final ScrollController scrollController = ScrollController(
     initialScrollOffset: 0.0,
@@ -181,7 +186,7 @@ class FutureRunListPageController extends GetxController {
     appModel.hasLocationPermissions = await Permission.location.isGranted;
 
     await refreshFromBackend();
-    await refreshFromTable(true);
+    //await refreshFromTable(true);
     chatSummaryMap = await getEventChatMessageCounts();
 
     if (Firebase.apps.isEmpty) {
@@ -236,6 +241,14 @@ class FutureRunListPageController extends GetxController {
         }
       }
     }
+  }
+
+  void openList() {
+    final controller = Get.find<MainNavigationController>();
+    controller.bottomNavigationKey.currentState?.setPage(0);
+    runsToDisplay.value = RunsToDisplay.onMap;
+    runsTimeScope.value = RunsTimeScope.all;
+    refreshFromTable(true);
   }
 
   void openMap() {
@@ -387,6 +400,9 @@ class FutureRunListPageController extends GetxController {
         runsTimeScope.value,
         mapBounds: mapBounds,
         unseenChats: thisEventUnseenChats,
+        dateRangeStart: dateFilterStart.value,
+        dateRangeEnd: dateFilterEnd.value,
+        useDatesForAllYears: multiYearDateFilter.value,
       );
     }
 

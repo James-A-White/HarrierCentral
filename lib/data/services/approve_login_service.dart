@@ -135,6 +135,7 @@ class ApproveLoginService {
       'screenWidth': (deviceInfo.deviceWidth).toInt().toString(),
       'screenHeight': (deviceInfo.deviceHeight).toInt().toString(),
       'ipInfo': responseBody,
+      'locale': Get.deviceLocale?.toString() ?? '',
     };
 
     // in the previous run, did we show a splash sequence?
@@ -153,15 +154,16 @@ class ApproveLoginService {
 
     Future<Response> futureResponse;
 
-    futureResponse = post(
-      Uri.parse(BASE_AF_API_URL),
-      headers: <String, String>{'content-type': 'application/json'},
-      body: jsonEncode(body),
-      // Send authorization headers to your backend
-      //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
-    ).catchError((dynamic error) {
-      return Response('<http error>', 500);
-    });
+    futureResponse =
+        post(
+          Uri.parse(BASE_AF_API_URL),
+          headers: <String, String>{'content-type': 'application/json'},
+          body: jsonEncode(body),
+          // Send authorization headers to your backend
+          //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
+        ).catchError((dynamic error) {
+          return Response('<http error>', 500);
+        });
 
     //final Future<void> delay = Future<void>.delayed(const Duration(seconds: 25));
 

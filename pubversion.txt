@@ -1,6 +1,32 @@
-2.1.0+1015
-    • Fixed network detection on startup
-    
+2.1.2+1040
+    • Production Release
+    • On the map made pins semi-transparent for past runs
+    • Added date filter to Runs List
+
+2.1.2+1032
+    • Removed unused locales from GetMaterialApp
+    • Report locale back to server for debugging / statistics
+    • Added a BetaFeaturesEnabled capability
+
+2.1.1+1031
+    • Production Release
+    • Cleaned up the UI on the Runs List page
+
+2.1.0+1030
+    • Production Release
+    • Bump Flutter version to 3.35.7
+    • Update dependencies  
+
+2.1.0+1021
+    • More attempted fixes for the grey tab bar and search bar on certain Android phones
+    • Repositioned the buttons on the Runs View to make the interface more intuitive
+
+2.1.0+1020
+    • Production Release
+
+2.1.0+1018
+    • Added "Show List" button to map to switch to the list
+
 2.1.0+1014
     • Chat icon in main app bar will now toggle to the Chat page and back to the runs list
     • Added "Open Map" button to the sliver app bar

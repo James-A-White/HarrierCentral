@@ -537,7 +537,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
         run.extensions.evtLat!,
         run.extensions.evtLon!,
       );
-      final DateTime dt = run.event.eventStartDatetime;
+      final DateTime dt = run.event.eventStartDatetimeGmt;
 
       final Marker marker = Marker(
         width: 45.0,
@@ -545,16 +545,19 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
         alignment: Alignment.topCenter,
         //anchorPos: AnchorPos.exactly(Anchor(27.0, 0.0)),
         point: ll,
-        child: _buildRunMarker(
-          run.event.eventId,
-          dt,
-          run.event.eventName,
-          rsvpState: run.extensions.rsvpState,
-          attendenceState: run.extensions.attendenceState,
-          isHare: run.extensions.isHare,
-          kennelPinColor: run.kennel.kennelPinColor,
-          eventScope: run.event.eventGeographicScope,
-          isCountedRun: run.event.isCountedRun,
+        child: Opacity(
+          opacity: dt.isBefore(DateTime.now()) ? 0.66 : 1.0,
+          child: _buildRunMarker(
+            run.event.eventId,
+            dt,
+            run.event.eventName,
+            rsvpState: run.extensions.rsvpState,
+            attendenceState: run.extensions.attendenceState,
+            isHare: run.extensions.isHare,
+            kennelPinColor: run.kennel.kennelPinColor,
+            eventScope: run.event.eventGeographicScope,
+            isCountedRun: run.event.isCountedRun,
+          ),
         ),
       );
 
@@ -664,7 +667,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
 
   Widget _buildRunMarker(
     String eventId,
-    DateTime? eventStartDatetime,
+    DateTime? eventStartDatetimeGmt,
     String eventName, {
     int? attendenceState,
     int? rsvpState,
@@ -688,7 +691,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
       },
       child: Image.asset(
         _getPin(
-          eventStartDatetime ?? DateTime.now(),
+          eventStartDatetimeGmt ?? DateTime.now(),
           rsvpState,
           attendenceState,
           isHare,
@@ -803,7 +806,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
   ];
 
   String _getPin(
-    DateTime eventStartDatetime,
+    DateTime eventStartDatetimeGmt,
     int? rsvpState,
     int? attendenceState,
     int? isHare,
@@ -823,7 +826,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
       isEvent = 'event';
     }
 
-    if (eventStartDatetime.isAfter(DateTime.now())) {
+    if (eventStartDatetimeGmt.isAfter(DateTime.now())) {
       // run is in the future
       if (((attendenceState ?? 0) >= attendenceAtHash.value) ||
           ((rsvpState ?? 0) >= rsvpYes.value)) {
@@ -1047,8 +1050,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                         (deviceInfo.deviceLat != null) &&
                         (deviceInfo.deviceLon != null)) ...<Widget>[
                       Positioned(
-                        right: 10.0,
-                        top: 60.0,
+                        left: 10.0,
+                        top: 74.0,
                         child: GestureDetector(
                           onTap: () {
                             setState(() {
@@ -1073,8 +1076,8 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                       ),
                     ],
                     Positioned(
-                      left: 10.0,
-                      top: 60.0,
+                      left: 70.0,
+                      top: 74.0,
                       child: GestureDetector(
                         onTap: () {
                           setState(() {
@@ -1095,10 +1098,38 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                         ),
                       ),
                     ),
+
+                    Positioned(
+                      right: -2.0,
+                      top: 74.0,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 13.0),
+                        width: 135,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.only(
+                              top: 0.0,
+                              bottom: 0.0,
+                            ),
+                          ),
+                          onPressed: () async {
+                            final runsListController =
+                                Get.find<FutureRunListPageController>();
+                            runsListController.openList();
+                          },
+                          child: Text(
+                            'Show List',
+                            textAlign: TextAlign.center,
+                            style: ts_button,
+                          ),
+                        ),
+                      ),
+                    ),
+
                     Positioned(
                       left: 10.0,
                       right: 10.0,
-                      top: 10.0,
+                      top: 25.0,
                       child: Container(
                         padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
                         decoration: BoxDecoration(
