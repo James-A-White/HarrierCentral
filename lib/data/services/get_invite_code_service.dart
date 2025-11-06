@@ -2,7 +2,7 @@ import 'package:harrier_central/imports.dart';
 
 class GetInviteCodeService {
   Future<SingleResultModel?> getInviteCode(String targetUserId) async {
-    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (Utilities.isNotConnected()) {
       return null;
       // TODO(James): fix this so we can return a bool
       //return false;

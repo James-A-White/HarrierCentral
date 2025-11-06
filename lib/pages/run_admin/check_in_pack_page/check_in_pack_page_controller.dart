@@ -161,7 +161,7 @@ class CheckInPackController extends GetxController
   }
 
   Future<void> refreshSqlTablesFromBackend(bool showLoadingIndicator) async {
-    if (appModel.connectionStatus != EnumConnectionStatus2.connected) {
+    if (Utilities.isNotConnected()) {
       return;
     }
 

@@ -50,73 +50,64 @@ class SyncUserDataService {
   }
 
   Future<void> getLastUpdatedTimes(int flags) async {
-    _hashersLastUpdated =
-        (flags & flagHashersTable) == 0
-            ? IGNORE_REPLICATION_TIMESTAMP
-            : await _getLastUpdatedTime(
-              tableModel.hashersTableHelper.colUpdatedAtValue,
-              tableModel.hashersTableHelper.getTableName(AppDomainType.user),
-            );
-    _citiesLastUpdated =
-        (flags & flagCitiesTable) == 0
-            ? IGNORE_REPLICATION_TIMESTAMP
-            : await _getLastUpdatedTime(
-              tableModel.citiesTableHelper.colUpdatedAtValue,
-              tableModel.citiesTableHelper.getTableName(AppDomainType.user),
-            );
-    _regionsLastUpdated =
-        (flags & flagRegionsTable) == 0
-            ? IGNORE_REPLICATION_TIMESTAMP
-            : await _getLastUpdatedTime(
-              tableModel.regionsTableHelper.colUpdatedAtValue,
-              tableModel.regionsTableHelper.getTableName(AppDomainType.user),
-            );
-    _countriesLastUpdated =
-        (flags & flagCountriesTable) == 0
-            ? IGNORE_REPLICATION_TIMESTAMP
-            : await _getLastUpdatedTime(
-              tableModel.countriesTableHelper.colUpdatedAtValue,
-              tableModel.countriesTableHelper.getTableName(AppDomainType.user),
-            );
-    _kennelsLastUpdated =
-        (flags & flagKennelsTable) == 0
-            ? IGNORE_REPLICATION_TIMESTAMP
-            : await _getLastUpdatedTime(
-              tableModel.kennelsTableHelper.colUpdatedAtValue,
-              tableModel.kennelsTableHelper.getTableName(AppDomainType.user),
-            );
-    _paymentsLastUpdated =
-        (flags & flagPaymentsTable) == 0
-            ? IGNORE_REPLICATION_TIMESTAMP
-            : await _getLastUpdatedTime(
-              tableModel.paymentsTableHelper.colUpdatedAtValue,
-              tableModel.paymentsTableHelper.getTableName(AppDomainType.user),
-            );
-    _hasherKennelMapLastUpdated =
-        (flags & flagHasherKennelMapTable) == 0
-            ? IGNORE_REPLICATION_TIMESTAMP
-            : await _getLastUpdatedTime(
-              tableModel.hasherKennelMapTableHelper.colUpdatedAtValue,
-              tableModel.hasherKennelMapTableHelper.getTableName(
-                AppDomainType.user,
-              ),
-            );
-    _hasherEventMapLastUpdated =
-        (flags & flagHasherEventMapTable) == 0
-            ? IGNORE_REPLICATION_TIMESTAMP
-            : await _getLastUpdatedTime(
-              tableModel.hasherEventMapTableHelper.colUpdatedAtValue,
-              tableModel.hasherEventMapTableHelper.getTableName(
-                AppDomainType.user,
-              ),
-            );
-    _narrowEventsLastUpdated =
-        (flags & flagNarrowEventsTable) == 0
-            ? IGNORE_REPLICATION_TIMESTAMP
-            : await _getLastUpdatedTime(
-              tableModel.eventsTableHelper.colUpdatedAtValue,
-              tableModel.eventsTableHelper.getTableName(AppDomainType.user),
-            );
+    _hashersLastUpdated = (flags & flagHashersTable) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await _getLastUpdatedTime(
+            tableModel.hashersTableHelper.colUpdatedAtValue,
+            tableModel.hashersTableHelper.getTableName(AppDomainType.user),
+          );
+    _citiesLastUpdated = (flags & flagCitiesTable) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await _getLastUpdatedTime(
+            tableModel.citiesTableHelper.colUpdatedAtValue,
+            tableModel.citiesTableHelper.getTableName(AppDomainType.user),
+          );
+    _regionsLastUpdated = (flags & flagRegionsTable) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await _getLastUpdatedTime(
+            tableModel.regionsTableHelper.colUpdatedAtValue,
+            tableModel.regionsTableHelper.getTableName(AppDomainType.user),
+          );
+    _countriesLastUpdated = (flags & flagCountriesTable) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await _getLastUpdatedTime(
+            tableModel.countriesTableHelper.colUpdatedAtValue,
+            tableModel.countriesTableHelper.getTableName(AppDomainType.user),
+          );
+    _kennelsLastUpdated = (flags & flagKennelsTable) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await _getLastUpdatedTime(
+            tableModel.kennelsTableHelper.colUpdatedAtValue,
+            tableModel.kennelsTableHelper.getTableName(AppDomainType.user),
+          );
+    _paymentsLastUpdated = (flags & flagPaymentsTable) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await _getLastUpdatedTime(
+            tableModel.paymentsTableHelper.colUpdatedAtValue,
+            tableModel.paymentsTableHelper.getTableName(AppDomainType.user),
+          );
+    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await _getLastUpdatedTime(
+            tableModel.hasherKennelMapTableHelper.colUpdatedAtValue,
+            tableModel.hasherKennelMapTableHelper.getTableName(
+              AppDomainType.user,
+            ),
+          );
+    _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await _getLastUpdatedTime(
+            tableModel.hasherEventMapTableHelper.colUpdatedAtValue,
+            tableModel.hasherEventMapTableHelper.getTableName(
+              AppDomainType.user,
+            ),
+          );
+    _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await _getLastUpdatedTime(
+            tableModel.eventsTableHelper.colUpdatedAtValue,
+            tableModel.eventsTableHelper.getTableName(AppDomainType.user),
+          );
   }
 
   Future<bool> updateFromBackend(
@@ -131,7 +122,7 @@ class SyncUserDataService {
     Client? client,
     bool usePaging = false,
   }) async {
-    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (Utilities.isNotConnected()) {
       return false;
     }
 
@@ -186,42 +177,36 @@ class SyncUserDataService {
           'queryType': 'syncUserData',
           'deviceId': deviceId,
           'accessToken': accessToken,
-          'citiesUpdatedAfter':
-              (tablesToSync & flagCitiesTable) == 0
-                  ? 'ignore'
-                  : ('${citiesUpdatedAfter}000000').substring(0, 26),
-          'regionsUpdatedAfter':
-              (tablesToSync & flagRegionsTable) == 0
-                  ? 'ignore'
-                  : ('${regionsUpdatedAfter}000000').substring(0, 26),
-          'countriesUpdatedAfter':
-              (tablesToSync & flagCountriesTable) == 0
-                  ? 'ignore'
-                  : ('${countriesUpdatedAfter}000000').substring(0, 26),
+          'citiesUpdatedAfter': (tablesToSync & flagCitiesTable) == 0
+              ? 'ignore'
+              : ('${citiesUpdatedAfter}000000').substring(0, 26),
+          'regionsUpdatedAfter': (tablesToSync & flagRegionsTable) == 0
+              ? 'ignore'
+              : ('${regionsUpdatedAfter}000000').substring(0, 26),
+          'countriesUpdatedAfter': (tablesToSync & flagCountriesTable) == 0
+              ? 'ignore'
+              : ('${countriesUpdatedAfter}000000').substring(0, 26),
           'hasherKennelMapUpdatedAfter':
               (tablesToSync & flagHasherKennelMapTable) == 0
-                  ? 'ignore'
-                  : ('${hasherKennelMapUpdatedAfter}000000').substring(0, 26),
+              ? 'ignore'
+              : ('${hasherKennelMapUpdatedAfter}000000').substring(0, 26),
           'hasherEventMapUpdatedAfter':
               (tablesToSync & flagHasherEventMapTable) == 0
-                  ? 'ignore'
-                  : ('${hasherEventMapUpdatedAfter}000000').substring(0, 26),
-          'hashersUpdatedAfter':
-              (tablesToSync & flagHashersTable) == 0
-                  ? 'ignore'
-                  : ('${hashersUpdatedAfter}000000').substring(0, 26),
-          'kennelsUpdatedAfter':
-              (tablesToSync & flagKennelsTable) == 0
-                  ? 'ignore'
-                  : ('${kennelsUpdatedAfter}000000').substring(0, 26),
+              ? 'ignore'
+              : ('${hasherEventMapUpdatedAfter}000000').substring(0, 26),
+          'hashersUpdatedAfter': (tablesToSync & flagHashersTable) == 0
+              ? 'ignore'
+              : ('${hashersUpdatedAfter}000000').substring(0, 26),
+          'kennelsUpdatedAfter': (tablesToSync & flagKennelsTable) == 0
+              ? 'ignore'
+              : ('${kennelsUpdatedAfter}000000').substring(0, 26),
           'narrowEventsUpdatedAfter':
               (tablesToSync & flagNarrowEventsTable) == 0
-                  ? 'ignore'
-                  : ('${narrowEventsUpdatedAfter}000000').substring(0, 26),
-          'paymentsUpdatedAfter':
-              (tablesToSync & flagPaymentsTable) == 0
-                  ? 'ignore'
-                  : ('${paymentsUpdatedAfter}000000').substring(0, 26),
+              ? 'ignore'
+              : ('${narrowEventsUpdatedAfter}000000').substring(0, 26),
+          'paymentsUpdatedAfter': (tablesToSync & flagPaymentsTable) == 0
+              ? 'ignore'
+              : ('${paymentsUpdatedAfter}000000').substring(0, 26),
           'forceReplicateAllRunsForKennel':
               forceReplicateAllRunsForKennel ?? 'ignore',
           'usePaging': usePaging ? '1' : '0',

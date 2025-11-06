@@ -20,7 +20,7 @@ class ConnectedWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (Utilities.isNotConnected()) {
       if (showHcBackground) {
         return Container(
           decoration: Backgrounds.defaultHcBackground(),
@@ -64,7 +64,7 @@ class ConnectedWidget extends StatelessWidget {
   Future<void> _attemptReconnect() async {
     await Utilities.checkForInternetConnection(true);
 
-    if (appModel.connectionStatus == EnumConnectionStatus2.connected) {
+    if (Utilities.isConnected()) {
       await Utilities.showAlert2(
         'Connected',
         'You are now connected to the Internet',

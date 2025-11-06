@@ -814,9 +814,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       ),
                                                     ),
                                             ),
-                                            Connection2.styleForConnected(
-                                              appModel.connectionStatus,
-                                              ElevatedButton(
+                                            StyleForConnected(
+                                              child: ElevatedButton(
                                                 style: ElevatedButton.styleFrom(
                                                   padding:
                                                       const EdgeInsets.only(
@@ -827,8 +826,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       ),
                                                 ),
                                                 onPressed: () {
-                                                  if (Connection2.checkForConnection(
-                                                    appModel.connectionStatus,
+                                                  if (Utilities.isConnected(
+                                                    showDialog: true,
                                                   )) {
                                                     Navigator.push(
                                                       context,
@@ -1345,9 +1344,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       MainAxisAlignment
                                                           .spaceAround,
                                                   children: <Widget>[
-                                                    Connection2.styleForConnected(
-                                                      appModel.connectionStatus,
-                                                      ElevatedButton(
+                                                    StyleForConnected(
+                                                      child: ElevatedButton(
                                                         style: ElevatedButton.styleFrom(
                                                           padding:
                                                               const EdgeInsets.only(
@@ -1442,9 +1440,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       MainAxisAlignment
                                                           .spaceAround,
                                                   children: <Widget>[
-                                                    Connection2.styleForConnected(
-                                                      appModel.connectionStatus,
-                                                      ElevatedButton(
+                                                    StyleForConnected(
+                                                      child: ElevatedButton(
                                                         style: ElevatedButton.styleFrom(
                                                           padding:
                                                               const EdgeInsets.only(
@@ -1688,9 +1685,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               mainAxisAlignment:
                                                   MainAxisAlignment.spaceAround,
                                               children: <Widget>[
-                                                Connection2.styleForConnected(
-                                                  appModel.connectionStatus,
-                                                  ElevatedButton(
+                                                StyleForConnected(
+                                                  child: ElevatedButton(
                                                     style: ElevatedButton.styleFrom(
                                                       padding:
                                                           const EdgeInsets.only(
@@ -1767,9 +1763,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               mainAxisAlignment:
                                                   MainAxisAlignment.spaceAround,
                                               children: <Widget>[
-                                                Connection2.styleForConnected(
-                                                  appModel.connectionStatus,
-                                                  ElevatedButton(
+                                                StyleForConnected(
+                                                  child: ElevatedButton(
                                                     style: ElevatedButton.styleFrom(
                                                       padding:
                                                           const EdgeInsets.only(
@@ -1863,9 +1858,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               mainAxisAlignment:
                                                   MainAxisAlignment.spaceAround,
                                               children: <Widget>[
-                                                Connection2.styleForConnected(
-                                                  appModel.connectionStatus,
-                                                  ElevatedButton(
+                                                StyleForConnected(
+                                                  child: ElevatedButton(
                                                     style: ElevatedButton.styleFrom(
                                                       padding:
                                                           const EdgeInsets.only(
@@ -1945,9 +1939,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               mainAxisAlignment:
                                                   MainAxisAlignment.spaceAround,
                                               children: <Widget>[
-                                                Connection2.styleForConnected(
-                                                  appModel.connectionStatus,
-                                                  ElevatedButton(
+                                                StyleForConnected(
+                                                  child: ElevatedButton(
                                                     style: ElevatedButton.styleFrom(
                                                       padding:
                                                           const EdgeInsets.only(
@@ -2071,17 +2064,13 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             height: 60,
             width: MediaQuery.of(context).size.width,
             color: Colors.yellow[100],
-            child: Connection2.styleForConnected(
-              appModel.connectionStatus,
-              ElevatedButton(
+            child: StyleForConnected(
+              child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _isDirty ? hc_red : Colors.grey,
                 ),
                 onPressed: () {
-                  if (Connection2.checkForConnection(
-                        appModel.connectionStatus,
-                      ) &&
-                      _isDirty) {
+                  if (Utilities.isConnected(showDialog: true) && _isDirty) {
                     _updateProfile();
                   }
                 },

@@ -1664,37 +1664,39 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     String text,
     EnumRsvpState rsvpState,
   ) {
-    return ElevatedButton(
-      child: SizedBox(
-        width: 200.0,
-        child: Row(
-          children: <Widget>[
-            Stack(
-              alignment: AlignmentDirectional.center,
-              children: <Widget>[
-                Container(
-                  height: 24,
-                  width: 24,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
+    return StyleForConnected(
+      child: ElevatedButton(
+        child: SizedBox(
+          width: 200.0,
+          child: Row(
+            children: <Widget>[
+              Stack(
+                alignment: AlignmentDirectional.center,
+                children: <Widget>[
+                  Container(
+                    height: 24,
+                    width: 24,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
                   ),
-                ),
-                SizedBox(
-                  height: 22.0,
-                  width: 22.0,
-                  child: Icon(iconData, size: 22.0, color: iconColor),
-                ),
-              ],
-            ),
-            const SizedBox(width: 15.0),
-            Text(text, style: ts_button),
-          ],
+                  SizedBox(
+                    height: 22.0,
+                    width: 22.0,
+                    child: Icon(iconData, size: 22.0, color: iconColor),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 15.0),
+              Text(text, style: ts_button),
+            ],
+          ),
         ),
+        onPressed: () async {
+          await _setRsvpState(rsvpState);
+        },
       ),
-      onPressed: () async {
-        await _setRsvpState(rsvpState);
-      },
     );
   }
 

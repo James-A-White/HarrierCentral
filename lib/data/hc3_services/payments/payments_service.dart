@@ -140,7 +140,7 @@ class PaymentsService {
   ) async {
     List<dynamic> results = <dynamic>[];
 
-    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (Utilities.isNotConnected()) {
       return results;
       // TODO(James): fix this so we can return a bool
       //return false;
@@ -235,7 +235,7 @@ class PaymentsService {
   }) async {
     List<dynamic> results = <dynamic>[];
 
-    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (Utilities.isNotConnected()) {
       return results;
       // TODO(James): fix this so we can return a bool
       //return false;
@@ -376,15 +376,16 @@ class PaymentsService {
         'emailAddress': emailAddress,
       });
 
-      final Response response = await post(
-        Uri.parse(EMAIL_PAYMENT_API_URL),
-        headers: <String, String>{'content-type': 'application/json'},
-        body: body,
-        // Send authorization headers to your backend
-        //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
-      ).catchError((dynamic error) {
-        return Future<Response>.value(Response('', 500));
-      });
+      final Response response =
+          await post(
+            Uri.parse(EMAIL_PAYMENT_API_URL),
+            headers: <String, String>{'content-type': 'application/json'},
+            body: body,
+            // Send authorization headers to your backend
+            //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
+          ).catchError((dynamic error) {
+            return Future<Response>.value(Response('', 500));
+          });
 
       return <String, String?>{'result': response.body, 'email': emailAddress};
     }

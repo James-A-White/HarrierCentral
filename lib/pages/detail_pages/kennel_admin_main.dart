@@ -434,9 +434,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           child: SizedBox(
                                             width: 110,
                                             height: 110,
-                                            child: Connection2.styleForConnected(
-                                              appModel.connectionStatus,
-                                              ElevatedButton(
+                                            child: StyleForConnected(
+                                              child: ElevatedButton(
                                                 style: ElevatedButton.styleFrom(
                                                   padding:
                                                       const EdgeInsets.only(
@@ -477,8 +476,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                   ],
                                                 ),
                                                 onPressed: () {
-                                                  if (Connection2.checkForConnection(
-                                                    appModel.connectionStatus,
+                                                  if (Utilities.isConnected(
+                                                    showDialog: true,
                                                   )) {
                                                     Navigator.push<dynamic>(
                                                       context,
@@ -518,9 +517,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           child: SizedBox(
                                             width: 110,
                                             height: 110,
-                                            child: Connection2.styleForConnected(
-                                              appModel.connectionStatus,
-                                              ElevatedButton(
+                                            child: StyleForConnected(
+                                              child: ElevatedButton(
                                                 style: ElevatedButton.styleFrom(
                                                   padding:
                                                       const EdgeInsets.only(
@@ -561,8 +559,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                   ],
                                                 ),
                                                 onPressed: () {
-                                                  if (Connection2.checkForConnection(
-                                                    appModel.connectionStatus,
+                                                  if (Utilities.isConnected(
+                                                    showDialog: true,
                                                   )) {
                                                     Navigator.push<dynamic>(
                                                       context,
@@ -615,9 +613,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           child: SizedBox(
                                             width: 110,
                                             height: 110,
-                                            child: Connection2.styleForConnected(
-                                              appModel.connectionStatus,
-                                              ElevatedButton(
+                                            child: StyleForConnected(
+                                              child: ElevatedButton(
                                                 style: ElevatedButton.styleFrom(
                                                   padding:
                                                       const EdgeInsets.only(
@@ -699,9 +696,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           child: SizedBox(
                                             width: 110,
                                             height: 110,
-                                            child: Connection2.styleForConnected(
-                                              appModel.connectionStatus,
-                                              ElevatedButton(
+                                            child: StyleForConnected(
+                                              child: ElevatedButton(
                                                 style: ElevatedButton.styleFrom(
                                                   padding:
                                                       const EdgeInsets.only(
@@ -778,8 +774,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       //   child: SizedBox(
                                       //     width: 110,
                                       //     height: 110,
-                                      //     child: Connection2.styleForConnected(
-                                      //       appModel.connectionStatus,
+                                      //     child: StyleForConnected(
+                                      //
                                       //       ElevatedButton(
                                       //         style: ElevatedButton.styleFrom(
                                       //           padding:
@@ -824,8 +820,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       //           ],
                                       //         ),
                                       //         onPressed: () async {
-                                      //           if (Connection2.checkForConnection(
-                                      //             appModel.connectionStatus,
+                                      //           if (Utilities.isConnected(
+                                      //
                                       //           )) {
                                       //             final bool?
                                       //             isPreviewBool =
@@ -899,8 +895,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       //   child: Container(
                                       //     width: 110,
                                       //     height: 110,
-                                      //     child: Connection2.styleForConnected(
-                                      //       appModel.connectionStatus,
+                                      //     child: StyleForConnected(
+                                      //
                                       //       ElevatedButton(
                                       //         style: ElevatedButton.styleFrom(
                                       //           padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
@@ -920,7 +916,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       //           ),
                                       //         ]),
                                       //         onPressed: () {
-                                      //           if (Connection2.checkForConnection(context, appModel.connectionStatus)) {
+                                      //           if (Utilities.isConnected(context, appModel.connectionStatus)) {
                                       //             Navigator.push<dynamic>(
                                       //               context,
                                       //               MaterialPageRoute<dynamic>(
@@ -960,9 +956,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           ),
                                           width: 110,
                                           height: 110,
-                                          child: Connection2.styleForConnected(
-                                            appModel.connectionStatus,
-                                            ElevatedButton(
+                                          child: StyleForConnected(
+                                            child: ElevatedButton(
                                               style: ElevatedButton.styleFrom(
                                                 padding: const EdgeInsets.only(
                                                   top: 8.0,
@@ -1000,8 +995,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                 ],
                                               ),
                                               onPressed: () {
-                                                if (Connection2.checkForConnection(
-                                                  appModel.connectionStatus,
+                                                if (Utilities.isConnected(
+                                                  showDialog: true,
                                                 )) {
                                                   final EmailReportsService
                                                   svc = EmailReportsService();
@@ -1077,9 +1072,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           child: SizedBox(
                                             width: 110,
                                             height: 110,
-                                            child: Connection2.styleForConnected(
-                                              appModel.connectionStatus,
-                                              ElevatedButton(
+                                            child: StyleForConnected(
+                                              child: ElevatedButton(
                                                 style: ElevatedButton.styleFrom(
                                                   padding:
                                                       const EdgeInsets.only(
@@ -1119,8 +1113,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                   ],
                                                 ),
                                                 onPressed: () {
-                                                  if (Connection2.checkForConnection(
-                                                    appModel.connectionStatus,
+                                                  if (Utilities.isConnected(
+                                                    showDialog: true,
                                                   )) {
                                                     _kennelMembersList =
                                                         KennelMembersList(
@@ -1910,9 +1904,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                             ),
                                             width: _buttonWidth,
                                             height: _buttonHeight,
-                                            child: Connection2.styleForConnected(
-                                              appModel.connectionStatus,
-                                              ElevatedButton(
+                                            child: StyleForConnected(
+                                              child: ElevatedButton(
                                                 style: ElevatedButton.styleFrom(
                                                   padding:
                                                       const EdgeInsets.only(
@@ -1968,8 +1961,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                   ],
                                                 ),
                                                 onPressed: () {
-                                                  if (Connection2.checkForConnection(
-                                                    appModel.connectionStatus,
+                                                  if (Utilities.isConnected(
+                                                    showDialog: true,
                                                   )) {
                                                     launchUrl(
                                                       Uri.parse(
@@ -2000,9 +1993,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       margin: const EdgeInsets.only(bottom: 20),
                                       width: _buttonWidth,
                                       height: _buttonHeight,
-                                      child: Connection2.styleForConnected(
-                                        appModel.connectionStatus,
-                                        ElevatedButton(
+                                      child: StyleForConnected(
+                                        child: ElevatedButton(
                                           style: ElevatedButton.styleFrom(
                                             padding: const EdgeInsets.only(
                                               left: 12.0,
@@ -2063,9 +2055,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       margin: const EdgeInsets.only(bottom: 20),
                                       width: _buttonWidth,
                                       height: _buttonHeight,
-                                      child: Connection2.styleForConnected(
-                                        appModel.connectionStatus,
-                                        ElevatedButton(
+                                      child: StyleForConnected(
+                                        child: ElevatedButton(
                                           style: ElevatedButton.styleFrom(
                                             padding: const EdgeInsets.only(
                                               left: 12.0,
@@ -2139,8 +2130,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       //   ),
                                       //   width: _buttonWidth,
                                       //   height: _buttonHeight,
-                                      //   child: Connection2.styleForConnected(
-                                      //     appModel.connectionStatus,
+                                      //   child: StyleForConnected(
+                                      //
                                       //     ElevatedButton(
                                       //       style: ElevatedButton.styleFrom(
                                       //         padding: const EdgeInsets.only(

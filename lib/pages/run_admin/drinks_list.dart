@@ -73,7 +73,7 @@ class DrinksListState extends State<DrinksList>
   final List<DrinksResults> _awards = <DrinksResults>[];
 
   Future<void> _refreshSqlTablesFromBackend(bool showLoadingIndicator) async {
-    if (appModel.connectionStatus == EnumConnectionStatus2.connected) {
+    if (Utilities.isConnected()) {
       if (showLoadingIndicator) {
         setState(() {
           _isLoading = true;

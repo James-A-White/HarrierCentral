@@ -798,17 +798,14 @@ class QrScannerTabState extends State<QrScannerTab>
             margin: const EdgeInsets.all(10.0),
             //width: 280.0,
             height: 40.0,
-            child: Connection2.styleForConnected(
-              appModel.connectionStatus,
-              ElevatedButton(
+            child: StyleForConnected(
+              child: ElevatedButton(
                 child: Text(
                   _isScanning ? 'Stop Scanning' : 'Start Scanning',
                   style: ts_title,
                 ),
                 onPressed: () async {
-                  if (Connection2.checkForConnection(
-                    appModel.connectionStatus,
-                  )) {
+                  if (Utilities.isConnected(showDialog: true)) {
                     await _toggleScanning();
                   }
                 },

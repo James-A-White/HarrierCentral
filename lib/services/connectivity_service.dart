@@ -15,6 +15,7 @@ class NetworkService extends GetxService {
   late final Connectivity _connectivity;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
   StreamSubscription<InternetStatus>? _internetStatusSub;
+
   final Duration debounce = const Duration(milliseconds: 5000);
   Timer? _debounceTimer;
 
@@ -32,11 +33,11 @@ class NetworkService extends GetxService {
 
     print('1. Status => $hasNet: ${DateTime.now().millisecondsSinceEpoch}');
 
-    if (hasNet) {
-      appModel.connectionStatus = EnumConnectionStatus2.connected;
-    } else {
-      appModel.connectionStatus = EnumConnectionStatus2.notConnected;
-    }
+    // if (hasNet) {
+    //   appModel.connectionStatus = EnumConnectionStatus2.connected;
+    // } else {
+    //   appModel.connectionStatus = EnumConnectionStatus2.notConnected;
+    // }
 
     // Listen for interface changes
     _connectivitySub = _connectivity.onConnectivityChanged.listen((results) {
@@ -66,11 +67,11 @@ class NetworkService extends GetxService {
       '2. Status => $hasInternet: ${DateTime.now().millisecondsSinceEpoch}',
     );
 
-    if (hasInternet) {
-      appModel.connectionStatus = EnumConnectionStatus2.connected;
-    } else {
-      appModel.connectionStatus = EnumConnectionStatus2.notConnected;
-    }
+    // if (hasInternet) {
+    //   appModel.connectionStatus = EnumConnectionStatus2.connected;
+    // } else {
+    //   appModel.connectionStatus = EnumConnectionStatus2.notConnected;
+    // }
 
     return hasInternet;
   }
@@ -99,11 +100,11 @@ class NetworkService extends GetxService {
         '3. Status => $hasInternet: ${DateTime.now().millisecondsSinceEpoch}',
       );
 
-      if (hasInternet) {
-        appModel.connectionStatus = EnumConnectionStatus2.connected;
-      } else {
-        appModel.connectionStatus = EnumConnectionStatus2.notConnected;
-      }
+      // if (hasInternet) {
+      //   appModel.connectionStatus = EnumConnectionStatus2.connected;
+      // } else {
+      //   appModel.connectionStatus = EnumConnectionStatus2.notConnected;
+      // }
     });
   }
 
@@ -116,11 +117,11 @@ class NetworkService extends GetxService {
         '6. Status => $newStatus: ${DateTime.now().millisecondsSinceEpoch}',
       );
 
-      if (newStatus == NetworkStatus.online) {
-        appModel.connectionStatus = EnumConnectionStatus2.connected;
-      } else {
-        appModel.connectionStatus = EnumConnectionStatus2.notConnected;
-      }
+      // if (newStatus == NetworkStatus.online) {
+      //   appModel.connectionStatus = EnumConnectionStatus2.connected;
+      // } else {
+      //   appModel.connectionStatus = EnumConnectionStatus2.notConnected;
+      // }
     });
   }
 

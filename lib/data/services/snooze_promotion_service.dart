@@ -6,7 +6,7 @@ class SnoozePromotionService {
     String promotionId,
     bool deletePromotion,
   ) async {
-    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (Utilities.isNotConnected()) {
       return null;
       // TODO(James): fix this so we can return a bool
       //return false;
@@ -28,12 +28,11 @@ class SnoozePromotionService {
       'deviceId': deviceId,
       'accessToken': accessToken,
       'promotionId': promotionId,
-      'snoozeUntilDate':
-          deletePromotion
-              ? '2100-01-01'
-              : DateFormat(
-                'yyyy-MM-dd',
-              ).format(DateTime.now().add(const Duration(days: 4))),
+      'snoozeUntilDate': deletePromotion
+          ? '2100-01-01'
+          : DateFormat(
+              'yyyy-MM-dd',
+            ).format(DateTime.now().add(const Duration(days: 4))),
     });
 
     final String responseBody = await ServiceCommon.sendHttpPostV2(body);

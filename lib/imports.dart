@@ -188,6 +188,7 @@ export 'package:harrier_central/widgets/qr_group.dart';
 export 'package:harrier_central/widgets/run_details.dart';
 export 'package:harrier_central/widgets/run_list_item.dart';
 export 'package:harrier_central/widgets/run_tabs.dart';
+export 'package:harrier_central/widgets/style_for_connected.dart';
 export 'package:harrier_central/widgets/text_scale_factor_clamper.dart';
 export 'package:harrier_central/widgets/user_details_ui.dart';
 export 'package:harrier_central/widgets/user_event_list_item.dart';

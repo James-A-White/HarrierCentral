@@ -86,7 +86,7 @@ class SyncKennelAdminService {
     bool usePaging = false,
     String? targetHasherId,
   }) async {
-    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (Utilities.isNotConnected()) {
       return false;
     }
 

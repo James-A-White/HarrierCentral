@@ -16,159 +16,148 @@ class MainNavigationPage extends StatelessWidget {
     return GetBuilder<MainNavigationController>(
       id: 'AppScaffold',
       builder: (AppScaffoldController) {
-        return Stack(
-          children: <Widget>[
-            Scaffold(
-              key: controller.ScaffoldKey,
-              backgroundColor: Colors.white,
-              appBar: PreferredSize(
-                preferredSize: Size.fromHeight(
-                  (controller.mainScreenContent.value ==
-                          MainPageContent.appContent)
-                      ? kToolbarHeight
-                      : 0,
-                ),
-                child: Obx(() {
-                  if (controller.mainScreenContent.value ==
-                      MainPageContent.help) {
-                    return SizedBox.shrink();
-                  }
-                  return AppBar(
-                    elevation: 3.0,
-                    backgroundColor: themeAppBarBackground,
-                    iconTheme: const IconThemeData(
-                      color: Colors.white,
-                      size: 28.0,
+        return Scaffold(
+          key: controller.ScaffoldKey,
+          backgroundColor: Colors.white,
+          appBar: PreferredSize(
+            preferredSize: Size.fromHeight(
+              (controller.mainScreenContent.value == MainPageContent.appContent)
+                  ? kToolbarHeight
+                  : 0,
+            ),
+            child: Obx(() {
+              if (controller.mainScreenContent.value == MainPageContent.help) {
+                return SizedBox.shrink();
+              }
+              return AppBar(
+                elevation: 3.0,
+                backgroundColor: themeAppBarBackground,
+                iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
+                leadingWidth: 90,
+                leading: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.menu),
+                      onPressed: () =>
+                          controller.ScaffoldKey.currentState?.openDrawer(),
                     ),
-                    leadingWidth: 90,
-                    leading: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.menu),
-                          onPressed: () =>
-                              controller.ScaffoldKey.currentState?.openDrawer(),
-                        ),
-                        controller.mainScreenReady.value
-                            ? GetBuilder<FutureRunListPageController>(
-                                id: 'main_nav_page',
-                                builder: (badgeController) {
-                                  return GestureDetector(
-                                    onTap: () {
-                                      bool forceChatPage = getPage() != 0;
-                                      if (forceChatPage ||
-                                          (badgeController
-                                                  .runsToDisplay
-                                                  .value !=
-                                              RunsToDisplay.unreadChats)) {
-                                        badgeController.runsToDisplay.value =
-                                            RunsToDisplay.unreadChats;
-                                        badgeController.runsTimeScope.value =
-                                            RunsTimeScope.all;
-                                      } else {
-                                        badgeController.runsToDisplay.value =
-                                            RunsToDisplay.allRuns;
-                                        badgeController.runsTimeScope.value =
-                                            RunsTimeScope.future;
-                                      }
+                    controller.mainScreenReady.value
+                        ? GetBuilder<FutureRunListPageController>(
+                            id: 'main_nav_page',
+                            builder: (badgeController) {
+                              return GestureDetector(
+                                onTap: () {
+                                  bool forceChatPage = getPage() != 0;
+                                  if (forceChatPage ||
+                                      (badgeController.runsToDisplay.value !=
+                                          RunsToDisplay.unreadChats)) {
+                                    badgeController.runsToDisplay.value =
+                                        RunsToDisplay.unreadChats;
+                                    badgeController.runsTimeScope.value =
+                                        RunsTimeScope.all;
+                                  } else {
+                                    badgeController.runsToDisplay.value =
+                                        RunsToDisplay.allRuns;
+                                    badgeController.runsTimeScope.value =
+                                        RunsTimeScope.future;
+                                  }
 
-                                      setPage(0);
+                                  setPage(0);
 
-                                      // return badgeController
-                                      //     .showOnlyEventsWithMessages
-                                      //     .value = !(badgeController
-                                      //     .showOnlyEventsWithMessages
-                                      //     .value);
-                                    },
-                                    child: badges.Badge(
-                                      position: badges.BadgePosition.topEnd(
-                                        top: -10,
-                                        end: -17,
-                                      ),
-
-                                      badgeContent: Container(
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: 2,
-                                        ),
-                                        width: 30,
-                                        height: 13,
-                                        child: AutoSizeText(
-                                          badgeController
-                                              .totalNotifications
-                                              .value
-                                              .toString(),
-                                          textAlign: TextAlign.center,
-                                          maxLines: 1,
-                                          minFontSize: 10,
-                                          maxFontSize: 13,
-                                          style: ts_badge,
-                                        ),
-                                      ),
-
-                                      showBadge:
-                                          badgeController
-                                              .totalNotifications
-                                              .value !=
-                                          0,
-                                      child:
-                                          // badgeController
-                                          //     .showChatBubbleLoading
-                                          //     .value
-                                          // ? const Icon(Icons.refresh)
-                                          // :
-                                          const Icon(Icons.chat_bubble_outline),
-                                    ),
-                                  );
+                                  // return badgeController
+                                  //     .showOnlyEventsWithMessages
+                                  //     .value = !(badgeController
+                                  //     .showOnlyEventsWithMessages
+                                  //     .value);
                                 },
-                              )
-                            : SizedBox(),
-                      ],
-                    ),
-                    title: AutoSizeText(
-                      controller.appBarText.value,
-                      style: ts_appBarTitle,
-                      maxLines: 1,
-                    ),
-                    centerTitle: true,
-                    actions: [
-                      IconButton(
-                        icon: const Icon(Icons.qr_code_scanner_sharp),
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const UserQrCodePage(),
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          controller.isFlipped.value
-                              ? Icons.undo
-                              : Icons.info_outline,
-                        ),
-                        onPressed: controller.toggleFlip,
-                      ),
-                    ],
-                  );
-                }),
-              ),
-              floatingActionButton: Obx(() {
-                if (!controller.isFlipped.value) {
-                  if (controller.currentPage.value == 2) {
-                    return controller.runAndKennelMapPageKey.currentState
-                            ?.getMapFab() ??
-                        SizedBox();
-                  }
-                  if (controller.currentPage.value == 1) {
-                    return controller.kennelLocationsPageKey.currentState
-                            ?.getKennelFab() ??
-                        SizedBox();
-                  }
-                }
-                return SizedBox();
-              }),
+                                child: badges.Badge(
+                                  position: badges.BadgePosition.topEnd(
+                                    top: -10,
+                                    end: -17,
+                                  ),
 
-              body: Container(
+                                  badgeContent: Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 2,
+                                    ),
+                                    width: 30,
+                                    height: 13,
+                                    child: AutoSizeText(
+                                      badgeController.totalNotifications.value
+                                          .toString(),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 1,
+                                      minFontSize: 10,
+                                      maxFontSize: 13,
+                                      style: ts_badge,
+                                    ),
+                                  ),
+
+                                  showBadge:
+                                      badgeController
+                                          .totalNotifications
+                                          .value !=
+                                      0,
+                                  child:
+                                      // badgeController
+                                      //     .showChatBubbleLoading
+                                      //     .value
+                                      // ? const Icon(Icons.refresh)
+                                      // :
+                                      const Icon(Icons.chat_bubble_outline),
+                                ),
+                              );
+                            },
+                          )
+                        : SizedBox(),
+                  ],
+                ),
+                title: AutoSizeText(
+                  controller.appBarText.value,
+                  style: ts_appBarTitle,
+                  maxLines: 1,
+                ),
+                centerTitle: true,
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.qr_code_scanner_sharp),
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const UserQrCodePage()),
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      controller.isFlipped.value
+                          ? Icons.undo
+                          : Icons.info_outline,
+                    ),
+                    onPressed: controller.toggleFlip,
+                  ),
+                ],
+              );
+            }),
+          ),
+          floatingActionButton: Obx(() {
+            if (!controller.isFlipped.value) {
+              if (controller.currentPage.value == 2) {
+                return controller.runAndKennelMapPageKey.currentState
+                        ?.getMapFab() ??
+                    SizedBox();
+              }
+              if (controller.currentPage.value == 1) {
+                return controller.kennelLocationsPageKey.currentState
+                        ?.getKennelFab() ??
+                    SizedBox();
+              }
+            }
+            return SizedBox();
+          }),
+
+          body: Stack(
+            children: [
+              Container(
                 decoration: Backgrounds.defaultHcBackground(),
                 child: AndroidSafeArea(
                   child: Obx(() {
@@ -375,52 +364,46 @@ class MainNavigationPage extends StatelessWidget {
                   }),
                 ),
               ),
+              OfflineModeRibbon(
+                lastSync: getDatePref(
+                  DatePrefsEnum.lastSuccessfulUserDataSyncAsDate,
+                ),
+                ribbonImage: 'images/icons/offline_mode.png',
+                refreshFunction: () => controller.initialize(),
+              ),
+            ],
+          ),
 
-              bottomNavigationBar: AndroidSafeArea(
-                child: Obx(() {
-                  return (controller.mainScreenContent.value ==
-                          MainPageContent.appContent)
-                      ? FancyBottomNavigation(
-                          key: controller.bottomNavigationKey,
-                          circleColor: themeButtonColors,
-                          inactiveIconColor: themeBackgroundColor,
-                          barBackgroundColor: themeNavBarBackground,
-                          tabs: [
-                            TabData(
-                              iconData: MaterialCommunityIcons.run_fast,
-                              title: 'Runs',
-                            ),
-                            TabData(
-                              iconData: FontAwesome.home,
-                              title: 'Kennels',
-                            ),
-                            TabData(
-                              iconData: FontAwesome.map,
-                              title: 'Explore',
-                            ),
-                            TabData(
-                              iconData: FontAwesome.list_ul,
-                              title: 'History',
-                            ),
-                          ],
-                          initialSelection: 0,
-                          //key: controller.bottomNavigationKey,
-                          onTabChangedListener: controller.onTabChanged,
-                        )
-                      : SizedBox();
-                }),
-              ),
-              //drawer: DrawerMenu(ScaffoldKey: controller.ScaffoldKey),
-              drawer: DrawerMenu(key: Key('4312134')),
-            ),
-            OfflineModeRibbon(
-              lastSync: getDatePref(
-                DatePrefsEnum.lastSuccessfulUserDataSyncAsDate,
-              ),
-              ribbonImage: 'images/icons/offline_mode.png',
-              refreshFunction: () => controller.initialize(),
-            ),
-          ],
+          bottomNavigationBar: AndroidSafeArea(
+            child: Obx(() {
+              return (controller.mainScreenContent.value ==
+                      MainPageContent.appContent)
+                  ? FancyBottomNavigation(
+                      key: controller.bottomNavigationKey,
+                      circleColor: themeButtonColors,
+                      inactiveIconColor: themeBackgroundColor,
+                      barBackgroundColor: themeNavBarBackground,
+                      tabs: [
+                        TabData(
+                          iconData: MaterialCommunityIcons.run_fast,
+                          title: 'Runs',
+                        ),
+                        TabData(iconData: FontAwesome.home, title: 'Kennels'),
+                        TabData(iconData: FontAwesome.map, title: 'Explore'),
+                        TabData(
+                          iconData: FontAwesome.list_ul,
+                          title: 'History',
+                        ),
+                      ],
+                      initialSelection: 0,
+                      //key: controller.bottomNavigationKey,
+                      onTabChangedListener: controller.onTabChanged,
+                    )
+                  : SizedBox();
+            }),
+          ),
+          //drawer: DrawerMenu(ScaffoldKey: controller.ScaffoldKey),
+          drawer: DrawerMenu(key: Key('4312134')),
         );
       },
     );

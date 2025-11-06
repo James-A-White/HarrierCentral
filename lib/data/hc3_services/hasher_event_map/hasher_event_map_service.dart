@@ -185,13 +185,14 @@ class HasherEventMapService {
         'emailAddress': emailAddress!,
       });
 
-      final Response response = await post(
-        Uri.parse(EMAIL_RUN_REPORT_API_URL),
-        headers: <String, String>{'content-type': 'application/json'},
-        body: body,
-      ).catchError((dynamic error) {
-        return Future<Response>.value(Response('', 500));
-      });
+      final Response response =
+          await post(
+            Uri.parse(EMAIL_RUN_REPORT_API_URL),
+            headers: <String, String>{'content-type': 'application/json'},
+            body: body,
+          ).catchError((dynamic error) {
+            return Future<Response>.value(Response('', 500));
+          });
 
       return <String, String>{'result': response.body, 'email': emailAddress};
     }
@@ -208,7 +209,7 @@ class HasherEventMapService {
     NotificationState notificationPreference,
     EnumEmailAlertState emailPreference,
   ) async {
-    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (Utilities.isNotConnected()) {
       return <dynamic>[];
       // TODO(James): fix this so we can return a bool
       //return false;
@@ -292,7 +293,7 @@ class HasherEventMapService {
     String? hemId,
     bool? autoSetNotifications,
   }) async {
-    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (Utilities.isNotConnected()) {
       return <dynamic>[];
       // TODO(James): fix this so we can return a bool
       //return false;
@@ -341,10 +342,10 @@ class HasherEventMapService {
       'hemId': hemId,
       'autoSetNotifications':
           (autoSetNotifications ??
-                  getBoolPref(BoolPrefsEnum.automaticallySetNotifiationPrefs) ??
-                  true)
-              ? 1
-              : 0,
+              getBoolPref(BoolPrefsEnum.automaticallySetNotifiationPrefs) ??
+              true)
+          ? 1
+          : 0,
     };
 
     if (isHare != null) {
@@ -377,7 +378,7 @@ class HasherEventMapService {
     String hasherIds,
     int attendenceState,
   ) async {
-    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (Utilities.isNotConnected()) {
       return <dynamic>[];
     }
 
@@ -449,7 +450,7 @@ class HasherEventMapService {
     String? qrScanText,
     String? hemId,
   }) async {
-    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (Utilities.isNotConnected()) {
       return <dynamic>[];
     }
 
@@ -528,7 +529,7 @@ class HasherEventMapService {
     String phoneNumber,
     AppDomainType appDomainType,
   ) async {
-    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (Utilities.isNotConnected()) {
       return <dynamic>[];
       // TODO(James): fix this so we can return a bool
       //return false;
@@ -595,7 +596,7 @@ class HasherEventMapService {
     String fromEventId,
     String toEventId,
   ) async {
-    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (Utilities.isNotConnected()) {
       return <dynamic>[];
       // TODO(James): fix this so we can return a bool
       //return false;

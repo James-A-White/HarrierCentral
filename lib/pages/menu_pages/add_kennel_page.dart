@@ -96,9 +96,8 @@ class FaqPageContentState extends State<FaqPageContent> {
                       textAlign: TextAlign.justify,
                     ),
                     const SizedBox(height: 20.0),
-                    Connection2.styleForConnected(
-                      appModel.connectionStatus,
-                      Center(
+                    StyleForConnected(
+                      child: Center(
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.only(

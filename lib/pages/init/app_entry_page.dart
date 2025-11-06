@@ -213,7 +213,7 @@ class AppEntryPageState extends State<AppEntryPage>
 
     await Utilities.subscribeToGeoLocationStream();
 
-    if (appModel.connectionStatus == EnumConnectionStatus2.connected) {
+    if (Utilities.isConnected()) {
       final String responseBody = await svc.approveLogin(
         navigatorKey.currentContext!,
         null,
@@ -287,7 +287,7 @@ class AppEntryPageState extends State<AppEntryPage>
       exit(0);
     } else if (loginResult == null) {
       // open app in offline mode
-      appModel.connectionStatus = EnumConnectionStatus2.notConnected;
+      //appModel.connectionStatus = EnumConnectionStatus2.notConnected;
 
       Get.off(() => MainNavigationPage(), routeName: '/main');
 
@@ -315,7 +315,7 @@ class AppEntryPageState extends State<AppEntryPage>
       if (allowContinueFromMessage) {
         if (loginResult.serverStatusCode == serverStatusUp.value) {
           if (loginResult.approvalCode == loginApprovalApproved.value) {
-            appModel.connectionStatus = EnumConnectionStatus2.connected;
+            //appModel.connectionStatus = EnumConnectionStatus2.connected;
             //if (true) {
             if (((userId == null) ||
                 (userId.isEmpty) ||

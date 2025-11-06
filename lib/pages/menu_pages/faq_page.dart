@@ -273,9 +273,8 @@ class FaqPageContentState extends State<FaqPageContent> {
                       },
                     ),
 
-                    Connection2.styleForConnected(
-                      appModel.connectionStatus,
-                      Center(
+                    StyleForConnected(
+                      child: Center(
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.only(

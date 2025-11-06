@@ -805,7 +805,7 @@ class Utilities {
 
     if (!hasInterface) {
       // Radios off (Wi-Fi + mobile data + ethernet + VPN)
-      appModel.connectionStatus = EnumConnectionStatus2.notConnected;
+      //appModel.connectionStatus = EnumConnectionStatus2.notConnected;
       print('No interfaces detected: ${DateTime.now().millisecondsSinceEpoch}');
       return false;
     }
@@ -843,7 +843,7 @@ class Utilities {
         if (!responseBody.startsWith(ERROR_PREFIX)) {
           final result = jsonDecode(responseBody)[0][0]['result'];
           if (result == 'Connected') {
-            appModel.connectionStatus = EnumConnectionStatus2.connected;
+            //appModel.connectionStatus = EnumConnectionStatus2.connected;
             print('HC server check successful, connected');
             return true; // ✅ success
           }
@@ -917,7 +917,7 @@ class Utilities {
               'OK',
             );
           }
-          appModel.connectionStatus = EnumConnectionStatus2.notConnected;
+          //appModel.connectionStatus = EnumConnectionStatus2.notConnected;
           return false;
         }
 
@@ -926,7 +926,7 @@ class Utilities {
       }
 
       // After retries, still no internet
-      appModel.connectionStatus = EnumConnectionStatus2.notConnected;
+      //appModel.connectionStatus = EnumConnectionStatus2.notConnected;
       print(
         'Retries failed.. not connected: ${DateTime.now().millisecondsSinceEpoch}',
       );
@@ -935,8 +935,31 @@ class Utilities {
 
     print('Connected: ${DateTime.now().millisecondsSinceEpoch}');
     // --- Everything OK ---
-    appModel.connectionStatus = EnumConnectionStatus2.connected;
+    //appModel.connectionStatus = EnumConnectionStatus2.connected;
     return true;
+  }
+
+  static bool isConnected({
+    bool showDialog = false,
+    String? title,
+    String? message,
+  }) {
+    final network = Get.find<NetworkService>();
+    bool isConnected = network.isOnline();
+    if (!isConnected) {
+      Utilities.showAlert(
+        title ?? 'Offline Mode',
+        message ??
+            'This feature is not available in offline mode. Please connect to the internet to use this feature',
+        'OK',
+      );
+    }
+    return isConnected;
+  }
+
+  static bool isNotConnected() {
+    final network = Get.find<NetworkService>();
+    return !network.isOnline();
   }
 
   // static Future<bool> checkForInternetConnection(

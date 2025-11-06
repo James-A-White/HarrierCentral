@@ -375,11 +375,9 @@ class FutureRunsListPage extends StatelessWidget {
                                         if ((listController
                                                     .filteredRuns[index] ==
                                                 2) &&
-                                            (appModel.connectionStatus ==
-                                                EnumConnectionStatus2
-                                                    .connected)) ...<Widget>[
-                                          const SizedBox(width: 36.0),
-                                        ],
+                                            (Utilities.isConnected())) ...<
+                                          Widget
+                                        >[const SizedBox(width: 36.0)],
                                         if ((listController
                                                     .filteredRuns[index] ==
                                                 1) &&
@@ -438,9 +436,9 @@ class FutureRunsListPage extends StatelessWidget {
                                         if ((listController
                                                     .filteredRuns[index] ==
                                                 2) &&
-                                            (appModel.connectionStatus ==
-                                                EnumConnectionStatus2
-                                                    .connected)) ...<Widget>[
+                                            (Utilities.isConnected())) ...<
+                                          Widget
+                                        >[
                                           GestureDetector(
                                             onTap: () async {
                                               bool success = false;
@@ -824,244 +822,249 @@ class FutureRunsListPage extends StatelessWidget {
   // }
 
   void _showConfigureDistancePopup(BuildContext context) {
-    final String units =
-        (getIntPref(IntPrefsEnum.hasherPreferences) ?? 2) &
-                hasherPref_distanceMeasuredIn ==
-            2
-        ? ' km'
-        : ' miles';
+    if (Utilities.isConnected(showDialog: true)) {
+      final String units =
+          (getIntPref(IntPrefsEnum.hasherPreferences) ?? 2) &
+                  hasherPref_distanceMeasuredIn ==
+              2
+          ? ' km'
+          : ' miles';
 
-    final String switchUnits =
-        (getIntPref(IntPrefsEnum.hasherPreferences) ?? 2) &
-                hasherPref_distanceMeasuredIn ==
-            2
-        ? ' miles'
-        : ' kilometers';
+      final String switchUnits =
+          (getIntPref(IntPrefsEnum.hasherPreferences) ?? 2) &
+                  hasherPref_distanceMeasuredIn ==
+              2
+          ? ' miles'
+          : ' kilometers';
 
-    final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
-      <String, dynamic>{
-        'title': '10$units',
-        'icon': <Widget>[
-          Container(
-            height: 30,
-            width: 45,
-            decoration: const BoxDecoration(
-              color: Colors.yellow,
-              shape: BoxShape.rectangle,
+      final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
+        <String, dynamic>{
+          'title': '10$units',
+          'icon': <Widget>[
+            Container(
+              height: 30,
+              width: 45,
+              decoration: const BoxDecoration(
+                color: Colors.yellow,
+                shape: BoxShape.rectangle,
+              ),
             ),
-          ),
-          Text('10', style: ts_footnoteBlack),
-        ],
-        'returnValue': hasherPref_10,
-      },
-      <String, dynamic>{
-        'title': '25$units',
-        'icon': <Widget>[
-          Container(
-            height: 30,
-            width: 45,
-            decoration: const BoxDecoration(
-              color: Colors.yellow,
-              shape: BoxShape.rectangle,
+            Text('10', style: ts_footnoteBlack),
+          ],
+          'returnValue': hasherPref_10,
+        },
+        <String, dynamic>{
+          'title': '25$units',
+          'icon': <Widget>[
+            Container(
+              height: 30,
+              width: 45,
+              decoration: const BoxDecoration(
+                color: Colors.yellow,
+                shape: BoxShape.rectangle,
+              ),
             ),
-          ),
-          Text('25', style: ts_footnoteBlack),
-        ],
-        'returnValue': hasherPref_25,
-      },
-      <String, dynamic>{
-        'title': '50$units',
-        'icon': <Widget>[
-          Container(
-            height: 30,
-            width: 45,
-            decoration: const BoxDecoration(
-              color: Colors.yellow,
-              shape: BoxShape.rectangle,
+            Text('25', style: ts_footnoteBlack),
+          ],
+          'returnValue': hasherPref_25,
+        },
+        <String, dynamic>{
+          'title': '50$units',
+          'icon': <Widget>[
+            Container(
+              height: 30,
+              width: 45,
+              decoration: const BoxDecoration(
+                color: Colors.yellow,
+                shape: BoxShape.rectangle,
+              ),
             ),
-          ),
-          Text('50', style: ts_footnoteBlack),
-        ],
-        'returnValue': hasherPref_50,
-      },
-      <String, dynamic>{
-        'title': '75$units',
-        'icon': <Widget>[
-          Container(
-            height: 30,
-            width: 45,
-            decoration: const BoxDecoration(
-              color: Colors.yellow,
-              shape: BoxShape.rectangle,
+            Text('50', style: ts_footnoteBlack),
+          ],
+          'returnValue': hasherPref_50,
+        },
+        <String, dynamic>{
+          'title': '75$units',
+          'icon': <Widget>[
+            Container(
+              height: 30,
+              width: 45,
+              decoration: const BoxDecoration(
+                color: Colors.yellow,
+                shape: BoxShape.rectangle,
+              ),
             ),
-          ),
-          Text('75', style: ts_footnoteBlack),
-        ],
-        'returnValue': hasherPref_75,
-      },
-      <String, dynamic>{
-        'title': '100$units',
-        'icon': <Widget>[
-          Container(
-            height: 30,
-            width: 45,
-            decoration: const BoxDecoration(
-              color: Colors.yellow,
-              shape: BoxShape.rectangle,
+            Text('75', style: ts_footnoteBlack),
+          ],
+          'returnValue': hasherPref_75,
+        },
+        <String, dynamic>{
+          'title': '100$units',
+          'icon': <Widget>[
+            Container(
+              height: 30,
+              width: 45,
+              decoration: const BoxDecoration(
+                color: Colors.yellow,
+                shape: BoxShape.rectangle,
+              ),
             ),
-          ),
-          Text('100', style: ts_footnoteBlack),
-        ],
-        'returnValue': hasherPref_100,
-      },
-      <String, dynamic>{
-        'title': '150$units',
-        'icon': <Widget>[
-          Container(
-            height: 30,
-            width: 45,
-            decoration: const BoxDecoration(
-              color: Colors.yellow,
-              shape: BoxShape.rectangle,
+            Text('100', style: ts_footnoteBlack),
+          ],
+          'returnValue': hasherPref_100,
+        },
+        <String, dynamic>{
+          'title': '150$units',
+          'icon': <Widget>[
+            Container(
+              height: 30,
+              width: 45,
+              decoration: const BoxDecoration(
+                color: Colors.yellow,
+                shape: BoxShape.rectangle,
+              ),
             ),
-          ),
-          Text('150', style: ts_footnoteBlack),
-        ],
-        'returnValue': hasherPref_150,
-      },
-      <String, dynamic>{
-        'title': '250$units',
-        'icon': <Widget>[
-          Container(
-            height: 30,
-            width: 45,
-            decoration: const BoxDecoration(
-              color: Colors.yellow,
-              shape: BoxShape.rectangle,
+            Text('150', style: ts_footnoteBlack),
+          ],
+          'returnValue': hasherPref_150,
+        },
+        <String, dynamic>{
+          'title': '250$units',
+          'icon': <Widget>[
+            Container(
+              height: 30,
+              width: 45,
+              decoration: const BoxDecoration(
+                color: Colors.yellow,
+                shape: BoxShape.rectangle,
+              ),
             ),
-          ),
-          Text('250', style: ts_footnoteBlack),
-        ],
-        'returnValue': hasherPref_250,
-      },
-      // <String, dynamic>{
-      //   'title': '500' + units,
-      //   'icon': <Widget>[
-      //     Container(
-      //       height: 30,
-      //       width: 45,
-      //       decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
-      //     ),
-      //     Text('500', style: ts_footnoteBlack)
-      //   ],
-      //   'returnValue': hasherPref_500
-      // },
-      // pop in a divider
-      <String, dynamic>{
-        'height': 0.0,
-        'thickness': 2.0,
-        'paddingTop': 2.0,
-        //'paddingBottom': 2.0,
-        'returnValue': null,
-      },
-      <String, dynamic>{
-        'title': 'Disable auto display',
-        'icon': <Widget>[
-          Container(
-            height: 30,
-            width: 45,
-            decoration: BoxDecoration(color: hc_red, shape: BoxShape.rectangle),
-          ),
-          Text('Off', style: ts_footnoteBlack.copyWith(color: Colors.white)),
-        ],
-        'returnValue': hasherPref_0,
-      },
-      <String, dynamic>{
-        'title': 'Switch to $switchUnits',
-        'icon': <Widget>[
-          Container(
-            height: 30,
-            width: 45,
-            decoration: BoxDecoration(
-              color: Colors.green.shade800,
-              shape: BoxShape.rectangle,
+            Text('250', style: ts_footnoteBlack),
+          ],
+          'returnValue': hasherPref_250,
+        },
+        // <String, dynamic>{
+        //   'title': '500' + units,
+        //   'icon': <Widget>[
+        //     Container(
+        //       height: 30,
+        //       width: 45,
+        //       decoration: const BoxDecoration(color: Colors.yellow, shape: BoxShape.rectangle),
+        //     ),
+        //     Text('500', style: ts_footnoteBlack)
+        //   ],
+        //   'returnValue': hasherPref_500
+        // },
+        // pop in a divider
+        <String, dynamic>{
+          'height': 0.0,
+          'thickness': 2.0,
+          'paddingTop': 2.0,
+          //'paddingBottom': 2.0,
+          'returnValue': null,
+        },
+        <String, dynamic>{
+          'title': 'Disable auto display',
+          'icon': <Widget>[
+            Container(
+              height: 30,
+              width: 45,
+              decoration: BoxDecoration(
+                color: hc_red,
+                shape: BoxShape.rectangle,
+              ),
             ),
-          ),
-          const Icon(
-            MaterialCommunityIcons.map_marker_distance,
-            color: Colors.white,
-          ),
-        ],
-        'returnValue': 9999,
-      },
-    ];
+            Text('Off', style: ts_footnoteBlack.copyWith(color: Colors.white)),
+          ],
+          'returnValue': hasherPref_0,
+        },
+        <String, dynamic>{
+          'title': 'Switch to $switchUnits',
+          'icon': <Widget>[
+            Container(
+              height: 30,
+              width: 45,
+              decoration: BoxDecoration(
+                color: Colors.green.shade800,
+                shape: BoxShape.rectangle,
+              ),
+            ),
+            const Icon(
+              MaterialCommunityIcons.map_marker_distance,
+              color: Colors.white,
+            ),
+          ],
+          'returnValue': 9999,
+        },
+      ];
 
-    final MultipleChoicePopupHc popup = MultipleChoicePopupHc(
-      key: const Key('5030202'),
-      title: 'Display all runs within...',
-      buttons: buttons,
-      cancelButtonTitle: 'Cancel',
-      cancelButtonReturnValue: followTypeCancel,
-    );
+      final MultipleChoicePopupHc popup = MultipleChoicePopupHc(
+        key: const Key('5030202'),
+        title: 'Display all runs within...',
+        buttons: buttons,
+        cancelButtonTitle: 'Cancel',
+        cancelButtonReturnValue: followTypeCancel,
+      );
 
-    showDialog<dynamic>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return popup;
-      },
-    ).then((dynamic retVal) async {
-      if (retVal == 9999) {
-        if (appModel.connectionStatus == EnumConnectionStatus2.connected) {
-          final HashersService srv = HashersService();
+      showDialog<dynamic>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return popup;
+        },
+      ).then((dynamic retVal) async {
+        if (retVal == 9999) {
+          if (Utilities.isConnected()) {
+            final HashersService srv = HashersService();
 
-          final int hasherPreferences =
-              getIntPref(IntPrefsEnum.hasherPreferences) ?? 3;
-          final int distanceMeasuredIn =
-              ((hasherPreferences & hasherPref_distanceMeasuredIn) == 3)
-              ? 2
-              : 3;
+            final int hasherPreferences =
+                getIntPref(IntPrefsEnum.hasherPreferences) ?? 3;
+            final int distanceMeasuredIn =
+                ((hasherPreferences & hasherPref_distanceMeasuredIn) == 3)
+                ? 2
+                : 3;
 
-          final int distance =
-              hasherPreferences & hasherPref_distanceForAutoDisplay;
+            final int distance =
+                hasherPreferences & hasherPref_distanceForAutoDisplay;
 
-          await srv.addEditUser(
-            targetUserId: getStringPref(StringPrefsEnum.userId)!,
-            preferences: distanceMeasuredIn + distance,
-          );
+            await srv.addEditUser(
+              targetUserId: getStringPref(StringPrefsEnum.userId)!,
+              preferences: distanceMeasuredIn + distance,
+            );
 
-          await setIntPref(
-            IntPrefsEnum.hasherPreferences,
-            distanceMeasuredIn + distance,
-          );
-          await controller.refreshFromTable(true);
+            await setIntPref(
+              IntPrefsEnum.hasherPreferences,
+              distanceMeasuredIn + distance,
+            );
+            await controller.refreshFromTable(true);
+          }
+        } else if ((retVal is! EnumFollowType) &&
+            (retVal >= hasherPref_0) &&
+            (retVal <= hasherPref_500)) {
+          if (Utilities.isConnected()) {
+            final HashersService srv = HashersService();
+
+            final int hasherPreferences =
+                getIntPref(IntPrefsEnum.hasherPreferences) ?? 3;
+            final int distanceMeasuredIn =
+                hasherPreferences & hasherPref_distanceMeasuredIn;
+            //int _autoRunPreference = hasherPreferences & hasherPref_distanceForAutoDisplay;
+
+            await srv.addEditUser(
+              targetUserId: getStringPref(StringPrefsEnum.userId)!,
+              preferences: distanceMeasuredIn + (retVal as int),
+            );
+
+            await setIntPref(
+              IntPrefsEnum.hasherPreferences,
+              distanceMeasuredIn + retVal,
+            );
+
+            await controller.refreshFromTable(true);
+          }
         }
-      } else if ((retVal is! EnumFollowType) &&
-          (retVal >= hasherPref_0) &&
-          (retVal <= hasherPref_500)) {
-        if (appModel.connectionStatus == EnumConnectionStatus2.connected) {
-          final HashersService srv = HashersService();
-
-          final int hasherPreferences =
-              getIntPref(IntPrefsEnum.hasherPreferences) ?? 3;
-          final int distanceMeasuredIn =
-              hasherPreferences & hasherPref_distanceMeasuredIn;
-          //int _autoRunPreference = hasherPreferences & hasherPref_distanceForAutoDisplay;
-
-          await srv.addEditUser(
-            targetUserId: getStringPref(StringPrefsEnum.userId)!,
-            preferences: distanceMeasuredIn + (retVal as int),
-          );
-
-          await setIntPref(
-            IntPrefsEnum.hasherPreferences,
-            distanceMeasuredIn + retVal,
-          );
-
-          await controller.refreshFromTable(true);
-        }
-      }
-    });
+      });
+    }
   }
 
   String _getDistancePreferenceString(String precursorText) {

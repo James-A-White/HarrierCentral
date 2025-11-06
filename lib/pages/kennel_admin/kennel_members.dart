@@ -640,8 +640,8 @@ class KennelMemberListState extends State<KennelMembersList>
                                   }
                                 },
                                 toggleEmailPreferenceCallback: () {
-                                  if (Connection2.checkForConnection(
-                                    appModel.connectionStatus,
+                                  if (Utilities.isConnected(
+                                    showDialog: true,
                                     message:
                                         'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.',
                                   )) {

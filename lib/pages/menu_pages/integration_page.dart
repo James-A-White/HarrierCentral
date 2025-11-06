@@ -40,7 +40,7 @@
 //           ),
 //         ),
 //         OfflineModeRibbon(
-//           showRibbon: appModel.connectionStatus == EnumConnectionStatus2.notConnected,
+//           showRibbon: Utilities.isNotConnected(),
 //           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
 //           ribbonImage: 'images/icons/offline_mode.png',
 //         ),

@@ -118,7 +118,7 @@ class HashersService extends BaseService {
     int preferences = -1,
     int nameDisplayPreference = -1,
   }) async {
-    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (Utilities.isNotConnected()) {
       return '';
       // TODO(James): fix this so we can return a bool
       //return false;
@@ -207,14 +207,14 @@ class HashersService extends BaseService {
       'hashersUpdatedAfter': hashersUpdatedAfter.toString(),
       'hasherEventMapUpdatedAfter':
           ((eventId != null) && (eventId.isNotEmpty) && (eventId != GUID_EMPTY))
-              ? hasherEventMapUpdatedAfter.toString()
-              : 'ignore',
+          ? hasherEventMapUpdatedAfter.toString()
+          : 'ignore',
       'hasherKennelMapUpdatedAfter':
           ((kennelId != null) &&
-                  (kennelId.isNotEmpty) &&
-                  (kennelId != GUID_EMPTY))
-              ? hasherKennelMapUpdatedAfter.toString()
-              : 'ignore',
+              (kennelId.isNotEmpty) &&
+              (kennelId != GUID_EMPTY))
+          ? hasherKennelMapUpdatedAfter.toString()
+          : 'ignore',
       'targetUserId': targetUserId,
       'email': email,
       'firstName': firstName,
@@ -227,8 +227,9 @@ class HashersService extends BaseService {
       'kennelId': kennelId,
       'historicalTotalRunCount': historicalTotalRunCount,
       'historicalHaringCount': historicalHaringCount,
-      'historicalCountIsEstimate':
-          (historicalCountIsEstimate ?? false) ? '1' : '0',
+      'historicalCountIsEstimate': (historicalCountIsEstimate ?? false)
+          ? '1'
+          : '0',
       'followKennelOnAddNewUser': followKennelOnAddNewUser?.toString(),
       'latitude': deviceInfo.deviceLat.toString(),
       'longitude': deviceInfo.deviceLon.toString(),
@@ -295,15 +296,16 @@ class HashersService extends BaseService {
   static Future<String> sendInviteCodeByEmail(String email) async {
     final String body = jsonEncode(<String, String>{'email': email});
 
-    final Response response = await post(
-      Uri.parse(EMAIL_INVITE_CODE_API_URL),
-      headers: <String, String>{'content-type': 'application/json'},
-      body: body,
-      // Send authorization headers to your backend
-      //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
-    ).catchError((dynamic error) {
-      return Future<Response>.value(Response('', 500));
-    });
+    final Response response =
+        await post(
+          Uri.parse(EMAIL_INVITE_CODE_API_URL),
+          headers: <String, String>{'content-type': 'application/json'},
+          body: body,
+          // Send authorization headers to your backend
+          //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
+        ).catchError((dynamic error) {
+          return Future<Response>.value(Response('', 500));
+        });
 
     String returnValue = ERROR_UNKNOWN_HTTP_ERROR;
 
@@ -319,7 +321,7 @@ class HashersService extends BaseService {
     required String targetUserId,
     required String photo,
   }) async {
-    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (Utilities.isNotConnected()) {
       return false;
       // TODO(James): fix this so we can return a bool
       //return false;
@@ -377,7 +379,7 @@ class HashersService extends BaseService {
     required String email,
     int includeInGlobalHashDirectory = -1,
   }) async {
-    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (Utilities.isNotConnected()) {
       return '';
       // TODO(James): fix this so we can return a bool
       //return false;

@@ -128,13 +128,13 @@ class KennelListItemState extends State<KennelListItem> {
               !widget.kennelItem.isHomeKennel
                   ? Container()
                   : Container(
-                    alignment: Alignment.topLeft,
-                    padding: const EdgeInsets.only(right: 5.0, bottom: 2.0),
-                    child:
-                        widget.kennelItem.extensions.followingRequested != -1
-                            ? Icon(delayIcon, size: 35, color: hc_blue)
-                            : Icon(FontAwesome.home, size: 35, color: hc_red),
-                  ),
+                      alignment: Alignment.topLeft,
+                      padding: const EdgeInsets.only(right: 5.0, bottom: 2.0),
+                      child:
+                          widget.kennelItem.extensions.followingRequested != -1
+                          ? Icon(delayIcon, size: 35, color: hc_blue)
+                          : Icon(FontAwesome.home, size: 35, color: hc_red),
+                    ),
               Expanded(
                 child: InkWell(
                   onTap: () {
@@ -178,26 +178,25 @@ class KennelListItemState extends State<KennelListItem> {
                   onTap: () {
                     _showEmailPopup(context);
                   },
-                  child:
-                      widget.kennelItem.extensions.emailAlertRequested != -1
-                          ? Icon(delayIcon, color: hc_blue, size: 24.0)
-                          : Image(
-                            width: 24.0,
-                            height: 24.0,
-                            fit: BoxFit.fill,
-                            image:
-                                widget
-                                            .kennelItem
-                                            .hkm
-                                            ?.kennelEmailAlertPreference ==
-                                        1
-                                    ? const AssetImage(
-                                      'images/icons/envelope_gold_50px.png',
-                                    )
-                                    : const AssetImage(
-                                      'images/icons/envelope_silver_strike_out_50px.png',
-                                    ),
-                          ),
+                  child: widget.kennelItem.extensions.emailAlertRequested != -1
+                      ? Icon(delayIcon, color: hc_blue, size: 24.0)
+                      : Image(
+                          width: 24.0,
+                          height: 24.0,
+                          fit: BoxFit.fill,
+                          image:
+                              widget
+                                      .kennelItem
+                                      .hkm
+                                      ?.kennelEmailAlertPreference ==
+                                  1
+                              ? const AssetImage(
+                                  'images/icons/envelope_gold_50px.png',
+                                )
+                              : const AssetImage(
+                                  'images/icons/envelope_silver_strike_out_50px.png',
+                                ),
+                        ),
                 ),
               ),
               Container(
@@ -208,13 +207,13 @@ class KennelListItemState extends State<KennelListItem> {
                   },
                   child:
                       widget.kennelItem.extensions.notificationsRequested != -1
-                          ? Icon(delayIcon, color: hc_blue, size: 24.0)
-                          : Image(
-                            width: 24.0,
-                            height: 24.0,
-                            fit: BoxFit.fill,
-                            image: AssetImage(path),
-                          ),
+                      ? Icon(delayIcon, color: hc_blue, size: 24.0)
+                      : Image(
+                          width: 24.0,
+                          height: 24.0,
+                          fit: BoxFit.fill,
+                          image: AssetImage(path),
+                        ),
                 ),
               ),
             ],
@@ -313,10 +312,9 @@ class KennelListItemState extends State<KennelListItem> {
                               fontStyle: FontStyle.normal,
                               fontSize: 16.0,
                               height: 1.0,
-                              color:
-                                  widget.kennelItem.hkm!.kennelCredit >= 0
-                                      ? Colors.green.shade900
-                                      : hc_red,
+                              color: widget.kennelItem.hkm!.kennelCredit >= 0
+                                  ? Colors.green.shade900
+                                  : hc_red,
                             ),
                           ),
                         ],
@@ -324,8 +322,7 @@ class KennelListItemState extends State<KennelListItem> {
                     ),
                   ),
                 ),
-                if (appModel.connectionStatus ==
-                    EnumConnectionStatus2.connected) ...<Widget>[
+                if (Utilities.isConnected()) ...<Widget>[
                   IconButton(
                     icon: const Icon(MaterialCommunityIcons.dots_vertical),
                     iconSize: Theme.of(context).iconTheme.size,
@@ -345,8 +342,8 @@ class KennelListItemState extends State<KennelListItem> {
   }
 
   Future<void> _showFollowingPopup() async {
-    if (Connection2.checkForConnection(
-      appModel.connectionStatus,
+    if (Utilities.isConnected(
+      showDialog: true,
       message:
           'Follwing kennels is not available in offline mode. Please connect to the Internet to change the following status for a kennel.',
     )) {
@@ -397,35 +394,35 @@ class KennelListItemState extends State<KennelListItem> {
         },
         !widget.kennelItem.isHomeKennel
             ? <String, dynamic>{
-              'title': 'Set home kennel',
-              'icon': <Widget>[
-                Container(
-                  height: 30,
-                  width: 30,
-                  decoration: const BoxDecoration(
-                    color: Colors.green,
-                    shape: BoxShape.circle,
+                'title': 'Set home kennel',
+                'icon': <Widget>[
+                  Container(
+                    height: 30,
+                    width: 30,
+                    decoration: const BoxDecoration(
+                      color: Colors.green,
+                      shape: BoxShape.circle,
+                    ),
                   ),
-                ),
-                const Icon(FontAwesome.home, color: Colors.white, size: 23),
-              ],
-              'returnValue': followTypeToggleHomeKennel,
-            }
+                  const Icon(FontAwesome.home, color: Colors.white, size: 23),
+                ],
+                'returnValue': followTypeToggleHomeKennel,
+              }
             : <String, dynamic>{
-              'title': 'Clear home kennel',
-              'icon': <Widget>[
-                Container(
-                  height: 30,
-                  width: 30,
-                  decoration: BoxDecoration(
-                    color: hc_red,
-                    shape: BoxShape.circle,
+                'title': 'Clear home kennel',
+                'icon': <Widget>[
+                  Container(
+                    height: 30,
+                    width: 30,
+                    decoration: BoxDecoration(
+                      color: hc_red,
+                      shape: BoxShape.circle,
+                    ),
                   ),
-                ),
-                const Icon(FontAwesome.home, color: Colors.white, size: 23),
-              ],
-              'returnValue': followTypeToggleHomeKennel,
-            },
+                  const Icon(FontAwesome.home, color: Colors.white, size: 23),
+                ],
+                'returnValue': followTypeToggleHomeKennel,
+              },
       ];
 
       final MultipleChoicePopupHc popup = MultipleChoicePopupHc(
@@ -598,8 +595,8 @@ class KennelListItemState extends State<KennelListItem> {
     //if ((retVal == NotificationState.on) || (retVal == NotificationState.ignore)) {
 
     if (!mounted) return;
-    if (Connection2.checkForConnection(
-      appModel.connectionStatus,
+    if (Utilities.isConnected(
+      showDialog: true,
       message:
           'Setting Kennel notifications is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.',
     )) {
@@ -753,8 +750,8 @@ class KennelListItemState extends State<KennelListItem> {
       },
     ).then((dynamic retVal) async {
       if ((retVal == emailAlertsOn) || (retVal == emailAlertsOff)) {
-        if (Connection2.checkForConnection(
-          appModel.connectionStatus,
+        if (Utilities.isConnected(
+          showDialog: true,
           message:
               'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.',
         )) {

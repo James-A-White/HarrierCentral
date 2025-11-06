@@ -41,8 +41,7 @@ class ServiceCommon {
   }) async {
     // if the connection check is bypassed, it is because we are doing an initial
     // connection check
-    if ((!bypassConnectionCheck) &&
-        appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
+    if ((!bypassConnectionCheck) && Utilities.isNotConnected()) {
       // if we were previously not connected, let's check the connection
       // and update the connection status
       await Utilities.checkForInternetConnection(
@@ -50,7 +49,7 @@ class ServiceCommon {
         performHcServerCheck: false,
       );
       // if we are still not connected, return an error
-      if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
+      if (Utilities.isNotConnected()) {
         return ERROR_NO_CONNECTION;
       }
     }
@@ -61,14 +60,15 @@ class ServiceCommon {
     Response response;
 
     if (client == null) {
-      response = await post(
-        Uri.parse(BASE_AF_API_URL),
-        headers: <String, String>{'content-type': 'application/json'},
-        body: requestBody,
-      ).catchError((dynamic error) {
-        recordError(requestBody, error.toString());
-        return Future<Response>.value(Response('', 500)); // CHECK
-      });
+      response =
+          await post(
+            Uri.parse(BASE_AF_API_URL),
+            headers: <String, String>{'content-type': 'application/json'},
+            body: requestBody,
+          ).catchError((dynamic error) {
+            recordError(requestBody, error.toString());
+            return Future<Response>.value(Response('', 500)); // CHECK
+          });
     } else {
       response = await client
           .post(
@@ -97,7 +97,7 @@ class ServiceCommon {
   //   Function? errorCallback,
   //   Client? client,
   // }) async {
-  //   if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
+  //   if (Utilities.isNotConnected()) {
   //     return ERROR_NO_CONNECTION;
   //   }
 
@@ -152,7 +152,7 @@ class ServiceCommon {
           response.reasonPhrase ?? '<null reason>',
           extraData: response.body,
         );
-        appModel.connectionStatus = EnumConnectionStatus2.notConnected;
+        // appModel.connectionStatus = EnumConnectionStatus2.notConnected;
       } else {
         // bypass the Harrier Central backend server check and
         // check the internet connection using other services.
@@ -161,7 +161,7 @@ class ServiceCommon {
           false,
           performHcServerCheck: false,
         );
-        if (appModel.connectionStatus == EnumConnectionStatus2.connected) {
+        if (Utilities.isConnected()) {
           recordError(
             requestBody,
             response.reasonPhrase ?? '<null reason>',
@@ -208,10 +208,9 @@ class ServiceCommon {
             )) ??
             false; // CHECK
 
-        returnValue =
-            alertResult
-                ? ERROR_KEY_OK_BTN_PRESSED
-                : ERROR_KEY_CANCEL_BTN_PRESSED;
+        returnValue = alertResult
+            ? ERROR_KEY_OK_BTN_PRESSED
+            : ERROR_KEY_CANCEL_BTN_PRESSED;
       }
     } else {
       returnValue = response.body;

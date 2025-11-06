@@ -154,7 +154,7 @@ class HasherKennelMapService {
     NotificationState notificationPreference,
     EnumEmailAlertState emailPreference,
   ) async {
-    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (Utilities.isNotConnected()) {
       return <dynamic>[];
       // TODO(James): fix this so we can return a bool
       //return false;
@@ -239,7 +239,7 @@ class HasherKennelMapService {
   }) async {
     List<dynamic> adHocData = <dynamic>[];
 
-    if (appModel.connectionStatus == EnumConnectionStatus2.notConnected) {
+    if (Utilities.isNotConnected()) {
       return adHocData;
       // TODO(James): fix this so we can return a bool
       //return false;

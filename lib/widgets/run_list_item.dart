@@ -388,8 +388,7 @@ class RunListItem extends StatelessWidget {
                               ),
                             ),
 
-                            if (appModel.connectionStatus ==
-                                EnumConnectionStatus2.connected) ...<Widget>[
+                            if (Utilities.isConnected()) ...<Widget>[
                               IconButton(
                                 icon: const Icon(
                                   MaterialCommunityIcons.dots_vertical,
@@ -464,8 +463,8 @@ class RunListItem extends StatelessWidget {
   }
 
   Future<void> _showAllOptionsPopup() async {
-    if (Connection2.checkForConnection(
-      appModel.connectionStatus,
+    if (Utilities.isConnected(
+      showDialog: true,
       message:
           'Setting run options is not available in offline mode. Please connect to the Internet.',
     )) {
@@ -894,8 +893,8 @@ class RunListItem extends StatelessWidget {
   // }
 
   void _showRsvpOptionsPopup() async {
-    if (Connection2.checkForConnection(
-      appModel.connectionStatus,
+    if (Utilities.isConnected(
+      showDialog: true,
       message:
           'Setting run options is not available in offline mode. Please connect to the Internet.',
     )) {

@@ -124,9 +124,7 @@ class QrGroup extends StatelessWidget {
                   const SizedBox(height: 30),
                   GestureDetector(
                     onTap: () {
-                      if (Connection2.checkForConnection(
-                        appModel.connectionStatus,
-                      )) {
+                      if (Utilities.isConnected(showDialog: true)) {
                         launchUrl(
                           Uri.parse(url),
                           mode: LaunchMode.externalApplication,

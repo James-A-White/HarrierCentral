@@ -142,42 +142,37 @@ Future<bool> setupDatabase(
     client.close();
   }
 
-  String message =
-      (await CommonQueries.countRecords(
-        tableModel.hashersTableHelper.getTableName(AppDomainType.user),
-      )).toString();
+  String message = (await CommonQueries.countRecords(
+    tableModel.hashersTableHelper.getTableName(AppDomainType.user),
+  )).toString();
   if (kDebugMode) {
     print('Hashers count = $message');
   }
 
-  message =
-      (await CommonQueries.countRecords(
-        tableModel.eventsTableHelper.getTableName(AppDomainType.user),
-      )).toString();
+  message = (await CommonQueries.countRecords(
+    tableModel.eventsTableHelper.getTableName(AppDomainType.user),
+  )).toString();
   if (kDebugMode) {
     print('Events count = $message');
   }
 
-  message =
-      (await CommonQueries.countRecords(
-        tableModel.kennelsTableHelper.getTableName(AppDomainType.user),
-      )).toString();
+  message = (await CommonQueries.countRecords(
+    tableModel.kennelsTableHelper.getTableName(AppDomainType.user),
+  )).toString();
   if (kDebugMode) {
     print('Kennels count = $message');
   }
 
-  message =
-      (await CommonQueries.countRecords(
-        tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.user),
-      )).toString();
+  message = (await CommonQueries.countRecords(
+    tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.user),
+  )).toString();
   if (kDebugMode) {
     print('Hasher event map count = $message');
   }
 
-  message =
-      (await CommonQueries.countRecords(
-        tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.user),
-      )).toString();
+  message = (await CommonQueries.countRecords(
+    tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.user),
+  )).toString();
   if (kDebugMode) {
     print('Hasher kennel map count = $message');
   }
@@ -216,7 +211,6 @@ enum EdbStatus { uninitialized, opening, opened }
 
 class AppModel extends GetxService {
   AppModel();
-  EnumConnectionStatus2 connectionStatus = EnumConnectionStatus2.notConnected;
   StreamSubscription<Position>? geoLocationStream;
   late DateTime appStartTime;
   EdbStatus dbStatus = EdbStatus.uninitialized;
@@ -334,8 +328,8 @@ class DeviceInfo extends GetxService {
       isPhysicalDevice = androidInfo.isPhysicalDevice;
     } else if (Platform.isIOS) {
       iosInfo = await plugin.iosInfo;
-      deviceId =
-          (iosInfo.identifierForVendor ?? '<no device ID>').toUpperCase();
+      deviceId = (iosInfo.identifierForVendor ?? '<no device ID>')
+          .toUpperCase();
       deviceType = iosInfo.model;
       deviceName = iosInfo.name;
       systemName = iosInfo.systemName;
