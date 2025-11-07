@@ -15,6 +15,8 @@ const int LOGIN_IS_DELAYED_WARNING_1 = 7;
 const int LOGIN_IS_DELAYED_WARNING_2 = 15;
 const int LOGIN_TIMEOUT = 20;
 const int DEFAULT_HTTP_TIMEOUT = 10;
+const int DISPLAY_SPLASH_ON_LAUNCH = 10;
+const int SPLASH_SCREEN_DISPLAY_TIME = 3;
 
 const int KENNEL_IS_FOLLOWING = 1;
 const int KENNEL_IS_BLOCKED = 2;
@@ -47,8 +49,6 @@ const double PROFILE_PIC_SIZE2 = 60.0;
 
 const double METERS_TO_MILES = 0.000621371;
 const double MILES_TO_METERS = 1609.34449;
-
-const int SPLASH_SCREEN_DISPLAY_TIME = 1;
 
 const LocationAccuracy BASE_APP_LOCATION_ACCURACY = LocationAccuracy.best;
 

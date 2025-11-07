@@ -773,12 +773,60 @@ class Utilities {
     );
   }
 
+  static Future<bool> checkHcServer() async {
+    const Duration hcServerTimeout = Duration(milliseconds: 5000);
+    try {
+      final String userId = getStringPref(StringPrefsEnum.userId) ?? GUID_EMPTY;
+      final String deviceId =
+          getStringPref(StringPrefsEnum.deviceId) ?? GUID_EMPTY;
+      final String deviceSecret =
+          getStringPref(StringPrefsEnum.deviceSecret) ??
+          'no_secret_required_here';
+
+      final String accessToken = Utilities.generateToken(
+        userId,
+        'hcapp_checkConnection',
+        paramString: deviceSecret,
+      );
+
+      final Map<String, String?> bodyMap = <String, String?>{
+        'queryType': 'checkConnection',
+        'deviceId': deviceId,
+        'accessToken': accessToken,
+      };
+
+      final String body = jsonEncode(bodyMap);
+
+      final String responseBody = await ServiceCommon.sendHttpPostV2(
+        body,
+        bypassConnectionCheck: true,
+      ).timeout(hcServerTimeout, onTimeout: () => '${ERROR_PREFIX}Timeout');
+
+      if (!responseBody.startsWith(ERROR_PREFIX)) {
+        final result = jsonDecode(responseBody)[0][0]['result'];
+        if (result == 'Connected') {
+          //appModel.connectionStatus = EnumConnectionStatus2.connected;
+          print('HC server check successful, connected');
+          return true; // ✅ success
+        }
+      } else {
+        print(
+          'No HC server detected: ${DateTime.now().millisecondsSinceEpoch}',
+        );
+        return false;
+      }
+    } catch (e) {
+      // Optional: log(e)
+    }
+
+    return false;
+  }
+
   static Future<bool> checkForInternetConnection(
     bool reconnectAttempt, {
     bool performHcServerCheck = true,
   }) async {
-    const Duration hcServerTimeout = Duration(milliseconds: 5000);
-    const Duration internetCheckTimeout = Duration(seconds: 3);
+    const Duration internetCheckTimeout = Duration(milliseconds: 3000);
     const int maxRetries = 3;
 
     print('Connection check: time = ${DateTime.now().millisecondsSinceEpoch}');
@@ -794,14 +842,7 @@ class Utilities {
       interfaces = [ConnectivityResult.none];
     }
 
-    // connectivity_plus 7.x returns List<ConnectivityResult>
-    final bool hasInterface = interfaces.any(
-      (r) =>
-          r == ConnectivityResult.wifi ||
-          r == ConnectivityResult.mobile ||
-          r == ConnectivityResult.ethernet ||
-          r == ConnectivityResult.vpn,
-    );
+    final hasInterface = interfaces.any((r) => r != ConnectivityResult.none);
 
     if (!hasInterface) {
       // Radios off (Wi-Fi + mobile data + ethernet + VPN)
@@ -811,50 +852,8 @@ class Utilities {
     }
 
     if (performHcServerCheck) {
-      try {
-        final String userId =
-            getStringPref(StringPrefsEnum.userId) ?? GUID_EMPTY;
-        final String deviceId =
-            getStringPref(StringPrefsEnum.deviceId) ?? GUID_EMPTY;
-        final String deviceSecret =
-            getStringPref(StringPrefsEnum.deviceSecret) ??
-            'no_secret_required_here';
-
-        final String accessToken = Utilities.generateToken(
-          userId,
-          'hcapp_checkConnection',
-          paramString: deviceSecret,
-        );
-
-        final Map<String, String?> bodyMap = <String, String?>{
-          'queryType': 'checkConnection',
-          'deviceId': deviceId,
-          'accessToken': accessToken,
-        };
-
-        final String body = jsonEncode(bodyMap);
-
-        // 🚨 Add timeout to the backend request
-        final String responseBody = await ServiceCommon.sendHttpPostV2(
-          body,
-          bypassConnectionCheck: true,
-        ).timeout(hcServerTimeout, onTimeout: () => '${ERROR_PREFIX}Timeout');
-
-        if (!responseBody.startsWith(ERROR_PREFIX)) {
-          final result = jsonDecode(responseBody)[0][0]['result'];
-          if (result == 'Connected') {
-            //appModel.connectionStatus = EnumConnectionStatus2.connected;
-            print('HC server check successful, connected');
-            return true; // ✅ success
-          }
-        } else {
-          print(
-            'No HC server detected: ${DateTime.now().millisecondsSinceEpoch}',
-          );
-        }
-      } catch (e) {
-        // Optional: log(e)
-      }
+      final hcServerOnline = await checkHcServer();
+      if (hcServerOnline) return true;
     }
 
     // --- If we get here, Harrier Central backend failed or was skipped ---
@@ -946,7 +945,7 @@ class Utilities {
   }) {
     final network = Get.find<NetworkService>();
     bool isConnected = network.isOnline();
-    if (!isConnected) {
+    if (!isConnected && showDialog) {
       Utilities.showAlert(
         title ?? 'Offline Mode',
         message ??

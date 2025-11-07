@@ -9,10 +9,12 @@ class AppEntryPage extends StatefulWidget {
 
 class AppEntryPageState extends State<AppEntryPage>
     with SingleTickerProviderStateMixin {
-  late AnimationController _iconAnimationController;
-  late CurvedAnimation _iconAnimation;
+  // late AnimationController _iconAnimationController;
+  // late CurvedAnimation _iconAnimation;
 
-  Future<void> _handleStartup(BuildContext context) async {
+  var _launchCount = 0;
+
+  Future<void> _handleStartup() async {
     await initPrefs(); // if services read prefs during init()
 
     String bootType =
@@ -439,41 +441,7 @@ class AppEntryPageState extends State<AppEntryPage>
         // TODO(James): Handle case where not allowed to continue after a message
       }
     }
-
-    //// return Future<void>(() {});((){});
   }
-
-  // Future<String?> _checkFacebookLogin() async {
-  //   final DateTime lastFbUpdate = getDatePref(DatePrefsEnum.lastFbTokenUpdate) ?? DateTime(2020);
-  //   final Duration fbTokenUpdateDelta = DateTime.now().difference(lastFbUpdate);
-  //   String? facebookAccessToken;
-
-  //   if (fbTokenUpdateDelta.inDays > 30) {
-  //     final DateTime fbLoginCancelled = getDatePref(DatePrefsEnum.fbLoginCancelled) ?? DateTime(2020);
-
-  //     final Duration daysSinceCancellation = DateTime.now().difference(fbLoginCancelled);
-
-  //     if (daysSinceCancellation.inDays > 30) {
-  //       final String? facebookId = getStringPref(StringPrefsEnum.facebookId);
-
-  //       if (((facebookId != null) && (facebookId.isNotEmpty)) || ((facebookAccessToken != null) && (facebookAccessToken.isNotEmpty))) {
-  //         final LoginResult loginResult = await FacebookAuth.instance.login();
-  //         if (loginResult.status == LoginStatus.success) {
-  //           final AccessToken? accessToken = loginResult.accessToken;
-  //           facebookAccessToken = accessToken?.token;
-  //           if (facebookAccessToken != null) {
-  //             await setStringPref(StringPrefsEnum.facebookAccessToken, facebookAccessToken);
-  //             await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime.now());
-  //             await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime(2020));
-  //           }
-  //         } else if (loginResult.status == LoginStatus.cancelled) {
-  //           await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime.now());
-  //         }
-  //       }
-  //     }
-  //   }
-  //   return facebookAccessToken;
-  // }
 
   Future<bool?> _displayAlert(
     BuildContext context,
@@ -513,17 +481,18 @@ class AppEntryPageState extends State<AppEntryPage>
 
   @override
   void dispose() {
-    _iconAnimationController.dispose();
+    //_iconAnimationController.dispose();
     super.dispose();
   }
 
   Future<void> _startTimeout() async {
-    await Future<dynamic>.delayed(
-      const Duration(seconds: SPLASH_SCREEN_DISPLAY_TIME),
-    );
+    if (_launchCount % DISPLAY_SPLASH_ON_LAUNCH == 0) {
+      await Future<dynamic>.delayed(
+        const Duration(seconds: SPLASH_SCREEN_DISPLAY_TIME),
+      );
+    }
 
-    if (!mounted) return;
-    await _handleStartup(context);
+    await _handleStartup();
     return;
   }
 
@@ -531,6 +500,10 @@ class AppEntryPageState extends State<AppEntryPage>
   void initState() {
     // precache the background image so it does not give a white flash
     // on the first load
+
+    _launchCount = getIntPref(IntPrefsEnum.launchCount) ?? 0;
+    setIntPref(IntPrefsEnum.launchCount, _launchCount + 1);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       precacheImage(
         const AssetAvifImage('images/backgrounds/hash_foot_background.avif'),
@@ -538,16 +511,16 @@ class AppEntryPageState extends State<AppEntryPage>
       );
     });
 
-    _iconAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 3000),
-      vsync: this,
-    );
-    _iconAnimation = CurvedAnimation(
-      parent: _iconAnimationController,
-      curve: Curves.easeIn,
-    );
-    _iconAnimation.addListener(() => setState(() {}));
-    _iconAnimationController.forward();
+    // _iconAnimationController = AnimationController(
+    //   duration: const Duration(milliseconds: 3000),
+    //   vsync: this,
+    // );
+    // _iconAnimation = CurvedAnimation(
+    //   parent: _iconAnimationController,
+    //   curve: Curves.easeIn,
+    // );
+    // _iconAnimation.addListener(() => setState(() {}));
+    // _iconAnimationController.forward();
 
     _startTimeout();
 
@@ -556,6 +529,10 @@ class AppEntryPageState extends State<AppEntryPage>
 
   @override
   Widget build(BuildContext context) {
-    return Image.asset('images/init/splash_screen.jpg');
+    if (_launchCount % DISPLAY_SPLASH_ON_LAUNCH == 0) {
+      return Image.asset('images/init/splash_screen.jpg');
+    }
+
+    return Image.asset('images/init/launcher_background.png');
   }
 }

@@ -112,65 +112,67 @@ class MainNavigationController extends GetxController
   Future<void> initialize() async {
     final stopwatch = Stopwatch()..start();
 
-    // Status bar color
-    // FlutterStatusbarcolor.setStatusBarColor(themeStatusBarBackground).then((_) {
-    //   FlutterStatusbarcolor.setStatusBarWhiteForeground(true);
-    // });
-
-    hcCurrentVersion = _trimToMinorVersionString(
-      getStringPref(StringPrefsEnum.harrierCentralVersion) ?? '',
-    );
-    hcPreviousVersion = _trimToMinorVersionString(
-      getStringPref(StringPrefsEnum.harrierCentralPreviousVersion) ?? '',
-    );
-
-    String? splashSequenceRootName = getStringPref(
-      StringPrefsEnum.splashSequenceRootName,
-    );
-
-    var splashType = SplashSequenceType.fromId(
-      getIntPref(IntPrefsEnum.splashSequenceType) ??
-          SplashSequenceType.unknown.id,
-    );
-
-    // always display version change splash sequences if they exist on the server
-    if (hcCurrentVersion != hcPreviousVersion) {
-      if (await _preloadImages('version_$hcCurrentVersion') == 0) {
-        // don't show any splah images if none have been loaded
-        mainScreenContent.value = MainPageContent.appContent;
-      } else {
-        mainScreenContent.value = MainPageContent.splashSequence;
-      }
-    } else if (splashSequenceRootName != null) {
-      var timeSinceLastView = DateTime.now().difference(
-        getDatePref(DatePrefsEnum.lastSplashSequenceDisplayed) ??
-            DateTime(2000),
+    if (Utilities.isConnected()) {
+      hcCurrentVersion = _trimToMinorVersionString(
+        getStringPref(StringPrefsEnum.harrierCentralVersion) ?? '',
+      );
+      hcPreviousVersion = _trimToMinorVersionString(
+        getStringPref(StringPrefsEnum.harrierCentralPreviousVersion) ?? '',
       );
 
-      // only show a splash screen if enough time has elapsed
-      // since the last time a splash screen was displayed
-      if (timeSinceLastView.inHours > splashType.delayInHours) {
-        if (await _preloadImages(splashSequenceRootName) == 0) {
+      String? splashSequenceRootName = getStringPref(
+        StringPrefsEnum.splashSequenceRootName,
+      );
+
+      var splashType = SplashSequenceType.fromId(
+        getIntPref(IntPrefsEnum.splashSequenceType) ??
+            SplashSequenceType.unknown.id,
+      );
+
+      // always display version change splash sequences if they exist on the server
+      if (hcCurrentVersion != hcPreviousVersion) {
+        if (await _preloadImages('version_$hcCurrentVersion') == 0) {
           // don't show any splah images if none have been loaded
           mainScreenContent.value = MainPageContent.appContent;
         } else {
           mainScreenContent.value = MainPageContent.splashSequence;
         }
-        await removePref(StringPrefsEnum.splashSequenceRootName);
-        await setStringPref(
-          StringPrefsEnum.splashSequenceRootNameViewed,
-          splashSequenceRootName,
+      } else if (splashSequenceRootName != null) {
+        var timeSinceLastView = DateTime.now().difference(
+          getDatePref(DatePrefsEnum.lastSplashSequenceDisplayed) ??
+              DateTime(2000),
         );
-        await setDatePref(DatePrefsEnum.splashSequenceViewedAt, DateTime.now());
-        await setDatePref(
-          DatePrefsEnum.lastSplashSequenceDisplayed,
-          DateTime.now(),
-        );
+
+        // only show a splash screen if enough time has elapsed
+        // since the last time a splash screen was displayed
+        if (timeSinceLastView.inHours > splashType.delayInHours) {
+          if (await _preloadImages(splashSequenceRootName) == 0) {
+            // don't show any splah images if none have been loaded
+            mainScreenContent.value = MainPageContent.appContent;
+          } else {
+            mainScreenContent.value = MainPageContent.splashSequence;
+          }
+          await removePref(StringPrefsEnum.splashSequenceRootName);
+          await setStringPref(
+            StringPrefsEnum.splashSequenceRootNameViewed,
+            splashSequenceRootName,
+          );
+          await setDatePref(
+            DatePrefsEnum.splashSequenceViewedAt,
+            DateTime.now(),
+          );
+          await setDatePref(
+            DatePrefsEnum.lastSplashSequenceDisplayed,
+            DateTime.now(),
+          );
+        } else {
+          mainScreenContent.value = MainPageContent.loading;
+        }
       } else {
         mainScreenContent.value = MainPageContent.loading;
       }
     } else {
-      mainScreenContent.value = MainPageContent.loading;
+      mainScreenContent.value = MainPageContent.appContent;
     }
 
     appBarText.value = tabTitles[0];

@@ -1,3 +1,7 @@
+2.1.2+1042
+    • Refactored internet connection checking
+    • Added logic that only displays the Tuna and Opee splash screen every 10 launches
+
 2.1.2+1040
     • Production Release
     • On the map made pins semi-transparent for past runs

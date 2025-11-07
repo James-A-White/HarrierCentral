@@ -19,12 +19,8 @@ class NetworkService extends GetxService {
   final Duration debounce = const Duration(milliseconds: 5000);
   Timer? _debounceTimer;
 
-  Future<NetworkService> init() async {
+  Future<void> init() async {
     _connectivity = Connectivity();
-
-    // Seed interface list (new API returns List<ConnectivityResult>)
-    final initialInterfaces = await _checkInterfacesSafe();
-    _setInterfaces(initialInterfaces);
 
     // Seed reachability
     final hasNet = await Utilities.checkForInternetConnection(false);
@@ -32,12 +28,6 @@ class NetworkService extends GetxService {
     status.value = hasNet ? NetworkStatus.online : NetworkStatus.offline;
 
     print('1. Status => $hasNet: ${DateTime.now().millisecondsSinceEpoch}');
-
-    // if (hasNet) {
-    //   appModel.connectionStatus = EnumConnectionStatus2.connected;
-    // } else {
-    //   appModel.connectionStatus = EnumConnectionStatus2.notConnected;
-    // }
 
     // Listen for interface changes
     _connectivitySub = _connectivity.onConnectivityChanged.listen((results) {
@@ -50,14 +40,24 @@ class NetworkService extends GetxService {
       internetStatus,
     ) {
       final hasInternet = internetStatus == InternetStatus.connected;
-      '4. Status => $hasInternet: ${DateTime.now().millisecondsSinceEpoch}';
+      print(
+        '4. Status => $hasInternet: ${DateTime.now().millisecondsSinceEpoch}',
+      );
 
       _setStatusDebounced(
         hasInternet ? NetworkStatus.online : NetworkStatus.offline,
       );
     });
 
-    return this;
+    // Seed interface list (new API returns List<ConnectivityResult>)
+    final initialInterfaces = await _checkInterfacesSafe();
+    _setInterfaces(initialInterfaces);
+
+    if (!hasAnyInterface) {
+      status.value = NetworkStatus.offline;
+    }
+
+    return;
   }
 
   Future<bool> forceRecheck() async {

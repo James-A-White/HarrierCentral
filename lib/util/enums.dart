@@ -77,6 +77,7 @@ enum IntPrefsEnum {
   timeWindow,
   //lastSuccessfulUserDataSyncInMs,
   //hasLocationPermissions,
+  launchCount,
   mapCenterOption,
   mapShowSearchBar,
   mapShowKennels,
