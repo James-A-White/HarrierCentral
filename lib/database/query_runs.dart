@@ -195,7 +195,7 @@ class QueryRuns {
               endDate = temp;
             }
 
-            print('start = $startDate, end = $endDate');
+            //print('start = $startDate, end = $endDate');
 
             timeFilteredRuns = allRuns
                 .where(

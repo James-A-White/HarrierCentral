@@ -80,7 +80,7 @@ class RootApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('Building RootApp...');
+    //print('Building RootApp...');
     return GetMaterialApp(
       themeMode: ThemeMode.light, // ✅ force light mode
       builder: (BuildContext context, Widget? child) {

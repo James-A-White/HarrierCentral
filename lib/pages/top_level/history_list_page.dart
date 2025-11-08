@@ -39,7 +39,7 @@ class CountryStats {
 //     GlobalKey<HistoryListPageState>();
 
 class HistoryListPage extends StatefulWidget {
-  HistoryListPage() : super();
+  const HistoryListPage({super.key});
 
   @override
   HistoryListPageState createState() => HistoryListPageState();

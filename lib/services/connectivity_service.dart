@@ -27,7 +27,7 @@ class NetworkService extends GetxService {
 
     status.value = hasNet ? NetworkStatus.online : NetworkStatus.offline;
 
-    print('1. Status => $hasNet: ${DateTime.now().millisecondsSinceEpoch}');
+    //('1. Status => $hasNet: ${DateTime.now().millisecondsSinceEpoch}');
 
     // Listen for interface changes
     _connectivitySub = _connectivity.onConnectivityChanged.listen((results) {
@@ -40,9 +40,9 @@ class NetworkService extends GetxService {
       internetStatus,
     ) {
       final hasInternet = internetStatus == InternetStatus.connected;
-      print(
-        '4. Status => $hasInternet: ${DateTime.now().millisecondsSinceEpoch}',
-      );
+      // print(
+      //   '4. Status => $hasInternet: ${DateTime.now().millisecondsSinceEpoch}',
+      // );
 
       _setStatusDebounced(
         hasInternet ? NetworkStatus.online : NetworkStatus.offline,
@@ -63,9 +63,9 @@ class NetworkService extends GetxService {
   Future<bool> forceRecheck() async {
     final hasInternet = await Utilities.checkForInternetConnection(false);
     status.value = hasInternet ? NetworkStatus.online : NetworkStatus.offline;
-    print(
-      '2. Status => $hasInternet: ${DateTime.now().millisecondsSinceEpoch}',
-    );
+    // print(
+    //   '2. Status => $hasInternet: ${DateTime.now().millisecondsSinceEpoch}',
+    // );
 
     // if (hasInternet) {
     //   appModel.connectionStatus = EnumConnectionStatus2.connected;
@@ -96,9 +96,9 @@ class NetworkService extends GetxService {
     _debounceTimer = Timer(debounce, () async {
       final hasInternet = await Utilities.checkForInternetConnection(false);
       status.value = hasInternet ? NetworkStatus.online : NetworkStatus.offline;
-      print(
-        '3. Status => $hasInternet: ${DateTime.now().millisecondsSinceEpoch}',
-      );
+      // print(
+      //   '3. Status => $hasInternet: ${DateTime.now().millisecondsSinceEpoch}',
+      // );
 
       // if (hasInternet) {
       //   appModel.connectionStatus = EnumConnectionStatus2.connected;
@@ -109,13 +109,13 @@ class NetworkService extends GetxService {
   }
 
   void _setStatusDebounced(NetworkStatus newStatus) {
-    print('5. Status => $newStatus: ${DateTime.now().millisecondsSinceEpoch}');
+    //print('5. Status => $newStatus: ${DateTime.now().millisecondsSinceEpoch}');
     _debounceTimer?.cancel();
     _debounceTimer = Timer(debounce, () {
       status.value = newStatus;
-      print(
-        '6. Status => $newStatus: ${DateTime.now().millisecondsSinceEpoch}',
-      );
+      // print(
+      //   '6. Status => $newStatus: ${DateTime.now().millisecondsSinceEpoch}',
+      // );
 
       // if (newStatus == NetworkStatus.online) {
       //   appModel.connectionStatus = EnumConnectionStatus2.connected;
