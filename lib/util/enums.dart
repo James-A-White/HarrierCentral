@@ -89,7 +89,8 @@ enum IntPrefsEnum {
 }
 
 enum DatePrefsEnum {
-  lastSuccessfulUserDataSyncAsDate,
+  lastSuccessfulUserDataSync,
+  lastSuccessfulUserDataFullSync,
   // lastFbTokenUpdate,
   // fbLoginCancelled,
   thirdPartyTokenLastUpdated,

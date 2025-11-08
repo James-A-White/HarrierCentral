@@ -115,6 +115,11 @@ Future<bool> setupDatabase(
       usePaging: true,
     );
 
+    await setDatePref(
+      DatePrefsEnum.lastSuccessfulUserDataFullSync,
+      DateTime.now(),
+    );
+
     await CommonQueries.deleteRemovedRecords(
       tableModel.hashersTableHelper.getTableName(AppDomainType.user),
     );

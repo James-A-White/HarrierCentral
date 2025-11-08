@@ -1,3 +1,4 @@
+import 'package:get/get_navigation/src/extension_navigation.dart' as nav;
 import 'package:harrier_central/imports.dart';
 
 class AppEntryPage extends StatefulWidget {
@@ -67,6 +68,7 @@ class AppEntryPageState extends State<AppEntryPage>
         DatePrefsEnum.thirdPartyTokenExpires,
       );
 
+      Get.reset();
       await clearPrefs();
 
       await setStringPref(StringPrefsEnum.userId, userId);
@@ -115,8 +117,30 @@ class AppEntryPageState extends State<AppEntryPage>
         thirdPartyTokenLastUpdated,
       );
 
+      print('Reloading all app data as requested...');
+
       await DBProvider.deleteDb(DB_NAME);
-      await Get.deleteAll(force: true);
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      print('Clearing GetX state...');
+      // 1. AGGRESSIVE GETX CLEANUP
+      // This cleans the state that belonged to the GetMaterialApp we are about to destroy.
+      Get.reset();
+
+      print('Re-initializing services...');
+      // 2. RE-INITIALIZE ESSENTIAL SERVICES (AppLifecycleController, etc.)
+      await initPrefs();
+      await initServices();
+
+      // 3. TRIGGER THE SWAP
+      // This triggers the internal logic in RestartWidgetState:
+      // a) Hides RootApp (forces unmount/disposal of old GetMaterialApp/Controller)
+      // b) Waits for disposal to finish (microtask + delay)
+      // c) Re-creates and shows the new RootApp with a fresh key.
+      print('Starting RootApp placeholder swap...');
+      restartKey.currentState?.restartApp();
+
+      return;
     }
 
     if (kDebugMode) {

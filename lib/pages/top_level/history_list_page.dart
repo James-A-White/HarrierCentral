@@ -35,11 +35,11 @@ class CountryStats {
   }
 }
 
-final GlobalKey<HistoryListPageState> historyListPageKey =
-    GlobalKey<HistoryListPageState>();
+// final GlobalKey<HistoryListPageState> historyListPageKey =
+//     GlobalKey<HistoryListPageState>();
 
 class HistoryListPage extends StatefulWidget {
-  HistoryListPage() : super(key: historyListPageKey);
+  HistoryListPage() : super();
 
   @override
   HistoryListPageState createState() => HistoryListPageState();

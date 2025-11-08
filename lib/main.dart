@@ -72,7 +72,7 @@ Future<void> main() async {
   await initPrefs(); // if services read prefs during init()
   await initServices(); // GetX DI registration (see services_init.dart)
 
-  runApp(const RootApp());
+  runApp(RestartWidget(key: restartKey, child: RootApp()));
 }
 
 class RootApp extends StatelessWidget {
@@ -80,6 +80,7 @@ class RootApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('Building RootApp...');
     return GetMaterialApp(
       themeMode: ThemeMode.light, // ✅ force light mode
       builder: (BuildContext context, Widget? child) {
@@ -101,7 +102,7 @@ class RootApp extends StatelessWidget {
         GetPage(name: '/main', page: () => MainNavigationPage()),
         // ...other routes
       ],
-      initialBinding: InitialBindings(), // controllers, etc.
+      //initialBinding: InitialBindings(), // controllers, etc.
       routes: routes,
       theme: ThemeData(
         useMaterial3: false, // ✅ disable M3 dynamic surfaces

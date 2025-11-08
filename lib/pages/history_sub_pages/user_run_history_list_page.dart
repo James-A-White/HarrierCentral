@@ -314,7 +314,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
           ),
         ),
         OfflineModeRibbon(
-          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSync),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
             setState(() {});

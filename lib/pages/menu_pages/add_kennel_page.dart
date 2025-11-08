@@ -38,7 +38,7 @@ class AddKennelPageState extends State<AddKennelPage> {
           ),
         ),
         OfflineModeRibbon(
-          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSync),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
             setState(() {});

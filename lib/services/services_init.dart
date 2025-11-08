@@ -6,9 +6,21 @@ import 'package:harrier_central/imports.dart';
 
 /// Register all long-lived services. Call from main(), and on “restart”.
 Future<void> initServices() async {
+  if (Get.isRegistered<AppLifecycleController>()) {
+    print('AppLifecycleController delete 1');
+    await Get.delete<AppLifecycleController>(
+      force: true,
+    ); // or await if you prefer
+  }
+
+  // 1. App Lifecycle Controller (Must be permanent to survive restarts)
+  // This registers the AppLifecycleController globally.
+  Get.put<AppLifecycleController>(AppLifecycleController(), permanent: true);
+
   // 1) Synchronous singletons first
 
   if (Get.isRegistered<AppModel>()) {
+    print('AppModel delete 1');
     await Get.delete<AppModel>(force: true); // or await if you prefer
   }
 

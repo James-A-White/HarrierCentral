@@ -84,7 +84,7 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
           ),
         ),
         OfflineModeRibbon(
-          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSync),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
             setState(() {});

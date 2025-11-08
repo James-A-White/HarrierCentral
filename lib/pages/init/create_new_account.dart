@@ -39,7 +39,7 @@ class CreateNewAccountPageState extends State<CreateNewAccountPage> {
           ),
         ),
         OfflineModeRibbon(
-          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSync),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
             setState(() {});

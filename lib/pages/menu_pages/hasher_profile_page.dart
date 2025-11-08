@@ -62,6 +62,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   bool? _historicalCountIsEstimate;
   bool? _historicalCountIsEstimateWidget;
 
+  bool _isReloading = false;
+
   String? _email = getStringPref(StringPrefsEnum.email);
   int _hasherPreferences = getIntPref(IntPrefsEnum.hasherPreferences) ?? 0;
 
@@ -620,6 +622,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isReloading) {
+      return SizedBox.shrink();
+    }
     return Stack(
       children: <Widget>[
         SizedBox(
@@ -2085,7 +2090,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           ),
         ),
         OfflineModeRibbon(
-          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSync),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
             setState(() {});
@@ -2102,11 +2107,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   Future<void> _reloadData() async {
     await setStringPref(StringPrefsEnum.bootType, BOOT_TYPE_RELOAD_DATA);
-
-    // and re-run the app.
-    await Future.microtask(() {
-      Get.offAll(() => AppEntryPage());
-    });
+    _isReloading = true;
+    Get.offAll(() => AppEntryPage());
   }
 
   Future<void> _enableLocationServices() async {

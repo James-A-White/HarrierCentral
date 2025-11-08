@@ -167,9 +167,15 @@ class MainNavigationController extends GetxController
           );
         } else {
           mainScreenContent.value = MainPageContent.loading;
+          // getStringPref(StringPrefsEnum.bootType) != BOOT_TYPE_NORMAL
+          //     ? mainScreenContent.value = MainPageContent.loading
+          //     : mainScreenContent.value = MainPageContent.appContent;
         }
       } else {
         mainScreenContent.value = MainPageContent.loading;
+        // getStringPref(StringPrefsEnum.bootType) != BOOT_TYPE_NORMAL
+        //     ? mainScreenContent.value = MainPageContent.loading
+        //     : mainScreenContent.value = MainPageContent.appContent;
       }
     } else {
       mainScreenContent.value = MainPageContent.appContent;
@@ -186,6 +192,11 @@ class MainNavigationController extends GetxController
 
     // Create pages
     futureRunsListPage = FutureRunsListPage();
+
+    update(['AppScaffold']);
+
+    mainScreenReady.value = true;
+
     kennelsListPage = KennelsListPage(key: kennelLocationsPageKey);
     historyListPage = HistoryListPage();
     runAndKennelMapPage = RunAndKennelMapPage(key: runAndKennelMapPageKey);
@@ -207,8 +218,6 @@ class MainNavigationController extends GetxController
     }
 
     update(['AppScaffold']);
-
-    mainScreenReady.value = true;
 
     // don't configure notifications until here because
     // when a notification is clicked and the app launches,
@@ -354,11 +363,19 @@ class MainNavigationController extends GetxController
       getStringPref(StringPrefsEnum.harrierCentralVersion) ?? '',
     );
 
+    // if (isLoadingData ||
+    //     getStringPref(StringPrefsEnum.bootType) != BOOT_TYPE_NORMAL) {
+    //   mainScreenContent.value = MainPageContent.loading;
+    // } else {
+    //   mainScreenContent.value = MainPageContent.appContent;
+    // }
+
     if (isLoadingData) {
       mainScreenContent.value = MainPageContent.loading;
     } else {
       mainScreenContent.value = MainPageContent.appContent;
     }
+
     // make sure app bar is drawn
     update(['AppScaffold']);
 

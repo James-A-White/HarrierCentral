@@ -100,9 +100,13 @@ class FutureRunListPageController extends GetxController {
     searchController.text = '';
     searchRunsText.value = '';
 
-    _onInitAsync().then((_) {
-      _updateTotalNotificationCounter();
-      update(['runList', 'main_nav_page']);
+    // do an immediate refresh from table to quickly display data already cached in the app
+    refreshFromTable(true).then((_) {
+      // then do any updates that require a trip to the server.
+      _onInitAsync().then((_) {
+        _updateTotalNotificationCounter();
+        update(['runList', 'main_nav_page']);
+      });
     });
   }
 
@@ -185,7 +189,7 @@ class FutureRunListPageController extends GetxController {
   Future<void> _onInitAsync() async {
     appModel.hasLocationPermissions = await Permission.location.isGranted;
 
-    await refreshFromBackend();
+    //await refreshFromBackend();
     //await refreshFromTable(true);
     chatSummaryMap = await getEventChatMessageCounts();
 
@@ -503,9 +507,8 @@ class FutureRunListPageController extends GetxController {
 
   Future<void> refreshFromBackend({bool clearLocalTables = false}) async {
     if (clearLocalTables) {
-      //setState(() {
       allRuns = null;
-      //});
+      update(['runList']);
 
       String query =
           'DELETE FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.user)}';
@@ -533,11 +536,8 @@ class FutureRunListPageController extends GetxController {
     }
 
     await tableModel.syncUserDataService.updateFromBackend(
-      SyncUserDataService.flagHasherEventMapTable |
-          SyncUserDataService.flagNarrowEventsTable |
-          SyncUserDataService.flagKennelsTable |
-          SyncUserDataService.flagPaymentsTable,
-      false,
+      SyncUserDataService.flagsAllData,
+      true,
       debugText: 'future_run_list_page: HEM, Events, Kennels',
     );
 

@@ -296,9 +296,7 @@ class FutureRunsListPage extends StatelessWidget {
                   style: text_button_style,
                   child: Text('Reload runs', style: ts_button),
                   onPressed: () async {
-                    await controller.refreshFromBackend(
-                      clearLocalTables: false,
-                    );
+                    await controller.refreshFromBackend(clearLocalTables: true);
                   },
                 ),
               ),

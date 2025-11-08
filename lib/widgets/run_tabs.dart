@@ -1951,7 +1951,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           ),
         ),
         OfflineModeRibbon(
-          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSyncAsDate),
+          lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSync),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {},
           //refreshFunction: () => controller.initialize(),

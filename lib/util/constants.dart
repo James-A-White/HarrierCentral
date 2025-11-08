@@ -18,6 +18,8 @@ const int DEFAULT_HTTP_TIMEOUT = 10;
 const int DISPLAY_SPLASH_ON_LAUNCH = 10;
 const int SPLASH_SCREEN_DISPLAY_TIME = 3;
 
+// we will not allow syncs happen less than 5 seconds apart. This prevents rapid repeated syncs during app startup.
+const int DEBOUNCE_SYNC_USER_DATA = 5;
 const int KENNEL_IS_FOLLOWING = 1;
 const int KENNEL_IS_BLOCKED = 2;
 const int KENNEL_IS_AUTO = 0;
