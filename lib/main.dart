@@ -6,21 +6,25 @@ import 'package:harrier_central/imports.dart';
 class AppLifecycleController extends SuperController<void> {
   @override
   void onPaused() {
+    //print('AppLifecycleController: onPaused called');
     _cancelGeoStream('onPaused');
   }
 
   @override
   void onDetached() {
+    // print('AppLifecycleController: onDetached called');
     _cancelGeoStream('onDetached');
   }
 
   @override
   void onInactive() {
+    //print('AppLifecycleController: onInactive called');
     _cancelGeoStream('onInactive');
   }
 
   @override
   void onResumed() {
+    //print('AppLifecycleController: onResumed called');
     Utilities.subscribeToGeoLocationStream(); // re-subscribe
     if (Get.isRegistered<ChatPageController>()) {
       final chatPageController = Get.find<ChatPageController>();

@@ -15,7 +15,8 @@ class RunListItemController extends GetxController {
                   NotificationState.auto)
               .obs,
       isPaid = (futureRun.extensions.isPaid).obs,
-      hares = (futureRun.event.hares ?? '').obs;
+      hares = (futureRun.event.hares ?? '').obs,
+      locationOneLineDesc = (futureRun.event.locationOneLineDesc ?? '').obs;
 
   final Rx<int> rsvpState;
   final Rx<int> attendanceState;
@@ -25,6 +26,7 @@ class RunListItemController extends GetxController {
   final Rx<NotificationState> notificationPreference;
   final Rx<int> isPaid;
   final Rx<String> hares;
+  final Rx<String> locationOneLineDesc;
   final Rx<bool> automaticallySetNotifiationPrefs =
       getBoolPref(BoolPrefsEnum.automaticallySetNotifiationPrefs)?.obs ??
       true.obs;
@@ -341,6 +343,7 @@ class RunListItem extends StatelessWidget {
                                             textAlign: TextAlign.left,
                                             overflow: TextOverflow.ellipsis,
                                           ),
+                                    Obx(() => _getLocationWidget()),
                                     Obx(() => _getHaresWidget()),
                                     if ((futureRun.extensions.evtLat != null &&
                                             futureRun
@@ -703,9 +706,20 @@ class RunListItem extends StatelessWidget {
 
   Widget _getHaresWidget() {
     return rliController.hares.isEmpty
-        ? const SizedBox()
+        ? const SizedBox.shrink()
         : Text(
             'Hares: ${rliController.hares}',
+            style: ts_regularMediumBlack,
+            textAlign: TextAlign.left,
+            overflow: TextOverflow.ellipsis,
+          );
+  }
+
+  Widget _getLocationWidget() {
+    return rliController.locationOneLineDesc.isEmpty
+        ? const SizedBox.shrink()
+        : Text(
+            rliController.locationOneLineDesc.value,
             style: ts_regularMediumBlack,
             textAlign: TextAlign.left,
             overflow: TextOverflow.ellipsis,

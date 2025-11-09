@@ -3,11 +3,12 @@
 // ignore_for_file: constant_identifier_names
 
 import 'package:badges/badges.dart' as badges;
+import 'package:eventide/eventide.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/widgets/beta_ribbon.dart';
+import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 import 'package:map_launcher/map_launcher.dart' as maps;
-import 'package:eventide/eventide.dart';
 
 // import 'package:manage_calendar_events/manage_calendar_events.dart' as calendar;
 
@@ -225,7 +226,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   bool _showTopWidget = true;
   bool _slideTopWidget = false;
 
-  static int DISPLAY_LOGO_IN_RSVP_DURATION = 5;
+  static int DISPLAY_LOGO_IN_RSVP_DURATION = 15;
 
   @override
   void initState() {
@@ -466,13 +467,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                       ),
                                       SizedBox(width: 30),
                                       Expanded(
-                                        child: AutoSizeText(
-                                          widget.futureRun.event.eventName,
-                                          maxLines: 3,
-                                          style: ts_tileTextLarge.copyWith(
-                                            color: Colors.white,
-                                          ),
-                                        ),
+                                        child: _getRunDetails(Colors.white),
                                       ),
                                       SizedBox(width: 20),
                                     ],
@@ -1326,6 +1321,45 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     );
   }
 
+  Widget _getRunDetails(Color textColor) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AutoSizeText(
+          widget.futureRun.event.eventName,
+          maxLines: 3,
+          style: ts_tileTextLarge.copyWith(color: textColor),
+        ),
+        Text(
+          DateFormat(
+            'E, MMM d, yyyy, h:mm a',
+          ).format(widget.futureRun.event.eventStartDatetime),
+          style: ts_listValueStyle.copyWith(color: textColor),
+          textAlign: TextAlign.left,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        if ((widget.futureRun.event.locationOneLineDesc ?? '') != '')
+          Text(
+            widget.futureRun.event.locationOneLineDesc!,
+            style: ts_listValueStyle.copyWith(color: textColor),
+            textAlign: TextAlign.left,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        if ((widget.futureRun.event.hares ?? '') != '')
+          Text(
+            'Hares: ${widget.futureRun.event.hares!}',
+            style: ts_listValueStyle.copyWith(color: textColor),
+            textAlign: TextAlign.left,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+      ],
+    );
+  }
+
   Stack _rsvpIcon(PackListAggregate e) {
     return Stack(
       alignment: AlignmentDirectional.center,
@@ -1467,13 +1501,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                               ),
                               SizedBox(width: 30),
                               Expanded(
-                                child: AutoSizeText(
-                                  widget.futureRun.event.eventName,
-                                  maxLines: 3,
-                                  style: ts_tileTextLarge.copyWith(
-                                    color: themeAppBarBackground,
-                                  ),
-                                ),
+                                child: _getRunDetails(themeAppBarBackground),
                               ),
                               SizedBox(width: 20),
                             ],
