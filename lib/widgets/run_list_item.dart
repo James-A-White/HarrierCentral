@@ -343,8 +343,8 @@ class RunListItem extends StatelessWidget {
                                             textAlign: TextAlign.left,
                                             overflow: TextOverflow.ellipsis,
                                           ),
-                                    Obx(() => _getLocationWidget()),
                                     Obx(() => _getHaresWidget()),
+                                    Obx(() => _getLocationWidget()),
                                     if ((futureRun.extensions.evtLat != null &&
                                             futureRun
                                                     .extensions

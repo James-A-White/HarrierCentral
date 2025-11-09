@@ -1,3 +1,8 @@
+2.1.3+1047
+    • Added descriptive text to the runs list when no runs are available
+    • Fixed the top chat bubble to always appear, even when there are no unread chat messages
+    • Switched the Hares line and the locaiton one line description line on the RunListTile so the locaiton is now right on top of the distance (makes more sense)
+
 2.1.3+1046
     • Added one line location to Run detail card (why did it take me so long!)
     • Added run details to the headers that pop up when you click on a notification for chats or RSVP

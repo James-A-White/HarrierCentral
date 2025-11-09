@@ -78,44 +78,40 @@ class MainNavigationPage extends StatelessWidget {
                                             Get.find<NotificationService>()
                                                 .globalTotalBadgeCount
                                                 .value;
-                                        if ((totalChatCount == 0)) {
-                                          return const SizedBox();
-                                        } else {
-                                          return badges.Badge(
-                                            position:
-                                                badges.BadgePosition.topEnd(
-                                                  top: -10,
-                                                  end: -17,
-                                                ),
 
-                                            badgeContent: Container(
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal: 2,
-                                              ),
-                                              width: 30,
-                                              height: 13,
-                                              child: AutoSizeText(
-                                                totalChatCount.toString(),
-                                                textAlign: TextAlign.center,
-                                                maxLines: 1,
-                                                minFontSize: 10,
-                                                maxFontSize: 13,
-                                                style: ts_badge,
-                                              ),
+                                        return badges.Badge(
+                                          position: badges.BadgePosition.topEnd(
+                                            top: -10,
+                                            end: -17,
+                                          ),
+
+                                          badgeContent: Container(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: 2,
                                             ),
+                                            width: 30,
+                                            height: 13,
+                                            child: AutoSizeText(
+                                              totalChatCount.toString(),
+                                              textAlign: TextAlign.center,
+                                              maxLines: 1,
+                                              minFontSize: 10,
+                                              maxFontSize: 13,
+                                              style: ts_badge,
+                                            ),
+                                          ),
 
-                                            showBadge: totalChatCount != 0,
-                                            child:
-                                                // badgeController
-                                                //     .showChatBubbleLoading
-                                                //     .value
-                                                // ? const Icon(Icons.refresh)
-                                                // :
-                                                const Icon(
-                                                  Icons.chat_bubble_outline,
-                                                ),
-                                          );
-                                        }
+                                          showBadge: totalChatCount != 0,
+                                          child:
+                                              // badgeController
+                                              //     .showChatBubbleLoading
+                                              //     .value
+                                              // ? const Icon(Icons.refresh)
+                                              // :
+                                              const Icon(
+                                                Icons.chat_bubble_outline,
+                                              ),
+                                        );
                                       }),
                               );
                             },

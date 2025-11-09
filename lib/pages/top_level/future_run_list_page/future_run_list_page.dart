@@ -267,90 +267,138 @@ class FutureRunsListPage extends StatelessWidget {
   }
 
   Widget _buildListView(FutureRunListPageController listController) {
-    return (controller.allRuns ?? <dynamic>[]).isEmpty
-        ? Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(left: 25, right: 25, bottom: 30),
-                child: Center(
-                  child: Text(
-                    'No Runs available.',
-                    style: ts_headingVeryLarge,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: 25.0,
-                  right: 25.0,
-                  bottom: 30,
-                ),
-                child: Center(
-                  child: Text(
-                    'You might not be following any Kennels with upcoming runs. Check the Kennels page, select several Kennels and then return to this page and hit the "Reload runs" button below.',
-                    style: ts_title,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 0.0),
-                child: TextButton(
-                  style: text_button_style,
-                  child: Text('Reload runs', style: ts_button),
-                  onPressed: () async {
-                    await controller.refreshFromBackend(clearLocalTables: true);
-                  },
-                ),
-              ),
-            ],
-          )
-        : NestedScrollView(
-            controller: controller.scrollController,
-            floatHeaderSlivers: true,
-            headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-              return <Widget>[
-                // SliverList(
-                //   delegate: SliverChildListDelegate(<Widget>[_searchBar()]),
-                // ),
-                SliverAppBar(
-                  expandedHeight: 131,
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  surfaceTintColor: Colors.transparent,
-                  floating: true,
-                  pinned: false,
-                  toolbarHeight: 131, // 👈 your desired height
-                  titleSpacing: 0.0,
-                  flexibleSpace: _searchBar(context),
-                ),
-              ];
-            },
-            body: RefreshIndicator(
-              onRefresh: () =>
-                  controller.refreshFromBackend(clearLocalTables: false),
-              displacement: 40.0,
-              child: Column(
+    String noRunsTitle = 'No Runs available';
+    String noRunsDescription =
+        'If you have set a date range or search text, you may want to clear those to see all available runs.';
+
+    switch (controller.runsToDisplay.value) {
+      case RunsToDisplay.onMap:
+        noRunsTitle = 'No runs on the map';
+        noRunsDescription =
+            'There are no runs to display based on the area currently being displayed on the map.\r\n\r\nTry zooming out or moving the map to a different area.';
+        break;
+      case RunsToDisplay.unreadChats:
+        noRunsTitle = 'You\'re up to date!';
+        noRunsDescription =
+            'This view shows you all runs past and future that have chat messages you have not yet seen.\r\n\r\nYou have either seen all chats for your runs (great job staying in the loop!) or you have set a text filter.\r\n\r\nIf you have runs with chats, please clear the text filter to see them.';
+        break;
+      case RunsToDisplay.myRuns:
+        noRunsTitle = 'No runs available';
+        noRunsDescription =
+            'This view shows you runs you\'ve attended or plan to attend.\r\n\r\nYou can RSVP to upcoming runs from the run details page. Past runs that you have attended will also show up here.\r\n\r\nIf you have set a date range or search text, you may want to clear those to see your runs.';
+        break;
+      case RunsToDisplay.allRuns:
+        noRunsTitle = 'No runs available';
+        noRunsDescription =
+            'This view shows all upcoming runs in Harrier Central and all runs in the past for Kennels you follow.\r\n\r\nIf you have set a date range or search text, you may want to clear those to see all available runs.';
+        break;
+      case RunsToDisplay.events:
+        noRunsTitle = 'No events available';
+        noRunsDescription =
+            'This view shows you runs that have been marked as events.\r\n\r\nIf you have set a date range or search text, you may want to clear those to see available events.';
+        break;
+    }
+
+    bool noRunsAvaiable = false;
+
+    if (controller.filteredRuns.isEmpty) {
+      noRunsAvaiable = true;
+    }
+
+    // Check if every element in the non-empty list is an integer
+    if (controller.filteredRuns.every((element) => element is int)) {
+      noRunsAvaiable = true;
+    }
+
+    return NestedScrollView(
+      controller: controller.scrollController,
+      floatHeaderSlivers: true,
+      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+        return <Widget>[
+          // SliverList(
+          //   delegate: SliverChildListDelegate(<Widget>[_searchBar()]),
+          // ),
+          SliverAppBar(
+            expandedHeight: 131,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            surfaceTintColor: Colors.transparent,
+            floating: true,
+            pinned: false,
+            toolbarHeight: 131, // 👈 your desired height
+            titleSpacing: 0.0,
+            flexibleSpace: _searchBar(context),
+          ),
+        ];
+      },
+      body: RefreshIndicator(
+        onRefresh: () => controller.refreshFromBackend(clearLocalTables: false),
+        displacement: 40.0,
+        child: Column(
+          children: [
+            // if (controller.showOnlyEventsWithMessages.value)
+            //   Container(
+            //     padding: EdgeInsets.only(top: 5, bottom: 5),
+            //     child: ElevatedButton(
+            //       onPressed: () {
+            //         controller.resetNotificationCounters();
+            //       },
+            //       child: Text(
+            //         'Clear all notifications',
+            //         style: ts_button,
+            //       ),
+            //     ),
+            //   ),
+            Expanded(
+              child: Stack(
                 children: [
-                  // if (controller.showOnlyEventsWithMessages.value)
-                  //   Container(
-                  //     padding: EdgeInsets.only(top: 5, bottom: 5),
-                  //     child: ElevatedButton(
-                  //       onPressed: () {
-                  //         controller.resetNotificationCounters();
-                  //       },
-                  //       child: Text(
-                  //         'Clear all notifications',
-                  //         style: ts_button,
-                  //       ),
-                  //     ),
-                  //   ),
-                  Expanded(
-                    child: Stack(
-                      children: [
-                        ListView.builder(
+                  noRunsAvaiable
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                left: 25,
+                                right: 25,
+                                bottom: 30,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  noRunsTitle,
+                                  style: ts_headingVeryLarge,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                left: 25.0,
+                                right: 25.0,
+                                bottom: 30,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  noRunsDescription,
+                                  style: ts_title,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                            // Padding(
+                            //   padding: const EdgeInsets.only(top: 0.0),
+                            //   child: TextButton(
+                            //     style: text_button_style,
+                            //     child: Text('Reload runs', style: ts_button),
+                            //     onPressed: () async {
+                            //       await controller.refreshFromBackend(
+                            //         clearLocalTables: true,
+                            //       );
+                            //     },
+                            //   ),
+                            // ),
+                          ],
+                        )
+                      : ListView.builder(
                           padding: const EdgeInsets.only(
                             left: 10,
                             right: 10,
@@ -570,13 +618,13 @@ class FutureRunsListPage extends StatelessWidget {
                             }
                           },
                         ),
-                      ],
-                    ),
-                  ),
                 ],
               ),
             ),
-          );
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _futurePastButton() {
