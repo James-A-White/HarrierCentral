@@ -54,7 +54,10 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   }
 
   Future<void> getEventChatMessageCounts() async {
-    final userId = getStringPref(StringPrefsEnum.userId)!;
+    final userId = getStringPref(StringPrefsEnum.userId);
+    if (userId == null || userId.isEmpty) {
+      return;
+    }
     String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
