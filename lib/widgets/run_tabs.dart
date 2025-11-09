@@ -290,17 +290,21 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
             });
           }
 
-          if (_tabController.previousIndex == 4) {
-            if (Get.isRegistered<FutureRunListPageController>()) {
-              final controller = Get.find<FutureRunListPageController>();
-              controller
-                      .thisEventUnseenChats[widget
-                          .futureRun
-                          .event
-                          .publicEventId]
-                      ?.value =
-                  0;
-              controller.update(['runList', 'chatTab', 'main_nav_page']);
+          if ((_tabController.previousIndex == 4) ||
+              (_tabController.index == 4)) {
+            if (Get.isRegistered<NotificationService>()) {
+              final controller = Get.find<NotificationService>();
+              controller.markEventMessagesAsViewed(
+                widget.futureRun.event.publicEventId,
+              );
+              // controller
+              //         .thisEventUnseenChats[widget
+              //             .futureRun
+              //             .event
+              //             .publicEventId]
+              //         ?.value =
+              //     0;
+              // controller.update(['runList', 'chatTab', 'main_nav_page']);
             }
           }
 
@@ -1829,13 +1833,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                       child: GetBuilder<FutureRunListPageController>(
                         id: 'chatTab',
                         builder: (controller) {
-                          final chatCount = controller
-                              .thisEventUnseenChats[widget
-                                  .futureRun
-                                  .event
-                                  .publicEventId]
-                              ?.value;
-
                           return Container(
                             height: 40.0,
                             decoration: BoxDecoration(
@@ -1871,36 +1868,88 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                     ),
                                   ),
                                 ),
-                                if ((chatCount != null) &&
-                                    (chatCount > 0) &&
-                                    (_tabController.index != 4)) ...<Widget>[
-                                  badges.Badge(
-                                    position: badges.BadgePosition.topEnd(
-                                      top: 0,
-                                      end: 0,
-                                    ),
-                                    badgeContent: Container(
-                                      //color: Colors.pink,
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 2,
+
+                                Obx(() {
+                                  if ((!notificationService.unreadEventCounts
+                                          .containsKey(
+                                            widget
+                                                .futureRun
+                                                .event
+                                                .publicEventId,
+                                          )) ||
+                                      (notificationService
+                                              .unreadEventCounts[widget
+                                                  .futureRun
+                                                  .event
+                                                  .publicEventId]
+                                              ?.value ==
+                                          0)) {
+                                    return const SizedBox();
+                                  } else {
+                                    return badges.Badge(
+                                      position: badges.BadgePosition.topEnd(
+                                        top: -5,
+                                        end: 0,
                                       ),
-                                      width: 30,
-                                      height: 13,
-                                      child: AutoSizeText(
-                                        chatCount.toString(),
-                                        textAlign: TextAlign.center,
-                                        maxLines: 1,
-                                        minFontSize: 10,
-                                        maxFontSize: 13,
-                                        style: ts_badge,
+                                      badgeContent: Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 2,
+                                        ),
+                                        width: 30,
+                                        height: 13,
+                                        child: AutoSizeText(
+                                          notificationService
+                                                  .unreadEventCounts[widget
+                                                      .futureRun
+                                                      .event
+                                                      .publicEventId]
+                                                  ?.value
+                                                  .toString() ??
+                                              '0',
+                                          textAlign: TextAlign.center,
+                                          maxLines: 1,
+                                          minFontSize: 10,
+                                          maxFontSize: 13,
+                                          style: ts_badge,
+                                        ),
                                       ),
-                                    ),
-                                    badgeStyle: badges.BadgeStyle(
-                                      badgeColor: Colors.red.shade800,
-                                      padding: const EdgeInsets.all(6),
-                                    ),
-                                  ),
-                                ],
+                                      badgeStyle: badges.BadgeStyle(
+                                        badgeColor: Colors.red.shade800,
+                                        padding: const EdgeInsets.all(6),
+                                      ),
+                                    );
+                                  }
+                                }),
+
+                                // if ((chatCount > 0) &&
+                                //     (_tabController.index != 4)) ...<Widget>[
+                                //   badges.Badge(
+                                //     position: badges.BadgePosition.topEnd(
+                                //       top: 0,
+                                //       end: 0,
+                                //     ),
+                                //     badgeContent: Container(
+                                //       //color: Colors.pink,
+                                //       padding: EdgeInsets.symmetric(
+                                //         horizontal: 2,
+                                //       ),
+                                //       width: 30,
+                                //       height: 13,
+                                //       child: AutoSizeText(
+                                //         chatCount.toString(),
+                                //         textAlign: TextAlign.center,
+                                //         maxLines: 1,
+                                //         minFontSize: 10,
+                                //         maxFontSize: 13,
+                                //         style: ts_badge,
+                                //       ),
+                                //     ),
+                                //     badgeStyle: badges.BadgeStyle(
+                                //       badgeColor: Colors.red.shade800,
+                                //       padding: const EdgeInsets.all(6),
+                                //     ),
+                                //   ),
+                                // ],
                               ],
                             ),
                           );

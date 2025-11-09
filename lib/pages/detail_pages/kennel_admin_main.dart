@@ -2317,7 +2317,6 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
   Widget _runRow(RunDetailsAggregate s) {
     return RunListItem(
       futureRun: s,
-      currentChatCount: 0,
       onItemTapped: () {
         Navigator.push<dynamic>(
           context,

@@ -44,16 +44,22 @@ class RunDetailsPageState extends State<RunDetailsPage> {
           icon: Icon(Icons.arrow_back),
           onPressed: () {
             if (_activeTab == 4) {
-              if (Get.isRegistered<FutureRunListPageController>()) {
-                final controller = Get.find<FutureRunListPageController>();
-                controller
-                        .thisEventUnseenChats[widget
-                            .futureRun
-                            .event
-                            .publicEventId]
-                        ?.value =
-                    0;
-                controller.update(['runList', 'main_nav_page']);
+              if (Get.isRegistered<NotificationService>()) {
+                final controller = Get.find<NotificationService>();
+                controller.markEventMessagesAsViewed(
+                  _futureRun.event.publicEventId,
+                );
+                // if (Get.isRegistered<FutureRunListPageController>()) {
+                //   final controller = Get.find<FutureRunListPageController>();
+                //   controller
+                //           .thisEventUnseenChats[widget
+                //               .futureRun
+                //               .event
+                //               .publicEventId]
+                //           ?.value =
+                //       0;
+                //   controller.update(['runList', 'main_nav_page']);
+                // }
               }
             }
             //print('Run details popped');

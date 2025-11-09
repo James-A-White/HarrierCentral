@@ -185,11 +185,16 @@ class FutureRunsListPage extends StatelessWidget {
                         ),
                       ),
                     ),
-                    controller.runsToDisplay.value == RunsToDisplay.onMap
-                        ? SizedBox(width: 42, child: _showMapButton())
-                        : SizedBox.shrink(),
+                    if (controller.runsToDisplay.value == RunsToDisplay.onMap)
+                      SizedBox(width: 42, child: _showMapButton()),
 
-                    controller.runsToDisplay.value != RunsToDisplay.onMap
+                    if (controller.runsToDisplay.value ==
+                        RunsToDisplay.unreadChats)
+                      SizedBox(width: 42, child: _showResetChatCountsButton()),
+
+                    ((controller.runsToDisplay.value != RunsToDisplay.onMap) &&
+                            (controller.runsToDisplay.value !=
+                                RunsToDisplay.unreadChats))
                         ? SizedBox(width: 42, child: _futurePastButton())
                         : SizedBox.shrink(),
                     SizedBox(width: 5),
@@ -552,22 +557,9 @@ class FutureRunsListPage extends StatelessWidget {
                                 ],
                               );
                             } else {
-                              String publicEventId =
-                                  (listController.filteredRuns[index]
-                                          as RunDetailsAggregate)
-                                      .event
-                                      .publicEventId;
-
                               return RunListItem(
                                 futureRun: listController.filteredRuns[index],
-                                currentChatCount:
-                                    (listController
-                                        .thisEventUnseenChats[publicEventId]
-                                        ?.value ??
-                                    listController
-                                        .chatSummaryMap[publicEventId]
-                                        ?.eventChatMessageCount ??
-                                    0),
+
                                 onItemTapped: () {
                                   listController.openRun(
                                     listController.filteredRuns[index],
@@ -639,6 +631,28 @@ class FutureRunsListPage extends StatelessWidget {
               ),
             );
     });
+  }
+
+  Widget _showResetChatCountsButton() {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
+      ),
+      onPressed: () async {
+        if (Get.isRegistered<NotificationService>()) {
+          final notificationController = Get.find<NotificationService>();
+          notificationController.resetAllEventChatCounts();
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 0, right: 0, top: 0, bottom: 0),
+        child: Icon(
+          Ionicons.checkmark_done_sharp,
+          color: Colors.white,
+          size: 30.0,
+        ),
+      ),
+    );
   }
 
   Widget _showMapButton() {

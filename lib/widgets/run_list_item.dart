@@ -3,7 +3,7 @@ import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
 class RunListItemController extends GetxController {
-  RunListItemController(RunDetailsAggregate futureRun, int ccc)
+  RunListItemController(RunDetailsAggregate futureRun)
     : rsvpState = (futureRun.extensions.rsvpState).obs,
       attendanceState = (futureRun.extensions.attendenceState).obs,
       isHareState = (futureRun.extensions.isHare).obs,
@@ -15,13 +15,11 @@ class RunListItemController extends GetxController {
                   NotificationState.auto)
               .obs,
       isPaid = (futureRun.extensions.isPaid).obs,
-      hares = (futureRun.event.hares ?? '').obs,
-      currentChatCount = ccc.obs;
+      hares = (futureRun.event.hares ?? '').obs;
 
   final Rx<int> rsvpState;
   final Rx<int> attendanceState;
 
-  final Rx<int> currentChatCount;
   final Rx<int> isHareState;
   final Rx<int> emailAlertPreference;
   final Rx<NotificationState> notificationPreference;
@@ -47,12 +45,8 @@ class RunListItemController extends GetxController {
 }
 
 class RunListItem extends StatelessWidget {
-  RunListItem({
-    super.key,
-    required this.futureRun,
-    required this.onItemTapped,
-    required int currentChatCount,
-  }) : rliController = RunListItemController(futureRun, currentChatCount);
+  RunListItem({super.key, required this.futureRun, required this.onItemTapped})
+    : rliController = RunListItemController(futureRun);
 
   final RunDetailsAggregate futureRun;
   final Function onItemTapped;
@@ -172,47 +166,47 @@ class RunListItem extends StatelessWidget {
                           child: Obx(() => _getNotificationWidget()),
                         ),
                       ),
-                Obx(() {
-                  if ((rliController.currentChatCount.value == 0) ||
-                      (rliController.notificationPreference.value ==
-                          NotificationState.ignore)) {
-                    return SizedBox();
-                  } else {
-                    return badges.Badge(
-                      position: badges.BadgePosition.topEnd(top: -5, end: 0),
-                      badgeContent: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 2),
-                        width: 30,
-                        height: 13,
-                        child: AutoSizeText(
-                          rliController.currentChatCount.toString(),
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          minFontSize: 10,
-                          maxFontSize: 13,
-                          style: ts_badge,
+                if (Get.isRegistered<NotificationService>())
+                  Obx(() {
+                    if ((!notificationService.unreadEventCounts.containsKey(
+                          futureRun.event.publicEventId,
+                        )) ||
+                        (notificationService
+                                .unreadEventCounts[futureRun
+                                    .event
+                                    .publicEventId]
+                                ?.value ==
+                            0)) {
+                      return const SizedBox();
+                    } else {
+                      return badges.Badge(
+                        position: badges.BadgePosition.topEnd(top: -5, end: 0),
+                        badgeContent: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 2),
+                          width: 30,
+                          height: 13,
+                          child: AutoSizeText(
+                            notificationService
+                                    .unreadEventCounts[futureRun
+                                        .event
+                                        .publicEventId]
+                                    ?.value
+                                    .toString() ??
+                                '0',
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            minFontSize: 10,
+                            maxFontSize: 13,
+                            style: ts_badge,
+                          ),
                         ),
-                      ),
-
-                      // Text(
-                      //   rliController.currentChatCount < 100
-                      //       ? rliController.currentChatCount.toString()
-                      //       : '>',
-                      //   style: ts_badge.copyWith(
-                      //     fontSize: rliController.currentChatCount < 10
-                      //         ? 20
-                      //         : rliController.currentChatCount < 100
-                      //             ? 15
-                      //             : 20,
-                      //   ),
-                      // ),
-                      badgeStyle: badges.BadgeStyle(
-                        badgeColor: Colors.red.shade800,
-                        padding: const EdgeInsets.all(6),
-                      ),
-                    );
-                  }
-                }),
+                        badgeStyle: badges.BadgeStyle(
+                          badgeColor: Colors.red.shade800,
+                          padding: const EdgeInsets.all(6),
+                        ),
+                      );
+                    }
+                  }),
                 SizedBox(width: 5),
               ],
             ),

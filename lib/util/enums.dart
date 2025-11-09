@@ -102,7 +102,7 @@ enum DatePrefsEnum {
   lastSplashSequenceDisplayed, // this value is retained over time and can be used to calculate splash delay intervals
 }
 
-enum MapPrefsEnum { chatCounts }
+enum MapPrefsEnum { serverChatCounts, clientChatCounts }
 
 enum TriStateFilter { neutral, include, exclude }
 

@@ -12,9 +12,6 @@ class FutureRunListPageController extends GetxController {
   RxList<dynamic> filteredRuns = [].obs;
   RxInt resultCount = 0.obs;
   RxString searchRunsText = ''.obs;
-  Map<String, RxInt> thisEventUnseenChats = {};
-  RxInt totalNotifications = 0.obs;
-  //RxBool showChatBubbleLoading = false.obs;
   Rx<RunsToDisplay> runsToDisplay = RunsToDisplay.allRuns.obs;
   RxBool runsToDisplayLoading = false.obs;
   RxBool showRunToDisplaySpinner = false.obs;
@@ -39,8 +36,6 @@ class FutureRunListPageController extends GetxController {
   final TextEditingController searchController = TextEditingController();
 
   bool showRsvpInstructions = false;
-
-  Map<String, EventChatSummary> chatSummaryMap = {};
 
   @override
   void onInit() {
@@ -104,94 +99,99 @@ class FutureRunListPageController extends GetxController {
     refreshFromTable(true).then((_) {
       // then do any updates that require a trip to the server.
       _onInitAsync().then((_) {
-        _updateTotalNotificationCounter();
+        // _updateTotalNotificationCounter();
         update(['runList', 'main_nav_page']);
       });
     });
   }
 
+  void refreshRunListUi() {
+    filterRuns(false);
+    update(['runList', 'main_nav_page']);
+  }
+
   void notificationReceived(RemoteMessage message) {
-    final publicEventId = message.data['PublicEventId'] as String?;
+    //final publicEventId = message.data['PublicEventId'] as String?;
 
-    // get the total amount of chats for this event from the message
-    final chatCount =
-        (int.tryParse(message.data['EventChatMessageCount'] as String) ?? 0);
+    // // get the total amount of chats for this event from the message
+    // final chatCount =
+    //     (int.tryParse(message.data['EventChatMessageCount'] as String) ?? 0);
 
-    _updateChatCountBadges(publicEventId, chatCount);
+    //_updateChatCountBadges(publicEventId, chatCount);
     filterRuns(false);
   }
 
-  void _updateChatCountBadges(String? publicEventId, int chatCount) {
-    if (publicEventId != null) {
-      // get the number of chats last displayed in the chat window
-      // when it was last shown
-      final chatsCounts = getMapIntPref(MapPrefsEnum.chatCounts);
+  // void _updateChatCountBadges(String? publicEventId, int chatCount) {
+  //   if (publicEventId != null) {
+  //     // get the number of chats last displayed in the chat window
+  //     // when it was last shown
+  //     final chatsCounts = getMapIntPref(MapPrefsEnum.unusedChatCounts);
 
-      // calculate how many chats have not been seen yet
-      if (thisEventUnseenChats[publicEventId] == null) {
-        thisEventUnseenChats[publicEventId] =
-            (chatCount - (chatsCounts[publicEventId] ?? 0)).obs;
-      } else {
-        thisEventUnseenChats[publicEventId]!.value =
-            chatCount - (chatsCounts[publicEventId] ?? 0);
-      }
-    }
+  //     // calculate how many chats have not been seen yet
+  //     if (thisEventUnseenChats[publicEventId] == null) {
+  //       thisEventUnseenChats[publicEventId] =
+  //           (chatCount - (chatsCounts[publicEventId] ?? 0)).obs;
+  //     } else {
+  //       thisEventUnseenChats[publicEventId]!.value =
+  //           chatCount - (chatsCounts[publicEventId] ?? 0);
+  //     }
+  //   }
 
-    _updateTotalNotificationCounter();
+  //   _updateTotalNotificationCounter();
 
-    update(['runList', 'chatTab', 'main_nav_page']);
-  }
+  //   update(['runList', 'chatTab', 'main_nav_page']);
+  // }
 
-  void resetNotificationCounters() async {
-    chatSummaryMap = await getEventChatMessageCounts();
-    final chatsCounts = getMapIntPref(MapPrefsEnum.chatCounts);
+  // void resetNotificationCounters() async {
+  //   //chatSummaryMap = await getEventChatMessageCounts();
+  //   final chatsCounts = getMapIntPref(MapPrefsEnum.unusedChatCounts);
 
-    for (var run in filteredRuns) {
-      if (run is! int) {
-        String? publicEventId = run.event?.publicEventId as String?;
-        if (publicEventId != null) {
-          if (chatSummaryMap[publicEventId] != null) {
-            chatsCounts[publicEventId] =
-                chatSummaryMap[publicEventId]?.eventChatMessageCount ?? 0;
-          }
-          thisEventUnseenChats[publicEventId]?.value = 0;
-        }
-      }
-    }
+  //   for (var run in filteredRuns) {
+  //     if (run is! int) {
+  //       String? publicEventId = run.event?.publicEventId as String?;
+  //       if (publicEventId != null) {
+  //         if (chatSummaryMap[publicEventId] != null) {
+  //           chatsCounts[publicEventId] =
+  //               chatSummaryMap[publicEventId]?.eventChatMessageCount ?? 0;
+  //         }
+  //         thisEventUnseenChats[publicEventId]?.value = 0;
+  //       }
+  //     }
+  //   }
 
-    setMapIntPref(MapPrefsEnum.chatCounts, chatsCounts);
+  //   setMapIntPref(MapPrefsEnum.unusedChatCounts, chatsCounts);
 
-    _updateTotalNotificationCounter();
+  //   _updateTotalNotificationCounter();
 
-    //showOnlyEventsWithMessages.value = false;
+  //   //showOnlyEventsWithMessages.value = false;
 
-    update(['runList', 'chatTab', 'main_nav_page']);
-  }
+  //   update(['runList', 'chatTab', 'main_nav_page']);
+  // }
 
-  void _updateTotalNotificationCounter() {
-    int total = 0;
+  // void _updateTotalNotificationCounter() {
+  //   int total = 0;
 
-    for (var run in filteredRuns) {
-      if (run is! int) {
-        String? publicEventId = run.event?.publicEventId as String?;
-        if (publicEventId != null) {
-          total +=
-              (thisEventUnseenChats[publicEventId]?.value ??
-              chatSummaryMap[publicEventId]?.eventChatMessageCount ??
-              0);
-        }
-      }
-    }
+  //   for (var run in filteredRuns) {
+  //     if (run is! int) {
+  //       String? publicEventId = run.event?.publicEventId as String?;
+  //       if (publicEventId != null) {
+  //         total +=
+  //             (thisEventUnseenChats[publicEventId]?.value ??
+  //             chatSummaryMap[publicEventId]?.eventChatMessageCount ??
+  //             0);
+  //       }
+  //     }
+  //   }
 
-    totalNotifications.value = total;
-  }
+  //   totalNotifications.value = total;
+  // }
 
   Future<void> _onInitAsync() async {
     appModel.hasLocationPermissions = await Permission.location.isGranted;
 
     //await refreshFromBackend();
     //await refreshFromTable(true);
-    chatSummaryMap = await getEventChatMessageCounts();
+    //chatSummaryMap = await getEventChatMessageCounts();
 
     if (Firebase.apps.isEmpty) {
       await Get.putAsync(() => NotificationService().init());
@@ -280,7 +280,7 @@ class FutureRunListPageController extends GetxController {
 
     await refreshFromBackend(clearLocalTables: false);
 
-    _updateTotalNotificationCounter();
+    // _updateTotalNotificationCounter();
 
     update(['runList', 'chatTab', 'main_nav_page']);
 
@@ -335,53 +335,6 @@ class FutureRunListPageController extends GetxController {
     return;
   }
 
-  Future<Map<String, EventChatSummary>> getEventChatMessageCounts() async {
-    final userId = getStringPref(StringPrefsEnum.userId)!;
-    String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-    String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
-
-    final accessToken = Utilities.generateToken(
-      userId,
-      'hcapp_getEventMessageCounts',
-      paramString: deviceSecret,
-    );
-
-    final body = <String, dynamic>{
-      'queryType': 'getEventMessageCounts',
-      'deviceId': deviceId,
-      'accessToken': accessToken,
-    };
-
-    String responseBody = await ServiceCommon.sendHttpPostV2(jsonEncode(body));
-
-    if (!responseBody.startsWith(ERROR_PREFIX)) {
-      final decoded = json.decode(responseBody) as List;
-      List<EventChatSummary> chatSummary = decoded.map<List<EventChatSummary>>((
-        innerList,
-      ) {
-        return (innerList as List)
-            .map<EventChatSummary>((item) => EventChatSummary.fromJson(item))
-            .toList();
-      }).toList()[0];
-
-      final chatsCounts = getMapIntPref(MapPrefsEnum.chatCounts);
-
-      Map<String, EventChatSummary> result = {};
-      for (var summary in chatSummary) {
-        result[summary.publicEventId] = EventChatSummary(
-          id: summary.id,
-          publicEventId: summary.publicEventId,
-          eventChatMessageCount:
-              summary.eventChatMessageCount -
-              (chatsCounts[summary.publicEventId] ?? 0),
-        );
-      }
-
-      return result;
-    }
-    return {};
-  }
-
   /// filterRuns() provides a complex filtering (search) option
   /// where the plus sign (+) is used as a logical OR allowing
   /// query results to be added together and commas (,) to be used
@@ -398,12 +351,19 @@ class FutureRunListPageController extends GetxController {
     // if we are only changing the search text, then we don't need to
     // re-filter the runs by time scope and runs to display
     if (!searchTextChanged) {
+      Map<String, RxInt> unseenChats = {};
+
+      if (Get.isRegistered<NotificationService>()) {
+        final controller = Get.find<NotificationService>();
+        unseenChats = controller.unreadEventCounts;
+      }
+
       preFilteredRuns.value = QueryRuns.doRunsFilter(
         allRuns ?? <RunDetailsAggregate>[],
         runsToDisplay.value,
         runsTimeScope.value,
         mapBounds: mapBounds,
-        unseenChats: thisEventUnseenChats,
+        unseenChats: unseenChats,
         dateRangeStart: dateFilterStart.value,
         dateRangeEnd: dateFilterEnd.value,
         useDatesForAllYears: multiYearDateFilter.value,

@@ -1,3 +1,6 @@
+2.1.3+1045
+    • Refactored chat badges and centralized in a single notification service
+
 2.1.3+1044
     • Continued refactoring of internet checking and fixes to regressions in the Reload Data function
 

@@ -21,8 +21,9 @@ class ChatPageController extends GetxController {
   void onInit() {
     super.onInit();
 
-    final String publicHasherId =
-        getStringPref(StringPrefsEnum.publicHasherId)!;
+    final String publicHasherId = getStringPref(
+      StringPrefsEnum.publicHasherId,
+    )!;
 
     //final String publicHasherId = getStringPref(StringPrefsEnum.pu)!;
     final String hashName =
@@ -136,15 +137,15 @@ class ChatPageController extends GetxController {
   void addMessage(types.Message message) {
     messages.insert(0, message);
 
-    if (visibility > .1) {
-      final chatsCounts = getMapIntPref(MapPrefsEnum.chatCounts);
-      //print('Add message chat message length = ${messages.length}');
+    // if (visibility > .1) {
+    //   final chatsCounts = getMapIntPref(MapPrefsEnum.unusedChatCounts);
+    //   //print('Add message chat message length = ${messages.length}');
 
-      chatsCounts[publicEventId] = messages.length;
+    //   chatsCounts[publicEventId] = messages.length;
 
-      // it's fine to call this async method unawaited
-      setMapIntPref(MapPrefsEnum.chatCounts, chatsCounts);
-    }
+    //   // it's fine to call this async method unawaited
+    //   setMapIntPref(MapPrefsEnum.unusedChatCounts, chatsCounts);
+    // }
 
     update(['chatMessages']);
   }
@@ -346,18 +347,19 @@ class ChatPageController extends GetxController {
     final mList = preprocessMessages(messageList);
     final msgs = mList.map(types.Message.fromJson).toList();
 
-    final updatedMsgs =
-        msgs.map((msg) => msg.copyWith(status: types.Status.sent)).toList();
+    final updatedMsgs = msgs
+        .map((msg) => msg.copyWith(status: types.Status.sent))
+        .toList();
 
-    // if (visibility > .1) {
-    final chatsCounts = getMapIntPref(MapPrefsEnum.chatCounts);
-    //print('Load messages chat message length = ${updatedMsgs.length}');
+    // // if (visibility > .1) {
+    // final chatsCounts = getMapIntPref(MapPrefsEnum.unusedChatCounts);
+    // //print('Load messages chat message length = ${updatedMsgs.length}');
 
-    chatsCounts[publicEventId] = updatedMsgs.length;
+    // chatsCounts[publicEventId] = updatedMsgs.length;
 
-    // it's fine to call this async method unawaited
-    setMapIntPref(MapPrefsEnum.chatCounts, chatsCounts);
-    //  }
+    // // it's fine to call this async method unawaited
+    // setMapIntPref(MapPrefsEnum.unusedChatCounts, chatsCounts);
+    // //  }
 
     return updatedMsgs;
   }

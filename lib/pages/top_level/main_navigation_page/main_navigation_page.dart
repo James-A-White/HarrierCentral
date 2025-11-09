@@ -71,42 +71,52 @@ class MainNavigationPage extends StatelessWidget {
                                   //     .showOnlyEventsWithMessages
                                   //     .value);
                                 },
-                                child: badges.Badge(
-                                  position: badges.BadgePosition.topEnd(
-                                    top: -10,
-                                    end: -17,
-                                  ),
+                                child: !Get.isRegistered<NotificationService>()
+                                    ? SizedBox()
+                                    : Obx(() {
+                                        var totalChatCount =
+                                            Get.find<NotificationService>()
+                                                .globalTotalBadgeCount
+                                                .value;
+                                        if ((totalChatCount == 0)) {
+                                          return const SizedBox();
+                                        } else {
+                                          return badges.Badge(
+                                            position:
+                                                badges.BadgePosition.topEnd(
+                                                  top: -10,
+                                                  end: -17,
+                                                ),
 
-                                  badgeContent: Container(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 2,
-                                    ),
-                                    width: 30,
-                                    height: 13,
-                                    child: AutoSizeText(
-                                      badgeController.totalNotifications.value
-                                          .toString(),
-                                      textAlign: TextAlign.center,
-                                      maxLines: 1,
-                                      minFontSize: 10,
-                                      maxFontSize: 13,
-                                      style: ts_badge,
-                                    ),
-                                  ),
+                                            badgeContent: Container(
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: 2,
+                                              ),
+                                              width: 30,
+                                              height: 13,
+                                              child: AutoSizeText(
+                                                totalChatCount.toString(),
+                                                textAlign: TextAlign.center,
+                                                maxLines: 1,
+                                                minFontSize: 10,
+                                                maxFontSize: 13,
+                                                style: ts_badge,
+                                              ),
+                                            ),
 
-                                  showBadge:
-                                      badgeController
-                                          .totalNotifications
-                                          .value !=
-                                      0,
-                                  child:
-                                      // badgeController
-                                      //     .showChatBubbleLoading
-                                      //     .value
-                                      // ? const Icon(Icons.refresh)
-                                      // :
-                                      const Icon(Icons.chat_bubble_outline),
-                                ),
+                                            showBadge: totalChatCount != 0,
+                                            child:
+                                                // badgeController
+                                                //     .showChatBubbleLoading
+                                                //     .value
+                                                // ? const Icon(Icons.refresh)
+                                                // :
+                                                const Icon(
+                                                  Icons.chat_bubble_outline,
+                                                ),
+                                          );
+                                        }
+                                      }),
                               );
                             },
                           )
