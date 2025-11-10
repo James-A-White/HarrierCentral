@@ -413,20 +413,58 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     }
   }
 
+  // /// To be called when a user views a chat page and marks all messages as read.
+  // void markEventMessagesAsViewed(String publicEventId) {
+  //   if (unreadEventCounts.containsKey(publicEventId)) {
+  //     unreadEventCounts[publicEventId]!.value = 0;
+  //   } else {
+  //     unreadEventCounts[publicEventId] = 0.obs;
+  //   }
+
+  //   final clientChatCounts = getMapIntPref(MapPrefsEnum.clientChatCounts);
+  //   final serverChatCounts = getMapIntPref(MapPrefsEnum.serverChatCounts);
+
+  //   clientChatCounts[publicEventId] = serverChatCounts[publicEventId] ?? 0;
+  //   setMapIntPref(MapPrefsEnum.clientChatCounts, clientChatCounts);
+  //   _recalculateGlobalBadgeCount();
+  // }
+
   /// To be called when a user views a chat page and marks all messages as read.
-  void markEventMessagesAsViewed(String publicEventId) {
-    if (unreadEventCounts.containsKey(publicEventId)) {
-      unreadEventCounts[publicEventId]!.value = 0;
-    } else {
-      unreadEventCounts[publicEventId] = 0.obs;
+  Future<void> markEventMessagesAsViewed(String publicEventId) async {
+    int badgeCount = await getData(publicEventId, true);
+    print('Badge count after marking as viewed: $badgeCount');
+  }
+
+  Future<int> getData(String publicEventId, bool resetBadgeCount) async {
+    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    var badgeCount = 0;
+
+    final accessToken = Utilities.generateToken(
+      userId,
+      'hcapp_setEventMessagesRead',
+      paramString: deviceSecret + publicEventId,
+    );
+
+    final body = <String, String>{
+      'queryType': 'setEventMessagesRead',
+      'deviceId': deviceId,
+      'accessToken': accessToken,
+      'publicEventId': publicEventId,
+      'resetBadgeCount': resetBadgeCount ? '1' : '0',
+    };
+
+    final responseBody = await ServiceCommon.sendHttpPostV2(jsonEncode(body));
+
+    if (!responseBody.startsWith(ERROR_PREFIX)) {
+      json.decode(responseBody).forEach((dynamic item) {
+        badgeCount = json.decode(responseBody)[0][0]['badgeCount'];
+      });
     }
 
-    final clientChatCounts = getMapIntPref(MapPrefsEnum.clientChatCounts);
-    final serverChatCounts = getMapIntPref(MapPrefsEnum.serverChatCounts);
-
-    clientChatCounts[publicEventId] = serverChatCounts[publicEventId] ?? 0;
-    setMapIntPref(MapPrefsEnum.clientChatCounts, clientChatCounts);
-    _recalculateGlobalBadgeCount();
+    return badgeCount;
   }
 
   /// To be called when a user views a chat page and marks all messages as read.
