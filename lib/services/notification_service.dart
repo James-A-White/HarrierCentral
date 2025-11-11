@@ -7,6 +7,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   // Map to track the unread count for each Public Event ID.
   // Key: PublicEventId, Value: Unread Message Count
   final RxMap<String, RxInt> unreadEventCounts = <String, RxInt>{}.obs;
+  // final Map<String, int> clientChatCounts = <String, int>{};
 
   // Derived RxInt for the *Global* App Icon Badge Count (sum of all events)
   final RxInt globalTotalBadgeCount = 0.obs;
@@ -87,27 +88,17 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
           })
           .toList()[0];
 
-      final Map<String, int> serverChatCounts = {
-        for (var summary in serverChatSummary)
-          summary.publicEventId: summary.eventChatMessageCount,
-      };
+      // clientChatCounts.clear();
+      // clientChatCounts.addAll({
+      //   for (var summary in serverChatSummary)
+      //     summary.publicEventId: summary.eventChatMessageCount,
+      // });
 
-      await setMapIntPref(MapPrefsEnum.serverChatCounts, serverChatCounts);
-
-      final clientChatCounts = getMapIntPref(MapPrefsEnum.clientChatCounts);
-
-      // 1. Combine all unique keys from both maps (Union of keys)
-      final allKeys = serverChatCounts.keys.toSet().union(
-        clientChatCounts.keys.toSet(),
-      );
-
-      // 2. Create a standard Map by iterating over all keys, calculating the difference
-      // and ensuring each value is an RxInt. We use ?? 0 to handle missing keys.
+      // Populate unreadEventCounts with RxInt values derived from clientChatCounts.
       unreadEventCounts.value = {
-        for (final key in allKeys)
-          key:
-              ((serverChatCounts[key] ?? 0) - (clientChatCounts[key] ?? 0)).obs,
-      }.obs;
+        for (final summary in serverChatSummary)
+          summary.publicEventId: summary.eventChatMessageCount.obs,
+      };
     }
 
     if (Get.isRegistered<FutureRunListPageController>()) {
@@ -249,16 +240,22 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     });
   }
 
-  void _handleForegroundMessage(RemoteMessage message) {
+  Future<void> _handleForegroundMessage(RemoteMessage message) async {
     if (kDebugMode) {
       print("Foreground message received: ${message.data}");
     }
 
     // 1. Badge Update Logic: Calculate and update unread counts
     final publicEventId = message.data['PublicEventId'] as String?;
-    final chatCount =
-        (int.tryParse(message.data['EventChatMessageCount'] as String) ?? 0);
-    _updateChatCountBadges(publicEventId, chatCount);
+    // final chatCount =
+    //     (int.tryParse(message.data['EventChatMessageCount'] as String) ?? 0);
+
+    int badgeCount = await _getAndResetBadgeCount(
+      publicEventId: publicEventId,
+      resetBadgeCount: false,
+    );
+
+    _updateChatCountBadges(publicEventId, badgeCount);
 
     // 2. Dispatch to internal controllers
     _dispatchMessageToControllers(message);
@@ -333,20 +330,19 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   // --- GetStorage and Badge Logic ---
 
   void _recalculateGlobalBadgeCount() {
-    final clientChatCounts = getMapIntPref(MapPrefsEnum.clientChatCounts);
-    final serverChatCounts = getMapIntPref(MapPrefsEnum.serverChatCounts);
+    // final clientChatCounts = getMapIntPref(MapPrefsEnum.clientChatCounts);
+    // final serverChatCounts = getMapIntPref(MapPrefsEnum.serverChatCounts);
 
-    // 1. Combine all unique keys from both maps (Union of keys)
-    final allKeys = serverChatCounts.keys.toSet().union(
-      clientChatCounts.keys.toSet(),
-    );
+    // // 1. Combine all unique keys from both maps (Union of keys)
+    // final allKeys = serverChatCounts.keys.toSet().union(
+    //   clientChatCounts.keys.toSet(),
+    // );
 
-    // 2. Create a standard Map by iterating over all keys, calculating the difference
-    // and ensuring each value is an RxInt. We use ?? 0 to handle missing keys.
-    unreadEventCounts.value = {
-      for (final key in allKeys)
-        key: ((serverChatCounts[key] ?? 0) - (clientChatCounts[key] ?? 0)).obs,
-    }.obs;
+    // // Populate unreadEventCounts with RxInt values derived from clientChatCounts.
+    // unreadEventCounts.value = {
+    //   for (final key in clientChatCounts.keys)
+    //     key: (clientChatCounts[key] ?? 0).obs,
+    // };
 
     globalTotalBadgeCount.value = unreadEventCounts.values.fold<int>(
       0,
@@ -364,17 +360,17 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     }
 
     // 2. Calculations
-    final clientChatCounts = getMapIntPref(MapPrefsEnum.clientChatCounts);
-    final localViewedCount = clientChatCounts[publicEventId] ?? 0;
+    // final clientChatCounts = getMapIntPref(MapPrefsEnum.clientChatCounts);
+    //final localViewedCount = clientChatCounts[publicEventId] ?? 0;
 
-    // Update the stored server count for this event
-    final serverChatCounts = getMapIntPref(MapPrefsEnum.serverChatCounts);
-    serverChatCounts[publicEventId] = serverChatCount;
-    setMapIntPref(MapPrefsEnum.serverChatCounts, serverChatCounts);
+    // // Update the stored server count for this event
+    // final serverChatCounts = getMapIntPref(MapPrefsEnum.serverChatCounts);
+    // serverChatCounts[publicEventId] = serverChatCount;
+    // setMapIntPref(MapPrefsEnum.serverChatCounts, serverChatCounts);
 
     // Calculate the new unread count (Server Total - Local Viewed).
     // Use max(0, ...) to ensure the count never goes below zero.
-    final newUnreadCount = max(0, serverChatCount - localViewedCount);
+    //final newUnreadCount = max(0, localViewedCount);
 
     // Get the unread count recorded just before this update.
     final previouslyUnread = unreadEventCounts[publicEventId] ?? 0;
@@ -382,21 +378,21 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     // 3. Reactivity and Update Logic
 
     // Only proceed if the effective unread count for this event has actually changed.
-    if (newUnreadCount != previouslyUnread) {
+    if (serverChatCount != (unreadEventCounts[publicEventId] ?? 0)) {
       // The event has unread messages and needs to be in the map.
       if (unreadEventCounts.containsKey(publicEventId)) {
-        unreadEventCounts[publicEventId]!.value = newUnreadCount;
+        unreadEventCounts[publicEventId]!.value = serverChatCount;
 
         if (kDebugMode) {
           print(
-            'Badge Update: Event $publicEventId count changed from $previouslyUnread to $newUnreadCount via .update().',
+            'Badge Update: Event $publicEventId count changed from $previouslyUnread to $serverChatCount via .update().',
           );
         }
       } else {
-        unreadEventCounts[publicEventId] = newUnreadCount.obs;
+        unreadEventCounts[publicEventId] = serverChatCount.obs;
         if (kDebugMode) {
           print(
-            'Badge Update: Event $publicEventId added with count $newUnreadCount.',
+            'Badge Update: Event $publicEventId added with count $serverChatCount.',
           );
         }
       }
@@ -407,7 +403,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     } else {
       if (kDebugMode) {
         print(
-          'Badge Update: Event $publicEventId count is unchanged ($newUnreadCount).',
+          'Badge Update: Event $publicEventId count is unchanged ($serverChatCount).',
         );
       }
     }
@@ -431,30 +427,54 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
 
   /// To be called when a user views a chat page and marks all messages as read.
   Future<void> markEventMessagesAsViewed(String publicEventId) async {
-    int badgeCount = await getData(publicEventId, true);
+    int badgeCount = await _getAndResetBadgeCount(
+      publicEventId: publicEventId,
+      resetBadgeCount: true,
+    );
+    _updateChatCountBadges(publicEventId, badgeCount);
+
     print('Badge count after marking as viewed: $badgeCount');
   }
 
-  Future<int> getData(String publicEventId, bool resetBadgeCount) async {
+  Future<int> _getAndResetBadgeCount({
+    String? publicEventId,
+    bool? resetBadgeCount,
+    bool? resetAllBadgeCounts,
+  }) async {
     final String userId = getStringPref(StringPrefsEnum.userId)!;
     String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
     var badgeCount = 0;
 
+    String paramString = deviceSecret;
+    // if (publicEventId != null) {
+    //   paramString = deviceSecret + publicEventId;
+    // }
+
     final accessToken = Utilities.generateToken(
       userId,
       'hcapp_setEventMessagesRead',
-      paramString: deviceSecret + publicEventId,
+      paramString: paramString,
     );
 
     final body = <String, String>{
       'queryType': 'setEventMessagesRead',
       'deviceId': deviceId,
       'accessToken': accessToken,
-      'publicEventId': publicEventId,
-      'resetBadgeCount': resetBadgeCount ? '1' : '0',
     };
+
+    if (publicEventId != null) {
+      body.addAll({'publicEventId': publicEventId});
+    }
+
+    if (resetBadgeCount != null) {
+      body.addAll({'resetBadgeCount': resetBadgeCount ? '1' : '0'});
+    }
+
+    if (resetAllBadgeCounts != null) {
+      body.addAll({'resetAllBadgeCounts': resetAllBadgeCounts ? '1' : '0'});
+    }
 
     final responseBody = await ServiceCommon.sendHttpPostV2(jsonEncode(body));
 
@@ -469,14 +489,14 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
 
   /// To be called when a user views a chat page and marks all messages as read.
   void resetAllEventChatCounts() {
-    final serverChatCounts = getMapIntPref(MapPrefsEnum.serverChatCounts);
-    setMapIntPref(MapPrefsEnum.clientChatCounts, serverChatCounts);
+    _getAndResetBadgeCount(resetAllBadgeCounts: true);
 
-    // 2. Create a standard Map by iterating over all keys, calculating the difference
-    // and ensuring each value is an RxInt. We use ?? 0 to handle missing keys.
     unreadEventCounts.value = {
-      for (final key in serverChatCounts.keys) key: 0.obs,
+      for (final key in unreadEventCounts.keys) key: 0.obs,
     }.obs;
+
+    // clientChatCounts.clear();
+    // clientChatCounts.addAll({for (final key in unreadEventCounts.keys) key: 0});
 
     _recalculateGlobalBadgeCount();
 

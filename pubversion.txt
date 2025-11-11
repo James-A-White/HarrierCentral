@@ -1,3 +1,6 @@
+2.1.3+1050
+    • Move chat badge count logic to the server where it belongs
+
 2.1.3+1047
     • Added descriptive text to the runs list when no runs are available
     • Fixed the top chat bubble to always appear, even when there are no unread chat messages
