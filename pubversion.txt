@@ -1,3 +1,7 @@
+2.1.3+1051
+    • Minor tweaks to server side badge count
+    • Updated SQL DB script - renamed a TXT file to prevent linting
+
 2.1.3+1050
     • Move chat badge count logic to the server where it belongs
 

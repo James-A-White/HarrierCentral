@@ -253,6 +253,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     int badgeCount = await _getAndResetBadgeCount(
       publicEventId: publicEventId,
       resetBadgeCount: false,
+      resetAllBadgeCounts: false,
     );
 
     _updateChatCountBadges(publicEventId, badgeCount);
@@ -454,12 +455,12 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
 
     final accessToken = Utilities.generateToken(
       userId,
-      'hcapp_setEventMessagesRead',
+      'hcapp_getEventBadgeCount',
       paramString: paramString,
     );
 
-    final body = <String, String>{
-      'queryType': 'setEventMessagesRead',
+    final body = <String, dynamic>{
+      'queryType': 'getEventBadgeCount',
       'deviceId': deviceId,
       'accessToken': accessToken,
     };
@@ -469,19 +470,33 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     }
 
     if (resetBadgeCount != null) {
-      body.addAll({'resetBadgeCount': resetBadgeCount ? '1' : '0'});
+      body.addAll({'resetBadgeCount': resetBadgeCount ? 1 : 0});
     }
 
     if (resetAllBadgeCounts != null) {
-      body.addAll({'resetAllBadgeCounts': resetAllBadgeCounts ? '1' : '0'});
+      body.addAll({'resetAllBadgeCounts': resetAllBadgeCounts ? 1 : 0});
     }
 
     final responseBody = await ServiceCommon.sendHttpPostV2(jsonEncode(body));
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
-      json.decode(responseBody).forEach((dynamic item) {
-        badgeCount = json.decode(responseBody)[0][0]['badgeCount'];
-      });
+      // Decode the JSON string into a Dart object (likely a List of Lists or a List of Maps)
+      final decodedBody = json.decode(responseBody);
+
+      // Check if the decoded object is a List and is NOT empty
+      if (decodedBody is List && decodedBody.isNotEmpty) {
+        // Access the element (assuming the structure is List<List<Map<String, dynamic>>>)
+        // The previous code was decoding the responseBody multiple times, which is inefficient and wrong.
+        badgeCount = decodedBody[0][0]['badgeCount'];
+
+        // NOTE: The previous code using .forEach() was also incorrect if you
+        // only wanted the first item's badgeCount. The line above is a direct
+        // access that is much more efficient.
+      } else {
+        // Handle the case where the array is empty or the structure is unexpected
+        badgeCount = 0; // Or whatever default value is appropriate
+        print('Warning: Decoded body is empty or not a List.');
+      }
     }
 
     return badgeCount;
