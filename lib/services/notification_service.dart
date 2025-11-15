@@ -64,12 +64,12 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
 
     final accessToken = Utilities.generateToken(
       userId,
-      'hcapp_getEventMessageCounts',
+      'hcapp_getEventBadgeCount',
       paramString: deviceSecret,
     );
 
     final body = <String, dynamic>{
-      'queryType': 'getEventMessageCounts',
+      'queryType': 'getEventBadgeCount',
       'deviceId': deviceId,
       'accessToken': accessToken,
     };
@@ -97,7 +97,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       // Populate unreadEventCounts with RxInt values derived from clientChatCounts.
       unreadEventCounts.value = {
         for (final summary in serverChatSummary)
-          summary.publicEventId: summary.eventChatMessageCount.obs,
+          summary.publicEventId: summary.badgeCount.obs,
       };
     }
 

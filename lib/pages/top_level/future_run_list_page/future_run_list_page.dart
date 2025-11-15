@@ -1267,29 +1267,19 @@ class FutureRunsListPage extends StatelessWidget {
 }
 
 class EventChatSummary {
-  final String id;
   final String publicEventId;
-  final int eventChatMessageCount;
+  final int badgeCount;
 
-  EventChatSummary({
-    required this.id,
-    required this.publicEventId,
-    required this.eventChatMessageCount,
-  });
+  EventChatSummary({required this.publicEventId, required this.badgeCount});
 
   factory EventChatSummary.fromJson(Map<String, dynamic> json) {
     return EventChatSummary(
-      id: json['id'] as String,
       publicEventId: json['PublicEventId'] as String,
-      eventChatMessageCount: json['EventChatMessageCount'] as int,
+      badgeCount: json['BadgeCount'] as int,
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'PublicEventId': publicEventId,
-      'EventChatMessageCount': eventChatMessageCount,
-    };
+    return {'PublicEventId': publicEventId, 'BadgeCount': badgeCount};
   }
 }

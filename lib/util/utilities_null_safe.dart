@@ -1161,6 +1161,14 @@ class Utilities {
     if (resultList.length == 1) {
       final AreWeAtRunModel result = resultList[0];
 
+      final String blockAutoCheckinForThisEventId =
+          getStringPref(StringPrefsEnum.blockAutoCheckinForThisEventId) ?? '';
+
+      if (blockAutoCheckinForThisEventId == result.eventId) {
+        // user has previously declined auto check-in for this event
+        return;
+      }
+
       if (result.eventId != EMPTY_RESULT) {
         final ConfirmAutoCheckinPopup popup = ConfirmAutoCheckinPopup(
           title: 'Check-in to Run',
@@ -1177,7 +1185,13 @@ class Utilities {
           },
         );
 
-        if (retVal == enumCheckInOption_Yes) {
+        if (retVal == enumCheckInOption_Cancel) {
+          // user decided not to check in automatically. Let's take note of this so we don't show the popup again.
+          setStringPref(
+            StringPrefsEnum.blockAutoCheckinForThisEventId,
+            result.eventId,
+          );
+        } else if (retVal == enumCheckInOption_Yes) {
           await tableModel.hasherEventMapService.setEventAttendence(
             result.eventId,
             userId,

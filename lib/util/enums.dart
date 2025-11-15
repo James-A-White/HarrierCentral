@@ -18,6 +18,7 @@ enum StringPrefsEnum {
   androidDownloadLink,
   apnsToken,
   betaFeaturesEnabled,
+  blockAutoCheckinForThisEventId,
   bootType,
   customEmailBody,
   deviceId,
