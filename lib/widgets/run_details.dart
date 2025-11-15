@@ -543,9 +543,10 @@ class RunDetails extends StatelessWidget {
                       Expanded(
                         flex: _flexRight,
                         child: SelectableText(
-                          event.locationStreet ?? '',
+                          (event.locationStreet ?? '').trim(),
                           style: ts_listValueStyle,
                           textAlign: TextAlign.left,
+                          minLines: 1,
                           maxLines: 3,
                           contextMenuBuilder:
                               (
@@ -668,6 +669,7 @@ class RunDetails extends StatelessWidget {
                               event.locationSubRegion ?? '',
                               style: ts_listValueStyle,
                               textAlign: TextAlign.left,
+                              minLines: 1,
                               maxLines: 3,
                               contextMenuBuilder:
                                   (
@@ -708,6 +710,7 @@ class RunDetails extends StatelessWidget {
                               event.locationRegion ?? '',
                               style: ts_listValueStyle,
                               textAlign: TextAlign.left,
+                              minLines: 1,
                               maxLines: 3,
                               contextMenuBuilder:
                                   (

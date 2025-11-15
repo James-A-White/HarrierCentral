@@ -232,6 +232,13 @@ class EventsService extends BaseService {
     String? locationOneLineDesc,
     String? eventImageUrl,
     String? hares,
+
+    String? locationPostCode,
+    String? locationCity,
+    String? locationStreet,
+    String? locationCountry,
+    String? locationRegion,
+    String? locationSubRegion,
   }) async {
     if (Utilities.isNotConnected()) {
       return '';
@@ -354,17 +361,65 @@ class EventsService extends BaseService {
     }
 
     if (eventDescription != null) {
+      if (eventDescription.isEmpty) {
+        eventDescription = '<remove>';
+      }
       bodyMap.addAll(<String, String>{'eventDescription': eventDescription});
     }
 
     if (hares != null) {
+      if (hares.isEmpty) {
+        hares = '<remove>';
+      }
       bodyMap.addAll(<String, String>{'hares': hares});
     }
 
     if (locationOneLineDesc != null) {
+      if (locationOneLineDesc.isEmpty) {
+        locationOneLineDesc = '<remove>';
+      }
       bodyMap.addAll(<String, String>{
         'locationOneLineDesc': locationOneLineDesc,
       });
+    }
+
+    if (locationPostCode != null) {
+      if (locationPostCode.isEmpty) {
+        locationPostCode = '<remove>';
+      }
+
+      bodyMap.addAll(<String, String>{'locationPostCode': locationPostCode});
+    }
+
+    if (locationCity != null) {
+      if (locationCity.isEmpty) {
+        locationCity = '<remove>';
+      }
+      bodyMap.addAll(<String, String>{'locationCity': locationCity});
+    }
+    if (locationStreet != null) {
+      if (locationStreet.isEmpty) {
+        locationStreet = '<remove>';
+      }
+      bodyMap.addAll(<String, String>{'locationStreet': locationStreet});
+    }
+    if (locationCountry != null) {
+      if (locationCountry.isEmpty) {
+        locationCountry = '<remove>';
+      }
+      bodyMap.addAll(<String, String>{'locationCountry': locationCountry});
+    }
+    if (locationRegion != null) {
+      if (locationRegion.isEmpty) {
+        locationRegion = '<remove>';
+      }
+      bodyMap.addAll(<String, String>{'locationRegion': locationRegion});
+    }
+    if (locationSubRegion != null) {
+      if (locationSubRegion.isEmpty) {
+        locationSubRegion = '<remove>';
+      }
+      bodyMap.addAll(<String, String>{'locationSubRegion': locationSubRegion});
     }
 
     if (eventPriceForMembers != null) {

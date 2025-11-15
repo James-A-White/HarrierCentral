@@ -18,9 +18,32 @@ class EditRunDetailsPage extends StatefulWidget {
   EditRunDetailsPageState createState() => EditRunDetailsPageState();
 }
 
+enum EditingTabEnum {
+  details(0, 'Details', 1, 0), // use the kennel default setting
+  address(1, 'Address', 2, 0), // use the kennel default setting
+  map(2, 'Map', 3, 1), // always notify
+  image(3, 'Image', 4, 2), // never notify
+  other(4, 'Other', 4, 3); //
+
+  final int value;
+  final String label;
+  final int next;
+  final int previous;
+
+  const EditingTabEnum(this.value, this.label, this.next, this.previous);
+
+  static final Map<int, EditingTabEnum> _valueMap = {
+    for (var state in EditingTabEnum.values) state.value: state,
+  };
+
+  static EditingTabEnum? fromInt(int value) => _valueMap[value];
+}
+
 class EditRunDetailsPageState extends State<EditRunDetailsPage>
     with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   final List<Tab> _tabs = <Tab>[];
+
+  EditingTabEnum _currentTab = EditingTabEnum.details;
 
   late TabController _tabController;
   bool _isUpdating = false;
@@ -32,6 +55,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
   //GlobalKey _tabKey;
 
   final GlobalKey<FormState> _detailsFormKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _addressFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _otherDetailsFormKey = GlobalKey<FormState>();
 
   final GlobalKey<MyFlutterMapState> _mapKey = GlobalKey<MyFlutterMapState>();
@@ -43,6 +67,12 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
   final FocusNode _focusNodeExtrasDescription = FocusNode();
   final FocusNode _focusNodeDatetime = FocusNode();
   final FocusNode _focusNodeEventName = FocusNode();
+  final FocusNode _focusNodeStreetAddress = FocusNode();
+  final FocusNode _focusNodeCity = FocusNode();
+  final FocusNode _focusNodeRegion = FocusNode();
+  final FocusNode _focusNodeSubRegion = FocusNode();
+  final FocusNode _focusNodePostCode = FocusNode();
+  final FocusNode _focusNodeCountry = FocusNode();
   final FocusNode _focusNodeEventDescription = FocusNode();
   final FocusNode _focusNodeLocationOneLineDesc = FocusNode();
   final FocusNode _focusNodeHares = FocusNode();
@@ -50,6 +80,18 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
   final TextEditingController _eventDatetimeController =
       TextEditingController();
   final TextEditingController _eventNameController = TextEditingController();
+  final TextEditingController _locationStreetController =
+      TextEditingController();
+  final TextEditingController _locationCityController = TextEditingController();
+  final TextEditingController _locationRegionController =
+      TextEditingController();
+  final TextEditingController _locationSubRegionController =
+      TextEditingController();
+  final TextEditingController _locationPostCodeController =
+      TextEditingController();
+  final TextEditingController _locationCountryController =
+      TextEditingController();
+
   final TextEditingController _eventDescriptionController =
       TextEditingController();
   final TextEditingController _locationOneLineDescController =
@@ -82,11 +124,23 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
   void dispose() {
     _eventDatetimeController.dispose();
     _eventNameController.dispose();
+    _locationStreetController.dispose();
+    _locationCityController.dispose();
+    _locationRegionController.dispose();
+    _locationSubRegionController.dispose();
+    _locationPostCodeController.dispose();
+    _locationCountryController.dispose();
     _eventDescriptionController.dispose();
     _locationOneLineDescController.dispose();
 
     _focusNodeDatetime.dispose();
     _focusNodeEventName.dispose();
+    _focusNodeStreetAddress.dispose();
+    _focusNodeCity.dispose();
+    _focusNodeRegion.dispose();
+    _focusNodeSubRegion.dispose();
+    _focusNodePostCode.dispose();
+    _focusNodeCountry.dispose();
     _focusNodeEventDescription.dispose();
     _focusNodeLocationOneLineDesc.dispose();
 
@@ -110,6 +164,15 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
 
   void _setTextFields() {
     _eventNameController.text = _eventAggregate.event.eventName;
+    _locationStreetController.text = _eventAggregate.event.locationStreet ?? '';
+    _locationCityController.text = _eventAggregate.event.locationCity ?? '';
+    _locationRegionController.text = _eventAggregate.event.locationRegion ?? '';
+    _locationSubRegionController.text =
+        _eventAggregate.event.locationSubRegion ?? '';
+    _locationPostCodeController.text =
+        _eventAggregate.event.locationPostCode ?? '';
+    _locationCountryController.text =
+        _eventAggregate.event.locationCountry ?? '';
     _eventDescriptionController.text =
         _eventAggregate.event.eventDescription ?? '';
     _eventDatetimeController.text = DateFormat(
@@ -139,6 +202,55 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
     _extrasDescriptionController.text =
         _eventAggregate.event.extrasDescription ?? '';
     _eventGeographicScope = _eventAggregate.event.eventGeographicScope;
+  }
+
+  Container _genericTextField({
+    required FocusNode focusNode,
+    required TextEditingController textEditignController,
+    required String labelText,
+    required bool useValidator,
+  }) {
+    return Container(
+      color: focusNode.hasFocus ? Colors.yellow.shade50 : Colors.white,
+      margin: const EdgeInsets.only(
+        top: 10.0,
+        bottom: 5.0,
+        left: 25.0,
+        right: 25.0,
+      ),
+      child: TextFormField(
+        focusNode: focusNode,
+        controller: textEditignController,
+        minLines: 1,
+        maxLines: 2,
+        onChanged: (String text) {
+          //widget.EventName = text;
+        },
+        keyboardType: TextInputType.multiline,
+        validator: (String? val) {
+          if (!useValidator) {
+            return null;
+          }
+          if ((val ?? '').isEmpty) {
+            return 'Please provide a ${labelText.toLowerCase()}';
+          } else {
+            return null;
+          }
+        },
+        textCapitalization: TextCapitalization.sentences,
+        style: ts_titleMediumBlack,
+        decoration: InputDecoration(
+          labelText: labelText,
+          fillColor: hc_red,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10.0),
+            borderSide: const BorderSide(),
+          ),
+          hintText: labelText,
+          hintStyle: ts_hint,
+        ),
+      ),
+    );
   }
 
   @override
@@ -197,15 +309,15 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
             ),
             Positioned(
               top: -25,
-              left: 10,
-              right: 10,
+              left: 0,
+              right: 0,
               child: Container(
                 //color: Colors.red,
-                width: 200,
-                padding: const EdgeInsets.only(left: 30, right: 30, top: 10.0),
+                //width: 200,
+                padding: const EdgeInsets.only(top: 10.0),
                 child: Container(
                   padding: const EdgeInsets.all(8.0),
-                  width: 140.0,
+                  //width: 140.0,
                   height: 75.0,
                   // reviewed for 2.0+
                   child: TabBar(
@@ -222,12 +334,12 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       left: 0,
                       right: 0,
                     ),
-                    indicatorSize: TabBarIndicatorSize.tab,
+                    indicatorSize: TabBarIndicatorSize.label,
                     // labelPadding: EdgeInsets.symmetric(
                     //   horizontal: 20.0,
                     // ),
                     indicatorPadding: EdgeInsets.symmetric(
-                      horizontal: -5.0,
+                      horizontal: -15.0,
                       vertical: 13.0,
                     ),
                     indicator: BoxDecoration(
@@ -253,6 +365,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                   controller: _tabController,
                   children: <Widget>[
                     _buildDetailsPage(context),
+                    _buildAddressPage(context),
                     _buildMapPage(),
                     _buildImagePage(),
                     _buildOtherDetailsPage(context),
@@ -275,6 +388,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
     _tabController = TabController(vsync: this, length: _tabs.length);
     _tabController.addListener(() {
       FocusScope.of(context).unfocus();
+      setState(() {
+        _currentTab = EditingTabEnum.fromInt(_tabController.index)!;
+      });
     });
 
     _eventAggregate = widget.eventAggregate;
@@ -327,6 +443,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
   void _initTabs() {
     if (_tabs.isEmpty) {
       _tabs.add(const Tab(text: 'Details'));
+      _tabs.add(const Tab(text: 'Address'));
       _tabs.add(const Tab(text: 'Map'));
       _tabs.add(const Tab(text: 'Image'));
       _tabs.add(const Tab(text: 'Other'));
@@ -364,8 +481,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
     });
   }
 
-  Future<void> _updateRunDetails(bool isMainRunDetailsPage) async {
-    if (isMainRunDetailsPage) {
+  Future<void> _updateRunDetails(EditingTabEnum tabType) async {
+    if (tabType == EditingTabEnum.details) {
       if (_detailsFormKey.currentState?.validate() ?? false) {
         //    If all data are correct then save data to out variables
         _detailsFormKey.currentState!.save();
@@ -415,8 +532,48 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
           'Please fill in the run name and other information on the Details tab and save those details before saving other information on this tab.',
           'OK',
         );
-        _tabController.animateTo(0);
-      } else {
+        _tabController.animateTo(EditingTabEnum.details.value);
+      } else if (tabType == EditingTabEnum.address) {
+        if (_addressFormKey.currentState?.validate() ?? false) {
+          //    If all data are correct then save data to out variables
+          _addressFormKey.currentState!.save();
+
+          FocusScope.of(context).unfocus();
+          setState(() {
+            _isUpdating = true;
+          });
+
+          final EventsService nSvc = EventsService();
+          final String eventId = await nSvc.addEditEvent(
+            eventId: _eventAggregate.event.eventId,
+            locationStreet: _locationStreetController.text,
+            locationCity: _locationCityController.text,
+            locationRegion: _locationRegionController.text,
+            locationSubRegion: _locationSubRegionController.text,
+            locationPostCode: _locationPostCodeController.text,
+            locationCountry: _locationCountryController.text,
+          );
+
+          _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+          setState(() {
+            _isUpdating = false;
+            // final SnackBar snackBar = SnackBar(
+            //   duration: const Duration(seconds: 3),
+            //   content: Text(
+            //     'Address has been saved',
+            //     textAlign: TextAlign.center,
+            //     style: ts_titleCondensed,
+            //   ),
+            //   backgroundColor: hc_blue,
+            // );
+
+            // if (!mounted) return;
+            // ScaffoldMessenger.of(
+            //   navigatorKey.currentContext!,
+            // ).showSnackBar(snackBar);
+          });
+        }
+      } else if (tabType == EditingTabEnum.other) {
         if (_otherDetailsFormKey.currentState?.validate() ?? false) {
           //    If all data are correct then save data to out variables
           _otherDetailsFormKey.currentState!.save();
@@ -480,6 +637,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
             ).showSnackBar(snackBar);
           });
         }
+      } else {
+        // print('Unhandled tab type in _updateRunDetails');
       }
     }
   }
@@ -505,6 +664,147 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
         // ),
         KeyboardActionsItem(focusNode: _focusNodeLocationOneLineDesc),
       ],
+    );
+  }
+
+  Widget _buildAddressPage(BuildContext context) {
+    return Theme(
+      data: Theme.of(context).copyWith(
+        disabledColor: Colors.grey,
+        iconTheme: IconTheme.of(context).copyWith(color: hc_red, size: 35),
+      ),
+      child: KeyboardActions(
+        config: _buildConfig(context),
+        tapOutsideBehavior: TapOutsideBehavior.none,
+        child: SingleChildScrollView(
+          child: Form(
+            key: _addressFormKey,
+            child: Wrap(
+              children: <Widget>[
+                Column(
+                  //mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Container(
+                      margin: const EdgeInsets.only(top: 25.0, bottom: 5.0),
+                      padding: const EdgeInsets.only(
+                        top: 5.0,
+                        bottom: 5.0,
+                        left: 20.0,
+                        right: 20.0,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.yellow[100],
+                        border: Border.all(width: 2.0),
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(10.0),
+                        ),
+                      ),
+                      child: Text(
+                        _eventAggregate.event.useFbRunDetails == 1
+                            ? _eventAggregate.event.eventInboundIntegrationId >=
+                                      integrationPlatformNames.length
+                                  ? 'Run data from external source'
+                                  : 'Run data from ${integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}'
+                            : 'Run data from Harrier Central',
+                        textAlign: TextAlign.center,
+                        style: ts_headingBlack,
+                      ),
+                    ),
+                    _genericTextField(
+                      focusNode: _focusNodeStreetAddress,
+                      textEditignController: _locationStreetController,
+                      labelText: 'Street Address',
+                      useValidator: false,
+                    ),
+                    _genericTextField(
+                      focusNode: _focusNodeCity,
+                      textEditignController: _locationCityController,
+                      labelText: 'City',
+                      useValidator: false,
+                    ),
+                    _genericTextField(
+                      focusNode: _focusNodeRegion,
+                      textEditignController: _locationRegionController,
+                      labelText: 'Region/State',
+                      useValidator: false,
+                    ),
+                    _genericTextField(
+                      focusNode: _focusNodeSubRegion,
+                      textEditignController: _locationSubRegionController,
+                      labelText: 'Sub-Region/County',
+                      useValidator: false,
+                    ),
+                    _genericTextField(
+                      focusNode: _focusNodePostCode,
+                      textEditignController: _locationPostCodeController,
+                      labelText: 'Postal Code',
+                      useValidator: false,
+                    ),
+                    _genericTextField(
+                      focusNode: _focusNodeCountry,
+                      textEditignController: _locationCountryController,
+                      labelText: 'Country',
+                      useValidator: false,
+                    ),
+                    const SizedBox(height: 20.0),
+                    _isUpdating
+                        ? const SizedBox(
+                            height: 70.0,
+                            width: 70.0,
+                            child: HcAppCircularProgressIndicator(
+                              key: Key('112096562'),
+                            ),
+                          )
+                        : ElevatedButton(
+                            child: Text(
+                              widget.isNewRun
+                                  ? 'Next'
+                                  : 'Save changes to Harrier Central',
+                              style: ts_button,
+                            ),
+                            onPressed: () async {
+                              if (_addressFormKey.currentState?.validate() ??
+                                  false) {
+                                await _updateRunDetails(EditingTabEnum.address);
+
+                                if (widget.isNewRun) {
+                                  // this delay is required to ensure that the _isUpdating setState
+                                  // to function properly
+                                  _tabController.animateTo(_currentTab.next);
+                                } else {
+                                  final SnackBar snackBar = SnackBar(
+                                    duration: const Duration(seconds: 3),
+                                    content: Text(
+                                      'Address has been saved',
+                                      textAlign: TextAlign.center,
+                                      style: ts_titleCondensed,
+                                    ),
+                                    backgroundColor: hc_blue,
+                                  );
+
+                                  if (!mounted) return;
+                                  ScaffoldMessenger.of(
+                                    navigatorKey.currentContext!,
+                                  ).showSnackBar(snackBar);
+                                }
+                                await Future<void>.delayed(
+                                  const Duration(milliseconds: 500),
+                                );
+                                setState(() {
+                                  _isUpdating = false;
+                                });
+                              }
+                            },
+                          ),
+                    const SizedBox(height: 80.0),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -846,12 +1146,12 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                             onPressed: () async {
                               if (_detailsFormKey.currentState?.validate() ??
                                   false) {
-                                await _updateRunDetails(true);
+                                await _updateRunDetails(EditingTabEnum.details);
 
                                 if (widget.isNewRun) {
                                   // this delay is required to ensure that the _isUpdating setState
                                   // to function properly
-                                  _tabController.animateTo(1);
+                                  _tabController.animateTo(_currentTab.next);
                                 } else {
                                   final SnackBar snackBar = SnackBar(
                                     duration: const Duration(seconds: 3),
@@ -955,7 +1255,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                         await Future<void>.delayed(
                           const Duration(milliseconds: 1000),
                         );
-                        _tabController.animateTo(3);
+                        _tabController.animateTo(_currentTab.next);
                       } else {
                         setState(() {
                           _isUpdating = false;
@@ -1214,7 +1514,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                         child: Text('Skip', style: ts_button),
                         onPressed: () {
                           setState(() {
-                            _tabController.animateTo(3);
+                            _tabController.animateTo(_currentTab.next);
                           });
                         },
                       ),
@@ -1260,7 +1560,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
         'OK',
       );
 
-      _tabController.animateTo(0);
+      _tabController.animateTo(EditingTabEnum.details.index);
     } else {
       final XFile? image = await ImagePicker().pickImage(source: source);
 
@@ -1493,7 +1793,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                               child: Text('Skip', style: ts_button),
                               onPressed: () {
                                 setState(() {
-                                  _tabController.animateTo(2);
+                                  _tabController.animateTo(_currentTab.next);
                                 });
                               },
                             ),
@@ -1517,7 +1817,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                   'OK',
                                 );
 
-                                _tabController.animateTo(0);
+                                _tabController.animateTo(
+                                  EditingTabEnum.details.index,
+                                );
                               } else {
                                 setState(() {
                                   _isUpdating = true;
@@ -1550,7 +1852,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                   await Future<void>.delayed(
                                     const Duration(milliseconds: 1000),
                                   );
-                                  _tabController.animateTo(2);
+                                  _tabController.animateTo(_currentTab.next);
                                 } else {
                                   final SnackBar snackBar = SnackBar(
                                     duration: const Duration(seconds: 3),
@@ -2208,7 +2510,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                       setState(() {
                                         _isUpdating = true;
                                       });
-                                      await _updateRunDetails(false);
+                                      await _updateRunDetails(
+                                        EditingTabEnum.other,
+                                      );
 
                                       if (widget.isNewRun) {
                                         if (!mounted) return;

@@ -1,3 +1,8 @@
+2.1.3+1052
+    • Added address page to run editor
+    • Fixed issue where users keep getting prompted to check in at the start of a run even after they select 'No'
+    • Fixed spacing issues on the Run Details page
+
 2.1.3+1051
     • Minor tweaks to server side badge count
     • Updated SQL DB script - renamed a TXT file to prevent linting
