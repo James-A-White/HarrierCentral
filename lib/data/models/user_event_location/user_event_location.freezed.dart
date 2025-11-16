@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$UserEventLocation implements DiagnosticableTreeMixin {
 
- String get paddedTimestamp; double get latitude; double get longitude;
+ String get timestamp; double get lat; double get lng; double get accuracy;
 /// Create a copy of UserEventLocation
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,21 +29,21 @@ $UserEventLocationCopyWith<UserEventLocation> get copyWith => _$UserEventLocatio
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
   properties
     ..add(DiagnosticsProperty('type', 'UserEventLocation'))
-    ..add(DiagnosticsProperty('paddedTimestamp', paddedTimestamp))..add(DiagnosticsProperty('latitude', latitude))..add(DiagnosticsProperty('longitude', longitude));
+    ..add(DiagnosticsProperty('timestamp', timestamp))..add(DiagnosticsProperty('lat', lat))..add(DiagnosticsProperty('lng', lng))..add(DiagnosticsProperty('accuracy', accuracy));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserEventLocation&&(identical(other.paddedTimestamp, paddedTimestamp) || other.paddedTimestamp == paddedTimestamp)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserEventLocation&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.lat, lat) || other.lat == lat)&&(identical(other.lng, lng) || other.lng == lng)&&(identical(other.accuracy, accuracy) || other.accuracy == accuracy));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,paddedTimestamp,latitude,longitude);
+int get hashCode => Object.hash(runtimeType,timestamp,lat,lng,accuracy);
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'UserEventLocation(paddedTimestamp: $paddedTimestamp, latitude: $latitude, longitude: $longitude)';
+  return 'UserEventLocation(timestamp: $timestamp, lat: $lat, lng: $lng, accuracy: $accuracy)';
 }
 
 
@@ -54,7 +54,7 @@ abstract mixin class $UserEventLocationCopyWith<$Res>  {
   factory $UserEventLocationCopyWith(UserEventLocation value, $Res Function(UserEventLocation) _then) = _$UserEventLocationCopyWithImpl;
 @useResult
 $Res call({
- String paddedTimestamp, double latitude, double longitude
+ String timestamp, double lat, double lng, double accuracy
 });
 
 
@@ -71,11 +71,12 @@ class _$UserEventLocationCopyWithImpl<$Res>
 
 /// Create a copy of UserEventLocation
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? paddedTimestamp = null,Object? latitude = null,Object? longitude = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? timestamp = null,Object? lat = null,Object? lng = null,Object? accuracy = null,}) {
   return _then(_self.copyWith(
-paddedTimestamp: null == paddedTimestamp ? _self.paddedTimestamp : paddedTimestamp // ignore: cast_nullable_to_non_nullable
-as String,latitude: null == latitude ? _self.latitude : latitude // ignore: cast_nullable_to_non_nullable
-as double,longitude: null == longitude ? _self.longitude : longitude // ignore: cast_nullable_to_non_nullable
+timestamp: null == timestamp ? _self.timestamp : timestamp // ignore: cast_nullable_to_non_nullable
+as String,lat: null == lat ? _self.lat : lat // ignore: cast_nullable_to_non_nullable
+as double,lng: null == lng ? _self.lng : lng // ignore: cast_nullable_to_non_nullable
+as double,accuracy: null == accuracy ? _self.accuracy : accuracy // ignore: cast_nullable_to_non_nullable
 as double,
   ));
 }
@@ -161,10 +162,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String paddedTimestamp,  double latitude,  double longitude)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String timestamp,  double lat,  double lng,  double accuracy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _UserEventLocation() when $default != null:
-return $default(_that.paddedTimestamp,_that.latitude,_that.longitude);case _:
+return $default(_that.timestamp,_that.lat,_that.lng,_that.accuracy);case _:
   return orElse();
 
 }
@@ -182,10 +183,10 @@ return $default(_that.paddedTimestamp,_that.latitude,_that.longitude);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String paddedTimestamp,  double latitude,  double longitude)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String timestamp,  double lat,  double lng,  double accuracy)  $default,) {final _that = this;
 switch (_that) {
 case _UserEventLocation():
-return $default(_that.paddedTimestamp,_that.latitude,_that.longitude);case _:
+return $default(_that.timestamp,_that.lat,_that.lng,_that.accuracy);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -202,10 +203,10 @@ return $default(_that.paddedTimestamp,_that.latitude,_that.longitude);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String paddedTimestamp,  double latitude,  double longitude)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String timestamp,  double lat,  double lng,  double accuracy)?  $default,) {final _that = this;
 switch (_that) {
 case _UserEventLocation() when $default != null:
-return $default(_that.paddedTimestamp,_that.latitude,_that.longitude);case _:
+return $default(_that.timestamp,_that.lat,_that.lng,_that.accuracy);case _:
   return null;
 
 }
@@ -217,12 +218,13 @@ return $default(_that.paddedTimestamp,_that.latitude,_that.longitude);case _:
 @JsonSerializable()
 
 class _UserEventLocation with DiagnosticableTreeMixin implements UserEventLocation {
-   _UserEventLocation({required this.paddedTimestamp, required this.latitude, required this.longitude});
+   _UserEventLocation({required this.timestamp, required this.lat, required this.lng, required this.accuracy});
   factory _UserEventLocation.fromJson(Map<String, dynamic> json) => _$UserEventLocationFromJson(json);
 
-@override final  String paddedTimestamp;
-@override final  double latitude;
-@override final  double longitude;
+@override final  String timestamp;
+@override final  double lat;
+@override final  double lng;
+@override final  double accuracy;
 
 /// Create a copy of UserEventLocation
 /// with the given fields replaced by the non-null parameter values.
@@ -238,21 +240,21 @@ Map<String, dynamic> toJson() {
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
   properties
     ..add(DiagnosticsProperty('type', 'UserEventLocation'))
-    ..add(DiagnosticsProperty('paddedTimestamp', paddedTimestamp))..add(DiagnosticsProperty('latitude', latitude))..add(DiagnosticsProperty('longitude', longitude));
+    ..add(DiagnosticsProperty('timestamp', timestamp))..add(DiagnosticsProperty('lat', lat))..add(DiagnosticsProperty('lng', lng))..add(DiagnosticsProperty('accuracy', accuracy));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserEventLocation&&(identical(other.paddedTimestamp, paddedTimestamp) || other.paddedTimestamp == paddedTimestamp)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserEventLocation&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.lat, lat) || other.lat == lat)&&(identical(other.lng, lng) || other.lng == lng)&&(identical(other.accuracy, accuracy) || other.accuracy == accuracy));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,paddedTimestamp,latitude,longitude);
+int get hashCode => Object.hash(runtimeType,timestamp,lat,lng,accuracy);
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'UserEventLocation(paddedTimestamp: $paddedTimestamp, latitude: $latitude, longitude: $longitude)';
+  return 'UserEventLocation(timestamp: $timestamp, lat: $lat, lng: $lng, accuracy: $accuracy)';
 }
 
 
@@ -263,7 +265,7 @@ abstract mixin class _$UserEventLocationCopyWith<$Res> implements $UserEventLoca
   factory _$UserEventLocationCopyWith(_UserEventLocation value, $Res Function(_UserEventLocation) _then) = __$UserEventLocationCopyWithImpl;
 @override @useResult
 $Res call({
- String paddedTimestamp, double latitude, double longitude
+ String timestamp, double lat, double lng, double accuracy
 });
 
 
@@ -280,11 +282,12 @@ class __$UserEventLocationCopyWithImpl<$Res>
 
 /// Create a copy of UserEventLocation
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? paddedTimestamp = null,Object? latitude = null,Object? longitude = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? timestamp = null,Object? lat = null,Object? lng = null,Object? accuracy = null,}) {
   return _then(_UserEventLocation(
-paddedTimestamp: null == paddedTimestamp ? _self.paddedTimestamp : paddedTimestamp // ignore: cast_nullable_to_non_nullable
-as String,latitude: null == latitude ? _self.latitude : latitude // ignore: cast_nullable_to_non_nullable
-as double,longitude: null == longitude ? _self.longitude : longitude // ignore: cast_nullable_to_non_nullable
+timestamp: null == timestamp ? _self.timestamp : timestamp // ignore: cast_nullable_to_non_nullable
+as String,lat: null == lat ? _self.lat : lat // ignore: cast_nullable_to_non_nullable
+as double,lng: null == lng ? _self.lng : lng // ignore: cast_nullable_to_non_nullable
+as double,accuracy: null == accuracy ? _self.accuracy : accuracy // ignore: cast_nullable_to_non_nullable
 as double,
   ));
 }

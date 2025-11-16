@@ -60,7 +60,7 @@ class RunPointBuffer {
     final body = jsonEncode(<String, dynamic>{
       'eventId': eventId,
       'userId': userId,
-      'points': batch.map((p) => p.toJson()).toList(),
+      'positions': batch.map((p) => p.toJson()).toList(),
     });
 
     // Simple retry with backoff for transient errors
@@ -70,10 +70,7 @@ class RunPointBuffer {
       try {
         final resp = await _http.post(
           Uri.parse(apiUrl),
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
+          headers: <String, String>{'content-type': 'application/json'},
           body: body,
         );
         if (resp.statusCode >= 200 && resp.statusCode < 300) {

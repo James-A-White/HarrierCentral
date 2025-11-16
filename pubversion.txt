@@ -1,3 +1,7 @@
+2.1.3+1053
+    • A testing only release
+    • Added the data collection part of run tracking
+
 2.1.3+1052
     • Added address page to run editor
     • Fixed issue where users keep getting prompted to check in at the start of a run even after they select 'No'

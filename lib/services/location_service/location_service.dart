@@ -103,6 +103,7 @@ class LocationService extends GetxService {
   void _updateDeviceLocation(Position position) {
     final lat = position.latitude.toDouble();
     final lon = position.longitude.toDouble();
+    final accuracy = position.accuracy.toDouble();
 
     // 1. Update the reactive variable within this service
     lastKnownPosition.value = position;
@@ -116,6 +117,7 @@ class LocationService extends GetxService {
     // 3. Update the shared state in DeviceInfoService
     deviceInfo.deviceLat = lat;
     deviceInfo.deviceLon = lon;
+    deviceInfo.deviceAccuracy = accuracy;
 
     if (joinRunTracking.value) {
       if ((_runBuffer != null) && (_runBuffer!.eventId != eventId)) {
@@ -125,7 +127,7 @@ class LocationService extends GetxService {
       }
 
       _runBuffer ??= RunPointBuffer(
-        apiUrl: 'https://your.api.example.com/runs/points/batch',
+        apiUrl: STORE_POSITIONS_URL,
         eventId: eventId!,
         userId: userId!,
         flushInterval: const Duration(minutes: 1),
@@ -133,9 +135,10 @@ class LocationService extends GetxService {
 
       final tsMs = DateTime.now().millisecondsSinceEpoch;
       final point = UserEventLocation(
-        paddedTimestamp: pad19(tsMs),
-        latitude: lat,
-        longitude: lon,
+        timestamp: pad19(tsMs),
+        lat: lat,
+        lng: lon,
+        accuracy: accuracy,
       );
       _runBuffer?.enqueue(point);
     }

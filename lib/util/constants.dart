@@ -80,6 +80,8 @@ const String EMAIL_PAYMENT_API_URL =
 const String EMAIL_RUN_REPORT_API_URL =
     'https://$BASE_AF_URL/api/SendRunCountsReport';
 
+const String STORE_POSITIONS_URL = 'https://$BASE_AF_URL/api/StorePositions';
+
 // old APIs below
 
 // TODO: Re-implement email run details

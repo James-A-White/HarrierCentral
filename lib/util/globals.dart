@@ -291,6 +291,7 @@ class DeviceInfo extends GetxService {
   late double deviceHeight;
   double? deviceLat;
   double? deviceLon;
+  double? deviceAccuracy;
   late double deviceTextScaleFactor;
   late double textClamp00;
   late double textClamp15;

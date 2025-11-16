@@ -6,9 +6,10 @@ part 'user_event_location.g.dart';
 @freezed
 abstract class UserEventLocation with _$UserEventLocation {
   factory UserEventLocation({
-    required String paddedTimestamp,
-    required double latitude,
-    required double longitude,
+    required String timestamp,
+    required double lat,
+    required double lng,
+    required double accuracy,
   }) = _UserEventLocation;
 
   factory UserEventLocation.fromJson(Map<String, dynamic> json) =>
