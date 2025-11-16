@@ -1,4 +1,3 @@
-import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
 
 // Ambient variable to access the service locator
@@ -217,7 +216,7 @@ enum EdbStatus { uninitialized, opening, opened }
 
 class AppModel extends GetxService {
   AppModel();
-  StreamSubscription<Position>? geoLocationStream;
+  //StreamSubscription<Position>? geoLocationStream;
   late DateTime appStartTime;
   EdbStatus dbStatus = EdbStatus.uninitialized;
 
@@ -225,9 +224,9 @@ class AppModel extends GetxService {
 
   // TODO(DevTeam): Make sure this is eventually called
   void dispose() {
-    if (geoLocationStream != null) {
-      geoLocationStream!.cancel();
-    }
+    // if (geoLocationStream != null) {
+    //   geoLocationStream!.cancel();
+    // }
   }
 }
 

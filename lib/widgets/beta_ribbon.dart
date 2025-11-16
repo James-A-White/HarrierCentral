@@ -6,29 +6,58 @@ class BetaRibbon extends StatelessWidget {
     this.ribbonImage = 'images/icons/beta_ribbon.png',
     this.text,
     this.title,
+    this.child,
+    this.feature,
+    this.ribbonTopMargin = 0,
   });
 
   final String ribbonImage;
   final String? text;
   final String? title;
+  final Widget? child;
+  final BetaFeatures? feature;
+  final int? ribbonTopMargin;
 
   @override
   Widget build(BuildContext context) {
-    return Positioned(
-      left: 0,
-      top: 0,
-      child: GestureDetector(
-        onTap: () async {
-          if ((text != null) && (title != null)) {
-            await Utilities.showAlert(title!, text!, 'OK');
-          }
-        },
-        child: Image.asset(
-          ribbonImage, // <-- now uses the provided image path
-          height: 100,
-          width: 100,
+    String betaFeaturesEnabled =
+        getStringPref(StringPrefsEnum.betaFeaturesEnabled) ?? '';
+
+    if ((feature != null) &&
+        (!betaFeaturesEnabled.toLowerCase().contains(
+          feature!.key.toLowerCase(),
+        ))) {
+      return const SizedBox.shrink();
+    }
+
+    return Stack(
+      children: [
+        if (child != null) child!,
+        Positioned(
+          left: 0,
+          top: ribbonTopMargin?.toDouble() ?? 0,
+          child: ((text != null) && (title != null))
+              ? GestureDetector(
+                  onTap: () async {
+                    if ((text != null) && (title != null)) {
+                      await Utilities.showAlert(title!, text!, 'OK');
+                    }
+                  },
+                  child: Image.asset(
+                    ribbonImage, // <-- now uses the provided image path
+                    height: 100,
+                    width: 100,
+                  ),
+                )
+              : IgnorePointer(
+                  child: Image.asset(
+                    ribbonImage, // <-- now uses the provided image path
+                    height: 100,
+                    width: 100,
+                  ),
+                ),
         ),
-      ),
+      ],
     );
   }
 }

@@ -73,6 +73,7 @@ export 'package:harrier_central/data/models/run_history/run_history_model.dart';
 export 'package:harrier_central/data/models/run_history/run_history_queries.dart';
 export 'package:harrier_central/data/models/run_query_extensions/run_query_extensions_model.dart';
 export 'package:harrier_central/data/models/single_result/single_result_model.dart';
+export 'package:harrier_central/data/models/user_event_location/user_event_location.dart';
 export 'package:harrier_central/data/models/user_run_history/user_run_history_model.dart';
 export 'package:harrier_central/data/services/approve_login_service.dart';
 export 'package:harrier_central/data/services/authenticate_web_portal_service.dart';
@@ -145,6 +146,7 @@ export 'package:harrier_central/pages/top_level/main_navigation_page/main_naviga
 export 'package:harrier_central/pages/top_level/run_locations.dart';
 export 'package:harrier_central/pages/top_level/user_qr_code_page.dart';
 export 'package:harrier_central/services/connectivity_service.dart';
+export 'package:harrier_central/services/location_service/location_service.dart';
 export 'package:harrier_central/services/notification_service.dart';
 export 'package:harrier_central/services/services_init.dart';
 export 'package:harrier_central/types/typedefs.dart';

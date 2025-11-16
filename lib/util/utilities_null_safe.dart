@@ -3,7 +3,6 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/top_level/select_run_page.dart';
 import 'package:intl/intl.dart';
@@ -390,55 +389,55 @@ class Utilities {
   //   }
   // }
 
-  static Future<void> subscribeToGeoLocationStream() async {
-    // Load saved location as fallback
-    final storedLat =
-        (getDoublePref(NumPrefsEnum.currentDeviceLat) ?? DEFAULT_LATITUDE)
-            .toDouble();
-    final storedLon =
-        (getDoublePref(NumPrefsEnum.currentDeviceLon) ?? DEFAULT_LONGITUDE)
-            .toDouble();
+  // static Future<void> subscribeToGeoLocationStream() async {
+  //   // Load saved location as fallback
+  //   final storedLat =
+  //       (getDoublePref(NumPrefsEnum.currentDeviceLat) ?? DEFAULT_LATITUDE)
+  //           .toDouble();
+  //   final storedLon =
+  //       (getDoublePref(NumPrefsEnum.currentDeviceLon) ?? DEFAULT_LONGITUDE)
+  //           .toDouble();
 
-    deviceInfo.deviceLat = storedLat;
-    deviceInfo.deviceLon = storedLon;
+  //   deviceInfo.deviceLat = storedLat;
+  //   deviceInfo.deviceLon = storedLon;
 
-    //IveCoreUtilities.logTiming('Geostatus query start', appModel.appStartTime);
+  //   //IveCoreUtilities.logTiming('Geostatus query start', appModel.appStartTime);
 
-    final permission = await Geolocator.checkPermission();
-    //IveCoreUtilities.logTiming('Geolocation query start', appModel.appStartTime);
+  //   final permission = await Geolocator.checkPermission();
+  //   //IveCoreUtilities.logTiming('Geolocation query start', appModel.appStartTime);
 
-    if (permission == LocationPermission.always ||
-        permission == LocationPermission.whileInUse) {
-      // Start streaming location updates
-      appModel.geoLocationStream = Geolocator.getPositionStream(
-        locationSettings: const LocationSettings(
-          accuracy: BASE_APP_LOCATION_ACCURACY,
-          distanceFilter: 50,
-        ),
-      ).listen(_updateDeviceLocation);
+  //   if (permission == LocationPermission.always ||
+  //       permission == LocationPermission.whileInUse) {
+  //     // Start streaming location updates
+  //     appModel.geoLocationStream = Geolocator.getPositionStream(
+  //       locationSettings: const LocationSettings(
+  //         accuracy: BASE_APP_LOCATION_ACCURACY,
+  //         distanceFilter: 50,
+  //       ),
+  //     ).listen(_updateDeviceLocation);
 
-      // One-time location fetch (low priority, non-blocking)
-      Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.lowest,
-        ),
-      ).then(_updateDeviceLocation);
-    }
-  }
+  //     // One-time location fetch (low priority, non-blocking)
+  //     Geolocator.getCurrentPosition(
+  //       locationSettings: const LocationSettings(
+  //         accuracy: LocationAccuracy.lowest,
+  //       ),
+  //     ).then(_updateDeviceLocation);
+  //   }
+  // }
 
-  static void _updateDeviceLocation(Position position) {
-    final lat = position.latitude.toDouble();
-    final lon = position.longitude.toDouble();
+  // static void _updateDeviceLocation(Position position) {
+  //   final lat = position.latitude.toDouble();
+  //   final lon = position.longitude.toDouble();
 
-    deviceInfo.deviceLat = lat;
-    deviceInfo.deviceLon = lon;
+  //   deviceInfo.deviceLat = lat;
+  //   deviceInfo.deviceLon = lon;
 
-    //print('lat = $lat, lon = $lon');
+  //   //print('lat = $lat, lon = $lon');
 
-    setNumPref(NumPrefsEnum.currentDeviceLat, lat);
-    setNumPref(NumPrefsEnum.currentDeviceLon, lon);
-    setDatePref(DatePrefsEnum.lastLocationUpdate, DateTime.now());
-  }
+  //   setNumPref(NumPrefsEnum.currentDeviceLat, lat);
+  //   setNumPref(NumPrefsEnum.currentDeviceLon, lon);
+  //   setDatePref(DatePrefsEnum.lastLocationUpdate, DateTime.now());
+  // }
 
   static String? validateEmail(String? value) {
     if ((value != null) && (value.isNotEmpty)) {

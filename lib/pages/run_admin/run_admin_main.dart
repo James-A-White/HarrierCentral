@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/widgets/beta_ribbon.dart';
 
 //import 'package:geolocator/geolocator.dart';
 
@@ -93,6 +94,7 @@ class RunAdminPage extends StatefulWidget {
 class RunAdminPageState extends State<RunAdminPage> {
   bool _isLoading = true;
   int _isBetaTester = 0;
+  bool _runTrackerJoined = false;
 
   late RunAdminAggregate? _eventAggregate;
 
@@ -101,6 +103,7 @@ class RunAdminPageState extends State<RunAdminPage> {
     _getRunDetails(widget.eventId);
 
     _isBetaTester = getIntPref(IntPrefsEnum.isBetaTester) ?? 0;
+    _runTrackerJoined = Get.find<LocationService>().joinRunTracking.value;
 
     super.initState();
   }
@@ -707,6 +710,7 @@ class RunAdminPageState extends State<RunAdminPage> {
                   ),
                 ),
               ),
+
               // TODO: Re-implement email run details
               // Padding(
               //   padding: const EdgeInsets.only(top: 15, bottom: 15),
@@ -763,6 +767,83 @@ class RunAdminPageState extends State<RunAdminPage> {
               //   ),
               // ),
             ],
+          ),
+        );
+
+        kiddies.add(
+          BetaRibbon(
+            feature: BetaFeatures.runTracking,
+            ribbonTopMargin: 15,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 15, bottom: 15),
+              child: SizedBox(
+                width: 110,
+                height: 110,
+                // foregroundDecoration: BoxDecoration(
+                //   color: Colors.grey,
+                //   backgroundBlendMode: BlendMode.saturation,
+                // ),
+                child: ElevatedButton(
+                  // shape: RoundedRectangleBorder(
+                  //     borderRadius: BorderRadius.circular(10.0)),
+                  // padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.only(
+                      top: 2.0,
+                      left: 0.0,
+                      bottom: 0.0,
+                    ),
+                    //primary: Colors.grey,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(left: 3, top: 5),
+                        child: Image.asset(
+                          'images/icons/print_qr_icon.png',
+                          height: 55.0,
+                          width: 55.0,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          left: 10,
+                          right: 10,
+                          top: 10,
+                        ),
+                        child: Text(
+                          !_runTrackerJoined
+                              ? 'Join run tracker'
+                              : 'Leave run tracker',
+                          style: ts_buttonLabelSmallCompressedLines,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _runTrackerJoined = !_runTrackerJoined;
+
+                      final locService = Get.find<LocationService>();
+
+                      if (_eventAggregate != null) {
+                        locService.joinRunTracking.value = _runTrackerJoined;
+                        locService.eventId = _eventAggregate!.event.eventId;
+                        locService.userId = getStringPref(
+                          StringPrefsEnum.userId,
+                        );
+                      } else {
+                        // normally we shouldn't get here, but just in case this is called before an event has been initialized
+                        _runTrackerJoined = false;
+                        locService.joinRunTracking.value = false;
+                      }
+                    });
+                  },
+                ),
+              ),
+            ),
           ),
         );
       }

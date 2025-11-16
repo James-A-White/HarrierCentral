@@ -7,25 +7,22 @@ class AppLifecycleController extends SuperController<void> {
   @override
   void onPaused() {
     //print('AppLifecycleController: onPaused called');
-    _cancelGeoStream('onPaused');
   }
 
   @override
   void onDetached() {
     // print('AppLifecycleController: onDetached called');
-    _cancelGeoStream('onDetached');
   }
 
   @override
   void onInactive() {
     //print('AppLifecycleController: onInactive called');
-    _cancelGeoStream('onInactive');
   }
 
   @override
   void onResumed() {
     //print('AppLifecycleController: onResumed called');
-    Utilities.subscribeToGeoLocationStream(); // re-subscribe
+    Get.put(LocationService()); // re-subscribe
     if (Get.isRegistered<ChatPageController>()) {
       final chatPageController = Get.find<ChatPageController>();
       chatPageController.onAppResumed(); // Call your method safely
@@ -33,15 +30,7 @@ class AppLifecycleController extends SuperController<void> {
   }
 
   @override
-  void onHidden() {
-    _cancelGeoStream('onHidden');
-  }
-
-  void _cancelGeoStream(String source) {
-    appModel.geoLocationStream?.cancel();
-    appModel.geoLocationStream = null;
-    // print('GeoLocation Stream cancelled ($source)');
-  }
+  void onHidden() {}
 }
 
 Future<void> main() async {

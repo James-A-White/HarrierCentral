@@ -237,7 +237,9 @@ class AppEntryPageState extends State<AppEntryPage>
 
     final ApproveLoginService svc = ApproveLoginService();
 
-    await Utilities.subscribeToGeoLocationStream();
+    Get.put(LocationService());
+
+    //await Utilities.subscribeToGeoLocationStream();
 
     if (Utilities.isConnected()) {
       final String responseBody = await svc.approveLogin(

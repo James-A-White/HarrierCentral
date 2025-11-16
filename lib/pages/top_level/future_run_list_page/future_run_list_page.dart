@@ -547,9 +547,13 @@ class FutureRunsListPage extends StatelessWidget {
                                                         .isEnabled) {
                                                       appModel.hasLocationPermissions =
                                                           true;
-                                                      await Utilities.subscribeToGeoLocationStream().then((
-                                                        void _,
-                                                      ) async {
+
+                                                      final locService =
+                                                          Get.put(
+                                                            LocationService(),
+                                                          );
+                                                      if (locService
+                                                          .initialized) {
                                                         await Utilities.showAlert(
                                                           'Location Services Enabled',
                                                           'Location Services have been enabled.',
@@ -560,7 +564,22 @@ class FutureRunsListPage extends StatelessWidget {
                                                             context,
                                                           );
                                                         }
-                                                      });
+                                                      }
+
+                                                      // await Utilities.subscribeToGeoLocationStream().then((
+                                                      //   void _,
+                                                      // ) async {
+                                                      //   await Utilities.showAlert(
+                                                      //     'Location Services Enabled',
+                                                      //     'Location Services have been enabled.',
+                                                      //     'OK',
+                                                      //   );
+                                                      //   if (context.mounted) {
+                                                      //     _showConfigureDistancePopup(
+                                                      //       context,
+                                                      //     );
+                                                      //   }
+                                                      // });
                                                     }
                                                   }
                                                 }

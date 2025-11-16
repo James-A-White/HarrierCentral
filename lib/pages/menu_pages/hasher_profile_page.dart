@@ -2143,13 +2143,14 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       if ((ps.isGranted) || success) {
         if (await Permission.location.serviceStatus.isEnabled) {
           appModel.hasLocationPermissions = true;
-          await Utilities.subscribeToGeoLocationStream().then((void _) async {
+          final locService = Get.put(LocationService());
+          if (locService.initialized) {
             await Utilities.showAlert(
               'Location Services Enabled',
               'Location Services have been enabled.',
               'OK',
             );
-          });
+          }
         }
       } else {
         await Utilities.showAlert(

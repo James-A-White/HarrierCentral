@@ -33,9 +33,10 @@ class MainNavigationPage extends StatelessWidget {
                 elevation: 3.0,
                 backgroundColor: themeAppBarBackground,
                 iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
-                leadingWidth: 90,
+                automaticallyImplyLeading: false,
+                leadingWidth: 110,
                 leading: Row(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisSize: MainAxisSize.max,
                   children: [
                     IconButton(
                       icon: const Icon(Icons.menu),
@@ -117,6 +118,42 @@ class MainNavigationPage extends StatelessWidget {
                             },
                           )
                         : SizedBox(),
+
+                    controller.mainScreenReady.value
+                        ? (!Get.isRegistered<LocationService>() ||
+                                  !Get.find<LocationService>()
+                                      .joinRunTracking
+                                      .value)
+                              ? SizedBox()
+                              : Obx(() {
+                                  final locationService =
+                                      Get.find<LocationService>();
+
+                                  // 2. Use the reactive getter to determine the state
+                                  final isFresh =
+                                      locationService.isLocationFresh;
+
+                                  return Padding(
+                                    padding: const EdgeInsets.only(
+                                      left: 10.0,
+                                      bottom: 2.0,
+                                    ),
+                                    child: Container(
+                                      height: 15,
+                                      width: 15,
+                                      // Use the decoration property
+                                      decoration: BoxDecoration(
+                                        // Set the shape to circle
+                                        shape: BoxShape.circle,
+                                        // Move the color property inside the decoration
+                                        color: isFresh
+                                            ? Colors.green
+                                            : Colors.red,
+                                      ),
+                                    ),
+                                  );
+                                })
+                        : SizedBox.shrink(),
                   ],
                 ),
                 title: AutoSizeText(

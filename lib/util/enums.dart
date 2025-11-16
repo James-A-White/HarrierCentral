@@ -382,6 +382,22 @@ enum EventType {
   static EventType? fromInt(int value) => _valueMap[value];
 }
 
+enum BetaFeatures {
+  runTracking('runTracker', 0, 'Run Tracking');
+
+  final String key;
+  final int value;
+  final String label;
+
+  const BetaFeatures(this.key, this.value, this.label);
+
+  static final Map<int, BetaFeatures> _valueMap = {
+    for (var state in BetaFeatures.values) state.value: state,
+  };
+
+  static BetaFeatures? fromInt(int value) => _valueMap[value];
+}
+
 //////////////////////////
 ///
 class EnumEmailAlertState extends HcEnum<int> {
