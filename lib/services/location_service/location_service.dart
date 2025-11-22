@@ -18,6 +18,7 @@ class LocationService extends GetxService {
   String? userId;
 
   RunPointBuffer? _runBuffer;
+  DateTime _lastFlushTime = DateTime.now();
 
   /// Reactive property that is true if the location has been updated in the last 60 seconds.
   /// Note: To make this indicator automatically turn OFF after 60 seconds,
@@ -70,12 +71,37 @@ class LocationService extends GetxService {
     if (permission == LocationPermission.always ||
         permission == LocationPermission.whileInUse) {
       // 4. Start streaming location updates (equivalent to your .listen)
+      final LocationSettings locationSettings;
+      if (defaultTargetPlatform == TargetPlatform.android) {
+        locationSettings = AndroidSettings(
+          accuracy: LocationAccuracy.high,
+          distanceFilter: 15,
+          intervalDuration: Duration(seconds: 15),
+          forceLocationManager: false,
+          foregroundNotificationConfig: ForegroundNotificationConfig(
+            notificationTitle: 'Harrier Central',
+            notificationText: 'Tracking run in progress',
+            enableWakeLock: true,
+          ),
+        );
+      } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+        locationSettings = AppleSettings(
+          accuracy: LocationAccuracy.high,
+          distanceFilter: 15,
+          activityType: ActivityType.fitness,
+          allowBackgroundLocationUpdates: true,
+          pauseLocationUpdatesAutomatically: false,
+        );
+      } else {
+        locationSettings = const LocationSettings(
+          accuracy: BASE_APP_LOCATION_ACCURACY,
+          distanceFilter: 15,
+        );
+      }
+
       _geoLocationStreamSubscription =
           Geolocator.getPositionStream(
-            locationSettings: const LocationSettings(
-              accuracy: BASE_APP_LOCATION_ACCURACY,
-              distanceFilter: 50, // Only update if device moves 50 meters
-            ),
+            locationSettings: locationSettings,
           ).listen(
             _updateDeviceLocation,
 
@@ -104,6 +130,7 @@ class LocationService extends GetxService {
     final lat = position.latitude.toDouble();
     final lon = position.longitude.toDouble();
     final accuracy = position.accuracy.toDouble();
+    final altitude = position.altitude.toDouble();
 
     // 1. Update the reactive variable within this service
     lastKnownPosition.value = position;
@@ -112,37 +139,53 @@ class LocationService extends GetxService {
     // 2. Update the persistent storage
     setNumPref(NumPrefsEnum.currentDeviceLat, lat);
     setNumPref(NumPrefsEnum.currentDeviceLon, lon);
+    setNumPref(NumPrefsEnum.currentDeviceAltitude, altitude);
     setDatePref(DatePrefsEnum.lastLocationUpdate, DateTime.now());
 
     // 3. Update the shared state in DeviceInfoService
     deviceInfo.deviceLat = lat;
     deviceInfo.deviceLon = lon;
     deviceInfo.deviceAccuracy = accuracy;
+    deviceInfo.deviceAltitude = altitude;
 
     if (joinRunTracking.value) {
       if ((_runBuffer != null) && (_runBuffer!.eventId != eventId)) {
         // Reset buffer if eventId/userId changed
-        _runBuffer?.dispose();
-        _runBuffer = null;
+        _runBuffer?.flush().then((_) {
+          print('LocationService: Flushed old run buffer.');
+          _runBuffer = null;
+          // wait for next location update to re-initialize
+          return;
+        });
       }
 
       _runBuffer ??= RunPointBuffer(
         apiUrl: STORE_POSITIONS_URL,
         eventId: eventId!,
         userId: userId!,
-        flushInterval: const Duration(minutes: 1),
       );
 
       final tsMs = DateTime.now().millisecondsSinceEpoch;
       final point = UserEventLocation(
-        timestamp: pad19(tsMs),
+        ts: pad19(tsMs),
         lat: lat,
         lng: lon,
-        accuracy: accuracy,
+        acc: accuracy,
+        alt: altitude,
       );
       _runBuffer?.enqueue(point);
     }
 
     print('LocationService: Updated to Lat: $lat, Lon: $lon');
+
+    if (_lastFlushTime.isBefore(
+      DateTime.now().subtract(const Duration(minutes: 1)),
+    )) {
+      _runBuffer?.flush();
+      _lastFlushTime = DateTime.now();
+      print('LocationService: Flushed run buffer.');
+    }
+
+    return;
   }
 }

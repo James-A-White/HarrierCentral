@@ -3,13 +3,13 @@
 import 'package:harrier_central/imports.dart';
 
 enum EnumAppPages {
-  settings,
+  fab,
+  friends,
   futureRuns,
   kennelList,
-  runCounts,
   qrCodePage,
-  friends,
-  fab,
+  runCounts,
+  settings,
 }
 
 enum StringPrefsEnum {
@@ -62,45 +62,44 @@ enum StringPrefsEnum {
 enum NumPrefsEnum {
   currentDeviceLat,
   currentDeviceLon,
+  currentDeviceAltitude,
   homeKennelLat,
   homeKennelLon,
 }
 
 enum BoolPrefsEnum {
-  notificationPreferencesRequested,
-  fcmTokenSavedToServer,
   automaticallySetNotifiationPrefs,
+  fcmTokenSavedToServer,
+  notificationPreferencesRequested,
 }
 
 enum IntPrefsEnum {
   databaseVersion,
   hasherPreferences,
-  timeWindow,
-  //lastSuccessfulUserDataSyncInMs,
-  //hasLocationPermissions,
-  launchCount,
-  mapCenterOption,
-  mapShowSearchBar,
-  mapShowKennels,
   isBetaTester,
   isResettingCache,
+  launchCount,
+  mapCenterOption,
+  mapShowKennels,
+  mapShowSearchBar,
+  positionReportsCaptured,
+  positionReportsSent,
   splashSequenceType,
-  //isLoggingOutOfFacebook,
-  //usePlatformNativeMapApp,
+  timeWindow,
 }
 
 enum DatePrefsEnum {
-  lastSuccessfulUserDataSync,
-  lastSuccessfulUserDataFullSync,
-  // lastFbTokenUpdate,
   // fbLoginCancelled,
-  thirdPartyTokenLastUpdated,
-  thirdPartyTokenExpires,
-  lastLocationUpdate,
+  // lastFbTokenUpdate,
   lastLeaderboardUpdate,
+  lastLocationUpdate,
   lastRunStartCheck,
-  splashSequenceViewedAt, // this value gets erased once it is reported to the server
   lastSplashSequenceDisplayed, // this value is retained over time and can be used to calculate splash delay intervals
+  lastSuccessfulUserDataFullSync,
+  lastSuccessfulUserDataSync,
+  splashSequenceViewedAt, // this value gets erased once it is reported to the server
+  thirdPartyTokenExpires,
+  thirdPartyTokenLastUpdated,
 }
 
 //enum MapPrefsEnum { serverChatCounts, clientChatCounts }

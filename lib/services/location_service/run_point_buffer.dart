@@ -9,23 +9,20 @@ class RunPointBuffer {
     required this.apiUrl,
     required this.eventId,
     required this.userId,
-    this.flushInterval = const Duration(minutes: 1),
     http.Client? httpClient,
   }) : _http = httpClient ?? http.Client();
 
   final String apiUrl;
   final String eventId;
   final String userId;
-  final Duration flushInterval;
   final http.Client _http;
 
   final ListQueue<UserEventLocation> _q = ListQueue();
-  Timer? _timer;
   bool _uploading = false;
 
   void enqueue(UserEventLocation p) {
     _q.addLast(p);
-    _ensureTimer();
+    //_ensureTimer();
   }
 
   Future<void> flush() async {
@@ -74,6 +71,7 @@ class RunPointBuffer {
           body: body,
         );
         if (resp.statusCode >= 200 && resp.statusCode < 300) {
+          print(resp.body);
           return true;
         }
         // 429/5xx: retry; others: give up
@@ -93,16 +91,16 @@ class RunPointBuffer {
     }
   }
 
-  void _ensureTimer() {
-    _timer ??= Timer.periodic(flushInterval, (_) => flush());
-  }
+  // void _ensureTimer() {
+  //   _timer ??= Timer.periodic(flushInterval, (_) => flush());
+  // }
 
-  Future<void> dispose({bool flushBeforeDispose = true}) async {
-    _timer?.cancel();
-    _timer = null;
-    if (flushBeforeDispose) {
-      await flush();
-    }
-    _http.close();
-  }
+  // Future<void> dispose({bool flushBeforeDispose = true}) async {
+  //   _timer?.cancel();
+  //   _timer = null;
+  //   if (flushBeforeDispose) {
+  //     await flush();
+  //   }
+  //   _http.close();
+  // }
 }
