@@ -32,9 +32,11 @@ AS
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 
+BEGIN TRY
+
 -- Auth validation
 DECLARE @authError NVARCHAR(255);
-EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, @publicEventId, @authError OUTPUT;
+EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, OBJECT_NAME(@@PROCID), @publicEventId, @authError OUTPUT;
 IF @authError IS NOT NULL
 BEGIN
     SELECT 0 AS Success, @authError AS ErrorMessage;
@@ -47,8 +49,6 @@ BEGIN
     SELECT 0 AS Success, 'Null or invalid publicEventId' AS ErrorMessage;
     RETURN;
 END
-
-BEGIN TRY
 
     DECLARE @eventId uniqueidentifier;
     SELECT @eventId = id FROM HC.Event WHERE PublicEventId = @publicEventId;

@@ -1,0 +1,59 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_getCountries",
+  "version": "1.0.0",
+  "description": "Returns a list of all countries from HC.Country, ordered alphabetically by CountryName. Used for populating country dropdowns in the portal. Requires standard portal authentication.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: the authenticated user's public hasher ID. Validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC6.ValidatePortalAuth."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "CountriesResult",
+      "description": "List of all countries ordered alphabetically by CountryName. Only returned on successful authentication.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Country unique identifier (PK from HC.Country)"
+        },
+        {
+          "name": "CountryName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Country display name (from HC.Country)"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning"
+  ]
+}

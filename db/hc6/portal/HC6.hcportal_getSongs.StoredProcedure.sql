@@ -26,18 +26,23 @@ AS
 --   - Validation now short-circuits on first error (HC5 could return
 --     multiple error rowsets)
 --   - DATALENGTH checks replaced with IS NULL for UNIQUEIDENTIFIER params
+--   - @publicKennelId changed from NVARCHAR(250) to UNIQUEIDENTIFIER
+--   - isInKennel return type kept as SMALLINT (matches HC5)
+--   - Removed dead variable @now (was declared but never used)
 --   - Removed dead input parameters: @hcVersion, @hcBuild
 --   - Auth validated via HC6.ValidatePortalAuth helper SP
 --   - Removed @ipAddress, @ipGeoDetails (logging moved to API shim)
 --   - Removed ErrorLog inserts (error logging moved to API shim)
 --   - Removed GeneralLog inserts (request logging moved to API shim)
+-- Bug Fixes (vs original HC5):
+--   - KennelSongMap join now uses resolved internal @kennelId instead of
+--     @publicKennelId directly (HC5 bug: join never matched, isInKennel
+--     always returned 0)
 -- =====================================================================
 
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
-
-DECLARE @now DATETIME2 = GETDATE()
 
 BEGIN TRY
 
@@ -50,12 +55,16 @@ BEGIN TRY
 
 	-- Auth validation
 	DECLARE @authError NVARCHAR(255);
-	EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, @publicKennelId, @authError OUTPUT;
+	EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, OBJECT_NAME(@@PROCID), @publicKennelId, @authError OUTPUT;
 	IF @authError IS NOT NULL
 	BEGIN
 		SELECT 0 AS Success, @authError AS ErrorMessage;
 		RETURN;
 	END
+
+	-- Resolve internal kennelId
+	DECLARE @kennelId UNIQUEIDENTIFIER;
+	SELECT @kennelId = ken.id FROM HC.Kennel ken WHERE ken.PublicKennelId = @publicKennelId;
 
 	-- =============================================
 	-- Return all non-removed songs with kennel membership flag
@@ -82,7 +91,7 @@ BEGIN TRY
 	FROM HC.Song s WITH (NOLOCK)
 	LEFT JOIN HC.KennelSongMap ksm WITH (NOLOCK)
 		ON ksm.SongId = s.id
-		AND ksm.KennelId = @publicKennelId
+		AND ksm.KennelId = @kennelId
 		AND ksm.Removed = 0
 	WHERE s.Removed = 0
 	ORDER BY s.SongName ASC

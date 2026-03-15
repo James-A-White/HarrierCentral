@@ -33,6 +33,10 @@ AS
 --   - Removed @ipAddress, @ipGeoDetails (logging moved to API shim)
 --   - Removed ErrorLog inserts (error logging moved to API shim)
 --   - Removed GeneralLog inserts (request logging moved to API shim)
+-- Bug Fixes (vs original HC5):
+--   - All KennelSongMap operations now use resolved internal @kennelId
+--     instead of @publicKennelId directly (HC5 bug: EXISTS/UPDATE/INSERT
+--     all matched zero rows, songs were never actually toggled)
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -44,7 +48,7 @@ BEGIN TRY
 
 	-- Auth validation
 	DECLARE @authError NVARCHAR(255);
-	EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, @songId, @authError OUTPUT;
+	EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, OBJECT_NAME(@@PROCID), @songId, @authError OUTPUT;
 	IF @authError IS NOT NULL
 	BEGIN
 		SELECT 0 AS Success, @authError AS ErrorMessage;
@@ -72,6 +76,10 @@ BEGIN TRY
 		RETURN;
 	END
 
+	-- Resolve internal kennelId
+	DECLARE @kennelId UNIQUEIDENTIFIER;
+	SELECT @kennelId = ken.id FROM HC.Kennel ken WHERE ken.PublicKennelId = @publicKennelId;
+
 	-- =============================================
 	-- Add or remove song from kennel
 	-- =============================================
@@ -80,18 +88,18 @@ BEGIN TRY
 	IF @isInKennel = 1
 	BEGIN
 		-- Adding song to kennel: check if a row already exists
-		IF EXISTS (SELECT 1 FROM HC.KennelSongMap WHERE SongId = @songId AND KennelId = @publicKennelId)
+		IF EXISTS (SELECT 1 FROM HC.KennelSongMap WHERE SongId = @songId AND KennelId = @kennelId)
 		BEGIN
 			-- Row exists -> un-remove it
 			UPDATE HC.KennelSongMap
 			SET Removed = 0, updatedAt = @now
-			WHERE SongId = @songId AND KennelId = @publicKennelId
+			WHERE SongId = @songId AND KennelId = @kennelId
 		END
 		ELSE
 		BEGIN
 			-- No row -> insert a new mapping
 			INSERT INTO HC.KennelSongMap (id, SongId, KennelId, Removed, CreatedAt)
-			VALUES (NEWID(), @songId, @publicKennelId, 0, @now)
+			VALUES (NEWID(), @songId, @kennelId, 0, @now)
 		END
 	END
 	ELSE
@@ -99,7 +107,7 @@ BEGIN TRY
 		-- Removing song from kennel: soft-delete by setting Removed = 1
 		UPDATE HC.KennelSongMap
 		SET Removed = 1, updatedAt = @now
-		WHERE SongId = @songId AND KennelId = @publicKennelId AND Removed = 0
+		WHERE SongId = @songId AND KennelId = @kennelId AND Removed = 0
 	END
 
 	COMMIT TRANSACTION;

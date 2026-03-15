@@ -3,7 +3,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_getKennelHashers]
 	-- required parameters
 	@publicHasherId UNIQUEIDENTIFIER = NULL,
 	@accessToken NVARCHAR(1000) = NULL,
-	@publicKennelId NVARCHAR(250) = NULL
+	@publicKennelId UNIQUEIDENTIFIER = NULL
 
 AS
 -- =====================================================================
@@ -24,7 +24,9 @@ AS
 --     to standard HC6 envelope (Success, ErrorMessage)
 --   - Validation now short-circuits on first error (HC5 could return
 --     multiple error rowsets)
---   - DATALENGTH checks replaced with IS NULL for GUID, LEN for string
+--   - DATALENGTH checks replaced with IS NULL for GUIDs
+--   - @publicKennelId changed from NVARCHAR(250) to UNIQUEIDENTIFIER
+--   - LEN(@publicKennelId) != 36 length check removed (type now enforces validity)
 --   - Auth validated via HC6.ValidatePortalAuth helper SP
 --   - Removed @ipAddress, @ipGeoDetails (logging moved to API shim)
 --   - Removed ErrorLog inserts (error logging moved to API shim)
@@ -36,8 +38,8 @@ SET XACT_ABORT ON;
 
 BEGIN TRY
 
-	-- Validation: publicKennelId (NVARCHAR, check with LEN)
-	IF @publicKennelId IS NULL OR LEN(@publicKennelId) != 36
+	-- Validation: publicKennelId
+	IF @publicKennelId IS NULL
 	BEGIN
 		SELECT 0 AS Success, 'Null or invalid publicKennelId' AS ErrorMessage;
 		RETURN;
@@ -45,7 +47,7 @@ BEGIN TRY
 
 	-- Auth validation
 	DECLARE @authError NVARCHAR(255);
-	EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, @publicKennelId, @authError OUTPUT;
+	EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, OBJECT_NAME(@@PROCID), @publicKennelId, @authError OUTPUT;
 	IF @authError IS NOT NULL
 	BEGIN
 		SELECT 0 AS Success, @authError AS ErrorMessage;

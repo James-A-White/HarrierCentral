@@ -1,0 +1,116 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_sendEventMessage",
+  "version": "1.0.0",
+  "description": "Sends a message to event participants based on releasability bit flags (admins, members, followers, RSVPs, hares, everyone). Inserts a record into HC.EventMessage, then returns three rowsets: the created message details, FCM tokens for users who qualify for full push notifications, and FCM tokens for users who qualify for in-app-only notifications. Notification preferences and a 6-hour event proximity window gate full push delivery.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: public hasher ID of the user sending the message, validated via HC6.ValidatePortalAuth. Also used to look up the sender's internal Hasher.id."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token, validated via HC6.ValidatePortalAuth with @publicEventId as the context identifier."
+    },
+    {
+      "name": "publicEventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.PublicEventId",
+      "description": "Required: public event ID the message is associated with. Validated for NULL after auth check."
+    },
+    {
+      "name": "messageId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.id",
+      "description": "Required: client-generated message ID. Used as the primary key for the EventMessage INSERT."
+    },
+    {
+      "name": "messageTitle",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.MessageTitle",
+      "description": "Optional: message title. If NULL, defaults to the event's EventName (resolved in the event lookup SELECT). Prepended with sender's display name before being returned in MessageDetails rowset."
+    },
+    {
+      "name": "messageContent",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.MessageContent",
+      "description": "Required: message body text. Validation error if NULL or LEN = 0."
+    },
+    {
+      "name": "messageReleasabilityFlags",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.MessageReleasabilityFlags",
+      "description": "Required: bit flags controlling who receives the message. 0x0001=Mismanagement/admins, 0x0002=Members, 0x0004=Followers, 0x0008=RSVPs, 0x0010=Hares, 0x0020=Everyone. Validation error if NULL or if (value & 0x0000003f) = 0."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "MessageDetails",
+      "description": "Returned on success. Always a single row. Contains the created message with sender info. The MessageRelesabilityFlags column name has a typo (missing 'a' in 'Releasability') — do not correct it, callers depend on it.",
+      "columns": [
+        { "name": "MessageId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "EventMessage.id" },
+        { "name": "EventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "EventMessage.EventId — internal event ID" },
+        { "name": "PublicEventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "EventMessage.PublicEventId" },
+        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Hasher.PublicHasherId of the message sender" },
+        { "name": "UserDisplayName", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Hasher.DisplayName of the message sender (computed column)" },
+        { "name": "UserPhoto", "type": "NVARCHAR(1000)", "nullable": true, "description": "Hasher.Photo of the message sender" },
+        { "name": "MessageTitle", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Hasher.DisplayName + ' - ' + EventMessage.MessageTitle — sender name prepended to the title" },
+        { "name": "MessageContent", "type": "NVARCHAR(500)", "nullable": false, "description": "EventMessage.MessageContent" },
+        { "name": "MessageRelesabilityFlags", "type": "INT", "nullable": false, "description": "EventMessage.MessageReleasabilityFlags — note: column alias has a typo ('Releasability' misspelled)" },
+        { "name": "MessageType", "type": "INT", "nullable": true, "description": "EventMessage.MessageType" }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "FullPushNotificationRecipients",
+      "description": "Users who should receive a full push notification (sound + popup). Filtered by notification preference = 1 (Always On) or = 4 (On 6 hours before run, only when event is within 6 hours), kennel membership, device FcmToken present, and releasability flags. Zero or more rows.",
+      "columns": [
+        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HasherKennelMap.UserId — internal hasher ID" },
+        { "name": "FcmToken", "type": "NVARCHAR(500)", "nullable": false, "description": "Device.FcmToken — Firebase Cloud Messaging token (WHERE FcmToken IS NOT NULL ensures non-null, but declared nullable in Device table)" }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "InAppOnlyNotificationRecipients",
+      "description": "Kennel followers and members who did NOT qualify for a full push notification. They receive a silent in-app notification for real-time chat updates. Zero or more rows.",
+      "columns": [
+        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HasherKennelMap.UserId — internal hasher ID" },
+        { "name": "FcmToken", "type": "NVARCHAR(500)", "nullable": true, "description": "Device.FcmToken — Firebase Cloud Messaging token" }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT into HC.EventMessage with the new message record (inside transaction)"
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never correct the 'MessageRelesabilityFlags' column name typo — callers depend on it",
+    "Never change the releasability bit flag values (0x0001-0x0020) without updating all callers",
+    "Never change the notification preference codes (1=Always, 2=Off, 3=Muted, 4=On 6h before) without updating callers",
+    "Never change the 6-hour proximity threshold without coordinating with the API shim and portal"
+  ]
+}

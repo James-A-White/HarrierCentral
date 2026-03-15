@@ -71,7 +71,7 @@ BEGIN TRY
 
     -- Auth validation
     DECLARE @authError NVARCHAR(255);
-    EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, @hasherBeingEditedPublicId, @authError OUTPUT;
+    EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, OBJECT_NAME(@@PROCID), @hasherBeingEditedPublicId, @authError OUTPUT;
     IF @authError IS NOT NULL
     BEGIN
         SELECT 0 AS Success, @authError AS ErrorMessage;

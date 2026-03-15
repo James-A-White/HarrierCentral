@@ -1,0 +1,84 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_toggleKennelSong",
+  "version": "1.0.0",
+  "description": "Toggles whether a song is associated with a kennel. @publicKennelId is resolved to the internal HC.Kennel.id (@kennelId) before all KennelSongMap operations — fixing the HC5 bug where @publicKennelId was used directly and no songs were ever actually toggled. If adding (@isInKennel=1), either creates a new KennelSongMap record or un-soft-deletes an existing one (Removed=0). If removing (@isInKennel=0), soft-deletes the mapping (Removed=1). All writes wrapped in a transaction.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: user making the request. Passed to HC6.ValidatePortalAuth. @songId is passed as the paramString to ValidatePortalAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "The public kennel GUID used to resolve the internal Kennel.id (@kennelId), which is then used in all KennelSongMap operations. Validated IS NULL after auth."
+    },
+    {
+      "name": "songId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "KennelSongMap.SongId",
+      "description": "The song to add or remove from the kennel. Also passed as the paramString to HC6.ValidatePortalAuth. Validated IS NULL."
+    },
+    {
+      "name": "isInKennel",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Toggle flag: 1 = add song to kennel (insert or un-soft-delete), 0 = remove song from kennel (soft-delete). Validated to be exactly 0 or 1; NULL or other values return an error."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "SuccessResult",
+      "description": "Returned after the song association has been successfully added or removed.",
+      "columns": [
+        {
+          "name": "resultCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1 for success"
+        },
+        {
+          "name": "result",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Always 'Success'"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT into HC.KennelSongMap when adding a song that has no existing mapping (uses resolved internal @kennelId)",
+    "UPDATE HC.KennelSongMap.Removed = 0 and updatedAt when adding a song that already has a mapping (un-soft-delete, uses resolved internal @kennelId)",
+    "UPDATE HC.KennelSongMap.Removed = 1 and updatedAt when removing a song (soft-delete, uses resolved internal @kennelId)"
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning"
+  ]
+}

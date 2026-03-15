@@ -1,0 +1,58 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_deleteEvent",
+  "version": "1.0.0",
+  "description": "Soft-deletes an event by setting Event.removed=1 and Event.updatedAt=GETDATE(), but only if no hashers have a checked-in attendance state (HasherEventMap.AttendenceState >= 20). Returns a plain Result string — callers must read the message text to distinguish success from blocked deletion. Does not throw an error rowset when deletion is blocked; only the ErrorEnvelope is returned on auth/validation failure.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: user's public hasher ID, validated via HC6.ValidatePortalAuth. Declared nullable so validation errors are trapped in SQL."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token, validated via HC6.ValidatePortalAuth with @publicEventId as the context identifier."
+    },
+    {
+      "name": "publicEventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.PublicEventId",
+      "description": "Required: identifies the event to soft-delete. Changed from NVARCHAR(250) in HC5 to UNIQUEIDENTIFIER. Validated for NULL after auth check."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on auth failure, NULL publicEventId, event not found, or runtime error. Short-circuits on first error.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "DeletionResult",
+      "description": "Returned after validation passes (event found). Single row. Returned for both successful deletion and blocked deletion — callers must read the Result string to determine outcome.",
+      "columns": [
+        { "name": "Result", "type": "NVARCHAR(MAX)", "nullable": false, "description": "Outcome message. 'This run has been successfully removed' on success. 'Cannot delete this run because N Hasher(s) have been checked in to the run.' when AttendenceState >= 20 for one or more attendees. 'Event not found or already removed' if @@ROWCOUNT=0 after UPDATE (concurrent deletion edge case)." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Event SET removed=1, updatedAt=GETDATE() WHERE id=@eventId — only when @countAtHash = 0 (no checked-in attendees)"
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change the AttendenceState >= 20 threshold without coordinating with the portal client",
+    "Never change the Result message strings without coordinating with callers that parse them"
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_regenerateExtApiKey",
+  "version": "1.0.0",
+  "description": "Regenerates the external API key (ExtApiKey) for a kennel. Requires the current API key to be provided for security verification. Only users with appropriate AppAccessFlags (0x40000019) can regenerate. Generates a 75-character cryptographically random key using CRYPT_GEN_RANDOM(150) and base64 encoding, with '+' and '/' characters stripped. The UPDATE is wrapped in a transaction. @publicKennelId changed from NVARCHAR(250) (HC5) to UNIQUEIDENTIFIER in HC6. @currentExtApiKey narrowed from NVARCHAR(1000) to NVARCHAR(120) to match Kennel.ExtApiKey.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: the user requesting key regeneration. Passed to HC6.ValidatePortalAuth and used for the AppAccessFlags authorization check."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "The kennel whose API key is being regenerated. Changed from NVARCHAR(250) in HC5 to UNIQUEIDENTIFIER in HC6. Validated IS NULL after auth. Kennel must exist."
+    },
+    {
+      "name": "currentExtApiKey",
+      "type": "NVARCHAR(120)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.ExtApiKey",
+      "description": "Security: the current external API key. Must exactly match Kennel.ExtApiKey for the resolved kennel. Narrowed from NVARCHAR(1000) in HC5 to NVARCHAR(120) in HC6 to match the table column."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "SuccessResult",
+      "description": "Returned when the API key has been successfully regenerated.",
+      "columns": [
+        {
+          "name": "newExtApiKey",
+          "type": "NVARCHAR(75)",
+          "nullable": true,
+          "description": "The newly generated external API key. 75 characters, derived from LEFT(base64(CRYPT_GEN_RANDOM(150)), 75) with '+' and '/' stripped."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Kennel.ExtApiKey — overwrites the existing API key with the newly generated value"
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change the AppAccessFlags permission bitmask (0x40000019) without coordinating with all callers"
+  ]
+}

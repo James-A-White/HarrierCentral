@@ -1,0 +1,259 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_getKennelHashers",
+  "version": "1.0.0",
+  "description": "Retrieves a list of all hashers (members and followers) for a specified kennel, including their membership status, run counts, payment history from the two most recent counted events, and credit balances. Requires portal access token validation and appropriate AppAccessFlags (0x40000019 permission check). @publicKennelId changed from NVARCHAR(250) to UNIQUEIDENTIFIER in HC6. Read-only query.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: public hasher ID of the authenticated user. Passed to HC6.ValidatePortalAuth and also used for the AppAccessFlags authorization check."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "Public kennel ID to retrieve hashers for. Changed from NVARCHAR(250) in HC5 to UNIQUEIDENTIFIER in HC6. Validated IS NULL before auth."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "KennelHashersList",
+      "description": "One row per hasher who is either a current member (MembershipExpirationDate > GETDATE()) or currently following the kennel (Following = 1). Includes profile data, membership/following status, run counts, recent event payment codes, credit balances, and discount information. Ordered by displayName.",
+      "columns": [
+        {
+          "name": "publicHasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Hasher's public ID (HC.Hasher.PublicHasherId)"
+        },
+        {
+          "name": "publicKennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Kennel's public ID echoed back (HC.Kennel.PublicKennelId)"
+        },
+        {
+          "name": "hashName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Hasher's hash name (HC.Hasher.HashName)"
+        },
+        {
+          "name": "firstName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Hasher's first name (HC.Hasher.FirstName)"
+        },
+        {
+          "name": "lastName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Hasher's last name (HC.Hasher.LastName)"
+        },
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Computed display name from HC.Hasher.DisplayName (computed column that respects NameDisplayPreference)"
+        },
+        {
+          "name": "eMail",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Hasher's email. Returned only if membership is active (MembershipExpirationDate > GETDATE()), otherwise '<hidden>'"
+        },
+        {
+          "name": "photo",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Hasher's photo URL. COALESCE to 'bundle://avatar-1' if NULL"
+        },
+        {
+          "name": "lastLoginDateTime",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Hasher's last login timestamp (HC.Hasher.LastLoginDateTime)"
+        },
+        {
+          "name": "inviteCode",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Invite/reset code if hasher has never logged in. Extracted from HC.Hasher.ResetCode by removing 'URC:' prefix. Empty string if hasher has previously logged in."
+        },
+        {
+          "name": "isHomeKennel",
+          "type": "VARCHAR(3)",
+          "nullable": false,
+          "description": "'Yes' if this kennel matches the hasher's HomeKennelId, 'No' otherwise"
+        },
+        {
+          "name": "isFollowing",
+          "type": "VARCHAR(3)",
+          "nullable": false,
+          "description": "'Yes' if HC.HasherKennelMap.Following = 1, 'No' otherwise"
+        },
+        {
+          "name": "isMember",
+          "type": "VARCHAR(3)",
+          "nullable": false,
+          "description": "'Yes' if HC.HasherKennelMap.MembershipExpirationDate > GETDATE(), 'No' otherwise"
+        },
+        {
+          "name": "status",
+          "type": "VARCHAR(9)",
+          "nullable": false,
+          "description": "'Member' if membership active, 'Following' if only following (not a current member), 'None' if neither"
+        },
+        {
+          "name": "notifications",
+          "type": "VARCHAR(7)",
+          "nullable": false,
+          "description": "Notification preference derived from HC.HasherKennelMap.KennelNotificationPreference: 0='Auto', 1='On', 2='Off', else='Unknown'"
+        },
+        {
+          "name": "emailAlerts",
+          "type": "VARCHAR(7)",
+          "nullable": false,
+          "description": "Email alert preference derived from HC.HasherKennelMap.KennelEmailAlertPreference: 0='Auto', 1='On', 2='Off', else='Unknown'"
+        },
+        {
+          "name": "historicHaring",
+          "type": "INT",
+          "nullable": false,
+          "description": "Historical haring count (pre-HC). COALESCE to 0 (HC.HasherKennelMap.historicalHaringCount)"
+        },
+        {
+          "name": "historicTotalRuns",
+          "type": "INT",
+          "nullable": false,
+          "description": "Historical total run count (pre-HC). COALESCE to 0 (HC.HasherKennelMap.historicalTotalRunCount)"
+        },
+        {
+          "name": "hcHaringCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "HC-tracked haring count for this kennel. COALESCE to 0 (HC.HasherKennelMap.hcHaringCount)"
+        },
+        {
+          "name": "hcTotalRunCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "HC-tracked total run count for this kennel. COALESCE to 0 (HC.HasherKennelMap.hcTotalRunCount)"
+        },
+        {
+          "name": "historicCountsAreEstimates",
+          "type": "VARCHAR(3)",
+          "nullable": false,
+          "description": "'Yes' if HC.HasherKennelMap.HistoricalCountIsEstimate = 1, 'No' otherwise"
+        },
+        {
+          "name": "dateOfLastRun",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Date of hasher's most recent run at this kennel (HC.HasherKennelMap.DateOfLastRun)"
+        },
+        {
+          "name": "membershipExpirationDate",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Membership expiration date (HC.HasherKennelMap.MembershipExpirationDate)"
+        },
+        {
+          "name": "kennelCredit",
+          "type": "SMALLMONEY",
+          "nullable": false,
+          "description": "Kennel-specific credit balance (HC.HasherKennelMap.KennelCredit)"
+        },
+        {
+          "name": "discountAmount",
+          "type": "SMALLMONEY",
+          "nullable": false,
+          "description": "Discount amount applied to this hasher at this kennel (HC.HasherKennelMap.DiscountAmount)"
+        },
+        {
+          "name": "discountPercent",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Discount percentage applied to this hasher at this kennel (HC.HasherKennelMap.DiscountPercent)"
+        },
+        {
+          "name": "discountDescription",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "Description of discount applied to this hasher at this kennel (HC.HasherKennelMap.DiscountDescription)"
+        },
+        {
+          "name": "hashCredit",
+          "type": "SMALLMONEY",
+          "nullable": false,
+          "description": "Hasher's credit balance for this kennel from HC.KennelCredit.currentBalance. COALESCE to 0."
+        },
+        {
+          "name": "atLastEvent",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Payment info at the last counted run: 'EventNumber-PaymentTypeCode' (e.g. '1234-C'). '?' if no payment record found. NULL if hasher did not attend."
+        },
+        {
+          "name": "atSecondToLastEvent",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Payment info at the second-to-last counted run: 'EventNumber-PaymentTypeCode'. '?' if no payment record found. NULL if hasher did not attend."
+        },
+        {
+          "name": "secondToLastEventDate",
+          "type": "DATETIME",
+          "nullable": true,
+          "description": "Event start datetime of the second-to-last counted run for this kennel"
+        },
+        {
+          "name": "lastEventDate",
+          "type": "DATETIME",
+          "nullable": true,
+          "description": "Event start datetime of the last counted run for this kennel"
+        },
+        {
+          "name": "nextEventDate",
+          "type": "DATETIME",
+          "nullable": true,
+          "description": "Event start datetime of the next upcoming counted run for this kennel"
+        },
+        {
+          "name": "nextEventNumber",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Event number of the next upcoming counted run (CAST to NVARCHAR(50))"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change the AppAccessFlags permission bitmask (0x40000019) without coordinating with all callers"
+  ]
+}

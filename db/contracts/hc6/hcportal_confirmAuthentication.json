@@ -1,0 +1,124 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_confirmAuthentication",
+  "version": "1.0.0",
+  "description": "Confirms a portal authentication request initiated by a QR code scan from the mobile app. The portal (browser) calls this SP after displaying a QR code. If the app has scanned it and inserted a matching WebPortalAuthenticationRequests record, the SP provisions a new HC.Device record with a shared secret and returns the user's profile along with the device credentials (obfuscated as iconDataBase64 and colorPaletteIndex). If no matching auth request exists, returns silently with no rowset.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "Browser device ID. If NULL, auto-generated via NEWID() at the start of execution."
+    },
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: service account GUID. This SP is called before the real user is known, so the portal authenticates as a service account. Validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token. Validated via HC6.ValidatePortalAuth with @qrCodeData as the paramString."
+    },
+    {
+      "name": "qrCodeData",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "WebPortalAuthenticationRequests.scanData",
+      "description": "The QR code payload to match against pending auth requests. Must be non-NULL and at least 10 characters (LEN check). Matched case-insensitively with TRIM(LOWER()). Also used as the paramString for auth token validation."
+    },
+    {
+      "name": "deviceInfo",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Device.DeviceData",
+      "description": "JSON device info for the browser session. Stored in HC.Device.DeviceData when provisioning a new device."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "SuccessResult",
+      "description": "Returned when a matching WebPortalAuthenticationRequests record is found. Contains user profile and obfuscated device credentials. If no matching auth request exists, no rowset is returned at all (silent empty return — not an error).",
+      "columns": [
+        {
+          "name": "publicHasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "The authenticated user's public hasher ID (from HC.Hasher, not the service account passed as parameter)"
+        },
+        {
+          "name": "scanData",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "The matched QR code scan data from HC.WebPortalAuthenticationRequests"
+        },
+        {
+          "name": "firstName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "User's first name. COALESCE to empty string."
+        },
+        {
+          "name": "lastName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "User's last name. COALESCE to empty string."
+        },
+        {
+          "name": "hashName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "User's hash name. COALESCE to empty string."
+        },
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "User's display name (from HC.Hasher.DisplayName). COALESCE to empty string."
+        },
+        {
+          "name": "photo",
+          "type": "NVARCHAR(1000)",
+          "nullable": false,
+          "description": "User's photo URL. COALESCE to empty string."
+        },
+        {
+          "name": "iconDataBase64",
+          "type": "NVARCHAR(150)",
+          "nullable": true,
+          "description": "OBFUSCATED: contains the device shared secret (75-char base64 string). Used by the portal for subsequent token generation."
+        },
+        {
+          "name": "colorPaletteIndex",
+          "type": "INT",
+          "nullable": true,
+          "description": "OBFUSCATED: contains the time window in seconds (30–45) for token validity."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT into HC.Device when provisioning a new browser device (new shared secret and time window). Wrapped in a transaction."
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning"
+  ]
+}

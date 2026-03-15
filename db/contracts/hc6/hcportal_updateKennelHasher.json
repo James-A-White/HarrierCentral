@@ -1,0 +1,262 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_updateKennelHasher",
+  "version": "1.0.0",
+  "description": "Updates a hasher's profile and kennel-specific settings for a given kennel. Allows editing of personal details (name, email, hash name), discount settings, membership status, notification preferences, historical run counts, and historical count estimates. The SP determines which fields to update based on which parameters are non-NULL. All writes are wrapped in a single transaction.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: public hasher ID of the user performing the update. Validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token. Validated via HC6.ValidatePortalAuth with @hasherBeingEditedPublicId as the paramString."
+    },
+    {
+      "name": "hasherBeingEditedPublicId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Hasher.PublicHasherId",
+      "description": "Public hasher ID of the user being edited. Required. Also used as the paramString for auth token validation."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "Public kennel ID for the kennel context. Required for all kennel-specific updates."
+    },
+    {
+      "name": "firstName",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.FirstName",
+      "description": "User's first name. If non-NULL, updates Hasher.FirstName. Widened from NVARCHAR(150) in HC5 to match table column."
+    },
+    {
+      "name": "lastName",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.LastName",
+      "description": "User's last name. If non-NULL, updates Hasher.LastName. Widened from NVARCHAR(150) in HC5 to match table column."
+    },
+    {
+      "name": "eMail",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.Email",
+      "description": "User's email address. If non-NULL, updates Hasher.Email."
+    },
+    {
+      "name": "hashName",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.HashName",
+      "description": "User's hash name. If non-NULL, updates Hasher.HashName."
+    },
+    {
+      "name": "isMember",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "String value controlling membership status. If 'yes' (case-insensitive), sets HasherKennelMap.MembershipExpirationDate to the sentinel date '2999-12-31' (never expires). Otherwise sets it to yesterday. Evaluated together with @status in a single IF block."
+    },
+    {
+      "name": "status",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "String value controlling membership status. If 'member' (case-insensitive), sets HasherKennelMap.MembershipExpirationDate to the sentinel date '2999-12-31' (never expires). Otherwise sets it to yesterday. Evaluated together with @isMember in a single IF block."
+    },
+    {
+      "name": "emailAlerts",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "String value ('on', 'off', 'auto') to set email alert preference. Maps to HasherKennelMap.KennelEmailAlertPreference: 'on'=1, 'off'=2, 'auto'=0."
+    },
+    {
+      "name": "notifications",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "String value ('on', 'off', 'auto') to set push notification preference. Maps to HasherKennelMap.KennelNotificationPreference: 'on'=1, 'off'=2, 'auto'=0."
+    },
+    {
+      "name": "discountPercent",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.DiscountPercent",
+      "description": "Discount percentage for the hasher in this kennel. If non-NULL, updates HasherKennelMap.DiscountPercent."
+    },
+    {
+      "name": "discountAmount",
+      "type": "SMALLMONEY",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.DiscountAmount",
+      "description": "Discount fixed amount for the hasher in this kennel. If non-NULL, updates HasherKennelMap.DiscountAmount."
+    },
+    {
+      "name": "discountDescription",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.DiscountDescription",
+      "description": "Description of the discount. If non-NULL, updates HasherKennelMap.DiscountDescription."
+    },
+    {
+      "name": "historicTotalRuns",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "String representation of historical total run count. If non-NULL and numeric (via ISNUMERIC), updates HasherKennelMap.HistoricalTotalRunCount, calls HC.nonApi_updateRunCountsByUser, and returns HistoricalRunCountUpdate rowset."
+    },
+    {
+      "name": "historicHaring",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "String representation of historical haring count. If non-NULL and numeric (via ISNUMERIC), updates HasherKennelMap.HistoricalHaringCount, calls HC.nonApi_updateRunCountsByUser, and returns HistoricalRunCountUpdate rowset."
+    },
+    {
+      "name": "historicCountsAreEstimates",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "String value ('yes' or 'no') indicating if historical counts are estimates. Maps to HasherKennelMap.HistoricalCountIsEstimate: 'yes'=1, 'no'=0."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "HistoricalRunCountUpdate",
+      "description": "Returned when @historicTotalRuns is successfully updated. Contains updated run count values from HasherKennelMap. Not returned if @historicTotalRuns is NULL or non-numeric.",
+      "columns": [
+        {
+          "name": "hkmId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HasherKennelMap record ID"
+        },
+        {
+          "name": "HistoricalHaringCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Historical haring count from HasherKennelMap"
+        },
+        {
+          "name": "HistoricalTotalRunCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Historical total run count from HasherKennelMap (just updated)"
+        },
+        {
+          "name": "HcTotalRunCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "HC system-calculated total run count (recalculated by nonApi_updateRunCountsByUser)"
+        },
+        {
+          "name": "HcHaringCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "HC system-calculated haring count"
+        },
+        {
+          "name": "hasherBeingEditedId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Public hasher ID of the user being edited (echo of @hasherBeingEditedPublicId parameter)"
+        },
+        {
+          "name": "publicHasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Public hasher ID of the user performing the update (echo of @publicHasherId parameter)"
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "HistoricalHaringUpdate",
+      "description": "Returned when @historicHaring is successfully updated. Contains updated run count values from HasherKennelMap. Not returned if @historicHaring is NULL or non-numeric. HC6 re-enabled HC.nonApi_updateRunCountsByUser for haring updates (was commented out in HC5).",
+      "columns": [
+        {
+          "name": "hkmId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HasherKennelMap record ID"
+        },
+        {
+          "name": "HistoricalHaringCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Historical haring count from HasherKennelMap (just updated)"
+        },
+        {
+          "name": "HistoricalTotalRunCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Historical total run count from HasherKennelMap"
+        },
+        {
+          "name": "HcTotalRunCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "HC system-calculated total run count (recalculated by nonApi_updateRunCountsByUser)"
+        },
+        {
+          "name": "HcHaringCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "HC system-calculated haring count"
+        },
+        {
+          "name": "hasherBeingEditedId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Public hasher ID of the user being edited (echo of @hasherBeingEditedPublicId parameter)"
+        },
+        {
+          "name": "publicHasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Public hasher ID of the user performing the update (echo of @publicHasherId parameter)"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Hasher (Email, FirstName, LastName, HashName, updatedAt) if any of those parameters are non-NULL",
+    "UPDATE HC.HasherKennelMap (DiscountAmount, DiscountPercent, DiscountDescription, updatedAt) if any discount parameters are non-NULL",
+    "UPDATE HC.HasherKennelMap (MembershipExpirationDate, Following, updatedAt) if @isMember or @status are non-NULL. Sentinel: '2999-12-31' = never expires; yesterday = not a member. Following always set to 1 on membership update.",
+    "UPDATE HC.HasherKennelMap (KennelNotificationPreference, KennelEmailAlertPreference, updatedAt) if @emailAlerts or @notifications are non-NULL",
+    "UPDATE HC.HasherKennelMap (HistoricalCountIsEstimate, updatedAt) if @historicCountsAreEstimates is non-NULL",
+    "UPDATE HC.HasherKennelMap (HistoricalTotalRunCount, updatedAt) if @historicTotalRuns is non-NULL and numeric",
+    "UPDATE HC.HasherKennelMap (HistoricalHaringCount, updatedAt) if @historicHaring is non-NULL and numeric",
+    "EXEC HC.nonApi_updateRunCountsByUser when @historicTotalRuns is updated (recalculates aggregate run counts)",
+    "EXEC HC.nonApi_updateRunCountsByUser when @historicHaring is updated (recalculates aggregate run counts — re-enabled in HC6)"
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change the string values for @isMember ('yes'), @status ('member'), @emailAlerts ('on'/'off'/'auto'), @notifications ('on'/'off'/'auto'), @historicCountsAreEstimates ('yes'/'no') without updating all callers",
+    "Never change the '2999-12-31' never-expires sentinel date without updating all callers"
+  ]
+}

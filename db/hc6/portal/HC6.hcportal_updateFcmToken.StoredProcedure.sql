@@ -4,7 +4,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_updateFcmToken]
 @deviceId uniqueidentifier = NULL,
 @publicHasherId uniqueidentifier = NULL,
 @accessToken nvarchar(1000) = NULL,
-@fcmToken nvarchar(1000) = NULL,
+@fcmToken nvarchar(500) = NULL,
 @buildNumber nvarchar(25) = NULL,
 @version nvarchar(25) = NULL
 
@@ -27,6 +27,9 @@ AS
 --   name in GeneralLog ('hcportal_confirmAuthentication' ->
 --   'hcportal_updateFcmToken'). Validation now short-circuits on first
 --   error. Added TRY/CATCH and transaction around Device UPDATE.
+--   - @fcmToken narrowed from NVARCHAR(1000) to NVARCHAR(500) to match
+--     ValidatePortalAuth @paramString and typical FCM token length
+--   - Added @deviceId null check (previously returned 'Success' silently on NULL)
 --   - Auth validated via HC6.ValidatePortalAuth helper SP
 --   - Removed @ipAddress, @ipGeoDetails (logging moved to API shim)
 --   - Removed ErrorLog inserts (error logging moved to API shim)
@@ -42,10 +45,17 @@ BEGIN TRY
 
     -- Auth validation
     DECLARE @authError NVARCHAR(255);
-    EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, @fcmToken, @authError OUTPUT;
+    EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, OBJECT_NAME(@@PROCID), @fcmToken, @authError OUTPUT;
     IF @authError IS NOT NULL
     BEGIN
         SELECT 0 AS Success, @authError AS ErrorMessage;
+        RETURN;
+    END
+
+    -- Validation: deviceId
+    IF @deviceId IS NULL
+    BEGIN
+        SELECT 0 AS Success, 'deviceId is required' AS ErrorMessage;
         RETURN;
     END
 

@@ -1,0 +1,321 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_getEvents",
+  "version": "1.0.0",
+  "description": "Retrieves hash running events filtered by geographic constraints (kennels, cities, regions, countries, continents) for display in the admin portal or on public HashRuns.org pages. Returns either a summary list or full event details depending on @fullDetails. Supports past/future/all time windows. @kennelUniqueShortName also falls back to city/region/country name matching. Dissemination rules are enforced for non-admin callers.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: user's public hasher ID, validated via HC6.ValidatePortalAuth. Magic GUID 11111111-1111-1111-1111-111111111111 sets @isAdmin=0, disabling the admin bypass of dissemination rules."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token, validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "publicKennelIds",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "Comma-separated list of public kennel GUIDs. Parsed via STRING_SPLIT. At least one geographic constraint (any parameter below) is required."
+    },
+    {
+      "name": "kennelUniqueShortName",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelUniqueShortName",
+      "description": "Single kennel unique short name. If not matched as a kennel, falls back to City, Region, or Country name lookup (most-events-in-last-30-days wins on tie)."
+    },
+    {
+      "name": "specialEventKennelIds",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "Comma-separated public kennel GUIDs. Only events with EventGeographicScope >= 2 are included."
+    },
+    {
+      "name": "cityNames",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "City.CityName",
+      "description": "Comma-separated city names. Matched case-insensitively with spaces stripped via TRIM(LOWER(REPLACE()))."
+    },
+    {
+      "name": "specialEventCityNames",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "City.CityName",
+      "description": "Comma-separated city names for special events only (EventGeographicScope >= 2)."
+    },
+    {
+      "name": "regionNames",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Region.RegionName",
+      "description": "Comma-separated region names. Matched case-insensitively with spaces stripped."
+    },
+    {
+      "name": "regionCodes",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Region.RegionAbbreviation",
+      "description": "Comma-separated region abbreviation codes. Matched case-insensitively."
+    },
+    {
+      "name": "cityIds",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "City.id",
+      "description": "Comma-separated city GUIDs. Parsed via STRING_SPLIT."
+    },
+    {
+      "name": "regionIds",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Region.id",
+      "description": "Comma-separated region GUIDs. Parsed via STRING_SPLIT."
+    },
+    {
+      "name": "countryIds",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Country.id",
+      "description": "Comma-separated country GUIDs. Parsed via STRING_SPLIT."
+    },
+    {
+      "name": "specialEventRegionNames",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Region.RegionName",
+      "description": "Comma-separated region names for special events only (EventGeographicScope >= 2)."
+    },
+    {
+      "name": "specialEventRegionCodes",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Region.RegionAbbreviation",
+      "description": "Comma-separated region codes for special events only (EventGeographicScope >= 2)."
+    },
+    {
+      "name": "countryCodes",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Country.CountryCode",
+      "description": "Comma-separated country codes (e.g. 'NL', 'BE'). Matched case-insensitively."
+    },
+    {
+      "name": "countryNames",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Country.CountryName",
+      "description": "Comma-separated country names. Matched case-insensitively with spaces stripped."
+    },
+    {
+      "name": "specialEventCountryCodes",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Country.CountryCode",
+      "description": "Comma-separated country codes for special events only (EventGeographicScope >= 2)."
+    },
+    {
+      "name": "specialEventCountryNames",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Country.CountryName",
+      "description": "Comma-separated country names for special events only (EventGeographicScope >= 2)."
+    },
+    {
+      "name": "continentNames",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Country.ContinentName",
+      "description": "Comma-separated continent names. Matched case-insensitively with spaces stripped."
+    },
+    {
+      "name": "continentCodes",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Country.ContinentCode",
+      "description": "Comma-separated continent codes (e.g. 'EU', 'AS', 'NA'). Matched case-insensitively."
+    },
+    {
+      "name": "specialEventContinentNames",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Country.ContinentName",
+      "description": "Comma-separated continent names for special events only (EventGeographicScope >= 2)."
+    },
+    {
+      "name": "specialEventContinentCodes",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Country.ContinentCode",
+      "description": "Comma-separated continent codes for special events only (EventGeographicScope >= 2)."
+    },
+    {
+      "name": "fullDetails",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Controls output shape: NULL or 0 returns EventSummaryList (fewer columns), 1 returns EventFullDetails (all columns including FB integration fields and pricing)."
+    },
+    {
+      "name": "weeksToDisplay",
+      "type": "SMALLINT",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Number of weeks before/after today to include. Defaults to 52. NULL is normalized to 999 (effectively all time). Capped at 999."
+    },
+    {
+      "name": "pastOrFuture",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Time window direction: 'future' (default, from -1 day to +weeksToDisplay), 'past' (-weeksToDisplay to +1 day), 'all' (-weeksToDisplay to +weeksToDisplay). NULL defaults to 'future'."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "EventSummaryList",
+      "description": "Returned when @fullDetails IS NULL or 0. One row per event matching filters. Filtered by removed=0, IsVisible=1, date window, geographic constraints, and dissemination rules.",
+      "condition": "(@fullDetails IS NULL) OR (@fullDetails = 0)",
+      "columns": [
+        { "name": "publicEventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Event.PublicEventId" },
+        { "name": "publicKennelId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Kennel.PublicKennelId" },
+        { "name": "kennelName", "type": "NVARCHAR(250)", "nullable": true, "description": "Kennel.KennelName" },
+        { "name": "kennelShortName", "type": "NVARCHAR(25)", "nullable": true, "description": "Kennel.KennelShortName" },
+        { "name": "kennelUniqueShortName", "type": "NVARCHAR(50)", "nullable": true, "description": "Kennel.KennelUniqueShortName" },
+        { "name": "kennelLogo", "type": "NVARCHAR(500)", "nullable": true, "description": "Kennel.KennelLogo" },
+        { "name": "isVisible", "type": "SMALLINT", "nullable": false, "description": "Event.IsVisible" },
+        { "name": "isCountedRun", "type": "SMALLINT", "nullable": false, "description": "Event.IsCountedRun" },
+        { "name": "eventNumber", "type": "SMALLINT", "nullable": true, "description": "Event.EventNumber" },
+        { "name": "eventGeographicScope", "type": "SMALLINT", "nullable": false, "description": "Event.EventGeographicScope (1=Normal, 2=Local special, 3=Regional, 4=National, 5=Continental, 6=Global, 7=Other)" },
+        { "name": "syncLat", "type": "DECIMAL(18,15)", "nullable": true, "description": "Computed latitude: uses FbLatitude if UseFbLatLon=1 and valid non-zero; else COALESCE(Event.Latitude, Kennel.Latitude, City.Latitude) if non-zero; else City.Latitude" },
+        { "name": "syncLong", "type": "DECIMAL(19,15)", "nullable": true, "description": "Computed longitude: same fallback logic as syncLat" },
+        { "name": "kenPublishToGoogleCalendar", "type": "SMALLINT", "nullable": true, "description": "Kennel.PublishToGoogleCalendar" },
+        { "name": "kenDisseminateOnGlobalGoogleCalendar", "type": "SMALLINT", "nullable": true, "description": "Kennel.DisseminateOnGlobalGoogleCalendar" },
+        { "name": "locationOneLineDesc", "type": "NVARCHAR(250)", "nullable": true, "description": "FbLocationOneLineDesc if UseFbLocation=1, else LocationOneLineDesc" },
+        { "name": "resolvableLocation", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Event.SyncResolvableLocation — geocodeable address string" },
+        { "name": "hares", "type": "NVARCHAR(2500)", "nullable": true, "description": "Event.Hares" },
+        { "name": "eventName", "type": "NVARCHAR(250)", "nullable": true, "description": "FbEventName if UseFbRunDetails=1, else EventName" },
+        { "name": "eventStartDatetime", "type": "DATETIME2", "nullable": true, "description": "FbEventStartDatetime if UseFbRunDetails=1, else EventStartDatetime. Converted to DATETIME2 (local time; DATETIMEOFFSET migration is a known TODO)." },
+        { "name": "daysUntilEvent", "type": "INT", "nullable": true, "description": "DATEDIFF(DAY, GETDATE(), eventStartDatetime). Negative for past events." },
+        { "name": "searchText", "type": "NVARCHAR(MAX)", "nullable": false, "description": "Concatenated search string wrapped in '~ ... ~'. Includes: event name, kennel names/tags, hares, all location fields, event number, city/region/country names/codes/search tags, geographic scope keywords, continent name. Used for client-side text search." },
+        { "name": "eventCityAndCountry", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Formatted 'City[, Region], Country' string. Uses FB location fields if UseFbLocation=1 and they have content (LEN >= 3), else HC fields; falls back to City/Region/Country table data. Region included if Country.ShowRegion=1." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "EventFullDetails",
+      "description": "Returned when @fullDetails = 1. One row per event. Same filters as EventSummaryList. Includes all summary columns plus pricing, payment, Facebook integration overrides, dissemination flags, and raw HC/FB location variants.",
+      "condition": "@fullDetails = 1",
+      "columns": [
+        { "name": "publicEventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Event.PublicEventId" },
+        { "name": "publicKennelId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Kennel.PublicKennelId" },
+        { "name": "kennelName", "type": "NVARCHAR(250)", "nullable": true, "description": "Kennel.KennelName" },
+        { "name": "kennelLogo", "type": "NVARCHAR(500)", "nullable": true, "description": "Kennel.KennelLogo" },
+        { "name": "kennelWebUrl", "type": "NVARCHAR(500)", "nullable": true, "description": "Kennel.KennelWebsiteUrl" },
+        { "name": "kennelShortName", "type": "NVARCHAR(25)", "nullable": true, "description": "Kennel.KennelShortName" },
+        { "name": "kennelUniqueShortName", "type": "NVARCHAR(50)", "nullable": true, "description": "Kennel.KennelUniqueShortName" },
+        { "name": "isVisible", "type": "SMALLINT", "nullable": false, "description": "Event.IsVisible" },
+        { "name": "isCountedRun", "type": "SMALLINT", "nullable": false, "description": "Event.IsCountedRun" },
+        { "name": "eventGeographicScope", "type": "SMALLINT", "nullable": false, "description": "Event.EventGeographicScope" },
+        { "name": "isPromotedEvent", "type": "SMALLINT", "nullable": true, "description": "Event.IsPromotedEvent" },
+        { "name": "eventNumber", "type": "SMALLINT", "nullable": true, "description": "Event.EventNumber" },
+        { "name": "eventPriceForMembers", "type": "DECIMAL(10,4)", "nullable": true, "description": "Event.EventPriceForMembers" },
+        { "name": "eventPriceForNonMembers", "type": "DECIMAL(10,4)", "nullable": true, "description": "Event.EventPriceForNonMembers" },
+        { "name": "kennelDefaultEventPriceForMembers", "type": "DECIMAL(10,4)", "nullable": true, "description": "Kennel.DefaultEventPriceForMembers" },
+        { "name": "kennelDefaultEventPriceForNonMembers", "type": "DECIMAL(10,4)", "nullable": true, "description": "Kennel.DefaultEventPriceForNonMembers" },
+        { "name": "eventPriceForExtras", "type": "DECIMAL(10,4)", "nullable": true, "description": "Event.EventPriceForExtras" },
+        { "name": "extrasDescription", "type": "NVARCHAR(250)", "nullable": true, "description": "Event.ExtrasDescription" },
+        { "name": "doTrackHashCash", "type": "SMALLINT", "nullable": true, "description": "Event.DoTrackHashCash" },
+        { "name": "kenDisseminateHashRunsDotOrg", "type": "SMALLINT", "nullable": true, "description": "Kennel.DisseminateHashRunsDotOrg" },
+        { "name": "kenDisseminateAllowWebLinks", "type": "SMALLINT", "nullable": true, "description": "Kennel.DisseminateAllowWebLinks" },
+        { "name": "kenDisseminationAudience", "type": "INT", "nullable": true, "description": "Kennel.DisseminationAudience" },
+        { "name": "evtDisseminationAudience", "type": "INT", "nullable": true, "description": "Event.EvtDisseminationAudience" },
+        { "name": "evtDisseminateAllowWebLinks", "type": "SMALLINT", "nullable": true, "description": "Event.EvtDisseminateAllowWebLinks" },
+        { "name": "evtDisseminateHashRunsDotOrg", "type": "SMALLINT", "nullable": true, "description": "Event.EvtDisseminateHashRunsDotOrg" },
+        { "name": "evtPublishToGoogleCalendar", "type": "SMALLINT", "nullable": true, "description": "Event.PublishToGoogleCalendar" },
+        { "name": "kenPublishToGoogleCalendar", "type": "SMALLINT", "nullable": true, "description": "Kennel.PublishToGoogleCalendar" },
+        { "name": "evtPublishToGoogleCalendarAddresses", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Event.PublishToGoogleCalendarAddresses" },
+        { "name": "evtDisseminateOnGlobalGoogleCalendar", "type": "SMALLINT", "nullable": true, "description": "Event.DisseminateOnGlobalGoogleCalendar" },
+        { "name": "kenDisseminateOnGlobalGoogleCalendar", "type": "SMALLINT", "nullable": true, "description": "Kennel.DisseminateOnGlobalGoogleCalendar" },
+        { "name": "integrationEnabled", "type": "INT", "nullable": true, "description": "Event.IntegrationEnabled" },
+        { "name": "eventFacebookId", "type": "NVARCHAR(250)", "nullable": true, "description": "Event.EventFacebookId" },
+        { "name": "absoluteEventNumber", "type": "SMALLINT", "nullable": true, "description": "Event.AbsoluteEventNumber" },
+        { "name": "canEditRunAttendence", "type": "SMALLINT", "nullable": true, "description": "Event.CanEditRunAttendence" },
+        { "name": "hares", "type": "NVARCHAR(2500)", "nullable": true, "description": "Event.Hares" },
+        { "name": "eventPaymentScheme", "type": "NVARCHAR(10)", "nullable": true, "description": "Event.EventPaymentScheme" },
+        { "name": "eventPaymentUrl", "type": "NVARCHAR(2000)", "nullable": true, "description": "Event.EventPaymentUrl" },
+        { "name": "eventPaymentUrlExpires", "type": "DATETIMEOFFSET(7)", "nullable": true, "description": "Event.EventPaymentUrlExpires" },
+        { "name": "extrasRsvpRequired", "type": "SMALLINT", "nullable": false, "description": "COALESCE(Event.ExtrasRsvpRequired, 0) — never NULL" },
+        { "name": "unconfirmedBankXferCount", "type": "INT", "nullable": true, "description": "Event.UnconfirmedBankXferCount" },
+        { "name": "tags1", "type": "INT", "nullable": true, "description": "Event.Tags1" },
+        { "name": "tags2", "type": "INT", "nullable": true, "description": "Event.Tags2" },
+        { "name": "tags3", "type": "INT", "nullable": true, "description": "Event.Tags3" },
+        { "name": "eventImage", "type": "NVARCHAR(500)", "nullable": true, "description": "FbEventImage if UseFbImage=1, else EventImage" },
+        { "name": "eventName", "type": "NVARCHAR(250)", "nullable": true, "description": "FbEventName if UseFbRunDetails=1, else EventName" },
+        { "name": "eventStartDatetime", "type": "DATETIME2", "nullable": true, "description": "FbEventStartDatetime if UseFbRunDetails=1, else EventStartDatetime. Converted to DATETIME2 (local time; DATETIMEOFFSET migration is a known TODO)." },
+        { "name": "eventDescription", "type": "NVARCHAR(4000)", "nullable": false, "description": "COALESCE(FbEventDescription if UseFbRunDetails=1, else EventDescription, '') — never NULL" },
+        { "name": "locationOneLineDesc", "type": "NVARCHAR(250)", "nullable": true, "description": "FbLocationOneLineDesc if UseFbLocation=1, else LocationOneLineDesc" },
+        { "name": "narrowEventLatitude", "type": "DECIMAL(18,15)", "nullable": true, "description": "Computed latitude: FB (if UseFbLatLon=1 and valid non-zero) > Event > Kennel > City" },
+        { "name": "narrowEventLongitude", "type": "DECIMAL(19,15)", "nullable": true, "description": "Computed longitude: same fallback as narrowEventLatitude" },
+        { "name": "locationPostCode", "type": "NVARCHAR(250)", "nullable": true, "description": "FbLocationPostCode if UseFbLocation=1, else LocationPostCode" },
+        { "name": "locationCity", "type": "NVARCHAR(250)", "nullable": true, "description": "FbLocationCity if UseFbLocation=1, else LocationCity" },
+        { "name": "locationStreet", "type": "NVARCHAR(250)", "nullable": true, "description": "FbLocationStreet if UseFbLocation=1, else LocationStreet" },
+        { "name": "locationCountry", "type": "NVARCHAR(250)", "nullable": true, "description": "FbLocationCountry if UseFbLocation=1, else LocationCountry" },
+        { "name": "locationRegion", "type": "NVARCHAR(250)", "nullable": true, "description": "FbLocationRegion if UseFbLocation=1, else LocationRegion" },
+        { "name": "locationSubRegion", "type": "NVARCHAR(250)", "nullable": true, "description": "FbLocationSubRegion if UseFbLocation=1, else LocationSubRegion" },
+        { "name": "removed", "type": "SMALLINT", "nullable": false, "description": "Event.removed — soft-delete flag" },
+        { "name": "updatedAt", "type": "DATETIMEOFFSET(7)", "nullable": true, "description": "Event.updatedAt" },
+        { "name": "useFbLocation", "type": "SMALLINT", "nullable": true, "description": "Event.UseFbLocation" },
+        { "name": "useFbLatLon", "type": "SMALLINT", "nullable": true, "description": "Event.UseFbLatLon" },
+        { "name": "useFbRunDetails", "type": "SMALLINT", "nullable": true, "description": "Event.UseFbRunDetails" },
+        { "name": "useFbImage", "type": "SMALLINT", "nullable": true, "description": "Event.UseFbImage" },
+        { "name": "extEventImage", "type": "NVARCHAR(500)", "nullable": true, "description": "Event.FbEventImage — raw external image URL" },
+        { "name": "extEventDescription", "type": "NVARCHAR(4000)", "nullable": false, "description": "COALESCE(Event.FbEventDescription, '') — never NULL" },
+        { "name": "hcLatitude", "type": "DECIMAL(18,15)", "nullable": true, "description": "Event.Latitude — HC-managed latitude" },
+        { "name": "hcLongitude", "type": "DECIMAL(19,15)", "nullable": true, "description": "Event.Longitude — HC-managed longitude" },
+        { "name": "fbLatitude", "type": "DECIMAL(18,15)", "nullable": true, "description": "Event.FbLatitude" },
+        { "name": "fbLongitude", "type": "DECIMAL(19,15)", "nullable": true, "description": "Event.FbLongitude" },
+        { "name": "kenLatitude", "type": "DECIMAL(18,15)", "nullable": true, "description": "Kennel.Latitude" },
+        { "name": "kenLongitude", "type": "DECIMAL(19,15)", "nullable": true, "description": "Kennel.Longitude" },
+        { "name": "countryId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "Event.CountryId" },
+        { "name": "countryName", "type": "NVARCHAR(250)", "nullable": true, "description": "Country.CountryName from Event.CountryId (c4s alias)" },
+        { "name": "cityLatitude", "type": "NUMERIC(12,9)", "nullable": true, "description": "City.Latitude" },
+        { "name": "cityLongitude", "type": "NUMERIC(13,9)", "nullable": true, "description": "City.Longitude" },
+        { "name": "digitsAfterDecimal", "type": "SMALLINT", "nullable": true, "description": "COALESCE(Kennel.DigitsAfterDecimal, Country.DigitsAfterDecimal)" },
+        { "name": "currencySymbol", "type": "NVARCHAR(10)", "nullable": true, "description": "COALESCE(Kennel.CurrencySymbol, Country.CurrencySymbol)" },
+        { "name": "daysUntilEvent", "type": "INT", "nullable": true, "description": "DATEDIFF(DAY, GETDATE(), eventStartDatetime). Negative for past events." },
+        { "name": "searchText", "type": "NVARCHAR(MAX)", "nullable": false, "description": "Concatenated search string wrapped in '~ ... ~'. Same composition as EventSummaryList.searchText." }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning (e.g. @weeksToDisplay NULL normalised to 999)",
+    "Never change the meaning of @fullDetails (NULL/0=summary, 1=full)",
+    "Never change the @pastOrFuture string values ('future', 'past', 'all')",
+    "Never change the eventGeographicScope integer codes (1-7) without updating client logic",
+    "Never remove support for the two magic service account GUIDs (11111111-..., 22222222-...) without coordinating frontend changes"
+  ]
+}

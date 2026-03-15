@@ -1,0 +1,83 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_updateFcmToken",
+  "version": "1.0.0",
+  "description": "Updates the FCM (Firebase Cloud Messaging) push notification token for a device after the browser has refreshed its token. Also updates device version, build number, and last login timestamp.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "Device ID whose record should be updated. Must be non-NULL; returns an error if NULL."
+    },
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: public hasher ID of the authenticated user. Validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token. Validated via HC6.ValidatePortalAuth with @fcmToken as the paramString."
+    },
+    {
+      "name": "fcmToken",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "Device.FcmToken",
+      "description": "New FCM push notification token to store for the device. Narrowed from NVARCHAR(1000) in HC5 to NVARCHAR(500) in HC6 to match the table column and ValidatePortalAuth paramString width."
+    },
+    {
+      "name": "buildNumber",
+      "type": "NVARCHAR(25)",
+      "nullable": true,
+      "mapsToColumn": "Device.BuildNumber",
+      "description": "Build number of the portal application to be stored with the device record."
+    },
+    {
+      "name": "version",
+      "type": "NVARCHAR(25)",
+      "nullable": true,
+      "mapsToColumn": "Device.Version",
+      "description": "Version number of the portal application to be stored with the device record."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "SuccessResult",
+      "description": "Returned after successfully updating the device record.",
+      "columns": [
+        {
+          "name": "result",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Literal string 'Success' to indicate completion"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Device (FcmToken, Version, BuildNumber, LastLogin) for the matching deviceId. Wrapped in a transaction."
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning"
+  ]
+}

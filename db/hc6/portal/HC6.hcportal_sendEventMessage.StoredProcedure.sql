@@ -43,9 +43,11 @@ AS
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 
+BEGIN TRY
+
 -- Auth validation
 DECLARE @authError NVARCHAR(255);
-EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, @publicEventId, @authError OUTPUT;
+EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, OBJECT_NAME(@@PROCID), @publicEventId, @authError OUTPUT;
 IF @authError IS NOT NULL
 BEGIN
     SELECT 0 AS Success, @authError AS ErrorMessage;
@@ -86,8 +88,6 @@ END
 
 DECLARE @hasherId uniqueidentifier;
 SELECT @hasherId = id FROM HC.Hasher WHERE PublicHasherId = @publicHasherId;
-
-BEGIN TRY
 
     DECLARE @timeLimitForNotificationsInHours smallint = 6;
 
@@ -185,7 +185,7 @@ BEGIN TRY
     INNER JOIN HC.Event evt ON evt.id = @eventId
     INNER JOIN HC.Device device ON device.UserId = h.id
     LEFT OUTER JOIN HC.HasherEventMap hem ON hem.EventId = evt.id AND hem.UserId = h.id
-    WHERE evt.id = @eventID
+    WHERE evt.id = @eventId
     AND
     (
         (COALESCE(hem.EventNotificationPreference, hkm.KennelNotificationPreference) = 1) -- always send notifications

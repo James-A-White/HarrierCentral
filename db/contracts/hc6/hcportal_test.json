@@ -1,0 +1,46 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_test",
+  "version": "1.0.0",
+  "description": "Test/debug SP that retrieves the top 5 event names for a given kennel, ordered by event start date descending. No authentication — intentionally lightweight for testing.",
+  "parameters": [
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "The public kennel ID to filter events by. Used to join Event to Kennel."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on any runtime error. No auth or validation — only the CATCH block can produce this.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "EventNames",
+      "description": "Top 5 event names for the specified kennel, ordered by EventStartDatetime descending. Empty rowset if @publicKennelId is NULL or matches no kennel.",
+      "columns": [
+        {
+          "name": "EventName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "The name of the event from HC.Event"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning"
+  ]
+}

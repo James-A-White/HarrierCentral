@@ -1,0 +1,194 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_getCategoryDetail2",
+  "version": "1.0.0",
+  "description": "Retrieves activity feed data for the admin portal dashboard. Returns raw typed data columns for one of 10 categories: 0=New Hashers, 1=Event RSVPs, 2=New Events, 3=New Kennels, 4=App Logins, 5=Payments, 6=Portal Access, 7=Errors, 8=HashRuns.Org Traffic, 100=Version Adoption. Each category returns typed columns specific to its data. Uses a time window of @days days (default 7; if 0, uses 60 minutes). HC6 removes the HC5 header metadata rowset entirely — portal is responsible for all presentation. Uses READ UNCOMMITTED isolation.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: the authenticated user's public hasher ID. Validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "categoryId",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Required. Category to retrieve: 0=New Hashers, 1=Event RSVPs, 2=New Events, 3=New Kennels, 4=App Logins, 5=Payments, 6=Portal Access, 7=Errors, 8=HashRuns.Org Traffic, 100=Version Adoption. NULL returns an error."
+    },
+    {
+      "name": "days",
+      "type": "SMALLINT",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Number of days of history to retrieve. Default 7. Special case: if 0, uses 60 minutes instead. Converted to minutes for cutoff date calculation."
+    },
+    {
+      "name": "hcVersion",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Optional. Used only for category 100 (Version Adoption) to filter logins by app version string via LIKE."
+    },
+    {
+      "name": "hcBuild",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Optional. Used only for category 100 (Version Adoption) to filter logins by app build string via LIKE."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "CategoryData",
+      "description": "Single rowset returned on success. Column shape varies by categoryId. All queries use OPTION(RECOMPILE) and NOLOCK hints. Note: HC5 returned a header metadata rowset (col1-col6 labels) before the data rowset — that rowset has been removed in HC6. Category-specific schemas follow.",
+      "categories": {
+        "0": {
+          "name": "New Hashers",
+          "columns": [
+            { "name": "createdAt", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "When the hasher account was created" },
+            { "name": "displayName", "type": "NVARCHAR(250)", "nullable": true, "description": "Hasher's display name" },
+            { "name": "homeKennelName", "type": "NVARCHAR(250)", "nullable": true, "description": "Home kennel name, or NULL if no home kennel" },
+            { "name": "cityFullName", "type": "NVARCHAR(350)", "nullable": true, "description": "Nearest city name (from spatial lookup). NULL if HomeLatitude is 51.503300000 (default) or no city found." }
+          ]
+        },
+        "1": {
+          "name": "Event RSVPs",
+          "columns": [
+            { "name": "updatedAt", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "When the HasherEventMap record was last updated" },
+            { "name": "kennelName", "type": "NVARCHAR(250)", "nullable": false, "description": "Name of the kennel for the event" },
+            { "name": "eventNumber", "type": "INT", "nullable": true, "description": "Event number from HC.Event.EventNumber" },
+            { "name": "displayName", "type": "NVARCHAR(120)", "nullable": true, "description": "Hasher's display name (h.DisplayName if VirginVisitorType=0, else hem.DisplayName)" },
+            { "name": "virginVisitorType", "type": "SMALLINT", "nullable": false, "description": "Visitor type from HC.HasherEventMap.VirginVisitorType" },
+            { "name": "rsvpState", "type": "SMALLINT", "nullable": false, "description": "RSVP state from HC.HasherEventMap.RsvpState" },
+            { "name": "attendenceState", "type": "SMALLINT", "nullable": false, "description": "Attendance state from HC.HasherEventMap.AttendenceState" },
+            { "name": "totalRunsThisKennel", "type": "INT", "nullable": false, "description": "Total runs at this kennel. COALESCE to 0 if NULL." },
+            { "name": "totalHaringThisKennel", "type": "INT", "nullable": false, "description": "Total haring runs at this kennel. COALESCE to 0 if NULL." }
+          ]
+        },
+        "2": {
+          "name": "New Events",
+          "columns": [
+            { "name": "createdAt", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "When the event was created" },
+            { "name": "inboundIntegrationId", "type": "INT", "nullable": true, "description": "Inbound integration ID from HC.Event.InboundIntegrationId" },
+            { "name": "kennelName", "type": "NVARCHAR(250)", "nullable": false, "description": "Name of the kennel hosting the event" },
+            { "name": "eventNumber", "type": "INT", "nullable": true, "description": "Event number from HC.Event.EventNumber" },
+            { "name": "eventStartDatetime", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "Event start datetime from HC.Event.EventStartDatetimeIndexed" },
+            { "name": "eventName", "type": "NVARCHAR(250)", "nullable": false, "description": "Event name from HC.Event.EventName" }
+          ]
+        },
+        "3": {
+          "name": "New Kennels",
+          "columns": [
+            { "name": "createdAt", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "When the kennel was created" },
+            { "name": "kennelName", "type": "NVARCHAR(250)", "nullable": false, "description": "Kennel name" },
+            { "name": "cityFullName", "type": "NVARCHAR(350)", "nullable": true, "description": "City name: COALESCE(CityFullName, cityCountryName, cityName) from HC.City" }
+          ]
+        },
+        "4": {
+          "name": "App Logins",
+          "columns": [
+            { "name": "loginDate", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "Login timestamp from HC.LaunchAndLogin.LoginDate" },
+            { "name": "displayName", "type": "NVARCHAR(250)", "nullable": true, "description": "Hasher's display name (LEFT JOIN, may be NULL for unknown users)" },
+            { "name": "deviceName", "type": "NVARCHAR(100)", "nullable": true, "description": "Device name from HC.LaunchAndLogin.DeviceName" },
+            { "name": "manufacturer", "type": "NVARCHAR(100)", "nullable": true, "description": "Device manufacturer from HC.LaunchAndLogin.Manufacturer" },
+            { "name": "deviceType", "type": "NVARCHAR(100)", "nullable": true, "description": "Device type from HC.LaunchAndLogin.DeviceType" },
+            { "name": "systemName", "type": "NVARCHAR(100)", "nullable": true, "description": "OS name from HC.LaunchAndLogin.SystemName" },
+            { "name": "systemVersion", "type": "NVARCHAR(100)", "nullable": true, "description": "OS version from HC.LaunchAndLogin.SystemVersion" },
+            { "name": "cityFullName", "type": "NVARCHAR(350)", "nullable": true, "description": "City name from HC.City (LEFT JOIN on CityId)" }
+          ]
+        },
+        "5": {
+          "name": "Payments",
+          "columns": [
+            { "name": "createdAt", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "When the payment was created from HC.Payment.createdAt" },
+            { "name": "kennelName", "type": "NVARCHAR(250)", "nullable": false, "description": "Kennel name for the event" },
+            { "name": "eventNumber", "type": "INT", "nullable": true, "description": "Event number from HC.Event.EventNumber" },
+            { "name": "displayName", "type": "NVARCHAR(120)", "nullable": true, "description": "Hasher's display name (h1.DisplayName if VirginVisitorType=0, else hem.DisplayName)" },
+            { "name": "virginVisitorType", "type": "SMALLINT", "nullable": false, "description": "Visitor type from HC.HasherEventMap.VirginVisitorType" },
+            { "name": "processedByDisplayName", "type": "NVARCHAR(250)", "nullable": false, "description": "Display name of the user who processed the payment (from HC.Hasher via PaymentProcessedBy_userId)" },
+            { "name": "cancelledByDisplayName", "type": "NVARCHAR(250)", "nullable": true, "description": "Display name of the user who cancelled the payment (LEFT JOIN via CancelledBy_UserId). NULL if not cancelled." },
+            { "name": "creditAmount", "type": "SMALLMONEY", "nullable": false, "description": "Credit amount from HC.Payment.CreditAmount" },
+            { "name": "debitAmount", "type": "SMALLMONEY", "nullable": false, "description": "Debit amount from HC.Payment.DebitAmount" },
+            { "name": "paymentType", "type": "SMALLINT", "nullable": false, "description": "Payment type code from HC.Payment.PaymentType" },
+            { "name": "paymentProvider", "type": "NVARCHAR(50)", "nullable": true, "description": "Payment provider from HC.Payment.PaymentProvider" },
+            { "name": "creditAvailable", "type": "SMALLMONEY", "nullable": false, "description": "Available credit from HC.Payment.CreditAvailable" },
+            { "name": "doPayForExtras", "type": "SMALLINT", "nullable": false, "description": "Whether to pay for extras from HC.Payment.DoPayForExtras" },
+            { "name": "extrasDescription", "type": "NVARCHAR(500)", "nullable": true, "description": "Extras description from HC.Event.ExtrasDescription" },
+            { "name": "currencySymbol", "type": "NVARCHAR(5)", "nullable": true, "description": "Currency symbol: COALESCE(Kennel.CurrencySymbol, Country.CurrencySymbol)" }
+          ]
+        },
+        "6": {
+          "name": "Portal Access",
+          "columns": [
+            { "name": "accessDate", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "Portal access timestamp from HC.PortalAccess.accessDate" },
+            { "name": "displayName", "type": "NVARCHAR(250)", "nullable": false, "description": "Hasher's display name from HC.Hasher.DisplayName" },
+            { "name": "kennelName", "type": "NVARCHAR(250)", "nullable": true, "description": "Home kennel name (LEFT JOIN). NULL if no home kennel." }
+          ]
+        },
+        "7": {
+          "name": "Errors",
+          "columns": [
+            { "name": "updatedAt", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "When the error was last updated from HC.ErrorLog.updatedAt" },
+            { "name": "errorDescription", "type": "NVARCHAR(2500)", "nullable": true, "description": "Error description from HC.ErrorLog.ErrorDescription" },
+            { "name": "displayName", "type": "NVARCHAR(250)", "nullable": true, "description": "Hasher's display name (LEFT JOIN on userId). NULL if no matching hasher." },
+            { "name": "userId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "User ID from HC.ErrorLog.userId" },
+            { "name": "procName", "type": "NVARCHAR(250)", "nullable": true, "description": "Stored procedure name from HC.ErrorLog.ProcName" }
+          ]
+        },
+        "8": {
+          "name": "HashRuns.Org Traffic",
+          "columns": [
+            { "name": "timestamp", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "Log entry timestamp from LOG.GeneralLog.Timestamp" },
+            { "name": "city", "type": "NVARCHAR(4000)", "nullable": true, "description": "City extracted via JSON_VALUE(data, '$.city') from LOG.GeneralLog.Data" },
+            { "name": "region", "type": "NVARCHAR(4000)", "nullable": true, "description": "Region extracted via JSON_VALUE(data, '$.region') from LOG.GeneralLog.Data" },
+            { "name": "country", "type": "NVARCHAR(4000)", "nullable": true, "description": "Country extracted via JSON_VALUE(data, '$.country') from LOG.GeneralLog.Data" },
+            { "name": "logMessage", "type": "NVARCHAR(255)", "nullable": false, "description": "Log message from LOG.GeneralLog.Message" },
+            { "name": "kennelName", "type": "NVARCHAR(250)", "nullable": true, "description": "Kennel name (LEFT JOIN via Event.KennelId). NULL if no matching event or kennel." },
+            { "name": "eventName", "type": "NVARCHAR(250)", "nullable": true, "description": "Event name from HC.Event (LEFT JOIN via PublicEventId = StrParam1). NULL if no matching event." }
+          ]
+        },
+        "100": {
+          "name": "Version Adoption",
+          "columns": [
+            { "name": "updatedAt", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "Most recent login date for this user in the time window (MAX of LoginDate)" },
+            { "name": "displayName", "type": "NVARCHAR(250)", "nullable": false, "description": "Hasher's display name from HC.Hasher.DisplayName" },
+            { "name": "hcVersion", "type": "NVARCHAR(200)", "nullable": false, "description": "HC app version string from HC.LaunchAndLogin.HcVersion" },
+            { "name": "systemName", "type": "NVARCHAR(100)", "nullable": true, "description": "OS name from HC.LaunchAndLogin.SystemName" },
+            { "name": "twoWeekCount", "type": "INT", "nullable": false, "description": "Number of logins by this user in the time window" },
+            { "name": "thisVersionCount", "type": "INT", "nullable": false, "description": "Number of logins by this user on the specified @hcVersion + @hcBuild in the time window" }
+          ]
+        }
+      }
+    }
+  ],
+  "sideEffects": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change the meaning of categoryId values (0-8, 100)",
+    "Never change the column shape of any category without updating all portal callers",
+    "Never restore the HC5 header metadata rowset (col1-col6) — callers have been updated to expect raw typed columns"
+  ]
+}

@@ -1,0 +1,559 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_editKennel",
+  "version": "1.0.0",
+  "description": "Updates an existing kennel's settings. Update-only (no insert path). Uses a COALESCE pattern: only parameters supplied as non-NULL are written; NULL means 'leave unchanged'. Two exceptions: @latitude and @longitude use -999.0 as a sentinel to explicitly set both columns to NULL (geographic nulling). There is no sentinel for clearing string fields to NULL. Covers kennel identity, dissemination, Google Calendar, payment config (3 slots), pricing, currency, location, tags, membership, notifications, and feature tier. Includes duplicate-name detection with auto-suggested alternatives for KennelUniqueShortName. UPDATE wrapped in a transaction.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: identifies the calling user. Passed to HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "Routing: identifies the kennel to update. Validated IS NULL after auth. Kennel must exist."
+    },
+    {
+      "name": "kennelStatus",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelStatus",
+      "description": "Kennel status enum. NULL = no change."
+    },
+    {
+      "name": "kennelName",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelName",
+      "description": "Full kennel name. NULL = no change."
+    },
+    {
+      "name": "kennelAdminEmailList",
+      "type": "NVARCHAR(2000)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelAdminEmailList",
+      "description": "Comma-separated admin email addresses. NULL = no change."
+    },
+    {
+      "name": "disseminateHashRunsDotOrg",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.DisseminateHashRunsDotOrg",
+      "description": "Whether to disseminate events to HashRuns.org. NULL = no change."
+    },
+    {
+      "name": "disseminateAllowWebLinks",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.DisseminateAllowWebLinks",
+      "description": "Whether dissemination allows web links. NULL = no change."
+    },
+    {
+      "name": "disseminationAudience",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.DisseminationAudience",
+      "description": "Dissemination audience scope. NULL = no change."
+    },
+    {
+      "name": "disseminateOnGlobalGoogleCalendar",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.DisseminateOnGlobalGoogleCalendar",
+      "description": "Whether to publish to global Google Calendar. Changed from INT (HC5) to SMALLINT in HC6 to match table column. NULL = no change."
+    },
+    {
+      "name": "googleCalendarId",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.GoogleCalendarId",
+      "description": "Google Calendar ID for this kennel. NULL = no change."
+    },
+    {
+      "name": "publishToGoogleCalendar",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublishToGoogleCalendar",
+      "description": "Whether to publish events to kennel's own Google Calendar. NULL = no change."
+    },
+    {
+      "name": "publishToGoogleCalendarAddresses",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublishToGoogleCalendarAddresses",
+      "description": "Google Calendar addresses to publish to. NULL = no change."
+    },
+    {
+      "name": "canEditRunAttendence",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.CanEditRunAttendence",
+      "description": "Whether users can edit run attendance. NULL = no change. Note: column name retains original typo."
+    },
+    {
+      "name": "kennelShortName",
+      "type": "NVARCHAR(25)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelShortName",
+      "description": "Short display name for the kennel. NULL = no change."
+    },
+    {
+      "name": "kennelUniqueShortName",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelUniqueShortName",
+      "description": "Globally unique short name. Widened from NVARCHAR(25) in HC5 to NVARCHAR(50) in HC6 to match table column. Validated for uniqueness with auto-suggested alternatives on conflict. NULL = no change."
+    },
+    {
+      "name": "kennelDescription",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelDescription",
+      "description": "Full kennel description text. NULL = no change."
+    },
+    {
+      "name": "kennelLogo",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelLogo",
+      "description": "URL to kennel logo image. NULL = no change."
+    },
+    {
+      "name": "kennelPinColor",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelPinColor",
+      "description": "Map pin color enum. NULL = no change."
+    },
+    {
+      "name": "kennelCoverPhoto",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelCoverPhoto",
+      "description": "URL to kennel cover photo. NULL = no change."
+    },
+    {
+      "name": "kennelWebsiteUrl",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelWebsiteUrl",
+      "description": "External kennel website URL. NULL = no change."
+    },
+    {
+      "name": "kennelEventsUrl",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelEventsUrl",
+      "description": "External events page URL. NULL = no change."
+    },
+    {
+      "name": "kennelHcEventsUrl",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelHcEventsUrl",
+      "description": "Harrier Central events page URL. NULL = no change."
+    },
+    {
+      "name": "kennelMismanagementTeam",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelMismanagementTeam",
+      "description": "Mismanagement team details (free text or JSON). NULL = no change."
+    },
+    {
+      "name": "defaultEventPriceForMembers",
+      "type": "DECIMAL(10,4)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.DefaultEventPriceForMembers",
+      "description": "Default event price for members. NULL = no change."
+    },
+    {
+      "name": "defaultEventPriceForNonMembers",
+      "type": "DECIMAL(10,4)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.DefaultEventPriceForNonMembers",
+      "description": "Default event price for non-members. NULL = no change."
+    },
+    {
+      "name": "defaultEventCurrencyType",
+      "type": "NVARCHAR(10)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.DefaultEventCurrencyType",
+      "description": "Default currency type for events. NULL = no change."
+    },
+    {
+      "name": "defaultRunStartTime",
+      "type": "TIME(7)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.DefaultRunStartTime",
+      "description": "Default start time for new runs. NULL = no change."
+    },
+    {
+      "name": "currencyCode",
+      "type": "NVARCHAR(5)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.CurrencyCode",
+      "description": "ISO currency code. NULL = no change."
+    },
+    {
+      "name": "primaryCultureCode",
+      "type": "NVARCHAR(10)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PrimaryCultureCode",
+      "description": "Primary culture/locale code. NULL = no change."
+    },
+    {
+      "name": "currencySymbol",
+      "type": "NVARCHAR(5)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.CurrencySymbol",
+      "description": "Currency display symbol. NULL = no change."
+    },
+    {
+      "name": "digitsAfterDecimal",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.DigitsAfterDecimal",
+      "description": "Number of decimal digits for currency display. NULL = no change."
+    },
+    {
+      "name": "bankScheme",
+      "type": "NVARCHAR(10)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.BankScheme",
+      "description": "Bank transfer scheme identifier. NULL = no change."
+    },
+    {
+      "name": "bankAccountNumber",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.BankAccountNumber",
+      "description": "Bank account number for direct transfers. NULL = no change."
+    },
+    {
+      "name": "bankBic",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.BankBic",
+      "description": "Bank BIC/SWIFT code. NULL = no change."
+    },
+    {
+      "name": "bankBeneficiary",
+      "type": "NVARCHAR(150)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.BankBeneficiary",
+      "description": "Bank transfer beneficiary name. NULL = no change."
+    },
+    {
+      "name": "kennelPaymentScheme",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelPaymentScheme",
+      "description": "Payment slot 1: scheme identifier. NULL = no change."
+    },
+    {
+      "name": "kennelPaymentUrl",
+      "type": "NVARCHAR(2000)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelPaymentUrl",
+      "description": "Payment slot 1: payment URL. NULL = no change."
+    },
+    {
+      "name": "kennelPaymentUrlExpires",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelPaymentUrlExpires",
+      "description": "Payment slot 1: URL expiry date. NULL = no change."
+    },
+    {
+      "name": "kennelPaymentMemberSurcharge",
+      "type": "DECIMAL(10,4)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelPaymentMemberSurcharge",
+      "description": "Payment slot 1: member surcharge. NULL = no change."
+    },
+    {
+      "name": "kennelPaymentNonMemberSurcharge",
+      "type": "DECIMAL(10,4)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelPaymentNonMemberSurcharge",
+      "description": "Payment slot 1: non-member surcharge. NULL = no change."
+    },
+    {
+      "name": "kennelPaymentScheme2",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelPaymentScheme2",
+      "description": "Payment slot 2: scheme identifier. NULL = no change."
+    },
+    {
+      "name": "kennelPaymentUrl2",
+      "type": "NVARCHAR(2000)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelPaymentUrl2",
+      "description": "Payment slot 2: payment URL. NULL = no change."
+    },
+    {
+      "name": "kennelPaymentUrlExpires2",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelPaymentUrlExpires2",
+      "description": "Payment slot 2: URL expiry date. NULL = no change."
+    },
+    {
+      "name": "kennelPaymentMemberSurcharge2",
+      "type": "DECIMAL(10,4)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelPaymentMemberSurcharge2",
+      "description": "Payment slot 2: member surcharge. NULL = no change."
+    },
+    {
+      "name": "kennelPaymentNonMemberSurcharge2",
+      "type": "DECIMAL(10,4)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelPaymentNonMemberSurcharge2",
+      "description": "Payment slot 2: non-member surcharge. NULL = no change."
+    },
+    {
+      "name": "kennelPaymentScheme3",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelPaymentScheme3",
+      "description": "Payment slot 3: scheme identifier. NULL = no change."
+    },
+    {
+      "name": "kennelPaymentUrl3",
+      "type": "NVARCHAR(2000)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelPaymentUrl3",
+      "description": "Payment slot 3: payment URL. NULL = no change."
+    },
+    {
+      "name": "kennelPaymentUrlExpires3",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelPaymentUrlExpires3",
+      "description": "Payment slot 3: URL expiry date. NULL = no change."
+    },
+    {
+      "name": "kennelPaymentMemberSurcharge3",
+      "type": "DECIMAL(10,4)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelPaymentMemberSurcharge3",
+      "description": "Payment slot 3: member surcharge. NULL = no change."
+    },
+    {
+      "name": "kennelPaymentNonMemberSurcharge3",
+      "type": "DECIMAL(10,4)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelPaymentNonMemberSurcharge3",
+      "description": "Payment slot 3: non-member surcharge. NULL = no change."
+    },
+    {
+      "name": "kennelFeaturesTier",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelFeaturesTier",
+      "description": "Feature tier/subscription level. NULL = no change."
+    },
+    {
+      "name": "kennelFeaturesExpire",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelFeaturesExpire",
+      "description": "Feature tier expiry date. NULL = no change."
+    },
+    {
+      "name": "kennelGoogleSheetApiKey",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelGoogleSheetApiKey",
+      "description": "Google Sheets API key for data import. NULL = no change."
+    },
+    {
+      "name": "allowSelfPayment",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.AllowSelfPayment",
+      "description": "Whether members can self-report payments. NULL = no change."
+    },
+    {
+      "name": "allowNegativeCredit",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.AllowNegativeCredit",
+      "description": "Whether negative credit balances are allowed. NULL = no change."
+    },
+    {
+      "name": "cityId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.CityId",
+      "description": "City reference ID. NULL = no change."
+    },
+    {
+      "name": "provinceStateId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.ProvinceStateId",
+      "description": "Province/state reference ID. NULL = no change."
+    },
+    {
+      "name": "countryId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.CountryId",
+      "description": "Country reference ID. NULL = no change."
+    },
+    {
+      "name": "latitude",
+      "type": "DECIMAL(18,14)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.Latitude",
+      "description": "Kennel latitude. Sentinel: -999.0 on either @latitude or @longitude sets both Latitude and Longitude columns to NULL (geographic nulling). Otherwise NULL = no change. Sentinel changed from 999 (HC5) to -999.0 in HC6."
+    },
+    {
+      "name": "longitude",
+      "type": "DECIMAL(19,15)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.Longitude",
+      "description": "Kennel longitude. Sentinel: -999.0 on either @latitude or @longitude sets both Latitude and Longitude columns to NULL (geographic nulling). Otherwise NULL = no change. Sentinel changed from 999 (HC5) to -999.0 in HC6."
+    },
+    {
+      "name": "defaultRunTags1",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.DefaultRunTags1",
+      "description": "Default bit-flag primary tags for new runs. NULL = no change."
+    },
+    {
+      "name": "defaultRunTags2",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.DefaultRunTags2",
+      "description": "Default bit-flag secondary tags for new runs. NULL = no change."
+    },
+    {
+      "name": "defaultRunTags3",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.DefaultRunTags3",
+      "description": "Default bit-flag tertiary tags for new runs. NULL = no change."
+    },
+    {
+      "name": "kennelGeolocation",
+      "type": "GEOGRAPHY",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelGeolocation",
+      "description": "Kennel geography point. NULL = no change. Note: GEOGRAPHY type cannot be passed from most API callers; this parameter is only usable from within SQL."
+    },
+    {
+      "name": "membershipDurationInMonths",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.MembershipDurationInMonths",
+      "description": "Duration of membership period in months. NULL = no change."
+    },
+    {
+      "name": "runCountStartDate",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.RunCountStartDate",
+      "description": "Date from which run counting begins. NULL = no change."
+    },
+    {
+      "name": "distancePreference",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.DistancePreference",
+      "description": "Distance unit preference (metric/imperial). NULL = no change."
+    },
+    {
+      "name": "extApiKey",
+      "type": "NVARCHAR(120)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.ExtApiKey",
+      "description": "External API key. NULL = no change."
+    },
+    {
+      "name": "kennelSearchTags",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelSearchTags",
+      "description": "Free-text search tags for kennel discovery. NULL = no change."
+    },
+    {
+      "name": "excludeFromLeaderboard",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.ExcludeFromLeaderboard",
+      "description": "Whether to exclude this kennel from leaderboards. NULL = no change."
+    },
+    {
+      "name": "notificationMinutesBeforeRunForChatPushNotifications",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.NotificationMinutesBeforeRunForChatPushNotifications",
+      "description": "Minutes before run to send chat push notifications. NULL = no change."
+    },
+    {
+      "name": "notificationMinutesBeforeRunForCheckinReminder",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.NotificationMinutesBeforeRunForCheckinReminder",
+      "description": "Minutes before run to send check-in reminders. NULL = no change."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error. Duplicate KennelUniqueShortName errors include auto-suggested alternatives in ErrorMessage.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "SuccessResult",
+      "description": "Returned after successful UPDATE of HC.Kennel.",
+      "columns": [
+        {
+          "name": "result",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Always 'Kennel updated successfully'"
+        },
+        {
+          "name": "resultCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Kennel — all provided non-NULL fields via COALESCE pattern. Latitude and Longitude are set to NULL if either @latitude or @longitude equals -999.0."
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change the lat/lon nulling sentinel (-999.0) without updating all callers"
+  ]
+}

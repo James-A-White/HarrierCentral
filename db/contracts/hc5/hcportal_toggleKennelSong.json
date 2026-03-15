@@ -1,8 +1,8 @@
 {
   "schema": "HC5",
   "name": "hcportal_toggleKennelSong",
-  "version": "1.0.0",
-  "description": "Toggles whether a song is associated with a kennel. If adding (@isInKennel=1), either creates a new KennelSongMap record or un-soft-deletes an existing one by setting Removed=0. If removing (@isInKennel=0), soft-deletes the mapping by setting Removed=1. This is a simple add/remove toggle for kennel song libraries.",
+  "version": "1.1.0",
+  "description": "Toggles whether a song is associated with a kennel. @publicKennelId is resolved to the internal HC.Kennel.id (@kennelId) before all KennelSongMap operations. If adding (@isInKennel=1), either creates a new KennelSongMap record or un-soft-deletes an existing one by setting Removed=0. If removing (@isInKennel=0), soft-deletes the mapping by setting Removed=1. @songId is passed as the paramString to the access token check function.",
   "parameters": [
     {
       "name": "publicHasherId",
@@ -16,21 +16,21 @@
       "type": "NVARCHAR(1000)",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "Auth: short-lived cryptographic token validated via HC.CHECK_PORTAL_ACCESS_TOKEN. @songId is passed as the kennelId parameter to the token check function."
+      "description": "Auth: short-lived cryptographic token validated via HC.CHECK_PORTAL_ACCESS_TOKEN. @songId is passed as the paramString to the token check function."
     },
     {
       "name": "publicKennelId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": "KennelSongMap.KennelId",
-      "description": "The kennel ID to add/remove the song from. Validated as NOT NULL and exactly 16 bytes via DATALENGTH."
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "The public kennel GUID used to look up the internal Kennel.id (@kennelId) at line 160, which is then used in all KennelSongMap operations (EXISTS check, UPDATE un-remove, INSERT, UPDATE remove). Validated as NOT NULL and exactly 16 bytes via DATALENGTH."
     },
     {
       "name": "songId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "KennelSongMap.SongId",
-      "description": "The song ID to add/remove. Validated as NOT NULL and exactly 16 bytes via DATALENGTH."
+      "description": "The song ID to add/remove. Validated as NOT NULL and exactly 16 bytes via DATALENGTH. Also passed as the paramString to the access token check function."
     },
     {
       "name": "isInKennel",
@@ -98,11 +98,16 @@
   "sideEffects": [
     "INSERT into HC.ErrorLog on validation/auth failures",
     "INSERT into LOG.GeneralLog on every call (after validation, with IP data and error flag)",
-    "INSERT into HC.KennelSongMap when adding a song that doesn't have a mapping yet",
-    "UPDATE HC.KennelSongMap.Removed and updatedAt when adding a song that already has a mapping (un-soft-delete)",
-    "UPDATE HC.KennelSongMap.Removed and updatedAt when removing a song (soft-delete)"
+    "INSERT into HC.KennelSongMap when adding a song that doesn't have a mapping yet (uses resolved internal @kennelId)",
+    "UPDATE HC.KennelSongMap.Removed and updatedAt when adding a song that already has a mapping (un-soft-delete, uses resolved internal @kennelId)",
+    "UPDATE HC.KennelSongMap.Removed and updatedAt when removing a song (soft-delete, uses resolved internal @kennelId)"
   ],
   "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "FIXED (2026-03-15): All KennelSongMap operations previously used @publicKennelId directly instead of resolved internal @kennelId",
+      "detail": "Original HC5 code used @publicKennelId directly in the EXISTS check, both UPDATEs, and the INSERT into HC.KennelSongMap. Since KennelSongMap.KennelId stores the internal HC.Kennel.id (not PublicKennelId), all operations silently matched zero rows — songs were never actually toggled. Fixed at line 159-160 by resolving @kennelId = ken.id FROM HC.Kennel WHERE PublicKennelId = @publicKennelId, then using @kennelId in: EXISTS (line 165), UPDATE un-remove (line 170), INSERT (line 176), and UPDATE remove (line 184)."
+    },
     {
       "severity": "high",
       "issue": "No XACT_ABORT ON",
@@ -136,7 +141,7 @@
     {
       "severity": "medium",
       "issue": "KennelSongMap.updatedAt set manually",
-      "detail": "Lines 166, 180: The SP manually sets updatedAt = @now. The table has a DEFAULT constraint that auto-updates this on modification. Manual setting bypasses the DB-level tracking and could cause confusion."
+      "detail": "Lines 169, 183: The SP manually sets updatedAt = @now. The table has a DEFAULT constraint that auto-updates this on modification. Manual setting bypasses the DB-level tracking and could cause confusion."
     },
     {
       "severity": "low",
@@ -146,7 +151,7 @@
     {
       "severity": "low",
       "issue": "Inconsistent INSERT field list",
-      "detail": "Line 172: INSERT into KennelSongMap includes (id, SongId, KennelId, Removed, CreatedAt) but omits updatedAt, which has a DEFAULT. The table also has updatedAtBias, which gets its DEFAULT. Explicit is better than implicit for auditability."
+      "detail": "Line 175: INSERT into KennelSongMap includes (id, SongId, KennelId, Removed, CreatedAt) but omits updatedAt, which has a DEFAULT. The table also has updatedAtBias, which gets its DEFAULT. Explicit is better than implicit for auditability."
     },
     {
       "severity": "low",

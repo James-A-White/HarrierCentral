@@ -1,0 +1,245 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_getLandingPageData",
+  "version": "1.0.0",
+  "description": "Returns landing page data for an authenticated portal user. Updates the FCM token on the device if changed (after validation), logs portal access, and returns the user's profile and list of kennels the user follows with membership status and kennel details.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: the user's public hasher ID. Validated via HC6.ValidatePortalAuth. Also used to look up user profile and kennel list."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "fcmToken",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "Device.FcmToken",
+      "description": "Firebase Cloud Messaging token for push notifications. If the stored value differs from this, the Device record is updated."
+    },
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "The device ID for the portal session. Used to update the FCM token if changed."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "UserProfile",
+      "description": "User profile information. Single row returned on success.",
+      "columns": [
+        {
+          "name": "firstName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "User's first name. COALESCE to empty string if NULL."
+        },
+        {
+          "name": "lastName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "User's last name. COALESCE to empty string if NULL."
+        },
+        {
+          "name": "hashName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "User's hash name. COALESCE to empty string if NULL."
+        },
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "User's display name. COALESCE to empty string if NULL."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "KennelList",
+      "description": "List of kennels the user is following (HasherKennelMap.Following = 1). Joins Hasher, HasherKennelMap, Kennel, City, Country tables.",
+      "columns": [
+        {
+          "name": "publicKennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Kennel's public identifier"
+        },
+        {
+          "name": "kennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Kennel name"
+        },
+        {
+          "name": "kennelShortName",
+          "type": "NVARCHAR(25)",
+          "nullable": false,
+          "description": "Kennel short name"
+        },
+        {
+          "name": "kennelUniqueShortName",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "Kennel unique short name (nullable)"
+        },
+        {
+          "name": "kennelLogo",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Kennel logo URL"
+        },
+        {
+          "name": "defaultTags1",
+          "type": "INT",
+          "nullable": false,
+          "description": "Kennel default run tags 1 (bitflags)"
+        },
+        {
+          "name": "defaultTags2",
+          "type": "INT",
+          "nullable": false,
+          "description": "Kennel default run tags 2 (bitflags)"
+        },
+        {
+          "name": "defaultTags3",
+          "type": "INT",
+          "nullable": false,
+          "description": "Kennel default run tags 3 (bitflags)"
+        },
+        {
+          "name": "countryId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Country identifier"
+        },
+        {
+          "name": "countryName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Country name from HC.Country"
+        },
+        {
+          "name": "defaultEventPriceForMembers",
+          "type": "DECIMAL(10,4)",
+          "nullable": false,
+          "description": "Default event price for members"
+        },
+        {
+          "name": "defaultEventPriceForNonMembers",
+          "type": "DECIMAL(10,4)",
+          "nullable": false,
+          "description": "Default event price for non-members"
+        },
+        {
+          "name": "defaultCurrencySymbol",
+          "type": "NVARCHAR(5)",
+          "nullable": true,
+          "description": "Currency symbol, coalesced from Kennel.CurrencySymbol then Country.CurrencySymbol"
+        },
+        {
+          "name": "defaultDigitsAfterDecimal",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Digits after decimal for currency display, coalesced from Kennel.DigitsAfterDecimal then Country.DigitsAfterDecimal"
+        },
+        {
+          "name": "defaultRunStartTime",
+          "type": "DATETIME",
+          "nullable": false,
+          "description": "Default run start time (CAST from Kennel.DefaultRunStartTime TIME to DATETIME)"
+        },
+        {
+          "name": "kennelLat",
+          "type": "DECIMAL(18,14)",
+          "nullable": true,
+          "description": "Kennel latitude from HC.Kennel.Latitude"
+        },
+        {
+          "name": "kennelLon",
+          "type": "DECIMAL(19,15)",
+          "nullable": true,
+          "description": "Kennel longitude from HC.Kennel.Longitude"
+        },
+        {
+          "name": "cityLat",
+          "type": "NUMERIC(12,9)",
+          "nullable": false,
+          "description": "City latitude from HC.City.Latitude"
+        },
+        {
+          "name": "cityLon",
+          "type": "NUMERIC(13,9)",
+          "nullable": false,
+          "description": "City longitude from HC.City.Longitude"
+        },
+        {
+          "name": "kennelCountryCodes",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "Neighboring country codes from HC.Country.NeighboringCountries"
+        },
+        {
+          "name": "isFollowing",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Whether user is following the kennel. Always 1 due to WHERE hkm.Following = 1 filter."
+        },
+        {
+          "name": "membershipExpirationDate",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Membership expiration date from HC.HasherKennelMap"
+        },
+        {
+          "name": "isMember",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 if membershipExpirationDate > GETDATE(), else 0"
+        },
+        {
+          "name": "isHomeKennel",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 if Hasher.HomeKennelId = Kennel.id, else 0"
+        },
+        {
+          "name": "appAccessFlags",
+          "type": "INT",
+          "nullable": true,
+          "description": "App access flags for the user-kennel relationship from HC.HasherKennelMap"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Device.FcmToken and updatedAt if @fcmToken differs from stored value (conditional, only when token has changed)",
+    "INSERT into HC.PortalAccess (hasherId) to log portal access"
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning"
+  ]
+}

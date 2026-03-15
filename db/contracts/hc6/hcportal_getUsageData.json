@@ -1,0 +1,397 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_getUsageData",
+  "version": "1.0.0",
+  "description": "Returns comprehensive platform usage statistics for the HC admin portal dashboard. Returns 5 rowsets: app version distribution (iOS vs Android), integration job status, usage metrics across data types (Account, Activity, Event, Kennel, Login, Payment, Portal, Error), recent login details, and recently updated/active events.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: the authenticated user's public hasher ID. Validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC6.ValidatePortalAuth."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "VersionData",
+      "description": "App version distribution showing iOS vs Android usage. Aggregates latest login records from the last 14 days where HcVersion LIKE 'HC Ver:%' and LEN(SystemName) > 2.",
+      "columns": [
+        {
+          "name": "versionNum",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "App version number extracted from HcVersion (portion before the '--' delimiter)"
+        },
+        {
+          "name": "buildNum",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Build number extracted from HcVersion (portion after the '--' delimiter)"
+        },
+        {
+          "name": "isiPhone",
+          "type": "INT",
+          "nullable": false,
+          "description": "Count of users on this version whose SystemName is 'iOS'"
+        },
+        {
+          "name": "isNotiPhone",
+          "type": "INT",
+          "nullable": false,
+          "description": "Count of users on this version whose SystemName is not 'iOS'"
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "IntegrationJobData",
+      "description": "Latest integration job run statistics for the most recent 10 integrations (by IntegrationAbbreviation order). Only jobs with a non-null endedAt are included.",
+      "columns": [
+        {
+          "name": "integrationAbbreviation",
+          "type": "NVARCHAR(20)",
+          "nullable": false,
+          "description": "Short name for the integration from HC.Integration"
+        },
+        {
+          "name": "integrationEnabled",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Whether this integration is currently enabled (0=disabled, non-zero=enabled) from HC.Integration.Enabled"
+        },
+        {
+          "name": "interval",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Scheduled interval in minutes between integration runs from HC.Integration.Interval"
+        },
+        {
+          "name": "integrationId",
+          "type": "INT",
+          "nullable": false,
+          "description": "Unique identifier for the integration from HC.IntegrationJob.IntegrationId"
+        },
+        {
+          "name": "recordsRead",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Number of records read in the last job from HC.IntegrationJob.RecordsRead"
+        },
+        {
+          "name": "recordsWritten",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Number of records successfully written in the last job from HC.IntegrationJob.RecordsWritten"
+        },
+        {
+          "name": "recordsFailedInfo",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Details about failed record imports from HC.IntegrationJob.RecordsFailedInfo"
+        },
+        {
+          "name": "errorCount",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Number of errors encountered in the last job from HC.IntegrationJob.ErrorCount"
+        },
+        {
+          "name": "errorInfo",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Details about errors from HC.IntegrationJob.ErrorInfo"
+        },
+        {
+          "name": "endedAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Timestamp when the last job completed from HC.IntegrationJob.endedAt"
+        },
+        {
+          "name": "minutesAgo",
+          "type": "INT",
+          "nullable": false,
+          "description": "Minutes elapsed since the last job completed (DATEDIFF(MINUTE, endedAt, GETDATE()))"
+        },
+        {
+          "name": "kennelsSucceeded",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Number of kennels successfully synced from HC.IntegrationJob.KennelsSucceeded"
+        },
+        {
+          "name": "kennelsSucceededInfo",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Details about successfully synced kennels from HC.IntegrationJob.KennelsSucceededInfo"
+        },
+        {
+          "name": "kennelsFailed",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Number of kennels that failed to sync from HC.IntegrationJob.KennelsFailed"
+        },
+        {
+          "name": "kennelsFailedInfo",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Details about kennels that failed to sync from HC.IntegrationJob.KennelsFailedInfo"
+        },
+        {
+          "name": "futureRunCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Total count of future events (EventStartDatetimeIndexed > GETDATE()). Same value repeated for all rows."
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "name": "UsageStatistics",
+      "description": "Usage metrics for 8 data types (Account, Activity, Event, Kennel, Login, Payment, Portal, Error) across multiple time windows. Rows ordered by id (0-7). Counts SUM CASE expressions so all count columns can be 0 but are not NULL in practice.",
+      "columns": [
+        {
+          "name": "dataType",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Type of data: 'Account', 'Activity', 'Event', 'Kennel', 'Login', 'Payment', 'Portal', or 'Error'"
+        },
+        {
+          "name": "id",
+          "type": "INT",
+          "nullable": false,
+          "description": "Sort order identifier (0=Account, 1=Activity, 2=Event, 3=Kennel, 4=Login, 5=Payment, 6=Portal, 7=Error)"
+        },
+        {
+          "name": "lastHour",
+          "type": "INT",
+          "nullable": true,
+          "description": "Count of records created/updated in the last hour"
+        },
+        {
+          "name": "lastHourComp",
+          "type": "INT",
+          "nullable": true,
+          "description": "Count from the hour before last (comparison baseline)"
+        },
+        {
+          "name": "lastDay",
+          "type": "INT",
+          "nullable": true,
+          "description": "Count of records created/updated in the last 24 hours"
+        },
+        {
+          "name": "lastDayComp",
+          "type": "INT",
+          "nullable": true,
+          "description": "Count from the 24 hours before that (comparison baseline)"
+        },
+        {
+          "name": "lastWeek",
+          "type": "INT",
+          "nullable": true,
+          "description": "Count of records created/updated in the last 7 days"
+        },
+        {
+          "name": "lastWeekComp",
+          "type": "INT",
+          "nullable": true,
+          "description": "Count from the 7 days before that (comparison baseline)"
+        },
+        {
+          "name": "lastMonth",
+          "type": "INT",
+          "nullable": true,
+          "description": "Count of records created/updated in the last 30 days"
+        },
+        {
+          "name": "lastMonthComp",
+          "type": "INT",
+          "nullable": true,
+          "description": "Count from the 30 days before that (comparison baseline)"
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "name": "LoginInformation",
+      "description": "Login detail for users who logged in in the last 24 hours (HcVersion LIKE 'HC Ver%'). Grouped by user, device type, OS version, HC version, and home kennel. Ordered by most recent login descending.",
+      "columns": [
+        {
+          "name": "userName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Display name from HC.Hasher.DisplayName (computed column)"
+        },
+        {
+          "name": "userId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "User's unique identifier from HC.LaunchAndLogin.UserId"
+        },
+        {
+          "name": "realName",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "User's first and last name concatenated with a space (h.FirstName + ' ' + h.LastName)"
+        },
+        {
+          "name": "photo",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "User's photo URL from HC.Hasher.Photo"
+        },
+        {
+          "name": "isIphone",
+          "type": "INT",
+          "nullable": false,
+          "description": "Device type flag: 1=iPhone (DeviceType='iPhone'), 0=non-iPhone, -1=NULL DeviceType"
+        },
+        {
+          "name": "systemVersion",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "OS version (first 5 chars of SystemVersion with '/' removed). COALESCE to empty string if NULL."
+        },
+        {
+          "name": "loginCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Number of logins in the last 24 hours for this user/device/version group"
+        },
+        {
+          "name": "lastLoginDate",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Most recent login timestamp for this group (MAX of LoginDate)"
+        },
+        {
+          "name": "minutesSinceLastLogin",
+          "type": "INT",
+          "nullable": false,
+          "description": "Minutes elapsed since last login (DATEDIFF(MINUTE, MAX(LoginDate), GETDATE()))"
+        },
+        {
+          "name": "kennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "User's home kennel name. COALESCE to empty string if NULL."
+        },
+        {
+          "name": "kennelShortName",
+          "type": "NVARCHAR(25)",
+          "nullable": false,
+          "description": "User's home kennel short name. COALESCE to empty string if NULL."
+        },
+        {
+          "name": "hcVersion",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "HC app version (LEFT of HcVersion up to the first comma)"
+        },
+        {
+          "name": "highlightPhoneVersion",
+          "type": "INT",
+          "nullable": false,
+          "description": "Computed highlight priority for phone OS version: 0=current, 1=recent, 2=older, 3=outdated. Based on systemVersion LIKE patterns."
+        },
+        {
+          "name": "highlightHcVersion",
+          "type": "INT",
+          "nullable": false,
+          "description": "Computed highlight priority for HC version: 0=current (2.1+, 2.0+), 1=recent (1.6+), 2=older (1.5+), 3=outdated (1.2, 1.1.x, all others)"
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "name": "RecentEvents",
+      "description": "UNION DISTINCT of the top 20 most recently updated events and top 20 most active events (by HasherEventMap activity in last 24 hours). Only includes events within 48 hours of start that are visible (IsVisible=1). Ordered by minutesAgoUpdated ASC.",
+      "columns": [
+        {
+          "name": "kennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Kennel name hosting the event"
+        },
+        {
+          "name": "kennelShortName",
+          "type": "NVARCHAR(25)",
+          "nullable": false,
+          "description": "Kennel short name"
+        },
+        {
+          "name": "kennelLogo",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Kennel logo URL"
+        },
+        {
+          "name": "eventName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Event name (FbEventName if UseFbRunDetails != 0, otherwise EventName)"
+        },
+        {
+          "name": "minutesAgoUpdated",
+          "type": "INT",
+          "nullable": false,
+          "description": "Minutes elapsed since event was last updated (DATEDIFF(MINUTE, evt.updatedAt, GETDATE()))"
+        },
+        {
+          "name": "minutesAgoCreated",
+          "type": "INT",
+          "nullable": false,
+          "description": "Minutes elapsed since event was created (DATEDIFF(MINUTE, evt.createdAt, GETDATE()))"
+        },
+        {
+          "name": "minutesUntilRun",
+          "type": "INT",
+          "nullable": false,
+          "description": "Minutes until the event starts (DATEDIFF(MINUTE, GETDATE(), EventStartDatetime)). Negative if already started."
+        },
+        {
+          "name": "activityLastDay",
+          "type": "INT",
+          "nullable": false,
+          "description": "Count of HasherEventMap records updated in the last 24 hours for this event"
+        },
+        {
+          "name": "publicEventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Public identifier for the event from HC.Event.PublicEventId"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning (e.g. isIphone -1 = NULL DeviceType)",
+    "Never change the dataType string values in UsageStatistics rowset",
+    "Never change the id sort order values (0-7) in UsageStatistics rowset",
+    "Never change the highlight priority values (0-3) in LoginInformation rowset without updating portal UI",
+    "Never change the hardcoded excluded user GUIDs without coordinating with callers"
+  ]
+}

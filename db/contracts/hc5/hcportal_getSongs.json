@@ -1,8 +1,8 @@
 {
   "schema": "HC5",
   "name": "hcportal_getSongs",
-  "version": "1.0.0",
-  "description": "Returns all non-removed songs from the HC.Song table with a membership flag indicating whether each song is assigned to the specified kennel (via HC.KennelSongMap). Read-only query used by the portal to display the master song list with kennel-specific membership indicators.",
+  "version": "1.1.0",
+  "description": "Returns all non-removed songs from the HC.Song table with a membership flag indicating whether each song is assigned to the specified kennel (via HC.KennelSongMap). @publicKennelId is resolved to the internal HC.Kennel.id (@kennelId) before the LEFT JOIN to KennelSongMap, ensuring the join uses the correct internal foreign key. Read-only query used by the portal to display the master song list with kennel-specific membership indicators.",
   "parameters": [
     {
       "name": "publicHasherId",
@@ -16,14 +16,14 @@
       "type": "NVARCHAR(1000)",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "Auth: short-lived cryptographic token validated via HC.CHECK_PORTAL_ACCESS_TOKEN."
+      "description": "Auth: short-lived cryptographic token validated via HC.CHECK_PORTAL_ACCESS_TOKEN. @publicKennelId is passed as the paramString to the token check function."
     },
     {
       "name": "publicKennelId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": "KennelSongMap.KennelId",
-      "description": "The kennel ID to check song membership against. Used in LEFT JOIN to KennelSongMap to compute isInKennel flag. Null validation uses DATALENGTH != 16 check."
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "The public kennel GUID used to look up the internal Kennel.id (@kennelId), which is then used in the LEFT JOIN to KennelSongMap to compute the isInKennel flag. Null validation uses DATALENGTH != 16 check."
     },
     {
       "name": "hcVersion",
@@ -63,7 +63,7 @@
     {
       "index": 0,
       "name": "SongsList",
-      "description": "All non-removed songs ordered by SongName ASC, with isInKennel flag indicating membership in the specified kennel. Only returned if no validation errors occurred.",
+      "description": "All non-removed songs ordered by SongName ASC, with isInKennel flag indicating membership in the specified kennel (using the resolved internal @kennelId). Only returned if no validation errors occurred.",
       "columns": [
         {
           "name": "id",
@@ -165,7 +165,7 @@
           "name": "isInKennel",
           "type": "SMALLINT",
           "nullable": false,
-          "description": "Computed flag: 1 if the song exists in HC.KennelSongMap for this kennel (and not removed), 0 otherwise. Uses CAST(CASE WHEN ksm.id IS NOT NULL THEN 1 ELSE 0 END as smallint)."
+          "description": "Computed flag: 1 if the song exists in HC.KennelSongMap for this kennel (and not removed), 0 otherwise. JOIN uses resolved internal @kennelId (not @publicKennelId). Uses CAST(CASE WHEN ksm.id IS NOT NULL THEN 1 ELSE 0 END as smallint)."
         }
       ]
     }
@@ -175,6 +175,11 @@
     "INSERT into LOG.GeneralLog on every call (after validation, includes error title if @isError = 1)"
   ],
   "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "FIXED (2026-03-15): KennelSongMap join previously used @publicKennelId directly instead of resolved internal @kennelId",
+      "detail": "Original HC5 code joined HC.KennelSongMap on KennelId = @publicKennelId directly. Since KennelSongMap.KennelId stores the internal HC.Kennel.id (not PublicKennelId), the LEFT JOIN never matched any rows and isInKennel always returned 0. Fixed at line 113 by resolving @kennelId = ken.id FROM HC.Kennel WHERE PublicKennelId = @publicKennelId, then using @kennelId in the LEFT JOIN at line 140."
+    },
     {
       "severity": "high",
       "issue": "No XACT_ABORT ON",
@@ -213,7 +218,7 @@
     {
       "severity": "low",
       "issue": "NOLOCK hints redundant with isolation level",
-      "detail": "Lines 134-135: WITH (NOLOCK) hints are redundant given SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED at line 23. The isolation level already enables dirty reads."
+      "detail": "Lines 138-139: WITH (NOLOCK) hints are redundant given SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED at line 23. The isolation level already enables dirty reads."
     }
   ],
   "breakingChangeRules": [

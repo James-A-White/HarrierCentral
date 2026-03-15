@@ -101,6 +101,7 @@ HC5 accepts NVARCHAR for everything. HC6 should use proper types:
 |-----------|-----|-----|---------------|
 | @publicKennelId | NVARCHAR(250) | UNIQUEIDENTIFIER | Send as GUID format, not arbitrary string |
 
+
 ---
 
 ## 4. Removed Parameters
@@ -200,7 +201,7 @@ These need clarification before HC6 migration:
 
 HC5 `getCategoryDetail` returns a single `message` column containing a pre-formatted string with embedded time-ago formatting (e.g. `"(5 min) John Smith  ---  London, England"`). HC5 `getCategoryDetail2` returns 6 generic columns (`col1`-`col6`) with the time-ago formatting pre-computed in `col1` and other data pre-formatted as strings.
 
-**HC6 still returns the same pre-formatted strings for the initial migration.** However, the architectural direction is to move all presentation formatting to the Flutter portal. This section documents the full scope of that future change.
+**HC6 has already made this change — both SPs now return raw typed columns.** The portal is responsible for all time-ago formatting and string concatenation. This is a breaking change from HC5.
 
 ### Time-ago formatting
 
@@ -236,15 +237,29 @@ Each category uses the 6-column grid differently. The header rowset defines colu
 
 ### Portal action
 
-This is a future change. The current HC6 SPs still return the same formatted strings as HC5. When the portal is ready to take over presentation:
-1. Implement time-ago formatting in Flutter (use the raw timestamp column)
-2. For `getCategoryDetail2`: read individual `col1`-`col6` columns and format in the portal's table/list UI
-3. For `getCategoryDetail`: either switch to using `getCategoryDetail2` (which already provides structured columns), or request a new HC6 version that returns raw data columns
-4. Reference the HC6 contracts for exact column definitions per category
+**This change is live in HC6.** Before cutover, the portal must:
+1. Implement time-ago formatting in Flutter using the raw timestamp column returned per category
+2. For `getCategoryDetail`: read the raw typed columns instead of a single `message` string — see the HC6 contract for the exact column set per category
+3. For `getCategoryDetail2`: the `col1`-`col6` header metadata rowset has been removed — HC6 returns the same raw typed columns as `getCategoryDetail`
+4. Reference the HC6 contracts (`/db/contracts/hc6/`) for exact column definitions per category
 
 ---
 
-## 11. Auth Helper (Internal Change, No Portal Impact)
+## 11. KennelSongMap Bug Fix (No Portal Action Required)
+
+**Affects: `getSongs` and `toggleKennelSong`**
+
+Both HC5 SPs had a logic error where `HC.KennelSongMap.KennelId` (which stores the internal `HC.Kennel.id`) was compared against `@publicKennelId` (the public GUID) directly. This meant:
+- `getSongs` always returned `isInKennel = 0` for every song regardless of the kennel's actual library
+- `toggleKennelSong` never wrote any rows — add/remove operations silently had no effect
+
+The bug has been fixed in both HC5 (applied to live DB, 2026-03-15) and HC6. The external interface is unchanged — same parameters, same rowset shape. The SP now simply returns correct results.
+
+**Portal action**: None. However, be aware that once HC6 is deployed, `getSongs` will start returning `isInKennel = true` for songs that are genuinely in the kennel's library (as intended). If any portal code made assumptions based on the broken behavior, it should be reviewed.
+
+---
+
+## 12. Auth Helper (Internal Change, No Portal Impact)
 
 **Affects: No portal code changes required**
 

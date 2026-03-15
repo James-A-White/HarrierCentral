@@ -1,0 +1,124 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_bulkAddHashers",
+  "version": "1.0.0",
+  "description": "Bulk adds or updates multiple hashers (members) for a kennel. Accepts a JSON array of hasher data, validates email format, creates new HC.Hasher records for new users, creates or updates HC.HasherKennelMap relationships, and optionally updates historical run counts. Uses a cursor to iterate through the input array. All writes are wrapped in a single transaction.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: public hasher ID of the authenticated user performing the bulk add. Validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token. Validated via HC6.ValidatePortalAuth with @publicKennelId as the paramString."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth/routing: public kennel ID for which hashers are being bulk added. Required. Used as paramString for auth token validation."
+    },
+    {
+      "name": "newHasherJson",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "JSON array of hasher objects to add/update. Each object may contain: publicHasherId, publicKennelId, firstName, lastName, eMail, hashName, historicTotalRuns, historicHaring, addHasherStatus. Must be non-NULL and at least 5 characters (LEN check). Parsed via OPENJSON with explicit schema."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "BulkAddResult",
+      "description": "Returned on success. Contains one row per input hasher with updated publicHasherId and addHasherStatus reflecting the outcome. Possible addHasherStatus values: 'NEW HC USER' (new Hasher record created), 'NEW MEMBER' (new HasherKennelMap record created or existing inactive member reactivated), 'UPDATE RUN COUNTS' (historical counts updated), 'NO CHANGE' (already a current member with no changes needed), 'ERROR' (invalid email format, row not processed).",
+      "columns": [
+        {
+          "name": "publicHasherId",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "The public hasher ID — newly generated GUID for new users, or NULL/passthrough for invalid-email rows"
+        },
+        {
+          "name": "publicKennelId",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "The public kennel ID from the JSON input (passthrough)"
+        },
+        {
+          "name": "firstName",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "First name from the JSON input (passthrough)"
+        },
+        {
+          "name": "lastName",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Last name from the JSON input (passthrough)"
+        },
+        {
+          "name": "email",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Email address from the JSON input (passthrough). Used as the unique key for hasher lookup."
+        },
+        {
+          "name": "hashName",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Hash name from the JSON input (passthrough)"
+        },
+        {
+          "name": "historicTotalRuns",
+          "type": "INT",
+          "nullable": true,
+          "description": "Historical total run count from the JSON input (passthrough)"
+        },
+        {
+          "name": "historicHaring",
+          "type": "INT",
+          "nullable": true,
+          "description": "Historical haring count from the JSON input (passthrough)"
+        },
+        {
+          "name": "addHasherStatus",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Processing outcome per row. Values: 'NEW HC USER' (Hasher record created), 'NEW MEMBER' (HasherKennelMap created or reactivated), 'UPDATE RUN COUNTS' (historical counts changed), 'NO CHANGE' (no action needed), 'ERROR' (invalid email, skipped)"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT into HC.Hasher (PublicHasherId, FirstName, LastName, HashName, Email, HomeKennelId, Photo) for each input row with a valid email and no existing Hasher record",
+    "INSERT into HC.HasherKennelMap (UserId, KennelId, Following, MembershipExpirationDate) with sentinel '2999-12-31' for new kennel memberships",
+    "UPDATE HC.HasherKennelMap (Following, MembershipExpirationDate) to Following=1 and '2999-12-31' for existing members who are no longer active",
+    "UPDATE HC.HasherKennelMap (HistoricalTotalRunCount, updatedAt) if the input value differs from the stored value",
+    "UPDATE HC.HasherKennelMap (HistoricalHaringCount, updatedAt) if the input value differs from the stored value",
+    "EXEC HC.nonApi_updateRunCountsByUser for each row where historical run counts are updated (recalculates aggregate run counts)"
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change the addHasherStatus string values ('NEW HC USER', 'NEW MEMBER', 'UPDATE RUN COUNTS', 'NO CHANGE', 'ERROR') without updating all portal parsing logic",
+    "Never change the '2999-12-31' never-expires sentinel date without updating all callers"
+  ]
+}

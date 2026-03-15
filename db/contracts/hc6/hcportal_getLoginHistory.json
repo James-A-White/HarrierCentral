@@ -1,0 +1,96 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_getLoginHistory",
+  "version": "1.0.0",
+  "description": "Returns login history for a specified user over the last 365 days. Includes login timestamps, app versions, device types, and geolocation data, ordered most recent first. Uses READ UNCOMMITTED isolation for performance.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: the authenticated user's public hasher ID. Validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "userId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "LaunchAndLogin.UserId",
+      "description": "The user ID to retrieve login history for. Validated as non-null. Used in main query WHERE clause."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "LoginHistoryResult",
+      "description": "Login history records for the specified user over the last 365 days, ordered by loginDate descending. Empty rowset if no matching records found.",
+      "columns": [
+        {
+          "name": "loginDate",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "Timestamp of the login from HC.LaunchAndLogin.LoginDate"
+        },
+        {
+          "name": "hcVersion",
+          "type": "NVARCHAR(200)",
+          "nullable": false,
+          "description": "App version string from HC.LaunchAndLogin.HcVersion"
+        },
+        {
+          "name": "systemVersion",
+          "type": "NVARCHAR(100)",
+          "nullable": false,
+          "description": "Device OS version from HC.LaunchAndLogin.SystemVersion. COALESCE to empty string if NULL."
+        },
+        {
+          "name": "isIphone",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 if SystemName LIKE '%ios%', else 0"
+        },
+        {
+          "name": "latitude",
+          "type": "NUMERIC(12,9)",
+          "nullable": false,
+          "description": "City latitude from HC.City (LEFT JOIN on CityId). COALESCE to 0.0 if no city found."
+        },
+        {
+          "name": "longitude",
+          "type": "NUMERIC(13,9)",
+          "nullable": false,
+          "description": "City longitude from HC.City (LEFT JOIN on CityId). COALESCE to 0.0 if no city found."
+        },
+        {
+          "name": "locationName",
+          "type": "NVARCHAR(350)",
+          "nullable": false,
+          "description": "Full city name from HC.City.CityFullName (LEFT JOIN on CityId). COALESCE to empty string if NULL."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning"
+  ]
+}
