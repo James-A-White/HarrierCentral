@@ -1,0 +1,356 @@
+{
+  "schema": "HC5",
+  "name": "hcportal_updateKennelHasher",
+  "version": "1.0.0",
+  "description": "Updates a hasher's profile and kennel-specific settings for a given kennel. Allows editing of personal details (name, email, hash name), discount settings, membership status, notification preferences, and historical run counts. The SP determines which fields to update based on which parameters are non-NULL.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Hasher.PublicHasherId",
+      "description": "Auth: Public hasher ID of the user performing the update. Validated via CHECK_PORTAL_ACCESS_TOKEN along with @hasherBeingEditedPublicId."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC.CHECK_PORTAL_ACCESS_TOKEN. Note: @hasherBeingEditedPublicId is passed as the kennelId parameter to the token check function."
+    },
+    {
+      "name": "hasherBeingEditedPublicId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Hasher.PublicHasherId",
+      "description": "Public hasher ID of the user being edited. Required. Used in access token validation."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "Public kennel ID for the kennel context. Required for all kennel-specific updates."
+    },
+    {
+      "name": "firstName",
+      "type": "NVARCHAR(150)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.FirstName",
+      "description": "User's first name. If non-NULL, updates Hasher.FirstName.",
+      "typeMismatch": "Parameter is NVARCHAR(150), table column is NVARCHAR(250)"
+    },
+    {
+      "name": "lastName",
+      "type": "NVARCHAR(150)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.LastName",
+      "description": "User's last name. If non-NULL, updates Hasher.LastName.",
+      "typeMismatch": "Parameter is NVARCHAR(150), table column is NVARCHAR(250)"
+    },
+    {
+      "name": "eMail",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.Email",
+      "description": "User's email address. If non-NULL, updates Hasher.Email."
+    },
+    {
+      "name": "hashName",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.HashName",
+      "description": "User's hash name. If non-NULL, updates Hasher.HashName."
+    },
+    {
+      "name": "isMember",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "String value ('yes' or not) to set membership status. If 'yes' (case-insensitive), sets MembershipExpirationDate to 2100-01-01. Otherwise sets it to yesterday. Takes precedence over @status if both provided.",
+      "codeSmell": "String parameter for boolean logic; sentinel date 2100-01-01 for 'member forever'"
+    },
+    {
+      "name": "status",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "String value ('member' or not) to set membership status. If 'member' (case-insensitive), sets MembershipExpirationDate to 2100-01-01. Otherwise sets it to yesterday. @isMember takes precedence if both provided.",
+      "codeSmell": "String parameter for boolean logic; sentinel date 2100-01-01 for 'member forever'"
+    },
+    {
+      "name": "emailAlerts",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "String value ('on', 'off', 'auto') to set email alert preference. Maps to HasherKennelMap.KennelEmailAlertPreference: 'on'=1, 'off'=2, 'auto'=0."
+    },
+    {
+      "name": "notifications",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "String value ('on', 'off', 'auto') to set notification preference. Maps to HasherKennelMap.KennelNotificationPreference: 'on'=1, 'off'=2, 'auto'=0."
+    },
+    {
+      "name": "discountPercent",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.DiscountPercent",
+      "description": "Discount percentage for the hasher in this kennel. If non-NULL, updates HasherKennelMap.DiscountPercent."
+    },
+    {
+      "name": "discountAmount",
+      "type": "SMALLMONEY",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.DiscountAmount",
+      "description": "Discount fixed amount for the hasher in this kennel. If non-NULL, updates HasherKennelMap.DiscountAmount."
+    },
+    {
+      "name": "discountDescription",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.DiscountDescription",
+      "description": "Description of the discount. If non-NULL, updates HasherKennelMap.DiscountDescription."
+    },
+    {
+      "name": "historicTotalRuns",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "String representation of historical total run count. If non-NULL and numeric (via ISNUMERIC), updates HasherKennelMap.HistoricalTotalRunCount and calls HC.nonApi_updateRunCountsByUser.",
+      "codeSmell": "String parameter for integer data; uses ISNUMERIC validation"
+    },
+    {
+      "name": "historicHaring",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "String representation of historical haring count. If non-NULL and numeric (via ISNUMERIC), updates HasherKennelMap.HistoricalHaringCount. Does NOT call nonApi_updateRunCountsByUser (commented out).",
+      "codeSmell": "String parameter for integer data; uses ISNUMERIC validation"
+    },
+    {
+      "name": "historicCountsAreEstimates",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "String value ('yes' or 'no') indicating if historical counts are estimates. Maps to HasherKennelMap.HistoricalCountIsEstimate: 'yes'=1, 'no'=0."
+    },
+    {
+      "name": "ipAddress",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Client IP address. Used in LOG.GeneralLog message field."
+    },
+    {
+      "name": "ipGeoDetails",
+      "type": "NVARCHAR(2000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "IP geolocation JSON. Stored in LOG.GeneralLog data field. Falls back to a placeholder JSON if NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Returned on validation or auth failures. Uses errorType codes 2 (validation) and 3 (auth). Multiple error rowsets possible if validation doesn't short-circuit (validation continues after errors are logged)."
+    },
+    {
+      "index": 0,
+      "name": "HistoricalRunCountUpdate",
+      "description": "Returned when @historicTotalRuns is successfully updated. Shows the updated run count values from HasherKennelMap.",
+      "columns": [
+        {
+          "name": "hkmId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HasherKennelMap record ID"
+        },
+        {
+          "name": "HistoricalHaringCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Historical haring count from HasherKennelMap"
+        },
+        {
+          "name": "HistoricalTotalRunCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Historical total run count from HasherKennelMap (just updated)"
+        },
+        {
+          "name": "HcTotalRunCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "HC system-calculated total run count"
+        },
+        {
+          "name": "HcHaringCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "HC system-calculated haring count"
+        },
+        {
+          "name": "hasherBeingEditedId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Public hasher ID of the user being edited (echo of parameter)"
+        },
+        {
+          "name": "publicHasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Public hasher ID of the user performing the update (echo of parameter)"
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "HistoricalHaringUpdate",
+      "description": "Returned when @historicHaring is successfully updated. Shows the updated run count values from HasherKennelMap.",
+      "columns": [
+        {
+          "name": "hkmId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HasherKennelMap record ID"
+        },
+        {
+          "name": "HistoricalHaringCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Historical haring count from HasherKennelMap (just updated)"
+        },
+        {
+          "name": "HistoricalTotalRunCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Historical total run count from HasherKennelMap"
+        },
+        {
+          "name": "HcTotalRunCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "HC system-calculated total run count"
+        },
+        {
+          "name": "HcHaringCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "HC system-calculated haring count"
+        },
+        {
+          "name": "hasherBeingEditedId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Public hasher ID of the user being edited (echo of parameter)"
+        },
+        {
+          "name": "publicHasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Public hasher ID of the user performing the update (echo of parameter)"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT into HC.ErrorLog on validation/auth failures",
+    "INSERT into LOG.GeneralLog on every call (after validation, with IP data and error status)",
+    "UPDATE HC.Hasher if firstName, lastName, eMail, or hashName are non-NULL",
+    "UPDATE HC.HasherKennelMap.DiscountAmount, DiscountPercent, DiscountDescription if discount parameters are non-NULL",
+    "UPDATE HC.HasherKennelMap.MembershipExpirationDate and Following if isMember or status are non-NULL",
+    "UPDATE HC.HasherKennelMap.KennelNotificationPreference, KennelEmailAlertPreference if emailAlerts or notifications are non-NULL",
+    "UPDATE HC.HasherKennelMap.HistoricalCountIsEstimate if historicCountsAreEstimates is non-NULL",
+    "UPDATE HC.HasherKennelMap.HistoricalTotalRunCount if historicTotalRuns is non-NULL and numeric",
+    "UPDATE HC.HasherKennelMap.HistoricalHaringCount if historicHaring is non-NULL and numeric",
+    "EXEC HC.nonApi_updateRunCountsByUser when @historicTotalRuns is updated (recalculates run counts)"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "No XACT_ABORT ON",
+      "detail": "SET NOCOUNT ON is present but SET XACT_ABORT ON is missing. Runtime errors will not auto-rollback."
+    },
+    {
+      "severity": "high",
+      "issue": "No TRY/CATCH block",
+      "detail": "The entire SP has no error handling. If any UPDATE or EXEC fails, the error propagates unhandled to the caller, potentially leaving data in an inconsistent state."
+    },
+    {
+      "severity": "high",
+      "issue": "No transaction wrapper",
+      "detail": "Multiple UPDATE statements across two tables (HC.Hasher and HC.HasherKennelMap) are executed without transaction protection. If any update fails mid-flight, prior changes persist, leaving data inconsistent."
+    },
+    {
+      "severity": "high",
+      "issue": "Validation does not short-circuit",
+      "detail": "All validation blocks run regardless of prior failures. Each failed check SELECTs an error rowset but does not RETURN immediately. If multiple validations fail, the caller receives multiple error rowsets. Only the final 'if (@isError = 1) RETURN' at line 190-193 stops execution."
+    },
+    {
+      "severity": "high",
+      "issue": "DATALENGTH for GUID validation",
+      "detail": "Lines 44, 83, 120: Uses DATALENGTH to validate GUIDs. DATALENGTH returns byte count (16 for UNIQUEIDENTIFIER), which is correct but LEN() or direct IS NULL checks are more idiomatic for GUIDs."
+    },
+    {
+      "severity": "medium",
+      "issue": "Sentinel date value for membership",
+      "detail": "Lines 240: Uses '2100-01-01' as a magic date to represent 'member forever'. Uses DATEADD(day, -1, GETDATE()) for 'not a member'. These should be replaced with explicit expiration date logic or a boolean flag."
+    },
+    {
+      "severity": "medium",
+      "issue": "Type mismatch: @firstName and @lastName",
+      "detail": "@firstName and @lastName are NVARCHAR(150) but Hasher.FirstName and Hasher.LastName are NVARCHAR(250). Values longer than 150 chars would be truncated before reaching the SP."
+    },
+    {
+      "severity": "medium",
+      "issue": "String parameters for integer data",
+      "detail": "@historicTotalRuns and @historicHaring are NVARCHAR(50) but represent integer values. The SP uses ISNUMERIC() and CAST() to validate and convert. Should be INT parameters."
+    },
+    {
+      "severity": "medium",
+      "issue": "String parameters for boolean/enum logic",
+      "detail": "@isMember, @status, @emailAlerts, @notifications, @historicCountsAreEstimates are all string parameters that map to integer/boolean columns via CASE statements with string comparisons. Should use INT parameters with documented enum values."
+    },
+    {
+      "severity": "medium",
+      "issue": "Inconsistent logic: @isMember vs @status",
+      "detail": "Lines 235-248: Both @isMember and @status control the same column (MembershipExpirationDate). If both are provided, both checks run in the same IF condition with OR logic, but the CASE statement evaluates both. The logic is ambiguous and should be refactored to accept one parameter."
+    },
+    {
+      "severity": "medium",
+      "issue": "Commented-out stored procedure call",
+      "detail": "Lines 359-360: EXEC HC.nonApi_updateRunCountsByUser is commented out when @historicHaring is updated, but it IS called when @historicTotalRuns is updated (line 322-323). This asymmetry may be intentional but is not documented."
+    },
+    {
+      "severity": "medium",
+      "issue": "Redundant ID lookups",
+      "detail": "Lines 305-306 and 343-344: The SP looks up @hid and @kid from PublicHasherId/PublicKennelId again, even though these were already resolved at lines 62 and 139. These variables should be reused."
+    },
+    {
+      "severity": "low",
+      "issue": "Commented-out debug code",
+      "detail": "Lines 80, 158, 308, 312: Multiple commented-out SELECT statements like 'SELECT 'Step 1' as result1' are leftover from development/debugging."
+    },
+    {
+      "severity": "low",
+      "issue": "Following always set to 1",
+      "detail": "Line 241: Sets hkm.Following = 1 unconditionally whenever membership status is updated. This may be intentional but is not documented."
+    },
+    {
+      "severity": "low",
+      "issue": "Silent success (no rowset)",
+      "detail": "If the SP completes successfully without updating @historicTotalRuns or @historicHaring, no success rowset is returned. The caller must infer success from the absence of an error rowset."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers",
+    "Never change the string values for @isMember, @status, @emailAlerts, @notifications, @historicCountsAreEstimates without updating all callers"
+  ]
+}

@@ -1,0 +1,650 @@
+{
+  "schema": "HC5",
+  "name": "hcportal_getKennel",
+  "version": "1.0.0",
+  "description": "Retrieves comprehensive details for a single kennel (hash running club) by its public ID. Returns kennel profile, location info, website settings, payment configuration, default run settings, and related geographic data. Used by both admin portal and public HashRuns.org sites.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: The user's public hasher ID. Two service account GUIDs are special: 11111111-... bypasses admin check (@isAdmin = 0), 22222222-... allows admin access. All others are validated against HC.Hasher."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC.CHECK_PORTAL_ACCESS_TOKEN. The @publicKennelId parameter is passed as the kennelId argument to the token check function."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "The public kennel ID to retrieve. Required. Validated by DATALENGTH check (must be 16 bytes)."
+    },
+    {
+      "name": "ipAddress",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Client IP address. Used in LOG.GeneralLog message field. Falls back to '<no IP address>' if NULL."
+    },
+    {
+      "name": "ipGeoDetails",
+      "type": "NVARCHAR(2000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "IP geolocation JSON. Stored in LOG.GeneralLog data field. Falls back to placeholder JSON with '??' country code if NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Uses errorType codes 2 (validation: null/invalid publicHasherId, hasher not found, null/invalid publicKennelId, kennel not found) and 3 (auth: invalid access token). Multiple error rowsets possible if validation doesn't short-circuit. Each validation block has '@isError = 0' guard but doesn't RETURN, so multiple errors may be logged."
+    },
+    {
+      "index": 0,
+      "name": "KennelDetailResult",
+      "description": "Returned on success after validation and logging. Contains comprehensive kennel profile with 70+ columns including geography (city/region/country/continent), website customization, payment schemes (x3), bank details, dissemination settings, default run configuration, and feature flags.",
+      "columns": [
+        {
+          "name": "kennelPublicId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Kennel.PublicKennelId - the public-facing ID"
+        },
+        {
+          "name": "kennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Kennel.KennelName - full kennel name"
+        },
+        {
+          "name": "kennelShortName",
+          "type": "NVARCHAR(25)",
+          "nullable": false,
+          "description": "Kennel.KennelShortName - abbreviated kennel name"
+        },
+        {
+          "name": "kennelUniqueShortName",
+          "type": "NVARCHAR(?)",
+          "nullable": true,
+          "description": "Kennel.KennelUniqueShortName - unique short identifier (column not in first 100 lines of table def)"
+        },
+        {
+          "name": "kennelLogo",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Kennel.KennelLogo - URL to kennel logo image"
+        },
+        {
+          "name": "kennelDescription",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Kennel.KennelDescription - descriptive text about the kennel"
+        },
+        {
+          "name": "latitude",
+          "type": "DECIMAL(18,14)",
+          "nullable": true,
+          "description": "Kennel.Latitude - kennel's geographic latitude"
+        },
+        {
+          "name": "longitude",
+          "type": "DECIMAL(19,15)",
+          "nullable": true,
+          "description": "Kennel.Longitude - kennel's geographic longitude"
+        },
+        {
+          "name": "defaultLatitude",
+          "type": "NUMERIC(12,9)",
+          "nullable": false,
+          "description": "City.latitude - default latitude from city record"
+        },
+        {
+          "name": "defaultLongitude",
+          "type": "NUMERIC(13,9)",
+          "nullable": false,
+          "description": "City.longitude - default longitude from city record"
+        },
+        {
+          "name": "excludeFromLeaderboard",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Kennel.ExcludeFromLeaderboard - flag to exclude kennel from leaderboard rankings"
+        },
+        {
+          "name": "publishToGoogleCalendar",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Kennel.PublishToGoogleCalendar - enable/disable Google Calendar publishing"
+        },
+        {
+          "name": "publishToGoogleCalendarAddresses",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Kennel.PublishToGoogleCalendarAddresses - comma-separated email addresses for calendar invites"
+        },
+        {
+          "name": "mismanagementTeam",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Kennel.KennelMismanagementTeam - description of kennel leadership/management team"
+        },
+        {
+          "name": "kennelWebsiteUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Kennel.KennelWebsiteUrl - external kennel website URL"
+        },
+        {
+          "name": "kennelCoverPhoto",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Kennel.KennelCoverPhoto - URL to kennel cover photo image"
+        },
+        {
+          "name": "cityName",
+          "type": "NVARCHAR(100)",
+          "nullable": false,
+          "description": "City.CityName - name of the kennel's city"
+        },
+        {
+          "name": "regionName",
+          "type": "NVARCHAR(100)",
+          "nullable": false,
+          "description": "Region.RegionName - name of the kennel's region/state/province"
+        },
+        {
+          "name": "countryName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Country.CountryName - name of the kennel's country"
+        },
+        {
+          "name": "continentName",
+          "type": "NVARCHAR(100)",
+          "nullable": false,
+          "description": "Country.ContinentName - name of the kennel's continent"
+        },
+        {
+          "name": "countryFlag",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": "Country.FlagFile - flag icon file for the country"
+        },
+        {
+          "name": "regionFlag",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": "Region.FlagFile - flag icon file for the region"
+        },
+        {
+          "name": "cityFlag",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": "City.FlagFile - flag icon file for the city"
+        },
+        {
+          "name": "websiteBackgroundColor",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "Kennel.WebsiteBackgroundColor - hex color code for website background"
+        },
+        {
+          "name": "websiteBackgroundImage",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Kennel.WebsiteBackgroundImage - URL to website background image"
+        },
+        {
+          "name": "websiteTitleText",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Kennel.WebsiteTitleText - custom title text for website"
+        },
+        {
+          "name": "websiteMenuBackgroundColor",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "Kennel.WebsiteMenuBackgroundColor - hex color code for menu background (column not in first 100 lines)"
+        },
+        {
+          "name": "websiteMenuTextColor",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "Kennel.WebsiteMenuTextColor - hex color code for menu text (column not in first 100 lines)"
+        },
+        {
+          "name": "websiteWelcomeText",
+          "type": "NVARCHAR(?)",
+          "nullable": true,
+          "description": "Kennel.WebsiteWelcomeText - welcome message HTML/text (column not in first 100 lines)"
+        },
+        {
+          "name": "websiteBodyTextColor",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "Kennel.WebsiteBodyTextColor - hex color code for body text (column not in first 100 lines)"
+        },
+        {
+          "name": "websiteTitleTextColor",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "Kennel.WebsiteTitleTextColor - hex color code for title text (column not in first 100 lines)"
+        },
+        {
+          "name": "websiteMismanagementDescription",
+          "type": "NVARCHAR(?)",
+          "nullable": true,
+          "description": "Kennel.WebsiteMismanagementDescription - management team description for website (column not in first 100 lines)"
+        },
+        {
+          "name": "websiteMismanagementJson",
+          "type": "NVARCHAR(?)",
+          "nullable": true,
+          "description": "Kennel.WebsiteMismanagementJson - JSON structure for management team (column not in first 100 lines)"
+        },
+        {
+          "name": "websiteExtraMenusJson",
+          "type": "NVARCHAR(?)",
+          "nullable": true,
+          "description": "Kennel.WebsiteExtraMenusJson - JSON structure for custom menu items (column not in first 100 lines)"
+        },
+        {
+          "name": "websiteControlFlags",
+          "type": "INT(?)",
+          "nullable": true,
+          "description": "Kennel.WebsiteControlFlags - bit flags for website feature toggles (column not in first 100 lines)"
+        },
+        {
+          "name": "websiteContactDetailsJson",
+          "type": "NVARCHAR(?)",
+          "nullable": true,
+          "description": "Kennel.WebsiteContactDetailsJson - JSON structure for contact information (column not in first 100 lines)"
+        },
+        {
+          "name": "websiteBannerImage",
+          "type": "NVARCHAR(?)",
+          "nullable": true,
+          "description": "Kennel.WebsiteBannerImage - URL to banner image (column not in first 100 lines)"
+        },
+        {
+          "name": "websiteUrlShortcode",
+          "type": "NVARCHAR(?)",
+          "nullable": true,
+          "description": "Kennel.WebsiteUrlShortcode - short URL slug for kennel website (column not in first 100 lines)"
+        },
+        {
+          "name": "websiteTitleFont",
+          "type": "NVARCHAR(?)",
+          "nullable": true,
+          "description": "Kennel.WebsiteTitleFont - font family for title text (column not in first 100 lines)"
+        },
+        {
+          "name": "websiteBodyFont",
+          "type": "NVARCHAR(?)",
+          "nullable": true,
+          "description": "Kennel.WebsiteBodyFont - font family for body text (column not in first 100 lines)"
+        },
+        {
+          "name": "kennelStatus",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Kennel.KennelStatus - current status code for the kennel"
+        },
+        {
+          "name": "kennelAdminEmailList",
+          "type": "NVARCHAR(2000)",
+          "nullable": true,
+          "description": "Kennel.KennelAdminEmailList - comma-separated admin email addresses"
+        },
+        {
+          "name": "disseminateHashRunsDotOrg",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Kennel.DisseminateHashRunsDotOrg - flag to publish events to HashRuns.org"
+        },
+        {
+          "name": "disseminateAllowWebLinks",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Kennel.DisseminateAllowWebLinks - flag to allow web links in disseminated events"
+        },
+        {
+          "name": "disseminationAudience",
+          "type": "INT",
+          "nullable": false,
+          "description": "Kennel.DisseminationAudience - audience level for event dissemination (enum value)"
+        },
+        {
+          "name": "disseminateOnGlobalGoogleCalendar",
+          "type": "SMALLINT(?)",
+          "nullable": true,
+          "description": "Kennel.DisseminateOnGlobalGoogleCalendar - flag to publish to global Google Calendar (column not in first 100 lines)"
+        },
+        {
+          "name": "canEditRunAttendence",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Kennel.CanEditRunAttendence - flag to allow editing run attendance records",
+          "typo": "Column name in SP is 'canEditRunAttendence' (misspelled), should be 'Attendance'"
+        },
+        {
+          "name": "kennelPinColor",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Kennel.KennelPinColor - color code for map pin"
+        },
+        {
+          "name": "kennelEventsUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Kennel.KennelEventsUrl - URL to kennel's events page"
+        },
+        {
+          "name": "kennelHcEventsUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Kennel.KennelHcEventsUrl - URL to kennel's Harrier Central events page"
+        },
+        {
+          "name": "defaultEventPriceForMembers",
+          "type": "DECIMAL(10,4)",
+          "nullable": false,
+          "description": "Kennel.DefaultEventPriceForMembers - default run price for members"
+        },
+        {
+          "name": "defaultEventPriceForNonMembers",
+          "type": "DECIMAL(10,4)",
+          "nullable": false,
+          "description": "Kennel.DefaultEventPriceForNonMembers - default run price for non-members"
+        },
+        {
+          "name": "defaultRunStartTime",
+          "type": "DATETIME",
+          "nullable": false,
+          "description": "Kennel.DefaultRunStartTime (TIME(7)) cast to DATETIME - default run start time"
+        },
+        {
+          "name": "bankScheme",
+          "type": "NVARCHAR(10)",
+          "nullable": true,
+          "description": "Kennel.BankScheme - bank account scheme (e.g. IBAN, SWIFT)"
+        },
+        {
+          "name": "bankAccountNumber",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Kennel.BankAccountNumber - bank account number"
+        },
+        {
+          "name": "bankBic",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Kennel.BankBic - BIC/SWIFT code"
+        },
+        {
+          "name": "bankBeneficiary",
+          "type": "NVARCHAR(150)",
+          "nullable": true,
+          "description": "Kennel.BankBeneficiary - account beneficiary name"
+        },
+        {
+          "name": "kennelPaymentScheme",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentScheme - primary payment provider scheme"
+        },
+        {
+          "name": "kennelPaymentUrl",
+          "type": "NVARCHAR(2000)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentUrl - primary payment URL"
+        },
+        {
+          "name": "kennelPaymentUrlExpires",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentUrlExpires - primary payment URL expiration timestamp"
+        },
+        {
+          "name": "kennelPaymentMemberSurcharge",
+          "type": "DECIMAL(10,4)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentMemberSurcharge - primary payment surcharge for members"
+        },
+        {
+          "name": "kennelPaymentNonMemberSurcharge",
+          "type": "DECIMAL(10,4)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentNonMemberSurcharge - primary payment surcharge for non-members"
+        },
+        {
+          "name": "kennelPaymentScheme2",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentScheme2 - secondary payment provider scheme"
+        },
+        {
+          "name": "kennelPaymentUrl2",
+          "type": "NVARCHAR(2000)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentUrl2 - secondary payment URL"
+        },
+        {
+          "name": "kennelPaymentUrlExpires2",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentUrlExpires2 - secondary payment URL expiration timestamp"
+        },
+        {
+          "name": "kennelPaymentMemberSurcharge2",
+          "type": "DECIMAL(10,4)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentMemberSurcharge2 - secondary payment surcharge for members"
+        },
+        {
+          "name": "kennelPaymentNonMemberSurcharge2",
+          "type": "DECIMAL(10,4)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentNonMemberSurcharge2 - secondary payment surcharge for non-members"
+        },
+        {
+          "name": "kennelPaymentScheme3",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentScheme3 - tertiary payment provider scheme"
+        },
+        {
+          "name": "kennelPaymentUrl3",
+          "type": "NVARCHAR(2000)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentUrl3 - tertiary payment URL"
+        },
+        {
+          "name": "kennelPaymentUrlExpires3",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentUrlExpires3 - tertiary payment URL expiration timestamp"
+        },
+        {
+          "name": "kennelPaymentMemberSurcharge3",
+          "type": "DECIMAL(10,4)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentMemberSurcharge3 - tertiary payment surcharge for members"
+        },
+        {
+          "name": "kennelPaymentNonMemberSurcharge3",
+          "type": "DECIMAL(10,4)",
+          "nullable": true,
+          "description": "Kennel.KennelPaymentNonMemberSurcharge3 - tertiary payment surcharge for non-members"
+        },
+        {
+          "name": "allowSelfPayment",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Kennel.AllowSelfPayment - flag to allow hashers to record their own payments"
+        },
+        {
+          "name": "allowNegativeCredit",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Kennel.AllowNegativeCredit - flag to allow negative credit balances"
+        },
+        {
+          "name": "cityId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Kennel.CityId - foreign key to HC.City"
+        },
+        {
+          "name": "provinceStateId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Kennel.ProvinceStateId - foreign key to HC.Region"
+        },
+        {
+          "name": "countryId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Kennel.CountryId - foreign key to HC.Country"
+        },
+        {
+          "name": "defaultRunTags1",
+          "type": "INT",
+          "nullable": false,
+          "description": "Kennel.DefaultRunTags1 - default tag set 1 for runs"
+        },
+        {
+          "name": "defaultRunTags2",
+          "type": "INT",
+          "nullable": false,
+          "description": "Kennel.DefaultRunTags2 - default tag set 2 for runs"
+        },
+        {
+          "name": "defaultRunTags3",
+          "type": "INT",
+          "nullable": false,
+          "description": "Kennel.DefaultRunTags3 - default tag set 3 for runs"
+        },
+        {
+          "name": "membershipDurationInMonths",
+          "type": "INT",
+          "nullable": false,
+          "description": "Kennel.MembershipDurationInMonths - length of membership validity"
+        },
+        {
+          "name": "runCountStartDate",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Kennel.RunCountStartDate - date to start counting runs from (for run number sequence)"
+        },
+        {
+          "name": "distancePreference",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Kennel.DistancePreference - preferred distance unit (km/miles enum)"
+        },
+        {
+          "name": "defaultDistancePreference",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Country.DistancePreference - country's default distance unit"
+        },
+        {
+          "name": "extApiKey",
+          "type": "NVARCHAR(120)",
+          "nullable": true,
+          "description": "Kennel.ExtApiKey - external API key for integrations"
+        },
+        {
+          "name": "kennelSearchTags",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Kennel.KennelSearchTags - search keywords for kennel discovery"
+        },
+        {
+          "name": "notificationMinutesBeforeRunForChatPushNotifications",
+          "type": "INT(?)",
+          "nullable": true,
+          "description": "Kennel.NotificationMinutesBeforeRunForChatPushNotifications - timing for chat notifications (column not in first 100 lines)"
+        },
+        {
+          "name": "notificationMinutesBeforeRunForCheckinReminder",
+          "type": "INT(?)",
+          "nullable": true,
+          "description": "Kennel.NotificationMinutesBeforeRunForCheckinReminder - timing for check-in reminders (column not in first 100 lines)"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT into HC.ErrorLog on validation/auth failures (lines 37, 59, 77, 98, 117)",
+    "INSERT into LOG.GeneralLog on every call after initial validation (lines 136-147), includes IP address and geo details, with different LogSource prefix based on @isAdmin flag"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "No XACT_ABORT ON",
+      "detail": "SET NOCOUNT ON is present (line 19) but SET XACT_ABORT ON is missing. Runtime errors will not auto-rollback."
+    },
+    {
+      "severity": "high",
+      "issue": "No TRY/CATCH block",
+      "detail": "The entire SP has no error handling. If the final SELECT fails (e.g. bad JOIN), the error propagates unhandled to the caller."
+    },
+    {
+      "severity": "high",
+      "issue": "Validation does not short-circuit",
+      "detail": "All validation blocks run regardless of prior failures. Each failed check SELECTs an error rowset and has an '@isError = 0' guard for subsequent checks, but does not RETURN until line 151. If multiple validations fail, the caller receives multiple error rowsets before the single RETURN. The final SELECT (line 154) never executes when @isError = 1, but all validation errors are already returned."
+    },
+    {
+      "severity": "high",
+      "issue": "DATALENGTH for UNIQUEIDENTIFIER checks",
+      "detail": "Lines 31, 72: Uses DATALENGTH instead of checking for NULL alone. For UNIQUEIDENTIFIER, DATALENGTH will always return 16 bytes if not NULL, making the check redundant. Should just check 'IS NULL'."
+    },
+    {
+      "severity": "medium",
+      "issue": "Hardcoded magic GUIDs for service accounts",
+      "detail": "Lines 49, 130-133: Two special GUIDs (11111111-... and 22222222-...) bypass normal hasher validation and control @isAdmin flag. The 11111111-... GUID sets @isAdmin = 0 for HashRuns.org public access. No documentation of what each represents."
+    },
+    {
+      "severity": "medium",
+      "issue": "@isAdmin set but never used for access control",
+      "detail": "Lines 129-133: @isAdmin flag is set based on publicHasherId value and used ONLY in the LOG.GeneralLog LogSource prefix (line 143). It does not control what data is returned or enforce any access restrictions. Dead logic for access control."
+    },
+    {
+      "severity": "medium",
+      "issue": "@ipAddress and @ipGeoDetails used only for logging",
+      "detail": "Lines 13-14, 144-145: These parameters are accepted and used in LOG.GeneralLog but have no impact on SP logic or output. Consider if they should be optional or document their logging-only purpose."
+    },
+    {
+      "severity": "low",
+      "issue": "Commented-out EXEC statements",
+      "detail": "Lines 21, 23, 28: Multiple commented-out debug/test EXEC statements with real GUIDs and JSON payloads. Leftover from development/debugging."
+    },
+    {
+      "severity": "low",
+      "issue": "Commented-out column selection",
+      "detail": "Line 166: 'GoogleCalendarId' column is commented out in the final SELECT but the column exists in the table. Unclear if this is intentional deprecation or temporary removal."
+    },
+    {
+      "severity": "low",
+      "issue": "Typo in column alias",
+      "detail": "Line 203: Output column is 'canEditRunAttendence' but should be 'canEditRunAttendance'. Typo in the SP; fixing in HC6 would be a breaking change unless clients tolerate both spellings."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers",
+    "Never fix the 'canEditRunAttendence' typo without coordinating with all clients"
+  ]
+}

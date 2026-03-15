@@ -1,0 +1,492 @@
+{
+  "schema": "HC5",
+  "name": "hcportal_addEditEvent2",
+  "version": "1.0.0",
+  "description": "Creates a new event or updates an existing event for a kennel. Handles event data (name, description, location, pricing, tags, dissemination settings), optionally saves tags as kennel defaults, and triggers run number recalculation after commit.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: identifies the calling user. Required but declared nullable so errors are trapped in SQL."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC.CHECK_PORTAL_ACCESS_TOKEN."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "Routing: identifies the kennel this event belongs to. Required but declared nullable for SQL-side error trapping."
+    },
+    {
+      "name": "absoluteEventNumber",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.AbsoluteEventNumber",
+      "description": "Optional absolute event number. Sentinel: -1 → NULL (no change), -2 → set to NULL on insert, ≤0 → NULL on update."
+    },
+    {
+      "name": "eventImage",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "Event.EventImage",
+      "description": "URL to the event image. Sentinel: '<null>' → set to NULL. Strings shorter than 5 chars normalized to NULL."
+    },
+    {
+      "name": "deleted",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.deleted",
+      "description": "Deletion flag. 1 = delete the event (stub — currently does nothing). Sentinel: -1 → NULL.",
+      "typeMismatch": "Table column is BIT, parameter is SMALLINT"
+    },
+    {
+      "name": "eventEndDatetime",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": true,
+      "mapsToColumn": "Event.EventEndDatetime",
+      "description": "Event end date/time. Dates ≤ 1/1/2000 normalized to NULL."
+    },
+    {
+      "name": "eventDescription",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Event.EventDescription",
+      "description": "Free-text event description. Strings shorter than 2 chars (by DATALENGTH) normalized to NULL. Unicode paragraph separators stripped."
+    },
+    {
+      "name": "eventGeographicScope",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.EventGeographicScope",
+      "description": "Geographic scope enum (1=Normal, 2=Local special, 3=Regional, 4=National, 5=Continental, 6=Global, 7=Other). Sentinel: -1 → NULL."
+    },
+    {
+      "name": "eventName",
+      "type": "NVARCHAR(120)",
+      "nullable": true,
+      "mapsToColumn": "Event.EventName",
+      "description": "Event display name. Strings shorter than 2 chars (by DATALENGTH) normalized to NULL. Auto-generated placeholder if empty on insert.",
+      "typeMismatch": "Table column is NVARCHAR(250), parameter is NVARCHAR(120)"
+    },
+    {
+      "name": "eventPriceForExtras",
+      "type": "FLOAT",
+      "nullable": true,
+      "mapsToColumn": "Event.EventPriceForExtras",
+      "description": "Price for extras/add-ons. Sentinel: -1 → NULL (no change), -2 → set to NULL.",
+      "typeMismatch": "Table column is DECIMAL(10,4), parameter is FLOAT"
+    },
+    {
+      "name": "eventPriceForMembers",
+      "type": "FLOAT",
+      "nullable": true,
+      "mapsToColumn": "Event.EventPriceForMembers",
+      "description": "Event price for members. Sentinel: -1 → NULL (no change), -2 → set to NULL.",
+      "typeMismatch": "Table column is DECIMAL(10,4), parameter is FLOAT"
+    },
+    {
+      "name": "eventPriceForNonMembers",
+      "type": "FLOAT",
+      "nullable": true,
+      "mapsToColumn": "Event.EventPriceForNonMembers",
+      "description": "Event price for non-members. Sentinel: -1 → NULL (no change), -2 → set to NULL.",
+      "typeMismatch": "Table column is DECIMAL(10,4), parameter is FLOAT"
+    },
+    {
+      "name": "extrasDescription",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Event.ExtrasDescription",
+      "description": "Description of extras. Sentinel: '<null>' → set to NULL. Strings shorter than 2 chars (by DATALENGTH) normalized to NULL."
+    },
+    {
+      "name": "extrasRsvpRequired",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.ExtrasRsvpRequired",
+      "description": "Whether RSVP is required for extras. Defaults to 0 on insert."
+    },
+    {
+      "name": "hares",
+      "type": "NVARCHAR(2500)",
+      "nullable": true,
+      "mapsToColumn": "Event.Hares",
+      "description": "Hare names/info. Sentinel: '<null>' → set to NULL. Strings shorter than 4 chars (by DATALENGTH) normalized to NULL."
+    },
+    {
+      "name": "integrationEnabled",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.IntegrationEnabled",
+      "description": "Whether integration is enabled for this event. Defaults to 1 on update, 0 on insert.",
+      "typeMismatch": "Table column is INT, parameter is SMALLINT"
+    },
+    {
+      "name": "isCountedRun",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.IsCountedRun",
+      "description": "Whether this event counts toward run numbers. Sentinel: -1 → NULL. Defaults to 1 on insert, 0 on update."
+    },
+    {
+      "name": "isPromotedEvent",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.IsPromotedEvent",
+      "description": "Whether this is a promoted/featured event. Sentinel: -1 → NULL. Defaults to 0."
+    },
+    {
+      "name": "isVisible",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.IsVisible",
+      "description": "Whether this event is visible to users. Sentinel: -1 → NULL. Defaults to 1."
+    },
+    {
+      "name": "hcLatitude",
+      "type": "DECIMAL(18,15)",
+      "nullable": true,
+      "mapsToColumn": "Event.Latitude",
+      "description": "Event latitude. Sentinel: -1 → NULL (no change), -99.0 → set to NULL. Also updates EventGeolocation."
+    },
+    {
+      "name": "locationCity",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Event.LocationCity",
+      "description": "City name. Sentinel: '<null>' → set to NULL. Strings shorter than 2 chars (by DATALENGTH) normalized to NULL."
+    },
+    {
+      "name": "locationCountry",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Event.LocationCountry",
+      "description": "Country name. Sentinel: '<null>' → set to NULL. Strings shorter than 2 chars (by DATALENGTH) normalized to NULL."
+    },
+    {
+      "name": "locationOneLineDesc",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Event.LocationOneLineDesc",
+      "description": "One-line location description. Sentinel: '<null>' → set to NULL. Strings shorter than 2 chars (by DATALENGTH) normalized to NULL. Unicode paragraph separators stripped."
+    },
+    {
+      "name": "locationPostCode",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": "Event.LocationPostCode",
+      "description": "Postal/zip code. Sentinel: '<null>' → set to NULL. Strings shorter than 2 chars (by DATALENGTH) normalized to NULL.",
+      "typeMismatch": "Table column is NVARCHAR(250), parameter is NVARCHAR(50)"
+    },
+    {
+      "name": "locationRegion",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Event.LocationRegion",
+      "description": "Region/state. Sentinel: '<null>' → set to NULL. Strings shorter than 2 chars (by DATALENGTH) normalized to NULL."
+    },
+    {
+      "name": "locationStreet",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Event.LocationStreet",
+      "description": "Street address. Sentinel: '<null>' → set to NULL. Strings shorter than 2 chars (by DATALENGTH) normalized to NULL."
+    },
+    {
+      "name": "locationSubRegion",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Event.LocationSubRegion",
+      "description": "Sub-region/district. Sentinel: '<null>' → set to NULL. Strings shorter than 2 chars (by DATALENGTH) normalized to NULL."
+    },
+    {
+      "name": "hcLongitude",
+      "type": "DECIMAL(19,15)",
+      "nullable": true,
+      "mapsToColumn": "Event.Longitude",
+      "description": "Event longitude. Sentinel: -1 → NULL (no change), -999.0 → set to NULL. Also updates EventGeolocation."
+    },
+    {
+      "name": "maximumParticipantsAllowed",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.MaximumParticipantsAllowed",
+      "description": "Max participants cap. Sentinel: -2 → set to NULL."
+    },
+    {
+      "name": "minimumParticipantsRequired",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.MinimumParticipantsRequired",
+      "description": "Minimum participants needed. Sentinel: -2 → set to NULL."
+    },
+    {
+      "name": "publicEventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.PublicEventId",
+      "description": "If provided, identifies an existing event to update. If NULL, a new event is created."
+    },
+    {
+      "name": "saveTagsAsKennelDefault",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "If 1, saves the provided tags1/tags2/tags3 as the kennel's default run tags."
+    },
+    {
+      "name": "eventStartDatetime",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": true,
+      "mapsToColumn": "Event.EventStartDatetime",
+      "description": "Event start date/time. Dates ≤ 1/1/2000 normalized to NULL. On insert, defaults to 3 days from now with kennel's DefaultRunStartTime if not provided."
+    },
+    {
+      "name": "tags1",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "Event.Tags1",
+      "description": "Bit-flag field for primary event tags (Normal Run, Red Dress, Full Moon, etc.). Defaults to 0 on insert."
+    },
+    {
+      "name": "tags2",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "Event.Tags2",
+      "description": "Bit-flag field for secondary event tags (Multi-Day, No Dogs, Family Hash, etc.). Defaults to 0 on insert."
+    },
+    {
+      "name": "tags3",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "Event.Tags3",
+      "description": "Bit-flag field for tertiary event tags (reserved). Defaults to 0 on insert."
+    },
+    {
+      "name": "useFbImage",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.UseFbImage",
+      "description": "Whether to use Facebook event image. Sentinel: -1 → NULL. Hardcoded to 0 on insert."
+    },
+    {
+      "name": "useFbLatLon",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.UseFbLatLon",
+      "description": "Whether to use Facebook lat/lon. Sentinel: -1 → NULL. Hardcoded to 0 on insert."
+    },
+    {
+      "name": "useFbLocation",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.UseFbLocation",
+      "description": "Whether to use Facebook location. Sentinel: -1 → NULL. Hardcoded to 0 on insert."
+    },
+    {
+      "name": "useFbRunDetails",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.UseFbRunDetails",
+      "description": "Whether to use Facebook run details (description, start time). Sentinel: -1 → NULL. Hardcoded to 0 on insert."
+    },
+    {
+      "name": "canEditRunAttendence",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.CanEditRunAttendence",
+      "description": "Whether users can edit their own attendance. Sentinel: -1 → NULL (no change), -2 → set to NULL."
+    },
+    {
+      "name": "evtDisseminationAudience",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "Event.EvtDisseminationAudience",
+      "description": "Dissemination audience flag. Sentinel: -1 → NULL (no change), -2 → set to NULL."
+    },
+    {
+      "name": "evtDisseminateAllowWebLinks",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.EvtDisseminateAllowWebLinks",
+      "description": "Whether dissemination allows web links. Sentinel: -1 → NULL (no change), 2 → set to NULL (INCONSISTENT: should be -2)."
+    },
+    {
+      "name": "evtDisseminateHashRunsDotOrg",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.EvtDisseminateHashRunsDotOrg",
+      "description": "Whether to disseminate to HashRuns.org. Sentinel: -1 → NULL (no change), -2 → set to NULL."
+    },
+    {
+      "name": "evtDisseminateOnGlobalGoogleCalendar",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.DisseminateOnGlobalGoogleCalendar",
+      "description": "Whether to publish to global Google Calendar. Sentinel: -1 → NULL (no change), -2 → set to NULL."
+    },
+    {
+      "name": "countryId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.CountryId",
+      "description": "Country reference. Falls back to kennel's CountryId on insert if not provided."
+    },
+    {
+      "name": "ipAddress",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "DEAD INPUT: Accepted but never used in the SP body."
+    },
+    {
+      "name": "ipGeoDetails",
+      "type": "NVARCHAR(2000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "DEAD INPUT: Accepted but never used in the SP body."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Uses errorType codes 2 (validation), 3 (auth/not-found), 4 (concurrent modification), 5 (unhandled DB error). Only one of ErrorResult, DeletionResult, or SuccessResult is returned per call."
+    },
+    {
+      "index": 0,
+      "name": "DeletionResult",
+      "description": "Returned when @deleted = 1. Currently a stub — no actual deletion logic is executed.",
+      "columns": [
+        {
+          "name": "result",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Always 'Deletion processed'"
+        },
+        {
+          "name": "resultCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1"
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "SuccessResult",
+      "description": "Returned on successful insert or update.",
+      "columns": [
+        {
+          "name": "result",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Human-readable success message, e.g. 'Successfully updated KennelShortName run/event #123'"
+        },
+        {
+          "name": "resultCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "1 on success, NULL if neither insert nor update path was taken"
+        },
+        {
+          "name": "publicEventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "The public event ID (existing on update, newly generated on insert)"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT into LOG.GeneralLog on every call (before validation)",
+    "INSERT into HC.ErrorLog on any validation/auth/runtime failure",
+    "UPDATE HC.Event when @publicEventId identifies an existing event",
+    "UPDATE HC.HasherEventMap.updatedAt when @countryId changes on an existing event",
+    "INSERT HC.Event when creating a new event (@publicEventId is NULL)",
+    "UPDATE HC.Kennel default tags when @saveTagsAsKennelDefault = 1",
+    "EXEC HC.nonApi_updateRunNumbers after COMMIT (outside transaction)"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "FLOAT for money",
+      "detail": "@eventPriceForMembers, @eventPriceForNonMembers, @eventPriceForExtras are FLOAT but table columns are DECIMAL(10,4). Risk of floating-point rounding errors on monetary values."
+    },
+    {
+      "severity": "high",
+      "issue": "Type mismatch: @deleted is SMALLINT, table column is BIT",
+      "detail": "Parameter accepts any SMALLINT value but column only stores 0/1."
+    },
+    {
+      "severity": "medium",
+      "issue": "Type mismatch: @integrationEnabled is SMALLINT, table column is INT",
+      "detail": "SMALLINT is narrower than INT. No data loss in this direction but types should match."
+    },
+    {
+      "severity": "medium",
+      "issue": "Length mismatch: @eventName is NVARCHAR(120), table column is NVARCHAR(250)",
+      "detail": "Silently truncates event names longer than 120 characters."
+    },
+    {
+      "severity": "medium",
+      "issue": "Length mismatch: @locationPostCode is NVARCHAR(50), table column is NVARCHAR(250)",
+      "detail": "Silently truncates post codes longer than 50 characters."
+    },
+    {
+      "severity": "high",
+      "issue": "Inconsistent sentinel for @evtDisseminateAllowWebLinks",
+      "detail": "Uses sentinel value 2 to mean 'set to NULL', while every other field uses -2. This is likely a bug."
+    },
+    {
+      "severity": "medium",
+      "issue": "Dead inputs: @ipAddress and @ipGeoDetails",
+      "detail": "Both parameters are accepted but never referenced in the SP body."
+    },
+    {
+      "severity": "low",
+      "issue": "Dead variable: @isAdmin",
+      "detail": "@isAdmin is declared and conditionally set to 0 for a test publicHasherId, but is never used anywhere."
+    },
+    {
+      "severity": "high",
+      "issue": "Wrong SP name in GeneralLog entry",
+      "detail": "LOG.GeneralLog LogSource is 'Admin Portal: hcportal_addEditEvent' and Message is '[HC5].[hcportal_addEditEvent]' — both missing the '2' suffix. Should reference hcportal_addEditEvent2."
+    },
+    {
+      "severity": "high",
+      "issue": "HC.nonApi_updateRunNumbers called outside transaction",
+      "detail": "Line 543: EXEC HC.nonApi_updateRunNumbers is called after COMMIT TRANSACTION. If this fails, run numbers are inconsistent but the event data is already committed."
+    },
+    {
+      "severity": "high",
+      "issue": "Deletion path is a stub",
+      "detail": "When @deleted = 1, the SP opens a transaction, does nothing, commits, and returns 'Deletion processed'. No actual deletion occurs."
+    },
+    {
+      "severity": "medium",
+      "issue": "Pervasive use of DATALENGTH for string length checks",
+      "detail": "DATALENGTH returns byte count (2x char count for NVARCHAR). Used throughout for empty-string normalization. Should use LEN() for character-level checks."
+    },
+    {
+      "severity": "low",
+      "issue": "Inconsistent sentinel values across parameters",
+      "detail": "Most nullable fields use -1 for 'no change' and -2 for 'explicitly set to null'. String fields use '<null>' for explicit null. Latitude uses -99.0, longitude uses -999.0. This patchwork is error-prone."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

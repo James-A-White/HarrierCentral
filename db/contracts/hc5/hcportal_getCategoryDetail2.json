@@ -1,0 +1,243 @@
+{
+  "schema": "HC5",
+  "name": "hcportal_getCategoryDetail2",
+  "version": "1.0.0",
+  "description": "Retrieves activity feed data for the HC admin portal dashboard. Returns a header row followed by data rows for one of 9 categories: 0=New Hashers, 1=Event RSVPs, 2=New Events, 3=New Kennels, 4=App Logins, 5=Payments, 6=Portal Access, 7=Errors, 8=HashRuns.Org Traffic, 100=Version Adoption. Each category has 6 columns with category-specific meanings. Results filtered by a cutoff date calculated from @days parameter.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: user's public hasher ID. Validated for NULL and byte length (must be 16 bytes)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC.CHECK_PORTAL_ACCESS_TOKEN."
+    },
+    {
+      "name": "categoryId",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Required. Specifies which category to retrieve: 0=New Hashers, 1=Event RSVPs, 2=New Events, 3=New Kennels, 4=App Logins, 5=Payments, 6=Portal Access, 7=Errors, 8=HashRuns.Org Traffic, 100=Version Adoption."
+    },
+    {
+      "name": "days",
+      "type": "SMALLINT",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Time window in days to look back for data. Defaults to 7. If 0, uses 60 minutes. Calculates cutoff date as @now - (@days * 24 * 60) minutes."
+    },
+    {
+      "name": "hcVersion",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Optional. App version string. Only used in Category 100 (Version Adoption) to filter version-specific login counts."
+    },
+    {
+      "name": "hcBuild",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Optional. App build string. Only used in Category 100 (Version Adoption) to filter version-specific login counts."
+    },
+    {
+      "name": "ipAddress",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Client IP address. Used in LOG.GeneralLog message field (coalesced to '<no IP address>')."
+    },
+    {
+      "name": "ipGeoDetails",
+      "type": "NVARCHAR(2000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "IP geolocation JSON. Stored in LOG.GeneralLog data field. Falls back to a placeholder JSON if NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Uses errorType codes 2 (validation) and 3 (auth). Validation does not short-circuit - multiple error rowsets possible if multiple validations fail. Always calls RETURN after error, so no data rowsets follow errors."
+    },
+    {
+      "index": 0,
+      "name": "CategoryHeader",
+      "description": "First rowset returned when no errors. Single row with 6 columns containing the column headers for the selected category. All categories return exactly 6 columns (unused columns are empty strings).",
+      "columns": [
+        {
+          "name": "col1",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Header for column 1. Varies by category but typically 'Time' (formatted as 'Xm ago', 'Xh Ym ago', or 'Xd ago')."
+        },
+        {
+          "name": "col2",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Header for column 2. Category-specific (e.g., 'Name', 'Kennel', 'Source', 'Location')."
+        },
+        {
+          "name": "col3",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Header for column 3. Category-specific (e.g., 'Location', 'Run #', 'Page')."
+        },
+        {
+          "name": "col4",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Header for column 4. Category-specific or empty string if category uses fewer than 4 columns."
+        },
+        {
+          "name": "col5",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Header for column 5. Category-specific or empty string if category uses fewer than 5 columns."
+        },
+        {
+          "name": "col6",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Header for column 6. Category-specific or empty string if category uses fewer than 6 columns."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "CategoryData",
+      "description": "Second rowset returned when no errors. Zero or more rows of data matching the category filter. Each row has exactly 6 columns (col1-col6) with meanings defined by the category header. All values are coalesced to empty strings (never NULL). Order varies by category (typically DESC by timestamp). All category queries use OPTION (RECOMPILE) and NOLOCK hints.",
+      "columns": [
+        {
+          "name": "col1",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Data for column 1. All categories use this as a formatted time-ago string: '<60m = 'Xm ago', <24h = 'Xh XXm ago', else 'Xd ago'."
+        },
+        {
+          "name": "col2",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Data for column 2. Category-specific. Coalesced to empty string."
+        },
+        {
+          "name": "col3",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Data for column 3. Category-specific. Coalesced to empty string."
+        },
+        {
+          "name": "col4",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Data for column 4. Category-specific or empty string if unused. Coalesced to empty string."
+        },
+        {
+          "name": "col5",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Data for column 5. Category-specific or empty string if unused. Coalesced to empty string."
+        },
+        {
+          "name": "col6",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Data for column 6. Category-specific or empty string if unused. Coalesced to empty string."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT into HC.ErrorLog on validation/auth failures (lines 43-44, 62-63, 80-81)",
+    "INSERT into LOG.GeneralLog on every call after validation (lines 94-105), includes IP address and geolocation data"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "DATALENGTH instead of LEN",
+      "detail": "Line 37: Uses DATALENGTH(@publicHasherId) != 16 to validate GUID. DATALENGTH returns byte count, not character count. For UNIQUEIDENTIFIER this is correct (16 bytes), but inconsistent with project standards which prefer LEN() for string checks. This is an edge case where DATALENGTH is technically appropriate but violates the coding standard."
+    },
+    {
+      "severity": "high",
+      "issue": "No XACT_ABORT ON",
+      "detail": "Line 23: SET NOCOUNT ON is present but SET XACT_ABORT ON is missing. Runtime errors will not auto-rollback. However, this is a read-only SP (uses READ UNCOMMITTED isolation) with no transactions, so impact is low."
+    },
+    {
+      "severity": "high",
+      "issue": "No TRY/CATCH block",
+      "detail": "The entire SP has no error handling. Runtime errors (e.g., divide by zero, overflow) propagate unhandled to the caller."
+    },
+    {
+      "severity": "high",
+      "issue": "No transaction wrapping",
+      "detail": "The SP performs INSERTs to HC.ErrorLog and LOG.GeneralLog without transaction control. If a subsequent query fails, log entries persist orphaned. However, since this is a read-only reporting SP with logging side effects, this is acceptable."
+    },
+    {
+      "severity": "high",
+      "issue": "Validation does not short-circuit",
+      "detail": "Lines 37-91: All validation blocks run regardless of prior failures. Each failed check SELECTs an error rowset but does not RETURN immediately. If multiple validations fail (e.g., NULL publicHasherId AND NULL categoryId), the caller receives multiple error rowsets before the single RETURN at line 109. Most callers likely only read the first rowset."
+    },
+    {
+      "severity": "medium",
+      "issue": "Wrong SP name in log message",
+      "detail": "Line 101: LOG.GeneralLog message reads 'Admin Portal: hcportal_getCategoryDetail' (missing the '2' suffix). Should be 'hcportal_getCategoryDetail2'."
+    },
+    {
+      "severity": "medium",
+      "issue": "Magic sentinel value for latitude",
+      "detail": "Line 147: WHERE h.HomeLatitude != 51.5033000000. This magic value (London latitude) is used to filter out default/unset locations. Should be documented or replaced with a named constant."
+    },
+    {
+      "severity": "medium",
+      "issue": "Hardcoded magic GUIDs for user exclusions",
+      "detail": "Lines 366-367, 476-477: Hardcoded user ID exclusions '0CDBB109-215E-4B5F-A405-F6C9FBCB18EC' and 'D0B7EF01-C6E3-4723-9D2F-2AE864A59F1A' appear in categories 4 and 6. No documentation of who these users are (likely test/admin accounts)."
+    },
+    {
+      "severity": "medium",
+      "issue": "Inconsistent time-ago calculation",
+      "detail": "All categories (lines 154-159, 210-215, 266-271, etc.) duplicate the same time-ago CASE expression. This should be a function or CTE to ensure consistency and maintainability."
+    },
+    {
+      "severity": "low",
+      "issue": "READ UNCOMMITTED allows dirty reads",
+      "detail": "Line 24: SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED allows dirty reads. This is intentional for reporting queries (documented in comment), but means the dashboard may show inconsistent or rolled-back data."
+    },
+    {
+      "severity": "low",
+      "issue": "OPTION (RECOMPILE) on all queries",
+      "detail": "Every category query ends with OPTION (RECOMPILE) (lines 189, 245, 288, 325, 369, 439, 479, 516, 561, 616). This forces plan recompilation on every execution. Likely intentional for parameter sniffing avoidance with variable @days and @cutoffDate, but should be documented."
+    },
+    {
+      "severity": "low",
+      "issue": "Dead input: hcVersion and hcBuild",
+      "detail": "Lines 16-17: @hcVersion and @hcBuild are only used in Category 100. If any other category is requested, these parameters are accepted but ignored. Not a true dead input, but category-specific."
+    },
+    {
+      "severity": "low",
+      "issue": "Incomplete case handling for InboundIntegrationId",
+      "detail": "Lines 273-278: Category 2 (New Events) maps InboundIntegrationId to abbreviations: 0='HC', 1='FB', 3='SD', 5='BE', ELSE '??'. Missing cases for 2 and 4. Should document valid values or default to a descriptive string."
+    },
+    {
+      "severity": "low",
+      "issue": "Complex currency symbol replacement logic",
+      "detail": "Lines 406-411: Category 5 (Payments) uses REPLACE(COALESCE(k.CurrencySymbol, c.CurrencySymbol), '^', ...) to inject amounts into a template. The '^' placeholder is undocumented magic. Should use a clearer templating approach."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers",
+    "Never change the meaning of categoryId values",
+    "Never reorder col1-col6 columns or change their count (always exactly 6)",
+    "Never change time-ago formatting logic without coordinating with portal frontend"
+  ]
+}

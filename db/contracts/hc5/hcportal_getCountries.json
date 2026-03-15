@@ -1,0 +1,105 @@
+{
+  "schema": "HC5",
+  "name": "hcportal_getCountries",
+  "version": "1.0.0",
+  "description": "Returns a list of all countries from the HC.Country table, ordered alphabetically by CountryName. Simple read-only lookup SP used for populating country dropdowns in the portal. Requires standard authentication (publicHasherId + accessToken).",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: the authenticated user's public hasher ID. Validated via HC.CHECK_PORTAL_ACCESS_TOKEN function."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC.CHECK_PORTAL_ACCESS_TOKEN."
+    },
+    {
+      "name": "ipAddress",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Client IP address. Used in LOG.GeneralLog message field."
+    },
+    {
+      "name": "ipGeoDetails",
+      "type": "NVARCHAR(2000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "IP geolocation JSON. Stored in LOG.GeneralLog data field. Falls back to a placeholder JSON if NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Uses errorType codes 2 (validation) and 3 (auth). Validation does not short-circuit — multiple error rowsets may be returned if both publicHasherId and accessToken validations fail."
+    },
+    {
+      "index": 0,
+      "name": "CountriesResult",
+      "description": "List of all countries ordered alphabetically by CountryName. Only returned if authentication succeeds and no validation errors occurred.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Country unique identifier (PK from HC.Country)"
+        },
+        {
+          "name": "CountryName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Country display name (from HC.Country)"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT into HC.ErrorLog on validation/auth failures",
+    "INSERT into LOG.GeneralLog on every call (after validation, with IP data and error title if validation failed)"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "No XACT_ABORT ON",
+      "detail": "SET NOCOUNT ON is present (line 17) but SET XACT_ABORT ON is missing. Runtime errors will not auto-rollback."
+    },
+    {
+      "severity": "high",
+      "issue": "No TRY/CATCH block",
+      "detail": "The entire SP has no error handling. If any runtime error occurs (e.g., Country table unavailable), the error propagates unhandled to the caller."
+    },
+    {
+      "severity": "high",
+      "issue": "Validation does not short-circuit",
+      "detail": "Lines 23-54: All validation blocks run regardless of prior failures. Each failed check SELECTs an error rowset but does not immediately RETURN. If both publicHasherId and accessToken validations fail, the caller receives two error rowsets before the single RETURN at line 71. The caller likely only reads the first rowset."
+    },
+    {
+      "severity": "medium",
+      "issue": "DATALENGTH instead of LEN for string checks",
+      "detail": "Line 23: Uses DATALENGTH(@publicHasherId) != 16 to validate UNIQUEIDENTIFIER. While correct for GUID validation (GUIDs are 16 bytes), this is inconsistent with the standard practice of using LEN() for string length checks. For UNIQUEIDENTIFIER, a NULL check alone would suffice since non-NULL GUIDs are always 16 bytes."
+    },
+    {
+      "severity": "medium",
+      "issue": "No transaction around INSERT operations",
+      "detail": "Lines 29, 44, 56: Multiple INSERT operations (into HC.ErrorLog and LOG.GeneralLog) are executed without a surrounding transaction. While these are logging operations and failure is non-critical, it's inconsistent with HC6 standards."
+    },
+    {
+      "severity": "low",
+      "issue": "Dead inputs: ipAddress and ipGeoDetails",
+      "detail": "@ipAddress and @ipGeoDetails are accepted parameters but only used for logging (lines 64-66). They have no functional impact on the SP's core behavior. This is acceptable for read-only audit logging but should be noted."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

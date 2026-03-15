@@ -1,0 +1,262 @@
+{
+  "schema": "HC5",
+  "name": "hcportal_sendEventMessage",
+  "version": "1.0.0",
+  "description": "Sends a message to event participants based on releasability flags (admins, members, followers, RSVPs, hares, everyone). Inserts into HC.EventMessage and returns the message details along with FCM tokens for users who should receive full push notifications (rowset 1) and in-app-only notifications (rowset 2). Notification preferences and time windows are considered.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Hasher.PublicHasherId",
+      "description": "Auth: Public ID of the user sending the message. Validated with DATALENGTH check (must be 16 bytes)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC.CHECK_PORTAL_ACCESS_TOKEN."
+    },
+    {
+      "name": "publicEventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.PublicEventId",
+      "description": "Public ID of the event to send message to. Validated with DATALENGTH check (must be 16 bytes)."
+    },
+    {
+      "name": "messageId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.id",
+      "description": "Client-generated message ID. Validated with DATALENGTH check (must be 16 bytes)."
+    },
+    {
+      "name": "messageTitle",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.MessageTitle",
+      "description": "Title of the message. If NULL, defaults to event name. Gets prepended with user's display name before returning."
+    },
+    {
+      "name": "messageContent",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.MessageContent",
+      "description": "Content of the message. Required (validation error if NULL or empty)."
+    },
+    {
+      "name": "messageReleasabilityFlags",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.MessageReleasabilityFlags",
+      "description": "Bit flags determining who receives the message: 0x0001=Admins, 0x0002=Members, 0x0004=Followers, 0x0008=RSVPs, 0x0010=Hares, 0x0020=Everyone. Required (validation error if NULL or if low 6 bits are all 0)."
+    },
+    {
+      "name": "ipAddress",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Client IP address. Logged to LOG.GeneralLog."
+    },
+    {
+      "name": "ipGeoDetails",
+      "type": "NVARCHAR(2000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "IP geolocation JSON. Logged to LOG.GeneralLog Data field. Falls back to placeholder JSON if NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Uses errorType codes 2 (validation) and 3 (auth). Validation does not short-circuit - multiple error rowsets may be returned before the SP returns."
+    },
+    {
+      "index": 0,
+      "name": "MessageDetails",
+      "description": "Returned on success. Contains the created message details with user info. Always a single row.",
+      "columns": [
+        {
+          "name": "MessageId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "The message ID (from EventMessage.id)"
+        },
+        {
+          "name": "EventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Internal event ID (from EventMessage.EventId)"
+        },
+        {
+          "name": "PublicEventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Public event ID (from EventMessage.PublicEventId)"
+        },
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Public hasher ID of the message sender (from Hasher.PublicHasherId)"
+        },
+        {
+          "name": "UserDisplayName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Display name of the message sender (from Hasher.DisplayName)"
+        },
+        {
+          "name": "UserPhoto",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Photo URL of the message sender (from Hasher.Photo)"
+        },
+        {
+          "name": "MessageTitle",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Message title prepended with user display name: '{DisplayName} - {MessageTitle}'"
+        },
+        {
+          "name": "MessageContent",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Message content (from EventMessage.MessageContent)"
+        },
+        {
+          "name": "MessageReleasabilityFlags",
+          "type": "INT",
+          "nullable": false,
+          "description": "Releasability bit flags (from EventMessage.MessageReleasabilityFlags). Note: column name typo 'Releasability' in SELECT."
+        },
+        {
+          "name": "MessageType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Message type (from EventMessage.MessageType)"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "FullPushNotificationRecipients",
+      "description": "Users who should receive full push notifications (with sound and popup). Filtered by notification preferences and time window (6 hours before event). Zero or more rows.",
+      "columns": [
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Internal hasher ID (from HasherKennelMap.UserId)"
+        },
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Firebase Cloud Messaging token for push notifications (from Device.FcmToken)"
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "InAppOnlyNotificationRecipients",
+      "description": "Users who should receive in-app-only notifications (silent, no popup). These are kennel followers/members who did not qualify for full push. Zero or more rows.",
+      "columns": [
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Internal hasher ID (from HasherKennelMap.UserId)"
+        },
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Firebase Cloud Messaging token (from Device.FcmToken)"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT into HC.ErrorLog on validation/auth failures",
+    "INSERT into LOG.GeneralLog on every call (after validation, with IP data)",
+    "INSERT into HC.EventMessage with the new message record"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "No XACT_ABORT ON",
+      "detail": "SET NOCOUNT ON is present but SET XACT_ABORT ON is missing. Runtime errors will not auto-rollback."
+    },
+    {
+      "severity": "high",
+      "issue": "No TRY/CATCH block",
+      "detail": "The entire SP has no error handling. If the EventMessage INSERT fails, the error propagates unhandled to the caller."
+    },
+    {
+      "severity": "high",
+      "issue": "No transaction around INSERT",
+      "detail": "The INSERT into HC.EventMessage (line 223) is not wrapped in a transaction. If the SP fails after the insert, the message record persists."
+    },
+    {
+      "severity": "high",
+      "issue": "Validation does not short-circuit",
+      "detail": "Lines 50-153: All validation blocks run regardless of prior failures. Each failed check SELECTs an error rowset but does not RETURN immediately (except lines 152, 220). If multiple validations fail, the caller receives multiple error rowsets. The @isError flag is checked at lines 104, 120, 150, 185, 218 but not consistently."
+    },
+    {
+      "severity": "high",
+      "issue": "Wrong SP name in LOG.GeneralLog",
+      "detail": "Line 144: LOG.GeneralLog.LogSource is hardcoded as 'Admin Portal: hcportal_getKennelHashers' instead of 'hcportal_sendEventMessage'. Copy-paste error from another SP."
+    },
+    {
+      "severity": "medium",
+      "issue": "DATALENGTH for string checks",
+      "detail": "Lines 50, 67, 84: Uses DATALENGTH instead of LEN for validating GUIDs. DATALENGTH returns byte count (2x char count for NVARCHAR). For GUIDs this happens to work (16 bytes = 16 chars in binary GUID representation) but is inconsistent with text validation at line 180 which also uses DATALENGTH."
+    },
+    {
+      "severity": "medium",
+      "issue": "Inconsistent validation short-circuiting",
+      "detail": "Lines 150-153 have a RETURN after @isError=1, but earlier validation blocks (lines 50-65, 67-82, 84-99) do not. Lines 186-209 have a RETURN, but line 218-221 has another RETURN. This creates unpredictable behavior where some errors cause immediate return and others allow subsequent validation."
+    },
+    {
+      "severity": "medium",
+      "issue": "MessageTitle defaults to EventName but validation is commented out",
+      "detail": "Lines 181-182: Validation for @messageTitle is commented out. Lines 212-215: @messageTitle is set to event name if NULL. But validation at line 179-209 happens before this default is applied, so the defaulting is ineffective for the validation check. Line 165 also sets @messageTitle from event name in the SELECT, so there are two places trying to apply this default."
+    },
+    {
+      "severity": "medium",
+      "issue": "Bit flag validation logic inconsistency",
+      "detail": "Line 184: Validates that low 6 bits (@messageReleasabilityFlags & 0x0000003f) are not all zero. But line 195: Error detail check uses 0x0000000f (low 4 bits). This is inconsistent - the error detail would miss flags 0x0020 and 0x0010."
+    },
+    {
+      "severity": "low",
+      "issue": "Dead variable: @isEventWithinTimeLimitForNotifications initial value",
+      "detail": "Line 160: @isEventWithinTimeLimitForNotifications is declared as 0, then conditionally set to 1 at line 175. The initial value of 0 is never explicitly used as a sentinel, though it is the effective default."
+    },
+    {
+      "severity": "low",
+      "issue": "Large block of commented-out debug code",
+      "detail": "Lines 262-376: Large sections of commented-out SQL including duplicate queries and a test EXEC statement. Should be removed."
+    },
+    {
+      "severity": "low",
+      "issue": "Temp table not needed",
+      "detail": "Lines 286: #tempMessageOn is created, then SELECTed at line 323, then DROPped at line 341. Could be replaced with a single query or CTE."
+    },
+    {
+      "severity": "low",
+      "issue": "Query line 214 references wrong variable",
+      "detail": "Line 214: SELECT @messageTitle = evt.EventName FROM HC.Event evt WHERE evt.publicEventId = @eventId. Should be 'WHERE evt.id = @eventId' (internal ID) or 'WHERE evt.PublicEventId = @publicEventId' (public ID). Column name 'publicEventId' doesn't exist on HC.Event (it's 'PublicEventId' with capital P). This query will fail."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

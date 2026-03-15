@@ -1,0 +1,195 @@
+{
+  "schema": "HC5",
+  "name": "hcportal_confirmAuthentication",
+  "version": "1.0.0",
+  "description": "Confirms a portal authentication request initiated by a QR code scan from the mobile app. The portal (browser) calls this SP after displaying a QR code. If the app has scanned it and inserted a matching WebPortalAuthenticationRequests record, the SP provisions a new HC.Device record with a shared secret and returns the user's profile along with the device credentials (obfuscated as iconDataBase64 and colorPaletteIndex).",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "Browser device ID. If NULL, auto-generated via NEWID()."
+    },
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: must be one of two well-known service account GUIDs (11111111-... or 22222222-...). This SP is called before the real user is known, so the portal authenticates as a service account."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC.CHECK_PORTAL_ACCESS_TOKEN. Note: @qrCodeData is passed as the kennelId parameter to the token check function."
+    },
+    {
+      "name": "qrCodeData",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "WebPortalAuthenticationRequests.scanData",
+      "description": "The QR code payload to match against pending auth requests. Must be at least 10 bytes (by DATALENGTH). Matched case-insensitively with TRIM(LOWER()).",
+      "typeMismatch": "Parameter is NVARCHAR(250), table column scanData is NVARCHAR(100)"
+    },
+    {
+      "name": "deviceInfo",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Device.DeviceData",
+      "description": "JSON device info for the browser session. Stored in HC.Device.DeviceData when provisioning a new device."
+    },
+    {
+      "name": "ipAddress",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Client IP address. Used in LOG.GeneralLog message (unlike addEditEvent2 where it is a dead input)."
+    },
+    {
+      "name": "ipGeoDetails",
+      "type": "NVARCHAR(2000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "IP geolocation JSON. Stored in LOG.GeneralLog data field. Falls back to a placeholder JSON if NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Uses errorType codes 2 (validation) and 3 (auth). Multiple error rowsets possible if validation doesn't short-circuit. If no matching auth request exists, no rowset is returned at all (silent empty return)."
+    },
+    {
+      "index": 0,
+      "name": "SuccessResult",
+      "description": "Returned when a matching WebPortalAuthenticationRequests record is found. Contains user profile and obfuscated device credentials. If no matching auth request exists, no rowset is returned at all (silent empty return).",
+      "columns": [
+        {
+          "name": "publicHasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "The authenticated user's public hasher ID (from Hasher table, not the service account ID passed as parameter)"
+        },
+        {
+          "name": "scanData",
+          "type": "NVARCHAR(100)",
+          "nullable": false,
+          "description": "The matched QR code scan data from WebPortalAuthenticationRequests"
+        },
+        {
+          "name": "firstName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "User's first name. COALESCE to empty string."
+        },
+        {
+          "name": "lastName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "User's last name. COALESCE to empty string."
+        },
+        {
+          "name": "hashName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "User's hash name. COALESCE to empty string."
+        },
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Computed display name (prefers hash name or real name based on NameDisplayPreference). COALESCE to empty string."
+        },
+        {
+          "name": "photo",
+          "type": "NVARCHAR(1000)",
+          "nullable": false,
+          "description": "User's photo URL. COALESCE to empty string."
+        },
+        {
+          "name": "iconDataBase64",
+          "type": "NVARCHAR(150)",
+          "nullable": true,
+          "description": "OBFUSCATED: This is actually the device shared secret (75-char base64 string). Used for subsequent token generation."
+        },
+        {
+          "name": "colorPaletteIndex",
+          "type": "INT",
+          "nullable": true,
+          "description": "OBFUSCATED: This is actually the time window (30-45 seconds) for token validity."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT into HC.ErrorLog on validation/auth failures",
+    "INSERT into LOG.GeneralLog on every call (after validation, with IP data)",
+    "INSERT into HC.Device when provisioning a new browser device (new shared secret + time window)"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "No XACT_ABORT ON",
+      "detail": "SET NOCOUNT ON is present but SET XACT_ABORT ON is missing. Runtime errors will not auto-rollback."
+    },
+    {
+      "severity": "high",
+      "issue": "No TRY/CATCH block",
+      "detail": "The entire SP has no error handling. If the Device INSERT fails (e.g. duplicate key), the error propagates unhandled to the caller."
+    },
+    {
+      "severity": "high",
+      "issue": "No transaction around Device INSERT",
+      "detail": "The INSERT into HC.Device is not wrapped in a transaction. If the SP fails after the insert, the device record persists orphaned."
+    },
+    {
+      "severity": "high",
+      "issue": "Validation does not short-circuit",
+      "detail": "All validation blocks run regardless of prior failures. Each failed check SELECTs an error rowset but does not RETURN. If multiple validations fail, the caller receives multiple error rowsets before the single RETURN at line 112. The caller likely only reads the first rowset."
+    },
+    {
+      "severity": "medium",
+      "issue": "Hardcoded magic GUIDs for service accounts",
+      "detail": "Lines 46-60: Only 11111111-1111-1111-1111-111111111111 and 22222222-2222-2222-2222-222222222222 are accepted as valid publicHasherIds. No documentation of what each represents."
+    },
+    {
+      "severity": "medium",
+      "issue": "Security through obscurity on column names",
+      "detail": "Device secret returned as 'iconDataBase64' and time window as 'colorPaletteIndex'. SP comments acknowledge this is bad practice. The column names obscure the security-critical nature of the data."
+    },
+    {
+      "severity": "medium",
+      "issue": "Silent empty return when no auth request found",
+      "detail": "Lines 123-126: If no WebPortalAuthenticationRequests record matches, the SP returns with no rowset at all. Caller must handle the 'no rows' case distinctly from an error rowset."
+    },
+    {
+      "severity": "medium",
+      "issue": "Case-insensitive matching prevents index usage",
+      "detail": "Lines 118, 150, 184: TRIM(LOWER(scanData)) = TRIM(LOWER(@qrCodeData)) forces a table scan on WebPortalAuthenticationRequests. Should use a case-insensitive collation or persisted computed column."
+    },
+    {
+      "severity": "medium",
+      "issue": "DATALENGTH for string checks",
+      "detail": "Lines 30, 62: Uses DATALENGTH instead of LEN for validating publicHasherId and qrCodeData. DATALENGTH returns byte count (2x char count for NVARCHAR)."
+    },
+    {
+      "severity": "low",
+      "issue": "Parameter wider than table column: @qrCodeData",
+      "detail": "@qrCodeData is NVARCHAR(250) but WebPortalAuthenticationRequests.scanData is NVARCHAR(100). Values longer than 100 chars would be accepted but never match."
+    },
+    {
+      "severity": "low",
+      "issue": "Commented-out debug code",
+      "detail": "Line 9: Commented-out hardcoded publicHasherId that looks like a real GUID. Leftover from development/debugging."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

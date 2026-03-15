@@ -1,0 +1,138 @@
+{
+  "schema": "HC5",
+  "name": "hcportal_deleteEvent",
+  "version": "1.0.0",
+  "description": "Soft-deletes an event by setting its 'removed' flag to 1, but only if no hashers have been checked in (AttendenceState >= 20). Validates user authentication and event existence before allowing deletion.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: public hasher ID of the user attempting to delete the event. Validated via CHECK_PORTAL_ACCESS_TOKEN. Must be exactly 16 bytes (DATALENGTH check)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC.CHECK_PORTAL_ACCESS_TOKEN with publicEventId as the kennelId parameter."
+    },
+    {
+      "name": "publicEventId",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Event.PublicEventId",
+      "description": "Routing: public event ID to delete. Validated to be exactly 72 bytes (by DATALENGTH, which is 36 chars in NVARCHAR). Resolved to internal Event.id for deletion.",
+      "typeMismatch": "Parameter is NVARCHAR(250), but table column PublicEventId is UNIQUEIDENTIFIER. SP validates byte length as 72 (36 chars * 2 bytes), suggesting it's passed as a GUID string."
+    },
+    {
+      "name": "ipAddress",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Client IP address. Logged to LOG.GeneralLog message field. Falls back to '<no IP address>' if NULL."
+    },
+    {
+      "name": "ipGeoDetails",
+      "type": "NVARCHAR(2000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "IP geolocation JSON. Logged to LOG.GeneralLog data field. Falls back to a placeholder JSON if NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Uses errorType codes 2 (validation) and 3 (auth). Validation does not short-circuit, so multiple error rowsets can be returned if multiple checks fail before the single RETURN at line 94."
+    },
+    {
+      "index": 0,
+      "name": "DeletionResult",
+      "description": "Single-column result indicating success or failure reason. Returned after all validation passes. No separate success/error indicators - caller must parse the Result message.",
+      "columns": [
+        {
+          "name": "Result",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Human-readable message: 'This run has been successfully removed' on success, or 'Cannot delete this run because N Hasher(s) have been checked in to the run.' if attendees exist."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT into HC.ErrorLog on validation/auth failures (lines 32, 51, 68, 85)",
+    "INSERT into LOG.GeneralLog on every call after validation (lines 98-109)",
+    "UPDATE HC.Event SET updatedAt=getdate(), removed=1 WHERE id=@eventId if no checked-in attendees exist (lines 129-132)"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "No XACT_ABORT ON",
+      "detail": "SET NOCOUNT ON is present (line 20) but SET XACT_ABORT ON is missing. Runtime errors will not auto-rollback."
+    },
+    {
+      "severity": "high",
+      "issue": "No TRY/CATCH block",
+      "detail": "The entire SP has no error handling. If the UPDATE or INSERT statements fail (e.g. deadlock, constraint violation), the error propagates unhandled to the caller."
+    },
+    {
+      "severity": "high",
+      "issue": "No transaction around UPDATE",
+      "detail": "The UPDATE HC.Event statement (lines 129-132) is not wrapped in a transaction. The SP could fail between the update and the return, leaving the event marked as removed but no success confirmation logged."
+    },
+    {
+      "severity": "high",
+      "issue": "Validation does not short-circuit",
+      "detail": "All validation blocks run regardless of prior failures. Each failed check SELECTs an error rowset (lines 34-40, 53-59, 70-76, 87-93) but does not RETURN immediately except for the access token check (line 94). If multiple validations fail, the caller receives multiple error rowsets before the single RETURN. The caller likely only reads the first rowset."
+    },
+    {
+      "severity": "medium",
+      "issue": "DATALENGTH for string checks",
+      "detail": "Lines 26, 62: Uses DATALENGTH instead of LEN for validating publicHasherId (expected 16 bytes = UNIQUEIDENTIFIER) and publicEventId (expected 72 bytes = 36-char GUID string in NVARCHAR). DATALENGTH returns byte count, which is correct for UNIQUEIDENTIFIER but assumes 2 bytes per char for NVARCHAR."
+    },
+    {
+      "severity": "medium",
+      "issue": "Type mismatch: @publicEventId vs Event.PublicEventId",
+      "detail": "@publicEventId is NVARCHAR(250) but Event.PublicEventId is UNIQUEIDENTIFIER. The SP validates byte length as 72 (36 chars * 2 bytes), suggesting callers pass a GUID string. Implicit conversion may fail if caller passes malformed GUID string."
+    },
+    {
+      "severity": "medium",
+      "issue": "Wrong SP name in log message",
+      "detail": "Line 105: LOG.GeneralLog message uses hardcoded 'Admin Portal: hcportal_deleteEvent' instead of OBJECT_NAME(@@PROCID). If SP is renamed, log messages will be incorrect."
+    },
+    {
+      "severity": "medium",
+      "issue": "Inconsistent use of @isError flag",
+      "detail": "Lines 23-111: @isError flag is set to 1 on validation failures but never prevents subsequent validation checks from running. Only the access token check (line 94) issues a RETURN. The flag is checked on line 111 but by then all validation checks have already run and produced error rowsets."
+    },
+    {
+      "severity": "medium",
+      "issue": "Sentinel magic value: AttendenceState >= 20",
+      "detail": "Line 125: Checks AttendenceState >= 20 to determine if hashers are 'checked in'. No documentation of what 20 means or what other values exist."
+    },
+    {
+      "severity": "low",
+      "issue": "Logging happens before validation completes",
+      "detail": "Lines 98-109: LOG.GeneralLog INSERT happens before the @isError check on line 111. Failed validation attempts are logged with error titles, but the SP may still RETURN before performing deletion logic."
+    },
+    {
+      "severity": "low",
+      "issue": "Type inconsistency: removed column",
+      "detail": "Line 131: UPDATE sets removed=1. Event.removed is SMALLINT (table line 96), not BIT. Other tables use BIT for boolean flags. SMALLINT allows sentinel values beyond 0/1."
+    },
+    {
+      "severity": "low",
+      "issue": "No verification of UPDATE success",
+      "detail": "Lines 129-132: UPDATE HC.Event doesn't check @@ROWCOUNT. If the UPDATE affects 0 rows (event already removed, or ID doesn't exist), the SP still returns 'This run has been successfully removed'."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

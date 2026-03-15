@@ -1,0 +1,164 @@
+{
+  "schema": "HC5",
+  "name": "hcportal_toggleKennelSong",
+  "version": "1.0.0",
+  "description": "Toggles whether a song is associated with a kennel. If adding (@isInKennel=1), either creates a new KennelSongMap record or un-soft-deletes an existing one by setting Removed=0. If removing (@isInKennel=0), soft-deletes the mapping by setting Removed=1. This is a simple add/remove toggle for kennel song libraries.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: user making the request. Validated as NOT NULL and exactly 16 bytes via DATALENGTH. Passed to CHECK_PORTAL_ACCESS_TOKEN."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC.CHECK_PORTAL_ACCESS_TOKEN. @songId is passed as the kennelId parameter to the token check function."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "KennelSongMap.KennelId",
+      "description": "The kennel ID to add/remove the song from. Validated as NOT NULL and exactly 16 bytes via DATALENGTH."
+    },
+    {
+      "name": "songId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "KennelSongMap.SongId",
+      "description": "The song ID to add/remove. Validated as NOT NULL and exactly 16 bytes via DATALENGTH."
+    },
+    {
+      "name": "isInKennel",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Toggle flag: 1 = add song to kennel (or un-remove if already exists), 0 = remove song from kennel (soft-delete). Validated to be exactly 0 or 1.",
+      "typeMismatch": "Parameter is SMALLINT, but KennelSongMap.Removed (which tracks this state) is also SMALLINT. No mismatch, but typically boolean flags should be BIT."
+    },
+    {
+      "name": "hcVersion",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Client version string. Not used in SP logic (dead input)."
+    },
+    {
+      "name": "hcBuild",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Client build string. Not used in SP logic (dead input)."
+    },
+    {
+      "name": "ipAddress",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Client IP address. Used in LOG.GeneralLog message (COALESCEd to '<no IP address>' if NULL)."
+    },
+    {
+      "name": "ipGeoDetails",
+      "type": "NVARCHAR(2000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "IP geolocation JSON. Stored in LOG.GeneralLog data field. Falls back to placeholder JSON if NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Returned on validation or auth failures. Uses errorType codes 2 (validation) and 3 (auth). Validation errors do NOT short-circuit - if multiple validations fail, multiple error rowsets are returned before the final RETURN at line 152. The caller likely only reads the first rowset."
+    },
+    {
+      "index": 0,
+      "name": "SuccessResult",
+      "description": "Returned on success after adding/removing the song association. Only returned if all validation passes.",
+      "columns": [
+        {
+          "name": "resultCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1 for success"
+        },
+        {
+          "name": "result",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Always 'Success'"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT into HC.ErrorLog on validation/auth failures",
+    "INSERT into LOG.GeneralLog on every call (after validation, with IP data and error flag)",
+    "INSERT into HC.KennelSongMap when adding a song that doesn't have a mapping yet",
+    "UPDATE HC.KennelSongMap.Removed and updatedAt when adding a song that already has a mapping (un-soft-delete)",
+    "UPDATE HC.KennelSongMap.Removed and updatedAt when removing a song (soft-delete)"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "No XACT_ABORT ON",
+      "detail": "SET NOCOUNT ON is present but SET XACT_ABORT ON is missing. Runtime errors will not auto-rollback."
+    },
+    {
+      "severity": "high",
+      "issue": "No TRY/CATCH block",
+      "detail": "The entire SP has no error handling. If the KennelSongMap INSERT or UPDATE fails (e.g. constraint violation), the error propagates unhandled to the caller."
+    },
+    {
+      "severity": "high",
+      "issue": "No transaction wrapping",
+      "detail": "The INSERT/UPDATE operations on KennelSongMap are not wrapped in a transaction. If the SP fails after modifying data, changes persist without rollback."
+    },
+    {
+      "severity": "high",
+      "issue": "Validation does not short-circuit",
+      "detail": "All validation blocks run regardless of prior failures. Each failed check SELECTs an error rowset but does not RETURN until line 152. If multiple validations fail, the caller receives multiple error rowsets."
+    },
+    {
+      "severity": "medium",
+      "issue": "DATALENGTH for UNIQUEIDENTIFIER validation",
+      "detail": "Lines 32, 53, 74: Uses DATALENGTH(guid) != 16 to validate GUIDs. While technically correct (UNIQUEIDENTIFIERs are 16 bytes), this is an unusual pattern. Standard practice is to check IS NULL only, as SQL Server enforces UNIQUEIDENTIFIER format on input."
+    },
+    {
+      "severity": "medium",
+      "issue": "Dead input parameters: @hcVersion, @hcBuild",
+      "detail": "These parameters are accepted but never used in the SP body. They should be removed in HC6 or actually used if intended for logging."
+    },
+    {
+      "severity": "medium",
+      "issue": "KennelSongMap.updatedAt set manually",
+      "detail": "Lines 166, 180: The SP manually sets updatedAt = @now. The table has a DEFAULT constraint that auto-updates this on modification. Manual setting bypasses the DB-level tracking and could cause confusion."
+    },
+    {
+      "severity": "low",
+      "issue": "SMALLINT used for boolean flag @isInKennel",
+      "detail": "@isInKennel is SMALLINT but represents a boolean (0/1). Should be BIT for clarity. KennelSongMap.Removed is also SMALLINT instead of BIT."
+    },
+    {
+      "severity": "low",
+      "issue": "Inconsistent INSERT field list",
+      "detail": "Line 172: INSERT into KennelSongMap includes (id, SongId, KennelId, Removed, CreatedAt) but omits updatedAt, which has a DEFAULT. The table also has updatedAtBias, which gets its DEFAULT. Explicit is better than implicit for auditability."
+    },
+    {
+      "severity": "low",
+      "issue": "Case-sensitive column names in INSERT/UPDATE",
+      "detail": "KennelSongMap uses PascalCase column names (SongId, KennelId, Removed, CreatedAt) which is inconsistent with other tables using camelCase (createdAt, updatedAt). Not an SP bug but a schema inconsistency."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

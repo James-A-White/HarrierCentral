@@ -1,0 +1,103 @@
+{
+  "schema": "HC5",
+  "name": "hcportal_test",
+  "version": "1.0.0",
+  "description": "Test stored procedure that retrieves the top 5 event names for a given kennel, ordered by event start date descending. This appears to be a simple test/debugging SP used to verify kennel access and event retrieval.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: User's public hasher ID. Not actually used in the SP body (dead input)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token. Not actually used in the SP body (dead input)."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "The public kennel ID to filter events by. Used to join Event to Kennel."
+    },
+    {
+      "name": "ipAddress",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Client IP address. Not used in the SP body (dead input)."
+    },
+    {
+      "name": "ipGeoDetails",
+      "type": "NVARCHAR(2000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "IP geolocation JSON. Not used in the SP body (dead input)."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "EventNames",
+      "description": "Top 5 event names for the specified kennel, ordered by start date descending",
+      "columns": [
+        {
+          "name": "EventName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "The name of the event from HC.Event table"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "No XACT_ABORT ON",
+      "detail": "SET NOCOUNT ON is present but SET XACT_ABORT ON is missing. This is a read-only query so it's less critical, but should follow standards."
+    },
+    {
+      "severity": "high",
+      "issue": "No TRY/CATCH block",
+      "detail": "The SP has no error handling whatsoever. Any runtime error will propagate unhandled to the caller."
+    },
+    {
+      "severity": "high",
+      "issue": "No authentication validation",
+      "detail": "Despite accepting @publicHasherId and @accessToken as parameters, the SP performs no authentication checks. Any caller can access any kennel's data by passing the correct @publicKennelId."
+    },
+    {
+      "severity": "high",
+      "issue": "Dead input parameters",
+      "detail": "@publicHasherId, @accessToken, @ipAddress, and @ipGeoDetails are all accepted but never used in the SP body. Only @publicKennelId is actually used."
+    },
+    {
+      "severity": "medium",
+      "issue": "Test/debug code in production",
+      "detail": "The SP name and commented EXEC example (line 8) suggest this is a test/debugging procedure that may not be intended for production use."
+    },
+    {
+      "severity": "medium",
+      "issue": "Commented-out debug code",
+      "detail": "Line 8: Contains a commented-out EXEC statement with a hardcoded GUID that looks like a real publicKennelId. Leftover from development/debugging."
+    },
+    {
+      "severity": "low",
+      "issue": "Silent empty result on invalid kennel",
+      "detail": "If @publicKennelId is NULL or doesn't match any kennel, the SP returns an empty rowset with no error indication."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

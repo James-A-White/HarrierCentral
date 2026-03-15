@@ -1,0 +1,136 @@
+{
+  "schema": "HC5",
+  "name": "hcportal_regenerateExtApiKey",
+  "version": "1.0.0",
+  "description": "Regenerates the external API key (ExtApiKey) for a kennel. Requires the current API key to be provided for security. Only users with appropriate AppAccessFlags (0x40000019) can regenerate the key. Generates a 75-character cryptographically random key using CRYPT_GEN_RANDOM and base64 encoding.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Hasher.PublicHasherId",
+      "description": "Auth: The user requesting the API key regeneration. Validated for existence and correct format (16 bytes via DATALENGTH)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC.CHECK_PORTAL_ACCESS_TOKEN."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "Auth: The kennel whose API key is being regenerated. Validated for existence and correct format (72 bytes via DATALENGTH).",
+      "typeMismatch": "Parameter is NVARCHAR(250) but should be UNIQUEIDENTIFIER to match Kennel.PublicKennelId"
+    },
+    {
+      "name": "currentExtApiKey",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.ExtApiKey",
+      "description": "Security: The current external API key. Must match the existing key in the database to proceed with regeneration.",
+      "typeMismatch": "Parameter is NVARCHAR(1000), table column Kennel.ExtApiKey is NVARCHAR(120)"
+    },
+    {
+      "name": "ipAddress",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Client IP address. Logged to LOG.GeneralLog message field."
+    },
+    {
+      "name": "ipGeoDetails",
+      "type": "NVARCHAR(2000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "IP geolocation JSON. Logged to LOG.GeneralLog data field. Falls back to placeholder JSON if NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Returned on validation or authorization failures. Uses errorType codes: 2 (validation error - null/invalid parameters, API key mismatch), 3 (authorization error - invalid access token or insufficient permissions)."
+    },
+    {
+      "index": 0,
+      "name": "SuccessResult",
+      "description": "Returned when API key is successfully regenerated. Contains the new 75-character API key.",
+      "columns": [
+        {
+          "name": "newExtApiKey",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "The newly generated external API key. 75 characters, base64-encoded from 150 bytes of cryptographically random data (CRYPT_GEN_RANDOM), with '+' and '/' characters stripped."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT into HC.ErrorLog on validation/auth failures",
+    "INSERT into LOG.GeneralLog on every call (includes IP address and geo details)",
+    "UPDATE HC.Kennel.ExtApiKey when regeneration succeeds (overwrites the old API key)"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "No SET XACT_ABORT ON",
+      "detail": "SET NOCOUNT ON is present but SET XACT_ABORT ON is missing. Runtime errors will not auto-rollback."
+    },
+    {
+      "severity": "high",
+      "issue": "No TRY/CATCH block",
+      "detail": "The entire SP has no error handling. If the UPDATE fails, the error propagates unhandled to the caller."
+    },
+    {
+      "severity": "high",
+      "issue": "No transaction around UPDATE",
+      "detail": "The UPDATE to HC.Kennel (line 184-186) is not wrapped in a transaction. If the SP fails after the update (e.g., if the SELECT fails), the API key change persists but the caller doesn't receive the new key."
+    },
+    {
+      "severity": "high",
+      "issue": "DATALENGTH for string checks",
+      "detail": "Lines 24, 60: Uses DATALENGTH instead of LEN for validating publicHasherId (should be 16 bytes for UNIQUEIDENTIFIER) and publicKennelId (checking for 72 bytes when it should be 36 chars for GUID). DATALENGTH returns byte count (2x char count for NVARCHAR)."
+    },
+    {
+      "severity": "medium",
+      "issue": "Type mismatch: @publicKennelId",
+      "detail": "@publicKennelId is NVARCHAR(250) but Kennel.PublicKennelId is UNIQUEIDENTIFIER. Should be UNIQUEIDENTIFIER. The DATALENGTH check for 72 bytes suggests this is intended as a string representation of a GUID (36 chars * 2 bytes = 72), but the column is a proper UNIQUEIDENTIFIER."
+    },
+    {
+      "severity": "medium",
+      "issue": "Type mismatch: @currentExtApiKey wider than table column",
+      "detail": "@currentExtApiKey is NVARCHAR(1000) but Kennel.ExtApiKey is NVARCHAR(120). Parameter is 8.3x wider than the column it matches against. The generated key is only 75 characters."
+    },
+    {
+      "severity": "medium",
+      "issue": "Commented-out dead code",
+      "detail": "Lines 40-57: Commented-out validation block that would have checked if @publicHasherId resolves to a valid Hasher record. This validation was removed but the code remains as clutter."
+    },
+    {
+      "severity": "medium",
+      "issue": "Validation does not short-circuit consistently",
+      "detail": "Most validation blocks check `AND (@isError = 0)` to avoid redundant checks, but the first validation block (lines 24-38) does not short-circuit, meaning it will log an error and return an error rowset even if a later validation also fails."
+    },
+    {
+      "severity": "low",
+      "issue": "Inconsistent return pattern",
+      "detail": "Line 150: Uses RETURN to exit early after errors, but line 178: Uses RETURN without any preceding SELECT. The success path (line 189) just SELECTs without a RETURN. This works but is inconsistent."
+    },
+    {
+      "severity": "low",
+      "issue": "Magic number for authorization check",
+      "detail": "Line 165: Authorization check uses `(@appAccessFlags & 0x40000019) = 0` to deny access. The bitmask 0x40000019 is not documented. Should use a named constant or comment explaining which flags are required."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

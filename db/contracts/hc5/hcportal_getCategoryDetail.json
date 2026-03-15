@@ -1,0 +1,180 @@
+{
+  "schema": "HC5",
+  "name": "hcportal_getCategoryDetail",
+  "version": "1.0.0",
+  "description": "Retrieves recent activity for admin portal dashboard. Returns formatted messages for 9 different activity categories: new hashers (0), event RSVPs (1), new events (2), new kennels (3), app logins (4), payments (5), portal access (6), errors (7), hashruns.org traffic (8), and version adoption (100). Uses a time window specified by @days parameter (default 7 days) and returns results as human-readable message strings with timestamps.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: portal user's public hasher ID. Validated via DATALENGTH check (line 37)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC.CHECK_PORTAL_ACCESS_TOKEN function (line 75)."
+    },
+    {
+      "name": "categoryId",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Category to retrieve: 0=New Hashers, 1=Event RSVPs, 2=New Events, 3=New Kennels, 4=App Logins, 5=Payments, 6=Portal Access, 7=Errors, 8=HashRuns.Org Traffic, 100=Version Adoption. Must not be null. Determines which query branch executes (lines 115-493)."
+    },
+    {
+      "name": "days",
+      "type": "SMALLINT",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Number of days of history to retrieve. Default 7. Special case: if 0, uses 60 minutes instead (line 29). Converted to minutes for date calculation (line 29-30)."
+    },
+    {
+      "name": "hcVersion",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Optional: used only for category 100 (Version Adoption) to filter logins by app version string (lines 461, 488)."
+    },
+    {
+      "name": "hcBuild",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Optional: used only for category 100 (Version Adoption) to filter logins by app build string (lines 461, 489)."
+    },
+    {
+      "name": "ipAddress",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Client IP address. Logged in LOG.GeneralLog message field (line 102). Coalesced to '<no IP address>' if null."
+    },
+    {
+      "name": "ipGeoDetails",
+      "type": "NVARCHAR(2000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "IP geolocation JSON. Stored in LOG.GeneralLog data field (line 103). Falls back to a placeholder JSON if NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Uses errorType codes 2 (validation) for null publicHasherId/categoryId and 3 (auth) for invalid access token. Validation does not short-circuit - errors are logged and returned, but SP continues until line 107-110 checks @isError flag and returns."
+    },
+    {
+      "index": 0,
+      "name": "CategoryData",
+      "description": "Single column result set containing formatted message strings. Each category query returns different message formats. Results ordered by timestamp DESC with OPTION (RECOMPILE) for all categories. Number of rows varies by category and time window.",
+      "columns": [
+        {
+          "name": "createdAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "Timestamp of the activity record (createdAt, updatedAt, or LoginDate depending on category). Used for ordering and filtering by @cutoffDate. Column name varies by category but always sorts by timestamp."
+        },
+        {
+          "name": "message",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Human-readable formatted message with relative time prefix (e.g. '(5 min)', '(2:30)', '(3 day)'). Format varies by category. Includes entity names, statuses, run counts, and other category-specific details concatenated into a single display string."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT into HC.ErrorLog on validation/auth failures (lines 43-44, 62-63, 80-81)",
+    "INSERT into LOG.GeneralLog on every call regardless of success/failure (lines 94-105) - logs SP name, error status, IP address and geo details"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "No XACT_ABORT ON",
+      "detail": "SET NOCOUNT ON is present (line 23) but SET XACT_ABORT ON is missing. Read-only queries typically don't need XACT_ABORT, but it's HC6 standard practice."
+    },
+    {
+      "severity": "high",
+      "issue": "No TRY/CATCH block",
+      "detail": "The entire SP has no error handling. If any query fails (e.g. geometry calculation error, JSON parsing error), the error propagates unhandled to the caller."
+    },
+    {
+      "severity": "medium",
+      "issue": "DATALENGTH for UNIQUEIDENTIFIER validation",
+      "detail": "Line 37: Uses DATALENGTH(@publicHasherId) != 16 instead of checking IS NULL separately. DATALENGTH is correct for UNIQUEIDENTIFIER (16 bytes) but inconsistent with string length checks which should use LEN."
+    },
+    {
+      "severity": "medium",
+      "issue": "Validation does not short-circuit",
+      "detail": "Lines 37-91: All validation blocks check @isError = 0 or run regardless. Errors are logged and flagged but don't RETURN immediately. The single RETURN is at line 109 after all validation. Multiple error rowsets could be returned if multiple validations fail."
+    },
+    {
+      "severity": "medium",
+      "issue": "Hardcoded user ID filters",
+      "detail": "Lines 297-298, 385-386: Hardcoded GUID filters exclude specific user IDs ('0CDBB109-...' and 'D0B7EF01-...') from app login and portal access reports. No comment explaining what these represent (likely test/service accounts)."
+    },
+    {
+      "severity": "medium",
+      "issue": "Magic latitude value",
+      "detail": "Line 128: WHERE h.HomeLatitude != 51.50330000 excludes a specific coordinate (appears to be central London, possibly a default/placeholder value) when matching cities by geolocation. No comment explaining this sentinel value."
+    },
+    {
+      "severity": "medium",
+      "issue": "READ UNCOMMITTED isolation level",
+      "detail": "Line 24: SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED allows dirty reads. Comment says 'Allow dirty reads for reporting queries' which is acceptable for dashboard data, but could return uncommitted/rolled-back data."
+    },
+    {
+      "severity": "medium",
+      "issue": "WITH (NOLOCK) hints everywhere",
+      "detail": "All queries use WITH (NOLOCK) hints in addition to READ UNCOMMITTED isolation level (lines 124-444). This is redundant - the isolation level already allows dirty reads. The hints are belt-and-suspenders but add visual noise."
+    },
+    {
+      "severity": "medium",
+      "issue": "Complex string concatenation for messages",
+      "detail": "All category queries build complex message strings with CASE statements and CONCAT. This mixes presentation logic into the database layer. Consider returning structured columns and formatting in the UI layer."
+    },
+    {
+      "severity": "medium",
+      "issue": "Inconsistent column naming in category queries",
+      "detail": "Some categories return 'createdAt', others 'updatedAt' or custom alias like 'Timestamp', but all alias to the same output structure. The actual column names vary (h.createdAt, hem.updatedAt, evt.createdAt, etc.)."
+    },
+    {
+      "severity": "low",
+      "issue": "Default @days could cause confusion",
+      "detail": "Line 13: @days defaults to 7, but line 29 has special logic: IF (@days != 0) SET @minutes = (@days * 24 * 60). If @days=0, uses 60 minutes. The != 0 check means @days=0 is treated differently than @days=NULL (which would use default 7)."
+    },
+    {
+      "severity": "low",
+      "issue": "Category 100 requires optional parameters",
+      "detail": "Lines 461, 488-489: Category 100 (Version Adoption) uses @hcVersion and @hcBuild in LIKE clauses but these parameters are nullable. If NULL, the LIKE '%' + NULL + '%' pattern won't match anything. Should check for NULL and default to wildcard."
+    },
+    {
+      "severity": "low",
+      "issue": "Inconsistent time formatting",
+      "detail": "All categories use identical CASE statements (lines 136-141, 172-178, etc.) to format relative time. This could be a scalar function to reduce duplication and improve maintainability."
+    },
+    {
+      "severity": "low",
+      "issue": "JSON parsing without error handling",
+      "detail": "Line 439-442: Category 8 uses JSON_VALUE to extract city/region/country from LOG.GeneralLog data field. If the JSON is malformed or missing fields, JSON_VALUE returns NULL silently. No validation or error handling."
+    },
+    {
+      "severity": "low",
+      "issue": "Geolocation distance calculation",
+      "detail": "Lines 126-130: Uses STDistance to find nearest city by geolocation, but excludes latitude 51.503300000. This OUTER APPLY with TOP 1 could be expensive if HC.City is large. Consider spatial index optimization."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers",
+    "Never change category ID meanings (0-8, 100) without updating all portal callers",
+    "Never change message format drastically - callers may parse these strings"
+  ]
+}

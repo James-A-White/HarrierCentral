@@ -1,0 +1,222 @@
+{
+  "schema": "HC5",
+  "name": "hcportal_bulkAddHashers",
+  "version": "1.0.0",
+  "description": "Bulk adds or updates multiple hashers (members) for a kennel. Accepts JSON array of hasher data, validates email format, creates new HC.Hasher records for new users, creates/updates HasherKennelMap relationships, and optionally updates historical run counts. Uses a cursor to iterate through the input array, processing each hasher individually.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: The public hasher ID of the authenticated user performing the bulk add operation. Validated for NULL and byte length (must be 16 bytes)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: Short-lived cryptographic token validated via HC.CHECK_PORTAL_ACCESS_TOKEN."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth/routing: The public kennel ID for which hashers are being bulk added. Validated for NULL and byte length (must be 16 bytes)."
+    },
+    {
+      "name": "newHasherJson",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "JSON array of hasher objects to add/update. Each object contains: publicHasherId, publicKennelId, firstName, lastName, email, hashName, historicTotalRuns, historicHaring, addHasherStatus. Must be at least 10 bytes (by DATALENGTH). Parsed via OPENJSON with explicit schema."
+    },
+    {
+      "name": "ipAddress",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Client IP address. Used in LOG.GeneralLog message (dead input - accepted but not meaningfully used)."
+    },
+    {
+      "name": "ipGeoDetails",
+      "type": "NVARCHAR(2000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "IP geolocation JSON. Stored in LOG.GeneralLog data field. Falls back to a placeholder JSON if NULL (dead input - accepted but not meaningfully used)."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Uses errorType codes 2 (validation) and 3 (auth). Validation checks do not fully short-circuit - multiple error rowsets can be returned if @isError flag checks fail. Only the access token validation has a RETURN statement (line 136)."
+    },
+    {
+      "index": 0,
+      "name": "BulkAddResult",
+      "description": "Returned on success. Contains the input hasher data with updated publicHasherId and addHasherStatus fields reflecting the outcome of each hasher's processing. Possible addHasherStatus values: 'NEW HC USER', 'NEW MEMBER', 'UPDATE RUN COUNTS', 'NO CHANGE', 'ERROR' (invalid email).",
+      "columns": [
+        {
+          "name": "publicHasherId",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "The public hasher ID - either from input (existing user) or newly generated (new user)"
+        },
+        {
+          "name": "publicKennelId",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "The public kennel ID from input (passthrough)"
+        },
+        {
+          "name": "firstName",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "First name from input (passthrough)"
+        },
+        {
+          "name": "lastName",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Last name from input (passthrough)"
+        },
+        {
+          "name": "email",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Email address from input (passthrough, used as unique key for lookups)"
+        },
+        {
+          "name": "hashName",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Hash name from input (passthrough)"
+        },
+        {
+          "name": "historicTotalRuns",
+          "type": "INT",
+          "nullable": true,
+          "description": "Historical total run count from input (passthrough)"
+        },
+        {
+          "name": "historicHaring",
+          "type": "INT",
+          "nullable": true,
+          "description": "Historical haring count from input (passthrough)"
+        },
+        {
+          "name": "addHasherStatus",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Status message indicating what action was taken: 'NEW HC USER' (created Hasher record), 'NEW MEMBER' (created/updated HasherKennelMap), 'UPDATE RUN COUNTS' (updated historical counts), 'NO CHANGE' (already existed with current data), 'ERROR' (invalid email format, not processed)"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT into HC.ErrorLog on validation/auth failures (lines 34, 53, 71, 91, 109, 127)",
+    "INSERT into LOG.GeneralLog on every call after validation (line 139)",
+    "INSERT into HC.Hasher for each new user with valid email (line 236)",
+    "INSERT into HC.HasherKennelMap for new kennel membership (line 247)",
+    "UPDATE HC.HasherKennelMap to set Following=1 and MembershipExpirationDate='2100-01-01' for existing members (line 254)",
+    "UPDATE HC.HasherKennelMap to set HistoricalTotalRunCount and/or HistoricalHaringCount if input values differ (lines 274-276, 298-303)",
+    "EXEC HC.nonApi_updateRunCounts (line 311-312) to recalculate aggregate run counts when historical counts are updated"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "No XACT_ABORT ON",
+      "detail": "SET NOCOUNT ON is present (line 22) but SET XACT_ABORT ON is missing. Runtime errors will not auto-rollback."
+    },
+    {
+      "severity": "high",
+      "issue": "No TRY/CATCH block",
+      "detail": "The entire SP has no error handling. If any INSERT/UPDATE fails (e.g. duplicate key, FK constraint), the error propagates unhandled to the caller. The cursor loop could fail mid-iteration leaving partial results."
+    },
+    {
+      "severity": "high",
+      "issue": "No transaction wrapper",
+      "detail": "Multiple data modifications (INSERT Hasher, INSERT/UPDATE HasherKennelMap, UPDATE run counts, EXEC nonApi_updateRunCounts) are not wrapped in a transaction. If any step fails mid-cursor, prior changes persist orphaned. This could leave the database in an inconsistent state."
+    },
+    {
+      "severity": "high",
+      "issue": "Validation does not short-circuit consistently",
+      "detail": "Lines 28-155: Most validation blocks check '@isError = 0' before executing, but they SELECT error rowsets without RETURN. Only the access token validation at line 136 has a RETURN statement. If multiple validations fail, the caller receives multiple error rowsets before execution continues to line 157. The caller likely only reads the first rowset."
+    },
+    {
+      "severity": "high",
+      "issue": "Cursor-based processing",
+      "detail": "Lines 193-324: Uses CURSOR to iterate through temp table. Cursors are slow and inefficient. This should be refactored to set-based operations where possible. Each iteration performs individual SELECT, INSERT, and UPDATE operations which could cause severe performance issues with large input arrays."
+    },
+    {
+      "severity": "medium",
+      "issue": "DATALENGTH for GUID and string checks",
+      "detail": "Lines 28, 65, 103: Uses DATALENGTH instead of LEN for validating publicHasherId (checking = 16 bytes for UNIQUEIDENTIFIER is correct for GUIDs) and newHasherJson (< 10 bytes). For UNIQUEIDENTIFIER, DATALENGTH is appropriate. For NVARCHAR, should use LEN to check character count, not byte count."
+    },
+    {
+      "severity": "medium",
+      "issue": "Magic date sentinel '2100-01-01'",
+      "detail": "Lines 247, 254: Uses '2100-01-01' as a sentinel value for MembershipExpirationDate to indicate 'never expires'. This is a magic value that should be documented or replaced with NULL and explicit logic."
+    },
+    {
+      "severity": "medium",
+      "issue": "Dead inputs: ipAddress and ipGeoDetails",
+      "detail": "Lines 15-16: @ipAddress and @ipGeoDetails are accepted as parameters but only used in LOG.GeneralLog (lines 147-149). They do not affect SP logic. If these are not required for business auditing, they should be removed in HC6."
+    },
+    {
+      "severity": "medium",
+      "issue": "Type widening in OPENJSON output",
+      "detail": "Lines 170-178: All string fields from JSON are parsed as NVARCHAR(500), which is wider than the base table columns (Hasher.FirstName, LastName, HashName, Email are NVARCHAR(250), Photo is NVARCHAR(1000)). Input values longer than table limits would be silently truncated on INSERT."
+    },
+    {
+      "severity": "medium",
+      "issue": "Random photo assignment",
+      "detail": "Line 233: Uses RAND() inside a cursor loop to assign a random avatar photo. RAND() without a seed in a loop may not produce varied results because RAND() is seeded once per query batch. This could result in all new users getting the same avatar."
+    },
+    {
+      "severity": "medium",
+      "issue": "Email validation is primitive",
+      "detail": "Line 227: Email validation uses 'LIKE '%_@__%.__%'' which is extremely permissive and would accept many invalid emails (e.g. 'a@b.c', '@@..', etc.). Should use more robust email validation."
+    },
+    {
+      "severity": "medium",
+      "issue": "SP called outside transaction: HC.nonApi_updateRunCounts",
+      "detail": "Lines 311-312: HC.nonApi_updateRunCounts is called within the cursor loop but outside any transaction. If this SP fails, prior changes in the current cursor iteration persist orphaned. This should be wrapped in a transaction."
+    },
+    {
+      "severity": "low",
+      "issue": "Temp table naming inconsistency",
+      "detail": "Lines 167, 181: Creates #newHasherTemp from OPENJSON, then immediately copies it to #outputTable. This is redundant - could use a single temp table."
+    },
+    {
+      "severity": "low",
+      "issue": "Inefficient EXISTS pattern",
+      "detail": "Line 252: Uses 'SELECT COUNT(*) ... = 0' to check existence. Should use 'NOT EXISTS' or 'IF NOT EXISTS' for better performance."
+    },
+    {
+      "severity": "low",
+      "issue": "Unused publicHasherId and publicKennelId in JSON",
+      "detail": "Lines 170-171: The JSON includes publicHasherId and publicKennelId fields but these are never used in the cursor logic. The SP looks up hashers by email (line 224) and uses the outer @kennelId (line 84), not the JSON values."
+    },
+    {
+      "severity": "low",
+      "issue": "Inconsistent error logging detail",
+      "detail": "Error logging is inconsistent - some errors log HcVersion as '<unknown>' (lines 34, 53, 91), others as 'hcportal' (lines 72, 110). Should use consistent convention."
+    },
+    {
+      "severity": "low",
+      "issue": "SELECT * from temp table",
+      "detail": "Line 326: Uses 'SELECT * FROM #outputTable' to return results. Explicit column list would be clearer and more maintainable."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers",
+    "Never change the addHasherStatus string values without updating portal parsing logic"
+  ]
+}

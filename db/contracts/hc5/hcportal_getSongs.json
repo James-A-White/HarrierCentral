@@ -1,0 +1,226 @@
+{
+  "schema": "HC5",
+  "name": "hcportal_getSongs",
+  "version": "1.0.0",
+  "description": "Returns all non-removed songs from the HC.Song table with a membership flag indicating whether each song is assigned to the specified kennel (via HC.KennelSongMap). Read-only query used by the portal to display the master song list with kennel-specific membership indicators.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: user ID validated via HC.CHECK_PORTAL_ACCESS_TOKEN. Null validation uses DATALENGTH != 16 check."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC.CHECK_PORTAL_ACCESS_TOKEN."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "KennelSongMap.KennelId",
+      "description": "The kennel ID to check song membership against. Used in LEFT JOIN to KennelSongMap to compute isInKennel flag. Null validation uses DATALENGTH != 16 check."
+    },
+    {
+      "name": "hcVersion",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Client app version. Dead input: accepted but never used in SP body."
+    },
+    {
+      "name": "hcBuild",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Client app build. Dead input: accepted but never used in SP body."
+    },
+    {
+      "name": "ipAddress",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Client IP address. Used in LOG.GeneralLog message field."
+    },
+    {
+      "name": "ipGeoDetails",
+      "type": "NVARCHAR(2000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "IP geolocation JSON. Stored in LOG.GeneralLog data field. Falls back to placeholder JSON if NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Uses errorType codes 2 (validation) and 3 (auth). Validation does not short-circuit: if multiple checks fail, multiple error rowsets are returned before RETURN at line 109."
+    },
+    {
+      "index": 0,
+      "name": "SongsList",
+      "description": "All non-removed songs ordered by SongName ASC, with isInKennel flag indicating membership in the specified kennel. Only returned if no validation errors occurred.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Song primary key (from HC.Song.id)"
+        },
+        {
+          "name": "SongName",
+          "type": "NVARCHAR(120)",
+          "nullable": false,
+          "description": "Song name (from HC.Song.SongName)"
+        },
+        {
+          "name": "TuneOf",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Original tune this song is based on (from HC.Song.TuneOf)"
+        },
+        {
+          "name": "BawdyRating",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Content rating for bawdiness level (from HC.Song.BawdyRating)"
+        },
+        {
+          "name": "Notes",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "General notes about the song (from HC.Song.Notes)"
+        },
+        {
+          "name": "Actions",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Song actions/choreography (from HC.Song.Actions)"
+        },
+        {
+          "name": "Variants",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Song variant information (from HC.Song.Variants)"
+        },
+        {
+          "name": "ImageUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "URL to song image (from HC.Song.ImageUrl)"
+        },
+        {
+          "name": "AudioUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "URL to song audio (from HC.Song.AudioUrl)"
+        },
+        {
+          "name": "AutoAddToKennel",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Flag indicating if this song should be auto-added to new kennels (from HC.Song.AutoAddToKennel)"
+        },
+        {
+          "name": "Rank",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Song rank/priority (from HC.Song.Rank)"
+        },
+        {
+          "name": "AddedBy_KennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "Kennel that originally added this song (from HC.Song.AddedBy_KennelId)"
+        },
+        {
+          "name": "AddedBy_UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "User that originally added this song (from HC.Song.AddedBy_UserId)"
+        },
+        {
+          "name": "Lyrics",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Song lyrics (from HC.Song.Lyrics)"
+        },
+        {
+          "name": "Tags",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Song tags for categorization (from HC.Song.Tags)"
+        },
+        {
+          "name": "createdAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "Song creation timestamp (from HC.Song.createdAt)"
+        },
+        {
+          "name": "isInKennel",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Computed flag: 1 if the song exists in HC.KennelSongMap for this kennel (and not removed), 0 otherwise. Uses CAST(CASE WHEN ksm.id IS NOT NULL THEN 1 ELSE 0 END as smallint)."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT into HC.ErrorLog on validation/auth failures (one record per failed check)",
+    "INSERT into LOG.GeneralLog on every call (after validation, includes error title if @isError = 1)"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "No XACT_ABORT ON",
+      "detail": "SET NOCOUNT ON is present but SET XACT_ABORT ON is missing. Runtime errors will not auto-rollback."
+    },
+    {
+      "severity": "high",
+      "issue": "No TRY/CATCH block",
+      "detail": "The entire SP has no error handling. Any runtime error propagates unhandled to the caller."
+    },
+    {
+      "severity": "high",
+      "issue": "No transaction wrapping",
+      "detail": "HC.ErrorLog and LOG.GeneralLog inserts are not wrapped in a transaction. This is acceptable for a read-only query but inconsistent with HC6 standards."
+    },
+    {
+      "severity": "high",
+      "issue": "Validation does not short-circuit",
+      "detail": "All validation blocks check @isError = 0 before running, but each failed check SELECTs an error rowset without RETURN. If multiple validations fail, the caller receives multiple error rowsets before the single RETURN at line 109. The caller likely only reads the first rowset."
+    },
+    {
+      "severity": "medium",
+      "issue": "DATALENGTH for UNIQUEIDENTIFIER checks",
+      "detail": "Lines 31, 52: Uses DATALENGTH(@publicHasherId) != 16 and DATALENGTH(@publicKennelId) != 16 to validate GUIDs. DATALENGTH is correct for UNIQUEIDENTIFIER (16 bytes) but unusual. Should just check IS NULL."
+    },
+    {
+      "severity": "medium",
+      "issue": "SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED",
+      "detail": "Line 23: Allows dirty reads for reporting queries. This is intentional and documented in the comment, but introduces risk of reading uncommitted data."
+    },
+    {
+      "severity": "low",
+      "issue": "Dead input parameters: @hcVersion, @hcBuild",
+      "detail": "@hcVersion and @hcBuild are accepted but never used in the SP body (not even in logging). Should be removed in HC6."
+    },
+    {
+      "severity": "low",
+      "issue": "NOLOCK hints redundant with isolation level",
+      "detail": "Lines 134-135: WITH (NOLOCK) hints are redundant given SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED at line 23. The isolation level already enables dirty reads."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

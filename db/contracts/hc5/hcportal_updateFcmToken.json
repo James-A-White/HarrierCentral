@@ -1,0 +1,154 @@
+{
+  "schema": "HC5",
+  "name": "hcportal_updateFcmToken",
+  "version": "1.0.0",
+  "description": "Updates the FCM (Firebase Cloud Messaging) push notification token for a device after the browser has refreshed its token. Also updates device version, build number, and last login timestamp. This SP is used for portal devices only (not mobile app).",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "Device ID whose FCM token should be updated. Required for successful execution, though NULL accepted for validation."
+    },
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: must be one of two well-known service account GUIDs (11111111-... or 22222222-...). This SP accepts service account authentication."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token. Note: token validation is commented out (lines 61-76), so this parameter is effectively a dead input."
+    },
+    {
+      "name": "fcmToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": "Device.FcmToken",
+      "description": "New FCM token to store for push notifications.",
+      "typeMismatch": "Parameter is NVARCHAR(1000), table column FcmToken is NVARCHAR(500)"
+    },
+    {
+      "name": "buildNumber",
+      "type": "NVARCHAR(25)",
+      "nullable": true,
+      "mapsToColumn": "Device.BuildNumber",
+      "description": "Build number of the portal application to be stored with the device record."
+    },
+    {
+      "name": "version",
+      "type": "NVARCHAR(25)",
+      "nullable": true,
+      "mapsToColumn": "Device.Version",
+      "description": "Version number of the portal application to be stored with the device record."
+    },
+    {
+      "name": "ipAddress",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Client IP address. Used in LOG.GeneralLog message."
+    },
+    {
+      "name": "ipGeoDetails",
+      "type": "NVARCHAR(2000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "IP geolocation JSON. Stored in LOG.GeneralLog data field. Falls back to a placeholder JSON if NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Uses errorType code 2 (validation). Multiple error rowsets possible because validation does not short-circuit (same pattern as hcportal_confirmAuthentication)."
+    },
+    {
+      "index": 0,
+      "name": "SuccessResult",
+      "description": "Returned after successfully updating the device record. Simple success indicator.",
+      "columns": [
+        {
+          "name": "result",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Literal string 'Success' to indicate completion"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT into HC.ErrorLog on validation failures",
+    "INSERT into LOG.GeneralLog on every call (after validation, with IP data)",
+    "UPDATE HC.Device (FcmToken, Version, BuildNumber, LastLogin) for the matching deviceId"
+  ],
+  "codeSmells": [
+    {
+      "severity": "critical",
+      "issue": "Wrong SP name in LOG.GeneralLog",
+      "detail": "Line 86: LogSource references 'hcportal_confirmAuthentication' instead of 'hcportal_updateFcmToken'. Copy-paste error from another SP."
+    },
+    {
+      "severity": "high",
+      "issue": "Auth validation is commented out",
+      "detail": "Lines 61-76: The entire CHECK_PORTAL_ACCESS_TOKEN validation block is commented out. The SP accepts any accessToken value without validation. This makes @accessToken a dead input."
+    },
+    {
+      "severity": "high",
+      "issue": "No XACT_ABORT ON",
+      "detail": "SET NOCOUNT ON is present but SET XACT_ABORT ON is missing. Runtime errors will not auto-rollback."
+    },
+    {
+      "severity": "high",
+      "issue": "No TRY/CATCH block",
+      "detail": "The entire SP has no error handling. If the Device UPDATE fails, the error propagates unhandled to the caller."
+    },
+    {
+      "severity": "high",
+      "issue": "No transaction around UPDATE",
+      "detail": "The UPDATE HC.Device (lines 97-102) is not wrapped in a transaction. If the SP fails after updating but before the final SELECT, the device record is left in an updated state with no confirmation returned."
+    },
+    {
+      "severity": "high",
+      "issue": "Validation does not short-circuit",
+      "detail": "Both validation blocks (lines 29-43 and 45-59) run regardless of prior failures. Each failed check SELECTs an error rowset but does not RETURN until line 94. If both validations fail, the caller receives two error rowsets. The caller likely only reads the first rowset."
+    },
+    {
+      "severity": "medium",
+      "issue": "Hardcoded magic GUIDs for service accounts",
+      "detail": "Lines 45-46: Only 11111111-1111-1111-1111-111111111111 and 22222222-2222-2222-2222-222222222222 are accepted as valid publicHasherIds. This second validation paradoxically rejects these values (checking != instead of =). The validation logic appears inverted."
+    },
+    {
+      "severity": "medium",
+      "issue": "DATALENGTH for string checks",
+      "detail": "Lines 29, 32: Uses DATALENGTH instead of LEN for validating publicHasherId. DATALENGTH returns byte count (2x char count for NVARCHAR). The check for '!= 16' expects 16 bytes (8 chars), but a GUID is 36 chars (72 bytes including dashes)."
+    },
+    {
+      "severity": "medium",
+      "issue": "Parameter wider than table column: @fcmToken",
+      "detail": "@fcmToken is NVARCHAR(1000) but Device.FcmToken is NVARCHAR(500). Values longer than 500 chars would be accepted but silently truncated on UPDATE."
+    },
+    {
+      "severity": "medium",
+      "issue": "Inverted validation logic",
+      "detail": "Lines 45-59: The validation checks '!= 22222222 AND != 11111111' and treats this as an error condition. This logic is inverted - it rejects the only two valid service account GUIDs and would accept any other GUID. Combined with commented-out token validation, this SP has no effective authentication."
+    },
+    {
+      "severity": "low",
+      "issue": "Inconsistent error handling pattern",
+      "detail": "Lines 92-95: Uses 'if (@isError = 1) RETURN' after logging but before the UPDATE. However, the error rowsets were already SELECTed in the validation blocks, so this RETURN just prevents the UPDATE from happening (which is correct, but the pattern is confusing)."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

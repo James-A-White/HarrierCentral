@@ -1,0 +1,330 @@
+{
+  "schema": "HC5",
+  "name": "hcportal_getKennelHashers",
+  "version": "1.0.0",
+  "description": "Retrieves a list of all hashers (members and followers) for a specified kennel, including their membership status, run counts, payment history from recent events, and credit balances. Requires portal access token validation and appropriate AppAccessFlags (0x40000019 permission check).",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: Public hasher ID of the authenticated user making the request. Validated via HC.CHECK_PORTAL_ACCESS_TOKEN and used for authorization check."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: Short-lived cryptographic token validated via HC.CHECK_PORTAL_ACCESS_TOKEN."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "Public kennel ID to retrieve hashers for. Must be exactly 72 bytes (DATALENGTH check)."
+    },
+    {
+      "name": "ipAddress",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Client IP address. Logged to LOG.GeneralLog for audit trail."
+    },
+    {
+      "name": "ipGeoDetails",
+      "type": "NVARCHAR(2000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "IP geolocation JSON. Logged to LOG.GeneralLog data field. Falls back to a placeholder JSON if NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Returned on validation or authorization failures. Uses errorType 2 (validation errors) and errorType 3 (auth errors). Multiple validation errors may return multiple error rowsets due to lack of short-circuit logic."
+    },
+    {
+      "index": 0,
+      "name": "KennelHashersList",
+      "description": "Returned on success. Contains one row per hasher who is either a current member or currently following the kennel. Includes profile data, membership/following status, run counts, recent event payment codes, credit balances, and discount information. Ordered by displayName.",
+      "columns": [
+        {
+          "name": "publicHasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Hasher's public ID"
+        },
+        {
+          "name": "publicKennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Kennel's public ID (echoed back)"
+        },
+        {
+          "name": "hashName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Hasher's hash name"
+        },
+        {
+          "name": "firstName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Hasher's first name"
+        },
+        {
+          "name": "lastName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Hasher's last name"
+        },
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Computed display name from Hasher.DisplayName (computed column that respects NameDisplayPreference)"
+        },
+        {
+          "name": "eMail",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Hasher's email. Shown only if membership is active (MembershipExpirationDate > GETDATE()), otherwise returns '<hidden>'"
+        },
+        {
+          "name": "photo",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Hasher's photo URL. COALESCE to 'bundle://avatar-1' if null"
+        },
+        {
+          "name": "lastLoginDateTime",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Hasher's last login timestamp"
+        },
+        {
+          "name": "inviteCode",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Invite/reset code if hasher has never logged in. Extracted from Hasher.ResetCode by removing 'URC:' prefix. Empty string if hasher has logged in."
+        },
+        {
+          "name": "isHomeKennel",
+          "type": "VARCHAR(3)",
+          "nullable": false,
+          "description": "'Yes' if this kennel matches hasher's HomeKennelId, otherwise 'No'"
+        },
+        {
+          "name": "isFollowing",
+          "type": "VARCHAR(3)",
+          "nullable": false,
+          "description": "'Yes' if HasherKennelMap.Following = 1, otherwise 'No'"
+        },
+        {
+          "name": "isMember",
+          "type": "VARCHAR(3)",
+          "nullable": false,
+          "description": "'Yes' if MembershipExpirationDate > GETDATE(), otherwise 'No'"
+        },
+        {
+          "name": "status",
+          "type": "VARCHAR(9)",
+          "nullable": false,
+          "description": "'Member' if membership active, 'Following' if only following (not member), 'None' if neither"
+        },
+        {
+          "name": "notifications",
+          "type": "VARCHAR(7)",
+          "nullable": false,
+          "description": "Notification preference: 'Auto', 'On', 'Off', or 'Unknown'"
+        },
+        {
+          "name": "emailAlerts",
+          "type": "VARCHAR(7)",
+          "nullable": false,
+          "description": "Email alert preference: 'Auto', 'On', 'Off', or 'Unknown'"
+        },
+        {
+          "name": "historicHaring",
+          "type": "INT",
+          "nullable": false,
+          "description": "Historical haring count (pre-HC). COALESCE to 0."
+        },
+        {
+          "name": "historicTotalRuns",
+          "type": "INT",
+          "nullable": false,
+          "description": "Historical total run count (pre-HC). COALESCE to 0."
+        },
+        {
+          "name": "hcHaringCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "HC-tracked haring count for this kennel. COALESCE to 0."
+        },
+        {
+          "name": "hcTotalRunCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "HC-tracked total run count for this kennel. COALESCE to 0."
+        },
+        {
+          "name": "historicCountsAreEstimates",
+          "type": "VARCHAR(3)",
+          "nullable": false,
+          "description": "'Yes' if HistoricalCountIsEstimate = 1, otherwise 'No'"
+        },
+        {
+          "name": "dateOfLastRun",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Date of hasher's most recent run at this kennel"
+        },
+        {
+          "name": "membershipExpirationDate",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Membership expiration date"
+        },
+        {
+          "name": "kennelCredit",
+          "type": "SMALLMONEY",
+          "nullable": false,
+          "description": "Kennel-specific credit balance from HasherKennelMap"
+        },
+        {
+          "name": "discountAmount",
+          "type": "SMALLMONEY",
+          "nullable": false,
+          "description": "Discount amount applied to hasher at this kennel"
+        },
+        {
+          "name": "discountPercent",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Discount percentage applied to hasher at this kennel"
+        },
+        {
+          "name": "discountDescription",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "Description of discount applied to hasher at this kennel"
+        },
+        {
+          "name": "hashCredit",
+          "type": "SMALLMONEY",
+          "nullable": false,
+          "description": "Hasher's credit balance for this kennel from KennelCredit.currentBalance. COALESCE to 0."
+        },
+        {
+          "name": "atLastEvent",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Payment info at last counted run: 'EventNumber-PaymentCode' (e.g., '1234-C' for cash). PaymentCode from Payment.PaymentTypeCode computed column. '?' if no payment found."
+        },
+        {
+          "name": "atSecondToLastEvent",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Payment info at second-to-last counted run: 'EventNumber-PaymentCode'. '?' if no payment found."
+        },
+        {
+          "name": "secondToLastEventDate",
+          "type": "DATETIME",
+          "nullable": true,
+          "description": "Event start date of second-to-last counted run"
+        },
+        {
+          "name": "lastEventDate",
+          "type": "DATETIME",
+          "nullable": true,
+          "description": "Event start date of last counted run"
+        },
+        {
+          "name": "nextEventDate",
+          "type": "DATETIME",
+          "nullable": true,
+          "description": "Event start date of next upcoming counted run"
+        },
+        {
+          "name": "nextEventNumber",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Event number of next upcoming counted run (CAST to NVARCHAR)"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT into HC.ErrorLog on validation/auth failures (one per failure)",
+    "INSERT into LOG.GeneralLog on every call (after validation phase, includes IP data and error status)"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "No SET XACT_ABORT ON",
+      "detail": "SET NOCOUNT ON is present but SET XACT_ABORT ON is missing. Runtime errors will not auto-rollback."
+    },
+    {
+      "severity": "high",
+      "issue": "No TRY/CATCH block",
+      "detail": "The entire SP has no error handling. If any query fails (e.g., invalid foreign key lookup), the error propagates unhandled to the caller."
+    },
+    {
+      "severity": "high",
+      "issue": "DATALENGTH used for string validation",
+      "detail": "Lines 30, 66: Uses DATALENGTH instead of LEN to validate @publicHasherId (checking for 16 bytes = UNIQUEIDENTIFIER) and @publicKennelId (checking for 72 bytes = 36-char GUID in NVARCHAR). DATALENGTH returns byte count (2x char count for NVARCHAR). Should use LEN for character-based validation or validate UNIQUEIDENTIFIER type directly."
+    },
+    {
+      "severity": "high",
+      "issue": "Validation does not short-circuit",
+      "detail": "Multiple validation blocks run sequentially but only the last one issues RETURN. If multiple validations fail, multiple error rowsets are returned. The @isError flag prevents later validations from running but LOG.GeneralLog insert (line 121) always runs, and RETURN only happens at line 136 after logging."
+    },
+    {
+      "severity": "medium",
+      "issue": "Inconsistent DATALENGTH check for publicKennelId",
+      "detail": "Line 66: Validates @publicKennelId DATALENGTH != 72 bytes. A UNIQUEIDENTIFIER stored in NVARCHAR(250) as string representation '12345678-1234-...' is 36 characters = 72 bytes. However, this brittle validation would break if trailing spaces were present or if the GUID were uppercase vs lowercase."
+    },
+    {
+      "severity": "medium",
+      "issue": "Commented-out validation block",
+      "detail": "Lines 46-63: Validation for @hasherId lookup is commented out. This may be intentional (allowing any valid GUID even if not found in Hasher table), but the commented code suggests it was once active."
+    },
+    {
+      "severity": "medium",
+      "issue": "Large CTE joins without indexes on Payment.CancelledBy_UserId",
+      "detail": "Lines 271, 281: LEFT JOIN to Payment with filter 'CancelledBy_UserId is null'. If there's no index on this nullable column, the join could be slow for large Payment tables."
+    },
+    {
+      "severity": "medium",
+      "issue": "Three separate queries to get last, second-to-last, and next event",
+      "detail": "Lines 176-201: Three sequential SELECT TOP 1 queries to get last event, second-to-last event, and next event. Could be optimized with a single ROW_NUMBER() query or CROSS APPLY."
+    },
+    {
+      "severity": "low",
+      "issue": "Hardcoded permission bitmask",
+      "detail": "Line 151: AppAccessFlags permission check uses hardcoded hex bitmask 0x40000019. No documentation of what this permission represents or how it maps to portal access roles."
+    },
+    {
+      "severity": "low",
+      "issue": "Commented-out display name logic",
+      "detail": "Lines 211-224: Complex display name computation is commented out. The SP now relies on Hasher.DisplayName computed column instead. The commented code suggests historical business logic for name display that may be valuable context."
+    },
+    {
+      "severity": "low",
+      "issue": "Commented-out JOIN logic for payment data",
+      "detail": "Lines 256-261: Original logic for joining last/second-to-last event payment data is commented out. The current implementation uses CTEs instead, which is cleaner but the commented code documents the evolution of the query design."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers",
+    "Never change the AppAccessFlags permission bitmask (0x40000019) without coordinating with all callers"
+  ]
+}

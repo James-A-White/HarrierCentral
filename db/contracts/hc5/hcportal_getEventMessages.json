@@ -1,0 +1,158 @@
+{
+  "schema": "HC5",
+  "name": "hcportal_getEventMessages",
+  "version": "1.0.0",
+  "description": "Retrieves all event messages for a specific event, returning message content with author information formatted for a chat-like interface. Messages are ordered by creation time descending (newest first).",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Hasher.PublicHasherId",
+      "description": "Auth: The public hasher ID of the user making the request. Validated via CHECK_PORTAL_ACCESS_TOKEN."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: Short-lived cryptographic token validated via HC.CHECK_PORTAL_ACCESS_TOKEN with @publicEventId passed as the kennelId parameter."
+    },
+    {
+      "name": "publicEventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.PublicEventId",
+      "description": "The public event ID to retrieve messages for. Used in token validation and to filter messages."
+    },
+    {
+      "name": "ipAddress",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Client IP address. Used in LOG.GeneralLog message field."
+    },
+    {
+      "name": "ipGeoDetails",
+      "type": "NVARCHAR(2000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "IP geolocation JSON. Stored in LOG.GeneralLog data field. Falls back to placeholder JSON if NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Returns error with errorType 2 (validation) or 3 (auth). Validation checks for NULL/invalid publicHasherId (DATALENGTH != 16), NULL/invalid publicEventId (DATALENGTH != 16), hasher lookup failure, and access token validation."
+    },
+    {
+      "index": 0,
+      "name": "EventMessages",
+      "description": "Array of event messages with author information. Messages ordered by createdAt DESC (newest first). Empty rowset if no messages exist for the event.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Message ID from EventMessage.id"
+        },
+        {
+          "name": "type",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Always returns the literal string 'text' for all messages"
+        },
+        {
+          "name": "text",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Message content from EventMessage.MessageContent"
+        },
+        {
+          "name": "roomId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "The publicEventId parameter value (same for all messages in this result)"
+        },
+        {
+          "name": "createdAt",
+          "type": "BIGINT",
+          "nullable": false,
+          "description": "Unix timestamp in milliseconds. Computed as DATEDIFF_BIG(MILLISECOND, '1970-01-01 00:00:00', msg.createdAt)"
+        },
+        {
+          "name": "author",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "JSON object with author info using JSON_QUERY. Contains: id (PublicHasherId), firstName (DisplayName), imageUrl (Photo). NULL if hasher not found."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT into HC.ErrorLog on validation/auth failures (errorId, HcVersion, ErrorName, ErrorDescription, ProcName, userId, string_1)",
+    "INSERT into LOG.GeneralLog on every call after validation (LogSource, Message with IP, Data with geo JSON, Timestamp)"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "No SET XACT_ABORT ON",
+      "detail": "SET NOCOUNT ON is present (line 22) but SET XACT_ABORT ON is missing. Runtime errors will not auto-rollback transactions."
+    },
+    {
+      "severity": "high",
+      "issue": "No TRY/CATCH block",
+      "detail": "The entire SP has no error handling. If the SELECT query fails (e.g. EventMessage table unavailable), the error propagates unhandled to the caller."
+    },
+    {
+      "severity": "high",
+      "issue": "Wrong SP name in LOG.GeneralLog",
+      "detail": "Line 105: LogSource field says 'hcportal_getKennelHashers' but this is hcportal_getEventMessages. Copy-paste error."
+    },
+    {
+      "severity": "high",
+      "issue": "Validation does not short-circuit",
+      "detail": "Validation blocks (lines 28-96) check @isError flag but continue running subsequent validations. Multiple error rowsets could be returned before the RETURN at line 113. First check sets @isError=1 but remaining validations still run and INSERT to ErrorLog."
+    },
+    {
+      "severity": "medium",
+      "issue": "DATALENGTH for string checks",
+      "detail": "Lines 28, 45: Uses DATALENGTH(@publicHasherId) != 16 and DATALENGTH(@publicEventId) != 16 to validate GUIDs. Should use LEN() or just IS NULL check since GUIDs are fixed-width type."
+    },
+    {
+      "severity": "medium",
+      "issue": "Multiple ErrorLog INSERTs for same error condition",
+      "detail": "If multiple validations fail (@publicHasherId and @publicEventId both NULL), multiple ErrorLog rows are created but only one error rowset is SELECT'd per validation block. Caller sees multiple error rowsets."
+    },
+    {
+      "severity": "medium",
+      "issue": "LOG.GeneralLog INSERT happens regardless of error",
+      "detail": "Lines 98-109: LOG.GeneralLog INSERT runs even when @isError=1, after error rowsets have been returned but before the RETURN. This means failed requests are logged after returning errors to caller."
+    },
+    {
+      "severity": "low",
+      "issue": "Inconsistent error logging patterns",
+      "detail": "First error (line 34) logs userId as '<unknown>' string. Second error (line 51) logs userId as @publicHasherId GUID. Third error (line 70) logs userId as @publicHasherId GUID. Should be consistent."
+    },
+    {
+      "severity": "low",
+      "issue": "Hardcoded literal 'text' in SELECT",
+      "detail": "Line 122: Returns literal string 'text' as message type for all messages. No evidence of other message types in EventMessage table schema (MessageType column exists but unused here)."
+    },
+    {
+      "severity": "low",
+      "issue": "author JSON can be NULL",
+      "detail": "Lines 127-139: JSON_QUERY returns NULL if hasher h is not found via INNER JOIN (though INNER JOIN means this shouldn't happen). The CASE WHEN h.id IS NOT NULL suggests defensive coding but INNER JOIN already filters out NULL hashers."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers",
+    "Never change the Unix epoch base date (1970-01-01) used for createdAt millisecond conversion",
+    "Never change the message ordering (createdAt desc) without frontend coordination"
+  ]
+}

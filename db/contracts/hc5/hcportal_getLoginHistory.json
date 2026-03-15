@@ -1,0 +1,152 @@
+{
+  "schema": "HC5",
+  "name": "hcportal_getLoginHistory",
+  "version": "1.0.0",
+  "description": "Returns the login history for a specified user over the last 365 days. Validates authentication via device-bound access token and logs the request. Returns login timestamps, app versions, device types, and geolocation data (city name, lat/long) ordered most recent first.",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: user's public hasher ID. Validated for non-null and 16-byte DATALENGTH. Used for access token validation and error logging."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC.CHECK_PORTAL_ACCESS_TOKEN."
+    },
+    {
+      "name": "userId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "LaunchAndLogin.UserId",
+      "description": "The user ID to retrieve login history for. Validated for non-null and 16-byte DATALENGTH. Used in main query WHERE clause."
+    },
+    {
+      "name": "ipAddress",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Client IP address. Used in LOG.GeneralLog message field."
+    },
+    {
+      "name": "ipGeoDetails",
+      "type": "NVARCHAR(2000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "IP geolocation JSON. Stored in LOG.GeneralLog data field. Falls back to placeholder JSON if NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Returned when validation or authentication fails. Uses errorType codes: 2 (validation failure for publicHasherId or userId), 3 (invalid access token). Multiple error rowsets possible since validation does not short-circuit early—each failed check returns its own error rowset but only the final RETURN exits the SP."
+    },
+    {
+      "index": 0,
+      "name": "LoginHistoryResult",
+      "description": "Returned when validation passes. Contains login history records for the user over the last 365 days, ordered by LoginDate descending. Empty rowset if no matching records found.",
+      "columns": [
+        {
+          "name": "loginDate",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "Timestamp of the login from HC.LaunchAndLogin.LoginDate"
+        },
+        {
+          "name": "hcVersion",
+          "type": "NVARCHAR(200)",
+          "nullable": false,
+          "description": "App version from HC.LaunchAndLogin.HcVersion"
+        },
+        {
+          "name": "systemVersion",
+          "type": "NVARCHAR(100)",
+          "nullable": false,
+          "description": "Device OS version from HC.LaunchAndLogin.SystemVersion. COALESCE to empty string."
+        },
+        {
+          "name": "isIphone",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 if SystemName contains 'ios' (case-insensitive LIKE), else 0"
+        },
+        {
+          "name": "latitude",
+          "type": "NUMERIC(12,9)",
+          "nullable": false,
+          "description": "Latitude from HC.City.Latitude (via LEFT JOIN on CityId). COALESCE to 0.0 if NULL."
+        },
+        {
+          "name": "longitude",
+          "type": "NUMERIC(13,9)",
+          "nullable": false,
+          "description": "Longitude from HC.City.Longitude (via LEFT JOIN on CityId). COALESCE to 0.0 if NULL."
+        },
+        {
+          "name": "locationName",
+          "type": "NVARCHAR(350)",
+          "nullable": false,
+          "description": "Full city name from HC.City.CityFullName (via LEFT JOIN on CityId). COALESCE to empty string if NULL."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT into HC.ErrorLog on validation/auth failures (lines 39-42, 60-63, 80-83)",
+    "INSERT into LOG.GeneralLog on every call after validation (line 96-105), logging IP address, geo details, and error title if failed"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "No XACT_ABORT ON",
+      "detail": "SET NOCOUNT ON is present (line 22) but SET XACT_ABORT ON is missing. Runtime errors will not auto-rollback."
+    },
+    {
+      "severity": "high",
+      "issue": "No TRY/CATCH block",
+      "detail": "The entire SP has no error handling. If queries fail (e.g. FK violations, connection issues), the error propagates unhandled to the caller."
+    },
+    {
+      "severity": "high",
+      "issue": "Validation does not short-circuit",
+      "detail": "Lines 33-93: All validation blocks run regardless of prior failures. Each failed check SELECTs an error rowset but does not RETURN immediately. @isError flag is checked after all three validations, then single RETURN at line 109. If multiple validations fail, the caller receives multiple error rowsets before the RETURN."
+    },
+    {
+      "severity": "medium",
+      "issue": "DATALENGTH for string checks",
+      "detail": "Lines 33, 54: Uses DATALENGTH instead of LEN for validating GUIDs. DATALENGTH returns byte count (16 bytes for UNIQUEIDENTIFIER is correct, but the pattern is inconsistent with general string length checks where LEN should be used). For UNIQUEIDENTIFIER specifically, DATALENGTH(16) is technically correct but the inconsistency is a code smell."
+    },
+    {
+      "severity": "medium",
+      "issue": "FLOAT sentinel value in output",
+      "detail": "Lines 121-122: Latitude and longitude are COALESCE to 0.0 as sentinel values when City data is missing. Better to use NULL or a flag column to indicate 'no location data'."
+    },
+    {
+      "severity": "low",
+      "issue": "Dead input parameters never used in logic",
+      "detail": "@ipAddress and @ipGeoDetails are accepted as parameters but only used for logging (lines 101-103). They do not affect the SP's core logic or query results."
+    },
+    {
+      "severity": "low",
+      "issue": "READ UNCOMMITTED isolation level",
+      "detail": "Line 23: SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED allows dirty reads. For a read-only history query this may be acceptable for performance, but could return inconsistent data if writes are happening."
+    },
+    {
+      "severity": "low",
+      "issue": "OPTION (RECOMPILE) on every execution",
+      "detail": "Line 129: Forces query plan recompilation on every call. May be intentional for parameter sniffing mitigation, but adds CPU overhead."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

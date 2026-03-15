@@ -1,0 +1,310 @@
+{
+  "schema": "HC5",
+  "name": "hcportal_getLandingPageData",
+  "version": "1.0.0",
+  "description": "Returns landing page data for an authenticated portal user. Updates FCM token on device if changed, logs portal access, and returns user profile and list of kennels the user follows (with membership status, mismanagement roles, and kennel details).",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Hasher.PublicHasherId",
+      "description": "Auth: The user's public ID. Validated for NULL and byte length (must be exactly 16 bytes). Used for authentication and to identify the user."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC.CHECK_PORTAL_ACCESS_TOKEN."
+    },
+    {
+      "name": "fcmToken",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "Device.FcmToken",
+      "description": "Firebase Cloud Messaging token for push notifications. If changed, the Device record is updated."
+    },
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "The device ID for the portal session. Used to update FCM token if changed."
+    },
+    {
+      "name": "ipAddress",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Client IP address. Used in LOG.GeneralLog message field."
+    },
+    {
+      "name": "ipGeoDetails",
+      "type": "NVARCHAR(2000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "IP geolocation JSON. Stored in LOG.GeneralLog data field. Falls back to a placeholder JSON if NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Uses errorType codes 2 (validation) and 3 (auth). Returned when validation or authentication fails. Multiple error conditions do not short-circuit (all validation runs), but only the first error is returned due to early RETURN."
+    },
+    {
+      "index": 0,
+      "name": "UserProfile",
+      "description": "User profile information. Returned once on success.",
+      "columns": [
+        {
+          "name": "firstName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "User's first name. COALESCE to empty string."
+        },
+        {
+          "name": "lastName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "User's last name. COALESCE to empty string."
+        },
+        {
+          "name": "hashName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "User's hash name. COALESCE to empty string."
+        },
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "User's display name (computed from NameDisplayPreference). COALESCE to empty string."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "KennelList",
+      "description": "List of kennels the user is following. Joins Hasher, HasherKennelMap, Kennel, City, Country tables. Only returns kennels where Following = 1.",
+      "columns": [
+        {
+          "name": "publicKennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Kennel's public ID"
+        },
+        {
+          "name": "kennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Kennel name"
+        },
+        {
+          "name": "kennelShortName",
+          "type": "NVARCHAR(25)",
+          "nullable": false,
+          "description": "Kennel short name"
+        },
+        {
+          "name": "kennelUniqueShortName",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "Kennel unique short name"
+        },
+        {
+          "name": "kennelLogo",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Kennel logo URL"
+        },
+        {
+          "name": "defaultTags1",
+          "type": "INT",
+          "nullable": false,
+          "description": "Kennel default run tags 1 (bitflags)"
+        },
+        {
+          "name": "defaultTags2",
+          "type": "INT",
+          "nullable": false,
+          "description": "Kennel default run tags 2 (bitflags)"
+        },
+        {
+          "name": "defaultTags3",
+          "type": "INT",
+          "nullable": false,
+          "description": "Kennel default run tags 3 (bitflags)"
+        },
+        {
+          "name": "countryId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Country ID"
+        },
+        {
+          "name": "countryName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Country name"
+        },
+        {
+          "name": "defaultEventPriceForMembers",
+          "type": "DECIMAL(10,4)",
+          "nullable": false,
+          "description": "Default event price for members"
+        },
+        {
+          "name": "defaultEventPriceForNonMembers",
+          "type": "DECIMAL(10,4)",
+          "nullable": false,
+          "description": "Default event price for non-members"
+        },
+        {
+          "name": "defaultCurrencySymbol",
+          "type": "NVARCHAR(5)",
+          "nullable": true,
+          "description": "Currency symbol (coalesced from Kennel.CurrencySymbol or Country.CurrencySymbol)"
+        },
+        {
+          "name": "defaultDigitsAfterDecimal",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Digits after decimal for currency (coalesced from Kennel.DigitsAfterDecimal or Country.DigitsAfterDecimal)"
+        },
+        {
+          "name": "defaultRunStartTime",
+          "type": "DATETIME",
+          "nullable": false,
+          "description": "Default run start time (cast from Kennel.DefaultRunStartTime TIME to DATETIME)"
+        },
+        {
+          "name": "kennelLat",
+          "type": "DECIMAL(18,14)",
+          "nullable": true,
+          "description": "Kennel latitude"
+        },
+        {
+          "name": "kennelLon",
+          "type": "DECIMAL(19,15)",
+          "nullable": true,
+          "description": "Kennel longitude"
+        },
+        {
+          "name": "cityLat",
+          "type": "NUMERIC(12,9)",
+          "nullable": false,
+          "description": "City latitude"
+        },
+        {
+          "name": "cityLon",
+          "type": "NUMERIC(13,9)",
+          "nullable": false,
+          "description": "City longitude"
+        },
+        {
+          "name": "kennelCountryCodes",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "Neighboring country codes"
+        },
+        {
+          "name": "isFollowing",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Whether user is following the kennel (always 1 due to WHERE clause)"
+        },
+        {
+          "name": "membershipExpirationDate",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Membership expiration date"
+        },
+        {
+          "name": "isMember",
+          "type": "INT",
+          "nullable": false,
+          "description": "Whether user is a current member (1 if membershipExpirationDate > getdate(), else 0)"
+        },
+        {
+          "name": "isHomeKennel",
+          "type": "INT",
+          "nullable": false,
+          "description": "Whether this is the user's home kennel (1 if Hasher.HomeKennelId = Kennel.id, else 0)"
+        },
+        {
+          "name": "appAccessFlags",
+          "type": "INT",
+          "nullable": true,
+          "description": "App access flags for the user-kennel relationship"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT into HC.ErrorLog on validation/auth failures",
+    "INSERT into LOG.GeneralLog on every call (after validation)",
+    "UPDATE HC.Device.FcmToken if @fcmToken differs from stored value",
+    "INSERT into HC.PortalAccess (hasherId) to log portal access"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "DATALENGTH for UNIQUEIDENTIFIER validation",
+      "detail": "Line 25: Uses DATALENGTH(@publicHasherId) != 16 to validate UNIQUEIDENTIFIER. Should use LEN or IS NULL check only. DATALENGTH returns byte count which works for UNIQUEIDENTIFIER (16 bytes) but is inconsistent with string validation best practices."
+    },
+    {
+      "severity": "high",
+      "issue": "No XACT_ABORT ON",
+      "detail": "SET NOCOUNT ON is present but SET XACT_ABORT ON is missing. Runtime errors will not auto-rollback."
+    },
+    {
+      "severity": "high",
+      "issue": "No TRY/CATCH block",
+      "detail": "The entire SP has no error handling. If any UPDATE or INSERT fails, the error propagates unhandled to the caller."
+    },
+    {
+      "severity": "high",
+      "issue": "No transaction wrapping side effects",
+      "detail": "UPDATE Device and INSERT PortalAccess are not wrapped in a transaction. If the SP fails partway through, these changes persist orphaned."
+    },
+    {
+      "severity": "high",
+      "issue": "Wrong SP name in LOG.GeneralLog",
+      "detail": "Line 85: LogSource is 'Admin Portal: hcportal_getKennelHashers' but this SP is hcportal_getLandingPageData. Copy-paste error from another SP."
+    },
+    {
+      "severity": "medium",
+      "issue": "Commented-out code block",
+      "detail": "Lines 41-58: Large block of commented-out validation code for checking if @publicHasherId exists in Hasher table. This suggests the validation was removed but the code was left as documentation."
+    },
+    {
+      "severity": "medium",
+      "issue": "UPDATE Device runs unconditionally",
+      "detail": "Lines 97-99: UPDATE runs even on error (before @isError check). Should only run on success path."
+    },
+    {
+      "severity": "high",
+      "issue": "Validation does not short-circuit",
+      "detail": "Validation blocks run regardless of prior failures. Each failed check SELECTs an error rowset but does not RETURN immediately. If multiple validations fail, the caller receives multiple error rowsets."
+    },
+    {
+      "severity": "low",
+      "issue": "Inconsistent casing",
+      "detail": "Line 88: Uses 'Getdate()' instead of 'GETDATE()' (SQL is case-insensitive but consistency aids readability)."
+    },
+    {
+      "severity": "low",
+      "issue": "Lowercase IF statement",
+      "detail": "Line 91: Uses lowercase 'if' instead of uppercase 'IF' (inconsistent with rest of SP)."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
