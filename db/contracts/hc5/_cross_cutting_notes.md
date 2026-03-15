@@ -187,8 +187,11 @@ Note: Flutter flags use a `0x100000000` high-bit prefix plus the low flag. The S
 `updateKennelHasher` passes boolean/integer values as NVARCHAR:
 - @isMember, @status, @emailAlerts, @notifications, @historicTotalRuns, @historicHaring, @historicCountsAreEstimates
 
-### Missing Table Schema
-**LOG.GeneralLog** — referenced by every SP for audit logging but its CREATE TABLE script is **not in the repo**. Needs to be exported from the database.
+### LOG.GeneralLog Schema (now in repo)
+Referenced by every SP for audit logging. Columns: `idx` (INT IDENTITY PK), `LogSource` (NVARCHAR(50)), `Message` (NVARCHAR(255)), `StrParam1` (NVARCHAR(500)), `Data` (NVARCHAR(4000)), `Timestamp` (DATETIMEOFFSET(7), default GETDATE()). Note: `LogSource` is only 50 chars — the wrong SP names in log messages still fit but should be fixed in HC6.
+
+### Datetime / Timezone Migration
+HC5 uses `CONVERT(datetime2, datetimeoffset)` to strip timezone info and return local time. This was fine before Google Calendar and push notification integrations required timezone awareness. Migration to UTC + offset is in progress but many UIs still expect local time. **HC6 approach**: return both a DATETIMEOFFSET column (source of truth) and a computed DATETIME2 column (backward compat) so portal screens can migrate individually. Affects `getEvent` and `getEvents` primarily. Decision handled per-SP during HC6 migration.
 
 ### Performance Anti-Patterns
 - `getCategoryDetail` / `getCategoryDetail2` — READ UNCOMMITTED + NOLOCK + OPTION(RECOMPILE) on all queries

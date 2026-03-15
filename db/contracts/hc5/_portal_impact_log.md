@@ -103,16 +103,25 @@ HC5 accepts NVARCHAR for everything. HC6 should use proper types:
 
 ---
 
-## 4. Removed Dead Parameters
+## 4. Removed Parameters
 
-These parameters will be removed in HC6. The portal should stop sending them:
+### @ipAddress and @ipGeoDetails — Removed from ALL SPs
 
-| SP | Parameters to Remove |
-|----|---------------------|
-| `addEditEvent2` | @ipAddress, @ipGeoDetails, @isAdmin |
-| `getSongs` | @hcVersion, @hcBuild |
-| `toggleKennelSong` | @hcVersion, @hcBuild |
-| `test` | @publicHasherId, @accessToken, @ipAddress, @ipGeoDetails |
+These parameters are being removed from **all 22 portal SPs** that had them (every SP except `test`, which already had them removed as dead inputs). Request logging and IP capture are moving to the .NET API shim. See `_api_impact_log.md` for full details on the shim's new logging responsibilities.
+
+**Portal action**: The portal does not send these directly (the shim injects them), so no portal code change is needed. Listed here for completeness.
+
+### Other Removed Parameters
+
+These parameters were dead inputs or redundant and are removed in HC6:
+
+| SP | Parameters to Remove | Reason |
+|----|---------------------|--------|
+| `addEditEvent` (was addEditEvent2) | `@isAdmin` | Declared/set but never used in logic |
+| `addEditEvent` (was addEditEvent2) | `@deleted` | Deletion path removed; use `deleteEvent` exclusively |
+| `getSongs` | `@hcVersion`, `@hcBuild` | Dead inputs (never used in SP body) |
+| `toggleKennelSong` | `@hcVersion`, `@hcBuild` | Dead inputs (never used in SP body) |
+| `test` | `@publicHasherId`, `@accessToken` | Dead inputs (no auth validation performed) |
 
 **Portal action**: Remove these from API call payloads. If the .NET shim auto-maps parameters, unused params may cause errors when the SP no longer declares them.
 
@@ -177,6 +186,74 @@ These need clarification before HC6 migration:
 
 3. **Message releasability bit flags**: The SP uses simple low flags (0x0001-0x0020) but Flutter defines a different scheme with a `0x100000000` high-bit prefix. Not fully implemented yet — will need reconciliation when chat infrastructure is built out in HC6. Do not change SP flags until then.
 
-4. **LOG.GeneralLog table schema**: Missing from repo. Needs to be exported before we can fully validate logging side-effects in HC6.
+4. ~~**LOG.GeneralLog table schema**~~: **Resolved.** Now in repo at `db/schema/tables/LOG.GeneralLog.Table.sql`. 5 columns: idx, LogSource (NVARCHAR(50)), Message (NVARCHAR(255)), StrParam1, Data (NVARCHAR(4000)), Timestamp.
 
-5. **Datetime conversion hack**: `getEvent` and `getEvents` convert datetimeoffset to datetime2, losing timezone info. HC6 should return proper UTC — but does the portal expect local time?
+5. **Datetime conversion hack**: `getEvent` and `getEvents` convert datetimeoffset to datetime2, losing timezone info. **Context**: Originally the system didn't need timezone awareness, but Google Calendar and push notification integrations required it. Migration to UTC + timezone offset is in progress, but many UIs still expect local time. **HC6 approach**: Return both representations — the proper DATETIMEOFFSET column for new/updated clients, plus a computed DATETIME2 (local time) column for backward compatibility. Portal screens migrate individually; legacy column dropped when all screens are updated. Decision deferred to per-SP migration.
+
+---
+
+## 10. Presentation Logic Moved to Portal
+
+**Affects: `getCategoryDetail` and `getCategoryDetail2` consumers**
+
+### What changed
+
+HC5 `getCategoryDetail` returns a single `message` column containing a pre-formatted string with embedded time-ago formatting (e.g. `"(5 min) John Smith  ---  London, England"`). HC5 `getCategoryDetail2` returns 6 generic columns (`col1`-`col6`) with the time-ago formatting pre-computed in `col1` and other data pre-formatted as strings.
+
+**HC6 still returns the same pre-formatted strings for the initial migration.** However, the architectural direction is to move all presentation formatting to the Flutter portal. This section documents the full scope of that future change.
+
+### Time-ago formatting
+
+HC5/HC6 SPs compute relative timestamps in SQL:
+- Less than 60 minutes: `"Xm ago"` (getCategoryDetail2) or `"(X min)"` (getCategoryDetail)
+- Less than 24 hours: `"Xh XXm ago"` or `"(X:XX)"`
+- 1+ days: `"Xd ago"` or `"(X day)"`
+
+When the portal takes over formatting, it must implement equivalent logic in Flutter using the `createdAt`/`updatedAt` timestamp column returned by each category.
+
+### Column layout per category (getCategoryDetail2)
+
+Each category uses the 6-column grid differently. The header rowset defines column names:
+
+| Category | col1 | col2 | col3 | col4 | col5 | col6 |
+|----------|------|------|------|------|------|------|
+| 0 - New Hashers | Time | Name | Location | - | - | - |
+| 1 - Event RSVPs | Time | Kennel | Run # | Hasher | Status | Runs / Hares |
+| 2 - New Events | Time | Source | Kennel | Run # | Event Date | Event Name |
+| 3 - New Kennels | Time | Kennel | Location | - | - | - |
+| 4 - App Logins | Time | Name | Device | OS | Location | - |
+| 5 - Payments | Time | Event | Hasher | Processed By | Amount | Type |
+| 6 - Portal Access | Time | Name | Kennel | - | - | - |
+| 7 - Errors | Time | Error | User | Stored Proc | - | - |
+| 8 - HashRuns.Org | Time | Location | Page | Kennel | Event | - |
+| 100 - Version Adoption | Time | Logins | This Ver | Name | Version | Platform |
+
+("-" = empty string, column unused for that category)
+
+### getCategoryDetail (single-message format)
+
+`getCategoryDetail` concatenates all data into one `message` string per row, alongside a `createdAt` timestamp. When the portal takes over formatting, it will need to parse raw data columns instead of a pre-built string. This is a **significant change** — the current portal code parses a single `message` column.
+
+### Portal action
+
+This is a future change. The current HC6 SPs still return the same formatted strings as HC5. When the portal is ready to take over presentation:
+1. Implement time-ago formatting in Flutter (use the raw timestamp column)
+2. For `getCategoryDetail2`: read individual `col1`-`col6` columns and format in the portal's table/list UI
+3. For `getCategoryDetail`: either switch to using `getCategoryDetail2` (which already provides structured columns), or request a new HC6 version that returns raw data columns
+4. Reference the HC6 contracts for exact column definitions per category
+
+---
+
+## 11. Auth Helper (Internal Change, No Portal Impact)
+
+**Affects: No portal code changes required**
+
+HC6 introduces `HC6.ValidatePortalAuth`, an internal helper SP that consolidates the ~15-30 lines of inline auth validation (publicHasherId NULL check + `HC.CHECK_PORTAL_ACCESS_TOKEN` call) that was duplicated in every HC5 portal SP.
+
+This is purely an internal database refactor. The portal still sends the same `@publicHasherId` and `@accessToken` parameters to every SP. The SPs still validate auth the same way — they just delegate to the helper instead of inlining the logic.
+
+**Portal action**: None. No change to request payloads or response handling.
+
+---
+
+*Last updated: 2026-03-15*
