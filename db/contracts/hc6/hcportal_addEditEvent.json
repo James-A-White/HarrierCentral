@@ -5,11 +5,11 @@
   "description": "Creates a new event or updates an existing event for a kennel. Handles event data (name, description, location, pricing, tags, dissemination settings), optionally saves tags as kennel defaults, and triggers run number recalculation inside the transaction. @publicEventId=NULL means insert; non-NULL means update. Renamed from HC5's hcportal_addEditEvent2. @deleted parameter removed — deletion is exclusively via hcportal_deleteEvent.",
   "parameters": [
     {
-      "name": "publicHasherId",
+      "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "Auth: identifies the calling user, validated via HC6.ValidatePortalAuth. Declared nullable so validation errors are trapped in SQL rather than causing SP execution failure."
+      "mapsToColumn": "Device.id",
+      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
       "name": "accessToken",

@@ -5,11 +5,11 @@
   "description": "Soft-deletes an event by setting Event.removed=1 and Event.updatedAt=GETDATE(), but only if no hashers have a checked-in attendance state (HasherEventMap.AttendenceState >= 20). Returns a plain Result string — callers must read the message text to distinguish success from blocked deletion. Does not throw an error rowset when deletion is blocked; only the ErrorEnvelope is returned on auth/validation failure.",
   "parameters": [
     {
-      "name": "publicHasherId",
+      "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "Auth: user's public hasher ID, validated via HC6.ValidatePortalAuth. Declared nullable so validation errors are trapped in SQL."
+      "mapsToColumn": "Device.id",
+      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
       "name": "accessToken",

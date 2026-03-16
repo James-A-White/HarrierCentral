@@ -5,11 +5,11 @@
   "description": "Retrieves all event messages for a specific event, returning message content with author information formatted for a chat-like interface. Messages are ordered by creation time descending (newest first). @publicEventId is validated before auth in HC6 (minor order change from HC5).",
   "parameters": [
     {
-      "name": "publicHasherId",
+      "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "Auth: user's public hasher ID, validated via HC6.ValidatePortalAuth."
+      "mapsToColumn": "Device.id",
+      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
       "name": "accessToken",

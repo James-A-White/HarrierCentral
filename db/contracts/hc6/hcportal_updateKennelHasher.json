@@ -5,11 +5,11 @@
   "description": "Updates a hasher's profile and kennel-specific settings for a given kennel. Allows editing of personal details (name, email, hash name), discount settings, membership status, notification preferences, historical run counts, and historical count estimates. The SP determines which fields to update based on which parameters are non-NULL. All writes are wrapped in a single transaction.",
   "parameters": [
     {
-      "name": "publicHasherId",
+      "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "Auth: public hasher ID of the user performing the update. Validated via HC6.ValidatePortalAuth."
+      "mapsToColumn": "Device.id",
+      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
       "name": "accessToken",

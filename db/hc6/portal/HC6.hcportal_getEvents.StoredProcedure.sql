@@ -1,7 +1,7 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcportal_getEvents]
 
 	-- required parameters
-	@publicHasherId UNIQUEIDENTIFIER = NULL,
+	@deviceId UNIQUEIDENTIFIER = NULL,
 	@accessToken NVARCHAR(1000) = NULL,
 
 	-- optional parameters
@@ -38,7 +38,7 @@ AS
 --              public HashRuns.org pages. Returns either a summary
 --              list or full event details depending on @fullDetails.
 --              Supports past/future/all time windows.
--- Parameters: @publicHasherId, @accessToken (auth),
+-- Parameters: @deviceId, @accessToken (auth),
 --             @publicKennelIds..@specialEventContinentCodes (geo filters),
 --             @fullDetails (0/NULL=summary, 1=full details),
 --             @weeksToDisplay (time window), @pastOrFuture (direction)
@@ -60,6 +60,7 @@ AS
 --   - Removed @ipAddress, @ipGeoDetails (logging moved to API shim)
 --   - Removed ErrorLog inserts (error logging moved to API shim)
 --   - Removed GeneralLog inserts (request logging moved to API shim)
+--   - @publicHasherId replaced by @deviceId (device-bound auth via HC.Device lookup)
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -69,7 +70,9 @@ BEGIN TRY
 
 	-- Auth validation
 	DECLARE @authError NVARCHAR(255);
-	EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, OBJECT_NAME(@@PROCID), NULL, @authError OUTPUT;
+	DECLARE @hasherId UNIQUEIDENTIFIER;
+	DECLARE @callerType INT;
+	EXEC HC6.ValidatePortalAuth @deviceId, @accessToken, OBJECT_NAME(@@PROCID), NULL, @authError OUTPUT, @hasherId OUTPUT, @callerType OUTPUT;
 	IF @authError IS NOT NULL
 	BEGIN
 		SELECT 0 AS Success, @authError AS ErrorMessage;
@@ -111,7 +114,7 @@ BEGIN TRY
 
 	-- Determine isAdmin for dissemination WHERE clause
 	DECLARE @isAdmin SMALLINT = 1
-	IF (@publicHasherId = '11111111-1111-1111-1111-111111111111')
+	IF (@callerType = 1)
 	BEGIN
 		SET @isAdmin = 0
 	END

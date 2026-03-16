@@ -1,7 +1,7 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcportal_regenerateExtApiKey]
 
 	-- required parameters
-	@publicHasherId UNIQUEIDENTIFIER = NULL,
+	@deviceId UNIQUEIDENTIFIER = NULL,
 	@accessToken NVARCHAR(1000) = NULL,
 	@publicKennelId UNIQUEIDENTIFIER = NULL,
 	@currentExtApiKey NVARCHAR(120) = NULL
@@ -14,7 +14,7 @@ AS
 --              Only users with appropriate AppAccessFlags (0x40000019) can
 --              regenerate. Generates a 75-character cryptographically random
 --              key using CRYPT_GEN_RANDOM and base64 encoding.
--- Parameters: @publicHasherId, @accessToken (auth)
+-- Parameters: @deviceId, @accessToken (auth)
 --             @publicKennelId (target kennel)
 --             @currentExtApiKey (current key for verification)
 -- Returns: Success: newExtApiKey column
@@ -40,6 +40,7 @@ AS
 --   - Removed @ipAddress, @ipGeoDetails (logging moved to API shim)
 --   - Removed ErrorLog inserts (error logging moved to API shim)
 --   - Removed GeneralLog inserts (request logging moved to API shim)
+--   - @publicHasherId replaced by @deviceId (device-bound auth via HC.Device lookup)
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -49,7 +50,9 @@ BEGIN TRY
 
 	-- Auth validation
 	DECLARE @authError NVARCHAR(255);
-	EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, OBJECT_NAME(@@PROCID), @publicKennelId, @authError OUTPUT;
+	DECLARE @hasherId UNIQUEIDENTIFIER;
+	DECLARE @callerType INT;
+	EXEC HC6.ValidatePortalAuth @deviceId, @accessToken, OBJECT_NAME(@@PROCID), @publicKennelId, @authError OUTPUT, @hasherId OUTPUT, @callerType OUTPUT;
 	IF @authError IS NOT NULL
 	BEGIN
 		SELECT 0 AS Success, @authError AS ErrorMessage;
@@ -92,8 +95,7 @@ BEGIN TRY
 		@kennelName = k.KennelName
 	FROM HC.HasherKennelMap hkm
 	INNER JOIN HC.Kennel k ON hkm.KennelId = k.id
-	INNER JOIN HC.Hasher h ON hkm.UserId = h.id
-	WHERE h.PublicHasherId = @publicHasherId
+	WHERE hkm.UserId = @hasherId
 	AND k.PublicKennelId = @publicKennelId
 
 	IF @appAccessFlags IS NULL OR (@appAccessFlags & 0x40000019) = 0

@@ -5,11 +5,11 @@
   "description": "Updates an existing kennel's settings. Update-only (no insert path). Uses a COALESCE pattern: only parameters supplied as non-NULL are written; NULL means 'leave unchanged'. Two exceptions: @latitude and @longitude use -999.0 as a sentinel to explicitly set both columns to NULL (geographic nulling). There is no sentinel for clearing string fields to NULL. Covers kennel identity, dissemination, Google Calendar, payment config (3 slots), pricing, currency, location, tags, membership, notifications, and feature tier. Includes duplicate-name detection with auto-suggested alternatives for KennelUniqueShortName. UPDATE wrapped in a transaction.",
   "parameters": [
     {
-      "name": "publicHasherId",
+      "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "Auth: identifies the calling user. Passed to HC6.ValidatePortalAuth."
+      "mapsToColumn": "Device.id",
+      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
       "name": "accessToken",

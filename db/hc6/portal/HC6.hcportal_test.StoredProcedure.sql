@@ -1,6 +1,7 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcportal_test]
 
 	-- required parameters
+	@deviceId UNIQUEIDENTIFIER = NULL,
 	@publicKennelId UNIQUEIDENTIFIER = NULL
 
 AS

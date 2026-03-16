@@ -5,11 +5,11 @@
   "description": "Regenerates the external API key (ExtApiKey) for a kennel. Requires the current API key to be provided for security verification. Only users with appropriate AppAccessFlags (0x40000019) can regenerate. Generates a 75-character cryptographically random key using CRYPT_GEN_RANDOM(150) and base64 encoding, with '+' and '/' characters stripped. The UPDATE is wrapped in a transaction. @publicKennelId changed from NVARCHAR(250) (HC5) to UNIQUEIDENTIFIER in HC6. @currentExtApiKey narrowed from NVARCHAR(1000) to NVARCHAR(120) to match Kennel.ExtApiKey.",
   "parameters": [
     {
-      "name": "publicHasherId",
+      "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "Auth: the user requesting key regeneration. Passed to HC6.ValidatePortalAuth and used for the AppAccessFlags authorization check."
+      "mapsToColumn": "Device.id",
+      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
       "name": "accessToken",

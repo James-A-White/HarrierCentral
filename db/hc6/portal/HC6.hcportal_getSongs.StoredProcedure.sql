@@ -1,7 +1,7 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcportal_getSongs]
 
 	-- required parameters
-	@publicHasherId UNIQUEIDENTIFIER = NULL,
+	@deviceId UNIQUEIDENTIFIER = NULL,
 	@accessToken NVARCHAR(1000) = NULL,
 	@publicKennelId UNIQUEIDENTIFIER = NULL
 
@@ -11,7 +11,7 @@ AS
 -- Description: Returns all non-removed songs from HC.Song with a
 --              membership flag (isInKennel) indicating whether each song
 --              is assigned to the specified kennel via HC.KennelSongMap.
--- Parameters: @publicHasherId, @accessToken (auth)
+-- Parameters: @deviceId, @accessToken (auth)
 --             @publicKennelId (kennel to check membership against)
 -- Returns: Single rowset: id, SongName, TuneOf, BawdyRating, Notes,
 --          Actions, Variants, ImageUrl, AudioUrl, AutoAddToKennel, Rank,
@@ -55,7 +55,9 @@ BEGIN TRY
 
 	-- Auth validation
 	DECLARE @authError NVARCHAR(255);
-	EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, OBJECT_NAME(@@PROCID), @publicKennelId, @authError OUTPUT;
+	DECLARE @hasherId UNIQUEIDENTIFIER;
+	DECLARE @callerType INT;
+	EXEC HC6.ValidatePortalAuth @deviceId, @accessToken, OBJECT_NAME(@@PROCID), @publicKennelId, @authError OUTPUT, @hasherId OUTPUT, @callerType OUTPUT;
 	IF @authError IS NOT NULL
 	BEGIN
 		SELECT 0 AS Success, @authError AS ErrorMessage;

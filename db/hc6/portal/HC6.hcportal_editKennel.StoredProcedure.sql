@@ -1,7 +1,7 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcportal_editKennel]
 
 	-- required parameters (we accept nulls so we can trap errors in SQL instead of having the SP fail to execute)
-	@publicHasherId UNIQUEIDENTIFIER = NULL,
+	@deviceId UNIQUEIDENTIFIER = NULL,
 	@accessToken NVARCHAR(1000) = NULL,
 	@publicKennelId UNIQUEIDENTIFIER = NULL,
 
@@ -86,7 +86,7 @@ AS
 --              currency, location, tags, membership, notifications,
 --              and feature tier. Includes duplicate-name detection with
 --              auto-suggested alternatives for KennelUniqueShortName.
--- Parameters: @publicHasherId, @accessToken (auth)
+-- Parameters: @deviceId, @accessToken (auth)
 --             @publicKennelId (routing)
 --             ~60 optional kennel settings via COALESCE pattern
 -- Returns: SuccessResult rowset (result, resultCode) or error envelope
@@ -120,7 +120,9 @@ BEGIN TRY
 
 	-- Auth validation
 	DECLARE @authError NVARCHAR(255);
-	EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, OBJECT_NAME(@@PROCID), @publicKennelId, @authError OUTPUT;
+	DECLARE @hasherId UNIQUEIDENTIFIER;
+	DECLARE @callerType INT;
+	EXEC HC6.ValidatePortalAuth @deviceId, @accessToken, OBJECT_NAME(@@PROCID), @publicKennelId, @authError OUTPUT, @hasherId OUTPUT, @callerType OUTPUT;
 	IF @authError IS NOT NULL
 	BEGIN
 		SELECT 0 AS Success, @authError AS ErrorMessage;

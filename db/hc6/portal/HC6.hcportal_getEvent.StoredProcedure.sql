@@ -1,7 +1,7 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcportal_getEvent]
 
 	-- required parameters
-	@publicHasherId UNIQUEIDENTIFIER = NULL,
+	@deviceId UNIQUEIDENTIFIER = NULL,
 	@accessToken NVARCHAR(1000) = NULL,
 	@includePaymentInfo INT = 0,
 
@@ -18,7 +18,7 @@ AS
 --              'lastrun'. Returns event details rowset and optionally
 --              an attendee list (with or without payment info).
 --              Used by both admin portal and public HashRuns.org site.
--- Parameters: @publicHasherId (auth), @accessToken (auth),
+-- Parameters: @deviceId (auth), @accessToken (auth),
 --             @includePaymentInfo (0=basic attendees, 1=full payment),
 --             @publicEventId (direct lookup),
 --             @kennelUniqueShortName + @runDesignator (indirect lookup)
@@ -40,6 +40,7 @@ AS
 --   - Removed @ipAddress, @ipGeoDetails (logging moved to API shim)
 --   - Removed ErrorLog inserts (error logging moved to API shim)
 --   - Removed GeneralLog inserts (request logging moved to API shim)
+--   - @publicHasherId replaced by @deviceId (device-bound auth via HC.Device lookup)
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -49,7 +50,9 @@ BEGIN TRY
 
 	-- Auth validation
 	DECLARE @authError NVARCHAR(255);
-	EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, OBJECT_NAME(@@PROCID), @publicEventId, @authError OUTPUT;
+	DECLARE @hasherId UNIQUEIDENTIFIER;
+	DECLARE @callerType INT;
+	EXEC HC6.ValidatePortalAuth @deviceId, @accessToken, OBJECT_NAME(@@PROCID), @publicEventId, @authError OUTPUT, @hasherId OUTPUT, @callerType OUTPUT;
 	IF @authError IS NOT NULL
 	BEGIN
 		SELECT 0 AS Success, @authError AS ErrorMessage;
@@ -241,7 +244,7 @@ BEGIN TRY
 	WHERE evt.id = @eventId
 
 	-- Rowset 1: Attendee List (only for non-service-account callers)
-	IF ((@publicHasherId != '22222222-2222-2222-2222-222222222222') AND (@publicHasherId != '11111111-1111-1111-1111-111111111111'))
+	IF (@callerType = 0)
 	BEGIN
 		IF (@includePaymentInfo = 0)
 		BEGIN

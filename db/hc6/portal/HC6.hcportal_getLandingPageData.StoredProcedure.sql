@@ -1,6 +1,5 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcportal_getLandingPageData]
 
-@publicHasherId uniqueidentifier = NULL,
 @accessToken nvarchar(1000) = NULL,
 @fcmToken nvarchar(500) = NULL,
 @deviceId uniqueidentifier = NULL
@@ -12,7 +11,7 @@ AS
 --   user. Updates FCM token on device if changed, and returns user
 --   profile and list of kennels the user follows (with membership
 --   status and kennel details).
--- Parameters: @publicHasherId, @accessToken, @fcmToken, @deviceId
+-- Parameters: @deviceId, @accessToken, @fcmToken
 -- Returns: On error: HC6 envelope (Success, ErrorMessage). On success:
 --   Rowset 0 = UserProfile (firstName, lastName, hashName, displayName).
 --   Rowset 1 = KennelList (kennel details, membership, location data).
@@ -31,6 +30,7 @@ AS
 --   - Removed GeneralLog inserts (request logging moved to API shim)
 --   - Error rowset shape changed from multi-column HC5 error format
 --     to standard HC6 envelope (Success, ErrorMessage)
+--   - @publicHasherId replaced by @deviceId (device-bound auth via HC.Device lookup)
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -40,7 +40,9 @@ BEGIN TRY
 
     -- Auth validation
     DECLARE @authError NVARCHAR(255);
-    EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, OBJECT_NAME(@@PROCID), NULL, @authError OUTPUT;
+    DECLARE @hasherId UNIQUEIDENTIFIER;
+    DECLARE @callerType INT;
+    EXEC HC6.ValidatePortalAuth @deviceId, @accessToken, OBJECT_NAME(@@PROCID), NULL, @authError OUTPUT, @hasherId OUTPUT, @callerType OUTPUT;
     IF @authError IS NOT NULL
     BEGIN
         SELECT 0 AS Success, @authError AS ErrorMessage;
@@ -52,17 +54,15 @@ BEGIN TRY
     DECLARE @firstName nvarchar(250),
             @lastName nvarchar(250),
             @hashName nvarchar(250),
-            @displayName nvarchar(250),
-            @hasherId uniqueidentifier
+            @displayName nvarchar(250)
 
     SELECT
         @firstName = coalesce(h.FirstName, ''),
         @lastName = coalesce(h.LastName, ''),
         @hashName = coalesce(h.HashName, ''),
-        @displayName = coalesce(h.DisplayName, ''),
-        @hasherId = h.id
+        @displayName = coalesce(h.DisplayName, '')
     FROM  HC.Hasher h
-    WHERE h.PublicHasherId = @publicHasherId
+    WHERE h.id = @hasherId
 
     BEGIN TRANSACTION;
 
@@ -115,7 +115,7 @@ BEGIN TRY
     INNER JOIN HC.Kennel k on k.id = hkm.KennelId
     INNER JOIN HC.City c on k.CityId = c.id
     INNER JOIN HC.Country n on k.CountryId = n.id
-    WHERE h.PublicHasherId = @publicHasherId
+    WHERE h.id = @hasherId
     AND hkm.Following = 1
 
 END TRY

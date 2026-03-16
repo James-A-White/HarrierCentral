@@ -5,11 +5,11 @@
   "description": "Retrieves hash running events filtered by geographic constraints (kennels, cities, regions, countries, continents) for display in the admin portal or on public HashRuns.org pages. Returns either a summary list or full event details depending on @fullDetails. Supports past/future/all time windows. @kennelUniqueShortName also falls back to city/region/country name matching. Dissemination rules are enforced for non-admin callers.",
   "parameters": [
     {
-      "name": "publicHasherId",
+      "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "Auth: user's public hasher ID, validated via HC6.ValidatePortalAuth. Magic GUID 11111111-1111-1111-1111-111111111111 sets @isAdmin=0, disabling the admin bypass of dissemination rules."
+      "mapsToColumn": "Device.id",
+      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
       "name": "accessToken",

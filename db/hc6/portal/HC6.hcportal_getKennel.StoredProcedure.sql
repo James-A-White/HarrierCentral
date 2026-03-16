@@ -1,7 +1,7 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcportal_getKennel]
 
 	-- required parameters
-	@publicHasherId UNIQUEIDENTIFIER = NULL,
+	@deviceId UNIQUEIDENTIFIER = NULL,
 	@accessToken NVARCHAR(1000) = NULL,
 	@publicKennelId UNIQUEIDENTIFIER = NULL
 
@@ -13,7 +13,7 @@ AS
 --              website settings, payment configuration, default run
 --              settings, and related geographic data. Used by both
 --              admin portal and public HashRuns.org sites.
--- Parameters: @publicHasherId, @accessToken (auth)
+-- Parameters: @deviceId, @accessToken (auth)
 --             @publicKennelId (routing)
 -- Returns: Single rowset with 70+ columns of kennel detail, or error
 -- Author: Harrier Central
@@ -31,6 +31,7 @@ AS
 --   - Removed @ipAddress, @ipGeoDetails (logging moved to API shim)
 --   - Removed ErrorLog inserts (error logging moved to API shim)
 --   - Removed GeneralLog inserts (request logging moved to API shim)
+--   - @publicHasherId replaced by @deviceId (device-bound auth via HC.Device lookup)
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -40,21 +41,18 @@ BEGIN TRY
 
 	-- Auth validation
 	DECLARE @authError NVARCHAR(255);
-	EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, OBJECT_NAME(@@PROCID), @publicKennelId, @authError OUTPUT;
+	DECLARE @hasherId UNIQUEIDENTIFIER;
+	DECLARE @callerType INT;
+	EXEC HC6.ValidatePortalAuth @deviceId, @accessToken, OBJECT_NAME(@@PROCID), @publicKennelId, @authError OUTPUT, @hasherId OUTPUT, @callerType OUTPUT;
 	IF @authError IS NOT NULL
 	BEGIN
 		SELECT 0 AS Success, @authError AS ErrorMessage;
 		RETURN;
 	END
 
-	-- Validation: hasher exists (skip for magic service account GUIDs)
-	-- 11111111-... = HashRuns.org public access
-	-- 22222222-... = admin portal service account
-	IF (@publicHasherId != '11111111-1111-1111-1111-111111111111') AND (@publicHasherId != '22222222-2222-2222-2222-222222222222')
+	-- Validation: hasher exists (skip for service account callers)
+	IF (@callerType = 0)
 	BEGIN
-		DECLARE @hasherId UNIQUEIDENTIFIER
-		SELECT @hasherId = id FROM HC.Hasher WHERE PublicHasherId = @publicHasherId
-
 		IF @hasherId IS NULL
 		BEGIN
 			SELECT 0 AS Success, 'Hasher not found' AS ErrorMessage;

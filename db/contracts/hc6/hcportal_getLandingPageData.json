@@ -5,11 +5,11 @@
   "description": "Returns landing page data for an authenticated portal user. Updates the FCM token on the device if changed (after validation), logs portal access, and returns the user's profile and list of kennels the user follows with membership status and kennel details.",
   "parameters": [
     {
-      "name": "publicHasherId",
+      "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "Auth: the user's public hasher ID. Validated via HC6.ValidatePortalAuth. Also used to look up user profile and kennel list."
+      "mapsToColumn": "Device.id",
+      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
       "name": "accessToken",
@@ -24,13 +24,6 @@
       "nullable": true,
       "mapsToColumn": "Device.FcmToken",
       "description": "Firebase Cloud Messaging token for push notifications. If the stored value differs from this, the Device record is updated."
-    },
-    {
-      "name": "deviceId",
-      "type": "UNIQUEIDENTIFIER",
-      "nullable": true,
-      "mapsToColumn": "Device.id",
-      "description": "The device ID for the portal session. Used to update the FCM token if changed."
     }
   ],
   "rowsets": [

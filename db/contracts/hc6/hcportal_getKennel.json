@@ -5,11 +5,11 @@
   "description": "Retrieves comprehensive details for a single kennel by its public ID. Returns kennel profile, location info, website settings, payment configuration (3 slots), default run settings, and related geographic data. Used by both the admin portal and public HashRuns.org sites. Two service account GUIDs bypass the hasher-existence check: 11111111-...=HashRuns.org public access, 22222222-...=admin portal service account. Read-only query.",
   "parameters": [
     {
-      "name": "publicHasherId",
+      "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "Auth: the calling user's public hasher ID. Passed to HC6.ValidatePortalAuth. Two magic service account GUIDs bypass the hasher-existence check: 11111111-1111-1111-1111-111111111111 (HashRuns.org) and 22222222-2222-2222-2222-222222222222 (admin portal service account)."
+      "mapsToColumn": "Device.id",
+      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
       "name": "accessToken",

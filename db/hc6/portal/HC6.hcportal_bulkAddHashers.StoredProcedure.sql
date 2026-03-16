@@ -1,7 +1,7 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcportal_bulkAddHashers]
 
 -- required parameters (we accept nulls so we can trap errors in SQL instead of having the SP fail to execute)
-@publicHasherId uniqueidentifier = NULL,
+@deviceId uniqueidentifier = NULL,
 @accessToken nvarchar(1000) = NULL,
 @publicKennelId uniqueidentifier = NULL,
 @newHasherJson nvarchar(MAX) = NULL
@@ -14,7 +14,7 @@ AS
 --   creates new HC.Hasher records for new users, creates/updates
 --   HasherKennelMap relationships, and optionally updates historical
 --   run counts. Uses a cursor to iterate through the input array.
--- Parameters: @publicHasherId (auth), @accessToken (auth),
+-- Parameters: @deviceId (auth), @accessToken (auth),
 --   @publicKennelId (routing), @newHasherJson (JSON array of hashers)
 -- Returns: On error: HC6 standard error envelope (Success, ErrorMessage).
 --   On success: BulkAddResult rowset with per-hasher outcomes.
@@ -30,6 +30,7 @@ AS
 --   - Removed @ipAddress, @ipGeoDetails (logging moved to API shim)
 --   - Removed ErrorLog inserts (error logging moved to API shim)
 --   - Removed GeneralLog inserts (request logging moved to API shim)
+--   - @publicHasherId replaced by @deviceId (device-bound auth via HC.Device lookup)
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -39,20 +40,12 @@ BEGIN TRY
 
     -- Auth validation
     DECLARE @authError NVARCHAR(255);
-    EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, OBJECT_NAME(@@PROCID), @publicKennelId, @authError OUTPUT;
+    DECLARE @hasherId UNIQUEIDENTIFIER;
+    DECLARE @callerType INT;
+    EXEC HC6.ValidatePortalAuth @deviceId, @accessToken, OBJECT_NAME(@@PROCID), @publicKennelId, @authError OUTPUT, @hasherId OUTPUT, @callerType OUTPUT;
     IF @authError IS NOT NULL
     BEGIN
         SELECT 0 AS Success, @authError AS ErrorMessage;
-        RETURN;
-    END
-
-    -- Resolve internal hasher ID from public ID
-    DECLARE @hasherId uniqueidentifier
-    SELECT @hasherId = id from HC.Hasher WHERE PublicHasherId = @publicHasherId
-
-    IF (@hasherId IS NULL)
-    BEGIN
-        SELECT 0 AS Success, 'No record found with provided @publicHasherId' AS ErrorMessage;
         RETURN;
     END
 

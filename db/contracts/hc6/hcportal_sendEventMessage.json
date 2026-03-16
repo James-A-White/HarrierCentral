@@ -5,11 +5,11 @@
   "description": "Sends a message to event participants based on releasability bit flags (admins, members, followers, RSVPs, hares, everyone). Inserts a record into HC.EventMessage, then returns three rowsets: the created message details, FCM tokens for users who qualify for full push notifications, and FCM tokens for users who qualify for in-app-only notifications. Notification preferences and a 6-hour event proximity window gate full push delivery.",
   "parameters": [
     {
-      "name": "publicHasherId",
+      "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "Auth: public hasher ID of the user sending the message, validated via HC6.ValidatePortalAuth. Also used to look up the sender's internal Hasher.id."
+      "mapsToColumn": "Device.id",
+      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
       "name": "accessToken",

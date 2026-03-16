@@ -5,11 +5,11 @@
   "description": "Retrieves recent activity for the admin portal dashboard. Returns raw typed data columns for one of 10 categories: 0=New Hashers, 1=Event RSVPs, 2=New Events, 3=New Kennels, 4=App Logins, 5=Payments, 6=Portal Access, 7=Errors, 8=HashRuns.Org Traffic, 100=Version Adoption. Uses a time window of @days days (default 7; if 0, uses 60 minutes). Portal is responsible for all presentation formatting. Uses READ UNCOMMITTED isolation.",
   "parameters": [
     {
-      "name": "publicHasherId",
+      "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "Auth: the authenticated user's public hasher ID. Validated via HC6.ValidatePortalAuth."
+      "mapsToColumn": "Device.id",
+      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
       "name": "accessToken",

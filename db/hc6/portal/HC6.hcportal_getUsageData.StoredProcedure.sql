@@ -1,5 +1,5 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcportal_getUsageData]
-	@publicHasherId UNIQUEIDENTIFIER = NULL,
+	@deviceId UNIQUEIDENTIFIER = NULL,
 	@accessToken NVARCHAR(1000) = NULL
 
 AS
@@ -11,7 +11,7 @@ AS
 --              across data types (Account, Activity, Event, Kennel,
 --              Login, Payment, Portal, Error), recent login details,
 --              and recently updated/active events.
--- Parameters: @publicHasherId, @accessToken (auth)
+-- Parameters: @deviceId, @accessToken (auth)
 -- Returns: Rowset 1: VersionData (iOS vs Android)
 --          Rowset 2: IntegrationJobData
 --          Rowset 3: UsageStatistics
@@ -42,7 +42,9 @@ BEGIN TRY
 
 	-- Auth validation
 	DECLARE @authError NVARCHAR(255);
-	EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, OBJECT_NAME(@@PROCID), NULL, @authError OUTPUT;
+	DECLARE @hasherId UNIQUEIDENTIFIER;
+	DECLARE @callerType INT;
+	EXEC HC6.ValidatePortalAuth @deviceId, @accessToken, OBJECT_NAME(@@PROCID), NULL, @authError OUTPUT, @hasherId OUTPUT, @callerType OUTPUT;
 	IF @authError IS NOT NULL
 	BEGIN
 		SELECT 0 AS Success, @authError AS ErrorMessage;

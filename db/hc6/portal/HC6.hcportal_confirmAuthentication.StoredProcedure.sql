@@ -2,7 +2,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_confirmAuthentication]
 
 -- required parameters (we accept nulls so we can trap errors in SQL instead of having the SP fail to execute)
 @deviceId uniqueidentifier = NULL,
-@publicHasherId uniqueidentifier = NULL,
+@newDeviceId uniqueidentifier = NULL,
 @accessToken nvarchar(1000) = NULL,
 @qrCodeData nvarchar(250) = NULL,
 @deviceInfo nvarchar(4000) = NULL
@@ -17,7 +17,7 @@ AS
 --   provisions a new HC.Device record with a shared secret and returns
 --   the user's profile along with the device credentials (obfuscated
 --   as iconDataBase64 and colorPaletteIndex).
--- Parameters: @deviceId, @publicHasherId (service account GUID),
+-- Parameters: @deviceId (service account auth device), @newDeviceId (device being provisioned),
 --   @accessToken, @qrCodeData, @deviceInfo
 -- Returns: On error: HC6 envelope (Success, ErrorMessage). On success:
 --   user profile with obfuscated device credentials. Silent empty
@@ -35,6 +35,7 @@ AS
 --   - Removed GeneralLog inserts (request logging moved to API shim)
 --   - Error rowset shape changed from multi-column HC5 error format
 --     to standard HC6 envelope (Success, ErrorMessage)
+--   - @publicHasherId removed; @deviceId now = service account auth device; @newDeviceId = device being provisioned
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -42,11 +43,13 @@ SET XACT_ABORT ON;
 
 BEGIN TRY
 
-    SELECT @deviceId = coalesce(@deviceId, newid())
+    SET @newDeviceId = COALESCE(@newDeviceId, NEWID())
 
     -- Auth validation
     DECLARE @authError NVARCHAR(255);
-    EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, OBJECT_NAME(@@PROCID), @qrCodeData, @authError OUTPUT;
+    DECLARE @saHasherId UNIQUEIDENTIFIER;
+    DECLARE @saCallerType INT;
+    EXEC HC6.ValidatePortalAuth @deviceId, @accessToken, OBJECT_NAME(@@PROCID), @qrCodeData, @authError OUTPUT, @saHasherId OUTPUT, @saCallerType OUTPUT;
     IF @authError IS NOT NULL
     BEGIN
         SELECT 0 AS Success, @authError AS ErrorMessage;
@@ -77,7 +80,7 @@ BEGIN TRY
     SELECT
             @deviceSecret = d.DeviceSecret,
             @timeWindow = d.TimeWindow
-            FROM HC.Device d where d.id = @deviceId
+            FROM HC.Device d where d.id = @newDeviceId
 
     -- Provision new device if no existing secret
     IF(@deviceSecret IS NULL)
@@ -105,7 +108,7 @@ BEGIN TRY
                     , [TimeWindow]
                     , [DeviceData])
                     VALUES
-                    (@deviceId
+                    (@newDeviceId
                     , @hasherId
                     , @deviceSecret
                     , @timeWindow

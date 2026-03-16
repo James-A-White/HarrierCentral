@@ -5,11 +5,11 @@
   "description": "Bulk adds or updates multiple hashers (members) for a kennel. Accepts a JSON array of hasher data, validates email format, creates new HC.Hasher records for new users, creates or updates HC.HasherKennelMap relationships, and optionally updates historical run counts. Uses a cursor to iterate through the input array. All writes are wrapped in a single transaction.",
   "parameters": [
     {
-      "name": "publicHasherId",
+      "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "Auth: public hasher ID of the authenticated user performing the bulk add. Validated via HC6.ValidatePortalAuth."
+      "mapsToColumn": "Device.id",
+      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
       "name": "accessToken",

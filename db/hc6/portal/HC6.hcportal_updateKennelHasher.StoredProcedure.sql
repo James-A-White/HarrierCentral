@@ -1,7 +1,7 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcportal_updateKennelHasher]
 
 -- required parameters (we accept nulls so we can trap errors in SQL instead of having the SP fail to execute)
-@publicHasherId uniqueidentifier = NULL,
+@deviceId uniqueidentifier = NULL,
 @accessToken nvarchar(1000) = NULL,
 @hasherBeingEditedPublicId uniqueidentifier = NULL,
 @publicKennelId uniqueidentifier = NULL,
@@ -39,7 +39,7 @@ AS
 --   preferences, historical run counts, and historical count estimates.
 --   The SP determines which fields to update based on which parameters
 --   are non-NULL.
--- Parameters: @publicHasherId (auth), @accessToken (auth),
+-- Parameters: @deviceId (auth), @accessToken (auth),
 --   @hasherBeingEditedPublicId (target hasher), @publicKennelId (kennel
 --   context), plus optional update fields
 -- Returns: On error: HC6 standard error envelope (Success, ErrorMessage).
@@ -62,6 +62,7 @@ AS
 --   - Removed @ipAddress, @ipGeoDetails (logging moved to API shim)
 --   - Removed ErrorLog inserts (error logging moved to API shim)
 --   - Removed GeneralLog inserts (request logging moved to API shim)
+--   - @publicHasherId replaced by @deviceId (device-bound auth via HC.Device lookup)
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -71,20 +72,12 @@ BEGIN TRY
 
     -- Auth validation
     DECLARE @authError NVARCHAR(255);
-    EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, OBJECT_NAME(@@PROCID), @hasherBeingEditedPublicId, @authError OUTPUT;
+    DECLARE @hasherId UNIQUEIDENTIFIER;
+    DECLARE @callerType INT;
+    EXEC HC6.ValidatePortalAuth @deviceId, @accessToken, OBJECT_NAME(@@PROCID), @hasherBeingEditedPublicId, @authError OUTPUT, @hasherId OUTPUT, @callerType OUTPUT;
     IF @authError IS NOT NULL
     BEGIN
         SELECT 0 AS Success, @authError AS ErrorMessage;
-        RETURN;
-    END
-
-    -- Resolve internal hasher ID from public ID (the calling user)
-    DECLARE @hasherId uniqueidentifier
-    SELECT @hasherId = id from HC.Hasher WHERE PublicHasherId = @publicHasherId
-
-    IF (@hasherId IS NULL)
-    BEGIN
-        SELECT 0 AS Success, 'No record found with provided @publicHasherId' AS ErrorMessage;
         RETURN;
     END
 
@@ -254,8 +247,7 @@ BEGIN TRY
                     hkm.HistoricalTotalRunCount,
                     hkm.HcTotalRunCount,
                     hkm.HcHaringCount,
-                    @hasherBeingEditedPublicId as hasherBeingEditedId,
-                    @publicHasherId as publicHasherId
+                    @hasherBeingEditedPublicId as hasherBeingEditedId
                 FROM HC.HasherKennelMap hkm
                 INNER JOIN HC.Hasher h on hkm.UserId = h.id
                 INNER JOIN HC.Kennel k on hkm.KennelId = k.id
@@ -290,8 +282,7 @@ BEGIN TRY
                     hkm.HistoricalTotalRunCount,
                     hkm.HcTotalRunCount,
                     hkm.HcHaringCount,
-                    @hasherBeingEditedPublicId as hasherBeingEditedId,
-                    @publicHasherId as publicHasherId
+                    @hasherBeingEditedPublicId as hasherBeingEditedId
                 FROM HC.HasherKennelMap hkm
                 INNER JOIN HC.Hasher h on hkm.UserId = h.id
                 INNER JOIN HC.Kennel k on hkm.KennelId = k.id

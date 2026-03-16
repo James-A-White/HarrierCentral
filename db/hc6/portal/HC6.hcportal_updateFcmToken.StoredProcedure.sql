@@ -2,7 +2,6 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_updateFcmToken]
 
 -- required parameters (we accept nulls so we can trap errors in SQL instead of having the SP fail to execute)
 @deviceId uniqueidentifier = NULL,
-@publicHasherId uniqueidentifier = NULL,
 @accessToken nvarchar(1000) = NULL,
 @fcmToken nvarchar(500) = NULL,
 @buildNumber nvarchar(25) = NULL,
@@ -15,8 +14,7 @@ AS
 --   notification token for a device after the browser has refreshed
 --   its token. Also updates device version, build number, and last
 --   login timestamp.
--- Parameters: @deviceId, @publicHasherId (service account GUID),
---   @accessToken, @fcmToken, @buildNumber, @version
+-- Parameters: @deviceId, @accessToken, @fcmToken, @buildNumber, @version
 -- Returns: On error: HC6 envelope (Success, ErrorMessage). On success:
 --   result = 'Success'
 -- Author: Harrier Central
@@ -36,6 +34,7 @@ AS
 --   - Removed GeneralLog inserts (request logging moved to API shim)
 --   - Error rowset shape changed from multi-column HC5 error format
 --     to standard HC6 envelope (Success, ErrorMessage)
+--   - @publicHasherId replaced by @deviceId (device-bound auth via HC.Device lookup)
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -45,7 +44,9 @@ BEGIN TRY
 
     -- Auth validation
     DECLARE @authError NVARCHAR(255);
-    EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, OBJECT_NAME(@@PROCID), @fcmToken, @authError OUTPUT;
+    DECLARE @hasherId UNIQUEIDENTIFIER;
+    DECLARE @callerType INT;
+    EXEC HC6.ValidatePortalAuth @deviceId, @accessToken, OBJECT_NAME(@@PROCID), @fcmToken, @authError OUTPUT, @hasherId OUTPUT, @callerType OUTPUT;
     IF @authError IS NOT NULL
     BEGIN
         SELECT 0 AS Success, @authError AS ErrorMessage;

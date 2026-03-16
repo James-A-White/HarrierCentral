@@ -1,7 +1,7 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcportal_addEditEvent]
 
 -- required parameters (we accept nulls so we can trap errors in SQL instead of having the SP fail to execute)
-@publicHasherId uniqueidentifier = NULL,
+@deviceId uniqueidentifier = NULL,
 @accessToken nvarchar(1000) = NULL,
 @publicKennelId uniqueidentifier = NULL,
 
@@ -57,7 +57,7 @@ AS
 --   kennel. Handles event data (name, description, location, pricing,
 --   tags, dissemination settings), optionally saves tags as kennel
 --   defaults, and triggers run number recalculation.
--- Parameters: @publicHasherId, @accessToken, @publicKennelId,
+-- Parameters: @deviceId, @accessToken, @publicKennelId,
 --   @publicEventId (NULL=insert, non-NULL=update), plus ~40 optional
 --   event fields.
 -- Returns: On error: HC6 standard envelope (Success, ErrorMessage).
@@ -81,6 +81,7 @@ AS
 --   Auth validated via HC6.ValidatePortalAuth helper SP.
 --   Removed ErrorLog/GeneralLog inserts (logging moved to API shim).
 --   All error returns now use HC6 standard envelope (Success, ErrorMessage).
+--   - @publicHasherId replaced by @deviceId (device-bound auth via HC.Device lookup)
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -94,7 +95,9 @@ BEGIN TRY
 
 -- Auth validation
 DECLARE @authError NVARCHAR(255);
-EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, OBJECT_NAME(@@PROCID), @publicKennelId, @authError OUTPUT;
+DECLARE @hasherId UNIQUEIDENTIFIER;
+DECLARE @callerType INT;
+EXEC HC6.ValidatePortalAuth @deviceId, @accessToken, OBJECT_NAME(@@PROCID), @publicKennelId, @authError OUTPUT, @hasherId OUTPUT, @callerType OUTPUT;
 IF @authError IS NOT NULL
 BEGIN
     SELECT 0 AS Success, @authError AS ErrorMessage;
@@ -264,7 +267,7 @@ DECLARE @resultInt int;
                         EvtDisseminateHashRunsDotOrg = CASE WHEN @evtDisseminateHashRunsDotOrg = -2 THEN NULL ELSE COALESCE(@evtDisseminateHashRunsDotOrg, EvtDisseminateHashRunsDotOrg) END,
                         DisseminateOnGlobalGoogleCalendar = CASE WHEN @evtDisseminateOnGlobalGoogleCalendar = -2 THEN NULL ELSE COALESCE(@evtDisseminateOnGlobalGoogleCalendar, DisseminateOnGlobalGoogleCalendar) END,
                         EventLastUpdatedSource = 'HC Portal',
-                        EventLastUpdatedBy = @publicHasherId,
+                        EventLastUpdatedBy = @hasherId,
                         CountryId = COALESCE(@countryId, CountryId)
                 WHERE id = @eventId;
 

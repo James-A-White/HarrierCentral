@@ -5,11 +5,11 @@
   "description": "Returns login history for a specified user over the last 365 days. Includes login timestamps, app versions, device types, and geolocation data, ordered most recent first. Uses READ UNCOMMITTED isolation for performance.",
   "parameters": [
     {
-      "name": "publicHasherId",
+      "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "Auth: the authenticated user's public hasher ID. Validated via HC6.ValidatePortalAuth."
+      "mapsToColumn": "Device.id",
+      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
       "name": "accessToken",

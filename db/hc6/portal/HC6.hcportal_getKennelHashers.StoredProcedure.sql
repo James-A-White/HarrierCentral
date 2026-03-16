@@ -1,7 +1,7 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcportal_getKennelHashers]
 
 	-- required parameters
-	@publicHasherId UNIQUEIDENTIFIER = NULL,
+	@deviceId UNIQUEIDENTIFIER = NULL,
 	@accessToken NVARCHAR(1000) = NULL,
 	@publicKennelId UNIQUEIDENTIFIER = NULL
 
@@ -13,7 +13,7 @@ AS
 --              status, run counts, payment history from recent events,
 --              and credit balances. Requires portal access token and
 --              appropriate AppAccessFlags (0x40000019 permission).
--- Parameters: @publicHasherId, @accessToken (auth)
+-- Parameters: @deviceId, @accessToken (auth)
 --             @publicKennelId (routing)
 -- Returns: Single rowset of hasher details, or error envelope
 -- Author: Harrier Central
@@ -31,6 +31,7 @@ AS
 --   - Removed @ipAddress, @ipGeoDetails (logging moved to API shim)
 --   - Removed ErrorLog inserts (error logging moved to API shim)
 --   - Removed GeneralLog inserts (request logging moved to API shim)
+--   - @publicHasherId replaced by @deviceId (device-bound auth via HC.Device lookup)
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -47,7 +48,9 @@ BEGIN TRY
 
 	-- Auth validation
 	DECLARE @authError NVARCHAR(255);
-	EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, OBJECT_NAME(@@PROCID), @publicKennelId, @authError OUTPUT;
+	DECLARE @hasherId UNIQUEIDENTIFIER;
+	DECLARE @callerType INT;
+	EXEC HC6.ValidatePortalAuth @deviceId, @accessToken, OBJECT_NAME(@@PROCID), @publicKennelId, @authError OUTPUT, @hasherId OUTPUT, @callerType OUTPUT;
 	IF @authError IS NOT NULL
 	BEGIN
 		SELECT 0 AS Success, @authError AS ErrorMessage;
@@ -75,8 +78,7 @@ BEGIN TRY
 		@kennelName = k.KennelName
 	FROM HC.HasherKennelMap hkm
 	INNER JOIN HC.Kennel k on hkm.KennelId = k.id
-	INNER JOIN HC.Hasher h on hkm.UserId = h.id
-	WHERE h.PublicHasherId = @publicHasherId
+	WHERE hkm.UserId = @hasherId
 	AND k.PublicKennelId = @publicKennelId
 
 	IF @appAccessFlags IS NULL OR (@appAccessFlags & 0x40000019) = 0

@@ -5,6 +5,13 @@
   "description": "Test/debug SP that retrieves the top 5 event names for a given kennel, ordered by event start date descending. No authentication — intentionally lightweight for testing.",
   "parameters": [
     {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "Accepted but unused. The API shim always passes deviceId; this parameter prevents mapping errors."
+    },
+    {
       "name": "publicKennelId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,

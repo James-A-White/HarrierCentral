@@ -1,7 +1,7 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcportal_toggleKennelSong]
 
 	-- required parameters (we accept nulls so we can trap errors in SQL instead of having the SP fail to execute)
-	@publicHasherId UNIQUEIDENTIFIER = NULL,
+	@deviceId UNIQUEIDENTIFIER = NULL,
 	@accessToken NVARCHAR(1000) = NULL,
 	@publicKennelId UNIQUEIDENTIFIER = NULL,
 	@songId UNIQUEIDENTIFIER = NULL,
@@ -14,7 +14,7 @@ AS
 --              If adding (@isInKennel=1), either creates a new
 --              KennelSongMap record or un-soft-deletes an existing one.
 --              If removing (@isInKennel=0), soft-deletes the mapping.
--- Parameters: @publicHasherId, @accessToken (auth)
+-- Parameters: @deviceId, @accessToken (auth)
 --             @publicKennelId, @songId (routing)
 --             @isInKennel (toggle flag: 0 or 1)
 -- Returns: SuccessResult rowset (resultCode, result) or error envelope
@@ -48,7 +48,9 @@ BEGIN TRY
 
 	-- Auth validation
 	DECLARE @authError NVARCHAR(255);
-	EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, OBJECT_NAME(@@PROCID), @songId, @authError OUTPUT;
+	DECLARE @hasherId UNIQUEIDENTIFIER;
+	DECLARE @callerType INT;
+	EXEC HC6.ValidatePortalAuth @deviceId, @accessToken, OBJECT_NAME(@@PROCID), @songId, @authError OUTPUT, @hasherId OUTPUT, @callerType OUTPUT;
 	IF @authError IS NOT NULL
 	BEGIN
 		SELECT 0 AS Success, @authError AS ErrorMessage;

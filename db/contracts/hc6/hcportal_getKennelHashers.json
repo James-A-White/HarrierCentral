@@ -5,11 +5,11 @@
   "description": "Retrieves a list of all hashers (members and followers) for a specified kennel, including their membership status, run counts, payment history from the two most recent counted events, and credit balances. Requires portal access token validation and appropriate AppAccessFlags (0x40000019 permission check). @publicKennelId changed from NVARCHAR(250) to UNIQUEIDENTIFIER in HC6. Read-only query.",
   "parameters": [
     {
-      "name": "publicHasherId",
+      "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "Auth: public hasher ID of the authenticated user. Passed to HC6.ValidatePortalAuth and also used for the AppAccessFlags authorization check."
+      "mapsToColumn": "Device.id",
+      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
       "name": "accessToken",

@@ -212,4 +212,35 @@ Phases 1-3 can be done while still calling HC5 SPs (the shim can dual-log alongs
 
 ---
 
+## 9. Auth Architecture Change — deviceId Replaces publicHasherId
+
+**Affects: ALL portal SP calls**
+
+### Summary
+
+HC6 portal SPs no longer accept `@publicHasherId`. They now accept `@deviceId` instead. `HC6.ValidatePortalAuth` has been rewritten to perform a `HC.Device JOIN HC.Hasher` lookup using `@deviceId`, returning the resolved `@hasherId` (internal PK) and `@callerType` to the calling SP.
+
+### Shim changes required
+
+1. **Replace `@publicHasherId` with `@deviceId` in all SP call parameter mappings.** The portal will send `deviceId` in the request payload; the shim must pass it to the SP as `@deviceId`.
+
+2. **Remove `@publicHasherId` from error logging.** The shim's `HC.ErrorLog` inserts (Section 2) currently record `@publicHasherId` as the `userId` field. Update to record the `@deviceId` value instead (or omit if hasher resolution failed).
+
+3. **`confirmAuthentication` parameter rename:** The device being provisioned is now `@newDeviceId` (was `@deviceId`). The service account's device ID is now `@deviceId` (was authenticated by `@publicHasherId`). The shim must map correctly:
+   - `deviceId` from request → SP param `@deviceId` (service account auth)
+   - `newDeviceId` from request → SP param `@newDeviceId` (device being provisioned)
+
+4. **New prerequisite function: `HC6.CHECK_PORTAL_ACCESS_TOKEN`** — This scalar function must be created in the database before HC6 SPs can be deployed. It has the same signature as `HC.CHECK_PORTAL_ACCESS_TOKEN` except the first parameter is `@deviceId UNIQUEIDENTIFIER` instead of `@publicHasherId UNIQUEIDENTIFIER`. The shim does NOT call this function directly — it is called internally by `HC6.ValidatePortalAuth`.
+
+5. **New prerequisite: service account device rows** — Two rows must be pre-seeded in `HC.Device` for the service accounts:
+   - One for the hasher whose `PublicHasherId` = `11111111-1111-1111-1111-111111111111` (HashRuns.org)
+   - One for the hasher whose `PublicHasherId` = `22222222-2222-2222-2222-222222222222` (admin portal)
+   These device rows provide the `deviceId` and `deviceSecret` that service account calls use for token generation.
+
+### No change to shim transport
+
+The shim's transport layer (JSON payload extraction → SP parameter mapping → result forwarding) does not change in structure. Only the parameter name changes from `publicHasherId` to `deviceId`.
+
+---
+
 *Last updated: 2026-03-15*

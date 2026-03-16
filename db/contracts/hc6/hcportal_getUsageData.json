@@ -5,11 +5,11 @@
   "description": "Returns comprehensive platform usage statistics for the HC admin portal dashboard. Returns 5 rowsets: app version distribution (iOS vs Android), integration job status, usage metrics across data types (Account, Activity, Event, Kennel, Login, Payment, Portal, Error), recent login details, and recently updated/active events.",
   "parameters": [
     {
-      "name": "publicHasherId",
+      "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "Auth: the authenticated user's public hasher ID. Validated via HC6.ValidatePortalAuth."
+      "mapsToColumn": "Device.id",
+      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
       "name": "accessToken",

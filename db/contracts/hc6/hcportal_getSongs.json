@@ -5,11 +5,11 @@
   "description": "Returns all non-removed songs from HC.Song with a membership flag (isInKennel) indicating whether each song is assigned to the specified kennel. @publicKennelId is resolved to the internal HC.Kennel.id (@kennelId), which is then used in the LEFT JOIN to HC.KennelSongMap — fixing the HC5 bug where the join used @publicKennelId directly and isInKennel always returned 0. Read-only query; uses READ UNCOMMITTED isolation level. isInKennel is returned as SMALLINT (not BIT).",
   "parameters": [
     {
-      "name": "publicHasherId",
+      "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "Auth: user ID. Passed to HC6.ValidatePortalAuth. Accepted as nullable for SQL-side error trapping."
+      "mapsToColumn": "Device.id",
+      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
       "name": "accessToken",

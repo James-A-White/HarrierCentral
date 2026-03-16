@@ -9,14 +9,7 @@
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "Device.id",
-      "description": "Device ID whose record should be updated. Must be non-NULL; returns an error if NULL."
-    },
-    {
-      "name": "publicHasherId",
-      "type": "UNIQUEIDENTIFIER",
-      "nullable": true,
-      "mapsToColumn": null,
-      "description": "Auth: public hasher ID of the authenticated user. Validated via HC6.ValidatePortalAuth."
+      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
       "name": "accessToken",

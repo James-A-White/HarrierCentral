@@ -271,4 +271,52 @@ This is purely an internal database refactor. The portal still sends the same `@
 
 ---
 
+## 13. Auth Architecture Change — @deviceId Replaces @publicHasherId
+
+**Affects: ALL portal API calls**
+
+### What changed
+
+HC6 introduces device-bound authentication. `@publicHasherId` has been removed from all portal SP signatures and replaced by `@deviceId`.
+
+**Old pattern (HC5/HC6 early):**
+```
+Portal sends: @publicHasherId (user's public GUID) + @accessToken
+Token hash input: publicHasherId + procName + paramString
+```
+
+**New pattern (HC6 final):**
+```
+Portal sends: @deviceId (device GUID) + @accessToken
+Token hash input: UPPER(deviceSecret) + procName + paramString
+```
+
+`HC6.ValidatePortalAuth` now accepts `@deviceId` and looks up `HC.Device` → `HC.Hasher` to resolve:
+- `@hasherId` (OUTPUT): `HC.Hasher.id` (internal PK) — used internally by all SPs for hasher-scoped queries
+- `@callerType` (OUTPUT): 0=regular user, 1=HashRuns.org, 2=admin portal service account
+
+### Why @deviceId instead of @publicHasherId
+
+`publicHasherId` is a dereferencing ID that, if compromised, requires updating across multiple related tables. `deviceId` is a revocable credential — deleting a device row immediately revokes access without affecting the user's account or any referential integrity.
+
+### Portal actions
+
+1. **Stop sending `@publicHasherId`** in API call payloads. Send `@deviceId` instead.
+2. **Update token generation**: The access token hash must now use `@deviceId` (not `@publicHasherId`) as the user identifier, prepended with `UPPER(deviceSecret)`. New formula:
+   - `hash = UPPER(deviceSecret) + procName + paramString`
+   - This requires the portal to persist the `deviceSecret` received during `confirmAuthentication`
+3. **`confirmAuthentication` payload change**: The parameter that was `@deviceId` (the device being provisioned) is now `@newDeviceId`. The service account's device ID is now `@deviceId`. Both must be sent.
+4. **`updateFcmToken`**: Remove `@publicHasherId` from this call's payload.
+5. **`getLandingPageData`**: Remove `@publicHasherId` from this call's payload (keep `@deviceId`).
+
+### Security improvement
+
+`deviceSecret` is a 75-character cryptographically random string, generated once at device provisioning and stored only in `HC.Device`. It never travels over the wire after initial provisioning. Its inclusion in every token hash makes token forgery computationally infeasible even if `deviceId` is known to an attacker.
+
+### Prerequisites (database)
+- `HC6.CHECK_PORTAL_ACCESS_TOKEN` scalar function must be created (uses `@deviceId` as first parameter, vs `HC.CHECK_PORTAL_ACCESS_TOKEN` which uses `@publicHasherId`)
+- Service account rows must be pre-seeded in `HC.Device` for the hashers whose `PublicHasherId` is `11111111-1111-1111-1111-111111111111` and `22222222-2222-2222-2222-222222222222`
+
+---
+
 *Last updated: 2026-03-15*

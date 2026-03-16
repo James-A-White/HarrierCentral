@@ -5,11 +5,11 @@
   "description": "Toggles whether a song is associated with a kennel. @publicKennelId is resolved to the internal HC.Kennel.id (@kennelId) before all KennelSongMap operations — fixing the HC5 bug where @publicKennelId was used directly and no songs were ever actually toggled. If adding (@isInKennel=1), either creates a new KennelSongMap record or un-soft-deletes an existing one (Removed=0). If removing (@isInKennel=0), soft-deletes the mapping (Removed=1). All writes wrapped in a transaction.",
   "parameters": [
     {
-      "name": "publicHasherId",
+      "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "Auth: user making the request. Passed to HC6.ValidatePortalAuth. @songId is passed as the paramString to ValidatePortalAuth."
+      "mapsToColumn": "Device.id",
+      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
       "name": "accessToken",

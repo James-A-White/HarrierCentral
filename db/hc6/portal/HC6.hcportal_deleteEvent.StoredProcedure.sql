@@ -1,7 +1,7 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcportal_deleteEvent]
 
 -- required parameters (we accept nulls so we can trap errors in SQL instead of having the SP fail to execute)
-@publicHasherId uniqueidentifier = NULL,
+@deviceId uniqueidentifier = NULL,
 @accessToken nvarchar(1000) = NULL,
 @publicEventId uniqueidentifier = NULL
 
@@ -11,7 +11,7 @@ AS
 -- Description: Soft-deletes an event by setting its 'removed' flag to 1,
 --   but only if no hashers have been checked in (AttendenceState >= 20).
 --   Validates user authentication and event existence before deletion.
--- Parameters: @publicHasherId, @accessToken, @publicEventId
+-- Parameters: @deviceId, @accessToken, @publicEventId
 -- Returns: On error: standard HC6 error envelope. On success: single-row
 --   Result message confirming deletion or explaining why it was blocked.
 -- Author: Harrier Central
@@ -36,7 +36,9 @@ BEGIN TRY
 
 -- Auth validation
 DECLARE @authError NVARCHAR(255);
-EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, OBJECT_NAME(@@PROCID), @publicEventId, @authError OUTPUT;
+DECLARE @hasherId UNIQUEIDENTIFIER;
+DECLARE @callerType INT;
+EXEC HC6.ValidatePortalAuth @deviceId, @accessToken, OBJECT_NAME(@@PROCID), @publicEventId, @authError OUTPUT, @hasherId OUTPUT, @callerType OUTPUT;
 IF @authError IS NOT NULL
 BEGIN
     SELECT 0 AS Success, @authError AS ErrorMessage;

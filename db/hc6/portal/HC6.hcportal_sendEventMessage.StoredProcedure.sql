@@ -1,7 +1,7 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcportal_sendEventMessage]
 
 -- required parameters (we accept nulls so we can trap errors in SQL instead of having the SP fail to execute)
-@publicHasherId uniqueidentifier = NULL,
+@deviceId uniqueidentifier = NULL,
 @accessToken nvarchar(1000) = NULL,
 @publicEventId uniqueidentifier = NULL,
 @messageId uniqueidentifier = NULL,
@@ -19,7 +19,7 @@ AS
 --   push notifications (rowset 1) and in-app-only notifications
 --   (rowset 2). Notification preferences and time windows are
 --   considered.
--- Parameters: @publicHasherId, @accessToken, @publicEventId,
+-- Parameters: @deviceId, @accessToken, @publicEventId,
 --   @messageId, @messageTitle, @messageContent,
 --   @messageReleasabilityFlags
 -- Returns: On error: HC6 standard envelope (Success, ErrorMessage).
@@ -38,6 +38,7 @@ AS
 --   Removed @ipAddress, @ipGeoDetails (logging moved to API shim).
 --   Removed ErrorLog/GeneralLog inserts (logging moved to API shim).
 --   All error returns now use HC6 standard envelope (Success, ErrorMessage).
+--   - @publicHasherId replaced by @deviceId (device-bound auth via HC.Device lookup)
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -47,7 +48,9 @@ BEGIN TRY
 
 -- Auth validation
 DECLARE @authError NVARCHAR(255);
-EXEC HC6.ValidatePortalAuth @publicHasherId, @accessToken, OBJECT_NAME(@@PROCID), @publicEventId, @authError OUTPUT;
+DECLARE @hasherId UNIQUEIDENTIFIER;
+DECLARE @callerType INT;
+EXEC HC6.ValidatePortalAuth @deviceId, @accessToken, OBJECT_NAME(@@PROCID), @publicEventId, @authError OUTPUT, @hasherId OUTPUT, @callerType OUTPUT;
 IF @authError IS NOT NULL
 BEGIN
     SELECT 0 AS Success, @authError AS ErrorMessage;
@@ -85,9 +88,6 @@ BEGIN
         SELECT 0 AS Success, 'Missing or empty fields: ' + @errorDetail AS ErrorMessage;
         RETURN;
 END
-
-DECLARE @hasherId uniqueidentifier;
-SELECT @hasherId = id FROM HC.Hasher WHERE PublicHasherId = @publicHasherId;
 
     DECLARE @timeLimitForNotificationsInHours smallint = 6;
 
@@ -138,7 +138,7 @@ SELECT @hasherId = id FROM HC.Hasher WHERE PublicHasherId = @publicHasherId;
                   , @eventId
                   , @publicEventId
                   , @hasherId
-                  , @publicHasherId
+                  , NULL
                   , @messageTitle
                   , @messageContent
                   , @messageReleasabilityFlags

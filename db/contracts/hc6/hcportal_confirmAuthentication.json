@@ -9,14 +9,14 @@
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "Device.id",
-      "description": "Browser device ID. If NULL, auto-generated via NEWID() at the start of execution."
+      "description": "Auth: the service account's device ID for authenticating this portal polling call. Validated via HC6.ValidatePortalAuth."
     },
     {
-      "name": "publicHasherId",
+      "name": "newDeviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "Auth: service account GUID. This SP is called before the real user is known, so the portal authenticates as a service account. Validated via HC6.ValidatePortalAuth."
+      "mapsToColumn": "Device.id",
+      "description": "The device ID to provision for the new browser session. If NULL, auto-generated via NEWID()."
     },
     {
       "name": "accessToken",

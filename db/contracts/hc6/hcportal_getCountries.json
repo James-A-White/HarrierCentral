@@ -5,11 +5,11 @@
   "description": "Returns a list of all countries from HC.Country, ordered alphabetically by CountryName. Used for populating country dropdowns in the portal. Requires standard portal authentication.",
   "parameters": [
     {
-      "name": "publicHasherId",
+      "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "Auth: the authenticated user's public hasher ID. Validated via HC6.ValidatePortalAuth."
+      "mapsToColumn": "Device.id",
+      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
       "name": "accessToken",
