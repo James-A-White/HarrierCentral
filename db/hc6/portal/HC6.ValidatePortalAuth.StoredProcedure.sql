@@ -65,11 +65,11 @@ DECLARE @deviceSecret NVARCHAR(150);
 DECLARE @publicHasherId UNIQUEIDENTIFIER;
 
 SELECT
-    @deviceSecret = d.SharedSecret,
+    @deviceSecret = d.DeviceSecret,
     @hasherId = h.id,
     @publicHasherId = h.PublicHasherId
 FROM HC.Device d
-INNER JOIN HC.Hasher h ON h.id = d.HasherId
+INNER JOIN HC.Hasher h ON h.id = d.UserId
 WHERE d.id = @deviceId;
 
 IF @hasherId IS NULL

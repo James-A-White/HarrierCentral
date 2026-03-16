@@ -112,7 +112,7 @@ BEGIN TRY
                     , @hasherId
                     , @deviceSecret
                     , @timeWindow
-                    , @deviceInfo
+                    , COALESCE(@deviceInfo, '')
                     )
 
                 COMMIT TRANSACTION;
