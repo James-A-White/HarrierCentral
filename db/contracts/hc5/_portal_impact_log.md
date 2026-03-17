@@ -314,9 +314,75 @@ Token hash input: UPPER(deviceSecret) + procName + paramString
 `deviceSecret` is a 75-character cryptographically random string, generated once at device provisioning and stored only in `HC.Device`. It never travels over the wire after initial provisioning. Its inclusion in every token hash makes token forgery computationally infeasible even if `deviceId` is known to an attacker.
 
 ### Prerequisites (database)
-- `HC6.CHECK_PORTAL_ACCESS_TOKEN` scalar function must be created (uses `@deviceId` as first parameter, vs `HC.CHECK_PORTAL_ACCESS_TOKEN` which uses `@publicHasherId`)
-- Service account rows must be pre-seeded in `HC.Device` for the hashers whose `PublicHasherId` is `11111111-1111-1111-1111-111111111111` and `22222222-2222-2222-2222-222222222222`
+- ✅ `HC6.CHECK_PORTAL_ACCESS_TOKEN` scalar function created — `db/schema/functions/HC6.CHECK_PORTAL_ACCESS_TOKEN.Function.sql` (2026-03-17)
+- ✅ Service account `HC.Device` rows seeded — `db/schema/seed/HC.Device.ServiceAccounts.seed.sql` (2026-03-17)
+  - Device `11111111-...` → HashRuns.org service account (callerType = 1)
+  - Device `22222222-...` → Admin portal service account (callerType = 2)
+  - Both seeded with `DeviceSecret = ''` and `TimeWindow = 86469` (see section 14 for why)
 
 ---
 
-*Last updated: 2026-03-15*
+## 14. HC6 Token Migration — Flutter Changes Pending
+
+**Status: DB prerequisites deployed 2026-03-17. Flutter changes NOT YET done.**
+
+### Token bypass (active until 2026-06-01)
+
+`HC6.CHECK_PORTAL_ACCESS_TOKEN` has a bypass date of `2026-06-01`. Until then, any token passes validation. This gives time to update the Flutter portal to generate HC6-format tokens before enforcement is turned on.
+
+**To enable enforcement early**: change the cutoff date in `HC6.CHECK_PORTAL_ACCESS_TOKEN` to any past date.
+
+### Empty DeviceSecret design decision
+
+The two service account `HC.Device` rows were seeded with `DeviceSecret = ''` (empty string). This means the HC6 token formula for service accounts produces an output **identical to HC5 tokens** — so the Flutter portal's existing `Utilities.generateToken()` call does not need to change for service account auth.
+
+This was intentional: it allows `confirmAuthentication` to work against the HC6 endpoint with only the payload change below, and no token-generation rewrite.
+
+### confirmAuthentication — one payload change required (HIGH priority)
+
+The Flutter portal currently sends:
+```dart
+{
+  'queryType': 'confirmAuthentication',
+  'deviceId': deviceId,           // ← new random UUID (the session being provisioned)
+  'publicHasherId': serviceAccountId,  // '22222222-...'
+  'accessToken': accessToken,          // token generated using serviceAccountId
+  ...
+}
+```
+
+HC6 `hcportal_confirmAuthentication` expects:
+```dart
+{
+  'queryType': 'confirmAuthentication',
+  'deviceId': serviceAccountDeviceId,  // ← '22222222-...' (service account auth device)
+  'newDeviceId': deviceId,             // ← new random UUID (device being provisioned)
+  'accessToken': accessToken,          // token still generated using '22222222-...' — no change needed
+  ...
+}
+```
+
+**What to change in `admin_portal_controller.dart`:**
+- Set `'deviceId'` to `HC_ADMIN_PORTAL_INTERNAL_USER_ID` (`'22222222-...'`)
+- Add `'newDeviceId': deviceId` (the locally generated UUID)
+- `accessToken` generation is **unchanged** — still uses `HC_ADMIN_PORTAL_INTERNAL_USER_ID` + proc name + paramString
+
+### Token generation rewrite — required for regular user sessions (MEDIUM priority, pre-enforcement)
+
+Once a regular user is authenticated via `confirmAuthentication`, subsequent API calls use their browser-session `deviceId` and `deviceSecret`. HC6 token formula:
+
+```
+hash = SHA256(UPPER(deviceId + '#' + procName + '#' + timeSlot + '#' + UPPER(deviceSecret) + callerParamString))
+```
+
+The Flutter portal must:
+1. Store `iconDataBase64` from the `confirmAuthentication` response — this is the `deviceSecret` (obfuscated field name)
+2. Persist it in Hive alongside `deviceId`
+3. Update `Utilities.generateToken()` to accept and use `deviceSecret` in the hash formula
+4. Use `deviceId` (not `publicHasherId`) as the user identifier in all post-login token calls
+
+This work must be completed and tested **before the bypass date of 2026-06-01**, or token enforcement must be deferred by updating the cutoff.
+
+---
+
+*Last updated: 2026-03-17*

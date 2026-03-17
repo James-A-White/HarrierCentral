@@ -1,0 +1,36 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Flutter Web (Chrome)",
+            "type": "dart",
+            "request": "launch",
+            "program": "lib/main.dart",
+            "deviceId": "chrome",
+            "args": [
+                "--web-port", "8080"
+            ]
+        },
+        {
+            "name": "Flutter Web (Web Server — any browser)",
+            "type": "dart",
+            "request": "launch",
+            "program": "lib/main.dart",
+            "deviceId": "web-server",
+            "args": [
+                "--web-port", "8080"
+            ]
+        },
+        {
+            "name": "Flutter Web (Chrome — Profile)",
+            "type": "dart",
+            "request": "launch",
+            "program": "lib/main.dart",
+            "deviceId": "chrome",
+            "flutterMode": "profile",
+            "args": [
+                "--web-port", "8080"
+            ]
+        }
+    ]
+}

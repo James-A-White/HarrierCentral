@@ -1,0 +1,24 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "HcDbConnectionString":"Server=tcp:harriercentral.database.windows.net,1433;Initial Catalog=HarrierCentralWebDb;Persist Security Info=False;User ID=harrieradmin;Password=Op33AndTuna;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
+    "ApiKey":"npsXZr6xtEPv9iaA7LAEfjRZhCuGbpbwC8BSlLpwbwkGzZdRdNndXWNfvKr8p4l9hdBWE5acK8q",
+    "BOX_CLIENT_ID":       "s7xllq6m149uh2a6bhr21xt0uudjtzfl",
+    "BOX_CLIENT_SECRET":   "i4HEIBO3kbUTBCir7CDNJRsbuccD00JU",
+    "BOX_REDIRECT_URI":    "http://localhost:7071/api/auth/callback",
+    "APP_BASE_URL":        "http://localhost:8000",
+    "DOS_TOKENS_TABLE_NAME":"BoxAccessTokens"     
+  },
+  "Host": {
+    "CORS": "*",
+    "CORS_AllowedOrigins": [
+      "http://localhost:3000",
+      "http://localhost:8000",
+      "http://localhost:7071",
+      "http://127.0.0.1:8000"
+    ],
+    "CORSCredentials": false
+  }
+}

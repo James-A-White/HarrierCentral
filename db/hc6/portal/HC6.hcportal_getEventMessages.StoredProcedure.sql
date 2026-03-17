@@ -48,7 +48,8 @@ BEGIN TRY
 	DECLARE @authError NVARCHAR(255);
 	DECLARE @hasherId UNIQUEIDENTIFIER;
 	DECLARE @callerType INT;
-	EXEC HC6.ValidatePortalAuth @deviceId, @accessToken, OBJECT_NAME(@@PROCID), @publicEventId, @authError OUTPUT, @hasherId OUTPUT, @callerType OUTPUT;
+	DECLARE @procName NVARCHAR(128) = OBJECT_NAME(@@PROCID);
+	EXEC HC6.ValidatePortalAuth @deviceId, @accessToken, @procName, @publicEventId, @authError OUTPUT, @hasherId OUTPUT, @callerType OUTPUT;
 	IF @authError IS NOT NULL
 	BEGIN
 		SELECT 0 AS Success, @authError AS ErrorMessage;

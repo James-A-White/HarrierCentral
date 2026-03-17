@@ -1,0 +1,8 @@
+.dart_tool/*
+build/*
+build/web/*
+build/ios/*/*
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+

@@ -1,0 +1,14 @@
+{
+    "flutter": {
+      "platforms": {
+        "dart": {
+          "lib/firebase_options.dart": {
+            "projectId": "harrier-central-mobile",
+            "configurations": {
+              "web": "1:699693953835:web:43c78891078029d87a8b6e"
+            }
+          }
+        }
+      }
+    }
+  }

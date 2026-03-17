@@ -1,0 +1,85 @@
+{
+  "project_info": {
+    "project_number": "699693953835",
+    "firebase_url": "https://harrier-central-mobile.firebaseio.com",
+    "project_id": "harrier-central-mobile",
+    "storage_bucket": "harrier-central-mobile.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:699693953835:android:c1ecc92cad9ee9967a8b6e",
+        "android_client_info": {
+          "package_name": "com.example.hcportal"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "699693953835-git8gjtc7qjcvq4l7c6srdf4c63nugil.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwo7nAC02nMVQn36ULyyKIgmnKaxP5XKs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "116406146374728773905",
+              "client_type": 3
+            },
+            {
+              "client_id": "699693953835-o537dp89b34r5nuvpo2p2t3r3sj3bs04.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.harriercentral.app",
+                "app_store_id": "1445513595"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:699693953835:android:683069737c7c7db4",
+        "android_client_info": {
+          "package_name": "com.harriercentral.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "699693953835-git8gjtc7qjcvq4l7c6srdf4c63nugil.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwo7nAC02nMVQn36ULyyKIgmnKaxP5XKs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "116406146374728773905",
+              "client_type": 3
+            },
+            {
+              "client_id": "699693953835-o537dp89b34r5nuvpo2p2t3r3sj3bs04.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.harriercentral.app",
+                "app_store_id": "1445513595"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

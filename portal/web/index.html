@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="/">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="A new Flutter project.">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="hcportal">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <title>Harrier Central</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" type="text/css" href="styles.css">
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-messaging-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyA_z9Xbh3U55aQ1HJYn1WqfXkY5_aetpFE",
+      authDomain: "harrier-central-mobile.firebaseapp.com",
+      databaseURL: "https://harrier-central-mobile.firebaseio.com",
+      projectId: "harrier-central-mobile",
+      storageBucket: "harrier-central-mobile.firebasestorage.app",
+      messagingSenderId: "699693953835",
+      appId: "1:699693953835:web:43c78891078029d87a8b6e",
+      measurementId: "G-2B04ZP86XF"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+</head>
+<body>
+  <div class="horizontal div">
+    <div class="vertical">
+        <h1 style="color:rgb(249, 208, 193); font-family:verdana;">Loading</h1>
+        <img src="https://harriercentral.blob.core.windows.net/harrier/hclogo250round.png"/>
+        <h1 style="color:rgb(249, 208, 193); font-family:verdana;">Harrier Central</h1>
+      </div>
+  </div>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+
+1.0.0+563
+    • Major refactor
+    • Check for all unawaited Futures
+    • Replaced discontinued pluto grid
+    • Other significant cleanups
