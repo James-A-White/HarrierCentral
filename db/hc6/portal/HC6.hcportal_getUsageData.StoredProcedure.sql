@@ -80,12 +80,12 @@ BEGIN TRY
 		GROUP BY ll2.HcVersion
 	)
 	SELECT
-		SUBSTRING(HcVersion, 1, PATINDEX('%--%', HcVersion) - 1) AS versionNum,
-		SUBSTRING(HcVersion, PATINDEX('%--%', HcVersion) + 1, 1000) AS buildNum,
+		SUBSTRING(HcVersion, 1, PATINDEX('%-%', HcVersion) - 1) AS versionNum,
+		SUBSTRING(HcVersion, PATINDEX('%-%', HcVersion) + 1, 1000) AS buildNum,
 		isiPhone,
 		isNotiPhone
 	FROM VersionStats
-	ORDER BY SUBSTRING(HcVersion, PATINDEX('%--%', HcVersion) + 1, 1000) DESC;
+	ORDER BY SUBSTRING(HcVersion, PATINDEX('%-%', HcVersion) + 1, 1000) DESC;
 
 	-- Result Set 2: Integration job data
 	;WITH LatestJobs AS (
@@ -304,7 +304,7 @@ BEGIN TRY
 		DATEDIFF(MINUTE, MAX(ll.LoginDate), GETDATE()) AS minutesSinceLastLogin,
 		COALESCE(k.KennelName, '') AS kennelName,
 		COALESCE(k.kennelShortName, '') AS kennelShortName,
-		LEFT(ll.HcVersion, CHARINDEX(',', ll.HcVersion) - 1) AS hcVersion,
+		LEFT(ll.HcVersion, NULLIF(CHARINDEX(',', ll.HcVersion), 0) - 1) AS hcVersion,
 		CASE
 			WHEN COALESCE(REPLACE(LEFT(ll.SystemVersion, 5), '/', ''), '') LIKE '26.%' THEN 0
 			WHEN COALESCE(REPLACE(LEFT(ll.SystemVersion, 5), '/', ''), '') LIKE '18.%' THEN 1
@@ -334,12 +334,12 @@ BEGIN TRY
 			ELSE 3
 		END AS highlightPhoneVersion,
 		CASE
-			WHEN LEFT(ll.HcVersion, CHARINDEX(',', ll.HcVersion) - 1) LIKE '%2.1%' THEN 0
-			WHEN LEFT(ll.HcVersion, CHARINDEX(',', ll.HcVersion) - 1) LIKE '%2.0%' THEN 0
-			WHEN LEFT(ll.HcVersion, CHARINDEX(',', ll.HcVersion) - 1) LIKE '%1.6%' THEN 1
-			WHEN LEFT(ll.HcVersion, CHARINDEX(',', ll.HcVersion) - 1) LIKE '%1.5%' THEN 2
-			WHEN LEFT(ll.HcVersion, CHARINDEX(',', ll.HcVersion) - 1) LIKE '%1.2%' THEN 3
-			WHEN LEFT(ll.HcVersion, CHARINDEX(',', ll.HcVersion) - 1) LIKE '%1.1.%' THEN 3
+			WHEN LEFT(ll.HcVersion, NULLIF(CHARINDEX(',', ll.HcVersion), 0) - 1) LIKE '%2.1%' THEN 0
+			WHEN LEFT(ll.HcVersion, NULLIF(CHARINDEX(',', ll.HcVersion), 0) - 1) LIKE '%2.0%' THEN 0
+			WHEN LEFT(ll.HcVersion, NULLIF(CHARINDEX(',', ll.HcVersion), 0) - 1) LIKE '%1.6%' THEN 1
+			WHEN LEFT(ll.HcVersion, NULLIF(CHARINDEX(',', ll.HcVersion), 0) - 1) LIKE '%1.5%' THEN 2
+			WHEN LEFT(ll.HcVersion, NULLIF(CHARINDEX(',', ll.HcVersion), 0) - 1) LIKE '%1.2%' THEN 3
+			WHEN LEFT(ll.HcVersion, NULLIF(CHARINDEX(',', ll.HcVersion), 0) - 1) LIKE '%1.1.%' THEN 3
 			ELSE 3
 		END AS highlightHcVersion
 	FROM HC.LaunchAndLogin ll WITH (NOLOCK)
@@ -351,7 +351,7 @@ BEGIN TRY
 		h.DisplayName,
 		ll.UserId,
 		h.FirstName + ' ' + h.LastName,
-		LEFT(ll.HcVersion, CHARINDEX(',', ll.HcVersion) - 1),
+		LEFT(ll.HcVersion, NULLIF(CHARINDEX(',', ll.HcVersion), 0) - 1),
 		COALESCE(REPLACE(LEFT(ll.SystemVersion, 5), '/', ''), ''),
 		CASE
 			WHEN ll.DeviceType = 'iPhone' THEN 1

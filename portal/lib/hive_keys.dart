@@ -10,6 +10,7 @@ const String HIVE_HASHER_ID = 'hasherId';
 const String HIVE_DISPLAY_NAME = 'displayName';
 const String HIVE_HASHER_PHOTO = 'hasherPhoto';
 const String HIVE_DEVICE_ID = 'deviceId';
+const String HIVE_DEVICE_SECRET = 'deviceSecret';
 
 const String HIVE_COUNTRY_LIST = 'countryList';
 

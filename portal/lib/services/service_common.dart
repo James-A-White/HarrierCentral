@@ -61,20 +61,24 @@ class ServiceCommon {
       'https://harriercentral.blob.core.windows.net/event-images/$fileName?sv=2020-04-08&st=2021-09-15T14%3A03%3A04Z&se=2100-09-16T14%3A03%3A00Z&sr=c&sp=racwdxlt&sig=q%2BVTH8wcrKOlSZK1FH7cUoaoYFPtjGpblCAVUqA4WFY%3D',
     );
 
-    final response = await http
-        .put(
-      uri,
-      headers: headers,
-      body: Uint8List.fromList(bytes),
-    )
-        .catchError(
-      (dynamic error) {
-        if (foundation.kDebugMode) {
-          debugPrint('Upload error: $error');
-        }
-        return http.Response('', -1);
-      },
-    );
+    http.Response response;
+    try {
+      response = await http.put(
+        uri,
+        headers: headers,
+        body: Uint8List.fromList(bytes),
+      );
+    } on Exception catch (error) {
+      if (foundation.kDebugMode) {
+        debugPrint('Upload error: $error');
+      }
+      await CoreUtilities.showAlert(
+        'Upload failed',
+        'The file was unable to be uploaded at this time. Please try again later.',
+        'OK',
+      );
+      return '';
+    }
 
     if (((response.statusCode) < 200) || ((response.statusCode) >= 300)) {
       await CoreUtilities.showAlert(
@@ -102,7 +106,8 @@ class ServiceCommon {
       return kennelData;
     }
 
-    if (foundation.kDebugMode) debugPrint('sendHttpPostToAzureFunctionApiCached: $requestBody');
+    if (foundation.kDebugMode)
+      debugPrint('sendHttpPostToAzureFunctionApiCached: $requestBody');
     return Future.value('');
   }
 
@@ -118,24 +123,24 @@ class ServiceCommon {
 
     try {
       final body = jsonEncode(requestBody);
-      final response = await http
-          .post(
-            Uri.parse(BASE_AF_API_URL),
-            headers: <String, String>{
-              'content-type': 'application/json',
-              'Access-Control-Allow-Origin': '*',
-            },
-            body: body,
-          )
-          .timeout(const Duration(seconds: DEFAULT_HTTP_TIMEOUT))
-          .catchError(
-        (dynamic error) {
-          if (foundation.kDebugMode) {
-            debugPrint('HTTP error: $error');
-          }
-          return Future<http.Response>.value(http.Response('', -1));
-        },
-      );
+      http.Response response;
+      try {
+        response = await http
+            .post(
+              Uri.parse(BASE_AF_API_URL),
+              headers: <String, String>{
+                'content-type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+              },
+              body: body,
+            )
+            .timeout(const Duration(seconds: DEFAULT_HTTP_TIMEOUT));
+      } on Exception catch (error) {
+        if (foundation.kDebugMode) {
+          debugPrint('HTTP error: $error');
+        }
+        return ERROR_UNKNOWN_HTTP_ERROR;
+      }
 
       //print(response.body);
 
@@ -187,31 +192,31 @@ class ServiceCommon {
   ) async {
     try {
       final body = jsonEncode(requestBody);
-      final response = await http
-          .post(
-            Uri.parse(BASE_HC6_API_URL),
-            headers: <String, String>{
-              'content-type': 'application/json',
-              'Access-Control-Allow-Origin': '*',
-            },
-            body: body,
-          )
-          .timeout(const Duration(seconds: DEFAULT_HTTP_TIMEOUT))
-          .catchError(
-        (dynamic error) {
-          if (foundation.kDebugMode) {
-            debugPrint('HTTP error: $error');
-          }
-          return Future<http.Response>.value(http.Response('', -1));
-        },
-      );
+      debugPrint(body);
+      http.Response response;
+      try {
+        response = await http
+            .post(
+              Uri.parse(BASE_HC6_API_URL),
+              headers: <String, String>{
+                'content-type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+              },
+              body: body,
+            )
+            .timeout(const Duration(seconds: DEFAULT_HTTP_TIMEOUT));
+      } on Exception catch (error) {
+        if (foundation.kDebugMode) {
+          debugPrint('HTTP error: $error');
+        }
+        return ERROR_UNKNOWN_HTTP_ERROR;
+      }
 
       if ((response.statusCode < 200) || (response.statusCode >= 300)) {
         // HC6 API returns 400 with {"success":false,"errorMessage":"..."} for SP errors
         if (response.body.isNotEmpty) {
           try {
-            final errorJson =
-                jsonDecode(response.body) as Map<String, dynamic>;
+            final errorJson = jsonDecode(response.body) as Map<String, dynamic>;
             final errorMessage =
                 errorJson['errorMessage'] as String? ?? 'An error occurred';
             await IveCoreUtilities.showAlert(
@@ -227,6 +232,8 @@ class ServiceCommon {
         }
         return ERROR_UNKNOWN_HTTP_ERROR;
       }
+
+      debugPrint('HC6 API response: ${response.body}');
 
       return response.body;
     } on Exception catch (e) {

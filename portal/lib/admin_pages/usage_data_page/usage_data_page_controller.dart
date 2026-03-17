@@ -38,32 +38,33 @@ class UsageDataPageController extends GetxController {
     if (_isFetching) return;
     _isFetching = true;
     try {
+      final deviceId = box.get(HIVE_DEVICE_ID) as String;
+      final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
+
       final accessToken = Utilities.generateToken(
-        box.get(HIVE_HASHER_ID) as String,
+        deviceId,
         'hcportal_getUsageData',
+        paramString: deviceSecret,
       );
 
       final body = <String, String>{
         'queryType': 'getUsageData',
-        'publicHasherId': box.get(HIVE_HASHER_ID) as String,
+        'deviceId': deviceId,
         'accessToken': accessToken,
       };
 
-      final jsonString =
-          await ServiceCommon.sendHttpPostToAzureFunctionApi(body);
+      final jsonString = await ServiceCommon.sendHttpPostToHC6Api(body);
       if (jsonString.startsWith(ERROR_PREFIX)) return;
-      final jsonStringNormalised =
-          jsonString.replaceAll('[[{', '{').replaceAll('}]]', '}');
-      final elements = jsonStringNormalised.split('],[');
 
-      hcVersions.value = _parseList(elements[0], UdHcVersion.fromJson);
+      final outer = json.decode(jsonString) as List<dynamic>;
+      hcVersions.value = _parseList(outer[0] as List<dynamic>, UdHcVersion.fromJson);
       _calculateMaxHcVersion();
 
       integrationMonitor.value =
-          _parseList(elements[1], UdIntegrationMonitorModel.fromJson);
-      appActivity.value = _parseList(elements[2], UdAppActivityModel.fromJson);
-      recentUsers.value = _parseList(elements[3], UdRecentUserModel.fromJson);
-      newEvents.value = _parseList(elements[4], UdNewEventsModel.fromJson);
+          _parseList(outer[1] as List<dynamic>, UdIntegrationMonitorModel.fromJson);
+      appActivity.value = _parseList(outer[2] as List<dynamic>, UdAppActivityModel.fromJson);
+      recentUsers.value = _parseList(outer[3] as List<dynamic>, UdRecentUserModel.fromJson);
+      newEvents.value = _parseList(outer[4] as List<dynamic>, UdNewEventsModel.fromJson);
 
       // Safety net: clear any stuck loading indicators on refresh
       isUpdatingId.value = -1;
@@ -75,11 +76,10 @@ class UsageDataPageController extends GetxController {
   }
 
   List<T> _parseList<T>(
-    String raw,
+    List<dynamic> data,
     T Function(Map<String, dynamic>) fromJson,
   ) {
-    final list = json.decode('[$raw]') as List<dynamic>;
-    return list.map((e) => fromJson(e as Map<String, dynamic>)).toList();
+    return data.map((e) => fromJson(e as Map<String, dynamic>)).toList();
   }
 
   void _calculateMaxHcVersion() {
@@ -100,20 +100,24 @@ class UsageDataPageController extends GetxController {
     isUpdatingDays.value = days;
 
     try {
+      final deviceId = box.get(HIVE_DEVICE_ID) as String;
+      final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
+
       final accessToken = Utilities.generateToken(
-        box.get(HIVE_HASHER_ID) as String,
+        deviceId,
         'hcportal_getCategoryDetail2',
+        paramString: deviceSecret,
       );
 
       final body = <String, String>{
         'queryType': 'getCategoryDetail2',
-        'publicHasherId': box.get(HIVE_HASHER_ID) as String,
+        'deviceId': deviceId,
         'accessToken': accessToken,
         'categoryId': categoryId.toString(),
         'days': days.toString(),
       };
 
-      final result = await ServiceCommon.sendHttpPostToAzureFunctionApi(body);
+      final result = await ServiceCommon.sendHttpPostToHC6Api(body);
       await _showCategoryDetailDialog(result, title);
     } catch (_) {
       // getCategoryDetail error
@@ -131,14 +135,18 @@ class UsageDataPageController extends GetxController {
     isUpdatingVersion.value = '$version/$buildNumber';
 
     try {
+      final deviceId = box.get(HIVE_DEVICE_ID) as String;
+      final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
+
       final accessToken = Utilities.generateToken(
-        box.get(HIVE_HASHER_ID) as String,
+        deviceId,
         'hcportal_getCategoryDetail2',
+        paramString: deviceSecret,
       );
 
       final body = <String, String>{
         'queryType': 'getCategoryDetail2',
-        'publicHasherId': box.get(HIVE_HASHER_ID) as String,
+        'deviceId': deviceId,
         'accessToken': accessToken,
         'categoryId': '100',
         'days': '14',
@@ -146,7 +154,7 @@ class UsageDataPageController extends GetxController {
         'hcBuild': buildNumber,
       };
 
-      final result = await ServiceCommon.sendHttpPostToAzureFunctionApi(body);
+      final result = await ServiceCommon.sendHttpPostToHC6Api(body);
       await _showCategoryDetailDialog(result, title);
     } catch (_) {
       // getHcVersionDetail error
@@ -163,37 +171,17 @@ class UsageDataPageController extends GetxController {
     final outer = json.decode(result) as List<dynamic>;
     if (outer.isEmpty) return;
 
-    final firstSet = outer[0] as List<dynamic>;
-    if (firstSet.isEmpty) return;
+    // HC6 format: [[{row1}, {row2}, ...]] — single rowset of typed columns
+    final dataSet = outer[0] as List<dynamic>;
+    if (dataSet.isEmpty) return;
 
-    final firstRow = firstSet.first as Map<String, dynamic>;
+    final firstRow = dataSet.first as Map<String, dynamic>;
+    final headers = firstRow.keys.toList();
 
-    // Check if this is an error response from validation
-    if (firstRow.containsKey('errorId')) {
-      return;
-    }
-
-    // Parse headers — only include non-empty columns
-    final activeColumns = <int>[];
-    final headers = <String>[];
-    for (var i = 1; i <= 6; i++) {
-      final h = (firstRow['col$i'] as String?) ?? '';
-      if (h.isNotEmpty) {
-        activeColumns.add(i);
-        headers.add(h);
-      }
-    }
-
-    // Parse data rows
-    final dataList = outer.length > 1 ? outer[1] as List<dynamic> : <dynamic>[];
     final rows = <List<String>>[];
-    for (final item in dataList) {
+    for (final item in dataSet) {
       final map = item as Map<String, dynamic>;
-      final row = <String>[];
-      for (final colIdx in activeColumns) {
-        row.add((map['col$colIdx'] as String?) ?? '');
-      }
-      rows.add(row);
+      rows.add(headers.map((h) => _formatValue(h, map[h])).toList());
     }
 
     await showDialog<void>(
@@ -204,6 +192,25 @@ class UsageDataPageController extends GetxController {
         rows: rows,
       ),
     );
+  }
+
+  String _formatValue(String columnName, dynamic value) {
+    if (value == null) return '';
+    final n = columnName.toLowerCase();
+    final isDateCol = n.endsWith('at') ||
+        n.endsWith('date') ||
+        n.endsWith('datetime') ||
+        n == 'timestamp';
+    if (isDateCol) {
+      try {
+        final dt = DateTime.parse(value.toString()).toLocal();
+        final diff = DateTime.now().difference(dt);
+        if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+        if (diff.inHours < 24) return '${diff.inHours}h ago';
+        return '${diff.inDays}d ago';
+      } catch (_) {}
+    }
+    return value.toString();
   }
 
   Future<void> integrationBlockPressed(

@@ -146,15 +146,15 @@ class AdminPortalController extends GetxController {
 
           final body = <String, String?>{
             'queryType': 'confirmAuthentication',
-            'deviceId': deviceId,
-            'publicHasherId': serviceAccountId,
+            'deviceId': serviceAccountId,
+            'newDeviceId': deviceId,
             'accessToken': accessToken,
             'qrCodeData': authCode,
             'deviceInfo': allInfo,
           };
 
           final jsonResult =
-              await ServiceCommon.sendHttpPostToAzureFunctionApi(body);
+              await ServiceCommon.sendHttpPostToHC6Api(body);
 
           if ((jsonResult.length > 10) &&
               (!jsonResult.contains(ERROR_PREFIX))) {
@@ -175,6 +175,10 @@ class AdminPortalController extends GetxController {
               await box.put(HIVE_HASHER_PHOTO, photo);
               await box.put(HIVE_HASHER_ID, publicHasherId);
               await box.put(HIVE_DEVICE_ID, deviceId);
+              await box.put(
+                HIVE_DEVICE_SECRET,
+                (items['iconDataBase64'] as String?) ?? '',
+              );
               await box.put(HIVE_IS_LOGGED_IN, true);
 
               update();

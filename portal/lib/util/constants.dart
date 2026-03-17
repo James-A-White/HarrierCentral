@@ -1,6 +1,6 @@
 // ignore_for_file: constant_identifier_names
 
-const int DEFAULT_HTTP_TIMEOUT = 10;
+const int DEFAULT_HTTP_TIMEOUT = 30;
 
 // const String ROUTE_REGISTER_VIRGIN = '/C';
 // const String ROUTE_SHOW_RUN_DETAILS = '/RD';

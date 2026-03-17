@@ -1,3 +1,4 @@
+using Azure.Data.Tables;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -120,13 +121,15 @@ namespace HcWebApi.Endpoints
                 // Log every request to LOG.GeneralLog (HC6 SPs no longer do this themselves)
                 await LogRequestAsync(connectionString, queryType, req);
 
-                // Detect HC6 error envelope: first rowset, single row, Success = 0
-                if (multipleResults.Count > 0 &&
-                    multipleResults[0].Count == 1 &&
-                    multipleResults[0][0].TryGetValue("Success", out var successVal) &&
-                    Convert.ToInt32(successVal) == 0)
+                // Detect HC6 error envelope: any rowset, single row, Success = 0
+                var errorRowset = multipleResults.FirstOrDefault(rs =>
+                    rs.Count == 1 &&
+                    rs[0].TryGetValue("Success", out var sv) &&
+                    Convert.ToInt32(sv) == 0);
+
+                if (errorRowset != null)
                 {
-                    multipleResults[0][0].TryGetValue("ErrorMessage", out var errMsgVal);
+                    errorRowset[0].TryGetValue("ErrorMessage", out var errMsgVal);
                     string errorMessage = errMsgVal?.ToString() ?? "Unknown error";
 
                     await LogErrorAsync(connectionString, queryType, deviceId, (string)data.accessToken, errorMessage);
