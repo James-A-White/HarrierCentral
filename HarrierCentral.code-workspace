@@ -1,0 +1,21 @@
+{
+    "folders": [
+        {
+            "name": "portal",
+            "path": "portal"
+        },
+        {
+            "name": "api",
+            "path": "api"
+        },
+        {
+            "name": "db",
+            "path": "db"
+        },
+        {
+            "name": "root",
+            "path": "."
+        }
+    ],
+    "settings": {}
+}

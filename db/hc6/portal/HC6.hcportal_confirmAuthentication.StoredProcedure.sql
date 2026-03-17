@@ -46,10 +46,11 @@ BEGIN TRY
     SET @newDeviceId = COALESCE(@newDeviceId, NEWID())
 
     -- Auth validation
+    DECLARE @procName NVARCHAR(128) = OBJECT_NAME(@@PROCID);
     DECLARE @authError NVARCHAR(255);
     DECLARE @saHasherId UNIQUEIDENTIFIER;
     DECLARE @saCallerType INT;
-    EXEC HC6.ValidatePortalAuth @deviceId, @accessToken, OBJECT_NAME(@@PROCID), @qrCodeData, @authError OUTPUT, @saHasherId OUTPUT, @saCallerType OUTPUT;
+    EXEC HC6.ValidatePortalAuth @deviceId, @accessToken, @procName, @qrCodeData, @authError OUTPUT, @saHasherId OUTPUT, @saCallerType OUTPUT;
     IF @authError IS NOT NULL
     BEGIN
         SELECT 0 AS Success, @authError AS ErrorMessage;
@@ -121,7 +122,8 @@ BEGIN TRY
 
     -- Return user profile with obfuscated device credentials
     SELECT
-        h.PublicHasherId as publicHasherId,
+        @newDeviceId as deviceId,          -- use this for all subsequent HC6 auth calls
+        h.PublicHasherId as publicHasherId, -- transitional: retained for HC5 compatibility during migration; remove once all SPs are on HC6
         w.scanData as scanData,
         coalesce(h.FirstName, '') as firstName,
         coalesce(h.LastName, '') as lastName,

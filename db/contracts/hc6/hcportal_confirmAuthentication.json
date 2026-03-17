@@ -56,10 +56,16 @@
       "description": "Returned when a matching WebPortalAuthenticationRequests record is found. Contains user profile and obfuscated device credentials. If no matching auth request exists, no rowset is returned at all (silent empty return — not an error).",
       "columns": [
         {
+          "name": "deviceId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "The provisioned device ID (@newDeviceId). Use this as the deviceId for all subsequent HC6 portal SP calls."
+        },
+        {
           "name": "publicHasherId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": "The authenticated user's public hasher ID (from HC.Hasher, not the service account passed as parameter)"
+          "description": "TRANSITIONAL: The authenticated user's public hasher ID (from HC.Hasher). Retained for HC5 backward compatibility during migration. Remove once all portal SPs are on HC6."
         },
         {
           "name": "scanData",
