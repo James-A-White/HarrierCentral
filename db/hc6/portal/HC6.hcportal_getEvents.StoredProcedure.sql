@@ -234,6 +234,10 @@ BEGIN TRY
 			END
 			AS eventCityAndCountry
 
+			, CASE WHEN (evt.UseFbImage = 1) THEN evt.FbEventImage ELSE evt.EventImage END AS eventImage
+			, evt.FbEventImage AS extEventImage
+			, evt.UseFbImage AS useFbImage
+
 			FROM HC.Event evt
 			INNER JOIN HC.Kennel ken ON evt.KennelId = ken.id
 			INNER JOIN HC.City c ON ken.CityId = c.id

@@ -28,6 +28,9 @@ _RunListModel _$RunListModelFromJson(Map<String, dynamic> json) =>
       hares: json['hares'] as String?,
       syncLat: (json['syncLat'] as num?)?.toDouble(),
       syncLong: (json['syncLong'] as num?)?.toDouble(),
+      eventImage: json['eventImage'] as String?,
+      extEventImage: json['extEventImage'] as String?,
+      useFbImage: (json['useFbImage'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$RunListModelToJson(_RunListModel instance) =>
@@ -52,4 +55,7 @@ Map<String, dynamic> _$RunListModelToJson(_RunListModel instance) =>
       'hares': instance.hares,
       'syncLat': instance.syncLat,
       'syncLong': instance.syncLong,
+      'eventImage': instance.eventImage,
+      'extEventImage': instance.extEventImage,
+      'useFbImage': instance.useFbImage,
     };

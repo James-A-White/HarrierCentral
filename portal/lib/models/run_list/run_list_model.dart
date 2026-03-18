@@ -28,6 +28,9 @@ abstract class RunListModel with _$RunListModel {
     String? hares,
     double? syncLat,
     double? syncLong,
+    String? eventImage,
+    String? extEventImage,
+    int? useFbImage,
   }) = _RunListModel;
 
   factory RunListModel.fromJson(Map<String, dynamic> json) =>

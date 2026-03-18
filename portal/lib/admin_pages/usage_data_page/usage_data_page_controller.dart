@@ -276,19 +276,22 @@ class UsageDataPageController extends GetxController {
   /// Fetches login history for a user and returns the list.
   Future<List<UdLoginHistoryModel>> getLoginHistory(String userId) async {
     try {
+      final deviceId = box.get(HIVE_DEVICE_ID) as String;
+      final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
       final accessToken = Utilities.generateToken(
-        box.get(HIVE_HASHER_ID) as String,
+        deviceId,
         'hcportal_getLoginHistory',
+        paramString: deviceSecret,
       );
 
       final body = <String, String>{
         'queryType': 'getLoginHistory',
-        'publicHasherId': box.get(HIVE_HASHER_ID) as String,
+        'deviceId': deviceId,
         'accessToken': accessToken,
         'userId': userId,
       };
 
-      final result = await ServiceCommon.sendHttpPostToAzureFunctionApi(body);
+      final result = await ServiceCommon.sendHttpPostToHC6Api(body);
       final outer = json.decode(result) as List<dynamic>;
       final items = outer.first as List<dynamic>;
       return items

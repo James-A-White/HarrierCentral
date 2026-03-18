@@ -34,6 +34,9 @@ mixin _$RunListModel implements DiagnosticableTreeMixin {
   String? get hares;
   double? get syncLat;
   double? get syncLong;
+  String? get eventImage;
+  String? get extEventImage;
+  int? get useFbImage;
 
   /// Create a copy of RunListModel
   /// with the given fields replaced by the non-null parameter values.
@@ -69,7 +72,10 @@ mixin _$RunListModel implements DiagnosticableTreeMixin {
       ..add(DiagnosticsProperty('locationOneLineDesc', locationOneLineDesc))
       ..add(DiagnosticsProperty('hares', hares))
       ..add(DiagnosticsProperty('syncLat', syncLat))
-      ..add(DiagnosticsProperty('syncLong', syncLong));
+      ..add(DiagnosticsProperty('syncLong', syncLong))
+      ..add(DiagnosticsProperty('eventImage', eventImage))
+      ..add(DiagnosticsProperty('extEventImage', extEventImage))
+      ..add(DiagnosticsProperty('useFbImage', useFbImage));
   }
 
   @override
@@ -114,7 +120,13 @@ mixin _$RunListModel implements DiagnosticableTreeMixin {
             (identical(other.hares, hares) || other.hares == hares) &&
             (identical(other.syncLat, syncLat) || other.syncLat == syncLat) &&
             (identical(other.syncLong, syncLong) ||
-                other.syncLong == syncLong));
+                other.syncLong == syncLong) &&
+            (identical(other.eventImage, eventImage) ||
+                other.eventImage == eventImage) &&
+            (identical(other.extEventImage, extEventImage) ||
+                other.extEventImage == extEventImage) &&
+            (identical(other.useFbImage, useFbImage) ||
+                other.useFbImage == useFbImage));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -140,12 +152,15 @@ mixin _$RunListModel implements DiagnosticableTreeMixin {
         locationOneLineDesc,
         hares,
         syncLat,
-        syncLong
+        syncLong,
+        eventImage,
+        extEventImage,
+        useFbImage
       ]);
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'RunListModel(publicEventId: $publicEventId, eventStartDatetime: $eventStartDatetime, publicKennelId: $publicKennelId, isVisible: $isVisible, isCountedRun: $isCountedRun, eventGeographicScope: $eventGeographicScope, eventNumber: $eventNumber, eventName: $eventName, kennelShortName: $kennelShortName, kennelLogo: $kennelLogo, daysUntilEvent: $daysUntilEvent, searchText: $searchText, kennelName: $kennelName, eventCityAndCountry: $eventCityAndCountry, resolvableLocation: $resolvableLocation, eventChatMessageCount: $eventChatMessageCount, locationOneLineDesc: $locationOneLineDesc, hares: $hares, syncLat: $syncLat, syncLong: $syncLong)';
+    return 'RunListModel(publicEventId: $publicEventId, eventStartDatetime: $eventStartDatetime, publicKennelId: $publicKennelId, isVisible: $isVisible, isCountedRun: $isCountedRun, eventGeographicScope: $eventGeographicScope, eventNumber: $eventNumber, eventName: $eventName, kennelShortName: $kennelShortName, kennelLogo: $kennelLogo, daysUntilEvent: $daysUntilEvent, searchText: $searchText, kennelName: $kennelName, eventCityAndCountry: $eventCityAndCountry, resolvableLocation: $resolvableLocation, eventChatMessageCount: $eventChatMessageCount, locationOneLineDesc: $locationOneLineDesc, hares: $hares, syncLat: $syncLat, syncLong: $syncLong, eventImage: $eventImage, extEventImage: $extEventImage, useFbImage: $useFbImage)';
   }
 }
 
@@ -175,7 +190,10 @@ abstract mixin class $RunListModelCopyWith<$Res> {
       String? locationOneLineDesc,
       String? hares,
       double? syncLat,
-      double? syncLong});
+      double? syncLong,
+      String? eventImage,
+      String? extEventImage,
+      int? useFbImage});
 }
 
 /// @nodoc
@@ -210,6 +228,9 @@ class _$RunListModelCopyWithImpl<$Res> implements $RunListModelCopyWith<$Res> {
     Object? hares = freezed,
     Object? syncLat = freezed,
     Object? syncLong = freezed,
+    Object? eventImage = freezed,
+    Object? extEventImage = freezed,
+    Object? useFbImage = freezed,
   }) {
     return _then(_self.copyWith(
       publicEventId: null == publicEventId
@@ -292,6 +313,18 @@ class _$RunListModelCopyWithImpl<$Res> implements $RunListModelCopyWith<$Res> {
           ? _self.syncLong
           : syncLong // ignore: cast_nullable_to_non_nullable
               as double?,
+      eventImage: freezed == eventImage
+          ? _self.eventImage
+          : eventImage // ignore: cast_nullable_to_non_nullable
+              as String?,
+      extEventImage: freezed == extEventImage
+          ? _self.extEventImage
+          : extEventImage // ignore: cast_nullable_to_non_nullable
+              as String?,
+      useFbImage: freezed == useFbImage
+          ? _self.useFbImage
+          : useFbImage // ignore: cast_nullable_to_non_nullable
+              as int?,
     ));
   }
 }
@@ -409,7 +442,10 @@ extension RunListModelPatterns on RunListModel {
             String? locationOneLineDesc,
             String? hares,
             double? syncLat,
-            double? syncLong)?
+            double? syncLong,
+            String? eventImage,
+            String? extEventImage,
+            int? useFbImage)?
         $default, {
     required TResult orElse(),
   }) {
@@ -436,7 +472,10 @@ extension RunListModelPatterns on RunListModel {
             _that.locationOneLineDesc,
             _that.hares,
             _that.syncLat,
-            _that.syncLong);
+            _that.syncLong,
+            _that.eventImage,
+            _that.extEventImage,
+            _that.useFbImage);
       case _:
         return orElse();
     }
@@ -477,7 +516,10 @@ extension RunListModelPatterns on RunListModel {
             String? locationOneLineDesc,
             String? hares,
             double? syncLat,
-            double? syncLong)
+            double? syncLong,
+            String? eventImage,
+            String? extEventImage,
+            int? useFbImage)
         $default,
   ) {
     final _that = this;
@@ -503,7 +545,10 @@ extension RunListModelPatterns on RunListModel {
             _that.locationOneLineDesc,
             _that.hares,
             _that.syncLat,
-            _that.syncLong);
+            _that.syncLong,
+            _that.eventImage,
+            _that.extEventImage,
+            _that.useFbImage);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -543,7 +588,10 @@ extension RunListModelPatterns on RunListModel {
             String? locationOneLineDesc,
             String? hares,
             double? syncLat,
-            double? syncLong)?
+            double? syncLong,
+            String? eventImage,
+            String? extEventImage,
+            int? useFbImage)?
         $default,
   ) {
     final _that = this;
@@ -569,7 +617,10 @@ extension RunListModelPatterns on RunListModel {
             _that.locationOneLineDesc,
             _that.hares,
             _that.syncLat,
-            _that.syncLong);
+            _that.syncLong,
+            _that.eventImage,
+            _that.extEventImage,
+            _that.useFbImage);
       case _:
         return null;
     }
@@ -599,7 +650,10 @@ class _RunListModel with DiagnosticableTreeMixin implements RunListModel {
       required this.locationOneLineDesc,
       this.hares,
       this.syncLat,
-      this.syncLong});
+      this.syncLong,
+      this.eventImage,
+      this.extEventImage,
+      this.useFbImage});
   factory _RunListModel.fromJson(Map<String, dynamic> json) =>
       _$RunListModelFromJson(json);
 
@@ -643,6 +697,12 @@ class _RunListModel with DiagnosticableTreeMixin implements RunListModel {
   final double? syncLat;
   @override
   final double? syncLong;
+  @override
+  final String? eventImage;
+  @override
+  final String? extEventImage;
+  @override
+  final int? useFbImage;
 
   /// Create a copy of RunListModel
   /// with the given fields replaced by the non-null parameter values.
@@ -682,7 +742,10 @@ class _RunListModel with DiagnosticableTreeMixin implements RunListModel {
       ..add(DiagnosticsProperty('locationOneLineDesc', locationOneLineDesc))
       ..add(DiagnosticsProperty('hares', hares))
       ..add(DiagnosticsProperty('syncLat', syncLat))
-      ..add(DiagnosticsProperty('syncLong', syncLong));
+      ..add(DiagnosticsProperty('syncLong', syncLong))
+      ..add(DiagnosticsProperty('eventImage', eventImage))
+      ..add(DiagnosticsProperty('extEventImage', extEventImage))
+      ..add(DiagnosticsProperty('useFbImage', useFbImage));
   }
 
   @override
@@ -727,7 +790,13 @@ class _RunListModel with DiagnosticableTreeMixin implements RunListModel {
             (identical(other.hares, hares) || other.hares == hares) &&
             (identical(other.syncLat, syncLat) || other.syncLat == syncLat) &&
             (identical(other.syncLong, syncLong) ||
-                other.syncLong == syncLong));
+                other.syncLong == syncLong) &&
+            (identical(other.eventImage, eventImage) ||
+                other.eventImage == eventImage) &&
+            (identical(other.extEventImage, extEventImage) ||
+                other.extEventImage == extEventImage) &&
+            (identical(other.useFbImage, useFbImage) ||
+                other.useFbImage == useFbImage));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -753,12 +822,15 @@ class _RunListModel with DiagnosticableTreeMixin implements RunListModel {
         locationOneLineDesc,
         hares,
         syncLat,
-        syncLong
+        syncLong,
+        eventImage,
+        extEventImage,
+        useFbImage
       ]);
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'RunListModel(publicEventId: $publicEventId, eventStartDatetime: $eventStartDatetime, publicKennelId: $publicKennelId, isVisible: $isVisible, isCountedRun: $isCountedRun, eventGeographicScope: $eventGeographicScope, eventNumber: $eventNumber, eventName: $eventName, kennelShortName: $kennelShortName, kennelLogo: $kennelLogo, daysUntilEvent: $daysUntilEvent, searchText: $searchText, kennelName: $kennelName, eventCityAndCountry: $eventCityAndCountry, resolvableLocation: $resolvableLocation, eventChatMessageCount: $eventChatMessageCount, locationOneLineDesc: $locationOneLineDesc, hares: $hares, syncLat: $syncLat, syncLong: $syncLong)';
+    return 'RunListModel(publicEventId: $publicEventId, eventStartDatetime: $eventStartDatetime, publicKennelId: $publicKennelId, isVisible: $isVisible, isCountedRun: $isCountedRun, eventGeographicScope: $eventGeographicScope, eventNumber: $eventNumber, eventName: $eventName, kennelShortName: $kennelShortName, kennelLogo: $kennelLogo, daysUntilEvent: $daysUntilEvent, searchText: $searchText, kennelName: $kennelName, eventCityAndCountry: $eventCityAndCountry, resolvableLocation: $resolvableLocation, eventChatMessageCount: $eventChatMessageCount, locationOneLineDesc: $locationOneLineDesc, hares: $hares, syncLat: $syncLat, syncLong: $syncLong, eventImage: $eventImage, extEventImage: $extEventImage, useFbImage: $useFbImage)';
   }
 }
 
@@ -790,7 +862,10 @@ abstract mixin class _$RunListModelCopyWith<$Res>
       String? locationOneLineDesc,
       String? hares,
       double? syncLat,
-      double? syncLong});
+      double? syncLong,
+      String? eventImage,
+      String? extEventImage,
+      int? useFbImage});
 }
 
 /// @nodoc
@@ -826,6 +901,9 @@ class __$RunListModelCopyWithImpl<$Res>
     Object? hares = freezed,
     Object? syncLat = freezed,
     Object? syncLong = freezed,
+    Object? eventImage = freezed,
+    Object? extEventImage = freezed,
+    Object? useFbImage = freezed,
   }) {
     return _then(_RunListModel(
       publicEventId: null == publicEventId
@@ -908,6 +986,18 @@ class __$RunListModelCopyWithImpl<$Res>
           ? _self.syncLong
           : syncLong // ignore: cast_nullable_to_non_nullable
               as double?,
+      eventImage: freezed == eventImage
+          ? _self.eventImage
+          : eventImage // ignore: cast_nullable_to_non_nullable
+              as String?,
+      extEventImage: freezed == extEventImage
+          ? _self.extEventImage
+          : extEventImage // ignore: cast_nullable_to_non_nullable
+              as String?,
+      useFbImage: freezed == useFbImage
+          ? _self.useFbImage
+          : useFbImage // ignore: cast_nullable_to_non_nullable
+              as int?,
     ));
   }
 }

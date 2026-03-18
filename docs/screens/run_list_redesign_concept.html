@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Runs & Events — Redesign Concept</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f1f5f9;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      font-size: 13px;
+      color: #0f172a;
+    }
+
+    /* ── App Bar ── */
+    .app-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 20px;
+      height: 52px;
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    .app-bar .back-btn {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      color: #475569;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .app-bar .title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #0f172a;
+      flex: 1;
+    }
+    .app-bar .kennel-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 10px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #b91c1c;
+    }
+    .app-bar .kennel-badge img {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .app-bar .kennel-badge .dot {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: #15803d;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px;
+      color: white;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .toolbar-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .btn-toolbar {
+      padding: 6px 12px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid;
+      white-space: nowrap;
+    }
+    .btn-toolbar.secondary {
+      background: #fff;
+      border-color: #e2e8f0;
+      color: #475569;
+    }
+    .btn-toolbar.secondary:hover { background: #f8fafc; }
+    .btn-toolbar.primary {
+      background: #b91c1c;
+      border-color: #b91c1c;
+      color: #fff;
+    }
+
+    /* ── Main Layout ── */
+    .main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      gap: 0;
+    }
+
+    /* ── Left Panel ── */
+    .left-panel {
+      width: 370px;
+      flex-shrink: 0;
+      background: #fff;
+      border-right: 1px solid #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .search-bar {
+      padding: 12px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .search-bar .icon { color: #94a3b8; font-size: 14px; }
+    .search-bar input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 13px;
+      color: #0f172a;
+      font-family: inherit;
+      background: transparent;
+    }
+    .search-bar input::placeholder { color: #94a3b8; }
+
+    .tab-row {
+      display: flex;
+      padding: 10px 14px;
+      gap: 6px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 6px 0;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: #64748b;
+    }
+    .tab.active {
+      background: #fef2f2;
+      color: #b91c1c;
+      font-weight: 600;
+    }
+
+    .run-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 10px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .run-list::-webkit-scrollbar { width: 4px; }
+    .run-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+    /* Standalone run card */
+    .run-card {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      cursor: pointer;
+      transition: box-shadow 0.15s, border-color 0.15s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      flex-shrink: 0; /* prevent flex container from squishing cards */
+    }
+    .run-card:hover {
+      box-shadow: 0 3px 8px rgba(0,0,0,0.09);
+      border-color: #cbd5e1;
+    }
+    .run-card.selected {
+      border-color: #b91c1c;
+      box-shadow: 0 0 0 3px rgba(185,28,28,0.10), 0 2px 6px rgba(0,0,0,0.06);
+    }
+
+    /* Image strip across top of card */
+    .card-image-strip {
+      width: 100%;
+      height: 90px; /* default — landscape */
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      background-size: cover;
+      background-position: center;
+      background-color: #334155; /* fallback while loading */
+      border-radius: 9px 9px 0 0; /* clip image to card's top corners only */
+    }
+    /* Dark scrim so text and logo stay readable over any photo */
+    .card-image-strip::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.18) 0%,
+        rgba(0,0,0,0.52) 100%
+      );
+    }
+    .card-image-strip .kennel-logo-img {
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      background: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 800;
+      color: #15803d;
+      border: 3px solid rgba(255,255,255,0.95);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+      z-index: 1;
+      letter-spacing: -0.5px;
+      flex-shrink: 0;
+    }
+    /* Run number badge, top-right of image */
+    .card-image-strip .run-num-badge {
+      position: absolute;
+      top: 8px; right: 9px;
+      background: rgba(0,0,0,0.45);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 20px;
+      backdrop-filter: blur(4px);
+      z-index: 1;
+    }
+    /* Run name, bottom-left of image */
+    .card-image-strip .run-name-overlay {
+      position: absolute;
+      bottom: 7px; left: 10px;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: calc(100% - 70px);
+      z-index: 1;
+    }
+    /* Selected: red tint overlay on top of image */
+    .run-card.selected .card-image-strip::before {
+      background: linear-gradient(
+        to bottom,
+        rgba(153,27,27,0.45) 0%,
+        rgba(153,27,27,0.72) 100%
+      );
+    }
+    /* No-image fallback: solid background, no gradient scrim */
+    .card-image-strip.no-image {
+      background-color: #1e293b;
+    }
+    .card-image-strip.no-image::before {
+      background: none;
+    }
+    .run-card.selected .card-image-strip.no-image {
+      background-color: #7f1d1d;
+    }
+
+    /* Card body */
+    .card-body {
+      padding: 8px 11px 10px;
+    }
+    .card-body .card-row {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      font-size: 11px;
+      color: #475569;
+      margin-top: 2px;
+      line-height: 1.4;
+    }
+    .card-body .card-row .row-icon {
+      font-size: 10px;
+      flex-shrink: 0;
+      opacity: 0.6;
+    }
+    .card-body .card-row .row-text {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card-body .card-row.muted .row-text { color: #94a3b8; }
+    /* Chip row for price + attendance */
+    .card-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 7px;
+    }
+    .card-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 500;
+      background: #f1f5f9;
+      color: #475569;
+    }
+    .card-chip.green {
+      background: #f0fdf4;
+      color: #15803d;
+    }
+    .card-chip.blue {
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+    .card-chip.amber {
+      background: #fffbeb;
+      color: #92400e;
+    }
+
+    /* ── Right Panel ── */
+    .right-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: #f8fafc;
+    }
+
+    .detail-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .detail-scroll::-webkit-scrollbar { width: 4px; }
+    .detail-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+    /* Hero image in detail panel */
+    .event-hero {
+      border-radius: 12px;
+      height: 220px;
+      background-size: cover;
+      background-position: center;
+      background-color: #334155;
+      border: 1px solid #e2e8f0;
+      flex-shrink: 0;
+    }
+
+    /* Event header card */
+    .event-header-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      border: 1px solid #e2e8f0;
+    }
+    .event-header-card .kennel-logo {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: #15803d;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+      border: 2px solid #dcfce7;
+    }
+    .event-header-card .header-info { flex: 1; }
+    .event-header-card .event-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.3;
+    }
+    .event-header-card .kennel-name {
+      font-size: 12px;
+      color: #b91c1c;
+      font-weight: 500;
+      margin-top: 2px;
+    }
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .badge {
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .badge.run-num {
+      background: #f1f5f9;
+      color: #475569;
+    }
+    .badge.event-type {
+      background: #eff6ff;
+      color: #2563eb;
+    }
+    .badge.past {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .badge.fees {
+      background: #f0fdf4;
+      color: #15803d;
+    }
+
+    /* Info sections */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .info-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid #e2e8f0;
+    }
+    .info-card.full-width {
+      grid-column: 1 / -1;
+    }
+    .info-card .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+      margin-bottom: 10px;
+    }
+    .info-row {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 10px;
+    }
+    .info-row:last-child { margin-bottom: 0; }
+    .info-row .field-label {
+      font-size: 11px;
+      color: #94a3b8;
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+    .info-row .field-value {
+      font-size: 13px;
+      color: #0f172a;
+      font-weight: 500;
+    }
+    .info-row .field-value.muted {
+      color: #475569;
+      font-weight: 400;
+    }
+
+    /* Action bar */
+    .action-bar {
+      padding: 12px 20px;
+      background: #fff;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .action-bar .spacer { flex: 1; }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid;
+      white-space: nowrap;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.1s;
+    }
+    .btn.primary {
+      background: #b91c1c;
+      border-color: #b91c1c;
+      color: #fff;
+    }
+    .btn.primary:hover { background: #991b1b; }
+    .btn.secondary {
+      background: #fff;
+      border-color: #e2e8f0;
+      color: #374151;
+    }
+    .btn.secondary:hover { background: #f8fafc; }
+    .btn.danger {
+      background: #fff;
+      border-color: #fca5a5;
+      color: #b91c1c;
+    }
+    .btn.danger:hover { background: #fef2f2; }
+    .btn .icon { font-size: 14px; }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 6px;
+      font-size: 11px;
+      color: #94a3b8;
+      background: #f8fafc;
+      flex-shrink: 0;
+    }
+    .footer a { color: #b91c1c; text-decoration: none; }
+
+    /* Note banner */
+    .note-banner {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 11px;
+      color: #92400e;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- App Bar -->
+  <div class="app-bar">
+    <div class="back-btn">←</div>
+    <div class="title">Runs &amp; Events</div>
+    <div class="kennel-badge">
+      <div class="dot">HC</div>
+      A Harrier Central Test
+    </div>
+    <div class="toolbar-actions">
+      <button class="btn-toolbar secondary">Print Check-in</button>
+      <button class="btn-toolbar secondary">Manage Hashers</button>
+      <button class="btn-toolbar secondary">Edit Kennel</button>
+      <button class="btn-toolbar primary">+ Add Run</button>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- Left Panel -->
+    <div class="left-panel">
+      <div class="search-bar">
+        <span class="icon">🔍</span>
+        <input type="text" placeholder="Search runs…" />
+      </div>
+      <div class="tab-row">
+        <button class="tab">Upcoming</button>
+        <button class="tab active">Past runs</button>
+      </div>
+      <div class="run-list">
+
+        <div class="run-card selected">
+          <div class="card-image-strip" style="height: 90px; background-image: url('https://picsum.photos/seed/londonpub/370/90')">
+            <div class="run-num-badge">#2182</div>
+            <div class="run-name-overlay">Test Monday run</div>
+          </div>
+          <div class="card-body">
+            <div class="card-row">
+              <span class="row-icon">🕐</span>
+              <span class="row-text">Mon, Feb 16 at 4:00 PM &nbsp;·&nbsp; 30 days ago</span>
+            </div>
+            <div class="card-row muted">
+              <span class="row-icon">📍</span>
+              <span class="row-text">London, United Kingdom</span>
+            </div>
+            <div class="card-row muted">
+              <span class="row-icon">🐇</span>
+              <span class="row-text">Tuna and Opee</span>
+            </div>
+            <div class="card-chips">
+              <span class="card-chip">£7.50 members · £9.00 guests</span>
+              <span class="card-chip green">👥 23 attended</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="run-card">
+          <div class="card-image-strip" style="height: 200px; background-image: url('https://picsum.photos/seed/greenpark/370/200')">
+            <div class="run-num-badge">#2181</div>
+            <div class="run-name-overlay">Tore hare</div>
+          </div>
+          <div class="card-body">
+            <div class="card-row">
+              <span class="row-icon">🕐</span>
+              <span class="row-text">Sun, Feb 15 at 4:00 PM &nbsp;·&nbsp; 31 days ago</span>
+            </div>
+            <div class="card-row muted">
+              <span class="row-icon">📍</span>
+              <span class="row-text">London, United Kingdom</span>
+            </div>
+            <div class="card-row muted">
+              <span class="row-icon">🐇</span>
+              <span class="row-text">Fifi</span>
+            </div>
+            <div class="card-chips">
+              <span class="card-chip">£7.50 members · £9.00 guests</span>
+              <span class="card-chip green">👥 18 attended</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="run-card">
+          <div class="card-image-strip" style="height: 270px; background-image: url('https://picsum.photos/seed/trailrun/370/270')">
+            <div class="run-num-badge">#2180</div>
+            <div class="run-name-overlay">Pre LH3 tracking run abcdef</div>
+          </div>
+          <div class="card-body">
+            <div class="card-row">
+              <span class="row-icon">🕐</span>
+              <span class="row-text">Fri, Feb 13 at 1:30 PM &nbsp;·&nbsp; 33 days ago</span>
+            </div>
+            <div class="card-row muted">
+              <span class="row-icon">📍</span>
+              <span class="row-text">London, United Kingdom</span>
+            </div>
+            <div class="card-row muted">
+              <span class="row-icon">🐇</span>
+              <span class="row-text">Tuna and Opee</span>
+            </div>
+            <div class="card-chips">
+              <span class="card-chip blue">Free</span>
+              <span class="card-chip green">👥 8 attended</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="run-card">
+          <div class="card-image-strip" style="height: 90px; background-image: url('https://picsum.photos/seed/citystreet/370/90')">
+            <div class="run-num-badge">#2179</div>
+            <div class="run-name-overlay">test 12345</div>
+          </div>
+          <div class="card-body">
+            <div class="card-row">
+              <span class="row-icon">🕐</span>
+              <span class="row-text">Wed, Feb 11 at 10:22 AM &nbsp;·&nbsp; 35 days ago</span>
+            </div>
+            <div class="card-row muted">
+              <span class="row-icon">📍</span>
+              <span class="row-text">London, United Kingdom</span>
+            </div>
+            <div class="card-chips">
+              <span class="card-chip">£7.50 members · £9.00 guests</span>
+              <span class="card-chip green">👥 31 attended</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="run-card">
+          <div class="card-image-strip no-image">
+            <div class="kennel-logo-img">HC</div>
+            <div class="run-num-badge">#2178</div>
+            <div class="run-name-overlay">RSVP Test</div>
+          </div>
+          <div class="card-body">
+            <div class="card-row">
+              <span class="row-icon">🕐</span>
+              <span class="row-text">Mon, Jan 19 at 7:00 PM &nbsp;·&nbsp; 58 days ago</span>
+            </div>
+            <div class="card-row muted">
+              <span class="row-icon">📍</span>
+              <span class="row-text">London, United Kingdom</span>
+            </div>
+            <div class="card-row muted">
+              <span class="row-icon">🐇</span>
+              <span class="row-text">Stinky</span>
+            </div>
+            <div class="card-chips">
+              <span class="card-chip">£5.00</span>
+              <span class="card-chip amber">✋ 5 RSVP'd</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="right-panel">
+      <div class="detail-scroll">
+
+        <!-- Hero Image -->
+        <div class="event-hero" style="background-image: url('https://picsum.photos/seed/londonpub/800/220')"></div>
+
+        <!-- Event Header -->
+        <div class="event-header-card">
+          <div class="kennel-logo">HC</div>
+          <div class="header-info">
+            <div class="event-name">Test Monday run</div>
+            <div class="kennel-name">A Harrier Central Test</div>
+            <div class="badge-row">
+              <span class="badge run-num">Run #2182</span>
+              <span class="badge event-type">Normal run</span>
+              <span class="badge past">30 days ago</span>
+              <span class="badge fees">£7.50 members · £9.00 non-members</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info Grid -->
+        <div class="info-grid">
+
+          <div class="info-card">
+            <div class="section-label">When</div>
+            <div class="info-row">
+              <div class="field-label">Date</div>
+              <div class="field-value">Monday, 16 February 2026</div>
+            </div>
+            <div class="info-row">
+              <div class="field-label">Start time</div>
+              <div class="field-value">4:00 PM</div>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <div class="section-label">Where</div>
+            <div class="info-row">
+              <div class="field-label">Venue</div>
+              <div class="field-value">Wetherspoon Penderel's Oak</div>
+            </div>
+            <div class="info-row">
+              <div class="field-label">Address</div>
+              <div class="field-value muted">285 High Holborn, WC1V 7HP<br>London, ENG, United Kingdom</div>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <div class="section-label">Hares</div>
+            <div class="info-row">
+              <div class="field-value">Tuna and Opee</div>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <div class="section-label">Visibility</div>
+            <div class="info-row">
+              <div class="field-label">Status</div>
+              <div class="field-value">Visible · Counted run</div>
+            </div>
+            <div class="info-row">
+              <div class="field-label">Audience</div>
+              <div class="field-value muted">All members</div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Action Bar -->
+      <div class="action-bar">
+        <button class="btn danger">
+          <span class="icon">🗑</span> Delete
+        </button>
+        <div class="spacer"></div>
+        <button class="btn secondary">
+          <span class="icon">🔗</span> Copy link
+        </button>
+        <button class="btn secondary">
+          <span class="icon">🗺</span> Map
+        </button>
+        <button class="btn secondary">
+          <span class="icon">💬</span> Trail Chat
+        </button>
+        <button class="btn secondary">
+          <span class="icon">✉</span> Email
+        </button>
+        <button class="btn primary">
+          <span class="icon">✏</span> Edit Run
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    Powered by Harrier Central · <a href="#">harriercentral.com</a> · v1.1.0
+  </div>
+
+</body>
+</html>

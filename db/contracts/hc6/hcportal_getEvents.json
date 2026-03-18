@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_getEvents",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Retrieves hash running events filtered by geographic constraints (kennels, cities, regions, countries, continents) for display in the admin portal or on public HashRuns.org pages. Returns either a summary list or full event details depending on @fullDetails. Supports past/future/all time windows. @kennelUniqueShortName also falls back to city/region/country name matching. Dissemination rules are enforced for non-admin callers.",
   "parameters": [
     {
@@ -217,7 +217,10 @@
         { "name": "eventStartDatetime", "type": "DATETIME2", "nullable": true, "description": "FbEventStartDatetime if UseFbRunDetails=1, else EventStartDatetime. Converted to DATETIME2 (local time; DATETIMEOFFSET migration is a known TODO)." },
         { "name": "daysUntilEvent", "type": "INT", "nullable": true, "description": "DATEDIFF(DAY, GETDATE(), eventStartDatetime). Negative for past events." },
         { "name": "searchText", "type": "NVARCHAR(MAX)", "nullable": false, "description": "Concatenated search string wrapped in '~ ... ~'. Includes: event name, kennel names/tags, hares, all location fields, event number, city/region/country names/codes/search tags, geographic scope keywords, continent name. Used for client-side text search." },
-        { "name": "eventCityAndCountry", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Formatted 'City[, Region], Country' string. Uses FB location fields if UseFbLocation=1 and they have content (LEN >= 3), else HC fields; falls back to City/Region/Country table data. Region included if Country.ShowRegion=1." }
+        { "name": "eventCityAndCountry", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Formatted 'City[, Region], Country' string. Uses FB location fields if UseFbLocation=1 and they have content (LEN >= 3), else HC fields; falls back to City/Region/Country table data. Region included if Country.ShowRegion=1." },
+        { "name": "eventImage", "type": "NVARCHAR(500)", "nullable": true, "description": "FbEventImage if UseFbImage=1, else EventImage. Added in v1.1.0 to support image display in the run list." },
+        { "name": "extEventImage", "type": "NVARCHAR(500)", "nullable": true, "description": "Event.FbEventImage — raw external image URL." },
+        { "name": "useFbImage", "type": "SMALLINT", "nullable": true, "description": "Event.UseFbImage — 1 if the FB image should be used, else 0." }
       ]
     },
     {

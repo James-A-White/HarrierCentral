@@ -480,19 +480,20 @@ class RunEditPageController extends TabUiController
         return;
       }
 
-      final hasherId = box.get(HIVE_HASHER_ID) as String;
+      final deviceId = box.get(HIVE_DEVICE_ID) as String;
+      final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
       final publicKennelId = originalData.publicKennelId.isNotEmpty
           ? originalData.publicKennelId
           : kennelData.publicKennelId;
       final accessToken = Utilities.generateToken(
-        hasherId,
-        'hcportal_addEditEvent2',
-        paramString: publicKennelId,
+        deviceId,
+        'hcportal_addEditEvent',
+        paramString: deviceSecret,
       );
 
       final bodyJson = <String, dynamic>{
-        'queryType': 'addEditEvent2',
-        'publicHasherId': hasherId,
+        'queryType': 'addEditEvent',
+        'deviceId': deviceId,
         'accessToken': accessToken,
         'publicKennelId': publicKennelId,
       };
@@ -506,7 +507,7 @@ class RunEditPageController extends TabUiController
       bodyJson.addAll(changes);
 
       final jsonResult =
-          await ServiceCommon.sendHttpPostToAzureFunctionApi(bodyJson);
+          await ServiceCommon.sendHttpPostToHC6Api(bodyJson);
       final updateResult = ((jsonDecode(jsonResult) as List<dynamic>)[0]
           as List<dynamic>)[0] as Map<String, dynamic>;
 
