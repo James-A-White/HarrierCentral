@@ -18,6 +18,8 @@ class AdminPortalController extends GetxController {
   final List<HasherKennelsModel> allKennels = [];
   final List<HasherKennelsModel> filteredKennels = [];
 
+  bool hasNavigated = false;
+
   final FocusNode searchFocusNode = FocusNode();
   final TextEditingController searchController = TextEditingController();
 

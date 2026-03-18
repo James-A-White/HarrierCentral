@@ -77,7 +77,6 @@ class RunListDetailPanel extends StatelessWidget {
             ),
           ),
         ),
-        _kennelBar(),
         _actionBar(context),
       ],
     );
@@ -357,43 +356,6 @@ class RunListDetailPanel extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           ParticipantsTable(edr.participants),
-        ],
-      ),
-    );
-  }
-
-  // ── Kennel bar ─────────────────────────────────────────────────────────────
-
-  Widget _kennelBar() {
-    final rdm = edr.runDetails;
-    if ((rdm.kennelName ?? '').isEmpty) return const SizedBox.shrink();
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: _kBorder)),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          if ((rdm.kennelLogo ?? '').isNotEmpty ||
-              (rdm.kennelShortName ?? '').isNotEmpty) ...[
-            KennelLogo(
-              kennelLogoUrl: rdm.kennelLogo ?? '',
-              kennelShortName: rdm.kennelShortName ?? '',
-              logoHeight: 32,
-              leftPadding: 0,
-              rightPadding: 10,
-            ),
-          ],
-          Text(
-            rdm.kennelName!,
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: _kTextPrimary,
-            ),
-          ),
         ],
       ),
     );

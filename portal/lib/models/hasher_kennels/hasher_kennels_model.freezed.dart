@@ -36,6 +36,9 @@ mixin _$HasherKennelsModel implements DiagnosticableTreeMixin {
   double get cityLon;
   double get defaultEventPriceForMembers;
   double get defaultEventPriceForNonMembers;
+  String? get cityName;
+  String? get regionName;
+  String? get continentName;
   DateTime? get membershipExpirationDate;
   double? get kennelLat;
   double? get kennelLon;
@@ -80,6 +83,9 @@ mixin _$HasherKennelsModel implements DiagnosticableTreeMixin {
           'defaultEventPriceForMembers', defaultEventPriceForMembers))
       ..add(DiagnosticsProperty(
           'defaultEventPriceForNonMembers', defaultEventPriceForNonMembers))
+      ..add(DiagnosticsProperty('cityName', cityName))
+      ..add(DiagnosticsProperty('regionName', regionName))
+      ..add(DiagnosticsProperty('continentName', continentName))
       ..add(DiagnosticsProperty(
           'membershipExpirationDate', membershipExpirationDate))
       ..add(DiagnosticsProperty('kennelLat', kennelLat))
@@ -121,8 +127,7 @@ mixin _$HasherKennelsModel implements DiagnosticableTreeMixin {
                 other.defaultTags2 == defaultTags2) &&
             (identical(other.defaultTags3, defaultTags3) ||
                 other.defaultTags3 == defaultTags3) &&
-            (identical(other.defaultDigitsAfterDecimal,
-                    defaultDigitsAfterDecimal) ||
+            (identical(other.defaultDigitsAfterDecimal, defaultDigitsAfterDecimal) ||
                 other.defaultDigitsAfterDecimal == defaultDigitsAfterDecimal) &&
             (identical(other.defaultCurrencySymbol, defaultCurrencySymbol) ||
                 other.defaultCurrencySymbol == defaultCurrencySymbol) &&
@@ -138,6 +143,12 @@ mixin _$HasherKennelsModel implements DiagnosticableTreeMixin {
                     defaultEventPriceForNonMembers) ||
                 other.defaultEventPriceForNonMembers ==
                     defaultEventPriceForNonMembers) &&
+            (identical(other.cityName, cityName) ||
+                other.cityName == cityName) &&
+            (identical(other.regionName, regionName) ||
+                other.regionName == regionName) &&
+            (identical(other.continentName, continentName) ||
+                other.continentName == continentName) &&
             (identical(
                     other.membershipExpirationDate, membershipExpirationDate) ||
                 other.membershipExpirationDate == membershipExpirationDate) &&
@@ -173,6 +184,9 @@ mixin _$HasherKennelsModel implements DiagnosticableTreeMixin {
         cityLon,
         defaultEventPriceForMembers,
         defaultEventPriceForNonMembers,
+        cityName,
+        regionName,
+        continentName,
         membershipExpirationDate,
         kennelLat,
         kennelLon
@@ -180,7 +194,7 @@ mixin _$HasherKennelsModel implements DiagnosticableTreeMixin {
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'HasherKennelsModel(publicKennelId: $publicKennelId, kennelName: $kennelName, kennelShortName: $kennelShortName, kennelUniqueShortName: $kennelUniqueShortName, kennelLogo: $kennelLogo, kennelCountryCodes: $kennelCountryCodes, countryId: $countryId, countryName: $countryName, isFollowing: $isFollowing, isMember: $isMember, isHomeKennel: $isHomeKennel, appAccessFlags: $appAccessFlags, defaultTags1: $defaultTags1, defaultTags2: $defaultTags2, defaultTags3: $defaultTags3, defaultDigitsAfterDecimal: $defaultDigitsAfterDecimal, defaultCurrencySymbol: $defaultCurrencySymbol, defaultRunStartTime: $defaultRunStartTime, cityLat: $cityLat, cityLon: $cityLon, defaultEventPriceForMembers: $defaultEventPriceForMembers, defaultEventPriceForNonMembers: $defaultEventPriceForNonMembers, membershipExpirationDate: $membershipExpirationDate, kennelLat: $kennelLat, kennelLon: $kennelLon)';
+    return 'HasherKennelsModel(publicKennelId: $publicKennelId, kennelName: $kennelName, kennelShortName: $kennelShortName, kennelUniqueShortName: $kennelUniqueShortName, kennelLogo: $kennelLogo, kennelCountryCodes: $kennelCountryCodes, countryId: $countryId, countryName: $countryName, isFollowing: $isFollowing, isMember: $isMember, isHomeKennel: $isHomeKennel, appAccessFlags: $appAccessFlags, defaultTags1: $defaultTags1, defaultTags2: $defaultTags2, defaultTags3: $defaultTags3, defaultDigitsAfterDecimal: $defaultDigitsAfterDecimal, defaultCurrencySymbol: $defaultCurrencySymbol, defaultRunStartTime: $defaultRunStartTime, cityLat: $cityLat, cityLon: $cityLon, defaultEventPriceForMembers: $defaultEventPriceForMembers, defaultEventPriceForNonMembers: $defaultEventPriceForNonMembers, cityName: $cityName, regionName: $regionName, continentName: $continentName, membershipExpirationDate: $membershipExpirationDate, kennelLat: $kennelLat, kennelLon: $kennelLon)';
   }
 }
 
@@ -213,6 +227,9 @@ abstract mixin class $HasherKennelsModelCopyWith<$Res> {
       double cityLon,
       double defaultEventPriceForMembers,
       double defaultEventPriceForNonMembers,
+      String? cityName,
+      String? regionName,
+      String? continentName,
       DateTime? membershipExpirationDate,
       double? kennelLat,
       double? kennelLon});
@@ -253,6 +270,9 @@ class _$HasherKennelsModelCopyWithImpl<$Res>
     Object? cityLon = null,
     Object? defaultEventPriceForMembers = null,
     Object? defaultEventPriceForNonMembers = null,
+    Object? cityName = freezed,
+    Object? regionName = freezed,
+    Object? continentName = freezed,
     Object? membershipExpirationDate = freezed,
     Object? kennelLat = freezed,
     Object? kennelLon = freezed,
@@ -346,6 +366,18 @@ class _$HasherKennelsModelCopyWithImpl<$Res>
           ? _self.defaultEventPriceForNonMembers
           : defaultEventPriceForNonMembers // ignore: cast_nullable_to_non_nullable
               as double,
+      cityName: freezed == cityName
+          ? _self.cityName
+          : cityName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      regionName: freezed == regionName
+          ? _self.regionName
+          : regionName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      continentName: freezed == continentName
+          ? _self.continentName
+          : continentName // ignore: cast_nullable_to_non_nullable
+              as String?,
       membershipExpirationDate: freezed == membershipExpirationDate
           ? _self.membershipExpirationDate
           : membershipExpirationDate // ignore: cast_nullable_to_non_nullable
@@ -478,6 +510,9 @@ extension HasherKennelsModelPatterns on HasherKennelsModel {
             double cityLon,
             double defaultEventPriceForMembers,
             double defaultEventPriceForNonMembers,
+            String? cityName,
+            String? regionName,
+            String? continentName,
             DateTime? membershipExpirationDate,
             double? kennelLat,
             double? kennelLon)?
@@ -510,6 +545,9 @@ extension HasherKennelsModelPatterns on HasherKennelsModel {
             _that.cityLon,
             _that.defaultEventPriceForMembers,
             _that.defaultEventPriceForNonMembers,
+            _that.cityName,
+            _that.regionName,
+            _that.continentName,
             _that.membershipExpirationDate,
             _that.kennelLat,
             _that.kennelLon);
@@ -556,6 +594,9 @@ extension HasherKennelsModelPatterns on HasherKennelsModel {
             double cityLon,
             double defaultEventPriceForMembers,
             double defaultEventPriceForNonMembers,
+            String? cityName,
+            String? regionName,
+            String? continentName,
             DateTime? membershipExpirationDate,
             double? kennelLat,
             double? kennelLon)
@@ -587,6 +628,9 @@ extension HasherKennelsModelPatterns on HasherKennelsModel {
             _that.cityLon,
             _that.defaultEventPriceForMembers,
             _that.defaultEventPriceForNonMembers,
+            _that.cityName,
+            _that.regionName,
+            _that.continentName,
             _that.membershipExpirationDate,
             _that.kennelLat,
             _that.kennelLon);
@@ -632,6 +676,9 @@ extension HasherKennelsModelPatterns on HasherKennelsModel {
             double cityLon,
             double defaultEventPriceForMembers,
             double defaultEventPriceForNonMembers,
+            String? cityName,
+            String? regionName,
+            String? continentName,
             DateTime? membershipExpirationDate,
             double? kennelLat,
             double? kennelLon)?
@@ -663,6 +710,9 @@ extension HasherKennelsModelPatterns on HasherKennelsModel {
             _that.cityLon,
             _that.defaultEventPriceForMembers,
             _that.defaultEventPriceForNonMembers,
+            _that.cityName,
+            _that.regionName,
+            _that.continentName,
             _that.membershipExpirationDate,
             _that.kennelLat,
             _that.kennelLon);
@@ -699,6 +749,9 @@ class _HasherKennelsModel extends HasherKennelsModel
       required this.cityLon,
       required this.defaultEventPriceForMembers,
       required this.defaultEventPriceForNonMembers,
+      this.cityName,
+      this.regionName,
+      this.continentName,
       this.membershipExpirationDate,
       this.kennelLat,
       this.kennelLon})
@@ -751,6 +804,12 @@ class _HasherKennelsModel extends HasherKennelsModel
   @override
   final double defaultEventPriceForNonMembers;
   @override
+  final String? cityName;
+  @override
+  final String? regionName;
+  @override
+  final String? continentName;
+  @override
   final DateTime? membershipExpirationDate;
   @override
   final double? kennelLat;
@@ -801,6 +860,9 @@ class _HasherKennelsModel extends HasherKennelsModel
           'defaultEventPriceForMembers', defaultEventPriceForMembers))
       ..add(DiagnosticsProperty(
           'defaultEventPriceForNonMembers', defaultEventPriceForNonMembers))
+      ..add(DiagnosticsProperty('cityName', cityName))
+      ..add(DiagnosticsProperty('regionName', regionName))
+      ..add(DiagnosticsProperty('continentName', continentName))
       ..add(DiagnosticsProperty(
           'membershipExpirationDate', membershipExpirationDate))
       ..add(DiagnosticsProperty('kennelLat', kennelLat))
@@ -842,8 +904,7 @@ class _HasherKennelsModel extends HasherKennelsModel
                 other.defaultTags2 == defaultTags2) &&
             (identical(other.defaultTags3, defaultTags3) ||
                 other.defaultTags3 == defaultTags3) &&
-            (identical(other.defaultDigitsAfterDecimal,
-                    defaultDigitsAfterDecimal) ||
+            (identical(other.defaultDigitsAfterDecimal, defaultDigitsAfterDecimal) ||
                 other.defaultDigitsAfterDecimal == defaultDigitsAfterDecimal) &&
             (identical(other.defaultCurrencySymbol, defaultCurrencySymbol) ||
                 other.defaultCurrencySymbol == defaultCurrencySymbol) &&
@@ -859,6 +920,12 @@ class _HasherKennelsModel extends HasherKennelsModel
                     defaultEventPriceForNonMembers) ||
                 other.defaultEventPriceForNonMembers ==
                     defaultEventPriceForNonMembers) &&
+            (identical(other.cityName, cityName) ||
+                other.cityName == cityName) &&
+            (identical(other.regionName, regionName) ||
+                other.regionName == regionName) &&
+            (identical(other.continentName, continentName) ||
+                other.continentName == continentName) &&
             (identical(
                     other.membershipExpirationDate, membershipExpirationDate) ||
                 other.membershipExpirationDate == membershipExpirationDate) &&
@@ -894,6 +961,9 @@ class _HasherKennelsModel extends HasherKennelsModel
         cityLon,
         defaultEventPriceForMembers,
         defaultEventPriceForNonMembers,
+        cityName,
+        regionName,
+        continentName,
         membershipExpirationDate,
         kennelLat,
         kennelLon
@@ -901,7 +971,7 @@ class _HasherKennelsModel extends HasherKennelsModel
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'HasherKennelsModel(publicKennelId: $publicKennelId, kennelName: $kennelName, kennelShortName: $kennelShortName, kennelUniqueShortName: $kennelUniqueShortName, kennelLogo: $kennelLogo, kennelCountryCodes: $kennelCountryCodes, countryId: $countryId, countryName: $countryName, isFollowing: $isFollowing, isMember: $isMember, isHomeKennel: $isHomeKennel, appAccessFlags: $appAccessFlags, defaultTags1: $defaultTags1, defaultTags2: $defaultTags2, defaultTags3: $defaultTags3, defaultDigitsAfterDecimal: $defaultDigitsAfterDecimal, defaultCurrencySymbol: $defaultCurrencySymbol, defaultRunStartTime: $defaultRunStartTime, cityLat: $cityLat, cityLon: $cityLon, defaultEventPriceForMembers: $defaultEventPriceForMembers, defaultEventPriceForNonMembers: $defaultEventPriceForNonMembers, membershipExpirationDate: $membershipExpirationDate, kennelLat: $kennelLat, kennelLon: $kennelLon)';
+    return 'HasherKennelsModel(publicKennelId: $publicKennelId, kennelName: $kennelName, kennelShortName: $kennelShortName, kennelUniqueShortName: $kennelUniqueShortName, kennelLogo: $kennelLogo, kennelCountryCodes: $kennelCountryCodes, countryId: $countryId, countryName: $countryName, isFollowing: $isFollowing, isMember: $isMember, isHomeKennel: $isHomeKennel, appAccessFlags: $appAccessFlags, defaultTags1: $defaultTags1, defaultTags2: $defaultTags2, defaultTags3: $defaultTags3, defaultDigitsAfterDecimal: $defaultDigitsAfterDecimal, defaultCurrencySymbol: $defaultCurrencySymbol, defaultRunStartTime: $defaultRunStartTime, cityLat: $cityLat, cityLon: $cityLon, defaultEventPriceForMembers: $defaultEventPriceForMembers, defaultEventPriceForNonMembers: $defaultEventPriceForNonMembers, cityName: $cityName, regionName: $regionName, continentName: $continentName, membershipExpirationDate: $membershipExpirationDate, kennelLat: $kennelLat, kennelLon: $kennelLon)';
   }
 }
 
@@ -936,6 +1006,9 @@ abstract mixin class _$HasherKennelsModelCopyWith<$Res>
       double cityLon,
       double defaultEventPriceForMembers,
       double defaultEventPriceForNonMembers,
+      String? cityName,
+      String? regionName,
+      String? continentName,
       DateTime? membershipExpirationDate,
       double? kennelLat,
       double? kennelLon});
@@ -976,6 +1049,9 @@ class __$HasherKennelsModelCopyWithImpl<$Res>
     Object? cityLon = null,
     Object? defaultEventPriceForMembers = null,
     Object? defaultEventPriceForNonMembers = null,
+    Object? cityName = freezed,
+    Object? regionName = freezed,
+    Object? continentName = freezed,
     Object? membershipExpirationDate = freezed,
     Object? kennelLat = freezed,
     Object? kennelLon = freezed,
@@ -1069,6 +1145,18 @@ class __$HasherKennelsModelCopyWithImpl<$Res>
           ? _self.defaultEventPriceForNonMembers
           : defaultEventPriceForNonMembers // ignore: cast_nullable_to_non_nullable
               as double,
+      cityName: freezed == cityName
+          ? _self.cityName
+          : cityName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      regionName: freezed == regionName
+          ? _self.regionName
+          : regionName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      continentName: freezed == continentName
+          ? _self.continentName
+          : continentName // ignore: cast_nullable_to_non_nullable
+              as String?,
       membershipExpirationDate: freezed == membershipExpirationDate
           ? _self.membershipExpirationDate
           : membershipExpirationDate // ignore: cast_nullable_to_non_nullable

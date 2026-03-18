@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_getLandingPageData",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Returns landing page data for an authenticated portal user. Updates the FCM token on the device if changed (after validation), logs portal access, and returns the user's profile and list of kennels the user follows with membership status and kennel details.",
   "parameters": [
     {
@@ -70,7 +70,7 @@
     {
       "index": 1,
       "name": "KennelList",
-      "description": "List of kennels the user is following (HasherKennelMap.Following = 1). Joins Hasher, HasherKennelMap, Kennel, City, Country tables.",
+      "description": "List of kennels the user is following (HasherKennelMap.Following = 1). Joins Hasher, HasherKennelMap, Kennel, City, Country, and Region tables.",
       "columns": [
         {
           "name": "publicKennelId",
@@ -131,6 +131,24 @@
           "type": "NVARCHAR(250)",
           "nullable": false,
           "description": "Country name from HC.Country"
+        },
+        {
+          "name": "cityName",
+          "type": "NVARCHAR(100)",
+          "nullable": false,
+          "description": "City name from HC.City. Added v1.1.0 to support kennel picker search by city."
+        },
+        {
+          "name": "regionName",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": "Region/state/province name from HC.Region (LEFT JOIN — null if kennel city has no region). Added v1.1.0."
+        },
+        {
+          "name": "continentName",
+          "type": "NVARCHAR(100)",
+          "nullable": false,
+          "description": "Continent name from HC.Country. Added v1.1.0 to support kennel picker search by continent (e.g. 'Asia', 'Europe')."
         },
         {
           "name": "defaultEventPriceForMembers",

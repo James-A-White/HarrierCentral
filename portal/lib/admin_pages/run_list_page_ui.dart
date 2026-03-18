@@ -7,6 +7,7 @@ import 'package:hcportal/admin_pages/run_list_detail_panel.dart';
 import 'package:hcportal/admin_pages/run_list_page_controller.dart';
 import 'package:hcportal/imports.dart';
 import 'package:hcportal/widgets/run_list_item.dart';
+import 'package:web/web.dart' as web;
 
 @JS()
 external JSObject get globalThis; // Access JavaScript global context
@@ -28,6 +29,8 @@ final TextEditingController _searchController = TextEditingController();
 class RunListPage extends StatelessWidget {
   RunListPage(
     this.kennel, {
+    this.allKennels = const [],
+    this.publicHasherId = '',
     this.backgroundColor,
     this.textTheme,
     super.key,
@@ -41,6 +44,8 @@ class RunListPage extends StatelessWidget {
   final String? backgroundColor;
   final String? textTheme;
   final HasherKennelsModel kennel;
+  final List<HasherKennelsModel> allKennels;
+  final String publicHasherId;
 
   final RunListPageController formController;
 
@@ -88,147 +93,402 @@ class RunListPage extends StatelessWidget {
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      titleSpacing: 0,
-      bottom: const PreferredSize(
-        preferredSize: Size.fromHeight(1),
-        child: Divider(height: 1, color: Color(0xFFE2E8F0)),
+    final showPicker = allKennels.length > 1;
+    final showKennelSearch = allKennels.length > 10;
+    return PreferredSize(
+      preferredSize: Size.fromHeight(
+        kToolbarHeight +
+            (showPicker ? (showKennelSearch ? 147.0 : 97.0) : 1.0),
       ),
-      leading: GestureDetector(
-        onTap: () => Get.back<void>(),
-        child: const Icon(
-          MaterialCommunityIcons.arrow_left,
-          color: Color(0xFF0F172A),
-        ),
-      ),
-      title: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text(
-            'Runs & Events',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF0F172A),
-            ),
-          ),
-          const SizedBox(width: 12),
-          _kennelBadge(),
-        ],
-      ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 12),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (formController.kennel.canManageMembers ||
-                  formController.kennel.canManageHashCash) ...[
-                _appBarBtn(
-                  'Print Check-in',
-                  onPressed: () async {
-                    await Get.to<CheckinSheetPage>(
-                      () => CheckinSheetPage(
-                        publicKennelId:
-                            formController.kennel.publicKennelId,
-                        kennelName: formController.kennel.kennelName,
-                        kennelLogo: formController.kennel.kennelLogo,
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(width: 8),
-                _appBarBtn(
-                  'Manage Hashers',
-                  onPressed: () async {
-                    await Get.to<KennelHashersPage>(
-                      () => KennelHashersPage(formController.kennel),
-                    );
-                  },
-                ),
-                const SizedBox(width: 8),
-              ],
-              if (formController.kennel.canManageKennel ||
-                  formController.kennel.canManageHashCash) ...[
-                _appBarBtn(
-                  'Edit Kennel',
-                  onPressed: () async {
-                    final kennel = await _getKennel(
-                      formController.kennel.publicKennelId,
-                    );
-                    if (kennel != null) {
-                      await Get.to<KennelEditPage>(
-                        () => KennelEditPage(
-                          key: UniqueKey(),
-                          kennelData: kennel,
+      child: Material(
+        color: Colors.white,
+        elevation: 0,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (showPicker) _kennelPickerBar(),
+            SizedBox(
+              height: kToolbarHeight,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  if (allKennels.isEmpty)
+                    GestureDetector(
+                      onTap: () => Get.back<void>(),
+                      child: const SizedBox(
+                        width: 56,
+                        child: Icon(
+                          MaterialCommunityIcons.arrow_left,
+                          color: Color(0xFF0F172A),
                         ),
-                      );
-                      await Get.delete<KennelPageFormController>(
-                        force: true,
-                      );
-                    }
-                  },
-                ),
-                const SizedBox(width: 8),
-              ],
-              if (formController.kennel.canManageRuns)
-                _appBarBtn(
-                  '+ Add Run',
-                  isPrimary: true,
-                  onPressed: () async {
-                    var lastRunDate = DateTime.now();
-                    for (final run in formController.allEvents) {
-                      if (run.eventStartDatetime.isAfter(lastRunDate)) {
-                        lastRunDate = run.eventStartDatetime;
-                      }
-                    }
-                    await Get.to<RunEditPage>(
-                      () => RunEditPage(
-                        runData: RunDetailsModel.empty(),
-                        kennelData: formController.kennel,
-                        isAddMode: true,
-                        lastRunDate: lastRunDate,
+                      ),
+                    )
+                  else
+                    const SizedBox(width: 16),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Runs & Events',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      _kennelBadge(),
+                    ],
+                  ),
+                  const Spacer(),
+                  GetBuilder<RunListPageController>(
+                    id: 'appBar',
+                    builder: (c) {
+                      final k = c.kennel;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (k.isAdmin) ...[
+                            if (k.canManageMembers || k.canManageHashCash) ...[
+                              _appBarBtn(
+                                'Print Check-in',
+                                onPressed: () async {
+                                  await Get.to<CheckinSheetPage>(
+                                    () => CheckinSheetPage(
+                                      publicKennelId: k.publicKennelId,
+                                      kennelName: k.kennelName,
+                                      kennelLogo: k.kennelLogo,
+                                    ),
+                                  );
+                                },
+                              ),
+                              const SizedBox(width: 8),
+                              _appBarBtn(
+                                'Manage Hashers',
+                                onPressed: () async {
+                                  await Get.to<KennelHashersPage>(
+                                    () => KennelHashersPage(k),
+                                  );
+                                },
+                              ),
+                              const SizedBox(width: 8),
+                            ],
+                            if (k.canManageKennel || k.canManageHashCash) ...[
+                              _appBarBtn(
+                                'Edit Kennel',
+                                onPressed: () async {
+                                  final kennel =
+                                      await _getKennel(k.publicKennelId);
+                                  if (kennel != null) {
+                                    await Get.to<KennelEditPage>(
+                                      () => KennelEditPage(
+                                        key: UniqueKey(),
+                                        kennelData: kennel,
+                                      ),
+                                    );
+                                    await Get.delete<KennelPageFormController>(
+                                      force: true,
+                                    );
+                                  }
+                                },
+                              ),
+                              const SizedBox(width: 8),
+                            ],
+                            if (k.canManageRuns) ...[
+                              _appBarBtn(
+                                '+ Add Run',
+                                isPrimary: true,
+                                onPressed: () async {
+                                  var lastRunDate = DateTime.now();
+                                  for (final run in formController.allEvents) {
+                                    if (run.eventStartDatetime
+                                        .isAfter(lastRunDate)) {
+                                      lastRunDate = run.eventStartDatetime;
+                                    }
+                                  }
+                                  await Get.to<RunEditPage>(
+                                    () => RunEditPage(
+                                      runData: RunDetailsModel.empty(),
+                                      kennelData: k,
+                                      isAddMode: true,
+                                      lastRunDate: lastRunDate,
+                                    ),
+                                  );
+                                  await formController.refreshEvents();
+                                },
+                              ),
+                              const SizedBox(width: 8),
+                            ],
+                          ],
+                          if ((publicHasherId.toUpperCase() ==
+                                  HC_PORTAL_ADMIN_OPEE) ||
+                              (publicHasherId.toUpperCase() ==
+                                  HC_PORTAL_ADMIN_TUNA)) ...[
+                            _appBarBtn(
+                              'Monitor',
+                              onPressed: () async {
+                                await Get.to<UsageDataPage>(UsageDataPage.new);
+                              },
+                            ),
+                            const SizedBox(width: 8),
+                          ],
+                          _appBarBtn(
+                            'Log out',
+                            onPressed: () async {
+                              await box.clear();
+                              web.window.location.reload();
+                            },
+                          ),
+                        ],
                       ),
                     );
-                    await formController.refreshEvents();
-                  },
-                ),
-            ],
-          ),
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1, color: Color(0xFFE2E8F0)),
+          ],
         ),
-      ],
+      ),
     );
   }
 
   Widget _kennelBadge() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFEF2F2),
-        border: Border.all(color: const Color(0xFFFECACA)),
-        borderRadius: BorderRadius.circular(20),
+    return Obx(() {
+      // Track selectedKennelId so the badge updates on kennel switch.
+      final _ = formController.selectedKennelId.value;
+      final k = formController.kennel;
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFEF2F2),
+          border: Border.all(color: const Color(0xFFFECACA)),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            KennelLogo(
+              kennelLogoUrl: k.kennelLogo,
+              kennelShortName: k.kennelShortName,
+              logoHeight: 22,
+              leftPadding: 0,
+              rightPadding: 6,
+            ),
+            Text(
+              k.kennelName,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFFB91C1C),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  // ── Kennel picker strip ───────────────────────────────────────────────────
+  // Shown at the top of the compound AppBar when the user belongs to > 1 kennel.
+  // Uses ALL kennels (not just admin ones). Editing buttons are gated by
+  // permissions inside _buildAppBar, so non-admin kennels just show runs.
+
+  Widget _kennelPickerBar() {
+    final showSearch = allKennels.length > 10;
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
       ),
-      child: Row(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          KennelLogo(
-            kennelLogoUrl: formController.kennel.kennelLogo,
-            kennelShortName: formController.kennel.kennelShortName,
-            logoHeight: 22,
-            leftPadding: 0,
-            rightPadding: 6,
+        // ── Logo row ────────────────────────────────────────────────────────
+        SizedBox(
+          height: 96,
+          child: Stack(
+            children: [
+              // Scrollable logo row
+              Obx(() {
+                final selectedId = formController.selectedKennelId.value;
+                final searchText =
+                    formController.kennelPickerSearch.value.toLowerCase();
+                final visible = searchText.isEmpty
+                    ? allKennels
+                    : allKennels
+                        .where(
+                          (k) => formController.kennelMatchesSearch(
+                            k,
+                            searchText,
+                          ),
+                        )
+                        .toList();
+                final items = [
+                  for (var i = 0; i < visible.length; i++) ...[
+                    if (i > 0) const SizedBox(width: 8),
+                    _kennelPickerItem(visible[i], selectedId),
+                  ],
+                ];
+                return NotificationListener<ScrollMetricsNotification>(
+                  onNotification: (n) {
+                    formController.updateKennelPickerOverflow(n.metrics);
+                    return false;
+                  },
+                  child: Align(
+                    child: SingleChildScrollView(
+                      controller: formController.kennelPickerScrollController,
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 40,
+                        vertical: 10,
+                      ),
+                      child:
+                          Row(mainAxisSize: MainAxisSize.min, children: items),
+                    ),
+                  ),
+                );
+              }),
+              // Scroll arrows — only visible when content overflows
+              Obx(() {
+                final hasOverflow =
+                    formController.kennelPickerHasOverflow.value;
+                final atStart = formController.kennelPickerAtStart.value;
+                final atEnd = formController.kennelPickerAtEnd.value;
+                if (!hasOverflow) return const SizedBox.shrink();
+                return Stack(
+                  children: [
+                    if (!atStart)
+                      Positioned(
+                        left: 0,
+                        top: 0,
+                        bottom: 0,
+                        child: _kennelPickerArrow(isLeft: true),
+                      ),
+                    if (!atEnd)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        bottom: 0,
+                        child: _kennelPickerArrow(isLeft: false),
+                      ),
+                  ],
+                );
+              }),
+            ],
           ),
-          Text(
-            formController.kennel.kennelName,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFFB91C1C),
+        ),
+        // ── Search bar (> 10 kennels only) ──────────────────────────────────
+        if (showSearch)
+          Container(
+            height: 50,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            color: Colors.white,
+            child: TextField(
+              controller: formController.kennelPickerSearchController,
+              onChanged: formController.filterKennelPicker,
+              style: const TextStyle(fontSize: 13),
+              decoration: InputDecoration(
+                hintText: 'Search kennels…',
+                hintStyle: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF94A3B8),
+                ),
+                prefixIcon: const Icon(
+                  Icons.search,
+                  size: 18,
+                  color: Color(0xFF94A3B8),
+                ),
+                suffixIcon: Obx(
+                  () => formController.kennelPickerSearch.value.isEmpty
+                      ? const SizedBox.shrink()
+                      : IconButton(
+                          icon: const Icon(Icons.close, size: 16),
+                          color: const Color(0xFF94A3B8),
+                          onPressed: () {
+                            formController.kennelPickerSearchController.clear();
+                            formController.filterKennelPicker('');
+                          },
+                        ),
+                ),
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(vertical: 6),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: const BorderSide(color: Color(0xFFB91C1C)),
+                ),
+              ),
             ),
           ),
-        ],
+      ],
+      ),
+    );
+  }
+
+  Widget _kennelPickerArrow({required bool isLeft}) {
+    return Container(
+      width: 44,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: isLeft ? Alignment.centerRight : Alignment.centerLeft,
+          end: isLeft ? Alignment.centerLeft : Alignment.centerRight,
+          colors: [Colors.white.withValues(alpha: 0), Colors.white],
+          stops: const [0.0, 0.65],
+        ),
+      ),
+      child: Align(
+        alignment:
+            isLeft ? Alignment.centerLeft : Alignment.centerRight,
+        child: IconButton(
+          icon: Icon(
+            isLeft ? Icons.chevron_left : Icons.chevron_right,
+            size: 22,
+          ),
+          color: const Color(0xFF475569),
+          splashRadius: 18,
+          onPressed: isLeft
+              ? formController.scrollKennelPickerLeft
+              : formController.scrollKennelPickerRight,
+        ),
+      ),
+    );
+  }
+
+  Widget _kennelPickerItem(HasherKennelsModel k, String selectedId) {
+    final isSelected = k.publicKennelId == selectedId;
+    return GestureDetector(
+      onTap: isSelected ? null : () => formController.switchKennel(k),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: isSelected ? const Color(0xFFFEF2F2) : Colors.white,
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFFB91C1C)
+                : const Color(0xFFE2E8F0),
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: KennelLogo(
+          kennelLogoUrl: k.kennelLogo,
+          kennelShortName: k.kennelShortName,
+          logoHeight: 76,
+          leftPadding: 0,
+          rightPadding: 0,
+        ),
       ),
     );
   }
@@ -587,49 +847,48 @@ class RunListPage extends StatelessWidget {
   }
 
   Widget _runList() {
-    return DefaultTabController(
-      length: 2,
-      child: Column(
-        children: [
-          _searchBar(),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-            child: Container(
-              clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
-                borderRadius: BorderRadius.circular(30),
+    return Column(
+      children: [
+        _searchBar(),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          child: Container(
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(30),
+            ),
+            child: TabBar(
+              controller: formController.tabController,
+              indicatorSize: TabBarIndicatorSize.tab,
+              indicator: BubbleTabIndicator(
+                indicatorHeight: 35,
+                indicatorColor: Colors.red.shade900,
+                tabBarIndicatorSize: TabBarIndicatorSize.tab,
+                indicatorRadius: 30,
               ),
-              child: TabBar(
-                indicatorSize: TabBarIndicatorSize.tab,
-                indicator: BubbleTabIndicator(
-                  indicatorHeight: 35,
-                  indicatorColor: Colors.red.shade900,
-                  tabBarIndicatorSize: TabBarIndicatorSize.tab,
-                  indicatorRadius: 30,
-                ),
-                labelStyle: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-                unselectedLabelStyle: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-                labelColor: Colors.white,
-                unselectedLabelColor: const Color(0xFF64748B),
-                tabs: const [
-                  Tab(text: TEXT_FUTURE_RUNS),
-                  Tab(text: TEXT_PAST_RUNS),
-                ],
-                onTap: (int tabIdx) {
-                  formController.displayRuns =
-                      tabIdx == 0 ? EDisplayRuns.future : EDisplayRuns.past;
-                  formController.setDisplayedEvents();
-                },
+              labelStyle: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
               ),
+              unselectedLabelStyle: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+              labelColor: Colors.white,
+              unselectedLabelColor: const Color(0xFF64748B),
+              tabs: const [
+                Tab(text: TEXT_FUTURE_RUNS),
+                Tab(text: TEXT_PAST_RUNS),
+              ],
+              onTap: (int tabIdx) {
+                formController.displayRuns =
+                    tabIdx == 0 ? EDisplayRuns.future : EDisplayRuns.past;
+                formController.setDisplayedEvents();
+              },
             ),
           ),
+        ),
           Expanded(
             child: Obx(() {
               final selectedId = formController
@@ -689,7 +948,6 @@ class RunListPage extends StatelessWidget {
             }),
           ),
         ],
-      ),
     );
   }
 

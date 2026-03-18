@@ -95,6 +95,9 @@ BEGIN TRY
     , k.DefaultRunTags3 as defaultTags3
     , k.CountryId as countryId
     , n.CountryName as countryName
+    , c.CityName as cityName
+    , r.RegionName as regionName
+    , n.ContinentName as continentName
     , k.DefaultEventPriceForMembers as defaultEventPriceForMembers
     , k.DefaultEventPriceForNonMembers as defaultEventPriceForNonMembers
     , coalesce(k.CurrencySymbol, n.CurrencySymbol) as defaultCurrencySymbol
@@ -116,6 +119,7 @@ BEGIN TRY
     INNER JOIN HC.Kennel k on k.id = hkm.KennelId
     INNER JOIN HC.City c on k.CityId = c.id
     INNER JOIN HC.Country n on k.CountryId = n.id
+    LEFT JOIN HC.Region r on c.RegionId = r.id
     WHERE h.id = @hasherId
     AND hkm.Following = 1
 

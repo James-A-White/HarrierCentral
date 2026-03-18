@@ -8,17 +8,22 @@ enum EDisplayRuns { past, future, all }
 
 const int NARROW_SCREEN_WIDTH = 950;
 
-class RunListPageController extends GetxController {
+class RunListPageController extends GetxController
+    with GetSingleTickerProviderStateMixin {
   RunListPageController(
     this.kennel, {
     this.backgroundColor = 'e0e0e0',
     this.textTheme = 'dark',
   }) {
     textThemeIsLight = textTheme.toLowerCase().contains('light');
+    selectedKennelId = kennel.publicKennelId.obs;
   }
   final String backgroundColor;
   final String textTheme;
-  final HasherKennelsModel kennel;
+  HasherKennelsModel kennel;
+
+  late Rx<String> selectedKennelId;
+  late TabController tabController;
 
   bool textThemeIsLight = true;
   String displayType = RUN_DISPLAY_TYPE_LIST_AND_DETAIL;
@@ -50,9 +55,19 @@ class RunListPageController extends GetxController {
   late StreamSubscription<RemoteMessage> _fcmSubscription;
   Map<String, int> thisEventChatCount = {};
 
+  final ScrollController kennelPickerScrollController = ScrollController();
+  final RxBool kennelPickerHasOverflow = false.obs;
+  final RxBool kennelPickerAtStart = true.obs;
+  final RxBool kennelPickerAtEnd = false.obs;
+  final RxString kennelPickerSearch = ''.obs;
+  final TextEditingController kennelPickerSearchController =
+      TextEditingController();
+
   @override
   void onInit() {
     super.onInit();
+    tabController = TabController(length: 2, vsync: this);
+    kennelPickerScrollController.addListener(_onKennelPickerScroll);
     unawaited(onInitAsync());
   }
 
@@ -105,12 +120,76 @@ class RunListPageController extends GetxController {
   @override
   void onClose() {
     unawaited(_fcmSubscription.cancel());
-    _worker?.dispose(); // Dispose the worker manually
+    _worker?.dispose();
+    tabController.dispose();
+    kennelPickerScrollController
+      ..removeListener(_onKennelPickerScroll)
+      ..dispose();
+    kennelPickerSearchController.dispose();
     super.onClose();
   }
 
   RxDouble width = 0.0.obs;
   RxDouble height = 0.0.obs;
+
+  void _onKennelPickerScroll() {
+    if (!kennelPickerScrollController.hasClients) return;
+    final pos = kennelPickerScrollController.position;
+    kennelPickerHasOverflow.value = pos.maxScrollExtent > 0;
+    kennelPickerAtStart.value = pos.pixels <= 0;
+    kennelPickerAtEnd.value = pos.pixels >= pos.maxScrollExtent - 0.5;
+  }
+
+  void updateKennelPickerOverflow(ScrollMetrics metrics) {
+    kennelPickerHasOverflow.value = metrics.maxScrollExtent > 0;
+    kennelPickerAtStart.value = metrics.pixels <= 0;
+    kennelPickerAtEnd.value = metrics.pixels >= metrics.maxScrollExtent - 0.5;
+  }
+
+  // Each kennel item is ~104 px wide (76 logo + 20 padding + 8 gap).
+  // Scroll by 5 items at a time.
+  static const double _kennelPickerItemWidth = 104.0;
+  static const int _kennelPickerScrollItems = 5;
+
+  void scrollKennelPickerLeft() {
+    if (!kennelPickerScrollController.hasClients) return;
+    unawaited(
+      kennelPickerScrollController.animateTo(
+        (kennelPickerScrollController.offset -
+                _kennelPickerItemWidth * _kennelPickerScrollItems)
+            .clamp(0.0, kennelPickerScrollController.position.maxScrollExtent),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      ),
+    );
+  }
+
+  void scrollKennelPickerRight() {
+    if (!kennelPickerScrollController.hasClients) return;
+    unawaited(
+      kennelPickerScrollController.animateTo(
+        (kennelPickerScrollController.offset +
+                _kennelPickerItemWidth * _kennelPickerScrollItems)
+            .clamp(0.0, kennelPickerScrollController.position.maxScrollExtent),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      ),
+    );
+  }
+
+  void filterKennelPicker(String text) {
+    kennelPickerSearch.value = text;
+  }
+
+  bool kennelMatchesSearch(HasherKennelsModel k, String lowerSearch) {
+    return k.kennelName.toLowerCase().contains(lowerSearch) ||
+        k.kennelShortName.toLowerCase().contains(lowerSearch) ||
+        k.kennelUniqueShortName.toLowerCase().contains(lowerSearch) ||
+        k.countryName.toLowerCase().contains(lowerSearch) ||
+        (k.cityName?.toLowerCase().contains(lowerSearch) ?? false) ||
+        (k.regionName?.toLowerCase().contains(lowerSearch) ?? false) ||
+        (k.continentName?.toLowerCase().contains(lowerSearch) ?? false);
+  }
 
   void updateSizeWithDebounce(double newWidth, double newHeight) {
     if (width.value != newWidth) {
@@ -197,6 +276,21 @@ class RunListPageController extends GetxController {
       }
 
       setDisplayedEvents();
+
+      if (!getAllEventDetails) {
+        // If there are no future events, fall back to the most recent past run.
+        if (displayedEvents.isEmpty && allEvents.isNotEmpty) {
+          displayRuns = EDisplayRuns.past;
+          tabController.animateTo(1);
+          setDisplayedEvents();
+        }
+
+        // Auto-select the first displayed event so the detail panel is populated.
+        if (displayedEvents.isNotEmpty) {
+          eventForSingleEventDetailsView.value =
+              await querySingleEvent(displayedEvents.first.publicEventId);
+        }
+      }
     }
 
     isLoaded.value = true;
@@ -368,6 +462,16 @@ class RunListPageController extends GetxController {
 
       return filteredRuns;
     }
+  }
+
+  Future<void> switchKennel(HasherKennelsModel newKennel) async {
+    kennel = newKennel;
+    selectedKennelId.value = newKennel.publicKennelId;
+    displayRuns = EDisplayRuns.future;
+    tabController.animateTo(0);
+    update(['appBar']);
+    firstLoad = true;
+    await refreshEvents();
   }
 
   Future<void> refreshEvents() async {

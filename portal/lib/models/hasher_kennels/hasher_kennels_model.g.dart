@@ -34,6 +34,9 @@ _HasherKennelsModel _$HasherKennelsModelFromJson(Map<String, dynamic> json) =>
           (json['defaultEventPriceForMembers'] as num).toDouble(),
       defaultEventPriceForNonMembers:
           (json['defaultEventPriceForNonMembers'] as num).toDouble(),
+      cityName: json['cityName'] as String?,
+      regionName: json['regionName'] as String?,
+      continentName: json['continentName'] as String?,
       membershipExpirationDate: json['membershipExpirationDate'] == null
           ? null
           : DateTime.parse(json['membershipExpirationDate'] as String),
@@ -65,6 +68,9 @@ Map<String, dynamic> _$HasherKennelsModelToJson(_HasherKennelsModel instance) =>
       'cityLon': instance.cityLon,
       'defaultEventPriceForMembers': instance.defaultEventPriceForMembers,
       'defaultEventPriceForNonMembers': instance.defaultEventPriceForNonMembers,
+      'cityName': instance.cityName,
+      'regionName': instance.regionName,
+      'continentName': instance.continentName,
       'membershipExpirationDate':
           instance.membershipExpirationDate?.toIso8601String(),
       'kennelLat': instance.kennelLat,
