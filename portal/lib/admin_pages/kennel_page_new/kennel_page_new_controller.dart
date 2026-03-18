@@ -10,6 +10,7 @@
 /// - Tab state management
 /// - API communication for saving changes
 
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:hcportal/imports.dart';
 import 'kennel_page_new_enums.dart';
 
@@ -523,15 +524,17 @@ class KennelPageFormController extends TabUiController
 
   @override
   Future<void> save(bool showDialog) async {
+    final deviceId = box.get(HIVE_DEVICE_ID) as String;
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
     final accessToken = Utilities.generateToken(
-      box.get(HIVE_HASHER_ID) as String,
+      deviceId,
       'hcportal_editKennel',
-      paramString: editedData.value.kennelPublicId.uuid,
+      paramString: deviceSecret,
     );
 
     final bodyParams = <String, dynamic>{
       'queryType': 'editKennel',
-      'publicHasherId': box.get(HIVE_HASHER_ID) as String,
+      'deviceId': deviceId,
       'accessToken': accessToken,
       'publicKennelId': editedData.value.kennelPublicId.uuid,
     };
@@ -540,9 +543,7 @@ class KennelPageFormController extends TabUiController
     final changedData = _buildChangedDataPayload();
     bodyParams.addAll(changedData);
 
-    final jsonResult = await ServiceCommon.sendHttpPostToAzureFunctionApi(
-      bodyParams,
-    );
+    final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(bodyParams);
 
     await _handleSaveResponse(jsonResult, showDialog);
   }
@@ -570,7 +571,7 @@ class KennelPageFormController extends TabUiController
 
   /// Handles the API response after saving.
   Future<void> _handleSaveResponse(String jsonResult, bool showDialog) async {
-    if (jsonResult.length <= 10) return;
+    if (jsonResult.startsWith(ERROR_PREFIX)) return;
 
     final decoded = json.decode(jsonResult) as List<dynamic>;
     final items = (decoded[0] as List<dynamic>)[0] as Map<String, dynamic>;
@@ -706,7 +707,7 @@ class KennelPageFormController extends TabUiController
         originalSongSelections[song.id] = song.isInKennel;
       }
     } catch (e) {
-      // Silently handle — list will remain empty
+      if (kDebugMode) debugPrint('_loadSongs error: $e');
     } finally {
       songsLoading.value = false;
       _updateSongsTabStatus();
@@ -748,8 +749,8 @@ class KennelPageFormController extends TabUiController
         // Revert on failure
         songSelections[songId]?.value = previousValue;
       }
-    } catch (_) {
-      // Revert on error
+    } catch (e) {
+      if (kDebugMode) debugPrint('Song toggle failed: $e');
       songSelections[songId]?.value = previousValue;
     } finally {
       _updateSongsTabStatus();

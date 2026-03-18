@@ -1349,8 +1349,8 @@ class RunEditPageController extends TabUiController
           }
         }
       }
-    } catch (_) {
-      // Reverse geocode failed
+    } catch (e) {
+      if (kDebugMode) debugPrint('Reverse geocode failed: $e');
     } finally {
       isGeocoding.value = false;
       checkIfFormIsDirty();

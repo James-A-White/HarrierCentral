@@ -10,23 +10,24 @@ Future<List<SongModel>> queryKennelSongs(String publicKennelId) async {
     return <SongModel>[];
   }
 
-  final publicHasherId = box.get(HIVE_HASHER_ID) as String;
+  final deviceId = box.get(HIVE_DEVICE_ID) as String;
+  final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
   final accessToken = Utilities.generateToken(
-    publicHasherId,
+    deviceId,
     'hcportal_getSongs',
-    paramString: publicKennelId,
+    paramString: deviceSecret,
   );
 
   final body = <String, String>{
     'queryType': 'getSongs',
-    'publicHasherId': publicHasherId,
+    'deviceId': deviceId,
     'accessToken': accessToken,
     'publicKennelId': publicKennelId,
   };
 
-  final jsonResult = await ServiceCommon.sendHttpPostToAzureFunctionApi(body);
+  final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
 
-  if (jsonResult.length > 10) {
+  if (!jsonResult.startsWith(ERROR_PREFIX)) {
     final jsonItems = json.decode(jsonResult) as List<dynamic>;
 
     // The SP returns a single result set of songs
@@ -53,25 +54,26 @@ Future<bool> toggleKennelSong({
 }) async {
   if (publicKennelId.length != 36 || songId.length != 36) return false;
 
-  final publicHasherId = box.get(HIVE_HASHER_ID) as String;
+  final deviceId = box.get(HIVE_DEVICE_ID) as String;
+  final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
   final accessToken = Utilities.generateToken(
-    publicHasherId,
+    deviceId,
     'hcportal_toggleKennelSong',
-    paramString: songId,
+    paramString: deviceSecret,
   );
 
   final body = <String, String>{
     'queryType': 'toggleKennelSong',
-    'publicHasherId': publicHasherId,
+    'deviceId': deviceId,
     'accessToken': accessToken,
     'publicKennelId': publicKennelId,
     'songId': songId,
     'isInKennel': isInKennel ? '1' : '0',
   };
 
-  final jsonResult = await ServiceCommon.sendHttpPostToAzureFunctionApi(body);
+  final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
 
-  if (jsonResult.length > 10) {
+  if (!jsonResult.startsWith(ERROR_PREFIX)) {
     final jsonItems = json.decode(jsonResult) as List<dynamic>;
     final result = (jsonItems[0] as List<dynamic>)[0] as Map<String, dynamic>;
     return (result['resultCode'] as int) == 1;

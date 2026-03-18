@@ -977,23 +977,24 @@ class RunListPage extends StatelessWidget {
   Future<KennelModel?> _getKennel(String publicKennelId) async {
     KennelModel? rdm;
 
-    final publicHasherId = await box.get(HIVE_HASHER_ID) as String;
+    final deviceId = box.get(HIVE_DEVICE_ID) as String;
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
 
     final accessToken = Utilities.generateToken(
-      publicHasherId,
+      deviceId,
       'hcportal_getKennel',
-      paramString: publicKennelId,
+      paramString: deviceSecret,
     );
 
     final body = <String, String>{
       'queryType': 'getKennel',
-      'publicHasherId': publicHasherId,
+      'deviceId': deviceId,
       'accessToken': accessToken,
       'publicKennelId': publicKennelId,
     };
 
-    final jsonResult = await ServiceCommon.sendHttpPostToAzureFunctionApi(body);
-    if (jsonResult.length > 10) {
+    final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+    if (!jsonResult.startsWith(ERROR_PREFIX)) {
       final jsonItems = json.decode(jsonResult) as List<dynamic>;
       rdm = KennelModel.fromJson(
         (jsonItems[0] as List<dynamic>)[0] as Map<String, dynamic>,

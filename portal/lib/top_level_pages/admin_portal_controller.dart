@@ -277,44 +277,45 @@ class AdminPortalController extends GetxController {
       await box.put(HIVE_FCM_TOKEN_DENIED_COUNT, fcmTokenDeniedCount);
     }
 
-    const serviceAccountId = HC_ADMIN_PORTAL_INTERNAL_USER_ID;
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
 
     final accessToken = Utilities.generateToken(
-      serviceAccountId,
+      deviceId,
       'hcportal_updateFcmToken',
-      paramString: newFcmToken ?? '',
+      paramString: deviceSecret,
     );
 
     final body = <String, String?>{
       'queryType': 'updateFcmToken',
       'deviceId': deviceId,
-      'publicHasherId': serviceAccountId,
       'accessToken': accessToken,
       'fcmToken': newFcmToken,
       'buildNumber': packageInfo.value?.buildNumber ?? '0',
       'version': packageInfo.value?.version ?? 'unknown',
     };
 
-    await ServiceCommon.sendHttpPostToAzureFunctionApi(body);
+    await ServiceCommon.sendHttpPostToHC6Api(body);
   }
 
   Future<void> _getHasherKennels() async {
-    final hasherId = box.get(HIVE_HASHER_ID) as String;
-    final fcmToken = box.get(HIVE_FCM_TOKEN) as String?;
     final deviceId = box.get(HIVE_DEVICE_ID) as String;
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
+    final fcmToken = box.get(HIVE_FCM_TOKEN) as String?;
 
-    final accessToken =
-        Utilities.generateToken(hasherId, 'hcportal_getLandingPageData');
+    final accessToken = Utilities.generateToken(
+      deviceId,
+      'hcportal_getLandingPageData',
+      paramString: deviceSecret,
+    );
 
     final body = <String, String?>{
       'queryType': 'getLandingPageData',
-      'publicHasherId': hasherId,
+      'deviceId': deviceId,
       'accessToken': accessToken,
       'fcmToken': fcmToken,
-      'deviceId': deviceId,
     };
 
-    final jsonResult = await ServiceCommon.sendHttpPostToAzureFunctionApi(body);
+    final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
     if (jsonResult.length > 10) {
       final items = ((json.decode(jsonResult) as List<dynamic>)[0]
           as List<dynamic>)[0] as Map<String, dynamic>;

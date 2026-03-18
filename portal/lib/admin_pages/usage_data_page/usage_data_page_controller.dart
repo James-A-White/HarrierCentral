@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:hcportal/imports.dart';
 import 'package:hcportal/admin_pages/usage_data_page/category_detail_dialog.dart';
 import 'package:hcportal/models/usage_data_new_events/usage_data_new_events.dart';
@@ -119,8 +120,8 @@ class UsageDataPageController extends GetxController {
 
       final result = await ServiceCommon.sendHttpPostToHC6Api(body);
       await _showCategoryDetailDialog(result, title);
-    } catch (_) {
-      // getCategoryDetail error
+    } catch (e) {
+      if (kDebugMode) debugPrint('getCategoryDetail error: $e');
     } finally {
       isUpdatingId.value = -1;
       isUpdatingDays.value = -1;
@@ -156,8 +157,8 @@ class UsageDataPageController extends GetxController {
 
       final result = await ServiceCommon.sendHttpPostToHC6Api(body);
       await _showCategoryDetailDialog(result, title);
-    } catch (_) {
-      // getHcVersionDetail error
+    } catch (e) {
+      if (kDebugMode) debugPrint('getHcVersionDetail error: $e');
     } finally {
       isUpdatingVersion.value = '';
     }
@@ -295,7 +296,8 @@ class UsageDataPageController extends GetxController {
             (e) => UdLoginHistoryModel.fromJson(e as Map<String, dynamic>),
           )
           .toList();
-    } catch (_) {
+    } catch (e) {
+      if (kDebugMode) debugPrint('getLoginHistory error: $e');
       return <UdLoginHistoryModel>[];
     }
   }

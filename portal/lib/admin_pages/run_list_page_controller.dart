@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, avoid_web_libraries_in_flutter
 import 'package:firebase_messaging/firebase_messaging.dart';
 //import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:hcportal/imports.dart';
 
 enum EDisplayRuns { past, future, all }
@@ -91,8 +92,8 @@ class RunListPageController extends GetxController {
             firstLoad = false;
           }
           isNarrowScreen.value = narrow;
-        } catch (_) {
-          // Debounce error
+        } catch (e) {
+          if (kDebugMode) debugPrint('RunListPageController debounce error: $e');
         } finally {
           _isDebounceRunning = false;
         }
@@ -125,8 +126,13 @@ class RunListPageController extends GetxController {
 
     var weeksToDisplay = weeks ?? 9999;
 
-    final accessToken =
-        Utilities.generateToken(publicHasherId, 'hcportal_getEvents');
+    final deviceId = box.get(HIVE_DEVICE_ID) as String;
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
+    final accessToken = Utilities.generateToken(
+      deviceId,
+      'hcportal_getEvents',
+      paramString: deviceSecret,
+    );
 
     if (!getAllEventDetails) {
       displayRuns = EDisplayRuns.all;
@@ -137,7 +143,7 @@ class RunListPageController extends GetxController {
 
     final body = <String, dynamic>{
       'queryType': 'getEvents',
-      'publicHasherId': publicHasherId,
+      'deviceId': deviceId,
       'accessToken': accessToken,
       'publicKennelIds': kennel.publicKennelId,
       'fullDetails': getAllEventDetails ? 1 : 0,
@@ -149,7 +155,7 @@ class RunListPageController extends GetxController {
               : 'all',
     };
 
-    final jsonResult = await ServiceCommon.sendHttpPostToAzureFunctionApi(body);
+    final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
     eventForSingleEventDetailsView = EventDetailsResult.empty().obs;
     displayedEvents.clear();
     allEvents.clear();
@@ -178,9 +184,10 @@ class RunListPageController extends GetxController {
       } else {
         final jsonItems = json.decode(jsonResult) as List<dynamic>;
         for (var i = 0; i < (jsonItems[0] as List<dynamic>).length; i++) {
-          var rlm = RunListModel.fromJson(
-            (jsonItems[0] as List<dynamic>)[i] as Map<String, dynamic>,
-          );
+          final map =
+              (jsonItems[0] as List<dynamic>)[i] as Map<String, dynamic>;
+          map['eventChatMessageCount'] ??= 0; // removed in HC6 (was hardcoded 0)
+          var rlm = RunListModel.fromJson(map);
           _prepareBadgeCounts(rlm.publicEventId, rlm.eventChatMessageCount);
           rlm = rlm.copyWith(
             searchText: '~ ${rlm.eventName} ${rlm.kennelShortName} ~',
@@ -216,26 +223,27 @@ class RunListPageController extends GetxController {
 
   Future<void> deleteEvent(String? eventId) async {
     if (eventId != null) {
+      final deviceId = box.get(HIVE_DEVICE_ID) as String;
+      final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
       final accessToken = Utilities.generateToken(
-        publicHasherId,
+        deviceId,
         'hcportal_deleteEvent',
-        paramString: eventId,
+        paramString: deviceSecret,
       );
 
       final body = <String, dynamic>{
         'queryType': 'deleteEvent',
-        'publicHasherId': publicHasherId,
+        'deviceId': deviceId,
         'accessToken': accessToken,
         'publicEventId': eventId,
       };
 
-      final jsonResult =
-          await ServiceCommon.sendHttpPostToAzureFunctionApi(body);
+      final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
 
-      if (jsonResult.length > 10) {
+      if (!jsonResult.startsWith(ERROR_PREFIX)) {
         final jsonItems = json.decode(jsonResult) as List<dynamic>;
         final result = ((jsonItems[0] as List<dynamic>)[0]
-            as Map<String, dynamic>)['result'] as String;
+            as Map<String, dynamic>)['Result'] as String;
 
         await CoreUtilities.showAlert(
           'Delete result',
