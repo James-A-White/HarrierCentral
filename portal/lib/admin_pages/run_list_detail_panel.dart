@@ -4,6 +4,8 @@ import 'package:hcportal/admin_pages/run_list_page_controller.dart';
 import 'package:hcportal/imports.dart';
 import 'package:hcportal/models/email/email_model.dart';
 import 'package:intl/intl.dart';
+import 'package:latlng/latlng.dart';
+import 'package:map/map.dart' as geo_map;
 import 'package:web/web.dart' as web;
 
 @JS('window.open')
@@ -68,6 +70,10 @@ class RunListDetailPanel extends StatelessWidget {
                 _eventHeaderCard(),
                 const SizedBox(height: 14),
                 _infoGrid(),
+                if (_latLon(edr.runDetails) != null) ...[
+                  const SizedBox(height: 14),
+                  _mapPreview(edr.runDetails),
+                ],
                 if (edr.participants.isNotEmpty) ...[
                   const SizedBox(height: 14),
                   _participantsSection(),
@@ -222,24 +228,28 @@ class RunListDetailPanel extends StatelessWidget {
 
     return Column(
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(child: _whenCard(rdm)),
-            const SizedBox(width: 14),
-            Expanded(child: _whereCard(rdm)),
-          ],
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: _whenCard(rdm)),
+              const SizedBox(width: 14),
+              Expanded(child: _whereCard(rdm)),
+            ],
+          ),
         ),
         const SizedBox(height: 14),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (hasHares) ...[
-              Expanded(child: _haresCard(rdm)),
-              const SizedBox(width: 14),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (hasHares) ...[
+                Expanded(child: _haresCard(rdm)),
+                const SizedBox(width: 14),
+              ],
+              Expanded(child: _visibilityCard(rdm)),
             ],
-            Expanded(child: _visibilityCard(rdm)),
-          ],
+          ),
         ),
       ],
     );
@@ -596,6 +606,39 @@ class RunListDetailPanel extends StatelessWidget {
     ].where((s) => s.isNotEmpty).join(', ');
   }
 
+  (double, double)? _latLon(RunDetailsModel rdm) {
+    if ((rdm.useFbLatLon != 0) &&
+        rdm.fbLatitude != null &&
+        rdm.fbLongitude != null &&
+        rdm.fbLongitude!.abs() <= 180) {
+      return (rdm.fbLatitude!, rdm.fbLongitude!);
+    }
+    if ((rdm.useFbLatLon == 0) &&
+        rdm.hcLatitude != null &&
+        rdm.hcLongitude != null &&
+        rdm.hcLongitude!.abs() <= 180) {
+      return (rdm.hcLatitude!, rdm.hcLongitude!);
+    }
+    return null;
+  }
+
+  Widget _mapPreview(RunDetailsModel rdm) {
+    final coords = _latLon(rdm);
+    if (coords == null) return const SizedBox.shrink();
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: _MapPreviewWidget(
+        key: ValueKey(rdm.publicEventId),
+        lat: coords.$1,
+        lon: coords.$2,
+        onTap: () {
+          final url = _mapUrl(rdm);
+          if (Uri.parse(url).isAbsolute) _openWindow(url, '_blank');
+        },
+      ),
+    );
+  }
+
   String _mapUrl(RunDetailsModel rdm) {
     if ((rdm.useFbLatLon != 0) &&
         (rdm.fbLongitude != null) &&
@@ -614,3 +657,93 @@ class RunListDetailPanel extends StatelessWidget {
 }
 
 enum _Btn { primary, secondary, danger }
+
+// ── Map preview widget ──────────────────────────────────────────────────────
+
+class _MapPreviewWidget extends StatelessWidget {
+  const _MapPreviewWidget({
+    super.key,
+    required this.lat,
+    required this.lon,
+    required this.onTap,
+  });
+
+  final double lat;
+  final double lon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final mapController = geo_map.MapController(
+      location: LatLng(Angle.degree(lat), Angle.degree(lon)),
+      zoom: 15,
+    );
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        child: SizedBox(
+          height: 250,
+          width: double.infinity,
+          child: Stack(
+            children: [
+              geo_map.MapLayout(
+                controller: mapController,
+                builder: (context, transformer) {
+                  final pos = transformer.toOffset(
+                    LatLng(Angle.degree(lat), Angle.degree(lon)),
+                  );
+                  return Stack(
+                    children: [
+                      geo_map.TileLayer(
+                        builder: (context, x, y, z) {
+                          final url =
+                              'https://www.google.com/maps/vt/pb=!1m4!1m3!1i$z!2i$x!3i$y!2m3!1e0!2sm!3i420120488!3m7!2sen!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0!5m1!1e0!23i4111425';
+                          return Image.network(url, fit: BoxFit.cover);
+                        },
+                      ),
+                      Positioned(
+                        left: pos.dx - 24,
+                        top: pos.dy - 48,
+                        child: IgnorePointer(
+                          child: Image.asset(
+                            'images/maps/map_pin_foot.png',
+                            height: 48,
+                            width: 48,
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+              Positioned(
+                right: 8,
+                bottom: 8,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    borderRadius: BorderRadius.circular(6),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.open_in_new,
+                    size: 16,
+                    color: Color(0xFF374151),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
