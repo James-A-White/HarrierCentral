@@ -86,19 +86,24 @@ class CheckinSheetController extends GetxController {
   }
 
   Future<void> getHasherDataFromDb() async {
+    final deviceId = box.get(HIVE_DEVICE_ID) as String;
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
     final accessToken = Utilities.generateToken(
-      box.get(HIVE_HASHER_ID) as String,
+      deviceId,
       'hcportal_getKennelHashers',
-      paramString: publicKennelId,
+      paramString: deviceSecret,
     );
 
-    final body = <String, String>{
+    final body = <String, dynamic>{
       'queryType': 'getKennelHashers',
-      'publicHasherId': box.get(HIVE_HASHER_ID) as String,
+      'deviceId': deviceId,
       'accessToken': accessToken,
       'publicKennelId': publicKennelId,
     };
-    final jsonString = await ServiceCommon.sendHttpPostToAzureFunctionApi(body);
+    final jsonString = await ServiceCommon.sendHttpPostToHC6Api(body);
+    debugPrint(jsonString.startsWith(ERROR_PREFIX)
+        ? 'SP 12b (a-b) [getKennelHashers] called — FAILED'
+        : 'SP 12b (a-b) [getKennelHashers] called — success');
 
     if (jsonString.length > 10) {
       final decodedJson = (json.decode(jsonString) as List<dynamic>)[0];

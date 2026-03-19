@@ -544,6 +544,9 @@ class KennelPageFormController extends TabUiController
     bodyParams.addAll(changedData);
 
     final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(bodyParams);
+    debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+        ? 'SP 6 [editKennel] called — FAILED'
+        : 'SP 6 [editKennel] called — success');
 
     await _handleSaveResponse(jsonResult, showDialog);
   }
@@ -803,16 +806,17 @@ class KennelPageFormController extends TabUiController
       return;
     }
 
-    final publicHasherId = box.get(HIVE_HASHER_ID) as String;
+    final deviceId = box.get(HIVE_DEVICE_ID) as String;
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
     final accessToken = Utilities.generateToken(
-      publicHasherId,
+      deviceId,
       'hcportal_addSong',
-      paramString: originalData.kennelPublicId.uuid,
+      paramString: deviceSecret,
     );
 
     final body = <String, dynamic>{
       'queryType': 'addSong',
-      'publicHasherId': publicHasherId,
+      'deviceId': deviceId,
       'accessToken': accessToken,
       'publicKennelId': originalData.kennelPublicId.uuid,
       'songName': songName,
@@ -824,7 +828,10 @@ class KennelPageFormController extends TabUiController
       'tags': newSongTagsController.text.trim(),
     };
 
-    final jsonResult = await ServiceCommon.sendHttpPostToAzureFunctionApi(body);
+    final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+    debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+        ? 'SP 2 [addSong] called — FAILED'
+        : 'SP 2 [addSong] called — success');
 
     if (jsonResult.length > 10) {
       isAddingSong.value = false;

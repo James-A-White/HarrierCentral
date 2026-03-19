@@ -92,107 +92,84 @@ class ServiceCommon {
     return fileName;
   }
 
-  static Future<String> sendHttpPostToAzureFunctionApiCached(
-    String requestBody, {
-    Function? errorCallback,
-  }) async {
-    if (requestBody.contains('getLandingPageData')) {
-      return landingPageData;
-    }
-    if (requestBody.contains('getEvents')) {
-      return eventData;
-    }
-    if (requestBody.contains('getKennel')) {
-      return kennelData;
-    }
+  // HC5 methods — commented out after full HC6 migration (2026-03-19)
+  // static Future<String> sendHttpPostToAzureFunctionApiCached(
+  //   String requestBody, {
+  //   Function? errorCallback,
+  // }) async {
+  //   if (requestBody.contains('getLandingPageData')) {
+  //     return landingPageData;
+  //   }
+  //   if (requestBody.contains('getEvents')) {
+  //     return eventData;
+  //   }
+  //   if (requestBody.contains('getKennel')) {
+  //     return kennelData;
+  //   }
+  //   return Future.value('');
+  // }
 
-    if (foundation.kDebugMode)
-      debugPrint('sendHttpPostToAzureFunctionApiCached: $requestBody');
-    return Future.value('');
-  }
-
-  static Future<String> sendHttpPostToAzureFunctionApi(
-    Map<String, dynamic> requestBody,
-    //   {
-    //   Function? errorCallback,
-    // }
-  ) async {
-// -- optional parameters
-// @ipAddress nvarchar(100) = NULL,
-// @ipGeoDetails nvarchar(2000) = NULL
-
-    try {
-      final body = jsonEncode(requestBody);
-      http.Response response;
-      try {
-        response = await http
-            .post(
-              Uri.parse(BASE_AF_API_URL),
-              headers: <String, String>{
-                'content-type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-              },
-              body: body,
-            )
-            .timeout(const Duration(seconds: DEFAULT_HTTP_TIMEOUT));
-      } on Exception catch (error) {
-        if (foundation.kDebugMode) {
-          debugPrint('HTTP error: $error');
-        }
-        return ERROR_UNKNOWN_HTTP_ERROR;
-      }
-
-      //print(response.body);
-
-      var returnValue = ERROR_UNKNOWN_HTTP_ERROR;
-
-      if ((response.statusCode < 200) || (response.statusCode >= 300)) {
-        returnValue = ERROR_UNKNOWN_HTTP_ERROR;
-      } else {
-        if (response.body.contains('"errorId"')) {
-          returnValue = ERROR_UNKNOWN_REMOTE_DB_ERROR;
-          final errorResult =
-              IveDbUtilities.checkResultsForErrors(response.body);
-          if (errorResult != null) {
-            // if (errorCallback != null) {
-            //   final errorCallbackResult =
-            //       await errorCallback(errorResult) as bool;
-            //   returnValue =
-            //       errorCallbackResult ? ERROR_HANDLED : ERROR_NOT_HANDLED;
-            // } else {
-            final alertResult = await IveCoreUtilities.showAlert(
-                  navigatorKey.currentContext!,
-                  errorResult.errorTitle,
-                  errorResult.errorUserMessage,
-                  'OK',
-                ) ??
-                true;
-            returnValue = alertResult
-                ? ERROR_KEY_OK_BTN_PRESSED
-                : ERROR_KEY_CANCEL_BTN_PRESSED;
-          }
-          //}
-        } else {
-          returnValue = response.body;
-        }
-      }
-
-      return returnValue;
-    } on Exception catch (e) {
-      if (foundation.kDebugMode) {
-        debugPrint('sendHttpPostToAzureFunctionApi exception: $e');
-      }
-    }
-
-    return ERROR_UNKNOWN_HTTP_ERROR;
-  }
+  // static Future<String> sendHttpPostToAzureFunctionApi(
+  //   Map<String, dynamic> requestBody,
+  // ) async {
+  //   try {
+  //     final body = jsonEncode(requestBody);
+  //     http.Response response;
+  //     try {
+  //       response = await http
+  //           .post(
+  //             Uri.parse(BASE_AF_API_URL),
+  //             headers: <String, String>{
+  //               'content-type': 'application/json',
+  //               'Access-Control-Allow-Origin': '*',
+  //             },
+  //             body: body,
+  //           )
+  //           .timeout(const Duration(seconds: DEFAULT_HTTP_TIMEOUT));
+  //     } on Exception catch (error) {
+  //       if (foundation.kDebugMode) {
+  //         debugPrint('HTTP error: $error');
+  //       }
+  //       return ERROR_UNKNOWN_HTTP_ERROR;
+  //     }
+  //     var returnValue = ERROR_UNKNOWN_HTTP_ERROR;
+  //     if ((response.statusCode < 200) || (response.statusCode >= 300)) {
+  //       returnValue = ERROR_UNKNOWN_HTTP_ERROR;
+  //     } else {
+  //       if (response.body.contains('"errorId"')) {
+  //         returnValue = ERROR_UNKNOWN_REMOTE_DB_ERROR;
+  //         final errorResult =
+  //             IveDbUtilities.checkResultsForErrors(response.body);
+  //         if (errorResult != null) {
+  //           final alertResult = await IveCoreUtilities.showAlert(
+  //                 navigatorKey.currentContext!,
+  //                 errorResult.errorTitle,
+  //                 errorResult.errorUserMessage,
+  //                 'OK',
+  //               ) ??
+  //               true;
+  //           returnValue = alertResult
+  //               ? ERROR_KEY_OK_BTN_PRESSED
+  //               : ERROR_KEY_CANCEL_BTN_PRESSED;
+  //         }
+  //       } else {
+  //         returnValue = response.body;
+  //       }
+  //     }
+  //     return returnValue;
+  //   } on Exception catch (e) {
+  //     if (foundation.kDebugMode) {
+  //       debugPrint('sendHttpPostToAzureFunctionApi exception: $e');
+  //     }
+  //   }
+  //   return ERROR_UNKNOWN_HTTP_ERROR;
+  // }
 
   static Future<String> sendHttpPostToHC6Api(
     Map<String, dynamic> requestBody,
   ) async {
     try {
       final body = jsonEncode(requestBody);
-      debugPrint(body);
       http.Response response;
       try {
         response = await http
@@ -232,8 +209,6 @@ class ServiceCommon {
         }
         return ERROR_UNKNOWN_HTTP_ERROR;
       }
-
-      debugPrint('HC6 API response: ${response.body}');
 
       return response.body;
     } on Exception catch (e) {

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' as foundation;
 import 'package:hcportal/admin_pages/run_list_page_controller.dart';
 import 'package:hcportal/imports.dart';
 
@@ -45,22 +44,25 @@ class SingleRunPageController extends GetxController {
   Future<EventDetailsResult?> _getEvent(String publicEventId) async {
     RunDetailsModel? rdm;
 
-    final publicHasherId = await box.get(HIVE_HASHER_ID) as String;
-
+    final deviceId = box.get(HIVE_DEVICE_ID) as String;
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
     final accessToken = Utilities.generateToken(
-      publicHasherId,
+      deviceId,
       'hcportal_getEvent',
-      paramString: publicEventId,
+      paramString: deviceSecret,
     );
 
-    final body = <String, String>{
+    final body = <String, dynamic>{
       'queryType': 'getEvent',
-      'publicHasherId': publicHasherId,
+      'deviceId': deviceId,
       'accessToken': accessToken,
       'publicEventId': publicEventId,
     };
 
-    final jsonResult = await ServiceCommon.sendHttpPostToAzureFunctionApi(body);
+    final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+    debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+        ? 'SP 8b (a-b) [getEvent] called — FAILED'
+        : 'SP 8b (a-b) [getEvent] called — success');
     if (jsonResult.length > 10) {
       final jsonItems = json.decode(jsonResult) as List<dynamic>;
       rdm = RunDetailsModel.fromJson(
@@ -136,11 +138,7 @@ class SingleRunPage extends StatelessWidget {
           },
           child: NotificationListener<SizeChangedLayoutNotification>(
             onNotification: (SizeChangedLayoutNotification notification) {
-              if (foundation.kDebugMode) {
-                debugPrint(
-                  '${DateTime.now().millisecondsSinceEpoch}  -  ${MediaQuery.of(context).size.width}',
-                );
-              }
+
               if (c.isNarrowScreen !=
                   MediaQuery.of(context).size.width < NARROW_SCREEN_WIDTH) {
                 c.isNarrowScreen =

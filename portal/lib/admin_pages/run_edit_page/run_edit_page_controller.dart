@@ -508,6 +508,9 @@ class RunEditPageController extends TabUiController
 
       final jsonResult =
           await ServiceCommon.sendHttpPostToHC6Api(bodyJson);
+      debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+          ? 'SP 1 [addEditEvent] called — FAILED'
+          : 'SP 1 [addEditEvent] called — success');
       final updateResult = ((jsonDecode(jsonResult) as List<dynamic>)[0]
           as List<dynamic>)[0] as Map<String, dynamic>;
 
@@ -523,7 +526,6 @@ class RunEditPageController extends TabUiController
             publicEventId: returnedEventId,
           );
           isAddMode = false;
-          if (kDebugMode) debugPrint('Switched to edit mode with eventId: $returnedEventId');
         }
       }
 
@@ -1023,20 +1025,6 @@ class RunEditPageController extends TabUiController
 
   /// Initializes the map controller with the run, kennel, or city location.
   void initializeMapController() {
-    if (kDebugMode) {
-      debugPrint('=== MAP INIT ===');
-      debugPrint(
-          'hcLat: ${originalData.hcLatitude}, hcLon: ${originalData.hcLongitude}');
-      debugPrint(
-          'kenLat(run): ${originalData.kenLatitude}, kenLon(run): ${originalData.kenLongitude}');
-      debugPrint(
-          'kennelLat: ${kennelData.kennelLat}, kennelLon: ${kennelData.kennelLon}');
-      debugPrint(
-          'cityLat(run): ${originalData.cityLatitude}, cityLon(run): ${originalData.cityLongitude}');
-      debugPrint(
-          'cityLat(kennel): ${kennelData.cityLat}, cityLon(kennel): ${kennelData.cityLon}');
-      debugPrint('isAddMode: $isAddMode');
-    }
 
     double lat;
     double lon;
@@ -1044,23 +1032,18 @@ class RunEditPageController extends TabUiController
     if (originalData.hcLatitude != null && originalData.hcLatitude != 0.0) {
       lat = originalData.hcLatitude!;
       lon = originalData.hcLongitude ?? 0.0;
-      if (kDebugMode) debugPrint('Using hc lat/lon');
+
     } else if (kennelData.kennelLat != null && kennelData.kennelLat != 0.0) {
       lat = kennelData.kennelLat!;
       lon = kennelData.kennelLon ?? 0.0;
-      if (kDebugMode) debugPrint('Using kennel lat/lon');
     } else if (kennelData.cityLat != 0.0) {
       lat = kennelData.cityLat;
       lon = kennelData.cityLon;
-      if (kDebugMode) debugPrint('Using kennel city lat/lon');
     } else {
       // Fallback to London
       lat = 51.5074;
       lon = -0.1278;
-      if (kDebugMode) debugPrint('Using default London lat/lon');
     }
-
-    if (kDebugMode) debugPrint('Resolved lat: $lat, lon: $lon');
 
     mapController.value = geo_map.MapController(
       location: LatLng(Angle.degree(lat), Angle.degree(lon)),

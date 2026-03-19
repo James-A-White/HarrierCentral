@@ -144,10 +144,6 @@ abstract class TabUiController extends GetxController {
     }
 
     bool isSubmittable = true;
-    int totalEmptyStatus = 0;
-    int totalValidStatus = 0;
-    int totalInvalidStatus = 0;
-    int totalTotal = 0;
 
     for (int i = 0; i < tabCount; i++) {
       final bool hasCustomStatus =
@@ -202,22 +198,6 @@ abstract class TabUiController extends GetxController {
 
       tabStatus[i].value = newStatus;
 
-      totalInvalidStatus += invalidStatus;
-      totalValidStatus += validStatus;
-      totalEmptyStatus += emptyStatus;
-      totalTotal += total;
-
-      if (log) {
-        final String tabTitle =
-            (allTabs.length > i) ? allTabs[i].title : 'tab_$i';
-        debugPrint(
-            'tab=$tabTitle, empty=$emptyStatus, valid=$validStatus, invalid=$invalidStatus, total=$total');
-      }
-    }
-
-    if (log) {
-      debugPrint(
-          'empty=$totalEmptyStatus, valid=$totalValidStatus, invalid=$totalInvalidStatus, total=$totalTotal');
     }
 
     return isSubmittable;

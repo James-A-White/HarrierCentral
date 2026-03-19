@@ -93,22 +93,25 @@ class ChatSheetController extends GetxController {
   }
 
   Future<String?> _getEventMessages(String publicEventId) async {
-    final publicHasherId = box.get(HIVE_HASHER_ID) as String;
-
+    final deviceId = box.get(HIVE_DEVICE_ID) as String;
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
     final accessToken = Utilities.generateToken(
-      publicHasherId,
+      deviceId,
       'hcportal_getEventMessages',
-      paramString: publicEventId,
+      paramString: deviceSecret,
     );
 
-    final body = <String, String>{
+    final body = <String, dynamic>{
       'queryType': 'getEventMessages',
-      'publicHasherId': publicHasherId,
+      'deviceId': deviceId,
       'accessToken': accessToken,
       'publicEventId': publicEventId,
     };
 
-    final jsonResult = await ServiceCommon.sendHttpPostToAzureFunctionApi(body);
+    final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+    debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+        ? 'SP 9 [getEventMessages] called — FAILED'
+        : 'SP 9 [getEventMessages] called — success');
     return jsonResult;
   }
 
@@ -285,17 +288,18 @@ class ChatSheetController extends GetxController {
 
     addMessage(textMessage);
 
-    final publicHasherId = box.get(HIVE_HASHER_ID) as String;
+    final deviceId = box.get(HIVE_DEVICE_ID) as String;
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
 
     final accessToken = Utilities.generateToken(
-      publicHasherId,
+      deviceId,
       'hcportal_sendEventMessage',
-      paramString: publicEventId,
+      paramString: deviceSecret,
     );
 
     final body = <String, dynamic>{
       'queryType': 'sendEventMessage',
-      'publicHasherId': publicHasherId,
+      'deviceId': deviceId,
       'accessToken': accessToken,
       'publicEventId': publicEventId,
       'messageId': uuid,
@@ -304,7 +308,10 @@ class ChatSheetController extends GetxController {
       'messageTitle': messageTitle,
     };
 
-    await ServiceCommon.sendHttpPostToAzureFunctionApi(body);
+    final sendResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+    debugPrint(sendResult.startsWith(ERROR_PREFIX)
+        ? 'SP 17 [sendEventMessage] called — FAILED'
+        : 'SP 17 [sendEventMessage] called — success');
   }
 
   List<Map<String, dynamic>> preprocessMessages(List<dynamic> messageList) {

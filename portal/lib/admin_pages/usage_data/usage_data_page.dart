@@ -60,18 +60,23 @@ class UsageDataPageState extends State<UsageDataPage> {
   final List<UdNewEventsModel> _newEvents = <UdNewEventsModel>[];
 
   Future<void> _getUsageData() async {
+    final deviceId = box.get(HIVE_DEVICE_ID) as String;
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
     final String accessToken = Utilities.generateToken(
-      box.get(HIVE_HASHER_ID) as String,
+      deviceId,
       'hcportal_getUsageData',
+      paramString: deviceSecret,
     );
 
-    final body = <String, String>{
+    final body = <String, dynamic>{
       'queryType': 'getUsageData',
-      'publicHasherId': box.get(HIVE_HASHER_ID) as String,
+      'deviceId': deviceId,
       'accessToken': accessToken,
-      // 'publicKennelId': widget.kennel.publicKennelId,
     };
-    var jsonString = await ServiceCommon.sendHttpPostToAzureFunctionApi(body);
+    var jsonString = await ServiceCommon.sendHttpPostToHC6Api(body);
+    debugPrint(jsonString.startsWith(ERROR_PREFIX)
+        ? 'SP 16a (a-b) [getUsageData] called — FAILED'
+        : 'SP 16a (a-b) [getUsageData] called — success');
     jsonString = jsonString.replaceAll('[[{', '{').replaceAll('}]]', '}');
     final elements = jsonString.split('],[');
 
@@ -124,20 +129,26 @@ class UsageDataPageState extends State<UsageDataPage> {
     int days,
     BuildContext context,
   ) async {
+    final deviceId = box.get(HIVE_DEVICE_ID) as String;
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
     final accessToken = Utilities.generateToken(
-      box.get(HIVE_HASHER_ID) as String,
-      'hcportal_getCategoryDetail',
+      deviceId,
+      'hcportal_getCategoryDetail2',
+      paramString: deviceSecret,
     );
 
-    final body = <String, String>{
-      'queryType': 'getCategoryDetail',
-      'publicHasherId': box.get(HIVE_HASHER_ID) as String,
+    final body = <String, dynamic>{
+      'queryType': 'getCategoryDetail2',
+      'deviceId': deviceId,
       'accessToken': accessToken,
       'categoryId': categoryId.toString(),
       'days': days.toString(),
     };
 
-    final jsonResult = await ServiceCommon.sendHttpPostToAzureFunctionApi(body);
+    final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+    debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+        ? 'SP 7a (a-d) [getCategoryDetail2] called — FAILED'
+        : 'SP 7a (a-d) [getCategoryDetail2] called — success');
 
     final jsonItems = json.decode(jsonResult) as List<dynamic>;
 
@@ -164,14 +175,17 @@ class UsageDataPageState extends State<UsageDataPage> {
     String buildNumber,
     BuildContext context,
   ) async {
+    final deviceId = box.get(HIVE_DEVICE_ID) as String;
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
     final accessToken = Utilities.generateToken(
-      box.get(HIVE_HASHER_ID) as String,
-      'hcportal_getCategoryDetail',
+      deviceId,
+      'hcportal_getCategoryDetail2',
+      paramString: deviceSecret,
     );
 
-    final body = <String, String>{
-      'queryType': 'getCategoryDetail',
-      'publicHasherId': box.get(HIVE_HASHER_ID) as String,
+    final body = <String, dynamic>{
+      'queryType': 'getCategoryDetail2',
+      'deviceId': deviceId,
       'accessToken': accessToken,
       'categoryId': '100',
       'days': '14',
@@ -179,7 +193,10 @@ class UsageDataPageState extends State<UsageDataPage> {
       'hcBuild': buildNumber,
     };
 
-    final jsonResult = await ServiceCommon.sendHttpPostToAzureFunctionApi(body);
+    final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+    debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+        ? 'SP 7b (a-d) [getCategoryDetail2] called — FAILED'
+        : 'SP 7b (a-d) [getCategoryDetail2] called — success');
 
     final jsonItems = json.decode(jsonResult) as List<dynamic>;
 

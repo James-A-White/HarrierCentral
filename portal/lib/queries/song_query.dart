@@ -26,6 +26,9 @@ Future<List<SongModel>> queryKennelSongs(String publicKennelId) async {
   };
 
   final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+  debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+      ? 'SP 15 [getSongs] called — FAILED'
+      : 'SP 15 [getSongs] called — success');
 
   if (!jsonResult.startsWith(ERROR_PREFIX)) {
     final jsonItems = json.decode(jsonResult) as List<dynamic>;
@@ -72,6 +75,9 @@ Future<bool> toggleKennelSong({
   };
 
   final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+  debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+      ? 'SP 18 [toggleKennelSong] called — FAILED'
+      : 'SP 18 [toggleKennelSong] called — success');
 
   if (!jsonResult.startsWith(ERROR_PREFIX)) {
     final jsonItems = json.decode(jsonResult) as List<dynamic>;

@@ -787,20 +787,25 @@ class KennelHashersController extends GetxController {
   }
 
   Future<void> getRowData() async {
+    final deviceId = box.get(HIVE_DEVICE_ID) as String;
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
     final accessToken = Utilities.generateToken(
-      box.get(HIVE_HASHER_ID) as String,
+      deviceId,
       'hcportal_getKennelHashers',
-      paramString: kennel.publicKennelId,
+      paramString: deviceSecret,
     );
 
-    final body = <String, String>{
+    final body = <String, dynamic>{
       'queryType': 'getKennelHashers',
-      'publicHasherId': box.get(HIVE_HASHER_ID) as String,
+      'deviceId': deviceId,
       'accessToken': accessToken,
       'publicKennelId': kennel.publicKennelId,
     };
 
-    final jsonString = await ServiceCommon.sendHttpPostToAzureFunctionApi(body);
+    final jsonString = await ServiceCommon.sendHttpPostToHC6Api(body);
+    debugPrint(jsonString.startsWith(ERROR_PREFIX)
+        ? 'SP 12a (a-b) [getKennelHashers] called — FAILED'
+        : 'SP 12a (a-b) [getKennelHashers] called — success');
     hashers.clear();
     rows.clear();
     newHashers.clear();
@@ -1095,10 +1100,12 @@ class KennelHashersController extends GetxController {
       final field = event.column.field;
       final newValue = event.value.toString();
 
+      final deviceId = box.get(HIVE_DEVICE_ID) as String;
+      final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
       final accessToken = Utilities.generateToken(
-        box.get(HIVE_HASHER_ID) as String,
+        deviceId,
         'hcportal_updateKennelHasher',
-        paramString: hasherBeingEditedPublicId,
+        paramString: deviceSecret,
       );
 
       if ((field == 'firstName') ||
@@ -1114,9 +1121,9 @@ class KennelHashersController extends GetxController {
           (field == 'discountDescription') ||
           (field == 'historicCountsAreEstimates') ||
           (field == 'historicHaring')) {
-        final body = <String, String>{
+        final body = <String, dynamic>{
           'queryType': 'updateKennelHasher',
-          'publicHasherId': box.get(HIVE_HASHER_ID) as String,
+          'deviceId': deviceId,
           'accessToken': accessToken,
           'hasherBeingEditedPublicId':
               hasherBeingEditedPublicId,
@@ -1125,7 +1132,10 @@ class KennelHashersController extends GetxController {
         };
 
         final jsonResult = await ServiceCommon
-            .sendHttpPostToAzureFunctionApi(body);
+            .sendHttpPostToHC6Api(body);
+        debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+            ? 'SP 20 [updateKennelHasher] called — FAILED'
+            : 'SP 20 [updateKennelHasher] called — success');
         //print('result=' + jsonResult);
         if (jsonResult.length > 10) {
           final jsonItems =
@@ -1236,22 +1246,27 @@ class KennelHashersController extends GetxController {
       final newHasherJson = jsonEncode(newHasherList);
       //print(newHasherJson);
 
+      final deviceId = box.get(HIVE_DEVICE_ID) as String;
+      final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
       final accessToken = Utilities.generateToken(
-        box.get(HIVE_HASHER_ID) as String,
+        deviceId,
         'hcportal_bulkAddHashers',
-        paramString: kennel.publicKennelId,
+        paramString: deviceSecret,
       );
 
-      final body = <String, String>{
+      final body = <String, dynamic>{
         'queryType': 'bulkAddHashers',
-        'publicHasherId': box.get(HIVE_HASHER_ID) as String,
+        'deviceId': deviceId,
         'accessToken': accessToken,
         'publicKennelId': kennel.publicKennelId,
         'newHasherJson': newHasherJson,
       };
       //print(body);
       final jsonString = await ServiceCommon
-          .sendHttpPostToAzureFunctionApi(body);
+          .sendHttpPostToHC6Api(body);
+      debugPrint(jsonString.startsWith(ERROR_PREFIX)
+          ? 'SP 3 [bulkAddHashers] called — FAILED'
+          : 'SP 3 [bulkAddHashers] called — success');
 
       newHashers.clear();
 

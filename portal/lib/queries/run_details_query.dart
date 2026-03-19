@@ -22,20 +22,24 @@ Future<EventDetailsResult> querySingleEvent(String publicEventId) async {
     return EventDetailsResult.empty();
   }
 
-  final publicHasherId = await box.get(HIVE_HASHER_ID) as String;
+  final deviceId = box.get(HIVE_DEVICE_ID) as String;
+  final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
   final accessToken = Utilities.generateToken(
-    publicHasherId,
+    deviceId,
     'hcportal_getEvent',
-    paramString: publicEventId,
+    paramString: deviceSecret,
   );
-  final body = <String, String>{
+  final body = <String, dynamic>{
     'queryType': 'getEvent',
-    'publicHasherId': publicHasherId,
+    'deviceId': deviceId,
     'accessToken': accessToken,
     'publicEventId': publicEventId,
   };
 
-  final jsonResult = await ServiceCommon.sendHttpPostToAzureFunctionApi(body);
+  final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+  debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+      ? 'SP 8a (a-b) [getEvent] called — FAILED'
+      : 'SP 8a (a-b) [getEvent] called — success');
   if (jsonResult.length > 10) {
     final jsonItems = json.decode(jsonResult) as List<dynamic>;
 

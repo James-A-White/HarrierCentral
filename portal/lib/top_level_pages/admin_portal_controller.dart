@@ -157,6 +157,9 @@ class AdminPortalController extends GetxController {
 
           final jsonResult =
               await ServiceCommon.sendHttpPostToHC6Api(body);
+          debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+              ? 'SP 4 [confirmAuthentication] called — FAILED'
+              : 'SP 4 [confirmAuthentication] called — success');
 
           if ((jsonResult.length > 10) &&
               (!jsonResult.contains(ERROR_PREFIX))) {
@@ -204,7 +207,6 @@ class AdminPortalController extends GetxController {
   Future<String?> _fetchAndStoreFcmToken(FirebaseMessaging messaging) async {
     final cachedFcmToken = (box.get(HIVE_FCM_TOKEN) as String?) ?? '';
     final newToken = await messaging.getToken(vapidKey: FIREBASE_VAPID_KEY);
-    if (kDebugMode) debugPrint('FCM Token: $newToken');
     if (newToken != null && newToken != cachedFcmToken) {
       await box.put(HIVE_FCM_TOKEN, newToken);
       await box.put(HIVE_FCM_TOKEN_CHANGED, true);
@@ -296,7 +298,10 @@ class AdminPortalController extends GetxController {
       'version': packageInfo.value?.version ?? 'unknown',
     };
 
-    await ServiceCommon.sendHttpPostToHC6Api(body);
+    final fcmResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+    debugPrint(fcmResult.startsWith(ERROR_PREFIX)
+        ? 'SP 19 [updateFcmToken] called — FAILED'
+        : 'SP 19 [updateFcmToken] called — success');
   }
 
   Future<void> _getHasherKennels() async {
@@ -318,6 +323,9 @@ class AdminPortalController extends GetxController {
     };
 
     final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+    debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+        ? 'SP 13 [getLandingPageData] called — FAILED'
+        : 'SP 13 [getLandingPageData] called — success');
     if (jsonResult.length > 10) {
       final items = ((json.decode(jsonResult) as List<dynamic>)[0]
           as List<dynamic>)[0] as Map<String, dynamic>;

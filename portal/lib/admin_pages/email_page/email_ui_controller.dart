@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:fleather/fleather.dart' as fleather;
 import 'package:hcportal/imports.dart';
 import 'package:hcportal/models/email/email_model.dart';
@@ -88,7 +87,6 @@ class EmailTabbedUiController extends TabUiController
 
   void checkUiControlValidationStates() {
     refreshTabStatuses();
-    if (kDebugMode) debugPrint('Email tab statuses refreshed');
   }
 
   @override

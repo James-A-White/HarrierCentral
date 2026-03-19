@@ -235,6 +235,9 @@ class RunListPageController extends GetxController
     };
 
     final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+    debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+        ? 'SP 10 [getEvents] called — FAILED'
+        : 'SP 10 [getEvents] called — success');
     eventForSingleEventDetailsView = EventDetailsResult.empty().obs;
     displayedEvents.clear();
     allEvents.clear();
@@ -333,6 +336,9 @@ class RunListPageController extends GetxController
       };
 
       final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+      debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+          ? 'SP 5 [deleteEvent] called — FAILED'
+          : 'SP 5 [deleteEvent] called — success');
 
       if (!jsonResult.startsWith(ERROR_PREFIX)) {
         final jsonItems = json.decode(jsonResult) as List<dynamic>;

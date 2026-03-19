@@ -67,8 +67,6 @@ extension ApplicationProposal on TestFormPage {
                           if (progressFileIdx > 7) {
                             progressFileIdx = 7;
                           }
-                          if (kDebugMode) debugPrint(
-                              'current word count = $currentWordCount, minWordCount = $minWordCount, progress indicator = $progressFileIdx');
                         } else if (currentWordCount <= maxWordCount) {
                           progressFileIdx =
                               ((currentWordCount / maxWordCount) * 13).toInt();

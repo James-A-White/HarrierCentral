@@ -971,6 +971,9 @@ class RunListPage extends StatelessWidget {
     };
 
     final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+    debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+        ? 'SP 11 [getKennel] called — FAILED'
+        : 'SP 11 [getKennel] called — success');
     if (!jsonResult.startsWith(ERROR_PREFIX)) {
       final jsonItems = json.decode(jsonResult) as List<dynamic>;
       rdm = KennelModel.fromJson(

@@ -55,6 +55,9 @@ class UsageDataPageController extends GetxController {
       };
 
       final jsonString = await ServiceCommon.sendHttpPostToHC6Api(body);
+      debugPrint(jsonString.startsWith(ERROR_PREFIX)
+          ? 'SP 16b (a-b) [getUsageData] called — FAILED'
+          : 'SP 16b (a-b) [getUsageData] called — success');
       if (jsonString.startsWith(ERROR_PREFIX)) return;
 
       final outer = json.decode(jsonString) as List<dynamic>;
@@ -119,6 +122,9 @@ class UsageDataPageController extends GetxController {
       };
 
       final result = await ServiceCommon.sendHttpPostToHC6Api(body);
+      debugPrint(result.startsWith(ERROR_PREFIX)
+          ? 'SP 7c (a-d) [getCategoryDetail2] called — FAILED'
+          : 'SP 7c (a-d) [getCategoryDetail2] called — success');
       await _showCategoryDetailDialog(result, title);
     } catch (e) {
       if (kDebugMode) debugPrint('getCategoryDetail error: $e');
@@ -156,6 +162,9 @@ class UsageDataPageController extends GetxController {
       };
 
       final result = await ServiceCommon.sendHttpPostToHC6Api(body);
+      debugPrint(result.startsWith(ERROR_PREFIX)
+          ? 'SP 7d (a-d) [getCategoryDetail2] called — FAILED'
+          : 'SP 7d (a-d) [getCategoryDetail2] called — success');
       await _showCategoryDetailDialog(result, title);
     } catch (e) {
       if (kDebugMode) debugPrint('getHcVersionDetail error: $e');
@@ -292,6 +301,9 @@ class UsageDataPageController extends GetxController {
       };
 
       final result = await ServiceCommon.sendHttpPostToHC6Api(body);
+      debugPrint(result.startsWith(ERROR_PREFIX)
+          ? 'SP 14 [getLoginHistory] called — FAILED'
+          : 'SP 14 [getLoginHistory] called — success');
       final outer = json.decode(result) as List<dynamic>;
       final items = outer.first as List<dynamic>;
       return items
