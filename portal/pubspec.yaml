@@ -109,6 +109,7 @@ flutter:
   assets:
     - images/backgrounds/
     - images/challenge_default_images/
+    - images/generic_logos/
     - images/maps/
     - images/other/
     - images/pdfs/

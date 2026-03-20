@@ -560,24 +560,24 @@ class CheckinSheetController extends GetxController {
       height: 50,
       width: 20,
       alignment: pw.Alignment.center,
-      child: pw.Transform.rotate(
-        angle: pi / 2,
-        child: pw.Container(
-          child: pw.FittedBox(
-            child: pw.Text(
-              eventDate == null ? '' : DateFormat('MMM d').format(eventDate),
-              tightBounds: true,
-              textAlign: pw.TextAlign.center,
-              maxLines: 1,
-              style: pw.TextStyle(
-                color: pdf_lib.PdfColors.black,
-                fontWeight: pw.FontWeight.bold,
-                fontSize: 13,
+      child: eventDate == null
+          ? pw.SizedBox()
+          : pw.Transform.rotate(
+              angle: pi / 2,
+              child: pw.FittedBox(
+                child: pw.Text(
+                  DateFormat('MMM d').format(eventDate),
+                  tightBounds: true,
+                  textAlign: pw.TextAlign.center,
+                  maxLines: 1,
+                  style: pw.TextStyle(
+                    color: pdf_lib.PdfColors.black,
+                    fontWeight: pw.FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
-      ),
     );
   }
 

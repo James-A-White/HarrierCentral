@@ -61,7 +61,7 @@ div.div {
     width: 100%;
     height: 100%;
 }
-img {
+.spin-logo {
     width: 250px;
     height: 250px;
     -webkit-animation:spin 2s linear infinite;

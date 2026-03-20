@@ -8,7 +8,8 @@
             "program": "${workspaceFolder}/portal/lib/main.dart",
             "deviceId": "chrome",
             "args": [
-                "--web-port", "8080"
+                "--web-port",
+                "8080"
             ]
         },
         {
@@ -18,7 +19,8 @@
             "program": "${workspaceFolder}/portal/lib/main.dart",
             "deviceId": "web-server",
             "args": [
-                "--web-port", "8080"
+                "--web-port",
+                "8080"
             ]
         },
         {
@@ -29,8 +31,15 @@
             "deviceId": "chrome",
             "flutterMode": "profile",
             "args": [
-                "--web-port", "8080"
+                "--web-port",
+                "8080"
             ]
+        },
+        {
+            "name": "Attach to .NET Functions",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command:azureFunctions.pickProcess}"
         }
     ]
 }

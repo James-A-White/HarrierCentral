@@ -12,7 +12,8 @@ class AdminPortalApp extends StatelessWidget {
     return GetBuilder<AdminPortalController>(
       init: AdminPortalController(),
       builder: (c) {
-        final isLoggedIn = (box.get(HIVE_IS_LOGGED_IN) ?? false) as bool;
+        final isLoggedIn =
+            c.isReady && ((box.get(HIVE_IS_LOGGED_IN) ?? false) as bool);
 
         // Auto-navigate to the combined run-list page once kennels are loaded.
         if (c.isReady && isLoggedIn && c.allKennels.isNotEmpty &&

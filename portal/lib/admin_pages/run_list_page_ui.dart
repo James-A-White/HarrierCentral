@@ -471,7 +471,7 @@ class RunListPage extends StatelessWidget {
       onTap: isSelected ? null : () => formController.switchKennel(k),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 10),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           color: isSelected ? const Color(0xFFFEF2F2) : Colors.white,

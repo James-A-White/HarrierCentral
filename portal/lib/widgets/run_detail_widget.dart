@@ -217,7 +217,7 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
                   ),
                 );
               },
-              child: Image.network(
+              child: HcNetworkImage(
                 (widget.rdm.useFbImage != 1
                     ? widget.rdm.eventImage
                     : widget.rdm.extEventImage)!,

@@ -725,7 +725,11 @@ class _UserPhoto extends StatelessWidget {
             builder: (_) => ImageDialog(userPhoto: photo),
           );
         },
-        child: Image.network(photo, fit: BoxFit.cover),
+        child: HcNetworkImage(photo, fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => const ColoredBox(
+              color: Colors.grey,
+              child: Icon(Icons.person, color: Colors.white),
+            )),
       );
     }
 
@@ -733,6 +737,10 @@ class _UserPhoto extends StatelessWidget {
       return Image.network(
         '${photo.replaceAll('bundle://', 'https://harriercentral.blob.core.windows.net/profile-photos/')}.jpg',
         fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => const ColoredBox(
+          color: Colors.grey,
+          child: Icon(Icons.person, color: Colors.white),
+        ),
       );
     }
 

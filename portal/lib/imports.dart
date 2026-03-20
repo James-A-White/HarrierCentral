@@ -60,7 +60,7 @@ export 'package:hcportal/models/usage_data_integration_monitor/usage_data_integr
 export 'package:hcportal/models/usage_data_login_history/usage_data_login_history.dart';
 export 'package:hcportal/models/usage_data_recent_user/usage_data_recent_user.dart';
 export 'package:hcportal/public_pages/register_virgin/register_virgin_page.dart';
-export 'package:hcportal/public_pages/single_run_page.dart';
+// export 'package:hcportal/public_pages/single_run_page.dart'; // DISABLED — no URL routing wired up
 export 'package:hcportal/queries/run_details_query.dart';
 export 'package:hcportal/queries/song_query.dart';
 export 'package:hcportal/routes.dart';
@@ -94,6 +94,7 @@ export 'package:hcportal/util/extensions.dart';
 export 'package:hcportal/util/hex_color.dart';
 export 'package:hcportal/util/image_dialog.dart';
 export 'package:hcportal/util/keep_alive_wrapper.dart';
+export 'package:hcportal/util/hc_network_image.dart';
 export 'package:hcportal/util/kennel_logo.dart';
 export 'package:hcportal/util/styles.dart';
 export 'package:hcportal/util/utilities.dart';

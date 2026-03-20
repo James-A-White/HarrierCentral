@@ -148,7 +148,7 @@ class DocumentManagerField extends StatelessWidget {
                 SizedBox(
                   height: height ?? 200,
                   width: width ?? 200,
-                  child: Image.network(
+                  child: HcNetworkImage(
                     uiControl.editedFieldValue!,
                     fit: BoxFit.contain,
                     loadingBuilder: (context, child, loadingProgress) {
@@ -164,6 +164,10 @@ class DocumentManagerField extends StatelessWidget {
                         ),
                       );
                     },
+                    errorBuilder: (_, __, ___) => const Icon(
+                      Icons.broken_image_outlined,
+                      color: Colors.grey,
+                    ),
                   ),
                 )
               else

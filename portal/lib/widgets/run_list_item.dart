@@ -73,7 +73,7 @@ class RunListItem extends StatelessWidget {
         children: [
           // Determines strip height — image at natural ratio, or fixed logo bg
           if (imageUrl != null)
-            Image.network(
+            HcNetworkImage(
               imageUrl,
               width: double.infinity,
               fit: BoxFit.fitWidth,

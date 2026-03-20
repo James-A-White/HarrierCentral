@@ -348,7 +348,7 @@ class _SongDetailPanel extends StatelessWidget {
           if (song.ImageUrl != null && song.ImageUrl!.isNotEmpty) ...[
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
+              child: HcNetworkImage(
                 song.ImageUrl!,
                 width: double.infinity,
                 height: 200,

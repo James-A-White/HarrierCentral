@@ -1005,10 +1005,15 @@ class KennelHashersController extends GetxController {
         tableHeadingText = 'Profile Photos';
         columns[1].renderer = (TrinaColumnRendererContext context) {
           if (hashers[context.rowIdx].photo.contains('http')) {
-            return Image.network(
+            return HcNetworkImage(
               hashers[context.rowIdx].photo,
               height: 200,
               width: 200,
+              errorBuilder: (_, __, ___) => const SizedBox(
+                height: 200,
+                width: 200,
+                child: Icon(Icons.person, color: Colors.grey),
+              ),
             );
           } else {
             return Container();

@@ -129,7 +129,7 @@ class EditableImageField<T extends TabUiController> extends StatelessWidget {
           ? const Center(child: CircularProgressIndicator())
           : ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
+              child: HcNetworkImage(
                 url,
                 fit: BoxFit.contain,
                 loadingBuilder: (context, child, loadingProgress) {
@@ -287,7 +287,7 @@ class ReadOnlyImagePreview extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(borderRadius),
-        child: Image.network(
+        child: HcNetworkImage(
           imageUrl!,
           fit: BoxFit.contain,
           loadingBuilder: (context, child, loadingProgress) {
