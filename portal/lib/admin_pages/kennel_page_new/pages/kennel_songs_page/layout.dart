@@ -10,6 +10,16 @@
 
 part of '../../kennel_page_new_ui.dart';
 
+/// Maps a bawdy rating (0–3) to its display emoji string.
+/// 0 = Clean 😇, 1 = Mild 🍺🍺, 2 = Spicy 🌶️🌶️🌶️, 3 = Bawdy 🔥🔥🔥🔥
+String _bawdyEmoji(int rating) => switch (rating) {
+      0 => '😇',
+      1 => '🍺🍺',
+      2 => '🌶️🌶️🌶️',
+      3 => '🔥🔥🔥🔥',
+      _ => '',
+    };
+
 // ---------------------------------------------------------------------------
 // Songs Tab Content Widget
 // ---------------------------------------------------------------------------
@@ -249,7 +259,7 @@ class _SongCheckboxTile extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 )
               : null,
-          trailing: song.BawdyRating != null && song.BawdyRating! > 0
+          trailing: song.BawdyRating != null
               ? _buildBawdyRating(song.BawdyRating!)
               : null,
           onTap: () => controller.selectSong(song.id),
@@ -260,14 +270,9 @@ class _SongCheckboxTile extends StatelessWidget {
 
   /// Builds a small bawdy rating indicator.
   Widget _buildBawdyRating(int rating) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(
-        rating.clamp(0, 5),
-        (_) => Icon(Icons.local_fire_department,
-            size: 14, color: Colors.red.shade400),
-      ),
-    );
+    final emoji = _bawdyEmoji(rating.clamp(0, 3));
+    if (emoji.isEmpty) return const SizedBox.shrink();
+    return Text(emoji, style: const TextStyle(fontSize: 14));
   }
 }
 
@@ -461,8 +466,9 @@ class _SongDetailPanel extends StatelessWidget {
 
   /// Converts a bawdy rating integer to a display string.
   String _bawdyRatingText(int? rating) {
-    if (rating == null || rating <= 0) return '—';
-    return List.filled(rating.clamp(0, 5), '🔥').join();
+    if (rating == null) return '—';
+    final emoji = _bawdyEmoji(rating.clamp(0, 3));
+    return emoji.isEmpty ? '—' : emoji;
   }
 
   // ---------------------------------------------------------------------------
@@ -523,6 +529,11 @@ class _SongDetailPanel extends StatelessWidget {
 
           // Additional details
           HelperWidgets().categoryLabelWidget('Additional Details'),
+
+          // Bawdy rating selector
+          _buildBawdyRatingSelector(),
+          const SizedBox(height: 12),
+
           _buildFormField(
             controller: controller.newSongNotesController,
             label: 'Notes',
@@ -547,6 +558,53 @@ class _SongDetailPanel extends StatelessWidget {
           ),
 
           const SizedBox(height: 20),
+        ],
+      ),
+    );
+  }
+
+  /// Bawdy rating selector — four labelled options rendered as a SegmentedButton.
+  Widget _buildBawdyRatingSelector() {
+    const options = [
+      (value: 0, emoji: '😇', label: 'Clean'),
+      (value: 1, emoji: '🍺🍺', label: 'Mild'),
+      (value: 2, emoji: '🌶️🌶️🌶️', label: 'Spicy'),
+      (value: 3, emoji: '🔥🔥🔥🔥', label: 'Bawdy'),
+    ];
+
+    return Obx(
+      () => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Bawdy Rating',
+            style: bodyStyleBlack.copyWith(
+              fontSize: 12,
+              color: Colors.grey.shade700,
+            ),
+          ),
+          const SizedBox(height: 6),
+          SegmentedButton<int>(
+            segments: [
+              for (final opt in options)
+                ButtonSegment<int>(
+                  value: opt.value,
+                  label: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(opt.emoji, style: const TextStyle(fontSize: 16)),
+                      const SizedBox(height: 2),
+                      Text(opt.label, style: const TextStyle(fontSize: 11)),
+                    ],
+                  ),
+                ),
+            ],
+            selected: {controller.newSongBawdyRating.value},
+            onSelectionChanged: (selection) {
+              controller.newSongBawdyRating.value = selection.first;
+            },
+            showSelectedIcon: false,
+          ),
         ],
       ),
     );

@@ -1,0 +1,132 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_addSong",
+  "version": "1.0.0",
+  "description": "Creates a new song record in HC.Song and immediately links it to the requesting kennel via HC.KennelSongMap. Both inserts are wrapped in a single transaction. The authenticated hasher is recorded as AddedBy_UserId; the resolved internal kennelId as AddedBy_KennelId. ImageUrl, AudioUrl, AutoAddToKennel, and Rank are not set at creation time (ImageUrl/AudioUrl = NULL, AutoAddToKennel = 0, Rank = 0). This is a new SP with no HC5 equivalent.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "Resolved to the internal Kennel.id before any writes. Validated IS NULL before auth. Also passed as the paramString to HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "songName",
+      "type": "NVARCHAR(120)",
+      "nullable": true,
+      "mapsToColumn": "Song.SongName",
+      "description": "Required. Trimmed before insert. Returns error if null or blank after trim."
+    },
+    {
+      "name": "tuneOf",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "Song.TuneOf",
+      "description": "Optional. Trimmed; stored as NULL if blank."
+    },
+    {
+      "name": "lyrics",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "Song.Lyrics",
+      "description": "Optional. Trimmed; stored as '' (empty string) if null because Song.Lyrics is NOT NULL."
+    },
+    {
+      "name": "notes",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "Song.Notes",
+      "description": "Optional. Trimmed; stored as NULL if blank."
+    },
+    {
+      "name": "actions",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "Song.Actions",
+      "description": "Optional. Trimmed; stored as NULL if blank."
+    },
+    {
+      "name": "variants",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "Song.Variants",
+      "description": "Optional. Trimmed; stored as NULL if blank."
+    },
+    {
+      "name": "tags",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "Song.Tags",
+      "description": "Optional. Trimmed; stored as NULL if blank."
+    },
+    {
+      "name": "bawdyRating",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Song.BawdyRating",
+      "description": "Required. Must be exactly 0, 1, 2, or 3. Validated before insert; returns error if null or out of range."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error. Ordering: publicKennelId null check → auth → songName blank check → bawdyRating range check → kennel not found.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "SuccessResult",
+      "description": "Returned after the song has been inserted and linked to the kennel.",
+      "columns": [
+        {
+          "name": "resultCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1 for success"
+        },
+        {
+          "name": "result",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Always 'Success'"
+        },
+        {
+          "name": "newSongId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "The id of the newly created HC.Song row"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT into HC.Song with the supplied fields; AddedBy_KennelId = resolved @kennelId, AddedBy_UserId = authenticated @hasherId, ImageUrl = NULL, AudioUrl = NULL, AutoAddToKennel = 0, Rank = 0, Removed = 0",
+    "INSERT into HC.KennelSongMap linking the new song to the requesting kennel (KennelId = resolved @kennelId, Removed = 0)"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning"
+  ]
+}

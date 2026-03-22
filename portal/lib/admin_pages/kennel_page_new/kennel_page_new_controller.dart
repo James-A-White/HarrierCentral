@@ -211,6 +211,9 @@ class KennelPageFormController extends TabUiController
       TextEditingController();
   final TextEditingController newSongTagsController = TextEditingController();
 
+  /// Bawdy rating for the new song being added (0–3).
+  final RxInt newSongBawdyRating = 0.obs;
+
   /// Returns the list of songs filtered by the current search query.
   List<SongModel> get filteredSongs {
     final query = songSearchQuery.value.toLowerCase().trim();
@@ -787,6 +790,7 @@ class KennelPageFormController extends TabUiController
     newSongActionsController.clear();
     newSongVariantsController.clear();
     newSongTagsController.clear();
+    newSongBawdyRating.value = 0;
   }
 
   /// Cancels adding a new song and returns to the detail placeholder.
@@ -826,6 +830,7 @@ class KennelPageFormController extends TabUiController
       'actions': newSongActionsController.text.trim(),
       'variants': newSongVariantsController.text.trim(),
       'tags': newSongTagsController.text.trim(),
+      'bawdyRating': newSongBawdyRating.value,
     };
 
     final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
