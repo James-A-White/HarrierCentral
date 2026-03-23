@@ -79,19 +79,7 @@ class RunListPageController extends GetxController
 
       if (publicEventId.isNotEmpty) {
         thisEventChatCount[publicEventId] =
-            int.tryParse(message.data['EventChatMessageCount'] as String) ?? 0;
-
-        final chatsCounts =
-            (box.get(HIVE_CHATS_COUNT) as Map?)?.cast<String, int>();
-
-        if (chatsCounts != null) {
-          thisEventChatCount[publicEventId] =
-              thisEventChatCount[publicEventId]! -
-                  (chatsCounts[publicEventId] ?? 0);
-        }
-
-        //_prepareBadgeCounts(publicEventId,rlm.eventChatMessageCount);
-
+            (thisEventChatCount[publicEventId] ?? 0) + 1;
         update(['chatCountBadge']);
       }
     });

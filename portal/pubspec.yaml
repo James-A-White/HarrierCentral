@@ -33,8 +33,9 @@ dependencies:
   fleather: ^1.26.0
   flutter:
     sdk: flutter
+  flutter_chat_core: ^2.9.0
   flutter_chat_types: ^3.6.2
-  flutter_chat_ui: ^1.6.15 
+  flutter_chat_ui: ^2.11.1
   flutter_form_builder: ^10.2.0
   flutter_linkify: ^6.0.0 
   flutter_spinkit: ^5.1.0

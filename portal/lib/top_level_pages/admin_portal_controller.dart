@@ -217,12 +217,40 @@ class AdminPortalController extends GetxController {
     return newToken;
   }
 
+  Future<void> _syncFcmTokenToServer(String? fcmToken) async {
+    final deviceId = (box.get(HIVE_DEVICE_ID) as String?) ?? '';
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
+    final accessToken = Utilities.generateToken(
+      deviceId,
+      'hcportal_updateFcmToken',
+      paramString: deviceSecret,
+    );
+    final body = <String, String?>{
+      'queryType': 'updateFcmToken',
+      'deviceId': deviceId,
+      'accessToken': accessToken,
+      'fcmToken': fcmToken,
+      'buildNumber': packageInfo.value?.buildNumber ?? '0',
+      'version': packageInfo.value?.version ?? 'unknown',
+    };
+    final fcmResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+    debugPrint(fcmResult.startsWith(ERROR_PREFIX)
+        ? 'SP 19 [updateFcmToken] called — FAILED'
+        : 'SP 19 [updateFcmToken] called — success');
+  }
+
   Future<void> _initializeNotifications() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
-    final deviceId = (box.get(HIVE_DEVICE_ID) as String?) ?? '';
+    // Sync refreshed tokens to the DB mid-session (Firebase can rotate tokens
+    // at any time without an app restart).
+    FirebaseMessaging.instance.onTokenRefresh.listen((token) async {
+      await box.put(HIVE_FCM_TOKEN, token);
+      await _syncFcmTokenToServer(token);
+    });
+
     String? newFcmToken;
 
     final messaging = FirebaseMessaging.instance;
@@ -281,27 +309,7 @@ class AdminPortalController extends GetxController {
       await box.put(HIVE_FCM_TOKEN_DENIED_COUNT, fcmTokenDeniedCount);
     }
 
-    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
-
-    final accessToken = Utilities.generateToken(
-      deviceId,
-      'hcportal_updateFcmToken',
-      paramString: deviceSecret,
-    );
-
-    final body = <String, String?>{
-      'queryType': 'updateFcmToken',
-      'deviceId': deviceId,
-      'accessToken': accessToken,
-      'fcmToken': newFcmToken,
-      'buildNumber': packageInfo.value?.buildNumber ?? '0',
-      'version': packageInfo.value?.version ?? 'unknown',
-    };
-
-    final fcmResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    debugPrint(fcmResult.startsWith(ERROR_PREFIX)
-        ? 'SP 19 [updateFcmToken] called — FAILED'
-        : 'SP 19 [updateFcmToken] called — success');
+    await _syncFcmTokenToServer(newFcmToken);
   }
 
   Future<void> _getHasherKennels() async {

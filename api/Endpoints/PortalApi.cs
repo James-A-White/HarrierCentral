@@ -281,7 +281,6 @@ namespace HcWebApi.Endpoints
                             Message = eventMessage.MessageContent,
                             eventMessage.MessageId,
                             MessageRelesabilityFlags = eventMessage.MessageRelesabilityFlags.ToString(),
-                            EventChatMessageCount = eventMessage.EventChatMessageCount.ToString(),
                             MessageType = eventMessage.MessageType.ToString(),
                         },
                         android = isNotification ? new { priority = "high", notification = new { sound = "default" } } : null,
@@ -525,7 +524,6 @@ public class EventMessage
     public required string MessageTitle { get; set; }
     public required string MessageContent { get; set; }
     public required int MessageRelesabilityFlags { get; set; }
-    public required int EventChatMessageCount { get; set; }
     public required int MessageType { get; set; }
 
 }

@@ -314,7 +314,6 @@ namespace HcWebApi.Endpoints
                             Message = eventMessage.MessageContent,
                             eventMessage.MessageId,
                             MessageRelesabilityFlags = eventMessage.MessageRelesabilityFlags.ToString(),
-                            EventChatMessageCount = eventMessage.EventChatMessageCount.ToString(),
                             MessageType = eventMessage.MessageType.ToString(),
                         },
                         android = isNotification ? new { priority = "high", notification = new { sound = "default" } } : null,

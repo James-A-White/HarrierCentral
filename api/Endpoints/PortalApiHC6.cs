@@ -217,18 +217,15 @@ namespace HcWebApi.Endpoints
 
                 logger.LogInformation("Processing event notifications...");
 
-                string jsonString = System.Text.Json.JsonSerializer.Serialize(multipleResults);
-                var parsedJson = System.Text.Json.JsonSerializer.Deserialize<List<List<Dictionary<string, object>>>>(jsonString);
-
-                if (parsedJson == null || parsedJson.Count < 3)
+                if (multipleResults == null || multipleResults.Count < 3)
                 {
-                    logger.LogError("Invalid JSON format.");
+                    logger.LogError("sendEventMessage returned fewer than 3 rowsets — cannot send notifications.");
                     return;
                 }
 
-                var eventDetailsList = System.Text.Json.JsonSerializer.Deserialize<List<EventMessage>>(System.Text.Json.JsonSerializer.Serialize(parsedJson[0]));
-                var notificationList = System.Text.Json.JsonSerializer.Deserialize<List<Recipient>>(System.Text.Json.JsonSerializer.Serialize(parsedJson[1]));
-                var inAppMessageList = System.Text.Json.JsonSerializer.Deserialize<List<Recipient>>(System.Text.Json.JsonSerializer.Serialize(parsedJson[2]));
+                var eventDetailsList = System.Text.Json.JsonSerializer.Deserialize<List<EventMessage>>(System.Text.Json.JsonSerializer.Serialize(multipleResults[0]));
+                var notificationList = System.Text.Json.JsonSerializer.Deserialize<List<Recipient>>(System.Text.Json.JsonSerializer.Serialize(multipleResults[1]));
+                var inAppMessageList = System.Text.Json.JsonSerializer.Deserialize<List<Recipient>>(System.Text.Json.JsonSerializer.Serialize(multipleResults[2]));
 
                 if (eventDetailsList == null || notificationList == null || inAppMessageList == null)
                 {
@@ -278,7 +275,6 @@ namespace HcWebApi.Endpoints
                             Message = eventMessage.MessageContent,
                             eventMessage.MessageId,
                             MessageRelesabilityFlags = eventMessage.MessageRelesabilityFlags.ToString(),
-                            EventChatMessageCount = eventMessage.EventChatMessageCount.ToString(),
                             MessageType = eventMessage.MessageType.ToString(),
                         },
                         android = isNotification ? new { priority = "high", notification = new { sound = "default" } } : null,
@@ -303,19 +299,19 @@ namespace HcWebApi.Endpoints
                 var response = await _httpClient.SendAsync(request);
                 if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine("FCM message sent successfully!");
+                    log.LogInformation("FCM message sent successfully.");
                 }
                 else
                 {
                     string errorJson = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Error sending FCM message: {errorJson}");
+                    log.LogError("Error sending FCM message: {ErrorJson}", errorJson);
                     if (errorJson.Contains("BadDeviceToken") || errorJson.Contains("not a valid FCM registration token"))
                         await DeleteFcmToken(fcmToken, log);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Exception while sending FCM message: {ex.Message}");
+                log.LogError("Exception while sending FCM message: {Message}", ex.Message);
             }
         }
 
@@ -333,7 +329,7 @@ namespace HcWebApi.Endpoints
                     if (DateTimeOffset.UtcNow - response.Value.LastUpdated < TimeSpan.FromMinutes(55))
                         return response.Value.FcmToken;
 
-                    Console.WriteLine("Token expired. Generating a new one.");
+                    log.LogInformation("Firebase access token expired — refreshing.");
                 }
 
                 string jsonUrl = "https://harriercentral.blob.core.windows.net/credentials/firebase_credentials.json";
@@ -341,7 +337,7 @@ namespace HcWebApi.Endpoints
 
                 if (!httpResponse.IsSuccessStatusCode)
                 {
-                    Console.WriteLine("Error: Failed to retrieve service account JSON from Azure Blob Storage.");
+                    log.LogError("Failed to retrieve Firebase service account JSON from Azure Blob Storage.");
                     return null;
                 }
 
@@ -364,7 +360,7 @@ namespace HcWebApi.Endpoints
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error retrieving Firebase access token: {ex.Message}");
+                log.LogError("Error retrieving Firebase access token: {Message}", ex.Message);
                 return null;
             }
         }
@@ -393,15 +389,16 @@ namespace HcWebApi.Endpoints
             {
                 using SqlConnection conn = new(connectionString);
                 await conn.OpenAsync();
-                using SqlCommand cmd = new("[HC5].[hcinternalapi_removeStaleFcmToken]", conn);
-                cmd.CommandType = CommandType.StoredProcedure;
+                using SqlCommand cmd = new(
+                    "UPDATE HC.Device SET FcmToken = NULL WHERE FcmToken = @fcmToken",
+                    conn);
                 cmd.Parameters.AddWithValue("@fcmToken", fcmToken);
-                using SqlDataReader reader = await cmd.ExecuteReaderAsync();
-                do { while (await reader.ReadAsync()) { } } while (await reader.NextResultAsync());
+                await cmd.ExecuteNonQueryAsync();
+                log.LogInformation("Stale FCM token cleared from HC.Device.");
             }
             catch (Exception ex)
             {
-                log.LogError($"Error deleting stale FCM token: {ex.Message}");
+                log.LogError("Error clearing stale FCM token: {Message}", ex.Message);
             }
         }
     }

@@ -1,29 +1,29 @@
 // ignore_for_file: require_trailing_commas
 
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
+import 'package:flutter_chat_core/flutter_chat_core.dart' as core;
 import 'package:hcportal/imports.dart';
 
 class ChatSheetController extends GetxController {
   ChatSheetController({
     required this.publicEventId,
     required this.messageTitle,
-  }) {
-    // Initialize controllers with initial data if available
-  }
+  });
+
   String publicEventId;
   String messageTitle;
 
-  RxDouble width = 0.0.obs;
-  RxDouble height = 0.0.obs;
+  final chatController = core.InMemoryChatController();
+  final _userCache = <String, core.User>{};
 
-  RxList<types.Message> messages = <types.Message>[].obs;
-
-  late StreamSubscription<RemoteMessage> _fcmSubscription;
+  late core.User currentUser;
+  StreamSubscription<RemoteMessage>? _fcmSubscription;
+  final Rx<DateTime?> lastFcmEchoAt = Rx<DateTime?>(null);
 
   @override
   void onClose() {
-    unawaited(_fcmSubscription.cancel());
+    unawaited(_fcmSubscription?.cancel());
+    chatController.dispose();
     super.onClose();
   }
 
@@ -37,22 +37,31 @@ class ChatSheetController extends GetxController {
         box.get(HIVE_HASH_NAME) as String;
     final photo = box.get(HIVE_HASHER_PHOTO) as String? ?? '';
 
-    user = types.User(
-      id: publicHasherId.toUpperCase(),
-      firstName: hashName,
-      imageUrl: photo,
+    currentUser = core.User(
+      id: publicHasherId.asUuid,
+      name: hashName,
+      imageSource: photo.isEmpty ? null : photo,
     );
+    _userCache[currentUser.id] = currentUser;
 
     unawaited(onInitAsync());
   }
 
-  Future<void> onInitAsync() async {
-    // Any asynchronous initialization can go here
+  Future<core.User?> resolveUser(String userId) async {
+    return _userCache[userId.asUuid];
+  }
 
-    var result = await _getEventMessages(publicEventId);
+  Future<void> onInitAsync() async {
+    final result = await _getEventMessages(publicEventId);
     if (result != null) {
       final outerItem = jsonDecode(result) as List<dynamic>;
-      messages.value = await loadMessages(outerItem[0] as List<dynamic>);
+      final messages = _parseMessages(outerItem[0] as List<dynamic>);
+      await chatController.setMessages(messages);
+
+      final chatsCounts =
+          (box.get(HIVE_CHATS_COUNT) as Map?)?.cast<String, int>() ?? {};
+      chatsCounts[publicEventId] = messages.length;
+      await box.put(HIVE_CHATS_COUNT, chatsCounts);
     }
 
     _fcmSubscription =
@@ -60,34 +69,37 @@ class ChatSheetController extends GetxController {
       final incomingEventId = message.data['PublicEventId'] as String?;
       if (incomingEventId != null &&
           publicEventId == incomingEventId.asUuid) {
-        final msgUser = types.User(
-          id: message.data['UserId'].toString().toUpperCase(),
-          firstName: message.data['UserDisplayName'] as String,
-          imageUrl: message.data['UserPhoto'] as String?,
+        final userId = message.data['UserId'].toString().asUuid;
+        _userCache[userId] = core.User(
+          id: userId,
+          name: message.data['UserDisplayName'] as String?,
+          imageSource: message.data['UserPhoto'] as String?,
         );
 
-        final textMessage = types.TextMessage(
-          author: msgUser,
-          roomId: message.data['PublicEventId'].toString().toUpperCase(),
-          createdAt: DateTime.now().millisecondsSinceEpoch,
-          id: message.data['MessageId'].toString().toUpperCase(),
-          text: message.data['Message'] as String,
-          status: types.Status.sent,
-          showStatus: true,
-        );
+        final messageId = message.data['MessageId'].toString().asUuid;
+        final existing = chatController.messages
+            .where((m) => m.id == messageId)
+            .firstOrNull;
 
-        final index = messages.indexWhere((element) =>
-            element.id.toUpperCase() ==
-            message.data['MessageId'].toString().toUpperCase());
+        lastFcmEchoAt.value = DateTime.now();
 
-        if (index == -1) {
-          addMessage(textMessage);
+        if (existing == null) {
+          final newMsg = core.Message.text(
+            id: messageId,
+            authorId: userId,
+            text: message.data['Message'] as String,
+            createdAt: DateTime.now(),
+            status: core.MessageStatus.sent,
+          );
+          unawaited(chatController.insertMessage(newMsg));
         } else {
-          final updatedMessage = (messages[index] as types.TextMessage)
-              .copyWith(status: types.Status.sent);
-
-          messages[index] = updatedMessage;
-          update();
+          if (existing is core.TextMessage) {
+            final updated = existing.copyWith(
+              status: core.MessageStatus.sent,
+              sentAt: DateTime.now(),
+            );
+            unawaited(chatController.updateMessage(existing, updated));
+          }
         }
       }
     });
@@ -116,19 +128,38 @@ class ChatSheetController extends GetxController {
     return jsonResult;
   }
 
-  late final types.User user;
+  List<core.Message> _parseMessages(List<dynamic> messageList) {
+    final result = <core.Message>[];
+    for (final item in messageList) {
+      final msg = item as Map<String, dynamic>;
 
-  void updateSizeWithDebounce(double newWidth, double newHeight) {
-    if (width.value != newWidth) {
-      width.value = newWidth;
-    }
-    if (height.value != newHeight) {
-      height.value = newHeight;
-    }
-  }
+      dynamic authorRaw = msg['author'];
+      if (authorRaw is String) {
+        authorRaw = jsonDecode(authorRaw);
+      }
+      final author = authorRaw as Map<String, dynamic>;
+      final authorId = (author['id'] as String).asUuid;
 
-  void addMessage(types.Message message) {
-    messages.insert(0, message);
+      _userCache[authorId] = core.User(
+        id: authorId,
+        name: author['firstName'] as String?,
+        imageSource: author['imageUrl'] as String?,
+      );
+
+      final createdAtMs = msg['createdAt'];
+      result.add(core.Message.text(
+        id: (msg['id'] as String).asUuid,
+        authorId: authorId,
+        text: msg['text'] as String,
+        createdAt: createdAtMs is int
+            ? DateTime.fromMillisecondsSinceEpoch(createdAtMs)
+            : null,
+        status: core.MessageStatus.sent,
+      ));
+    }
+    // SP returns newest-first (ORDER BY createdAt DESC); v2 chat displays
+    // index 0 at top, so reverse to oldest-first for correct display order.
+    return result.reversed.toList();
   }
 
   Future<void> handleAttachmentPressed() async {
@@ -141,7 +172,7 @@ class ChatSheetController extends GetxController {
             children: <Widget>[
               TextButton(
                 onPressed: () async {
-                  Get.back<void>(); // Close the bottom sheet
+                  Get.back<void>();
                   await handleImageSelection();
                 },
                 child: const Align(
@@ -151,7 +182,7 @@ class ChatSheetController extends GetxController {
               ),
               TextButton(
                 onPressed: () async {
-                  Get.back<void>(); // Close the bottom sheet
+                  Get.back<void>();
                   await handleFileSelection();
                 },
                 child: const Align(
@@ -160,7 +191,7 @@ class ChatSheetController extends GetxController {
                 ),
               ),
               TextButton(
-                onPressed: () => Get.back<void>(), // Close the bottom sheet
+                onPressed: () => Get.back<void>(),
                 child: const Align(
                   alignment: AlignmentDirectional.centerStart,
                   child: Text('Cancel'),
@@ -170,30 +201,23 @@ class ChatSheetController extends GetxController {
           ),
         ),
       ),
-      barrierColor: Colors.black54, // Optional: Background dimming
-      // isDismissible: true,          // Optional: Allows dismissing by tapping outside
-      // enableDrag: true,             // Optional: Allows dragging to close
+      barrierColor: Colors.black54,
     );
   }
 
   Future<void> handleFileSelection() async {
-    final result = await FilePicker.platform.pickFiles(
-        //type: FileType.any,
-        );
+    final result = await FilePicker.platform.pickFiles();
 
     if (result != null && result.files.single.path != null) {
-      final message = types.FileMessage(
-        author: user,
-        createdAt: DateTime.now().millisecondsSinceEpoch,
+      final message = core.Message.file(
         id: const Uuid().v4(),
-        //roomId: ,
-        mimeType: lookupMimeType(result.files.single.path!),
+        authorId: currentUser.id,
+        source: result.files.single.path!,
         name: result.files.single.name,
         size: result.files.single.size,
-        uri: result.files.single.path!,
+        mimeType: lookupMimeType(result.files.single.path!),
       );
-
-      addMessage(message);
+      unawaited(chatController.insertMessage(message));
     }
   }
 
@@ -208,86 +232,38 @@ class ChatSheetController extends GetxController {
       final bytes = await result.readAsBytes();
       final image = await decodeImageFromList(bytes);
 
-      final message = types.ImageMessage(
-        author: user,
-        createdAt: DateTime.now().millisecondsSinceEpoch,
-        height: image.height.toDouble(),
+      final message = core.Message.image(
         id: const Uuid().v4(),
-        //roomId: ,
-        name: result.name,
-        size: bytes.length,
-        uri: result.path,
+        authorId: currentUser.id,
+        source: result.path,
         width: image.width.toDouble(),
+        height: image.height.toDouble(),
+        size: bytes.length,
       );
-
-      addMessage(message);
+      unawaited(chatController.insertMessage(message));
     }
   }
 
-  Future<void> handleMessageTap(BuildContext _, types.Message message) async {
-    if (message is types.FileMessage) {
-      //var localPath = message.uri;
-
-      if (message.uri.startsWith('http')) {
-        try {
-          final index =
-              messages.indexWhere((element) => element.id == message.id);
-          final updatedMessage =
-              (messages[index] as types.FileMessage).copyWith(
-            isLoading: true,
-          );
-
-          messages[index] = updatedMessage;
-
-          // final client = http.Client();
-          // final request = await client.get(Uri.parse(message.uri));
-          // final bytes = request.bodyBytes;
-          //final documentsDir = (await getApplicationDocumentsDirectory()).path;
-          //localPath = '$documentsDir/${message.name}';
-
-          // if (!File(localPath).existsSync()) {
-          //   final file = File(localPath);
-          //   await file.writeAsBytes(bytes);
-          // }
-        } finally {
-          final index =
-              messages.indexWhere((element) => element.id == message.id);
-          final updatedMessage =
-              (messages[index] as types.FileMessage).copyWith(
-                  //isLoading: null,
-                  );
-
-          messages[index] = updatedMessage;
-        }
-      }
-
-      //await OpenFilex.open(localPath);
-    }
+  void handleMessageTap(
+    BuildContext _,
+    core.Message message, {
+    required int index,
+    required TapUpDetails details,
+  }) {
+    // File tap handling reserved for future use
   }
 
-  void handlePreviewDataFetched(
-    types.TextMessage message,
-    types.PreviewData previewData,
-  ) {
-    final index = messages.indexWhere((element) => element.id == message.id);
-    final updatedMessage = (messages[index] as types.TextMessage).copyWith(
-      previewData: previewData,
-    );
-
-    messages[index] = updatedMessage;
-  }
-
-  Future<void> handleSendPressed(types.PartialText message) async {
+  Future<void> handleSendPressed(String text) async {
     final uuid = const Uuid().v4();
-    final textMessage = types.TextMessage(
-      author: user,
-      createdAt: DateTime.now().millisecondsSinceEpoch,
+    final newMsg = core.Message.text(
       id: uuid,
-      roomId: publicEventId,
-      text: message.text,
+      authorId: currentUser.id,
+      text: text,
+      createdAt: DateTime.now(),
+      status: core.MessageStatus.sending,
     );
 
-    addMessage(textMessage);
+    unawaited(chatController.insertMessage(newMsg));
 
     final deviceId = box.get(HIVE_DEVICE_ID) as String;
     final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
@@ -304,48 +280,28 @@ class ChatSheetController extends GetxController {
       'accessToken': accessToken,
       'publicEventId': publicEventId,
       'messageId': uuid,
-      'messageContent': textMessage.text,
+      'messageContent': text,
       'messageReleasabilityFlags': 63,
       'messageTitle': messageTitle,
     };
 
     final sendResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    debugPrint(sendResult.startsWith(ERROR_PREFIX)
+    final failed = sendResult.startsWith(ERROR_PREFIX);
+    debugPrint(failed
         ? 'SP 17 [sendEventMessage] called — FAILED'
         : 'SP 17 [sendEventMessage] called — success');
-  }
 
-  List<Map<String, dynamic>> preprocessMessages(List<dynamic> messageList) {
-    return messageList.map((item) {
-      final message = item as Map<String, dynamic>;
-
-      // Decode the author field if it is a string
-      if (message['author'] is String) {
-        message['author'] = jsonDecode(message['author'].toString());
-      }
-
-      message['showStatus'] = true;
-      //message['status'] = types.Status.sent;
-
-      return message;
-    }).toList();
-  }
-
-  Future<List<types.Message>> loadMessages(List<dynamic> messageList) async {
-    final mList = preprocessMessages(messageList);
-    final msgs = mList.map(types.Message.fromJson).toList();
-
-    final updatedMsgs =
-        msgs.map((msg) => msg.copyWith(status: types.Status.sent)).toList();
-
-    final chatsCounts =
-        (box.get(HIVE_CHATS_COUNT) as Map?)?.cast<String, int>() ?? {};
-
-    chatsCounts[publicEventId] = updatedMsgs.length;
-
-    // it's fine to call this async method unawaited
-    await box.put(HIVE_CHATS_COUNT, chatsCounts);
-
-    return updatedMsgs;
+    // Update message status immediately from the API response rather than
+    // waiting for the FCM echo (which never arrives if notifications are off).
+    final sent = chatController.messages.where((m) => m.id == uuid).firstOrNull;
+    if (sent is core.TextMessage) {
+      unawaited(chatController.updateMessage(
+        sent,
+        sent.copyWith(
+          status: failed ? core.MessageStatus.error : core.MessageStatus.sent,
+          sentAt: failed ? null : DateTime.now(),
+        ),
+      ));
+    }
   }
 }
