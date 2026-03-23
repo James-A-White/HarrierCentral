@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_getEventMessages",
-  "version": "1.0.0",
-  "description": "Retrieves all event messages for a specific event, returning message content with author information formatted for a chat-like interface. Messages are ordered by creation time descending (newest first). @publicEventId is validated before auth in HC6 (minor order change from HC5).",
+  "version": "1.1.0",
+  "description": "Retrieves all non-deleted event messages for a specific event, returning message content with author information formatted for a chat-like interface. Auth is validated first (consistent with all HC6 SPs). Returns an error if the event is not found. Messages are ordered by creation time descending (newest first).",
   "parameters": [
     {
       "name": "deviceId",
@@ -23,14 +23,14 @@
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "Event.PublicEventId",
-      "description": "Required: public event ID. Validated for NULL before auth check. Used to resolve Event.id for message retrieval."
+      "description": "Required: public event ID. Validated for NULL after auth. Used to resolve Event.id for message retrieval. Returns 'Event not found' if no matching event exists."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error. Possible ErrorMessage values: auth errors from ValidatePortalAuth, 'publicEventId is required', 'Event not found'.",
       "columns": [
         { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
         { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
@@ -39,18 +39,19 @@
     {
       "index": 0,
       "name": "EventMessages",
-      "description": "All messages for the event, ordered by createdAt DESC (newest first). Empty rowset if no messages exist. One row per message.",
+      "description": "All non-deleted messages for the event (msg.removed = 0, h.Removed = 0), ordered by createdAt DESC (newest first). Empty rowset if no messages exist. One row per message.",
       "columns": [
         { "name": "id", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "EventMessage.id — message identifier" },
         { "name": "type", "type": "NVARCHAR(4)", "nullable": false, "description": "Always the literal string 'text' for all messages" },
         { "name": "text", "type": "NVARCHAR(500)", "nullable": true, "description": "EventMessage.MessageContent" },
         { "name": "roomId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The @publicEventId parameter value — same for all rows in a given call" },
         { "name": "createdAt", "type": "BIGINT", "nullable": false, "description": "Unix timestamp in milliseconds: DATEDIFF_BIG(MILLISECOND, '1970-01-01 00:00:00', EventMessage.createdAt)" },
-        { "name": "author", "type": "NVARCHAR(MAX)", "nullable": true, "description": "JSON object with author info (via JSON_QUERY FOR JSON PATH WITHOUT_ARRAY_WRAPPER): { id: Hasher.PublicHasherId, firstName: Hasher.DisplayName, imageUrl: Hasher.Photo }. NULL if hasher not found (defensive CASE, though INNER JOIN prevents this)." }
+        { "name": "author", "type": "NVARCHAR(MAX)", "nullable": true, "description": "JSON object with author info (via JSON_QUERY FOR JSON PATH WITHOUT_ARRAY_WRAPPER): { id: Hasher.PublicHasherId, firstName: Hasher.DisplayName, imageUrl: Hasher.Photo }. NULL if hasher not found (defensive CASE, though INNER JOIN prevents this in practice)." }
       ]
     }
   ],
   "sideEffects": [],
+  "codeSmells": [],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

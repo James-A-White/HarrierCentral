@@ -8,8 +8,8 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_getEventMessages]
 AS
 -- =====================================================================
 -- Procedure: HC6.hcportal_getEventMessages
--- Description: Retrieves all event messages for a specific event,
---              returning message content with author information
+-- Description: Retrieves all non-deleted event messages for a specific
+--              event, returning message content with author information
 --              formatted for a chat-like interface. Messages are
 --              ordered by creation time descending (newest first).
 -- Parameters: @deviceId, @accessToken (auth),
@@ -30,6 +30,12 @@ AS
 --   - Removed @ipAddress, @ipGeoDetails (logging moved to API shim)
 --   - Removed ErrorLog inserts (error logging moved to API shim)
 --   - Removed GeneralLog inserts (request logging moved to API shim)
+-- Bug Fixes (post-migration):
+--   - Auth now validated before parameter checks (consistent with other HC6 SPs)
+--   - Added NULL guard on @eventId: unknown event returns clean error
+--     instead of silently returning zero rows
+--   - Added msg.removed = 0 and h.Removed = 0 filters: soft-deleted
+--     messages and messages from removed hashers are now excluded
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -37,14 +43,7 @@ SET XACT_ABORT ON;
 
 BEGIN TRY
 
-	-- Validation: publicEventId
-	IF @publicEventId IS NULL
-	BEGIN
-		SELECT 0 AS Success, 'Null or invalid publicEventId' AS ErrorMessage;
-		RETURN;
-	END
-
-	-- Auth validation
+	-- Auth validation (before parameter checks, consistent with HC6 standard)
 	DECLARE @authError NVARCHAR(255);
 	DECLARE @hasherId UNIQUEIDENTIFIER;
 	DECLARE @callerType INT;
@@ -56,11 +55,25 @@ BEGIN TRY
 		RETURN;
 	END
 
-	-- Resolve event ID
-	DECLARE @eventId UNIQUEIDENTIFIER
-	SELECT @eventId = id FROM HC.Event WHERE PublicEventId = @publicEventId
+	-- Validation: publicEventId
+	IF @publicEventId IS NULL
+	BEGIN
+		SELECT 0 AS Success, 'publicEventId is required' AS ErrorMessage;
+		RETURN;
+	END
 
-	-- Main query: Event Messages
+	-- Resolve event ID
+	DECLARE @eventId UNIQUEIDENTIFIER;
+	SELECT @eventId = id FROM HC.Event WHERE PublicEventId = @publicEventId;
+
+	-- Guard: event must exist
+	IF @eventId IS NULL
+	BEGIN
+		SELECT 0 AS Success, 'Event not found' AS ErrorMessage;
+		RETURN;
+	END
+
+	-- Main query: Event Messages (excluding soft-deleted messages and removed hashers)
 	SELECT
 		msg.id AS [id],
 		'text' AS [type],
@@ -85,6 +98,8 @@ BEGIN TRY
 	FROM HC.EventMessage msg
 	INNER JOIN HC.Hasher h ON msg.UserId = h.id
 	WHERE msg.EventId = @eventId
+	  AND msg.removed = 0
+	  AND h.Removed = 0
 	ORDER BY createdAt DESC
 
 END TRY
