@@ -16,7 +16,7 @@ class RunListPageController extends GetxController
     this.textTheme = 'dark',
   }) {
     textThemeIsLight = textTheme.toLowerCase().contains('light');
-    selectedKennelId = kennel.publicKennelId.obs;
+    selectedKennelId = kennel.publicKennelId.asUuid.obs;
   }
   final String backgroundColor;
   final String textTheme;
@@ -74,9 +74,10 @@ class RunListPageController extends GetxController
   Future<void> onInitAsync() async {
     _fcmSubscription =
         FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      final publicEventId = message.data['PublicEventId'] as String?;
+      final publicEventId =
+          normalizeUuid(message.data['PublicEventId'] as String?);
 
-      if (publicEventId != null) {
+      if (publicEventId.isNotEmpty) {
         thisEventChatCount[publicEventId] =
             int.tryParse(message.data['EventChatMessageCount'] as String) ?? 0;
 
@@ -300,21 +301,22 @@ class RunListPageController extends GetxController
   }
 
   void resetBadgeCount(String publicEventId) {
+    publicEventId = normalizeUuid(publicEventId);
     thisEventChatCount[publicEventId] = 0;
     update(['chatCountBadge']);
   }
 
   void _prepareBadgeCounts(String? publicEventId, int? eventChatMessageCount) {
-    if (publicEventId != null) {
-      thisEventChatCount[publicEventId] = eventChatMessageCount ?? 0;
+    if (publicEventId == null) return;
+    thisEventChatCount[publicEventId.asUuid] = eventChatMessageCount ?? 0;
 
-      final chatsCounts =
-          (box.get(HIVE_CHATS_COUNT) as Map?)?.cast<String, int>();
+    final chatsCounts =
+        (box.get(HIVE_CHATS_COUNT) as Map?)?.cast<String, int>();
 
-      if (chatsCounts != null) {
-        thisEventChatCount[publicEventId] = thisEventChatCount[publicEventId]! -
-            (chatsCounts[publicEventId] ?? 0);
-      }
+    if (chatsCounts != null) {
+      thisEventChatCount[publicEventId.asUuid] =
+          thisEventChatCount[publicEventId.asUuid]! -
+              (chatsCounts[publicEventId.asUuid] ?? 0);
     }
   }
 

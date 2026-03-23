@@ -142,8 +142,9 @@ AppAccessFlags bit definitions (from Flutter constants):
 - `0x00000008` — authCanManageHashCash
 - `0x00000010` — authCanManageMembers
 - `0x00000020` — authCanManageAwards
+- `0x00000040` — authCanManageSongs
 - `0x40000000` — authIsSuperAdmin
-- `0x0000003f` — authAllFlags (all non-super flags)
+- `0x0000007f` — authAllFlags (all non-super flags)
 
 Composite masks used in SPs:
 - `0x40000019` = authIsSuperAdmin | authCanManageMembers | authCanManageHashCash | authIsAdmin — used in `getKennelHashers` and `regenerateExtApiKey`

@@ -2,7 +2,7 @@
   "schema": "HC6",
   "name": "hcportal_getSongs",
   "version": "1.0.0",
-  "description": "Returns all non-removed songs from HC.Song with a membership flag (isInKennel) indicating whether each song is assigned to the specified kennel. @publicKennelId is resolved to the internal HC.Kennel.id (@kennelId), which is then used in the LEFT JOIN to HC.KennelSongMap — fixing the HC5 bug where the join used @publicKennelId directly and isInKennel always returned 0. Read-only query; uses READ UNCOMMITTED isolation level. isInKennel is returned as SMALLINT (not BIT).",
+  "description": "Returns all non-removed songs from HC.Song with a membership flag (isInKennel) indicating whether each song is assigned to the specified kennel. @publicKennelId is resolved to the internal HC.Kennel.id (@kennelId), which is then used in the LEFT JOIN to HC.KennelSongMap — fixing the HC5 bug where the join used @publicKennelId directly and isInKennel always returned 0. AddedBy_KennelName is resolved via a LEFT JOIN to HC.Kennel on Song.AddedBy_KennelId. Read-only query; uses READ UNCOMMITTED isolation level. isInKennel is returned as SMALLINT (not BIT).",
   "parameters": [
     {
       "name": "deviceId",
@@ -112,6 +112,12 @@
           "type": "UNIQUEIDENTIFIER",
           "nullable": true,
           "description": "Kennel that originally added this song (HC.Song.AddedBy_KennelId)"
+        },
+        {
+          "name": "AddedBy_KennelName",
+          "type": "NVARCHAR(200)",
+          "nullable": true,
+          "description": "Display name of the kennel that originally added this song. Resolved via LEFT JOIN HC.Kennel ON HC.Kennel.id = Song.AddedBy_KennelId. NULL if AddedBy_KennelId is NULL or the kennel no longer exists."
         },
         {
           "name": "AddedBy_UserId",

@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
-  "name": "hcportal_addSong",
+  "name": "hcportal_editSong",
   "version": "1.0.0",
-  "description": "Creates a new song record in HC.Song and immediately links it to the requesting kennel via HC.KennelSongMap. Both inserts are wrapped in a single transaction. The authenticated hasher is recorded as AddedBy_UserId; the resolved internal kennelId as AddedBy_KennelId. ImageUrl, AudioUrl, AutoAddToKennel, and Rank are not set at creation time (ImageUrl/AudioUrl = NULL, AutoAddToKennel = 0, Rank = 0). Caller must hold authIsSuperAdmin (0x40000000) or authCanManageSongs (0x00000040) for the requesting kennel. Service accounts (callerType 1 or 2) are explicitly rejected. This is a new SP with no HC5 equivalent.",
+  "description": "Updates an existing HC.Song record. Caller must hold authIsSuperAdmin (AppAccessFlags & 0x40000000) or authCanManageSongs (AppAccessFlags & 0x00000040) for the kennel that originally added the song (Song.AddedBy_KennelId). Service accounts (callerType 1 or 2) are explicitly rejected — they may not edit songs. Fields not passed (or passed as empty strings) are stored as NULL, except Lyrics which is stored as '' (NOT NULL column).",
   "parameters": [
     {
       "name": "deviceId",
@@ -23,14 +23,21 @@
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "Kennel.PublicKennelId",
-      "description": "Resolved to the internal Kennel.id before any writes. Validated IS NULL before auth. Also passed as the paramString to HC6.ValidatePortalAuth."
+      "description": "Caller's kennel context for auth routing — passed as paramString to HC6.ValidatePortalAuth. Does not need to match the song's AddedBy_KennelId; the permission check uses AddedBy_KennelId directly."
+    },
+    {
+      "name": "songId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Song.id",
+      "description": "Required. The song to update. Returns error if NULL or if no non-removed song with this id exists."
     },
     {
       "name": "songName",
       "type": "NVARCHAR(120)",
       "nullable": true,
       "mapsToColumn": "Song.SongName",
-      "description": "Required. Trimmed before insert. Returns error if null or blank after trim."
+      "description": "Required. Trimmed before update. Returns error if null or blank after trim."
     },
     {
       "name": "tuneOf",
@@ -79,14 +86,14 @@
       "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": "Song.BawdyRating",
-      "description": "Required. Must be exactly 0, 1, 2, or 3. Validated before insert; returns error if null or out of range."
+      "description": "Required. Must be exactly 0, 1, 2, or 3. Returns error if null or out of range."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error. Ordering: publicKennelId null check → auth → songName blank check → bawdyRating range check → kennel not found.",
+      "description": "Returned on any validation, auth, permission, or runtime error. Short-circuits on first error. Ordering: publicKennelId null → auth → songId null → songName blank → bawdyRating range → song not found → permission check.",
       "columns": [
         { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
         { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
@@ -95,7 +102,7 @@
     {
       "index": 0,
       "name": "SuccessResult",
-      "description": "Returned after the song has been inserted and linked to the kennel.",
+      "description": "Returned after the song has been updated successfully.",
       "columns": [
         {
           "name": "resultCode",
@@ -108,19 +115,12 @@
           "type": "NVARCHAR",
           "nullable": false,
           "description": "Always 'Success'"
-        },
-        {
-          "name": "newSongId",
-          "type": "UNIQUEIDENTIFIER",
-          "nullable": false,
-          "description": "The id of the newly created HC.Song row"
         }
       ]
     }
   ],
   "sideEffects": [
-    "INSERT into HC.Song with the supplied fields; AddedBy_KennelId = resolved @kennelId, AddedBy_UserId = authenticated @hasherId, ImageUrl = NULL, AudioUrl = NULL, AutoAddToKennel = 0, Rank = 0, Removed = 0",
-    "INSERT into HC.KennelSongMap linking the new song to the requesting kennel (KennelId = resolved @kennelId, Removed = 0)"
+    "UPDATE HC.Song SET SongName, TuneOf, BawdyRating, Notes, Actions, Variants, Lyrics, Tags, updatedAt WHERE id = @songId AND Removed = 0"
   ],
   "permissionBits": {
     "column": "HC.HasherKennelMap.AppAccessFlags",
@@ -129,7 +129,7 @@
       "0x40000000": "authIsSuperAdmin",
       "0x00000040": "authCanManageSongs"
     },
-    "note": "Check is against the kennel identified by @publicKennelId. Service accounts (callerType 1 or 2) are rejected unconditionally — they may not add songs."
+    "note": "Check is against the kennel identified by Song.AddedBy_KennelId, not @publicKennelId. Service accounts (callerType 1 or 2) are rejected before the permission check — they may not edit songs."
   },
   "codeSmells": [],
   "breakingChangeRules": [

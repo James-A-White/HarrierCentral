@@ -30,6 +30,7 @@ class ChatSheetController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    publicEventId = normalizeUuid(publicEventId);
 
     final publicHasherId = box.get(HIVE_HASHER_ID) as String;
     final hashName = box.get(HIVE_DISPLAY_NAME) as String? ??
@@ -58,7 +59,7 @@ class ChatSheetController extends GetxController {
         FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       final incomingEventId = message.data['PublicEventId'] as String?;
       if (incomingEventId != null &&
-          publicEventId.toUpperCase() == incomingEventId.toUpperCase()) {
+          publicEventId == incomingEventId.asUuid) {
         final msgUser = types.User(
           id: message.data['UserId'].toString().toUpperCase(),
           firstName: message.data['UserDisplayName'] as String,

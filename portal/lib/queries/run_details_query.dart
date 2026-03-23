@@ -18,6 +18,7 @@ class EventDetailsResult {
 }
 
 Future<EventDetailsResult> querySingleEvent(String publicEventId) async {
+  publicEventId = normalizeUuid(publicEventId);
   if (publicEventId.length != 36) {
     return EventDetailsResult.empty();
   }

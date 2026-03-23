@@ -36,11 +36,15 @@ part 'pages/kennel_page_new_widgets.dart';
 class KennelEditPage extends GetView<KennelPageFormController> {
   const KennelEditPage({
     required this.kennelData,
+    required this.appAccessFlags,
     super.key,
   });
 
   /// Initial kennel data to populate the form.
   final KennelModel kennelData;
+
+  /// AppAccessFlags for the current user against this kennel.
+  final int appAccessFlags;
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +60,10 @@ class KennelEditPage extends GetView<KennelPageFormController> {
   /// Ensures the controller is registered before building.
   void _ensureControllerInitialized() {
     if (!Get.isRegistered<KennelPageFormController>()) {
-      Get.put(KennelPageFormController(kennelData), permanent: true);
+      Get.put(
+        KennelPageFormController(kennelData, appAccessFlags: appAccessFlags),
+        permanent: true,
+      );
     }
   }
 }

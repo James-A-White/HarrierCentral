@@ -17,8 +17,8 @@ AS
 --   everyone). Inserts into HC.EventMessage and returns the message
 --   details along with FCM tokens for users who should receive full
 --   push notifications (rowset 1) and in-app-only notifications
---   (rowset 2). Notification preferences and time windows are
---   considered.
+--   (rowset 2). Notification preferences and a 6-hour event proximity
+--   window gate full push delivery.
 -- Parameters: @deviceId, @accessToken, @publicEventId,
 --   @messageId, @messageTitle, @messageContent,
 --   @messageReleasabilityFlags
@@ -38,7 +38,18 @@ AS
 --   Removed @ipAddress, @ipGeoDetails (logging moved to API shim).
 --   Removed ErrorLog/GeneralLog inserts (logging moved to API shim).
 --   All error returns now use HC6 standard envelope (Success, ErrorMessage).
---   - @publicHasherId replaced by @deviceId (device-bound auth via HC.Device lookup)
+--   @publicHasherId replaced by @deviceId (device-bound auth via HC.Device lookup)
+-- Bug Fixes (post-migration):
+--   PublicHasherId was hardcoded NULL in INSERT — now resolved from HC.Hasher.
+--   Added NULL guard on @eventId after event lookup (event not found now
+--     returns a clean error instead of a constraint violation).
+--   Service accounts now rejected unconditionally (@callerType check added).
+--   Releasability flag mask in error-detail builder corrected from 0x0f to
+--     0x3f to match the outer validation check.
+--   Removed redundant second @messageTitle fallback (COALESCE in event SELECT
+--     already handles it; second query was dead code).
+--   Removed redundant WHERE evt.id = @eventId in temp table query (already
+--     enforced by the INNER JOIN condition).
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -55,6 +66,13 @@ EXEC HC6.ValidatePortalAuth @deviceId, @accessToken, @procName, @publicEventId, 
 IF @authError IS NOT NULL
 BEGIN
     SELECT 0 AS Success, @authError AS ErrorMessage;
+    RETURN;
+END
+
+-- Reject service accounts
+IF @callerType != 0
+BEGIN
+    SELECT 0 AS Success, 'Service accounts may not send event messages' AS ErrorMessage;
     RETURN;
 END
 
@@ -82,7 +100,7 @@ BEGIN
         DECLARE @errorDetail nvarchar(1000);
         SET @errorDetail = '';
         IF (@messageContent IS NULL OR LEN(@messageContent) = 0) SET @errorDetail = 'Message Content ';
-        IF (@messageReleasabilityFlags IS NULL OR (@messageReleasabilityFlags & 0x0000000f) = 0) SET @errorDetail = @errorDetail + 'Message Releasability Flags ';
+        IF (@messageReleasabilityFlags IS NULL OR (@messageReleasabilityFlags & 0x0000003f) = 0) SET @errorDetail = @errorDetail + 'Message Releasability Flags ';
 
         SET @errorDetail = REPLACE(TRIM(@errorDetail), ' ', ', ');
 
@@ -108,16 +126,21 @@ END
     INNER JOIN DomainValues.Timezone tz ON tz.id = c.TimezoneId
     WHERE PublicEventId = @publicEventId;
 
+    -- Guard: event must exist
+    IF @eventId IS NULL
+    BEGIN
+        SELECT 0 AS Success, 'Event not found' AS ErrorMessage;
+        RETURN;
+    END
+
     IF (ABS(DATEDIFF(minute, GETDATE(), @eventStartDateTimeInUtc)) <= (@timeLimitForNotificationsInHours * 60))
     BEGIN
         SET @isEventWithinTimeLimitForNotifications = 1;
     END
 
-    -- Default messageTitle to event name if still NULL
-    IF (@messageTitle IS NULL)
-    BEGIN
-        SELECT @messageTitle = evt.EventName FROM HC.Event evt WHERE evt.id = @eventId;
-    END
+    -- Resolve the caller's public hasher ID
+    DECLARE @publicHasherId UNIQUEIDENTIFIER;
+    SELECT @publicHasherId = h.PublicHasherId FROM HC.Hasher h WHERE h.id = @hasherId;
 
     -- Insert the message inside a transaction
     BEGIN TRANSACTION;
@@ -139,7 +162,7 @@ END
                   , @eventId
                   , @publicEventId
                   , @hasherId
-                  , NULL
+                  , @publicHasherId
                   , @messageTitle
                   , @messageContent
                   , @messageReleasabilityFlags
@@ -186,8 +209,7 @@ END
     INNER JOIN HC.Event evt ON evt.id = @eventId
     INNER JOIN HC.Device device ON device.UserId = h.id
     LEFT OUTER JOIN HC.HasherEventMap hem ON hem.EventId = evt.id AND hem.UserId = h.id
-    WHERE evt.id = @eventId
-    AND
+    WHERE
     (
         (COALESCE(hem.EventNotificationPreference, hkm.KennelNotificationPreference) = 1) -- always send notifications
         OR

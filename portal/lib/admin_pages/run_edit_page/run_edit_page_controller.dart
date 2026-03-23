@@ -482,9 +482,11 @@ class RunEditPageController extends TabUiController
 
       final deviceId = box.get(HIVE_DEVICE_ID) as String;
       final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
-      final publicKennelId = originalData.publicKennelId.isNotEmpty
-          ? originalData.publicKennelId
-          : kennelData.publicKennelId;
+      final publicKennelId = normalizeUuid(
+        originalData.publicKennelId.isNotEmpty
+            ? originalData.publicKennelId
+            : kennelData.publicKennelId,
+      );
       final accessToken = Utilities.generateToken(
         deviceId,
         'hcportal_addEditEvent',
@@ -501,7 +503,7 @@ class RunEditPageController extends TabUiController
       if (!isAddMode &&
           originalData.publicEventId != null &&
           originalData.publicEventId!.length > 10) {
-        bodyJson['publicEventId'] = originalData.publicEventId;
+        bodyJson['publicEventId'] = normalizeUuid(originalData.publicEventId);
       }
 
       bodyJson.addAll(changes);
@@ -1156,6 +1158,7 @@ class RunEditPageController extends TabUiController
   /// copies all location-related fields (place description, address, lat/lon)
   /// into the current form. Also centres the map on the new coordinates.
   Future<void> populateFromPreviousRun(String publicEventId) async {
+    publicEventId = normalizeUuid(publicEventId);
     final edr = await querySingleEvent(publicEventId);
     final source = edr.runDetails;
 

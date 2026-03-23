@@ -19,6 +19,7 @@ abstract class SongModel with _$SongModel {
     int? AutoAddToKennel,
     int? Rank,
     String? AddedBy_KennelId,
+    String? AddedBy_KennelName,
     String? AddedBy_UserId,
     String? Lyrics,
     String? Tags,

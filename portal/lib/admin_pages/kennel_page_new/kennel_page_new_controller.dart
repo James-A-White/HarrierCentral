@@ -39,7 +39,7 @@ class KennelPageFormController extends TabUiController
   // Constructor
   // ---------------------------------------------------------------------------
 
-  KennelPageFormController(this._initialData) {
+  KennelPageFormController(this._initialData, {required this.appAccessFlags}) {
     originalData = _initialData;
     setScreenSize();
   }
@@ -176,6 +176,15 @@ class KennelPageFormController extends TabUiController
   // State - Songs Tab
   // ---------------------------------------------------------------------------
 
+  /// AppAccessFlags for the current user against this kennel.
+  /// Passed directly from the call site where HasherKennelsModel is available.
+  final int appAccessFlags;
+
+  /// Whether the current user may add or edit songs.
+  bool get canManageSongs =>
+      (appAccessFlags & authCanManageSongs) != 0 ||
+      (appAccessFlags & authIsSuperAdmin) != 0;
+
   /// Whether songs are currently being loaded from the API.
   final RxBool songsLoading = false.obs;
 
@@ -199,6 +208,9 @@ class KennelPageFormController extends TabUiController
 
   /// Whether the "Add New Song" form is currently displayed.
   final RxBool isAddingSong = false.obs;
+
+  /// Whether the "Edit Song" form is currently displayed.
+  final RxBool isEditingSong = false.obs;
 
   /// Text controllers for the new song form.
   final TextEditingController newSongNameController = TextEditingController();
@@ -709,8 +721,8 @@ class KennelPageFormController extends TabUiController
       originalSongSelections.clear();
 
       for (final song in songs) {
-        songSelections[song.id] = RxInt(song.isInKennel);
-        originalSongSelections[song.id] = song.isInKennel;
+        songSelections[song.id.asUuid] = RxInt(song.isInKennel);
+        originalSongSelections[song.id.asUuid] = song.isInKennel;
       }
     } catch (e) {
       if (kDebugMode) debugPrint('_loadSongs error: $e');
@@ -737,6 +749,8 @@ class KennelPageFormController extends TabUiController
   /// Optimistically updates the UI, then calls the API. If the API call
   /// fails, the selection is reverted.
   Future<void> toggleSongInKennel(String songId, bool isInKennel) async {
+    songId = songId.asUuid;
+
     // Optimistic UI update
     final previousValue = songSelections[songId]?.value ?? 0;
     songSelections[songId]?.value = isInKennel ? 1 : 0;
@@ -766,7 +780,8 @@ class KennelPageFormController extends TabUiController
   /// Selects a song to display its details in the right panel.
   void selectSong(String songId) {
     isAddingSong.value = false;
-    selectedSongId.value = songId;
+    isEditingSong.value = false;
+    selectedSongId.value = songId.asUuid;
   }
 
   /// Resets song selections to their original state.
@@ -781,6 +796,7 @@ class KennelPageFormController extends TabUiController
   void startAddNewSong() {
     selectedSongId.value = '';
     isAddingSong.value = true;
+    isEditingSong.value = false;
 
     // Clear form fields
     newSongNameController.clear();
@@ -796,6 +812,58 @@ class KennelPageFormController extends TabUiController
   /// Cancels adding a new song and returns to the detail placeholder.
   void cancelAddNewSong() {
     isAddingSong.value = false;
+  }
+
+  /// Enters "Edit Song" mode for the given song, pre-populating the shared
+  /// form controllers with the song's current values.
+  void startEditSong(SongModel song) {
+    isAddingSong.value = false;
+    isEditingSong.value = true;
+    selectedSongId.value = song.id.asUuid;
+
+    newSongNameController.text = song.SongName;
+    newSongTuneOfController.text = song.TuneOf ?? '';
+    newSongLyricsController.text = song.Lyrics ?? '';
+    newSongNotesController.text = song.Notes ?? '';
+    newSongActionsController.text = song.Actions ?? '';
+    newSongVariantsController.text = song.Variants ?? '';
+    newSongTagsController.text = song.Tags ?? '';
+    newSongBawdyRating.value = (song.BawdyRating ?? 0).clamp(0, 3);
+  }
+
+  /// Cancels editing and returns to the read-only detail panel.
+  void cancelEditSong() {
+    isEditingSong.value = false;
+  }
+
+  /// Saves edits to the selected song via the API and refreshes the list.
+  Future<void> saveEditedSong() async {
+    final songId = selectedSongId.value;
+    if (songId.isEmpty) return;
+
+    final songName = newSongNameController.text.trim();
+    if (songName.isEmpty) {
+      await CoreUtilities.showAlert('Validation', 'Song name is required.', 'OK');
+      return;
+    }
+
+    final success = await editSong(
+      publicKennelId: originalData.kennelPublicId.uuid,
+      songId: songId,
+      songName: songName,
+      tuneOf: newSongTuneOfController.text.trim(),
+      lyrics: newSongLyricsController.text.trim(),
+      notes: newSongNotesController.text.trim(),
+      actions: newSongActionsController.text.trim(),
+      variants: newSongVariantsController.text.trim(),
+      tags: newSongTagsController.text.trim(),
+      bawdyRating: newSongBawdyRating.value,
+    );
+
+    if (success) {
+      isEditingSong.value = false;
+      await _loadSongs();
+    }
   }
 
   /// Saves the new song via the API and refreshes the song list.

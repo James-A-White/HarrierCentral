@@ -37,6 +37,10 @@ AS
 -- Created: 2026-03-20
 -- HC5 Source: None — new SP with no HC5 equivalent
 -- Breaking Changes: N/A (new SP)
+-- Permission bits (AppAccessFlags in HC.HasherKennelMap):
+--   0x40000000 = authIsSuperAdmin
+--   0x00000040 = authCanManageSongs
+--   Service accounts (callerType != 0) are always rejected.
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -77,6 +81,13 @@ BEGIN TRY
         RETURN;
     END
 
+    -- Service accounts are not permitted to add songs
+    IF @callerType != 0
+    BEGIN
+        SELECT 0 AS Success, 'Service accounts may not add songs' AS ErrorMessage;
+        RETURN;
+    END
+
     -- Resolve internal kennelId
     DECLARE @kennelId UNIQUEIDENTIFIER;
     SELECT @kennelId = ken.id FROM HC.Kennel ken WHERE ken.PublicKennelId = @publicKennelId;
@@ -84,6 +95,19 @@ BEGIN TRY
     IF @kennelId IS NULL
     BEGIN
         SELECT 0 AS Success, 'Kennel not found' AS ErrorMessage;
+        RETURN;
+    END
+
+    -- Permission check: caller must hold authIsSuperAdmin (0x40000000) OR
+    -- authCanManageSongs (0x00000040) for the requesting kennel.
+    DECLARE @addSongFlags INT;
+    SELECT @addSongFlags = hkm.AppAccessFlags
+    FROM HC.HasherKennelMap hkm
+    WHERE hkm.UserId = @hasherId AND hkm.KennelId = @kennelId;
+
+    IF @addSongFlags IS NULL OR (@addSongFlags & 0x40000040) = 0
+    BEGIN
+        SELECT 0 AS Success, 'You do not have permission to add songs' AS ErrorMessage;
         RETURN;
     END
 

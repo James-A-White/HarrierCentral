@@ -26,6 +26,7 @@ mixin _$SongModel implements DiagnosticableTreeMixin {
   int? get AutoAddToKennel;
   int? get Rank;
   String? get AddedBy_KennelId;
+  String? get AddedBy_KennelName;
   String? get AddedBy_UserId;
   String? get Lyrics;
   String? get Tags;
@@ -58,6 +59,7 @@ mixin _$SongModel implements DiagnosticableTreeMixin {
       ..add(DiagnosticsProperty('AutoAddToKennel', AutoAddToKennel))
       ..add(DiagnosticsProperty('Rank', Rank))
       ..add(DiagnosticsProperty('AddedBy_KennelId', AddedBy_KennelId))
+      ..add(DiagnosticsProperty('AddedBy_KennelName', AddedBy_KennelName))
       ..add(DiagnosticsProperty('AddedBy_UserId', AddedBy_UserId))
       ..add(DiagnosticsProperty('Lyrics', Lyrics))
       ..add(DiagnosticsProperty('Tags', Tags))
@@ -89,6 +91,8 @@ mixin _$SongModel implements DiagnosticableTreeMixin {
             (identical(other.Rank, Rank) || other.Rank == Rank) &&
             (identical(other.AddedBy_KennelId, AddedBy_KennelId) ||
                 other.AddedBy_KennelId == AddedBy_KennelId) &&
+            (identical(other.AddedBy_KennelName, AddedBy_KennelName) ||
+                other.AddedBy_KennelName == AddedBy_KennelName) &&
             (identical(other.AddedBy_UserId, AddedBy_UserId) ||
                 other.AddedBy_UserId == AddedBy_UserId) &&
             (identical(other.Lyrics, Lyrics) || other.Lyrics == Lyrics) &&
@@ -101,7 +105,7 @@ mixin _$SongModel implements DiagnosticableTreeMixin {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
       runtimeType,
       id,
       SongName,
@@ -115,15 +119,16 @@ mixin _$SongModel implements DiagnosticableTreeMixin {
       AutoAddToKennel,
       Rank,
       AddedBy_KennelId,
+      AddedBy_KennelName,
       AddedBy_UserId,
       Lyrics,
       Tags,
       createdAt,
-      isInKennel);
+      isInKennel]);
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'SongModel(id: $id, SongName: $SongName, TuneOf: $TuneOf, BawdyRating: $BawdyRating, Notes: $Notes, Actions: $Actions, Variants: $Variants, ImageUrl: $ImageUrl, AudioUrl: $AudioUrl, AutoAddToKennel: $AutoAddToKennel, Rank: $Rank, AddedBy_KennelId: $AddedBy_KennelId, AddedBy_UserId: $AddedBy_UserId, Lyrics: $Lyrics, Tags: $Tags, createdAt: $createdAt, isInKennel: $isInKennel)';
+    return 'SongModel(id: $id, SongName: $SongName, TuneOf: $TuneOf, BawdyRating: $BawdyRating, Notes: $Notes, Actions: $Actions, Variants: $Variants, ImageUrl: $ImageUrl, AudioUrl: $AudioUrl, AutoAddToKennel: $AutoAddToKennel, Rank: $Rank, AddedBy_KennelId: $AddedBy_KennelId, AddedBy_KennelName: $AddedBy_KennelName, AddedBy_UserId: $AddedBy_UserId, Lyrics: $Lyrics, Tags: $Tags, createdAt: $createdAt, isInKennel: $isInKennel)';
   }
 }
 
@@ -145,6 +150,7 @@ abstract mixin class $SongModelCopyWith<$Res> {
       int? AutoAddToKennel,
       int? Rank,
       String? AddedBy_KennelId,
+      String? AddedBy_KennelName,
       String? AddedBy_UserId,
       String? Lyrics,
       String? Tags,
@@ -176,6 +182,7 @@ class _$SongModelCopyWithImpl<$Res> implements $SongModelCopyWith<$Res> {
     Object? AutoAddToKennel = freezed,
     Object? Rank = freezed,
     Object? AddedBy_KennelId = freezed,
+    Object? AddedBy_KennelName = freezed,
     Object? AddedBy_UserId = freezed,
     Object? Lyrics = freezed,
     Object? Tags = freezed,
@@ -230,6 +237,10 @@ class _$SongModelCopyWithImpl<$Res> implements $SongModelCopyWith<$Res> {
       AddedBy_KennelId: freezed == AddedBy_KennelId
           ? _self.AddedBy_KennelId
           : AddedBy_KennelId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      AddedBy_KennelName: freezed == AddedBy_KennelName
+          ? _self.AddedBy_KennelName
+          : AddedBy_KennelName // ignore: cast_nullable_to_non_nullable
               as String?,
       AddedBy_UserId: freezed == AddedBy_UserId
           ? _self.AddedBy_UserId
@@ -361,6 +372,7 @@ extension SongModelPatterns on SongModel {
             int? AutoAddToKennel,
             int? Rank,
             String? AddedBy_KennelId,
+            String? AddedBy_KennelName,
             String? AddedBy_UserId,
             String? Lyrics,
             String? Tags,
@@ -385,6 +397,7 @@ extension SongModelPatterns on SongModel {
             _that.AutoAddToKennel,
             _that.Rank,
             _that.AddedBy_KennelId,
+            _that.AddedBy_KennelName,
             _that.AddedBy_UserId,
             _that.Lyrics,
             _that.Tags,
@@ -423,6 +436,7 @@ extension SongModelPatterns on SongModel {
             int? AutoAddToKennel,
             int? Rank,
             String? AddedBy_KennelId,
+            String? AddedBy_KennelName,
             String? AddedBy_UserId,
             String? Lyrics,
             String? Tags,
@@ -446,6 +460,7 @@ extension SongModelPatterns on SongModel {
             _that.AutoAddToKennel,
             _that.Rank,
             _that.AddedBy_KennelId,
+            _that.AddedBy_KennelName,
             _that.AddedBy_UserId,
             _that.Lyrics,
             _that.Tags,
@@ -483,6 +498,7 @@ extension SongModelPatterns on SongModel {
             int? AutoAddToKennel,
             int? Rank,
             String? AddedBy_KennelId,
+            String? AddedBy_KennelName,
             String? AddedBy_UserId,
             String? Lyrics,
             String? Tags,
@@ -506,6 +522,7 @@ extension SongModelPatterns on SongModel {
             _that.AutoAddToKennel,
             _that.Rank,
             _that.AddedBy_KennelId,
+            _that.AddedBy_KennelName,
             _that.AddedBy_UserId,
             _that.Lyrics,
             _that.Tags,
@@ -533,6 +550,7 @@ class _SongModel with DiagnosticableTreeMixin implements SongModel {
       this.AutoAddToKennel,
       this.Rank,
       this.AddedBy_KennelId,
+      this.AddedBy_KennelName,
       this.AddedBy_UserId,
       this.Lyrics,
       this.Tags,
@@ -565,6 +583,8 @@ class _SongModel with DiagnosticableTreeMixin implements SongModel {
   final int? Rank;
   @override
   final String? AddedBy_KennelId;
+  @override
+  final String? AddedBy_KennelName;
   @override
   final String? AddedBy_UserId;
   @override
@@ -608,6 +628,7 @@ class _SongModel with DiagnosticableTreeMixin implements SongModel {
       ..add(DiagnosticsProperty('AutoAddToKennel', AutoAddToKennel))
       ..add(DiagnosticsProperty('Rank', Rank))
       ..add(DiagnosticsProperty('AddedBy_KennelId', AddedBy_KennelId))
+      ..add(DiagnosticsProperty('AddedBy_KennelName', AddedBy_KennelName))
       ..add(DiagnosticsProperty('AddedBy_UserId', AddedBy_UserId))
       ..add(DiagnosticsProperty('Lyrics', Lyrics))
       ..add(DiagnosticsProperty('Tags', Tags))
@@ -639,6 +660,8 @@ class _SongModel with DiagnosticableTreeMixin implements SongModel {
             (identical(other.Rank, Rank) || other.Rank == Rank) &&
             (identical(other.AddedBy_KennelId, AddedBy_KennelId) ||
                 other.AddedBy_KennelId == AddedBy_KennelId) &&
+            (identical(other.AddedBy_KennelName, AddedBy_KennelName) ||
+                other.AddedBy_KennelName == AddedBy_KennelName) &&
             (identical(other.AddedBy_UserId, AddedBy_UserId) ||
                 other.AddedBy_UserId == AddedBy_UserId) &&
             (identical(other.Lyrics, Lyrics) || other.Lyrics == Lyrics) &&
@@ -651,7 +674,7 @@ class _SongModel with DiagnosticableTreeMixin implements SongModel {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
       runtimeType,
       id,
       SongName,
@@ -665,15 +688,16 @@ class _SongModel with DiagnosticableTreeMixin implements SongModel {
       AutoAddToKennel,
       Rank,
       AddedBy_KennelId,
+      AddedBy_KennelName,
       AddedBy_UserId,
       Lyrics,
       Tags,
       createdAt,
-      isInKennel);
+      isInKennel]);
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'SongModel(id: $id, SongName: $SongName, TuneOf: $TuneOf, BawdyRating: $BawdyRating, Notes: $Notes, Actions: $Actions, Variants: $Variants, ImageUrl: $ImageUrl, AudioUrl: $AudioUrl, AutoAddToKennel: $AutoAddToKennel, Rank: $Rank, AddedBy_KennelId: $AddedBy_KennelId, AddedBy_UserId: $AddedBy_UserId, Lyrics: $Lyrics, Tags: $Tags, createdAt: $createdAt, isInKennel: $isInKennel)';
+    return 'SongModel(id: $id, SongName: $SongName, TuneOf: $TuneOf, BawdyRating: $BawdyRating, Notes: $Notes, Actions: $Actions, Variants: $Variants, ImageUrl: $ImageUrl, AudioUrl: $AudioUrl, AutoAddToKennel: $AutoAddToKennel, Rank: $Rank, AddedBy_KennelId: $AddedBy_KennelId, AddedBy_KennelName: $AddedBy_KennelName, AddedBy_UserId: $AddedBy_UserId, Lyrics: $Lyrics, Tags: $Tags, createdAt: $createdAt, isInKennel: $isInKennel)';
   }
 }
 
@@ -698,6 +722,7 @@ abstract mixin class _$SongModelCopyWith<$Res>
       int? AutoAddToKennel,
       int? Rank,
       String? AddedBy_KennelId,
+      String? AddedBy_KennelName,
       String? AddedBy_UserId,
       String? Lyrics,
       String? Tags,
@@ -729,6 +754,7 @@ class __$SongModelCopyWithImpl<$Res> implements _$SongModelCopyWith<$Res> {
     Object? AutoAddToKennel = freezed,
     Object? Rank = freezed,
     Object? AddedBy_KennelId = freezed,
+    Object? AddedBy_KennelName = freezed,
     Object? AddedBy_UserId = freezed,
     Object? Lyrics = freezed,
     Object? Tags = freezed,
@@ -783,6 +809,10 @@ class __$SongModelCopyWithImpl<$Res> implements _$SongModelCopyWith<$Res> {
       AddedBy_KennelId: freezed == AddedBy_KennelId
           ? _self.AddedBy_KennelId
           : AddedBy_KennelId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      AddedBy_KennelName: freezed == AddedBy_KennelName
+          ? _self.AddedBy_KennelName
+          : AddedBy_KennelName // ignore: cast_nullable_to_non_nullable
               as String?,
       AddedBy_UserId: freezed == AddedBy_UserId
           ? _self.AddedBy_UserId

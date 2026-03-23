@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_sendEventMessage",
-  "version": "1.0.0",
-  "description": "Sends a message to event participants based on releasability bit flags (admins, members, followers, RSVPs, hares, everyone). Inserts a record into HC.EventMessage, then returns three rowsets: the created message details, FCM tokens for users who qualify for full push notifications, and FCM tokens for users who qualify for in-app-only notifications. Notification preferences and a 6-hour event proximity window gate full push delivery.",
+  "version": "1.1.0",
+  "description": "Sends a message to event participants based on releasability bit flags (admins, members, followers, RSVPs, hares, everyone). Inserts a record into HC.EventMessage, then returns three rowsets: the created message details, FCM tokens for users who qualify for full push notifications, and FCM tokens for users who qualify for in-app-only notifications. Notification preferences and a 6-hour event proximity window gate full push delivery. Service accounts are rejected unconditionally.",
   "parameters": [
     {
       "name": "deviceId",
@@ -23,7 +23,7 @@
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "Event.PublicEventId",
-      "description": "Required: public event ID the message is associated with. Validated for NULL after auth check."
+      "description": "Required: public event ID the message is associated with. Validated for NULL after auth check. Event must exist or SP returns 'Event not found'."
     },
     {
       "name": "messageId",
@@ -37,7 +37,7 @@
       "type": "NVARCHAR(250)",
       "nullable": true,
       "mapsToColumn": "EventMessage.MessageTitle",
-      "description": "Optional: message title. If NULL, defaults to the event's EventName (resolved in the event lookup SELECT). Prepended with sender's display name before being returned in MessageDetails rowset."
+      "description": "Optional: message title. If NULL, defaults to the event's EventName via COALESCE in the event lookup SELECT. Prepended with sender's display name before being returned in MessageDetails rowset."
     },
     {
       "name": "messageContent",
@@ -103,6 +103,7 @@
   "sideEffects": [
     "INSERT into HC.EventMessage with the new message record (inside transaction)"
   ],
+  "codeSmells": [],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

@@ -133,6 +133,25 @@ END CATCH
 - `CREATE OR ALTER PROCEDURE` (not `CREATE` or `ALTER` alone)
 - `BIT` for boolean columns (match the table definition exactly)
 
+**UUID normalisation (Flutter/Dart):**
+
+All UUID strings in this project must be lowercase. SQL Server returns
+`UNIQUEIDENTIFIER` columns as uppercase; the `uuid` package normalises to
+lowercase via `UuidValue.fromString()`. Comparing the two without
+normalisation silently returns `false`.
+
+Rules:
+- Use `normalizeUuid(string)` or the `.asUuid` extension (from
+  `lib/util/uuid_utils.dart`, globally exported via `imports.dart`)
+  whenever comparing a UUID string from one source against another.
+- Normalise UUID string parameters at the **entry point** of every query
+  or service function before using them in API calls or map lookups.
+- For new UUID fields in Freezed models, use `@UuidConverter()` + `UuidValue`
+  instead of `String` so normalisation is automatic at JSON parse time.
+  Plain `String` UUID fields are **not** automatically normalised.
+- Never compare two UUID strings with raw `==` unless both are guaranteed
+  to already be lowercase (e.g. both came through `UuidValue`).
+
 **Always flag as code smells:**
 - Sentinel magic values (`-1`, `-2`, `'<null>'`, `-99.0`, `-999.0`)
 - Inconsistent sentinel values across parameters in the same SP

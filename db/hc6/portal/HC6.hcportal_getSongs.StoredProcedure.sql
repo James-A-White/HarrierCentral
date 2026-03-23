@@ -15,8 +15,8 @@ AS
 --             @publicKennelId (kennel to check membership against)
 -- Returns: Single rowset: id, SongName, TuneOf, BawdyRating, Notes,
 --          Actions, Variants, ImageUrl, AudioUrl, AutoAddToKennel, Rank,
---          AddedBy_KennelId, AddedBy_UserId, Lyrics, Tags, createdAt,
---          isInKennel
+--          AddedBy_KennelId, AddedBy_KennelName, AddedBy_UserId, Lyrics,
+--          Tags, createdAt, isInKennel
 -- Author: Harrier Central
 -- Created: 2026-03-15
 -- HC5 Source: HC5.hcportal_getSongs
@@ -85,7 +85,8 @@ BEGIN TRY
 		s.AudioUrl,
 		s.AutoAddToKennel,
 		s.Rank,
-		s.AddedBy_KennelId,
+		addedByKennel.PublicKennelId AS AddedBy_KennelId,
+		addedByKennel.KennelName AS AddedBy_KennelName,
 		s.AddedBy_UserId,
 		s.Lyrics,
 		s.Tags,
@@ -96,6 +97,8 @@ BEGIN TRY
 		ON ksm.SongId = s.id
 		AND ksm.KennelId = @kennelId
 		AND ksm.Removed = 0
+	LEFT JOIN HC.Kennel addedByKennel WITH (NOLOCK)
+		ON addedByKennel.id = s.AddedBy_KennelId
 	WHERE s.Removed = 0
 	ORDER BY s.SongName ASC
 

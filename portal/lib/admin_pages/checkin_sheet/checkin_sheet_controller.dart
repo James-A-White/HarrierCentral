@@ -47,6 +47,7 @@ class CheckinSheetController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    publicKennelId = normalizeUuid(publicKennelId);
 
     final height = (box.get(HIVE_PAGE_HEIGHT) as int?) ?? 0;
 

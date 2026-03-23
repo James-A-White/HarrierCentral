@@ -87,7 +87,9 @@ class KennelLogo extends StatelessWidget {
               ],)
             : HcNetworkImage(
                 kennelLogoUrl,
+                width: (logoHeight ?? 10000.0) + .0,
                 height: (logoHeight ?? 10000.0) + .0,
+                fit: BoxFit.contain,
                 errorBuilder: (_, __, ___) => const SizedBox.shrink(),
               ),
       ),

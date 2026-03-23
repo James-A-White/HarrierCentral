@@ -171,12 +171,13 @@ class _SongListPanel extends StatelessWidget {
 
           const SizedBox(width: 8),
 
-          // Add Song button
-          FilledButton.icon(
-            onPressed: controller.startAddNewSong,
-            icon: const Icon(Icons.add, size: 18),
-            label: const Text('Add Song'),
-          ),
+          // Add Song button — only visible to super-admins and song managers
+          if (controller.canManageSongs)
+            FilledButton.icon(
+              onPressed: controller.startAddNewSong,
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('Add Song'),
+            ),
         ],
       ),
     );
@@ -229,8 +230,8 @@ class _SongCheckboxTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final isSelected = controller.selectedSongId.value == song.id;
-      final isInKennel = controller.songSelections[song.id]?.value == 1;
+      final isSelected = controller.selectedSongId.value == song.id.asUuid;
+      final isInKennel = controller.songSelections[song.id.asUuid]?.value == 1;
 
       return Container(
         color: isSelected ? Colors.blue.shade50 : null,
@@ -311,6 +312,11 @@ class _SongDetailPanel extends StatelessWidget {
 
       if (song == null) {
         return _buildPlaceholder();
+      }
+
+      // Editing mode — show the editable form pre-populated with this song
+      if (controller.isEditingSong.value) {
+        return _buildEditSongForm(song);
       }
 
       return _buildSongDetail(song);
@@ -395,6 +401,24 @@ class _SongDetailPanel extends StatelessWidget {
             'Auto-add to Kennel',
             (song.AutoAddToKennel ?? 0) > 0 ? 'Yes' : 'No',
           ),
+          if (song.AddedBy_KennelName != null &&
+              song.AddedBy_KennelName!.isNotEmpty)
+            _buildDetailRow('Added by', song.AddedBy_KennelName!),
+
+          const SizedBox(height: 12),
+          // Edit button — only visible to users who can manage songs AND only
+          // for songs that were added by this kennel.
+          if (controller.canManageSongs &&
+              song.AddedBy_KennelId?.asUuid ==
+                  controller.originalData.kennelPublicId.uuid)
+            Align(
+              alignment: Alignment.centerRight,
+              child: OutlinedButton.icon(
+                onPressed: () => controller.startEditSong(song),
+                icon: const Icon(Icons.edit, size: 16),
+                label: const Text('Edit Song'),
+              ),
+            ),
 
           const SizedBox(height: 16),
 
@@ -605,6 +629,88 @@ class _SongDetailPanel extends StatelessWidget {
             },
             showSelectedIcon: false,
           ),
+        ],
+      ),
+    );
+  }
+
+  /// Form for editing an existing song (pre-populated via [startEditSong]).
+  Widget _buildEditSongForm(SongModel song) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header with cancel/save buttons
+          Row(
+            children: [
+              Expanded(
+                child: Text('Edit Song', style: headingStyleBlack),
+              ),
+              TextButton(
+                onPressed: controller.cancelEditSong,
+                child: const Text('Cancel'),
+              ),
+              const SizedBox(width: 8),
+              FilledButton(
+                onPressed: controller.saveEditedSong,
+                child: const Text('Save Changes'),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+          const Divider(),
+
+          HelperWidgets().categoryLabelWidget('Song Information'),
+          _buildFormField(
+            controller: controller.newSongNameController,
+            label: 'Song Name *',
+          ),
+          const SizedBox(height: 12),
+          _buildFormField(
+            controller: controller.newSongTuneOfController,
+            label: 'Tune Of',
+          ),
+
+          const SizedBox(height: 16),
+
+          HelperWidgets().categoryLabelWidget('Lyrics'),
+          _buildFormField(
+            controller: controller.newSongLyricsController,
+            label: 'Lyrics',
+            maxLines: 10,
+          ),
+
+          const SizedBox(height: 16),
+
+          HelperWidgets().categoryLabelWidget('Additional Details'),
+          _buildBawdyRatingSelector(),
+          const SizedBox(height: 12),
+          _buildFormField(
+            controller: controller.newSongNotesController,
+            label: 'Notes',
+            maxLines: 3,
+          ),
+          const SizedBox(height: 12),
+          _buildFormField(
+            controller: controller.newSongActionsController,
+            label: 'Actions (e.g., "Drink!" instructions)',
+            maxLines: 3,
+          ),
+          const SizedBox(height: 12),
+          _buildFormField(
+            controller: controller.newSongVariantsController,
+            label: 'Variants',
+            maxLines: 3,
+          ),
+          const SizedBox(height: 12),
+          _buildFormField(
+            controller: controller.newSongTagsController,
+            label: 'Tags (comma-separated)',
+          ),
+
+          const SizedBox(height: 20),
         ],
       ),
     );
