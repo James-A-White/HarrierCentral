@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_getEvents",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Retrieves hash running events filtered by geographic constraints (kennels, cities, regions, countries, continents) for display in the admin portal or on public HashRuns.org pages. Returns either a summary list or full event details depending on @fullDetails. Supports past/future/all time windows. @kennelUniqueShortName also falls back to city/region/country name matching. Dissemination rules are enforced for non-admin callers.",
   "parameters": [
     {
@@ -220,7 +220,8 @@
         { "name": "eventCityAndCountry", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Formatted 'City[, Region], Country' string. Uses FB location fields if UseFbLocation=1 and they have content (LEN >= 3), else HC fields; falls back to City/Region/Country table data. Region included if Country.ShowRegion=1." },
         { "name": "eventImage", "type": "NVARCHAR(500)", "nullable": true, "description": "FbEventImage if UseFbImage=1, else EventImage. Added in v1.1.0 to support image display in the run list." },
         { "name": "extEventImage", "type": "NVARCHAR(500)", "nullable": true, "description": "Event.FbEventImage — raw external image URL." },
-        { "name": "useFbImage", "type": "SMALLINT", "nullable": true, "description": "Event.UseFbImage — 1 if the FB image should be used, else 0." }
+        { "name": "useFbImage", "type": "SMALLINT", "nullable": true, "description": "Event.UseFbImage — 1 if the FB image should be used, else 0." },
+        { "name": "eventChatMessageCount", "type": "INT", "nullable": false, "description": "Unread chat message count for this event and the requesting user. Computed as total non-removed EventMessages minus the user's LastSequenceCount from HC.EventMessageBadgeCounts. 0 if no messages or no read cursor exists." }
       ]
     },
     {
@@ -306,7 +307,8 @@
         { "name": "digitsAfterDecimal", "type": "SMALLINT", "nullable": true, "description": "COALESCE(Kennel.DigitsAfterDecimal, Country.DigitsAfterDecimal)" },
         { "name": "currencySymbol", "type": "NVARCHAR(10)", "nullable": true, "description": "COALESCE(Kennel.CurrencySymbol, Country.CurrencySymbol)" },
         { "name": "daysUntilEvent", "type": "INT", "nullable": true, "description": "DATEDIFF(DAY, GETDATE(), eventStartDatetime). Negative for past events." },
-        { "name": "searchText", "type": "NVARCHAR(MAX)", "nullable": false, "description": "Concatenated search string wrapped in '~ ... ~'. Same composition as EventSummaryList.searchText." }
+        { "name": "searchText", "type": "NVARCHAR(MAX)", "nullable": false, "description": "Concatenated search string wrapped in '~ ... ~'. Same composition as EventSummaryList.searchText." },
+        { "name": "eventChatMessageCount", "type": "INT", "nullable": false, "description": "Unread chat message count for this event and the requesting user. Same computation as EventSummaryList.eventChatMessageCount." }
       ]
     }
   ],

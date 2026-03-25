@@ -17,6 +17,7 @@ mixin _$ParticipantModel {
   String get displayName;
   int get rsvpState;
   int get attendanceState;
+  int get isHare;
   int get totalRunsThisKennel;
   int get totalHaringThisKennel;
   String get amountPaidStr;
@@ -46,6 +47,7 @@ mixin _$ParticipantModel {
                 other.rsvpState == rsvpState) &&
             (identical(other.attendanceState, attendanceState) ||
                 other.attendanceState == attendanceState) &&
+            (identical(other.isHare, isHare) || other.isHare == isHare) &&
             (identical(other.totalRunsThisKennel, totalRunsThisKennel) ||
                 other.totalRunsThisKennel == totalRunsThisKennel) &&
             (identical(other.totalHaringThisKennel, totalHaringThisKennel) ||
@@ -67,6 +69,7 @@ mixin _$ParticipantModel {
       displayName,
       rsvpState,
       attendanceState,
+      isHare,
       totalRunsThisKennel,
       totalHaringThisKennel,
       amountPaidStr,
@@ -76,7 +79,7 @@ mixin _$ParticipantModel {
 
   @override
   String toString() {
-    return 'ParticipantModel(displayName: $displayName, rsvpState: $rsvpState, attendanceState: $attendanceState, totalRunsThisKennel: $totalRunsThisKennel, totalHaringThisKennel: $totalHaringThisKennel, amountPaidStr: $amountPaidStr, amountOwedStr: $amountOwedStr, creditAvailableStr: $creditAvailableStr, virginVisitorType: $virginVisitorType)';
+    return 'ParticipantModel(displayName: $displayName, rsvpState: $rsvpState, attendanceState: $attendanceState, isHare: $isHare, totalRunsThisKennel: $totalRunsThisKennel, totalHaringThisKennel: $totalHaringThisKennel, amountPaidStr: $amountPaidStr, amountOwedStr: $amountOwedStr, creditAvailableStr: $creditAvailableStr, virginVisitorType: $virginVisitorType)';
   }
 }
 
@@ -90,6 +93,7 @@ abstract mixin class $ParticipantModelCopyWith<$Res> {
       {String displayName,
       int rsvpState,
       int attendanceState,
+      int isHare,
       int totalRunsThisKennel,
       int totalHaringThisKennel,
       String amountPaidStr,
@@ -114,6 +118,7 @@ class _$ParticipantModelCopyWithImpl<$Res>
     Object? displayName = null,
     Object? rsvpState = null,
     Object? attendanceState = null,
+    Object? isHare = null,
     Object? totalRunsThisKennel = null,
     Object? totalHaringThisKennel = null,
     Object? amountPaidStr = null,
@@ -133,6 +138,10 @@ class _$ParticipantModelCopyWithImpl<$Res>
       attendanceState: null == attendanceState
           ? _self.attendanceState
           : attendanceState // ignore: cast_nullable_to_non_nullable
+              as int,
+      isHare: null == isHare
+          ? _self.isHare
+          : isHare // ignore: cast_nullable_to_non_nullable
               as int,
       totalRunsThisKennel: null == totalRunsThisKennel
           ? _self.totalRunsThisKennel
@@ -259,6 +268,7 @@ extension ParticipantModelPatterns on ParticipantModel {
             String displayName,
             int rsvpState,
             int attendanceState,
+            int isHare,
             int totalRunsThisKennel,
             int totalHaringThisKennel,
             String amountPaidStr,
@@ -275,6 +285,7 @@ extension ParticipantModelPatterns on ParticipantModel {
             _that.displayName,
             _that.rsvpState,
             _that.attendanceState,
+            _that.isHare,
             _that.totalRunsThisKennel,
             _that.totalHaringThisKennel,
             _that.amountPaidStr,
@@ -305,6 +316,7 @@ extension ParticipantModelPatterns on ParticipantModel {
             String displayName,
             int rsvpState,
             int attendanceState,
+            int isHare,
             int totalRunsThisKennel,
             int totalHaringThisKennel,
             String amountPaidStr,
@@ -320,6 +332,7 @@ extension ParticipantModelPatterns on ParticipantModel {
             _that.displayName,
             _that.rsvpState,
             _that.attendanceState,
+            _that.isHare,
             _that.totalRunsThisKennel,
             _that.totalHaringThisKennel,
             _that.amountPaidStr,
@@ -349,6 +362,7 @@ extension ParticipantModelPatterns on ParticipantModel {
             String displayName,
             int rsvpState,
             int attendanceState,
+            int isHare,
             int totalRunsThisKennel,
             int totalHaringThisKennel,
             String amountPaidStr,
@@ -364,6 +378,7 @@ extension ParticipantModelPatterns on ParticipantModel {
             _that.displayName,
             _that.rsvpState,
             _that.attendanceState,
+            _that.isHare,
             _that.totalRunsThisKennel,
             _that.totalHaringThisKennel,
             _that.amountPaidStr,
@@ -383,6 +398,7 @@ class _ParticipantModel implements ParticipantModel {
       {required this.displayName,
       required this.rsvpState,
       required this.attendanceState,
+      required this.isHare,
       required this.totalRunsThisKennel,
       required this.totalHaringThisKennel,
       required this.amountPaidStr,
@@ -398,6 +414,8 @@ class _ParticipantModel implements ParticipantModel {
   final int rsvpState;
   @override
   final int attendanceState;
+  @override
+  final int isHare;
   @override
   final int totalRunsThisKennel;
   @override
@@ -437,6 +455,7 @@ class _ParticipantModel implements ParticipantModel {
                 other.rsvpState == rsvpState) &&
             (identical(other.attendanceState, attendanceState) ||
                 other.attendanceState == attendanceState) &&
+            (identical(other.isHare, isHare) || other.isHare == isHare) &&
             (identical(other.totalRunsThisKennel, totalRunsThisKennel) ||
                 other.totalRunsThisKennel == totalRunsThisKennel) &&
             (identical(other.totalHaringThisKennel, totalHaringThisKennel) ||
@@ -458,6 +477,7 @@ class _ParticipantModel implements ParticipantModel {
       displayName,
       rsvpState,
       attendanceState,
+      isHare,
       totalRunsThisKennel,
       totalHaringThisKennel,
       amountPaidStr,
@@ -467,7 +487,7 @@ class _ParticipantModel implements ParticipantModel {
 
   @override
   String toString() {
-    return 'ParticipantModel(displayName: $displayName, rsvpState: $rsvpState, attendanceState: $attendanceState, totalRunsThisKennel: $totalRunsThisKennel, totalHaringThisKennel: $totalHaringThisKennel, amountPaidStr: $amountPaidStr, amountOwedStr: $amountOwedStr, creditAvailableStr: $creditAvailableStr, virginVisitorType: $virginVisitorType)';
+    return 'ParticipantModel(displayName: $displayName, rsvpState: $rsvpState, attendanceState: $attendanceState, isHare: $isHare, totalRunsThisKennel: $totalRunsThisKennel, totalHaringThisKennel: $totalHaringThisKennel, amountPaidStr: $amountPaidStr, amountOwedStr: $amountOwedStr, creditAvailableStr: $creditAvailableStr, virginVisitorType: $virginVisitorType)';
   }
 }
 
@@ -483,6 +503,7 @@ abstract mixin class _$ParticipantModelCopyWith<$Res>
       {String displayName,
       int rsvpState,
       int attendanceState,
+      int isHare,
       int totalRunsThisKennel,
       int totalHaringThisKennel,
       String amountPaidStr,
@@ -507,6 +528,7 @@ class __$ParticipantModelCopyWithImpl<$Res>
     Object? displayName = null,
     Object? rsvpState = null,
     Object? attendanceState = null,
+    Object? isHare = null,
     Object? totalRunsThisKennel = null,
     Object? totalHaringThisKennel = null,
     Object? amountPaidStr = null,
@@ -526,6 +548,10 @@ class __$ParticipantModelCopyWithImpl<$Res>
       attendanceState: null == attendanceState
           ? _self.attendanceState
           : attendanceState // ignore: cast_nullable_to_non_nullable
+              as int,
+      isHare: null == isHare
+          ? _self.isHare
+          : isHare // ignore: cast_nullable_to_non_nullable
               as int,
       totalRunsThisKennel: null == totalRunsThisKennel
           ? _self.totalRunsThisKennel

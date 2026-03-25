@@ -147,6 +147,9 @@ namespace HcWebApi.Endpoints
                     case "sendEventMessage":
                         await SendNotifications(multipleResults, log);
                         break;
+                    case "markEventChatRead":
+                        await SendReadSyncAsync(multipleResults, (string)data.publicEventId, log);
+                        break;
                 }
 
                 return new OkObjectResult(multipleResults);
@@ -378,6 +381,94 @@ namespace HcWebApi.Endpoints
             catch (Exception ex)
             {
                 log.LogError($"Error updating Google Calendar: {ex.Message}");
+            }
+        }
+
+        private async Task SendReadSyncAsync(
+            List<List<Dictionary<string, object>>> multipleResults,
+            string publicEventId,
+            ILogger logger)
+        {
+            try
+            {
+                if (multipleResults.Count < 2 || multipleResults[1].Count == 0)
+                {
+                    logger.LogInformation("markEventChatRead: no other devices to notify for event {PublicEventId}.", publicEventId);
+                    return;
+                }
+
+                string? accessToken = await GetFirebaseAccessTokenAsync();
+
+                foreach (var row in multipleResults[1])
+                {
+                    if (!row.TryGetValue("FcmToken", out var tokenObj)) continue;
+                    var token = tokenObj?.ToString();
+                    if (string.IsNullOrEmpty(token)) continue;
+                    await SendReadSyncMessageAsync(token, publicEventId, accessToken, logger);
+                }
+
+                logger.LogInformation("Read sync sent to {Count} device(s) for event {PublicEventId}.",
+                    multipleResults[1].Count, publicEventId);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Error sending read sync notifications: {Message}", ex.Message);
+            }
+        }
+
+        private static async Task SendReadSyncMessageAsync(
+            string fcmToken, string publicEventId, string? accessToken, ILogger log)
+        {
+            try
+            {
+                var messageBody = new
+                {
+                    message = new
+                    {
+                        token = fcmToken,
+                        // Data-only — no notification block — so this never surfaces
+                        // as a visible alert on the recipient device.
+                        data = new
+                        {
+                            Type = "read_sync",
+                            PublicEventId = publicEventId,
+                        },
+                        // Lower priority on both platforms: this is a background sync,
+                        // not a user-facing notification.
+                        android = new { priority = "normal" },
+                        apns = new
+                        {
+                            headers = new Dictionary<string, string> { ["apns-priority"] = "5" },
+                            payload = new
+                            {
+                                aps = new Dictionary<string, object> { ["content-available"] = 1 }
+                            }
+                        }
+                    }
+                };
+
+                var jsonPayload = System.Text.Json.JsonSerializer.Serialize(messageBody);
+                var stringContent = new StringContent(jsonPayload, Encoding.UTF8);
+                stringContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+                var request = new HttpRequestMessage(HttpMethod.Post, FcmUrl)
+                {
+                    Headers = { { "Authorization", $"Bearer {accessToken}" } },
+                    Content = stringContent
+                };
+
+                var response = await _httpClient.SendAsync(request);
+                if (!response.IsSuccessStatusCode)
+                {
+                    string errorJson = await response.Content.ReadAsStringAsync();
+                    log.LogError("Error sending read sync FCM: {ErrorJson}", errorJson);
+                    if (errorJson.Contains("BadDeviceToken") || errorJson.Contains("not a valid FCM registration token"))
+                        await DeleteFcmToken(fcmToken, log);
+                }
+            }
+            catch (Exception ex)
+            {
+                log.LogError("Exception sending read sync FCM: {Message}", ex.Message);
             }
         }
 

@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_web_libraries_in_flutter
 
+import 'package:hcportal/admin_pages/kennel_page_new/kennel_page_new_enums.dart';
 import 'package:hcportal/admin_pages/run_list_page_controller.dart';
 import 'package:hcportal/imports.dart';
 import 'package:hcportal/models/email/email_model.dart';
@@ -74,7 +75,7 @@ class RunListDetailPanel extends StatelessWidget {
                   const SizedBox(height: 14),
                   _mapPreview(edr.runDetails),
                 ],
-                if (edr.participants.isNotEmpty) ...[
+                if (_shouldShowParticipants) ...[
                   const SizedBox(height: 14),
                   _participantsSection(),
                 ],
@@ -120,84 +121,98 @@ class RunListDetailPanel extends StatelessWidget {
     final daysUntil = _daysUntil(rdm.eventStartDatetime);
     final fees = _feesText(rdm);
 
-    return _card(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if ((rdm.kennelLogo ?? '').isNotEmpty &&
-              (rdm.kennelShortName ?? '').isNotEmpty) ...[
-            KennelLogo(
-              kennelLogoUrl: rdm.kennelLogo!,
-              kennelShortName: rdm.kennelShortName!,
-              logoHeight: 52,
-              leftPadding: 0,
-              rightPadding: 16,
-            ),
-          ],
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  eventName,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: _kTextPrimary,
-                    height: 1.3,
-                  ),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [Color(0xFFFFCDD2), Color(0xFFFFF3E0)],
+          ),
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if ((rdm.kennelLogo ?? '').isNotEmpty &&
+                (rdm.kennelShortName ?? '').isNotEmpty) ...[
+              ClipOval(
+                child: KennelLogo(
+                  kennelLogoUrl: rdm.kennelLogo!,
+                  kennelShortName: rdm.kennelShortName!,
+                  logoHeight: 70,
+                  leftPadding: 0,
+                  rightPadding: 0,
                 ),
-                if ((rdm.kennelName ?? '').isNotEmpty) ...[
-                  const SizedBox(height: 2),
+              ),
+              const SizedBox(width: 16),
+            ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    rdm.kennelName!,
+                    eventName,
                     style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: _kRed,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: _kTextPrimary,
+                      height: 1.2,
                     ),
+                  ),
+                  if ((rdm.kennelName ?? '').isNotEmpty) ...[
+                    const SizedBox(height: 3),
+                    Text(
+                      rdm.kennelName!,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: _kRed,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: [
+                      if (rdm.isCountedRun == 1)
+                        _badge(
+                          'Run #${rdm.eventNumber}',
+                          bg: const Color(0xFFF1F5F9),
+                          fg: _kTextSecondary,
+                        ),
+                      _badge(
+                        rdm.eventGeographicScope > 1
+                            ? SPECIAL_EVENT_STRINGS.keys
+                                .elementAt(rdm.eventGeographicScope)
+                            : 'Normal run',
+                        bg: const Color(0xFFEFF6FF),
+                        fg: const Color(0xFF2563EB),
+                      ),
+                      _badge(
+                        _relativeTime(daysUntil),
+                        bg: daysUntil < 0
+                            ? const Color(0xFFFEF3C7)
+                            : const Color(0xFFF0FDF4),
+                        fg: daysUntil < 0
+                            ? const Color(0xFF92400E)
+                            : const Color(0xFF15803D),
+                      ),
+                      if (fees.isNotEmpty)
+                        _badge(
+                          fees,
+                          bg: const Color(0xFFF0FDF4),
+                          fg: const Color(0xFF15803D),
+                        ),
+                    ],
                   ),
                 ],
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 4,
-                  children: [
-                    if (rdm.isCountedRun == 1)
-                      _badge(
-                        'Run #${rdm.eventNumber}',
-                        bg: const Color(0xFFF1F5F9),
-                        fg: _kTextSecondary,
-                      ),
-                    _badge(
-                      rdm.eventGeographicScope > 1
-                          ? SPECIAL_EVENT_STRINGS.keys
-                              .elementAt(rdm.eventGeographicScope)
-                          : 'Normal run',
-                      bg: const Color(0xFFEFF6FF),
-                      fg: const Color(0xFF2563EB),
-                    ),
-                    _badge(
-                      _relativeTime(daysUntil),
-                      bg: daysUntil < 0
-                          ? const Color(0xFFFEF3C7)
-                          : const Color(0xFFF0FDF4),
-                      fg: daysUntil < 0
-                          ? const Color(0xFF92400E)
-                          : const Color(0xFF15803D),
-                    ),
-                    if (fees.isNotEmpty)
-                      _badge(
-                        fees,
-                        bg: const Color(0xFFF0FDF4),
-                        fg: const Color(0xFF15803D),
-                      ),
-                  ],
-                ),
-              ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -225,6 +240,7 @@ class RunListDetailPanel extends StatelessWidget {
   Widget _infoGrid() {
     final rdm = edr.runDetails;
     final hasHares = (rdm.hares ?? '').isNotEmpty;
+    final activeTags = _activeTags(rdm);
 
     return Column(
       children: [
@@ -251,7 +267,100 @@ class RunListDetailPanel extends StatelessWidget {
             ],
           ),
         ),
+        if (activeTags.isNotEmpty) ...[
+          const SizedBox(height: 14),
+          _tagsCard(activeTags),
+        ],
       ],
+    );
+  }
+
+  List<RunTag> _activeTags(RunDetailsModel rdm) {
+    return RunTag.values.where((tag) {
+      final group = tag.bitFlag ~/ 4294967296;
+      final bit = tag.bitFlag & 0x7FFFFFFF;
+      return (group == 1 && (bit & rdm.tags1) != 0) ||
+             (group == 2 && (bit & rdm.tags2) != 0) ||
+             (group == 4 && (bit & rdm.tags3) != 0);
+    }).toList();
+  }
+
+  Widget _tagsCard(List<RunTag> tags) {
+    return _infoCard(
+      label: 'Event tags',
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [for (final tag in tags) _tagChip(tag)],
+        ),
+      ],
+    );
+  }
+
+  Color _tagIconColor(RunTag tag) {
+    return switch (tag) {
+      RunTag.redDress => Colors.red,
+      RunTag.fullMoon => Colors.amber.shade600,
+      RunTag.familyHash => Colors.blue.shade600,
+      RunTag.normalRun => Colors.green.shade600,
+      RunTag.harriette => Colors.pink.shade400,
+      RunTag.agm => Colors.purple.shade600,
+      RunTag.drinkingPractice => Colors.orange.shade700,
+      RunTag.hangoverRun => Colors.brown.shade400,
+      RunTag.menOnly => Colors.blue.shade700,
+      RunTag.womenOnly => Colors.pink.shade600,
+      RunTag.kidsAllowed => Colors.lightBlue.shade400,
+      RunTag.noKidsAllowed => Colors.red.shade400,
+      RunTag.dogFriendly => Colors.brown.shade600,
+      RunTag.noDogsAllowed => Colors.red.shade400,
+      RunTag.bringFlashlight => Colors.amber.shade600,
+      RunTag.waterOnTrail => Colors.blue.shade500,
+      RunTag.swimStop => Colors.cyan.shade500,
+      RunTag.nightRun => Colors.indigo.shade600,
+      RunTag.shiggyRun => Colors.brown.shade500,
+      RunTag.cityHash => Colors.blueGrey.shade600,
+      RunTag.steepHills => Colors.green.shade700,
+      RunTag.bikeHash => Colors.orange.shade600,
+      RunTag.charityEvent => Colors.red.shade600,
+      RunTag.campingHash => Colors.green.shade800,
+      _ => Colors.grey.shade700,
+    };
+  }
+
+  Widget _tagChip(RunTag tag) {
+    final color = _tagIconColor(tag);
+    return Container(
+      padding: const EdgeInsets.fromLTRB(6, 6, 12, 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: color, width: 1.5),
+            ),
+            alignment: Alignment.center,
+            child: Icon(tag.icon, size: 14, color: color),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            tag.title,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: _kTextPrimary,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -259,11 +368,8 @@ class RunListDetailPanel extends StatelessWidget {
     return _infoCard(
       label: 'When',
       children: [
-        _infoRow(
-          'Date',
-          DateFormat('EEEE, d MMMM yyyy').format(rdm.eventStartDatetime),
-        ),
-        _infoRow('Start time', DateFormat('h:mm a').format(rdm.eventStartDatetime)),
+        _infoRow(null, DateFormat('EEEE, d MMMM yyyy').format(rdm.eventStartDatetime)),
+        _infoRow(null, DateFormat('h:mm a').format(rdm.eventStartDatetime), muted: true),
       ],
     );
   }
@@ -274,8 +380,8 @@ class RunListDetailPanel extends StatelessWidget {
     return _infoCard(
       label: 'Where',
       children: [
-        if (venue.isNotEmpty) _infoRow('Venue', venue),
-        if (address.isNotEmpty) _infoRow('Address', address, muted: true),
+        if (venue.isNotEmpty) _infoRow(null, venue),
+        if (address.isNotEmpty) _infoRow(null, address, muted: true),
       ],
     );
   }
@@ -288,11 +394,11 @@ class RunListDetailPanel extends StatelessWidget {
   }
 
   Widget _visibilityCard(RunDetailsModel rdm) {
-    final vis = rdm.isVisible == 1 ? 'Visible' : 'Hidden';
-    final counted = rdm.isCountedRun == 1 ? 'Counted run' : 'Not counted';
     return _infoCard(
       label: 'Visibility',
-      children: [_infoRow('Status', '$vis  ·  $counted')],
+      children: [
+        _infoRow(null, rdm.isVisible == 1 ? 'Visible' : 'Hidden'),
+      ],
     );
   }
 
@@ -350,7 +456,23 @@ class RunListDetailPanel extends StatelessWidget {
 
   // ── Participants ───────────────────────────────────────────────────────────
 
+  bool get _isFutureRun =>
+      edr.runDetails.eventStartDatetime.isAfter(DateTime.now());
+
+  List<ParticipantModel> get _rsvpList =>
+      edr.participants.where((p) => p.rsvpState >= 2).toList();
+
+  bool get _shouldShowParticipants {
+    if (_isFutureRun) return _rsvpList.isNotEmpty;
+    return edr.participants.isNotEmpty;
+  }
+
   Widget _participantsSection() {
+    if (_isFutureRun) return _rsvpSection();
+    return _packSection();
+  }
+
+  Widget _packSection() {
     return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -368,6 +490,168 @@ class RunListDetailPanel extends StatelessWidget {
           ParticipantsTable(edr.participants),
         ],
       ),
+    );
+  }
+
+  Widget _rsvpSection() {
+    final rsvps = _rsvpList;
+    final confirmed = rsvps.where((p) => p.rsvpState >= 3).length;
+    final maybes = rsvps.where((p) => p.rsvpState == 2).length;
+    return _card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text(
+                "WHO'S COMING",
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.8,
+                  color: _kTextMuted,
+                ),
+              ),
+              const SizedBox(width: 8),
+              _rsvpCountBadge('$confirmed Coming', const Color(0xFFDCFCE7), const Color(0xFF166534)),
+              if (maybes > 0) ...[
+                const SizedBox(width: 4),
+                _rsvpCountBadge('+$maybes maybe',
+                    const Color(0xFFFEF9C3), const Color(0xFF854D0E)),
+              ],
+            ],
+          ),
+          const SizedBox(height: 12),
+          Table(
+            columnWidths: const {
+              0: IntrinsicColumnWidth(),  // RSVP icon
+              1: FlexColumnWidth(),       // Name (+ hare rabbit)
+              2: IntrinsicColumnWidth(),  // Runs
+              3: IntrinsicColumnWidth(),  // Haring
+            },
+            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+            children: [
+              TableRow(
+                decoration: const BoxDecoration(
+                  border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+                ),
+                children: [
+                  const SizedBox(width: 22),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: Text('Name',
+                        style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: _kTextMuted)),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 12, bottom: 6),
+                    child: Text('Runs',
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: _kTextMuted)),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 12, bottom: 6),
+                    child: Text('Haring',
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: _kTextMuted)),
+                  ),
+                ],
+              ),
+              for (final p in rsvps) _rsvpRow(p),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  TableRow _rsvpRow(ParticipantModel p) {
+    final isHare = p.isHare != 0;
+    return TableRow(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 8, right: 6),
+          child: _rsvpStatusIcon(p, isHare),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Text(
+            p.displayName,
+            style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: _kTextPrimary),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 8, left: 12),
+          child: Text(
+            '${p.totalRunsThisKennel}',
+            textAlign: TextAlign.right,
+            style: const TextStyle(fontSize: 13, color: _kTextSecondary),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 8, left: 12),
+          child: Text(
+            '${p.totalHaringThisKennel}',
+            textAlign: TextAlign.right,
+            style: const TextStyle(fontSize: 13, color: _kTextSecondary),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _rsvpStatusIcon(ParticipantModel p, bool isHare) {
+    if (isHare) {
+      return _iconCircle(
+        const Color(0xFF7C3AED),
+        const Icon(MaterialCommunityIcons.rabbit, size: 12, color: Colors.white),
+      );
+    }
+    if (p.rsvpState == 2) {
+      return _iconCircle(
+        const Color(0xFFD97706),
+        const Icon(Icons.question_mark_rounded, size: 12, color: Colors.white),
+      );
+    }
+    // rsvpState >= 3: going
+    return _iconCircle(
+      const Color(0xFF16A34A),
+      const Icon(Icons.check, size: 12, color: Colors.white),
+    );
+  }
+
+  Widget _iconCircle(Color color, Widget icon) {
+    return Container(
+      width: 22,
+      height: 22,
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+      alignment: Alignment.center,
+      child: icon,
+    );
+  }
+
+  Widget _rsvpCountBadge(String label, Color bg, Color fg) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(label,
+          style: TextStyle(
+              fontSize: 10, fontWeight: FontWeight.w700, color: fg)),
     );
   }
 

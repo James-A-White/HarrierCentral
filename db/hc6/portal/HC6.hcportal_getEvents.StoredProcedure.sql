@@ -52,8 +52,9 @@ AS
 --     to standard HC6 envelope (Success, ErrorMessage)
 --   - Validation now short-circuits on first error with RETURN
 --   - DATALENGTH checks replaced with IS NULL for GUIDs
---   - Removed eventChatMessageCount from BOTH EventSummaryList and
---     EventFullDetails rowsets (obsolete, was hardcoded to 0)
+--   - eventChatMessageCount restored in both rowsets — now returns the
+--     real unread count (total messages − user's LastSequenceCount from
+--     HC.EventMessageBadgeCounts) instead of the HC5 hardcoded 0
 --   - Removed commented-out debug code
 --   - Fixed DATALENGTH location string check to use LEN
 --   - Auth validated via HC6.ValidatePortalAuth helper SP
@@ -237,6 +238,19 @@ BEGIN TRY
 			, CASE WHEN (evt.UseFbImage = 1) THEN evt.FbEventImage ELSE evt.EventImage END AS eventImage
 			, evt.FbEventImage AS extEventImage
 			, evt.UseFbImage AS useFbImage
+			, COALESCE((
+				SELECT COUNT(*)
+				FROM HC.EventMessage em
+				WHERE em.EventId = evt.id AND em.removed = 0
+			), 0)
+			- COALESCE((
+				SELECT ebc.LastSequenceCount
+				FROM HC.EventMessageBadgeCounts ebc
+				WHERE ebc.EventId = evt.id
+				  AND ebc.UserId  = @hasherId
+				  AND ebc.Removed = 0
+			), 0)
+			AS eventChatMessageCount
 
 			FROM HC.Event evt
 			INNER JOIN HC.Kennel ken ON evt.KennelId = ken.id
@@ -433,6 +447,19 @@ BEGIN TRY
 			END
 			+ ' ~'
 			AS searchText
+			, COALESCE((
+				SELECT COUNT(*)
+				FROM HC.EventMessage em
+				WHERE em.EventId = evt.id AND em.removed = 0
+			), 0)
+			- COALESCE((
+				SELECT ebc.LastSequenceCount
+				FROM HC.EventMessageBadgeCounts ebc
+				WHERE ebc.EventId = evt.id
+				  AND ebc.UserId  = @hasherId
+				  AND ebc.Removed = 0
+			), 0)
+			AS eventChatMessageCount
 			FROM HC.Event evt
 			INNER JOIN HC.Kennel ken ON evt.KennelId = ken.id
 			INNER JOIN HC.City city ON ken.CityId = city.id

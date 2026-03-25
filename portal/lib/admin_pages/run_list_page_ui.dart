@@ -1,6 +1,5 @@
 // ignore_for_file: constant_identifier_names, avoid_web_libraries_in_flutter
 
-import 'package:badges/badges.dart' as badges;
 import 'package:hcportal/admin_pages/checkin_sheet/checkin_sheet_ui.dart';
 import 'package:hcportal/admin_pages/kennel_page_new/kennel_page_new_ui.dart';
 import 'package:hcportal/admin_pages/run_list_detail_panel.dart';
@@ -308,6 +307,56 @@ class RunListPage extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+        // ── Search bar (> 10 kennels only) ──────────────────────────────────
+        if (showSearch)
+          Container(
+            height: 50,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            color: Colors.white,
+            child: TextField(
+              controller: formController.kennelPickerSearchController,
+              onChanged: formController.filterKennelPicker,
+              style: const TextStyle(fontSize: 13),
+              decoration: InputDecoration(
+                hintText: 'Search kennels…',
+                hintStyle: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF94A3B8),
+                ),
+                prefixIcon: const Icon(
+                  Icons.search,
+                  size: 18,
+                  color: Color(0xFF94A3B8),
+                ),
+                suffixIcon: Obx(
+                  () => formController.kennelPickerSearch.value.isEmpty
+                      ? const SizedBox.shrink()
+                      : IconButton(
+                          icon: const Icon(Icons.close, size: 16),
+                          color: const Color(0xFF94A3B8),
+                          onPressed: () {
+                            formController.kennelPickerSearchController.clear();
+                            formController.filterKennelPicker('');
+                          },
+                        ),
+                ),
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(vertical: 6),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: const BorderSide(color: Color(0xFFB91C1C)),
+                ),
+              ),
+            ),
+          ),
         // ── Logo row ────────────────────────────────────────────────────────
         SizedBox(
           height: 96,
@@ -382,56 +431,6 @@ class RunListPage extends StatelessWidget {
             ],
           ),
         ),
-        // ── Search bar (> 10 kennels only) ──────────────────────────────────
-        if (showSearch)
-          Container(
-            height: 50,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: Colors.white,
-            child: TextField(
-              controller: formController.kennelPickerSearchController,
-              onChanged: formController.filterKennelPicker,
-              style: const TextStyle(fontSize: 13),
-              decoration: InputDecoration(
-                hintText: 'Search kennels…',
-                hintStyle: const TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF94A3B8),
-                ),
-                prefixIcon: const Icon(
-                  Icons.search,
-                  size: 18,
-                  color: Color(0xFF94A3B8),
-                ),
-                suffixIcon: Obx(
-                  () => formController.kennelPickerSearch.value.isEmpty
-                      ? const SizedBox.shrink()
-                      : IconButton(
-                          icon: const Icon(Icons.close, size: 16),
-                          color: const Color(0xFF94A3B8),
-                          onPressed: () {
-                            formController.kennelPickerSearchController.clear();
-                            formController.filterKennelPicker('');
-                          },
-                        ),
-                ),
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(vertical: 6),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide: const BorderSide(color: Color(0xFFB91C1C)),
-                ),
-              ),
-            ),
-          ),
       ],
       ),
     );
@@ -470,23 +469,67 @@ class RunListPage extends StatelessWidget {
     final isSelected = k.publicKennelId == selectedId;
     return GestureDetector(
       onTap: isSelected ? null : () => formController.switchKennel(k),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: isSelected ? const Color(0xFFFEF2F2) : Colors.white,
-          border: Border.all(
-            color: isSelected
-                ? const Color(0xFFB91C1C)
-                : const Color(0xFFE2E8F0),
-            width: isSelected ? 2 : 1,
-          ),
+      child: isSelected
+          ? _selectedKennelPill(k)
+          : _unselectedKennelCircle(k),
+    );
+  }
+
+  Widget _selectedKennelPill(HasherKennelsModel k) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(40),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF134E4A), Color(0xFF0D9488)],
         ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ClipOval(
+            child: KennelLogo(
+              kennelLogoUrl: k.kennelLogo,
+              kennelShortName: k.kennelShortName,
+              logoHeight: 52,
+              leftPadding: 0,
+              rightPadding: 0,
+            ),
+          ),
+          const SizedBox(width: 10),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 160),
+            child: Text(
+              k.kennelName,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _unselectedKennelCircle(HasherKennelsModel k) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      decoration: BoxDecoration(
+        // Use borderRadius instead of BoxShape.circle so the decoration can
+        // safely lerp with the selected pill's borderRadius during transition.
+        borderRadius: BorderRadius.circular(36),
+        color: Colors.white,
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: ClipOval(
         child: KennelLogo(
           kennelLogoUrl: k.kennelLogo,
           kennelShortName: k.kennelShortName,
-          logoHeight: 76,
+          logoHeight: 72,
           leftPadding: 0,
           rightPadding: 0,
         ),
@@ -911,36 +954,17 @@ class RunListPage extends StatelessWidget {
                   return GetBuilder<RunListPageController>(
                     id: 'chatCountBadge',
                     builder: (controller) {
-                      return badges.Badge(
-                        position:
-                            badges.BadgePosition.topEnd(top: -5, end: 0),
-                        badgeContent: Text(
-                          (formController.thisEventChatCount[
-                                      event.publicEventId] ??
-                                  0)
-                              .toString(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                          ),
-                        ),
-                        badgeStyle: badges.BadgeStyle(
-                          badgeColor: Colors.red.shade800,
-                          padding: const EdgeInsets.all(6),
-                        ),
-                        showBadge: (formController.thisEventChatCount[
-                                    event.publicEventId] ??
-                                0) !=
+                      return RunListItem(
+                        event: event,
+                        isSelected: isSelected,
+                        chatCount: formController.thisEventChatCount[
+                                event.publicEventId] ??
                             0,
-                        child: RunListItem(
-                          event: event,
-                          isSelected: isSelected,
-                          onTap: () async {
-                            formController
-                                    .eventForSingleEventDetailsView.value =
-                                await querySingleEvent(event.publicEventId);
-                          },
-                        ),
+                        onTap: () async {
+                          formController
+                                  .eventForSingleEventDetailsView.value =
+                              await querySingleEvent(event.publicEventId);
+                        },
                       );
                     },
                   );

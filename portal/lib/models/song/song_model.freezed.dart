@@ -105,7 +105,7 @@ mixin _$SongModel implements DiagnosticableTreeMixin {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hashAll([
+  int get hashCode => Object.hash(
       runtimeType,
       id,
       SongName,
@@ -124,7 +124,7 @@ mixin _$SongModel implements DiagnosticableTreeMixin {
       Lyrics,
       Tags,
       createdAt,
-      isInKennel]);
+      isInKennel);
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
@@ -674,7 +674,7 @@ class _SongModel with DiagnosticableTreeMixin implements SongModel {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hashAll([
+  int get hashCode => Object.hash(
       runtimeType,
       id,
       SongName,
@@ -693,7 +693,7 @@ class _SongModel with DiagnosticableTreeMixin implements SongModel {
       Lyrics,
       Tags,
       createdAt,
-      isInKennel]);
+      isInKennel);
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {

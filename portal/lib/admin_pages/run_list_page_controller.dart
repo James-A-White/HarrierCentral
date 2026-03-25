@@ -76,12 +76,17 @@ class RunListPageController extends GetxController
         FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       final publicEventId =
           normalizeUuid(message.data['PublicEventId'] as String?);
+      if (publicEventId.isEmpty) return;
 
-      if (publicEventId.isNotEmpty) {
+      final type = message.data['Type'] as String?;
+      if (type == 'read_sync') {
+        // Another device has read this chat — zero the badge immediately.
+        thisEventChatCount[publicEventId] = 0;
+      } else {
         thisEventChatCount[publicEventId] =
             (thisEventChatCount[publicEventId] ?? 0) + 1;
-        update(['chatCountBadge']);
       }
+      update(['chatCountBadge']);
     });
 
     _worker = debounce(
@@ -258,11 +263,8 @@ class RunListPageController extends GetxController
           final map =
               (jsonItems[0] as List<dynamic>)[i] as Map<String, dynamic>;
           map['eventChatMessageCount'] ??= 0; // removed in HC6 (was hardcoded 0)
-          var rlm = RunListModel.fromJson(map);
+          final rlm = RunListModel.fromJson(map);
           _prepareBadgeCounts(rlm.publicEventId, rlm.eventChatMessageCount);
-          rlm = rlm.copyWith(
-            searchText: '~ ${rlm.eventName} ${rlm.kennelShortName} ~',
-          );
           allEvents.add(rlm);
         }
       }
@@ -296,16 +298,11 @@ class RunListPageController extends GetxController
 
   void _prepareBadgeCounts(String? publicEventId, int? eventChatMessageCount) {
     if (publicEventId == null) return;
-    thisEventChatCount[publicEventId.asUuid] = eventChatMessageCount ?? 0;
-
+    final total = eventChatMessageCount ?? 0;
     final chatsCounts =
         (box.get(HIVE_CHATS_COUNT) as Map?)?.cast<String, int>();
-
-    if (chatsCounts != null) {
-      thisEventChatCount[publicEventId.asUuid] =
-          thisEventChatCount[publicEventId.asUuid]! -
-              (chatsCounts[publicEventId.asUuid] ?? 0);
-    }
+    final seen = chatsCounts?[publicEventId.asUuid] ?? 0;
+    thisEventChatCount[publicEventId.asUuid] = total - seen;
   }
 
   Future<void> deleteEvent(String? eventId) async {

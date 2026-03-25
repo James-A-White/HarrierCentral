@@ -6,17 +6,52 @@ class RunListItem extends StatelessWidget {
     required this.event,
     required this.onTap,
     this.isSelected = false,
+    this.chatCount = 0,
     super.key,
   });
 
   final RunListModel event;
   final VoidCallback? onTap;
   final bool isSelected;
+  final int chatCount;
 
-  static const _stripHeight = 80.0;
   static const _radius = 10.0;
   static const _red = Color(0xFFB91C1C);
-  static const _darkSlate = Color(0xFF1E293B);
+
+  // Header strip colour — varies by event type; grey if hidden.
+  static Color _typeColor(int scope, bool visible) {
+    if (!visible) return const Color(0xFF94A3B8); // hidden → slate-400
+    switch (scope) {
+      case 1:
+        return const Color(0xFF2563EB); // Normal run → blue-600
+      case 2:
+        return const Color(0xFF0891B2); // Special local → cyan-600
+      case 3:
+        return const Color(0xFF7C3AED); // Regional/state → violet-600
+      case 4:
+        return const Color(0xFFEA580C); // National → orange-600
+      case 5:
+        return const Color(0xFFDB2777); // Continental → pink-600
+      case 6:
+        return const Color(0xFFD97706); // World → amber-600
+      case 7:
+        return const Color(0xFF4F46E5); // Other → indigo-600
+      default:
+        return const Color(0xFF475569); // Not specified → slate-600
+    }
+  }
+
+  bool get _isVisible => event.isVisible == 1;
+
+  String? get _resolvedImageUrl {
+    if (event.useFbImage == 1) {
+      final url = event.extEventImage ?? '';
+      if (url.startsWith('http')) return url;
+    }
+    final url = event.eventImage ?? '';
+    if (url.startsWith('http')) return url;
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +59,7 @@ class RunListItem extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: _isVisible ? Colors.white : const Color(0xFFF1F5F9),
           borderRadius: BorderRadius.circular(_radius),
           border: Border.all(
             color: isSelected ? _red : const Color(0xFFE2E8F0),
@@ -45,7 +80,8 @@ class RunListItem extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildStrip(),
+            _buildHeader(),
+            if (_resolvedImageUrl != null) _buildImage(),
             _buildBody(),
           ],
         ),
@@ -53,85 +89,42 @@ class RunListItem extends StatelessWidget {
     );
   }
 
-  // ── Image strip ────────────────────────────────────────────────────────────
+  // ── Coloured header strip ──────────────────────────────────────────────────
 
-  String? get _resolvedImageUrl {
-    if (event.useFbImage == 1) {
-      final url = event.extEventImage ?? '';
-      if (url.startsWith('http')) return url;
-    }
-    final url = event.eventImage ?? '';
-    if (url.startsWith('http')) return url;
-    return null;
-  }
-
-  Widget _buildStrip() {
-    final imageUrl = _resolvedImageUrl;
+  Widget _buildHeader() {
+    final color = _typeColor(event.eventGeographicScope, _isVisible);
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(_radius)),
-      child: Stack(
-        children: [
-          // Determines strip height — image at natural ratio, or fixed logo bg
-          if (imageUrl != null)
-            HcNetworkImage(
-              imageUrl,
-              width: double.infinity,
-              fit: BoxFit.fitWidth,
-              errorBuilder: (_, __, ___) => _logoBackground(),
-            )
-          else
-            _logoBackground(),
-          if (event.isCountedRun == 1)
-            Positioned(top: 8, right: 9, child: _runNumBadge()),
-          Positioned(
-            bottom: 7,
-            left: 10,
-            right: event.isCountedRun == 1 ? 60 : 12,
-            child: Text(
-              event.eventName,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                shadows: [
-                  Shadow(
-                    offset: Offset(0, 1),
-                    blurRadius: 8,
-                    color: Color(0xCC000000),
-                  ),
-                  Shadow(
-                    offset: Offset(0, 0),
-                    blurRadius: 3,
-                    color: Color(0xAA000000),
-                  ),
-                ],
+      child: Container(
+        color: color,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                event.eventName,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  shadows: [
+                    Shadow(
+                      offset: Offset(0, 1),
+                      blurRadius: 4,
+                      color: Color(0x44000000),
+                    ),
+                  ],
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _logoBackground() {
-    return SizedBox(
-      height: _stripHeight,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          const ColoredBox(color: _darkSlate),
-          Center(
-            child: KennelLogo(
-              kennelLogoUrl: event.kennelLogo,
-              kennelShortName: event.kennelShortName,
-              logoHeight: 46,
-              leftPadding: 0,
-              rightPadding: 0,
-            ),
-          ),
-        ],
+            if (event.isCountedRun == 1) ...[
+              const SizedBox(width: 8),
+              _runNumBadge(),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -140,7 +133,7 @@ class RunListItem extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.45),
+        color: Colors.black.withValues(alpha: 0.30),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
@@ -154,6 +147,17 @@ class RunListItem extends StatelessWidget {
     );
   }
 
+  // ── Event image (below header, full-width, 100 % opacity) ─────────────────
+
+  Widget _buildImage() {
+    return HcNetworkImage(
+      _resolvedImageUrl!,
+      width: double.infinity,
+      fit: BoxFit.fitWidth,
+      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+    );
+  }
+
   // ── Card body ──────────────────────────────────────────────────────────────
 
   Widget _buildBody() {
@@ -163,33 +167,75 @@ class RunListItem extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(11, 8, 11, 10),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
         children: [
-          _row(
-            icon: MaterialCommunityIcons.clock_outline,
-            text: '$dateStr  ·  $relStr',
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _row(
+                  icon: Icons.calendar_month_outlined,
+                  text: '$dateStr  ·  $relStr',
+                ),
+                const SizedBox(height: 2),
+                _row(
+                  icon: MaterialCommunityIcons.map_marker_outline,
+                  text: event.eventCityAndCountry,
+                  muted: true,
+                ),
+                if ((event.locationOneLineDesc ?? '').isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  _row(
+                    icon: Icons.place_outlined,
+                    text: event.locationOneLineDesc!,
+                    muted: true,
+                  ),
+                ],
+                if ((event.hares ?? '').isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  _row(
+                    icon: MaterialCommunityIcons.rabbit,
+                    text: event.hares!,
+                    muted: true,
+                  ),
+                ],
+                if (event.eventGeographicScope > 1) ...[
+                  const SizedBox(height: 6),
+                  _specialChip(),
+                ],
+              ],
+            ),
           ),
-          const SizedBox(height: 2),
-          _row(
-            icon: MaterialCommunityIcons.map_marker_outline,
-            text: event.eventCityAndCountry,
-            muted: true,
-          ),
-          if ((event.hares ?? '').isNotEmpty) ...[
-            const SizedBox(height: 2),
-            _row(
-              icon: MaterialCommunityIcons.rabbit,
-              text: event.hares!,
-              muted: true,
+          if (chatCount > 0) ...[
+            const SizedBox(width: 8),
+            Padding(
+              padding: const EdgeInsets.only(top: 1),
+              child: _chatBadge(),
             ),
           ],
-          if (event.eventGeographicScope > 1) ...[
-            const SizedBox(height: 6),
-            _specialChip(),
-          ],
         ],
+      ),
+    );
+  }
+
+  Widget _chatBadge() {
+    return Container(
+      constraints: const BoxConstraints(minWidth: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: _red,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        chatCount.toString(),
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
@@ -207,8 +253,7 @@ class RunListItem extends StatelessWidget {
           child: Icon(
             icon,
             size: 14,
-            color:
-                muted ? const Color(0xFF64748B) : const Color(0xFF334155),
+            color: muted ? const Color(0xFF64748B) : const Color(0xFF334155),
           ),
         ),
         const SizedBox(width: 4),
@@ -247,8 +292,6 @@ class RunListItem extends StatelessWidget {
       ),
     );
   }
-
-  // ── Helpers ────────────────────────────────────────────────────────────────
 
   String _relativeTime(int days) {
     if (days == 0) return 'Today';

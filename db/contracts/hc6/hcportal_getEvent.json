@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_getEvent",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Retrieves event details by publicEventId, kennelUniqueShortName + runDesignator, or special keywords 'nextrun'/'lastrun'. Returns an EventDetails rowset (always) and optionally an AttendeeList rowset. AttendeeList is suppressed for service account callers (GUIDs 11111111-... and 22222222-...). @includePaymentInfo controls whether the AttendeeList includes full payment columns. Auth is enforced via HC6.ValidatePortalAuth. Used by both admin portal and public HashRuns.org site.",
   "parameters": [
     {
@@ -162,10 +162,11 @@
       "condition": "(@publicHasherId NOT IN service account GUIDs) AND (@includePaymentInfo = 0)",
       "columns": [
         { "name": "displayName", "type": "NVARCHAR(250)", "nullable": true, "description": "COALESCE(HasherEventMap.DisplayName, Hasher.DisplayName)" },
-        { "name": "rsvpState", "type": "SMALLINT", "nullable": true, "description": "HasherEventMap.RsvpState" },
-        { "name": "attendanceState", "type": "SMALLINT", "nullable": true, "description": "HasherEventMap.AttendenceState" },
-        { "name": "totalRunsThisKennel", "type": "INT", "nullable": false, "description": "COALESCE(HasherEventMap.TotalRunsThisKennel, 0) + COALESCE(HasherKennelMap.HistoricalTotalRunCount, 0)" },
-        { "name": "totalHaringThisKennel", "type": "INT", "nullable": false, "description": "COALESCE(HasherEventMap.TotalHaringThisKennel, 0) + COALESCE(HasherKennelMap.HistoricalHaringCount, 0)" },
+        { "name": "rsvpState", "type": "SMALLINT", "nullable": true, "description": "HasherEventMap.RsvpState. Known values: 0=no response, 1=maybe, 2+=going." },
+        { "name": "attendanceState", "type": "SMALLINT", "nullable": true, "description": "HasherEventMap.AttendenceState. Values >= 20 indicate checked in." },
+        { "name": "isHare", "type": "SMALLINT", "nullable": false, "description": "HasherEventMap.IsHare — 1 if this person is a hare for the event, 0 otherwise." },
+        { "name": "totalRunsThisKennel", "type": "INT", "nullable": false, "description": "HasherKennelMap.HcTotalRunCount + HasherKennelMap.HistoricalTotalRunCount — current system run count plus legacy imported count. HcTotalRunCount is updated whenever the hasher attends a run, so this is always current regardless of whether the queried event is past or future." },
+        { "name": "totalHaringThisKennel", "type": "INT", "nullable": false, "description": "HasherKennelMap.HcHaringCount + HasherKennelMap.HistoricalHaringCount — current system haring count plus legacy imported count." },
         { "name": "amountPaidStr", "type": "NVARCHAR(MAX)", "nullable": false, "description": "COALESCE(formatted currency string using Payment.CreditAmount, '') — '^' in currency symbol replaced with formatted amount" },
         { "name": "amountOwedStr", "type": "NVARCHAR(MAX)", "nullable": false, "description": "COALESCE(formatted currency string using Payment.DebitAmount, '')" },
         { "name": "creditAvailableStr", "type": "NVARCHAR(MAX)", "nullable": false, "description": "COALESCE(formatted currency string using Payment.CreditAvailable, '')" },
@@ -179,10 +180,11 @@
       "condition": "(@publicHasherId NOT IN service account GUIDs) AND (@includePaymentInfo = 1)",
       "columns": [
         { "name": "displayName", "type": "NVARCHAR(250)", "nullable": true, "description": "COALESCE(HasherEventMap.DisplayName, Hasher.DisplayName)" },
-        { "name": "rsvpState", "type": "SMALLINT", "nullable": true, "description": "HasherEventMap.RsvpState" },
-        { "name": "attendanceState", "type": "SMALLINT", "nullable": true, "description": "HasherEventMap.AttendenceState" },
-        { "name": "totalRunsThisKennel", "type": "INT", "nullable": false, "description": "COALESCE(HasherEventMap.TotalRunsThisKennel, 0) + COALESCE(HasherKennelMap.HistoricalTotalRunCount, 0)" },
-        { "name": "totalHaringThisKennel", "type": "INT", "nullable": false, "description": "COALESCE(HasherEventMap.TotalHaringThisKennel, 0) + COALESCE(HasherKennelMap.HistoricalHaringCount, 0)" },
+        { "name": "rsvpState", "type": "SMALLINT", "nullable": true, "description": "HasherEventMap.RsvpState. Known values: 0=no response, 1=maybe, 2+=going." },
+        { "name": "attendanceState", "type": "SMALLINT", "nullable": true, "description": "HasherEventMap.AttendenceState. Values >= 20 indicate checked in." },
+        { "name": "isHare", "type": "SMALLINT", "nullable": false, "description": "HasherEventMap.IsHare — 1 if this person is a hare for the event, 0 otherwise." },
+        { "name": "totalRunsThisKennel", "type": "INT", "nullable": false, "description": "HasherKennelMap.HcTotalRunCount + HasherKennelMap.HistoricalTotalRunCount — current system run count plus legacy imported count. HcTotalRunCount is updated whenever the hasher attends a run, so this is always current regardless of whether the queried event is past or future." },
+        { "name": "totalHaringThisKennel", "type": "INT", "nullable": false, "description": "HasherKennelMap.HcHaringCount + HasherKennelMap.HistoricalHaringCount — current system haring count plus legacy imported count." },
         { "name": "virginVisitorType", "type": "SMALLINT", "nullable": true, "description": "HasherEventMap.VirginVisitorType" },
         { "name": "cancelledDate", "type": "DATETIMEOFFSET(7)", "nullable": true, "description": "Payment.CancelledDate" },
         { "name": "cancelledBy", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Hasher.DisplayName of the user who cancelled the payment (computed column)" },

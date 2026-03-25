@@ -64,6 +64,10 @@ class ChatSheetController extends GetxController {
       await box.put(HIVE_CHATS_COUNT, chatsCounts);
     }
 
+    // Mark as read server-side and fan-out a silent read_sync to other
+    // devices so their badges are zeroed immediately.
+    unawaited(_markEventChatRead(publicEventId));
+
     _fcmSubscription =
         FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       final incomingEventId = message.data['PublicEventId'] as String?;
@@ -103,6 +107,26 @@ class ChatSheetController extends GetxController {
         }
       }
     });
+  }
+
+  Future<void> _markEventChatRead(String publicEventId) async {
+    final deviceId = box.get(HIVE_DEVICE_ID) as String;
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
+    final accessToken = Utilities.generateToken(
+      deviceId,
+      'hcportal_markEventChatRead',
+      paramString: deviceSecret,
+    );
+    final body = <String, dynamic>{
+      'queryType': 'markEventChatRead',
+      'deviceId': deviceId,
+      'accessToken': accessToken,
+      'publicEventId': publicEventId,
+    };
+    final result = await ServiceCommon.sendHttpPostToHC6Api(body);
+    debugPrint(result.startsWith(ERROR_PREFIX)
+        ? 'SP [markEventChatRead] called — FAILED'
+        : 'SP [markEventChatRead] called — success');
   }
 
   Future<String?> _getEventMessages(String publicEventId) async {
