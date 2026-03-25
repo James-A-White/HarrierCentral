@@ -392,9 +392,14 @@ class RunListPage extends StatelessWidget {
                     child: SingleChildScrollView(
                       controller: formController.kennelPickerScrollController,
                       scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 40,
-                        vertical: 10,
+                      // Left padding must exceed the scroll-arrow button width
+                      // (44 px) so the first kennel item is never obscured by
+                      // the arrow overlay when the picker is slightly scrolled.
+                      padding: const EdgeInsets.only(
+                        left: 52,
+                        right: 40,
+                        top: 10,
+                        bottom: 10,
                       ),
                       child:
                           Row(mainAxisSize: MainAxisSize.min, children: items),

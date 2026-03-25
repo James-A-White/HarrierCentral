@@ -29,6 +29,7 @@ class DocumentManagerField extends StatelessWidget {
     this.uploadStatus,
     this.imageValidator,
     this.preserveFormat = false,
+    this.imageOverlay,
   });
 
   final TabUiController controller;
@@ -57,6 +58,9 @@ class DocumentManagerField extends StatelessWidget {
   /// When true, the original file bytes are uploaded as-is (preserving format and
   /// transparency) instead of being re-encoded as JPEG.
   final bool preserveFormat;
+
+  /// Optional widget rendered on top of the displayed image (e.g. a short-name text overlay).
+  final Widget? imageOverlay;
 
   static const int _maxUploadBytes = 3145728; // 3 MB
 
@@ -146,9 +150,15 @@ class DocumentManagerField extends StatelessWidget {
           );
         }
 
+        // bundle:// assets are routed to the droppable placeholder (image display +
+        // upload button + drag-drop) rather than the "has valid image" path.
+        final bool isBundleAsset = isImageUpload &&
+            (uiControl.editedFieldValue?.startsWith('bundle://') ?? false);
+
         // Check if there's a valid image value (not null and not the '<null>' sentinel)
         final hasValidImage = uiControl.editedFieldValue != null &&
-            uiControl.editedFieldValue != '<null>';
+            uiControl.editedFieldValue != '<null>' &&
+            !isBundleAsset;
 
         if (hasValidImage) {
           return Column(
@@ -207,11 +217,11 @@ class DocumentManagerField extends StatelessWidget {
 
         return Column(
           children: <Widget>[
-            if (placeholderText != null)
+            if (placeholderText != null || isBundleAsset)
               _DroppablePlaceholder(
                 width: width ?? 200,
                 height: height ?? 200,
-                placeholderText: placeholderText!,
+                placeholderText: placeholderText ?? '',
                 allowedExtensions: allowedExtensions ?? defaultExtensions,
                 controller: controller,
                 uiControl: uiControl,
@@ -222,6 +232,8 @@ class DocumentManagerField extends StatelessWidget {
                 uploadStatus: uploadStatus,
                 imageValidator: imageValidator,
                 preserveFormat: preserveFormat,
+                bundleUrl: isBundleAsset ? uiControl.editedFieldValue : null,
+                imageOverlay: imageOverlay,
               )
             else
               Image.asset(
@@ -465,6 +477,8 @@ class _DroppablePlaceholder extends StatefulWidget {
     this.uploadStatus,
     this.imageValidator,
     this.preserveFormat = false,
+    this.bundleUrl,
+    this.imageOverlay,
   });
 
   final double width;
@@ -480,6 +494,14 @@ class _DroppablePlaceholder extends StatefulWidget {
   final RxString? uploadStatus;
   final String? Function(int width, int height)? imageValidator;
   final bool preserveFormat;
+
+  /// When set, the placeholder renders the bundle asset image with an optional
+  /// overlay instead of the grey upload box. Drag-and-drop and tap-to-upload
+  /// still work — this is the display surface when no custom logo exists yet.
+  final String? bundleUrl;
+
+  /// Optional widget rendered over the bundle image (e.g. short-name text).
+  final Widget? imageOverlay;
 
   @override
   State<_DroppablePlaceholder> createState() => _DroppablePlaceholderState();
@@ -597,6 +619,96 @@ class _DroppablePlaceholderState extends State<_DroppablePlaceholder> {
 
   @override
   Widget build(BuildContext context) {
+    // Bundle mode: show the bundle asset image with overlay + drag-hover indicator.
+    // Tap and drop both trigger the file upload flow.
+    if (widget.bundleUrl != null) {
+      return GestureDetector(
+        onTap: () => _triggerUpload(
+          controller: widget.controller,
+          uiControl: widget.uiControl,
+          recordId: widget.recordId,
+          allowedExtensions: widget.allowedExtensions,
+          uploading: widget.uploading,
+          onUploadComplete: widget.onUploadComplete,
+          filenamePrefix: widget.filenamePrefix,
+          uploadStatus: widget.uploadStatus,
+          imageValidator: widget.imageValidator,
+          preserveFormat: widget.preserveFormat,
+        ),
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: SizedBox(
+            key: _containerKey,
+            width: widget.width,
+            height: widget.height,
+            child: Stack(
+              // alignment: center so the imageOverlay (a naturally-sized child)
+              // is vertically and horizontally centered over the logo image.
+              alignment: Alignment.center,
+              children: [
+                // Image fills the full box via Positioned.fill.
+                Positioned.fill(
+                  child: Image.asset(
+                    'images/generic_logos/${widget.bundleUrl!.replaceAll('bundle://', '')}.png'
+                        .toLowerCase(),
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => const Icon(
+                      Icons.broken_image_outlined,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+                // imageOverlay is naturally sized and centered by Stack alignment.
+                if (widget.imageOverlay != null) widget.imageOverlay!,
+                // Drag-hover overlay fills the full box via Positioned.fill.
+                Positioned.fill(child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  decoration: BoxDecoration(
+                    color: _isDraggingOver
+                        ? Colors.blue.shade50.withValues(alpha: 0.85)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _isDraggingOver
+                          ? Colors.blue.shade400
+                          : Colors.transparent,
+                      width: 3,
+                    ),
+                  ),
+                  child: _isDraggingOver
+                      ? Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.file_download_outlined,
+                                size: 64,
+                                color: Colors.blue.shade400,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Drop to upload',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.blue.shade600,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        )
+                      : null,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Normal placeholder mode: grey box with icon and text.
     return GestureDetector(
       onTap: () => _triggerUpload(
         controller: widget.controller,
