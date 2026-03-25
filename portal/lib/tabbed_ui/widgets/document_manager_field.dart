@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:web/web.dart' as web;
 import 'package:hcportal/imports.dart';
 import 'package:hcportal/tabbed_ui/widgets/sidebar_hover_region.dart';
 import 'package:image/image.dart' as image;
@@ -26,6 +27,8 @@ class DocumentManagerField extends StatelessWidget {
     this.expandToFit = false,
     this.allowedExtensions,
     this.uploadStatus,
+    this.imageValidator,
+    this.preserveFormat = false,
   });
 
   final TabUiController controller;
@@ -46,6 +49,14 @@ class DocumentManagerField extends StatelessWidget {
 
   /// Optional reactive string to track upload status ('selecting', 'uploading', or empty)
   final RxString? uploadStatus;
+
+  /// Optional callback to validate image dimensions after decode.
+  /// Receives (width, height) in pixels; return an error string to abort, or null to proceed.
+  final String? Function(int width, int height)? imageValidator;
+
+  /// When true, the original file bytes are uploaded as-is (preserving format and
+  /// transparency) instead of being re-encoded as JPEG.
+  final bool preserveFormat;
 
   static const int _maxUploadBytes = 3145728; // 3 MB
 
@@ -197,58 +208,20 @@ class DocumentManagerField extends StatelessWidget {
         return Column(
           children: <Widget>[
             if (placeholderText != null)
-              GestureDetector(
-                onTap: () => _triggerUpload(
-                  controller: controller,
-                  uiControl: uiControl,
-                  recordId: recordId,
-                  allowedExtensions: allowedExtensions ?? defaultExtensions,
-                  uploading: uploading,
-                  onUploadComplete: onUploadComplete,
-                  filenamePrefix: filenamePrefix,
-                  uploadStatus: uploadStatus,
-                ),
-                child: MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: Container(
-                    width: width ?? 200,
-                    height: height ?? 200,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: Colors.grey.shade400,
-                        width: 2,
-                        style: BorderStyle.solid,
-                      ),
-                    ),
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.add_photo_alternate_outlined,
-                              size: 64,
-                              color: Colors.grey.shade500,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              placeholderText!,
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.grey.shade600,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+              _DroppablePlaceholder(
+                width: width ?? 200,
+                height: height ?? 200,
+                placeholderText: placeholderText!,
+                allowedExtensions: allowedExtensions ?? defaultExtensions,
+                controller: controller,
+                uiControl: uiControl,
+                recordId: recordId,
+                uploading: uploading,
+                onUploadComplete: onUploadComplete,
+                filenamePrefix: filenamePrefix,
+                uploadStatus: uploadStatus,
+                imageValidator: imageValidator,
+                preserveFormat: preserveFormat,
               )
             else
               Image.asset(
@@ -267,6 +240,8 @@ class DocumentManagerField extends StatelessWidget {
               onUploadComplete: onUploadComplete,
               filenamePrefix: filenamePrefix,
               uploadStatus: uploadStatus,
+              imageValidator: imageValidator,
+              preserveFormat: preserveFormat,
             ),
           ],
         );
@@ -286,6 +261,8 @@ Future<void> _triggerUpload({
   required ValueChanged<String> onUploadComplete,
   String? filenamePrefix,
   RxString? uploadStatus,
+  String? Function(int width, int height)? imageValidator,
+  bool preserveFormat = false,
 }) async {
   // Set to 'selecting' state while file picker is open
   uploadStatus?.value = 'selecting';
@@ -318,33 +295,70 @@ Future<void> _triggerUpload({
     return;
   }
 
-  final fileSize =
-      result.files.first.bytes?.length ?? DocumentManagerField._maxUploadBytes;
+  await _processFileBytes(
+    fileBytes: List<int>.from(result.files.first.bytes!),
+    fileExtension: (result.files.first.extension ?? '').toLowerCase(),
+    fileSize: result.files.first.bytes?.length ?? DocumentManagerField._maxUploadBytes,
+    controller: controller,
+    uiControl: uiControl,
+    recordId: recordId,
+    uploading: uploading,
+    onUploadComplete: onUploadComplete,
+    filenamePrefix: filenamePrefix,
+    uploadStatus: uploadStatus,
+    imageValidator: imageValidator,
+    preserveFormat: preserveFormat,
+  );
+}
+
+/// Validates and uploads file bytes. Shared by file-picker and drag-and-drop paths.
+/// Caller sets uploadStatus to 'processing' before calling.
+Future<void> _processFileBytes({
+  required List<int> fileBytes,
+  required String fileExtension,
+  required int fileSize,
+  required TabUiController controller,
+  required UiControlDefinition uiControl,
+  required String recordId,
+  required RxBool uploading,
+  required ValueChanged<String> onUploadComplete,
+  String? filenamePrefix,
+  RxString? uploadStatus,
+  String? Function(int width, int height)? imageValidator,
+  bool preserveFormat = false,
+}) async {
   if (fileSize >= DocumentManagerField._maxUploadBytes) {
     await Utilities.showAlert(
       'File too large',
       'Please select a file that is smaller than 3Mb',
       'OK',
     );
-    result.files.clear();
     uploadStatus?.value = '';
     uploading.value = false;
     return;
   }
 
-  List<int> fileBytes = List<int>.from(result.files.first.bytes!);
-  final fileExtension = (result.files.first.extension ?? '').toLowerCase();
-
+  var processedBytes = fileBytes;
   var doProcess = true;
+
   if (uiControl.controlType == UiControlType.imageUpload &&
       fileExtension != 'jpg' &&
       fileExtension != 'jpeg') {
-    if (['png', 'tga', 'gif', 'bmp', 'ico', 'webp', 'psd', 'pvr', 'tif', 'tiff']
+    if (['png', 'tga', 'gif', 'bmp', 'ico', 'webp', 'psd', 'pvr', 'tif', 'tiff', 'avif']
         .contains(fileExtension)) {
       try {
-        final img = image.decodeImage(Uint8List.fromList(fileBytes));
+        final img = image.decodeImage(Uint8List.fromList(processedBytes));
         if (img != null) {
-          fileBytes = image.encodeJpg(img);
+          if (imageValidator != null) {
+            final error = imageValidator(img.width, img.height);
+            if (error != null) {
+              doProcess = false;
+              await Utilities.showAlert('Invalid image', error, 'OK');
+            }
+          }
+          if (doProcess && !preserveFormat) {
+            processedBytes = image.encodeJpg(img);
+          }
         }
       } catch (_) {
         doProcess = false;
@@ -364,16 +378,15 @@ Future<void> _triggerUpload({
     }
   }
 
-  if (doProcess && fileBytes.isNotEmpty) {
-    // Change to 'uploading' state for actual network upload
+  if (doProcess && processedBytes.isNotEmpty) {
     uploadStatus?.value = 'uploading';
-
     final fileName = await ServiceCommon.uploadFile(
-      fileBytes,
+      processedBytes,
       recordId,
       uiControl.fileType.name,
       uiControl.controlType,
       filenamePrefix: filenamePrefix,
+      filenameExtension: preserveFormat ? fileExtension : null,
     );
     if (fileName.isNotEmpty) {
       onUploadComplete(fileName);
@@ -396,6 +409,8 @@ class _UploadButton extends StatelessWidget {
     required this.onUploadComplete,
     this.filenamePrefix,
     this.uploadStatus,
+    this.imageValidator,
+    this.preserveFormat = false,
   });
 
   final TabUiController controller;
@@ -407,6 +422,8 @@ class _UploadButton extends StatelessWidget {
   final ValueChanged<String> onUploadComplete;
   final String? filenamePrefix;
   final RxString? uploadStatus;
+  final String? Function(int width, int height)? imageValidator;
+  final bool preserveFormat;
 
   @override
   Widget build(BuildContext context) {
@@ -421,10 +438,225 @@ class _UploadButton extends StatelessWidget {
         onUploadComplete: onUploadComplete,
         filenamePrefix: filenamePrefix,
         uploadStatus: uploadStatus,
+        imageValidator: imageValidator,
+        preserveFormat: preserveFormat,
       ),
       child: Text(
         'Upload ${uiControl.fileType.fullName}',
         style: const TextStyle(fontSize: 18),
+      ),
+    );
+  }
+}
+
+/// Placeholder drop-target that accepts both taps (file picker) and OS file drops.
+class _DroppablePlaceholder extends StatefulWidget {
+  const _DroppablePlaceholder({
+    required this.width,
+    required this.height,
+    required this.placeholderText,
+    required this.allowedExtensions,
+    required this.controller,
+    required this.uiControl,
+    required this.recordId,
+    required this.uploading,
+    required this.onUploadComplete,
+    this.filenamePrefix,
+    this.uploadStatus,
+    this.imageValidator,
+    this.preserveFormat = false,
+  });
+
+  final double width;
+  final double height;
+  final String placeholderText;
+  final List<String> allowedExtensions;
+  final TabUiController controller;
+  final UiControlDefinition uiControl;
+  final String recordId;
+  final RxBool uploading;
+  final ValueChanged<String> onUploadComplete;
+  final String? filenamePrefix;
+  final RxString? uploadStatus;
+  final String? Function(int width, int height)? imageValidator;
+  final bool preserveFormat;
+
+  @override
+  State<_DroppablePlaceholder> createState() => _DroppablePlaceholderState();
+}
+
+class _DroppablePlaceholderState extends State<_DroppablePlaceholder> {
+  final _containerKey = GlobalKey();
+  bool _isDraggingOver = false;
+  late final JSFunction _dragOverJs;
+  late final JSFunction _dropJs;
+  late final JSFunction _dragLeaveJs;
+
+  @override
+  void initState() {
+    super.initState();
+    _dragOverJs = ((web.Event event) {
+      event.preventDefault();
+      final e = event as web.DragEvent;
+      final over = _isWithinBounds(e.clientX, e.clientY);
+      if (over != _isDraggingOver) setState(() => _isDraggingOver = over);
+    }).toJS;
+
+    _dropJs = ((web.Event event) {
+      event.preventDefault();
+      final e = event as web.DragEvent;
+      if (_isWithinBounds(e.clientX, e.clientY)) {
+        setState(() => _isDraggingOver = false);
+        unawaited(_handleDrop(e));
+      }
+    }).toJS;
+
+    _dragLeaveJs = ((web.Event event) {
+      final e = event as web.DragEvent;
+      if (_isDraggingOver && !_isWithinBounds(e.clientX, e.clientY)) {
+        setState(() => _isDraggingOver = false);
+      }
+    }).toJS;
+
+    web.window.addEventListener('dragover', _dragOverJs);
+    web.window.addEventListener('drop', _dropJs);
+    web.window.addEventListener('dragleave', _dragLeaveJs);
+  }
+
+  @override
+  void dispose() {
+    web.window.removeEventListener('dragover', _dragOverJs);
+    web.window.removeEventListener('drop', _dropJs);
+    web.window.removeEventListener('dragleave', _dragLeaveJs);
+    super.dispose();
+  }
+
+  bool _isWithinBounds(num x, num y) {
+    final renderBox =
+        _containerKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) return false;
+    final topLeft = renderBox.localToGlobal(Offset.zero);
+    final size = renderBox.size;
+    return x >= topLeft.dx &&
+        x <= topLeft.dx + size.width &&
+        y >= topLeft.dy &&
+        y <= topLeft.dy + size.height;
+  }
+
+  Future<void> _handleDrop(web.DragEvent event) async {
+    final files = event.dataTransfer?.files;
+    if (files == null || files.length == 0) return;
+    final file = files.item(0);
+    if (file == null) return;
+
+    final name = file.name;
+    final ext = name.contains('.') ? name.split('.').last.toLowerCase() : '';
+
+    if (!widget.allowedExtensions.contains(ext)) {
+      await Utilities.showAlert(
+        'Invalid file type',
+        'Please drop a ${widget.allowedExtensions.join(' or ')} file.',
+        'OK',
+      );
+      return;
+    }
+
+    widget.uploading.value = true;
+    widget.uploadStatus?.value = 'processing';
+
+    final Uint8List bytes;
+    try {
+      final jsBuffer = await file.arrayBuffer().toDart;
+      bytes = jsBuffer.toDart.asUint8List();
+    } catch (_) {
+      await Utilities.showAlert(
+        'File error',
+        'There was an unknown error reading the dropped file. Please try again.',
+        'OK',
+      );
+      widget.uploading.value = false;
+      widget.uploadStatus?.value = '';
+      return;
+    }
+
+    await _processFileBytes(
+      fileBytes: List<int>.from(bytes),
+      fileExtension: ext,
+      fileSize: bytes.length,
+      controller: widget.controller,
+      uiControl: widget.uiControl,
+      recordId: widget.recordId,
+      uploading: widget.uploading,
+      onUploadComplete: widget.onUploadComplete,
+      filenamePrefix: widget.filenamePrefix,
+      uploadStatus: widget.uploadStatus,
+      imageValidator: widget.imageValidator,
+      preserveFormat: widget.preserveFormat,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _triggerUpload(
+        controller: widget.controller,
+        uiControl: widget.uiControl,
+        recordId: widget.recordId,
+        allowedExtensions: widget.allowedExtensions,
+        uploading: widget.uploading,
+        onUploadComplete: widget.onUploadComplete,
+        filenamePrefix: widget.filenamePrefix,
+        uploadStatus: widget.uploadStatus,
+        imageValidator: widget.imageValidator,
+        preserveFormat: widget.preserveFormat,
+      ),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: AnimatedContainer(
+          key: _containerKey,
+          duration: const Duration(milliseconds: 150),
+          width: widget.width,
+          height: widget.height,
+          decoration: BoxDecoration(
+            color: _isDraggingOver ? Colors.blue.shade50 : Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: _isDraggingOver ? Colors.blue.shade400 : Colors.grey.shade400,
+              width: _isDraggingOver ? 3 : 2,
+            ),
+          ),
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    _isDraggingOver
+                        ? Icons.file_download_outlined
+                        : Icons.add_photo_alternate_outlined,
+                    size: 64,
+                    color: _isDraggingOver
+                        ? Colors.blue.shade400
+                        : Colors.grey.shade500,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    _isDraggingOver ? 'Drop to upload' : widget.placeholderText,
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: _isDraggingOver
+                          ? Colors.blue.shade600
+                          : Colors.grey.shade600,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

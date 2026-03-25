@@ -22,6 +22,7 @@ part 'pages/kennel_other_page/layout.dart';
 part 'pages/kennel_developer_page/layout.dart';
 part 'pages/kennel_hash_cash_page/layout.dart';
 part 'pages/kennel_songs_page/layout.dart';
+part 'pages/kennel_logo_page/layout.dart';
 part 'pages/kennel_page_new_widgets.dart';
 
 // ---------------------------------------------------------------------------
@@ -282,6 +283,8 @@ class _KennelTabBarView extends StatelessWidget {
         return KennelHashCashTabContent(controller: controller);
       case KennelTabType.songs:
         return KennelSongsTabContent(controller: controller);
+      case KennelTabType.kennelLogo:
+        return KennelLogoTabContent(controller: controller);
     }
   }
 }

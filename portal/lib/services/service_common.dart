@@ -13,6 +13,7 @@ class ServiceCommon {
     String fileTypeName,
     UiControlType controlType, {
     String? filenamePrefix,
+    String? filenameExtension,
   }) async {
     // NOTE: If we run into errors testing this locally, run the following command in the flutter terminal
     // fluttercors --disable
@@ -26,7 +27,14 @@ class ServiceCommon {
       'Access-Control-Allow-Origin': '*',
     };
 
-    if (controlType == UiControlType.imageUpload) {
+    if (filenameExtension != null) {
+      fileExtension = filenameExtension;
+      headers['content-type'] = switch (filenameExtension) {
+        'png' => 'image/png',
+        'avif' => 'image/avif',
+        _ => 'image/jpeg',
+      };
+    } else if (controlType == UiControlType.imageUpload) {
       fileExtension = 'jpg';
       headers['content-type'] = 'image/jpeg';
     } else if (controlType == UiControlType.pdfUpload) {
@@ -55,10 +63,14 @@ class ServiceCommon {
     final datetime = intl.DateFormat('yyyyMMddkkmmss').format(DateTime.now());
     final prefix = filenamePrefix ?? 'dos_';
 
-    var fileName =
-        '${prefix}${publicEventId}_${fileTypeName}_$datetime.$fileExtension';
+    final bool isKennelLogo = fileTypeName == DocumentType.kennelLogo.name;
+    var fileName = isKennelLogo
+        ? '$prefix$datetime.$fileExtension'
+        : '${prefix}${publicEventId}_${fileTypeName}_$datetime.$fileExtension';
     final uri = Uri.parse(
-      'https://harriercentral.blob.core.windows.net/event-images/$fileName?sv=2020-04-08&st=2021-09-15T14%3A03%3A04Z&se=2100-09-16T14%3A03%3A00Z&sr=c&sp=racwdxlt&sig=q%2BVTH8wcrKOlSZK1FH7cUoaoYFPtjGpblCAVUqA4WFY%3D',
+      isKennelLogo
+          ? '$BASE_KENNEL_LOGOS_URL$fileName$KENNEL_LOGO_UPLOAD_SAS'
+          : 'https://harriercentral.blob.core.windows.net/event-images/$fileName?sv=2020-04-08&st=2021-09-15T14%3A03%3A04Z&se=2100-09-16T14%3A03%3A00Z&sr=c&sp=racwdxlt&sig=q%2BVTH8wcrKOlSZK1FH7cUoaoYFPtjGpblCAVUqA4WFY%3D',
     );
 
     http.Response response;

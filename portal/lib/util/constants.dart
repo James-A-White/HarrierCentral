@@ -41,6 +41,8 @@ const String BASE_PROMO_IMAGE_URL =
 
 const String BASE_KENNEL_LOGOS_URL =
     'https://harriercentral.blob.core.windows.net/harrier/';
+const String KENNEL_LOGO_UPLOAD_SAS =
+    '?sv=2025-07-05&spr=https%2Chttp&st=2026-03-24T13%3A01%3A00Z&se=2100-03-26T13%3A01%3A00Z&sr=c&sp=racwltf&sig=2WpGaXuqWmmqg57XpbnEOAnffMo9rNfZ6d61%2BENs7a4%3D';
 const String BASE_API_URL = 'https://hcwebapi.azurewebsites.net';
 
 const String BASE_AF_API_URL =

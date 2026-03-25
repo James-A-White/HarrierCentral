@@ -21,6 +21,7 @@ part 'pages/kennel_other_page/controls.dart';
 part 'pages/kennel_developer_page/controls.dart';
 part 'pages/kennel_hash_cash_page/controls.dart';
 part 'pages/kennel_songs_page/controls.dart';
+part 'pages/kennel_logo_page/controls.dart';
 
 // ---------------------------------------------------------------------------
 // Controller
@@ -77,6 +78,9 @@ class KennelPageFormController extends TabUiController
 
   /// Tracks upload state for file fields.
   final Map<String, RxBool> uploadingState = {};
+
+  /// Tracks detailed upload status ('selecting', 'uploading', or empty).
+  final Map<String, RxString> uploadStatusState = {};
 
   // ---------------------------------------------------------------------------
   // State - Auto-save
@@ -332,6 +336,7 @@ class KennelPageFormController extends TabUiController
     initKennelDeveloperControls();
     initKennelHashCashControls();
     initKennelSongsControls();
+    initKennelLogoControls();
 
     populateTextControllers();
   }

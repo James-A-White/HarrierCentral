@@ -77,6 +77,11 @@ enum DocumentType {
     'images/other/upload_image.png',
     '',
   ),
+  kennelLogo(
+    'Kennel Logo',
+    'images/other/upload_image.png',
+    '',
+  ),
   ;
 
   const DocumentType(

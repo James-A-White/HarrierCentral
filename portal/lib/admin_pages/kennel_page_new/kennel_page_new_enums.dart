@@ -110,6 +110,19 @@ enum KennelTabType {
     isTabLockable: false,
     hasCustomTabStatusFunction: true,
     showTabInSubmitSummary: false,
+  ),
+
+  /// Kennel logo upload.
+  kennelLogo(
+    key: 'kennelLogo',
+    title: 'Logo',
+    description: 'Upload a logo image for your kennel.\n\n'
+        'This image is displayed on the Harrier Central map and in run listings. '
+        'A square image with a transparent background works best.',
+    icon: FontAwesome5Solid.image,
+    isTabLockable: true,
+    hasCustomTabStatusFunction: false,
+    showTabInSubmitSummary: true,
   );
 
   const KennelTabType({
