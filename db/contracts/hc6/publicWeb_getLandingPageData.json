@@ -1,0 +1,74 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getLandingPageData",
+  "version": "1.0.0",
+  "description": "Returns the minimum kennel identity data needed to render a public-web landing page. Looked up by KennelUniqueShortName, which maps directly to the kennel's URL slug (e.g. 'lh3' → lh3.harriercentral.com). No authentication required.",
+  "parameters": [
+    {
+      "name": "kennelUniqueShortName",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "mapsToColumn": "Kennel.KennelUniqueShortName",
+      "description": "The kennel's URL slug — must match exactly (case-insensitive collation applies at DB level)"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "KennelLandingPage",
+      "description": "Single row when the kennel is found and publicly visible. Empty rowset (0 rows) when not found or inactive — the caller must treat this as a 404.",
+      "columns": [
+        {
+          "name": "KennelLogo",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "URL of the kennel logo image"
+        },
+        {
+          "name": "KennelDescription",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Free-text description of the kennel"
+        },
+        {
+          "name": "KennelShortName",
+          "type": "NVARCHAR(25)",
+          "nullable": false,
+          "description": "Display short name (e.g. 'LH3')"
+        },
+        {
+          "name": "KennelUniqueShortName",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "URL slug — echoed back from input so the caller can confirm the match"
+        },
+        {
+          "name": "KennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Full kennel name (e.g. 'London Hash House Harriers')"
+        },
+        {
+          "name": "WebsiteBackgroundImage",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "URL of the kennel's website background image"
+        },
+        {
+          "name": "WebsiteTitleText",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Override title text for the kennel's website hero (falls back to KennelName if null)"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change the empty-rowset-means-404 contract"
+  ]
+}

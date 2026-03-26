@@ -22,7 +22,7 @@ maintained by a solo developer (James) working nights and weekends.
 ## Architecture
 
 ```
-Next.js Public Websites (planned)    Flutter Web Admin Portal
+Next.js Public Websites (active)     Flutter Web Admin Portal
               ↓                                ↓
          Azure Function .NET Shim (stable, rarely changes)
                             ↓
@@ -37,7 +37,11 @@ Next.js Public Websites (planned)    Flutter Web Admin Portal
 - No dynamic SQL. Ever.
 - The API is a transport layer only — logic lives in the database
 
-**Auth:** Device-bound shared secret → short-lived (30s) cryptographic token
+**Auth (Flutter portal):** Device-bound shared secret → short-lived (30s) cryptographic token
+
+**Auth (Next.js public web):** Standard email/password (NextAuth.js or similar) — separate
+from the portal's device-bound auth. The public web has three user populations with
+different access levels (see Public Web section below).
 
 ---
 
@@ -51,14 +55,17 @@ Next.js Public Websites (planned)    Flutter Web Admin Portal
     /internal      ← HC5 internal SPs (untouched for now)
   /hc6
     /portal        ← New HC6 portal SPs (active work happens here)
+    /public-web    ← New HC6 public web SPs (publicWeb_ prefix)
   /schema
     /tables        ← Base table CREATE OR ALTER TABLE statements
   /contracts
     /hc5           ← Extracted HC5 SP contracts (JSON)
     /hc6           ← HC6 SP contracts (JSON)
 /api               ← Azure Function .NET source
+  /Endpoints/PublicWebApi.cs  ← Unauthenticated GET shim for HC6 public web SPs
 /portal            ← Flutter Web admin portal source
-/public-web        ← Next.js public-facing club websites (future)
+/public-web        ← Next.js multi-tenant kennel websites (active — see Public Web section)
+  /lib/api.ts      ← Server-side API client (calls PublicWebApi shim)
 /docs
   /contracts       ← Auto-generated markdown from contracts
   /screens         ← Screen Behaviour Audits
@@ -67,6 +74,69 @@ Next.js Public Websites (planned)    Flutter Web Admin Portal
   /fixtures        ← Sanitised sample SP payloads
 /tools             ← Prompt assembly and automation scripts
 ```
+
+---
+
+## Public Web — Multi-Tenant Kennel Websites
+
+The `/public-web` Next.js app hosts a separate website for every registered kennel
+from a single deployment. It is entirely separate from the Flutter admin portal.
+
+### URL / Tenancy Tiers
+
+| Tier | URL Form | Who controls DNS? | Notes |
+|------|----------|-------------------|-------|
+| 2 (default) | `a.harriercentral.com` | Harrier Central (wildcard `*.harriercentral.com`) | Every kennel gets this automatically |
+| 3 (upgrade) | `a.com` | The kennel | Custom domain; requires a domain→slug mapping record in DB |
+
+Tier 1 (`harriercentral.com/a/`) is intentionally skipped — subdomains give each
+kennel a cleaner identity and the custom domain upgrade is a hostname swap, not a
+URL structure change.
+
+### Tenant Resolution
+
+Next.js middleware inspects each request's hostname to derive the kennel slug:
+
+- `a.harriercentral.com` → slug `a`
+- `a.com` → slug looked up from `Kennel.customDomain` in DB → `a`
+
+All page templates receive the resolved kennel context and fetch only that kennel's data.
+
+### User Populations (three tiers)
+
+The public web has three distinct user populations. **Auth is separate from the
+Flutter portal's device-bound token system — public web uses standard
+email/password (NextAuth.js or similar).**
+
+| Population | Who | What they see |
+|------------|-----|---------------|
+| **Public** | Anyone, no login | Run calendar, recent trails, club info, social links |
+| **Member** | Logged-in registered member of that kennel | All public content + member roster, GPS trails, mis-management contacts, member-only pages |
+| **Admin** | Logged-in committee member or mis-management | All member content + kennel management pages (edit runs, manage members, content admin) |
+
+**Key rules:**
+- An admin of kennel A must not see admin content for kennel B — auth is always
+  scoped to the resolved kennel slug
+- Admin access here is for web content management, not the same as Flutter portal
+  admin access (which is for platform-level administration)
+- A user can be a Member of multiple kennels; their role is kennel-scoped
+
+### Theming
+
+Each kennel has its own visual identity stored in the DB:
+- Primary colour, accent colour
+- Logo URL
+- Club name / short name / tagline
+
+Theme tokens are injected at the tenant-resolution layer and applied via CSS custom
+properties. One set of page templates; appearance varies per kennel.
+
+### SEO
+
+- ISR (Incremental Static Regeneration) for performance — Google sees fully-rendered HTML
+- Per-tenant `<title>`, `<meta description>`, Open Graph tags
+- Canonical URLs: if a kennel is on tier 3, tier 2 URLs redirect to the custom domain
+- Per-tenant `sitemap.xml` and `robots.txt`
 
 ---
 
@@ -327,4 +397,4 @@ The most important tables for portal SPs:
 
 ---
 
-*Last updated: March 2026*
+*Last updated: March 2026 — added Public Web multi-tenancy section*
