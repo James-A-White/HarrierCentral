@@ -96,8 +96,7 @@ class RunListPage extends StatelessWidget {
     final showKennelSearch = allKennels.length > 10;
     return PreferredSize(
       preferredSize: Size.fromHeight(
-        kToolbarHeight +
-            (showPicker ? (showKennelSearch ? 147.0 : 97.0) : 1.0),
+        kToolbarHeight + (showPicker ? (showKennelSearch ? 147.0 : 97.0) : 1.0),
       ),
       child: Material(
         color: Colors.white,
@@ -151,100 +150,104 @@ class RunListPage extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             if (k.isAdmin) ...[
-                            if (k.canManageMembers || k.canManageHashCash) ...[
-                              _appBarBtn(
-                                'Print Check-in',
-                                onPressed: () async {
-                                  await Get.to<CheckinSheetPage>(
-                                    () => CheckinSheetPage(
-                                      publicKennelId: k.publicKennelId,
-                                      kennelName: k.kennelName,
-                                      kennelLogo: k.kennelLogo,
-                                    ),
-                                  );
-                                },
-                              ),
-                              const SizedBox(width: 8),
-                              _appBarBtn(
-                                'Manage Hashers',
-                                onPressed: () async {
-                                  await Get.to<KennelHashersPage>(
-                                    () => KennelHashersPage(k),
-                                  );
-                                },
-                              ),
-                              const SizedBox(width: 8),
-                            ],
-                            if (k.canManageKennel || k.canManageHashCash) ...[
-                              _appBarBtn(
-                                'Edit Kennel',
-                                onPressed: () async {
-                                  final kennel =
-                                      await _getKennel(k.publicKennelId);
-                                  if (kennel != null) {
-                                    await Get.to<KennelEditPage>(
-                                      () => KennelEditPage(
-                                        key: UniqueKey(),
-                                        kennelData: kennel,
-                                        appAccessFlags: k.appAccessFlags,
+                              if (k.canManageMembers ||
+                                  k.canManageHashCash) ...[
+                                _appBarBtn(
+                                  'Print Check-in',
+                                  onPressed: () async {
+                                    await Get.to<CheckinSheetPage>(
+                                      () => CheckinSheetPage(
+                                        publicKennelId: k.publicKennelId,
+                                        kennelName: k.kennelName,
+                                        kennelLogo: k.kennelLogo,
                                       ),
                                     );
-                                    await Get.delete<KennelPageFormController>(
-                                      force: true,
+                                  },
+                                ),
+                                const SizedBox(width: 8),
+                                _appBarBtn(
+                                  'Manage Hashers',
+                                  onPressed: () async {
+                                    await Get.to<KennelHashersPage>(
+                                      () => KennelHashersPage(k),
                                     );
-                                  }
-                                },
-                              ),
-                              const SizedBox(width: 8),
-                            ],
-                            if (k.canManageRuns) ...[
-                              _appBarBtn(
-                                '+ Add Run',
-                                isPrimary: true,
-                                onPressed: () async {
-                                  var lastRunDate = DateTime.now();
-                                  for (final run in formController.allEvents) {
-                                    if (run.eventStartDatetime
-                                        .isAfter(lastRunDate)) {
-                                      lastRunDate = run.eventStartDatetime;
+                                  },
+                                ),
+                                const SizedBox(width: 8),
+                              ],
+                              if (k.canManageKennel || k.canManageHashCash) ...[
+                                _appBarBtn(
+                                  'Edit Kennel',
+                                  onPressed: () async {
+                                    final kennel =
+                                        await _getKennel(k.publicKennelId);
+                                    if (kennel != null) {
+                                      await Get.to<KennelEditPage>(
+                                        () => KennelEditPage(
+                                          key: UniqueKey(),
+                                          kennelData: kennel,
+                                          appAccessFlags: k.appAccessFlags,
+                                        ),
+                                      );
+                                      await Get.delete<
+                                          KennelPageFormController>(
+                                        force: true,
+                                      );
                                     }
-                                  }
-                                  await Get.to<RunEditPage>(
-                                    () => RunEditPage(
-                                      runData: RunDetailsModel.empty(),
-                                      kennelData: k,
-                                      isAddMode: true,
-                                      lastRunDate: lastRunDate,
-                                    ),
-                                  );
-                                  await formController.refreshEvents();
+                                  },
+                                ),
+                                const SizedBox(width: 8),
+                              ],
+                              if (k.canManageRuns) ...[
+                                _appBarBtn(
+                                  '+ Add Run',
+                                  isPrimary: true,
+                                  onPressed: () async {
+                                    var lastRunDate = DateTime.now();
+                                    for (final run
+                                        in formController.allEvents) {
+                                      if (run.eventStartDatetime
+                                          .isAfter(lastRunDate)) {
+                                        lastRunDate = run.eventStartDatetime;
+                                      }
+                                    }
+                                    await Get.to<RunEditPage>(
+                                      () => RunEditPage(
+                                        runData: RunDetailsModel.empty(),
+                                        kennelData: k,
+                                        isAddMode: true,
+                                        lastRunDate: lastRunDate,
+                                      ),
+                                    );
+                                    await formController.refreshEvents();
+                                  },
+                                ),
+                                const SizedBox(width: 8),
+                              ],
+                            ],
+                            if ((publicHasherId.toUpperCase() ==
+                                    HC_PORTAL_ADMIN_OPEE) ||
+                                (publicHasherId.toUpperCase() ==
+                                    HC_PORTAL_ADMIN_TUNA)) ...[
+                              _appBarBtn(
+                                'Monitor',
+                                onPressed: () async {
+                                  await Get.to<UsageDataPage>(
+                                      UsageDataPage.new);
                                 },
                               ),
                               const SizedBox(width: 8),
                             ],
-                          ],
-                          if ((publicHasherId.toUpperCase() ==
-                                  HC_PORTAL_ADMIN_OPEE) ||
-                              (publicHasherId.toUpperCase() ==
-                                  HC_PORTAL_ADMIN_TUNA)) ...[
                             _appBarBtn(
-                              'Monitor',
+                              'Log out',
                               onPressed: () async {
-                                await Get.to<UsageDataPage>(UsageDataPage.new);
+                                await box.clear();
+                                web.window.location.reload();
                               },
                             ),
-                            const SizedBox(width: 8),
                           ],
-                          _appBarBtn(
-                            'Log out',
-                            onPressed: () async {
-                              await box.clear();
-                              web.window.location.reload();
-                            },
-                          ),
-                        ],
-                      ),
-                    );
+                        ),
+                      );
                     },
                   ),
                 ],
@@ -307,176 +310,257 @@ class RunListPage extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-        // ── Search bar (> 10 kennels only) ──────────────────────────────────
-        if (showSearch)
-          Container(
-            height: 50,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: Colors.white,
-            child: TextField(
-              controller: formController.kennelPickerSearchController,
-              onChanged: formController.filterKennelPicker,
-              style: const TextStyle(fontSize: 13),
-              decoration: InputDecoration(
-                hintText: 'Search kennels…',
-                hintStyle: const TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF94A3B8),
-                ),
-                prefixIcon: const Icon(
-                  Icons.search,
-                  size: 18,
-                  color: Color(0xFF94A3B8),
-                ),
-                suffixIcon: Obx(
-                  () => formController.kennelPickerSearch.value.isEmpty
-                      ? const SizedBox.shrink()
-                      : IconButton(
-                          icon: const Icon(Icons.close, size: 16),
-                          color: const Color(0xFF94A3B8),
-                          onPressed: () {
-                            formController.kennelPickerSearchController.clear();
-                            formController.filterKennelPicker('');
-                          },
-                        ),
-                ),
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(vertical: 6),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide: const BorderSide(color: Color(0xFFB91C1C)),
+          // ── Search bar (> 10 kennels only) ──────────────────────────────────
+          if (showSearch)
+            Container(
+              height: 50,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              color: Colors.white,
+              child: TextField(
+                controller: formController.kennelPickerSearchController,
+                onChanged: formController.filterKennelPicker,
+                style: const TextStyle(fontSize: 13),
+                decoration: InputDecoration(
+                  hintText: 'Search kennels…',
+                  hintStyle: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF94A3B8),
+                  ),
+                  prefixIcon: const Icon(
+                    Icons.search,
+                    size: 18,
+                    color: Color(0xFF94A3B8),
+                  ),
+                  suffixIcon: Obx(
+                    () => formController.kennelPickerSearch.value.isEmpty
+                        ? const SizedBox.shrink()
+                        : IconButton(
+                            icon: const Icon(Icons.close, size: 16),
+                            color: const Color(0xFF94A3B8),
+                            onPressed: () {
+                              formController.kennelPickerSearchController
+                                  .clear();
+                              formController.filterKennelPicker('');
+                            },
+                          ),
+                  ),
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 6),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    borderSide: const BorderSide(color: Color(0xFFB91C1C)),
+                  ),
                 ),
               ),
             ),
-          ),
-        // ── Logo row ────────────────────────────────────────────────────────
-        SizedBox(
-          height: 96,
-          child: Stack(
-            children: [
-              // Scrollable logo row
-              Obx(() {
-                final selectedId = formController.selectedKennelId.value;
-                final searchText =
-                    formController.kennelPickerSearch.value.toLowerCase();
-                final visible = searchText.isEmpty
-                    ? allKennels
-                    : allKennels
-                        .where(
-                          (k) => formController.kennelMatchesSearch(
-                            k,
-                            searchText,
-                          ),
-                        )
-                        .toList();
-                final items = [
-                  for (var i = 0; i < visible.length; i++) ...[
-                    if (i > 0) const SizedBox(width: 8),
-                    _kennelPickerItem(visible[i], selectedId),
-                  ],
-                ];
-                return NotificationListener<ScrollMetricsNotification>(
-                  onNotification: (n) {
-                    formController.updateKennelPickerOverflow(n.metrics);
-                    return false;
-                  },
-                  child: Align(
-                    child: SingleChildScrollView(
+          // ── Logo row ────────────────────────────────────────────────────────
+          SizedBox(
+            height: 96,
+            child: Obx(() {
+              final selectedId = formController.selectedKennelId.value;
+              final isLoading = !formController.isLoaded.value;
+              final searchText =
+                  formController.kennelPickerSearch.value.toLowerCase();
+              final visible = searchText.isEmpty
+                  ? allKennels
+                  : allKennels
+                      .where(
+                        (k) => formController.kennelMatchesSearch(
+                          k,
+                          searchText,
+                        ),
+                      )
+                      .toList();
+
+              return Stack(
+                children: [
+                  NotificationListener<ScrollMetricsNotification>(
+                    onNotification: (n) {
+                      formController.updateKennelPickerOverflow(n.metrics);
+                      return false;
+                    },
+                    child: ListView.separated(
                       controller: formController.kennelPickerScrollController,
                       scrollDirection: Axis.horizontal,
-                      // Left padding must exceed the scroll-arrow button width
-                      // (44 px) so the first kennel item is never obscured by
-                      // the arrow overlay when the picker is slightly scrolled.
                       padding: const EdgeInsets.only(
-                        left: 52,
-                        right: 40,
+                        left: 75,
+                        right: 75,
                         top: 10,
                         bottom: 10,
                       ),
-                      child:
-                          Row(mainAxisSize: MainAxisSize.min, children: items),
+                      itemCount: visible.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 8),
+                      itemBuilder: (_, i) => _kennelPickerItem(
+                        visible[i],
+                        selectedId,
+                        isLoading: isLoading,
+                      ),
                     ),
                   ),
-                );
-              }),
-              // Scroll arrows — only visible when content overflows
-              Obx(() {
-                final hasOverflow =
-                    formController.kennelPickerHasOverflow.value;
-                final atStart = formController.kennelPickerAtStart.value;
-                final atEnd = formController.kennelPickerAtEnd.value;
-                if (!hasOverflow) return const SizedBox.shrink();
-                return Stack(
-                  children: [
-                    if (!atStart)
-                      Positioned(
-                        left: 0,
-                        top: 0,
-                        bottom: 0,
-                        child: _kennelPickerArrow(isLeft: true),
-                      ),
-                    if (!atEnd)
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        bottom: 0,
-                        child: _kennelPickerArrow(isLeft: false),
-                      ),
-                  ],
-                );
-              }),
-            ],
+                  Obx(() {
+                    final hasOverflow =
+                        formController.kennelPickerHasOverflow.value;
+                    final atStart = formController.kennelPickerAtStart.value;
+                    final atEnd = formController.kennelPickerAtEnd.value;
+                    if (!hasOverflow) return const SizedBox.shrink();
+                    return Stack(
+                      children: [
+                        if (!atStart)
+                          Positioned(
+                            left: 0,
+                            top: 0,
+                            bottom: 0,
+                            child: _kennelPickerArrow(isLeft: true),
+                          ),
+                        if (!atEnd)
+                          Positioned(
+                            right: 0,
+                            top: 0,
+                            bottom: 0,
+                            child: _kennelPickerArrow(isLeft: false),
+                          ),
+                      ],
+                    );
+                  }),
+                ],
+              );
+            }),
           ),
-        ),
-      ],
+        ],
       ),
     );
   }
 
   Widget _kennelPickerArrow({required bool isLeft}) {
-    return Container(
-      width: 44,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: isLeft ? Alignment.centerRight : Alignment.centerLeft,
-          end: isLeft ? Alignment.centerLeft : Alignment.centerRight,
-          colors: [Colors.white.withValues(alpha: 0), Colors.white],
-          stops: const [0.0, 0.65],
-        ),
-      ),
-      child: Align(
-        alignment:
-            isLeft ? Alignment.centerLeft : Alignment.centerRight,
-        child: IconButton(
-          icon: Icon(
-            isLeft ? Icons.chevron_left : Icons.chevron_right,
-            size: 22,
+    return SizedBox(
+      width: 56,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: isLeft ? Alignment.centerRight : Alignment.centerLeft,
+                  end: isLeft ? Alignment.centerLeft : Alignment.centerRight,
+                  colors: [
+                    Colors.white.withValues(alpha: 0),
+                    Colors.white.withValues(alpha: 0.94),
+                  ],
+                  stops: const [0.0, 0.65],
+                ),
+              ),
+            ),
           ),
-          color: const Color(0xFF475569),
-          splashRadius: 18,
-          onPressed: isLeft
-              ? formController.scrollKennelPickerLeft
-              : formController.scrollKennelPickerRight,
-        ),
+          Align(
+            alignment: isLeft ? Alignment.centerLeft : Alignment.centerRight,
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.96),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: const Color(0xFFCBD5E1),
+                ),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x1A000000),
+                    blurRadius: 4,
+                    offset: Offset(0, 1),
+                  ),
+                ],
+              ),
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(
+                  minWidth: 36,
+                  minHeight: 36,
+                ),
+                icon: Icon(
+                  isLeft ? Icons.chevron_left : Icons.chevron_right,
+                  size: 22,
+                  weight: 700,
+                ),
+                color: const Color(0xFF1E293B),
+                splashRadius: 18,
+                onPressed: isLeft
+                    ? formController.scrollKennelPickerLeft
+                    : formController.scrollKennelPickerRight,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _kennelPickerItem(HasherKennelsModel k, String selectedId) {
-    final isSelected = k.publicKennelId == selectedId;
-    return GestureDetector(
-      onTap: isSelected ? null : () => formController.switchKennel(k),
-      child: isSelected
-          ? _selectedKennelPill(k)
-          : _unselectedKennelCircle(k),
+  Widget _kennelPickerItem(HasherKennelsModel k, String selectedId,
+      {bool isLoading = false}) {
+    final isSelected = k.publicKennelId.asUuid == selectedId;
+    final canTap = !isSelected && !isLoading;
+    double? scrollOffsetAtPointerDown;
+    Offset? globalPositionAtPointerDown;
+
+    const maxScrollDeltaForTap = 2.0;
+    const maxPointerMoveForTap = 8.0;
+
+    void triggerSelection() {
+      if (!canTap) return;
+      unawaited(formController.switchKennel(k));
+    }
+
+    return Opacity(
+      opacity: (!isSelected && isLoading) ? 0.4 : 1.0,
+      child: Listener(
+        key: ValueKey('kennel-picker-item-${k.publicKennelId.asUuid}'),
+        behavior: HitTestBehavior.opaque,
+        onPointerDown: (event) {
+          if (!canTap) return;
+          scrollOffsetAtPointerDown =
+              formController.kennelPickerScrollController.hasClients
+                  ? formController.kennelPickerScrollController.offset
+                  : 0.0;
+          globalPositionAtPointerDown = event.position;
+        },
+        onPointerUp: (event) {
+          if (!canTap) return;
+          if (globalPositionAtPointerDown == null) return;
+
+          final currentOffset =
+              formController.kennelPickerScrollController.hasClients
+                  ? formController.kennelPickerScrollController.offset
+                  : 0.0;
+
+          final movedSinceTapDown =
+              (currentOffset - (scrollOffsetAtPointerDown ?? currentOffset))
+                  .abs();
+          final pointerTravel =
+              (event.position - globalPositionAtPointerDown!).distance;
+
+          // Only switch on pointer up when the interaction behaved like a tap:
+          // minimal scroll movement and minimal pointer travel.
+          if (movedSinceTapDown <= maxScrollDeltaForTap &&
+              pointerTravel <= maxPointerMoveForTap) {
+            triggerSelection();
+          }
+          scrollOffsetAtPointerDown = null;
+          globalPositionAtPointerDown = null;
+        },
+        onPointerCancel: (_) {
+          scrollOffsetAtPointerDown = null;
+          globalPositionAtPointerDown = null;
+        },
+        child: isSelected ? _selectedKennelPill(k) : _unselectedKennelCircle(k),
+      ),
     );
   }
 
@@ -549,17 +633,12 @@ class RunListPage extends StatelessWidget {
   }) {
     return TextButton(
       style: TextButton.styleFrom(
-        backgroundColor:
-            isPrimary ? const Color(0xFFB91C1C) : Colors.white,
-        foregroundColor:
-            isPrimary ? Colors.white : const Color(0xFF475569),
+        backgroundColor: isPrimary ? const Color(0xFFB91C1C) : Colors.white,
+        foregroundColor: isPrimary ? Colors.white : const Color(0xFF475569),
         side: BorderSide(
-          color: isPrimary
-              ? const Color(0xFFB91C1C)
-              : const Color(0xFFE2E8F0),
+          color: isPrimary ? const Color(0xFFB91C1C) : const Color(0xFFE2E8F0),
         ),
-        padding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
         ),
@@ -939,12 +1018,11 @@ class RunListPage extends StatelessWidget {
             ),
           ),
         ),
-          Expanded(
-            child: Obx(() {
-              final selectedId = formController
-                  .eventForSingleEventDetailsView.value
-                  .runDetails.publicEventId;
-              return Scrollbar(
+        Expanded(
+          child: Obx(() {
+            final selectedId = formController
+                .eventForSingleEventDetailsView.value.runDetails.publicEventId;
+            return Scrollbar(
               thumbVisibility: true,
               controller: _scrollController3,
               child: ListView.separated(
@@ -962,12 +1040,11 @@ class RunListPage extends StatelessWidget {
                       return RunListItem(
                         event: event,
                         isSelected: isSelected,
-                        chatCount: formController.thisEventChatCount[
-                                event.publicEventId] ??
+                        chatCount: formController
+                                .thisEventChatCount[event.publicEventId] ??
                             0,
                         onTap: () async {
-                          formController
-                                  .eventForSingleEventDetailsView.value =
+                          formController.eventForSingleEventDetailsView.value =
                               await querySingleEvent(event.publicEventId);
                         },
                       );
@@ -975,10 +1052,10 @@ class RunListPage extends StatelessWidget {
                   );
                 },
               ),
-              );
-            }),
-          ),
-        ],
+            );
+          }),
+        ),
+      ],
     );
   }
 

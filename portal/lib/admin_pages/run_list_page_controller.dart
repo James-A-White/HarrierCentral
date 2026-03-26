@@ -102,7 +102,8 @@ class RunListPageController extends GetxController
           }
           isNarrowScreen.value = narrow;
         } catch (e) {
-          if (kDebugMode) debugPrint('RunListPageController debounce error: $e');
+          if (kDebugMode)
+            debugPrint('RunListPageController debounce error: $e');
         } finally {
           _isDebounceRunning = false;
         }
@@ -262,7 +263,8 @@ class RunListPageController extends GetxController
         for (var i = 0; i < (jsonItems[0] as List<dynamic>).length; i++) {
           final map =
               (jsonItems[0] as List<dynamic>)[i] as Map<String, dynamic>;
-          map['eventChatMessageCount'] ??= 0; // removed in HC6 (was hardcoded 0)
+          map['eventChatMessageCount'] ??=
+              0; // removed in HC6 (was hardcoded 0)
           final rlm = RunListModel.fromJson(map);
           _prepareBadgeCounts(rlm.publicEventId, rlm.eventChatMessageCount);
           allEvents.add(rlm);
@@ -459,7 +461,7 @@ class RunListPageController extends GetxController
 
   Future<void> switchKennel(HasherKennelsModel newKennel) async {
     kennel = newKennel;
-    selectedKennelId.value = newKennel.publicKennelId;
+    selectedKennelId.value = newKennel.publicKennelId.asUuid;
     displayRuns = EDisplayRuns.future;
     tabController.animateTo(0);
     update(['appBar']);
