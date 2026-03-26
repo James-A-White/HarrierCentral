@@ -14,16 +14,22 @@ class CheckinSheetPage extends StatelessWidget {
   final String kennelName;
   final String kennelLogo;
 
+  void _ensureControllerInitialized() {
+    if (!Get.isRegistered<CheckinSheetController>()) {
+      Get.put(
+        CheckinSheetController(
+          publicKennelId: publicKennelId,
+          kennelName: kennelName,
+          kennelLogo: kennelLogo,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Ensure the controller is properly initialized or retrieved
-    final formController = Get.put(
-      CheckinSheetController(
-        publicKennelId: publicKennelId,
-        kennelName: kennelName,
-        kennelLogo: kennelLogo,
-      ),
-    );
+    _ensureControllerInitialized();
+    final formController = Get.find<CheckinSheetController>();
 
     return Scaffold(
       appBar: AppBar(

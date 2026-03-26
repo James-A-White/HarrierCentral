@@ -84,16 +84,16 @@ class KennelLogoTabContent extends StatelessWidget {
                   controller.checkIfFormIsDirty();
                 },
                 onRemoveDocument: () {
-                  // Revert display to the bundle asset for this kennel so
-                  // there is always a logo visible. The save value is cleared
-                  // so the logo is removed from the DB when the form is saved.
+                  // Revert display to a random bundle asset so there is always
+                  // a logo visible. Save the bundle URL to the DB so the app
+                  // and web clients render the same generic logo.
                   final hue = (Random().nextInt(12) * 30);
                   final bundleUrl =
                       'bundle://C-${hue.toString().padLeft(3, '0')}';
                   uiControl.editedFieldValue = bundleUrl;
                   controller.editedData.value =
                       controller.editedData.value.copyWith(
-                    kennelLogo: '',
+                    kennelLogo: bundleUrl,
                   );
                 },
                 onAfterRemove: () => controller.checkIfFormIsDirty(),

@@ -11,9 +11,16 @@ import 'package:hcportal/models/usage_data_new_events/usage_data_new_events.dart
 class UsageDataPage extends StatelessWidget {
   const UsageDataPage({super.key});
 
+  void _ensureControllerInitialized() {
+    if (!Get.isRegistered<UsageDataPageController>()) {
+      Get.put(UsageDataPageController());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(UsageDataPageController());
+    _ensureControllerInitialized();
+    final controller = Get.find<UsageDataPageController>();
 
     return Scaffold(
       appBar: AppBar(

@@ -63,20 +63,21 @@ class RunEditPage extends GetView<RunEditPageController> {
   }
 
   /// Ensures the controller is registered before building.
-  /// Always creates a fresh controller with the latest data.
+  /// Only creates the controller if it isn't already registered — preserving
+  /// state (e.g. isAddMode → false after first save) across widget rebuilds.
+  /// GetX disposes the controller automatically when the route is popped,
+  /// so a fresh instance is still created on each new navigation to this page.
   void _ensureControllerInitialized() {
-    // Delete any existing controller to ensure fresh data is loaded
-    if (Get.isRegistered<RunEditPageController>()) {
-      unawaited(Get.delete<RunEditPageController>(force: true));
+    if (!Get.isRegistered<RunEditPageController>()) {
+      Get.put(
+        RunEditPageController(
+          initialData: runData,
+          kennelData: kennelData,
+          isAddMode: isAddMode,
+          lastRunDate: lastRunDate,
+        ),
+      );
     }
-    Get.put(
-      RunEditPageController(
-        initialData: runData,
-        kennelData: kennelData,
-        isAddMode: isAddMode,
-        lastRunDate: lastRunDate,
-      ),
-    );
   }
 }
 
@@ -164,7 +165,7 @@ class _RunTitle extends StatelessWidget {
     // in add mode (no observable variables accessed).
     return Text(
       controller.isAddMode
-          ? 'Add New Run'
+          ? 'Add Run to ${controller.kennelData.kennelName}'
           : 'Editing ${controller.editedData.value.eventName}',
       style: headingStyleBlack,
     );
