@@ -7,6 +7,8 @@ AS
 --              to render a public-web landing page, including HC6
 --              theming from HC.KennelWebsite where configured.
 --              Looked up by URL slug (KennelUniqueShortName).
+--              Style columns fall back to the FILTH kennel's
+--              KennelWebsite row when the requested kennel has no value.
 -- Parameters:  @kennelUniqueShortName  NVARCHAR(50) — URL slug;
 --                                      maps to Kennel.KennelUniqueShortName
 -- Returns:     Rowset 0: single KennelLandingPage row, or empty if the
@@ -16,13 +18,23 @@ AS
 --                        (Success = 0, ErrorMessage = ...).
 -- Author:      Harrier Central
 -- Created:     2026-03-26
--- Updated:     2026-03-27 — LEFT JOIN HC.KennelWebsite added; HC6
---                           theming, OgImage, SEO, and scroll effect
---                           columns added. Overlapping columns COALESCE
---                           from KennelWebsite first, falling back to
---                           HC.Kennel values during data migration.
+-- Updated:     2026-03-27 — Added HC.KennelWebsite join; HC6 theming,
+--                           OgImage, SEO, and scroll effect columns.
+--                           FILTH kennel (5029DE3A-D231-47AA-BE72-
+--                           ECE9BCCD55D1) added as platform-level style
+--                           defaults (kwf). HC.Kennel Website* column
+--                           fallbacks removed — no kennel has data in
+--                           those columns for the HC6 public web.
+--             2026-03-27 — Added hardcoded content fallbacks for Tagline,
+--                           WelcomeText, and TitleText (falls back to
+--                           KennelName). Applies when the kennel has no
+--                           KennelWebsite row or the column is NULL.
+--             2026-03-28 — Added k.PublicKennelId so the frontend can pass
+--                           it to subsequent public-web SPs (e.g.
+--                           publicWeb_getEvents) that take a GUID key
+--                           instead of the URL slug.
 -- HC5 Source:  None — new for HC6 public web
--- Breaking Changes: Adds new nullable columns to rowset. No removals.
+-- Breaking Changes: None — PublicKennelId is a new column addition only.
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -42,52 +54,60 @@ BEGIN TRY
         RETURN;
     END;
 
-    -- Return kennel identity and website config.
-    -- HC.KennelWebsite columns are NULL until the data migration from
-    -- HC.Kennel runs. Overlapping legacy columns COALESCE KennelWebsite
-    -- first so the migration cutover is seamless with no SP redeploy.
+    -- FILTH kennel — platform-level style defaults. Style columns COALESCE:
+    --   kennel value (kw) → FILTH default (kwf) → hardcoded literal (ThemeMode/ScrollBlur only)
+    -- HC.Kennel Website* columns are NOT used as fallbacks — no kennel has
+    -- data in those columns for the HC6 public web.
+    DECLARE @filthKennelId UNIQUEIDENTIFIER = '5029DE3A-D231-47AA-BE72-ECE9BCCD55D1';
+
+    -- kw  = the requested kennel's KennelWebsite row (NULL if not yet configured)
+    -- kwf = the FILTH kennel's KennelWebsite row    (NULL if FILTH not configured)
     -- Empty rowset (0 rows) = kennel not found or not publicly visible → 404.
     SELECT
-        -- ── Core identity (always from HC.Kennel) ────────────────────
+        -- ── Core identity (from HC.Kennel) ───────────────────────────────────
+        k.PublicKennelId,
         k.KennelName,
         k.KennelShortName,
         k.KennelUniqueShortName,
         k.KennelDescription,
 
-        -- ── Branding — KennelWebsite preferred, HC.Kennel fallback ───
-        COALESCE(kw.LogoUrl,         k.KennelLogo)             AS KennelLogo,
-        COALESCE(kw.FaviconUrl,      k.KennelFavicon)          AS FaviconUrl,
-        COALESCE(kw.BannerImage,     k.WebsiteBannerImage)     AS BannerImage,
-        COALESCE(kw.BackgroundImage, k.WebsiteBackgroundImage) AS WebsiteBackgroundImage,
-        COALESCE(kw.TitleText,       k.WebsiteTitleText)       AS WebsiteTitleText,
+        -- ── Branding — kennel → FILTH ────────────────────────────────────────
+        COALESCE(kw.LogoUrl,         kwf.LogoUrl)         AS KennelLogo,
+        COALESCE(kw.FaviconUrl,      kwf.FaviconUrl)      AS FaviconUrl,
+        COALESCE(kw.BannerImage,     kwf.BannerImage)     AS BannerImage,
+        COALESCE(kw.BackgroundImage, kwf.BackgroundImage) AS WebsiteBackgroundImage,
 
-        -- ── HC6 theming (NULL until data migration) ──────────────────
-        kw.ThemeMode,
-        kw.PrimaryColor,
-        kw.AccentColor,
-        kw.ScrollBlur,
-        kw.Tagline,
-        kw.WelcomeText,
-        kw.OgImageUrl,
+        -- ── HC6 theming — kennel → FILTH → literal last resort ───────────────
+        COALESCE(kw.ThemeMode,    kwf.ThemeMode,    'dark') AS ThemeMode,
+        COALESCE(kw.PrimaryColor, kwf.PrimaryColor)         AS PrimaryColor,
+        COALESCE(kw.AccentColor,  kwf.AccentColor)          AS AccentColor,
+        COALESCE(kw.ScrollBlur,   kwf.ScrollBlur,   0)      AS ScrollBlur,
+        COALESCE(kw.OgImageUrl,   kwf.OgImageUrl)           AS OgImageUrl,
 
-        -- ── SEO — KennelWebsite preferred, HC.Kennel fallback ────────
-        COALESCE(kw.SeoTitle,       k.KennelSeoTitle)       AS SeoTitle,
-        COALESCE(kw.SeoDescription, k.KennelSeoDescription) AS SeoDescription,
+        -- ── Kennel-specific content — kennel → hardcoded platform default ──────
+        COALESCE(kw.TitleText, k.KennelName)                                   AS WebsiteTitleText,
+        COALESCE(kw.Tagline,   N'A Drinking Club with a Running Problem')       AS Tagline,
+        COALESCE(kw.WelcomeText, N'The Hash House Harriers — or simply "the Hash" — is a worldwide social running group that combines a casual cross-country run with good company and a post-run celebration. Founded in Kuala Lumpur in 1938 by a group of British expatriates looking for a fun way to stay fit, the Hash has since grown to thousands of chapters across the globe. Each week, a volunteer "hare" lays a trail of chalk marks, flour, or paper, and the group — the "pack" — follows the clues to find the finish. No experience needed, no fitness level required. Walkers, joggers, and seasoned runners are all equally welcome. The only rule? Have fun.') AS WelcomeText,
+
+        -- ── SEO (no FILTH default) ───────────────────────────────────────────
+        kw.SeoTitle,
+        kw.SeoDescription,
         kw.SeoStructuredDataJson,
 
-        -- ── Routing ──────────────────────────────────────────────────
+        -- ── Routing ──────────────────────────────────────────────────────────
         kw.CustomDomain,
         kw.Enabled AS WebsiteEnabled,
 
-        -- ── HC5 legacy colours — KennelWebsite preferred, fallback ───
-        COALESCE(kw.BackgroundColor,     k.WebsiteBackgroundColor)     AS WebsiteBackgroundColor,
-        COALESCE(kw.MenuBackgroundColor, k.WebsiteMenuBackgroundColor) AS MenuBackgroundColor,
-        COALESCE(kw.MenuTextColor,       k.WebsiteMenuTextColor)       AS MenuTextColor,
-        COALESCE(kw.BodyTextColor,       k.WebsiteBodyTextColor)       AS BodyTextColor,
-        COALESCE(kw.TitleTextColor,      k.WebsiteTitleTextColor)      AS TitleTextColor
+        -- ── HC5 legacy colours — kennel → FILTH ──────────────────────────────
+        COALESCE(kw.BackgroundColor,     kwf.BackgroundColor)     AS WebsiteBackgroundColor,
+        COALESCE(kw.MenuBackgroundColor, kwf.MenuBackgroundColor) AS MenuBackgroundColor,
+        COALESCE(kw.MenuTextColor,       kwf.MenuTextColor)       AS MenuTextColor,
+        COALESCE(kw.BodyTextColor,       kwf.BodyTextColor)       AS BodyTextColor,
+        COALESCE(kw.TitleTextColor,      kwf.TitleTextColor)      AS TitleTextColor
 
     FROM HC.Kennel k
-    LEFT JOIN HC.KennelWebsite kw ON kw.KennelId = k.id
+    LEFT JOIN HC.KennelWebsite kw  ON kw.KennelId  = k.id
+    LEFT JOIN HC.KennelWebsite kwf ON kwf.KennelId = @filthKennelId
     WHERE k.KennelUniqueShortName = @kennelUniqueShortName
       AND k.deleted = 0
       AND k.removed = 0;

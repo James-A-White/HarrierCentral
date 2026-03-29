@@ -378,6 +378,33 @@ node tools/extract_contracts.js
 
 Requires: `ANTHROPIC_API_KEY` in `.env` at repo root.
 
+### Deploying SPs
+
+All SPs (portal and public-web) are deployed via `sqlcmd` using the credentials
+in `.env`. The deploy script `tools/deploy_hc6.sh` handles the full HC6 deploy:
+
+```bash
+./tools/deploy_hc6.sh
+```
+
+It runs four steps in order: HC6 schema → ValidatePortalAuth helper →
+all `hcportal_*.sql` portal SPs → all `publicWeb_*.sql` public-web SPs.
+
+### Archiving run-once database scripts
+
+Migrations, data patches, and other run-once scripts must **not** sit alongside
+deployable SPs — the deploy script would re-run them on every deploy.
+
+Once a run-once script has been executed:
+1. Move it to an `archive/` subdirectory within its current folder
+   (e.g. `db/hc6/public-web/archive/`).
+2. The deploy script globs are non-recursive, so archived scripts are never
+   picked up again.
+3. The file remains in git history for reference.
+
+**Rule:** if a SQL file is not a `CREATE OR ALTER PROCEDURE`, it is a run-once
+script and must be archived after it has been run.
+
 ---
 
 ## Table Schemas
@@ -397,4 +424,4 @@ The most important tables for portal SPs:
 
 ---
 
-*Last updated: March 2026 — added Public Web multi-tenancy section*
+*Last updated: March 2026 — added deploy script docs and run-once archive convention*

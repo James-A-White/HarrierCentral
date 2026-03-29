@@ -11,6 +11,7 @@
 #   1. HC6 schema (CREATE SCHEMA if not exists)
 #   2. HC6.ValidatePortalAuth helper SP  ← must be first; called by all portal SPs
 #   3. All HC6.hcportal_* portal SPs
+#   4. All publicWeb_* public-web SPs
 #
 # What this does NOT deploy:
 #   - Table DDL (HC.* tables are shared with HC5 and already exist)
@@ -23,6 +24,7 @@ set -uo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SP_DIR="$REPO_ROOT/db/hc6/portal"
+PW_DIR="$REPO_ROOT/db/hc6/public-web"
 
 # ── Load .env ─────────────────────────────────────────────────────────────────
 if [[ -f "$REPO_ROOT/.env" ]]; then
@@ -115,6 +117,13 @@ echo ""
 echo "── Step 3: Portal SPs ───────────────────────────────────────"
 for file in "$SP_DIR"/HC6.hcportal_*.StoredProcedure.sql; do
     name="$(basename "$file" .StoredProcedure.sql)"
+    run_file "$name" "$file"
+done
+
+echo ""
+echo "── Step 4: Public-web SPs ───────────────────────────────────"
+for file in "$PW_DIR"/publicWeb_*.sql; do
+    name="$(basename "$file" .sql)"
     run_file "$name" "$file"
 done
 
