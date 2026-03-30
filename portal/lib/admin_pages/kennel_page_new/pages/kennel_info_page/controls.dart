@@ -192,7 +192,7 @@ extension KennelInfoControlsExtension on KennelPageFormController {
       label: 'Kennel admin email list',
       maxStringLength: 500,
       minStringLength: 6,
-      readonly: true,
+      readonly: false,
       maxLines: 3,
       includeOverrideButton: false,
       textController: textControllers[fieldKey] = TextEditingController(),

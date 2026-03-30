@@ -378,6 +378,16 @@ node tools/extract_contracts.js
 
 Requires: `ANTHROPIC_API_KEY` in `.env` at repo root.
 
+### Production Deployment Rule
+
+**Never trigger a production deployment autonomously.** All deployments to
+production — whether the Next.js public web, the Azure Functions API shim, or
+the SQL Server stored procedures — must be explicitly requested by James in the
+conversation. Do not deploy as a side effect of making code changes, even if
+asked to "make the change and push it."
+
+---
+
 ### Deploying SPs
 
 All SPs (portal and public-web) are deployed via `sqlcmd` using the credentials

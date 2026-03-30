@@ -3,7 +3,8 @@ CREATE OR ALTER PROCEDURE [HC6].[publicWeb_getEvents]
     @IsFuture          BIT,
     @MaxEvents         INT           = NULL,
     @DateCutoff        NVARCHAR(50)  = NULL,
-    @DaysOffset        INT           = NULL
+    @DaysOffset        INT           = NULL,
+    @SummaryOnly       BIT           = 0
 AS
 -- =====================================================================
 -- Procedure:   HC6.publicWeb_getEvents
@@ -24,6 +25,9 @@ AS
 --              @DaysOffset       INT  (opt)    — relative boundary in days
 --                                               from today (always positive;
 --                                               direction from @IsFuture)
+--              @SummaryOnly      BIT  (opt)    — when 1, nulls out heavy text
+--                                               fields (EventDescription,
+--                                               EventUrl, w3wJson) for list views
 --              Rules:
 --                - At least one of @MaxEvents, @DateCutoff, @DaysOffset
 --                  must be supplied.
@@ -159,12 +163,12 @@ BEGIN TRY
         e.SyncLocationPostCode   AS LocationPostCode,
         e.SyncLatitude           AS Latitude,
         e.SyncLongitude          AS Longitude,
-        e.w3wJson,
+        CASE WHEN @SummaryOnly = 1 THEN NULL ELSE e.w3wJson           END AS w3wJson,
 
-        -- Content
-        e.SyncDescription        AS EventDescription,
+        -- Content (heavy fields nulled when @SummaryOnly = 1)
+        CASE WHEN @SummaryOnly = 1 THEN NULL ELSE e.SyncDescription  END AS EventDescription,
         e.EventImage,
-        e.EventUrl,
+        CASE WHEN @SummaryOnly = 1 THEN NULL ELSE e.EventUrl          END AS EventUrl,
 
         -- Tags (raw bitflags — decoded on the client using the RunTag enum)
         e.Tags1,

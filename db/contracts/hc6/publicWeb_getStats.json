@@ -1,0 +1,94 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getStats",
+  "version": "1.0.0",
+  "description": "Returns run statistics for a kennel's public stats page. All hashers with a non-removed relationship to the kennel (removed = 0) are included regardless of IsMember flag — both registered members and followers/visitors appear. Display name uses the kennel-specific hash name when set, falling back to the hasher's global hash name, then the computed DisplayName. Returns two rowsets: Rowset 0 is a HasherCount sentinel that prevents a false 404 when the kennel exists but has no hashers yet; Rowset 1 contains the hasher stat rows. No authentication required.",
+  "parameters": [
+    {
+      "name": "PublicKennelId",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "The kennel's public UUID, cast to UNIQUEIDENTIFIER internally. Passed as a string to allow the unauthenticated HTTP shim to forward query-string parameters without type conversion."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "HasherCountSentinel",
+      "description": "Always returns exactly 1 row when the kennel is found and active. An empty rowset (0 rows) signals kennel-not-found and the shim returns 404. Prevents a false 404 when the kennel exists but has no hashers yet.",
+      "columns": [
+        {
+          "name": "HasherCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "COUNT(*) of all non-removed hasher relationships (removed = 0), regardless of IsMember flag. May be 0 for a brand-new kennel."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "HasherStats",
+      "description": "One row per hasher with a non-removed relationship to the kennel and at least one run recorded (HcTotalRunCount + HistoricalTotalRunCount > 0), ordered by RollingYearRuns DESC, TotalRuns DESC. May be empty for a new kennel.",
+      "columns": [
+        {
+          "name": "Rank",
+          "type": "BIGINT",
+          "nullable": false,
+          "description": "ROW_NUMBER() over the default sort (RollingYearRuns DESC, TotalRuns DESC). Clients that re-sort client-side should recompute rank locally."
+        },
+        {
+          "name": "DisplayName",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "COALESCE(KennelHashName, HashName, DisplayName) — kennel-specific hash name first, global hash name second, computed full name third."
+        },
+        {
+          "name": "TotalRuns",
+          "type": "INT",
+          "nullable": false,
+          "description": "HcTotalRunCount + HistoricalTotalRunCount — all HC-tracked runs plus pre-HC historical runs."
+        },
+        {
+          "name": "TotalHaring",
+          "type": "INT",
+          "nullable": false,
+          "description": "HcHaringCount + HistoricalHaringCount — all HC-tracked hares set plus pre-HC historical haring."
+        },
+        {
+          "name": "YtdRuns",
+          "type": "INT",
+          "nullable": false,
+          "description": "YtdTotalRunCount — runs in the current calendar year, maintained by the portal."
+        },
+        {
+          "name": "YtdHaring",
+          "type": "INT",
+          "nullable": false,
+          "description": "YtdHaringCount — hares set in the current calendar year."
+        },
+        {
+          "name": "RollingYearRuns",
+          "type": "INT",
+          "nullable": false,
+          "description": "COALESCE(RollingYearTotalRunCount, 0) — runs in the last 365 days. Nullable in older records; defaults to 0."
+        },
+        {
+          "name": "RollingYearHaring",
+          "type": "INT",
+          "nullable": false,
+          "description": "COALESCE(RollingYearHaringCount, 0) — hares set in the last 365 days. Nullable in older records; defaults to 0."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change the empty-rowset-means-404 contract on Rowset 0",
+    "Never change the COALESCE order for DisplayName — callers depend on kennel-specific name taking precedence"
+  ]
+}
