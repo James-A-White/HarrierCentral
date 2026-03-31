@@ -28,7 +28,9 @@ export default function AdminLoginPage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-zinc-950 p-4">
       <div className="w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-white mb-6 text-center">TSA Eats Admin</h1>
+        <div className="flex justify-center mb-6">
+          <img src="/logo.png" alt="TSA Eats" className="w-64" />
+        </div>
         <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-800">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>

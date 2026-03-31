@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 interface InviteData {
@@ -10,6 +10,18 @@ interface InviteData {
 }
 
 export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen flex items-center justify-center bg-zinc-950">
+        <p className="text-zinc-400">Loading…</p>
+      </main>
+    }>
+      <RegisterForm />
+    </Suspense>
+  );
+}
+
+function RegisterForm() {
   const router = useRouter();
   const params = useSearchParams();
   const token = params.get('t');
@@ -37,14 +49,26 @@ export default function RegisterPage() {
   }, [token]);
 
   function formatPhone(raw: string): string {
-    const digits = raw.replace(/\D/g, '');
-    return digits.length === 10 ? `+1${digits}` : digits.length === 11 && digits[0] === '1' ? `+${digits}` : '';
+    const trimmed = raw.trim();
+    // Already E.164 — accept as-is
+    if (/^\+\d{7,15}$/.test(trimmed)) return trimmed;
+    const digits = trimmed.replace(/\D/g, '');
+    // US: 10 digits or 11 starting with 1
+    if (digits.length === 10) return `+1${digits}`;
+    if (digits.length === 11 && digits[0] === '1') return `+${digits}`;
+    // UK: 11 digits starting with 07 → +44 7...
+    if (digits.length === 11 && digits.startsWith('07')) return `+44${digits.slice(1)}`;
+    // UK: 10 digits starting with 7 (already dropped leading 0)
+    if (digits.length === 10 && digits.startsWith('7')) return `+44${digits}`;
+    // UK: 12 digits starting with 44
+    if (digits.length === 12 && digits.startsWith('44')) return `+${digits}`;
+    return '';
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const e164 = formatPhone(phone);
-    if (!e164) { setError('Enter a valid 10-digit US phone number.'); return; }
+    if (!e164) { setError('Enter a valid US or UK phone number.'); return; }
     if (step === 'form' && !termsAccepted) { setError('You must accept the terms to continue.'); return; }
 
     setSubmitting(true);
@@ -73,9 +97,8 @@ export default function RegisterPage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-zinc-950 p-4">
       <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-white mb-2">TSA Eats</h1>
-          <p className="text-zinc-400 text-sm">Free meals for TSA officers during government shutdowns</p>
+        <div className="mb-8 flex justify-center">
+          <img src="/logo.png" alt="TSA Eats" className="w-80" />
         </div>
 
         <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-800">
@@ -97,7 +120,7 @@ export default function RegisterPage() {
               <label className="block text-sm text-zinc-400 mb-1">Mobile phone number</label>
               <input
                 type="tel"
-                placeholder="(555) 555-5555"
+                placeholder="US: (555) 555-5555 · UK: 07700 900000"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500"
