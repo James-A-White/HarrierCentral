@@ -50,7 +50,7 @@ export default function VerifyPage() {
     <main className="min-h-screen flex items-center justify-center bg-zinc-950 p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center gap-3">
-          <img src="/logo.png" alt="TSA Eats" className="w-72" />
+          <img src="https://harriercentral.blob.core.windows.net/harrier/tsaEatsLogo.png" alt="TSA Eats" className="w-72" />
           <p className="text-zinc-400 text-sm">Enter the 6-digit code we sent to your phone</p>
         </div>
 

@@ -3,18 +3,16 @@
 const TSA_API_URL = process.env.TSA_API_URL ?? '';
 const TSA_API_KEY = process.env.TSA_API_KEY ?? '';
 
-type Row = Record<string, unknown>;
-
-async function callGet<T extends Row>(queryType: string, params: Record<string, string> = {}): Promise<T[] | null> {
+async function callGet<T>(queryType: string, params: Record<string, string> = {}): Promise<T[] | null> {
   const qs = new URLSearchParams({ queryType, ...params }).toString();
   const res = await fetch(`${TSA_API_URL}/api/TsaApi?${qs}`, { cache: 'no-store' });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`TsaApi GET ${queryType} failed: ${res.status}`);
-  const data: T[][] = await res.json();
+  const data = await res.json() as T[][];
   return data[0] ?? [];
 }
 
-async function callPost<T extends Row>(queryType: string, body: Record<string, unknown>): Promise<T[] | null> {
+async function callPost<T>(queryType: string, body: Record<string, unknown>): Promise<T[] | null> {
   const res = await fetch(`${TSA_API_URL}/api/TsaApi`, {
     method: 'POST',
     headers: {
@@ -26,10 +24,10 @@ async function callPost<T extends Row>(queryType: string, body: Record<string, u
   });
   if (res.status === 404) return null;
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error((err as { errorMessage?: string }).errorMessage ?? `TsaApi POST ${queryType} failed: ${res.status}`);
+    const err = await res.json().catch(() => ({})) as { errorMessage?: string };
+    throw new Error(err.errorMessage ?? `TsaApi POST ${queryType} failed: ${res.status}`);
   }
-  const data: T[][] = await res.json();
+  const data = await res.json() as T[][];
   return data[0] ?? [];
 }
 
@@ -89,7 +87,7 @@ export async function getMenuItems(restaurantId: string): Promise<MenuItem[]> {
 // ── Auth API (server-side only) ──────────────────────────────────────
 
 export async function validateInviteToken(token: string) {
-  return callPost<{ id: string; firstName: string; lastName: string }>(
+  return callPost<{ Success?: number; ErrorMessage?: string | null; id: string; firstName: string; lastName: string }>(
     'validateInviteToken', { token }
   );
 }
@@ -135,4 +133,33 @@ export async function createInvite(firstName: string, lastName: string, createdB
 
 export async function listInvites(): Promise<Invite[]> {
   return (await callPost<Invite>('listInvites', {})) ?? [];
+}
+
+// ── Order API ────────────────────────────────────────────────────────
+
+export interface OrderDetails {
+  token: string;
+  firstName: string;
+  lastName: string;
+  restaurantName: string;
+  mealName: string;
+  date: string;
+  redeemedAt: string | null;
+}
+
+export async function createOrder(workerId: string, restaurantId: string, mealId: string) {
+  return callPost<{ token: string; Success: number; ErrorMessage: string | null }>(
+    'createOrder', { workerId, restaurantId, mealId }
+  );
+}
+
+export async function getOrderByToken(token: string): Promise<OrderDetails | null> {
+  const rows = await callGet<OrderDetails>('getOrderByToken', { token });
+  return rows?.[0] ?? null;
+}
+
+export async function redeemOrder(token: string) {
+  return callPost<{ Success: number; ErrorMessage: string | null }>(
+    'redeemOrder', { token }
+  );
 }

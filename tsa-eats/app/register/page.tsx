@@ -76,14 +76,18 @@ function RegisterForm() {
     const res = await fetch('/api/auth/send-otp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phoneNumber: e164 }),
+      body: JSON.stringify({ phoneNumber: e164, ...(invite ? { inviteId: invite.id } : {}) }),
     });
     const data = await res.json();
-    if (!res.ok) { setError(data.error ?? 'Failed to send code.'); setSubmitting(false); return; }
+    if (!res.ok) { setError(data.error ?? 'Failed to proceed.'); setSubmitting(false); return; }
 
-    sessionStorage.setItem('tsa_phone', e164);
-    if (invite) sessionStorage.setItem('tsa_invite_id', invite.id);
-    router.push('/register/verify');
+    // ── SMS disabled — OTP verify step commented out ─────────────────────────
+    // sessionStorage.setItem('tsa_phone', e164);
+    // if (invite) sessionStorage.setItem('tsa_invite_id', invite.id);
+    // router.push('/register/verify');
+    // ─────────────────────────────────────────────────────────────────────────
+
+    router.push('/');
   }
 
   if (step === 'loading') {
@@ -98,7 +102,7 @@ function RegisterForm() {
     <main className="min-h-screen flex items-center justify-center bg-zinc-950 p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 flex justify-center">
-          <img src="/logo.png" alt="TSA Eats" className="w-80" />
+          <img src="https://harriercentral.blob.core.windows.net/harrier/tsaEatsLogo.png" alt="TSA Eats" className="w-80" />
         </div>
 
         <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-800">
@@ -120,7 +124,7 @@ function RegisterForm() {
               <label className="block text-sm text-zinc-400 mb-1">Mobile phone number</label>
               <input
                 type="tel"
-                placeholder="US: (555) 555-5555 · UK: 07700 900000"
+                placeholder="(555) 555-5555"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500"
@@ -153,7 +157,7 @@ function RegisterForm() {
               disabled={submitting}
               className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-semibold rounded-lg py-2.5 transition-colors"
             >
-              {submitting ? 'Sending code…' : 'Send verification code'}
+              {submitting ? 'Continuing…' : 'Continue'}
             </button>
           </form>
         </div>
