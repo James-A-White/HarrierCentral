@@ -24,6 +24,10 @@ export function middleware(req: NextRequest) {
       url.pathname = '/admin/login';
       return NextResponse.rewrite(url);
     }
+    // Login API must be reachable before a cookie exists
+    if (pathname === '/api/admin/login') {
+      return NextResponse.next();
+    }
     const adminCookie = req.cookies.get('tsa_admin')?.value;
     if (!adminCookie) {
       return NextResponse.redirect(new URL('https://admin.tsaeats.org/login', req.url));
