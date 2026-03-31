@@ -52,5 +52,5 @@ When asked to deploy:
 |-----------|-----------|-------|
 | `admin.tsaeats.org` | `/admin` | Auth-gated; login at `admin.tsaeats.org/login` |
 | `signup.tsaeats.org` | `/register` | Public; convenience link for new user signup |
-| `restaurant.tsaeats.org` | `tsaeats.org` (redirect) | Placeholder — restaurant routes not yet built |
+| `restaurant.tsaeats.org` | `/restaurant-portal` | Auth-gated; login at `restaurant.tsaeats.org/login`; scan at `/scan/{token}` |
 | `www.tsaeats.org` | `tsaeats.org` (301) | Canonical redirect via `next.config.ts` |

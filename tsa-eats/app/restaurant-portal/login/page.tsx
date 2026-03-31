@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function AdminLoginPage() {
+export default function RestaurantLoginPage() {
   const router = useRouter();
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -14,7 +14,7 @@ export default function AdminLoginPage() {
     setSubmitting(true);
     setError('');
 
-    const res = await fetch('/api/admin/login', {
+    const res = await fetch('/api/restaurant-portal/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password }),
@@ -22,14 +22,15 @@ export default function AdminLoginPage() {
     const data = await res.json();
 
     if (!res.ok) { setError(data.error ?? 'Incorrect password.'); setSubmitting(false); return; }
-    router.push('/admin');
+    router.push('/');
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-zinc-950 p-4">
+    <main className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
-        <div className="flex justify-center mb-6">
-          <img src="https://harriercentral.blob.core.windows.net/harrier/tsaEatsLogo.png" alt="TSA Eats" className="w-64" />
+        <div className="text-center mb-8">
+          <h1 className="text-white text-2xl font-bold">TSA Eats</h1>
+          <p className="text-zinc-400 text-sm mt-1">Restaurant portal</p>
         </div>
         <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-800">
           <form onSubmit={handleSubmit} className="space-y-4">

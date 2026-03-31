@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { Restaurant, WorkerSession } from '@/lib/api';
+import type { Restaurant, MenuItem, WorkerSession } from '@/lib/api';
 
 const SERVICE_LABELS: Record<string, string> = {
   pickup: 'Pickup',
@@ -14,9 +14,11 @@ const SERVICE_LABELS: Record<string, string> = {
 export default function BrowsePage({
   worker,
   restaurants,
+  menuItemsMap,
 }: {
   worker: WorkerSession;
   restaurants: Restaurant[];
+  menuItemsMap: Record<string, MenuItem[]>;
 }) {
   const router = useRouter();
   const [filter, setFilter] = useState('');
@@ -69,35 +71,82 @@ export default function BrowsePage({
         <p className="text-zinc-500 text-sm">{filtered.length} restaurant{filtered.length !== 1 ? 's' : ''} available</p>
 
         {/* Restaurant cards */}
-        <div className="space-y-3">
-          {filtered.map((r) => (
-            <div key={r.id} className="bg-zinc-900 rounded-2xl p-5 border border-zinc-800">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-white font-semibold truncate">{r.name}</h2>
-                  <p className="text-zinc-400 text-sm mt-0.5">{r.address}</p>
-                  {r.description && (
-                    <p className="text-zinc-500 text-sm mt-2 line-clamp-2">{r.description}</p>
-                  )}
-                  <div className="flex flex-wrap gap-1.5 mt-3">
-                    {r.cuisineType && (
-                      <span className="bg-zinc-800 text-zinc-300 text-xs px-2 py-0.5 rounded-full">
-                        {r.cuisineType}
-                      </span>
-                    )}
-                    {r.serviceTypes?.split(',').map((s) => (
-                      <span key={s} className="bg-blue-950 text-blue-300 text-xs px-2 py-0.5 rounded-full">
-                        {SERVICE_LABELS[s.trim()] ?? s.trim()}
-                      </span>
-                    ))}
+        <div className="space-y-4">
+          {filtered.map((r) => {
+            const meals = menuItemsMap[r.id]?.filter((m) => m.isAvailable) ?? [];
+            return (
+              <div
+                key={r.id}
+                className="bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden"
+              >
+                {/* Restaurant image */}
+                {r.imageUrl ? (
+                  <img
+                    src={r.imageUrl}
+                    alt={r.name}
+                    className="w-full h-44 object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-44 bg-zinc-800 flex items-center justify-center">
+                    <span className="text-zinc-600 text-sm">No image</span>
                   </div>
+                )}
+
+                <div className="p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <h2 className="text-white font-semibold truncate">{r.name}</h2>
+                      <p className="text-zinc-400 text-sm mt-0.5">{r.address}</p>
+                      {r.description && (
+                        <p className="text-zinc-500 text-sm mt-2 line-clamp-2">{r.description}</p>
+                      )}
+                      <div className="flex flex-wrap gap-1.5 mt-3">
+                        {r.cuisineType && (
+                          <span className="bg-zinc-800 text-zinc-300 text-xs px-2 py-0.5 rounded-full">
+                            {r.cuisineType}
+                          </span>
+                        )}
+                        {r.serviceTypes?.split(',').map((s) => (
+                          <span key={s} className="bg-blue-950 text-blue-300 text-xs px-2 py-0.5 rounded-full">
+                            {SERVICE_LABELS[s.trim()] ?? s.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Available meals */}
+                  {meals.length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-zinc-400 text-xs font-medium uppercase tracking-wide mb-2">
+                        Available meals
+                      </p>
+                      <ul className="space-y-1">
+                        {meals.slice(0, 3).map((m) => (
+                          <li key={m.id} className="text-zinc-300 text-sm flex items-center gap-2">
+                            <span className="w-1 h-1 rounded-full bg-zinc-500 flex-shrink-0" />
+                            {m.name}
+                          </li>
+                        ))}
+                        {meals.length > 3 && (
+                          <li className="text-zinc-500 text-sm pl-3">
+                            +{meals.length - 3} more
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => router.push(`/restaurant/${r.id}`)}
+                    className="mt-4 w-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg py-2.5 transition-colors"
+                  >
+                    View menu &amp; select meal
+                  </button>
                 </div>
               </div>
-              <button className="mt-4 w-full bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-medium rounded-lg py-2 transition-colors">
-                View menu & reserve
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {filtered.length === 0 && (

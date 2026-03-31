@@ -51,8 +51,24 @@ export function middleware(req: NextRequest) {
   }
 
   if (host === 'restaurant.tsaeats.org') {
-    // Placeholder until restaurant routes are built
-    return NextResponse.redirect(new URL('https://tsaeats.org', req.url));
+    if (pathname === '/login') {
+      const url = req.nextUrl.clone();
+      url.pathname = '/restaurant-portal/login';
+      return NextResponse.rewrite(url);
+    }
+    if (pathname === '/api/restaurant-portal/login') {
+      return NextResponse.next();
+    }
+    const restaurantCookie = req.cookies.get('tsa_restaurant')?.value;
+    if (!restaurantCookie) {
+      return NextResponse.redirect(new URL('https://restaurant.tsaeats.org/login', req.url));
+    }
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.next();
+    }
+    const url = req.nextUrl.clone();
+    url.pathname = pathname === '/' ? '/restaurant-portal' : `/restaurant-portal${pathname}`;
+    return NextResponse.rewrite(url);
   }
 
   // --- Path-based routing for tsaeats.org ---
