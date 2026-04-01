@@ -43,9 +43,9 @@ export function middleware(req: NextRequest) {
     return NextResponse.rewrite(url);
   }
 
-  if (host === 'signup.tsaeats.org') {
-    // Redirect to the canonical domain — the multi-step registration flow
-    // (register → verify → home) must run on tsaeats.org to work correctly.
+  if (host === 'login.tsaeats.org') {
+    // Redirect to the canonical domain — registration/login must run on
+    // tsaeats.org to work correctly.
     const qs = req.nextUrl.search;
     return NextResponse.redirect(new URL(`https://tsaeats.org/register${qs}`), 302);
   }
