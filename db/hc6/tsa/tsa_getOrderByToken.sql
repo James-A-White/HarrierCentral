@@ -8,12 +8,14 @@ AS
 --              Returns 0 rows if token not found.
 -- Parameters:
 --   @token - The QR code token (UNIQUEIDENTIFIER)
--- Returns: firstName, lastName, restaurantName, mealName, date, redeemedAt
+-- Returns: token, restaurantId, firstName, lastName, restaurantName,
+--          mealName, date, redeemedAt
 -- =====================================================================
 SET NOCOUNT ON;
 
 SELECT
     o.[token],
+    o.[restaurantId],
     w.[firstName],
     w.[lastName],
     r.[name]                                    AS restaurantName,

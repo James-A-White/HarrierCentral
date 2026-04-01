@@ -124,33 +124,41 @@ function signRestaurantToken(payload: string): string {
   return createHmac('sha256', RESTAURANT_SECRET).update(payload).digest('hex');
 }
 
-export function makeRestaurantCookieValue(): string {
+export interface RestaurantSession {
+  restaurantId: string;
+}
+
+export function makeRestaurantCookieValue(restaurantId: string): string {
   const exp = Math.floor(Date.now() / 1000) + EIGHT_HOURS;
-  const payload = `restaurant:${exp}`;
+  const payload = `restaurant:${restaurantId}:${exp}`;
   const sig = signRestaurantToken(payload);
   return `${payload}.${sig}`;
 }
 
-export function verifyRestaurantCookie(value: string): boolean {
+export function verifyRestaurantCookie(value: string): RestaurantSession | null {
   const lastDot = value.lastIndexOf('.');
-  if (lastDot === -1) return false;
+  if (lastDot === -1) return null;
   const payload = value.slice(0, lastDot);
   const sig = value.slice(lastDot + 1);
   const expected = signRestaurantToken(payload);
   try {
-    if (!timingSafeEqual(Buffer.from(sig, 'hex'), Buffer.from(expected, 'hex'))) return false;
+    if (!timingSafeEqual(Buffer.from(sig, 'hex'), Buffer.from(expected, 'hex'))) return null;
   } catch {
-    return false;
+    return null;
   }
+  // payload format: restaurant:{restaurantId}:{exp}
+  // UUIDs contain only hex chars and hyphens, so split(':') gives exactly 3 parts
   const parts = payload.split(':');
-  const exp = parseInt(parts[1] ?? '0', 10);
-  return Math.floor(Date.now() / 1000) < exp;
+  if (parts.length !== 3) return null;
+  const exp = parseInt(parts[2] ?? '0', 10);
+  if (Math.floor(Date.now() / 1000) >= exp) return null;
+  return { restaurantId: parts[1]! };
 }
 
-export async function getRestaurantSession(): Promise<boolean> {
+export async function getRestaurantSession(): Promise<RestaurantSession | null> {
   const jar = await cookies();
   const value = jar.get(RESTAURANT_COOKIE)?.value;
-  if (!value) return false;
+  if (!value) return null;
   return verifyRestaurantCookie(value);
 }
 
