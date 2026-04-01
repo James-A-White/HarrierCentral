@@ -165,6 +165,34 @@ export async function getOrderByToken(token: string): Promise<OrderDetails | nul
   return rows?.[0] ?? null;
 }
 
+// ── Analytics API ────────────────────────────────────────────────────
+
+export interface RedemptionDetail {
+  date: string;
+  restaurantName: string;
+  firstName: string;
+  lastName: string;
+  mealName: string;
+  redeemedAt: string;
+}
+
+export interface RedemptionSummaryRow {
+  date: string;
+  restaurantName: string;
+  mealName: string;
+  count: number;
+}
+
+export async function getRedemptionDetail(restaurantId?: string): Promise<RedemptionDetail[]> {
+  const params = restaurantId ? { restaurantId } : {};
+  return (await callPost<RedemptionDetail>('getRedemptionDetail', params)) ?? [];
+}
+
+export async function getRedemptionSummary(restaurantId?: string): Promise<RedemptionSummaryRow[]> {
+  const params = restaurantId ? { restaurantId } : {};
+  return (await callPost<RedemptionSummaryRow>('getRedemptionSummary', params)) ?? [];
+}
+
 export async function restaurantLogin(password: string) {
   return callPost<{ restaurantId: string; restaurantName: string }>(
     'restaurantLogin', { password }
