@@ -1,27 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { timingSafeEqual } from 'crypto';
+import { restaurantLogin } from '@/lib/api';
 import { makeRestaurantCookieValue, restaurantCookieOptions } from '@/lib/session';
 
 export async function POST(req: NextRequest) {
   const { password } = await req.json();
 
-  const expected = process.env.RESTAURANT_PASSWORD ?? '';
-  if (!expected) {
-    return NextResponse.json({ error: 'Restaurant portal not configured.' }, { status: 500 });
+  if (!password) {
+    return NextResponse.json({ error: 'Password required.' }, { status: 400 });
   }
 
-  let match = false;
-  try {
-    match = timingSafeEqual(Buffer.from(password ?? ''), Buffer.from(expected));
-  } catch {
-    match = false;
-  }
+  const rows = await restaurantLogin(password);
+  const restaurant = rows?.[0];
 
-  if (!match) {
+  if (!restaurant) {
     return NextResponse.json({ error: 'Incorrect password.' }, { status: 401 });
   }
 
-  const token = makeRestaurantCookieValue();
+  const token = makeRestaurantCookieValue(restaurant.restaurantId);
   const res = NextResponse.json({ ok: true });
   res.cookies.set(restaurantCookieOptions(token));
   return res;

@@ -6,12 +6,13 @@ export async function POST(
   _req: NextRequest,
   { params }: { params: Promise<{ token: string }> }
 ) {
-  if (!(await getRestaurantSession())) {
+  const session = await getRestaurantSession();
+  if (!session) {
     return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
   }
 
   const { token } = await params;
-  const rows = await redeemOrder(token);
+  const rows = await redeemOrder(token, session.restaurantId);
   const result = rows?.[0];
 
   if (!result || Number(result.Success) === 0) {

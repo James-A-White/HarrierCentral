@@ -139,6 +139,7 @@ export async function listInvites(): Promise<Invite[]> {
 
 export interface OrderDetails {
   token: string;
+  restaurantId: string;
   firstName: string;
   lastName: string;
   restaurantName: string;
@@ -158,8 +159,14 @@ export async function getOrderByToken(token: string): Promise<OrderDetails | nul
   return rows?.[0] ?? null;
 }
 
-export async function redeemOrder(token: string) {
+export async function restaurantLogin(password: string) {
+  return callPost<{ restaurantId: string; restaurantName: string }>(
+    'restaurantLogin', { password }
+  );
+}
+
+export async function redeemOrder(token: string, restaurantId: string) {
   return callPost<{ Success: number; ErrorMessage: string | null }>(
-    'redeemOrder', { token }
+    'redeemOrder', { token, restaurantId }
   );
 }

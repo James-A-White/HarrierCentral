@@ -1,12 +1,15 @@
 CREATE OR ALTER PROCEDURE [TSA].[tsa_redeemOrder]
-    @token UNIQUEIDENTIFIER
+    @token        UNIQUEIDENTIFIER,
+    @restaurantId UNIQUEIDENTIFIER
 AS
 -- =====================================================================
 -- Procedure: TSA.tsa_redeemOrder
--- Description: Marks an order as redeemed. Prevents double redemption
---              and rejects orders that are not for today (UTC).
+-- Description: Marks an order as redeemed. Rejects if: not found,
+--              already redeemed, not from today (UTC), or the logged-in
+--              restaurant does not own the order.
 -- Parameters:
---   @token - The QR code token to redeem
+--   @token        - The QR code token to redeem
+--   @restaurantId - The restaurant making the redemption (from session)
 -- Returns: Success (BIT), ErrorMessage
 -- =====================================================================
 SET NOCOUNT ON;
@@ -15,13 +18,15 @@ SET XACT_ABORT ON;
 BEGIN TRY
     BEGIN TRANSACTION;
 
-    DECLARE @orderId        UNIQUEIDENTIFIER;
-    DECLARE @redeemedAt     DATETIME2(7);
-    DECLARE @orderDate      DATE;
+    DECLARE @orderId             UNIQUEIDENTIFIER;
+    DECLARE @redeemedAt          DATETIME2(7);
+    DECLARE @orderDate           DATE;
+    DECLARE @orderRestaurantId   UNIQUEIDENTIFIER;
 
-    SELECT  @orderId    = [id],
-            @redeemedAt = [redeemedAt],
-            @orderDate  = [date]
+    SELECT  @orderId           = [id],
+            @redeemedAt        = [redeemedAt],
+            @orderDate         = [date],
+            @orderRestaurantId = [restaurantId]
     FROM    [TSA].[Order]
     WHERE   [token] = @token;
 
@@ -29,6 +34,13 @@ BEGIN TRY
     BEGIN
         ROLLBACK TRANSACTION;
         SELECT 0 AS Success, 'Order not found.' AS ErrorMessage;
+        RETURN;
+    END
+
+    IF @orderRestaurantId <> @restaurantId
+    BEGIN
+        ROLLBACK TRANSACTION;
+        SELECT 0 AS Success, 'This order is not for your restaurant.' AS ErrorMessage;
         RETURN;
     END
 
