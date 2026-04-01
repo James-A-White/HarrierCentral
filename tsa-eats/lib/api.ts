@@ -118,6 +118,12 @@ export async function createReturnSession(workerId: string) {
   );
 }
 
+export async function loginByPhone(phoneNumber: string) {
+  return callPost<{ Success: number; ErrorMessage: string | null; sessionId: string; workerId: string; firstName: string; lastName: string }>(
+    'loginByPhone', { phoneNumber }
+  );
+}
+
 export async function validateSession(sessionId: string): Promise<WorkerSession | null> {
   const rows = await callPost<WorkerSession>('validateSession', { sessionId });
   return rows?.[0] ?? null;

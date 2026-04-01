@@ -26,11 +26,10 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-zinc-950 p-4">
+    <main className="min-h-screen bg-zinc-950">
+      <img src="https://harriercentral.blob.core.windows.net/harrier/tsaEatsLogo.jpg" alt="TSA Eats" className="w-full h-auto block" />
+      <div className="flex items-center justify-center p-4 py-8">
       <div className="w-full max-w-sm">
-        <div className="flex justify-center mb-6">
-          <img src="https://harriercentral.blob.core.windows.net/harrier/tsaEatsLogo.png" alt="TSA Eats" className="w-64" />
-        </div>
         <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-800">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -54,6 +53,7 @@ export default function AdminLoginPage() {
             </button>
           </form>
         </div>
+      </div>
       </div>
     </main>
   );
