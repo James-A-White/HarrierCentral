@@ -26,12 +26,10 @@ export default function RestaurantLoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
+    <main className="min-h-screen bg-zinc-950">
+      <img src="https://harriercentral.blob.core.windows.net/harrier/tsaEatsLogo.jpg" alt="TSA Eats" className="w-full h-auto block" />
+      <div className="flex items-center justify-center p-4 py-8">
       <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <h1 className="text-white text-2xl font-bold">TSA Eats</h1>
-          <p className="text-zinc-400 text-sm mt-1">Restaurant portal</p>
-        </div>
         <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-800">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -55,6 +53,7 @@ export default function RestaurantLoginPage() {
             </button>
           </form>
         </div>
+      </div>
       </div>
     </main>
   );

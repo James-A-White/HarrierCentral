@@ -36,6 +36,7 @@ export default function ScanPage({
 
   return (
     <main className="min-h-screen bg-zinc-950">
+      <img src="https://harriercentral.blob.core.windows.net/harrier/tsaEatsLogo.jpg" alt="TSA Eats" className="w-full h-auto block" />
       <header className="sticky top-0 bg-zinc-950/90 backdrop-blur border-b border-zinc-800 z-10">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
           <h1 className="text-white font-bold">TSA Eats — Order</h1>
