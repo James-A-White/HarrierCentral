@@ -1,0 +1,21 @@
+# Next.js build output
+.next/
+out/
+
+# Dependencies
+node_modules/
+
+# Environment files
+.env*.local
+
+# Deployment artefact
+deploy.zip
+
+# TypeScript
+*.tsbuildinfo
+
+# macOS
+.DS_Store
+
+# Word temp/lock files
+~$*
