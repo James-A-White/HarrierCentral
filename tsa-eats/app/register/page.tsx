@@ -99,12 +99,10 @@ function RegisterForm() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-zinc-950 p-4">
+    <main className="min-h-screen bg-zinc-950">
+      <img src="https://harriercentral.blob.core.windows.net/harrier/tsaEatsLogo.jpg" alt="TSA Eats" className="w-full h-auto block" />
+      <div className="flex items-center justify-center p-4 py-8">
       <div className="w-full max-w-md">
-        <div className="mb-8 flex justify-center">
-          <img src="https://harriercentral.blob.core.windows.net/harrier/tsaEatsLogo.png" alt="TSA Eats" className="w-80" />
-        </div>
-
         <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-800">
           {tokenError && (
             <div className="mb-4 p-3 bg-red-950 border border-red-800 rounded-lg text-red-300 text-sm">{tokenError}</div>
@@ -161,6 +159,7 @@ function RegisterForm() {
             </button>
           </form>
         </div>
+      </div>
       </div>
     </main>
   );

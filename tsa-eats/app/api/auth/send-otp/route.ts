@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // import { createOtp } from '@/lib/api';
 // import { sendOtpSms } from '@/lib/twilio';
 // ─────────────────────────────────────────────────────────────────────────────
-import { createWorkerAndSession } from '@/lib/api';
+import { createWorkerAndSession, loginByPhone } from '@/lib/api';
 import { sessionCookieOptions } from '@/lib/session';
 
 export async function POST(req: NextRequest) {
@@ -41,12 +41,16 @@ export async function POST(req: NextRequest) {
       res.cookies.set(sessionCookieOptions(reg.sessionId as string));
       return res;
     } else {
-      // Returning user — workerId lookup requires OTP validation.
-      // Re-enable when SMS infrastructure is active.
-      return NextResponse.json(
-        { error: 'SMS verification is temporarily unavailable. Please contact support.' },
-        { status: 503 }
-      );
+      // Returning user — OTP bypass until SMS infrastructure is active.
+      // TODO: replace with tsa_validateOtp + tsa_createReturnSession once Twilio is provisioned.
+      const retRows = await loginByPhone(phoneNumber);
+      const ret = retRows?.[0];
+      if (!ret || Number(ret.Success) === 0) {
+        return NextResponse.json({ error: ret?.ErrorMessage ?? 'Account not found.' }, { status: 401 });
+      }
+      const res = NextResponse.json({ ok: true, firstName: ret.firstName, lastName: ret.lastName });
+      res.cookies.set(sessionCookieOptions(ret.sessionId as string));
+      return res;
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);

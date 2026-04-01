@@ -47,13 +47,11 @@ export default function VerifyPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-zinc-950 p-4">
+    <main className="min-h-screen bg-zinc-950">
+      <img src="https://harriercentral.blob.core.windows.net/harrier/tsaEatsLogo.jpg" alt="TSA Eats" className="w-full h-auto block" />
+      <div className="flex items-center justify-center p-4 py-8">
       <div className="w-full max-w-md">
-        <div className="mb-8 flex flex-col items-center gap-3">
-          <img src="https://harriercentral.blob.core.windows.net/harrier/tsaEatsLogo.png" alt="TSA Eats" className="w-72" />
-          <p className="text-zinc-400 text-sm">Enter the 6-digit code we sent to your phone</p>
-        </div>
-
+        <p className="text-zinc-400 text-sm text-center mb-6">Enter the 6-digit code we sent to your phone</p>
         <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-800">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -91,6 +89,7 @@ export default function VerifyPage() {
             </button>
           </form>
         </div>
+      </div>
       </div>
     </main>
   );
