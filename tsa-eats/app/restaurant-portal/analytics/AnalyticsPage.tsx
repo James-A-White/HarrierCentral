@@ -45,6 +45,7 @@ export default function AnalyticsPage({
 
   return (
     <main className="min-h-screen bg-zinc-950">
+      <img src="https://harriercentral.blob.core.windows.net/harrier/tsaEatsLogo.jpg" alt="TSA Eats" className="w-full h-auto block" />
       <header className="sticky top-0 bg-zinc-950/90 backdrop-blur border-b border-zinc-800 z-10">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <h1 className="text-white font-bold">Analytics</h1>
@@ -114,6 +115,33 @@ export default function AnalyticsPage({
         {/* Summary view */}
         {view === 'summary' && summaryByDate.map(([date, rows]) => {
           const dayTotal = rows.reduce((sum, r) => sum + Number(r.count), 0);
+
+          if (showRestaurant) {
+            // Admin view: aggregate to restaurant totals only
+            const byRestaurant = new Map<string, number>();
+            for (const row of rows) {
+              byRestaurant.set(row.restaurantName, (byRestaurant.get(row.restaurantName) ?? 0) + Number(row.count));
+            }
+            const restaurantEntries = Array.from(byRestaurant.entries()).sort((a, b) => b[1] - a[1]);
+            return (
+              <div key={date} className="bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden">
+                <div className="px-5 py-4 border-b border-zinc-800 flex items-center justify-between">
+                  <p className="text-white font-semibold text-sm">{formatDate(date)}</p>
+                  <p className="text-white text-sm font-bold">{dayTotal} total</p>
+                </div>
+                <div className="divide-y divide-zinc-800">
+                  {restaurantEntries.map(([name, total], i) => (
+                    <div key={i} className="px-5 py-3 flex items-center justify-between gap-4">
+                      <p className="text-zinc-300 text-sm">{name}</p>
+                      <p className="text-zinc-400 text-sm font-semibold shrink-0">{total}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          }
+
+          // Restaurant portal view: meal-level breakdown
           return (
             <div key={date} className="bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden">
               <div className="px-5 py-3 border-b border-zinc-800 flex items-center justify-between">
@@ -123,12 +151,7 @@ export default function AnalyticsPage({
               <div className="divide-y divide-zinc-800">
                 {rows.map((row, i) => (
                   <div key={i} className="px-5 py-3 flex items-center justify-between gap-4">
-                    <div>
-                      {showRestaurant && (
-                        <p className="text-zinc-500 text-xs">{row.restaurantName}</p>
-                      )}
-                      <p className="text-white text-sm">{row.mealName}</p>
-                    </div>
+                    <p className="text-white text-sm">{row.mealName}</p>
                     <p className="text-zinc-400 text-sm font-semibold shrink-0">× {row.count}</p>
                   </div>
                 ))}

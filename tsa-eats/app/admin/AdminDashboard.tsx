@@ -64,8 +64,9 @@ export default function AdminDashboard({ invites: initial }: { invites: Invite[]
   const registered = invites.filter((i) => i.status === 'Registered').length;
 
   return (
-    <main className="min-h-screen bg-zinc-950 p-6">
-      <div className="max-w-3xl mx-auto space-y-8">
+    <main className="min-h-screen bg-zinc-950">
+      <img src="https://harriercentral.blob.core.windows.net/harrier/tsaEatsLogo.jpg" alt="TSA Eats" className="w-full h-auto block" />
+      <div className="max-w-3xl mx-auto space-y-8 p-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-white">TSA Eats — Admin</h1>
           <div className="flex items-center gap-4">

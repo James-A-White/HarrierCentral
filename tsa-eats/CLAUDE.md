@@ -11,7 +11,7 @@ When asked to deploy:
 2. **Bump the version** — increment the minor version by 1 in `package.json`:
    - `0.1` → `0.2`, `0.9` → `0.10`, `0.10` → `0.11`, `2.1` → `2.2`, `2.10` → `2.11`
    - The patch component is always `0` (stored as `X.Y.0` in `package.json`)
-   - Current version: `0.7.0`
+   - Current version: `1.0.0`
 
 3. **Build and deploy to production** using these steps (always use absolute paths):
    ```bash

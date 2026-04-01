@@ -14,13 +14,18 @@ export default async function RestaurantScanPage({
   const { token } = await params;
   const order = await getOrderByToken(token);
 
+  const logo = <img src="https://harriercentral.blob.core.windows.net/harrier/tsaEatsLogo.jpg" alt="TSA Eats" className="w-full h-auto block" />;
+
   if (!order) {
     return (
-      <main className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
-        <div className="text-center space-y-3">
-          <div className="text-5xl">❌</div>
-          <h1 className="text-white text-xl font-bold">Order not found</h1>
-          <p className="text-zinc-400 text-sm">This QR code is not recognised.</p>
+      <main className="min-h-screen bg-zinc-950">
+        {logo}
+        <div className="flex items-center justify-center p-4 py-16">
+          <div className="text-center space-y-3">
+            <div className="text-5xl">❌</div>
+            <h1 className="text-white text-xl font-bold">Order not found</h1>
+            <p className="text-zinc-400 text-sm">This QR code is not recognised.</p>
+          </div>
         </div>
       </main>
     );
@@ -29,11 +34,14 @@ export default async function RestaurantScanPage({
   // Both IDs come from the DB (SQL Server uppercase UUIDs) — lowercase compare is belt-and-braces
   if (order.restaurantId.toLowerCase() !== session.restaurantId.toLowerCase()) {
     return (
-      <main className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
-        <div className="text-center space-y-3">
-          <div className="text-5xl">⛔</div>
-          <h1 className="text-white text-xl font-bold">Wrong restaurant</h1>
-          <p className="text-zinc-400 text-sm">This order is for {order.restaurantName}.</p>
+      <main className="min-h-screen bg-zinc-950">
+        {logo}
+        <div className="flex items-center justify-center p-4 py-16">
+          <div className="text-center space-y-3">
+            <div className="text-5xl">⛔</div>
+            <h1 className="text-white text-xl font-bold">Wrong restaurant</h1>
+            <p className="text-zinc-400 text-sm">This order is for {order.restaurantName}.</p>
+          </div>
         </div>
       </main>
     );
