@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to create invite.' }, { status: 500 });
   }
 
-  const registrationUrl = `https://signup.tsaeats.org?t=${invite.token}`;
+  const registrationUrl = `https://login.tsaeats.org?t=${invite.token}`;
 
   return NextResponse.json({ ...invite, registrationUrl });
 }
