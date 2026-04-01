@@ -2,3 +2,12 @@
 *.env
 .env.local
 node_modules/
+
+# macOS
+.DS_Store
+
+# Word temp/lock files
+~$*
+
+# Azure Functions local settings (contains credentials)
+api/local.settings.json
