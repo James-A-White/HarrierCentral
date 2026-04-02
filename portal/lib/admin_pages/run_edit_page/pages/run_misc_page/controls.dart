@@ -415,7 +415,7 @@ extension MiscControlsExtension on RunEditPageController {
       editedFieldValue: initialValue.toString(),
       originalFieldValue: (originalData.canEditRunAttendence ?? -2).toString(),
       globalKey: GlobalKey<FormFieldState>(),
-      label: 'Can edit run attendance',
+      label: 'User can set run attendance',
       tabIndex: tabIndex,
       onUndo: () {
         runAttendance.value = originalData.canEditRunAttendence ?? -2;
