@@ -191,7 +191,7 @@ extension KennelInfoControlsExtension on KennelPageFormController {
       globalKey: GlobalKey<FormFieldState>(),
       label: 'Kennel admin email list',
       maxStringLength: 500,
-      minStringLength: 6,
+      minStringLength: 0,
       readonly: false,
       maxLines: 3,
       includeOverrideButton: false,
@@ -199,7 +199,7 @@ extension KennelInfoControlsExtension on KennelPageFormController {
       tabIndex: tabIndex,
       updateEditedValue: (String? value) {
         editedData.value =
-            editedData.value.copyWith(kennelAdminEmailList: value!);
+            editedData.value.copyWith(kennelAdminEmailList: value);
         uiControls[fieldKey]?.editedFieldValue = value;
       },
     );

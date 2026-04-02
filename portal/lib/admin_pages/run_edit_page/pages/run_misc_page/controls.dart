@@ -25,6 +25,7 @@ extension MiscControlsExtension on RunEditPageController {
     _registerPublishOnHashrunsControl(tabKey, tabIndex);
     _registerRunAudienceControl(tabKey, tabIndex);
     _registerAllowWebLinkControl(tabKey, tabIndex);
+    _registerRunAttendanceControl(tabKey, tabIndex);
   }
 
   // ---------------------------------------------------------------------------
@@ -388,6 +389,42 @@ extension MiscControlsExtension on RunEditPageController {
         allowWebLink.value = intVal;
         editedData.value = editedData.value.copyWith(
           evtDisseminateAllowWebLinks: intVal,
+        );
+        uiControls[fieldKey]?.editedFieldValue = intVal.toString();
+      },
+    );
+  }
+
+  void _registerRunAttendanceControl(String tabKey, int tabIndex) {
+    final fieldKey = '${tabKey}_${RunMiscField.runAttendance.name}';
+    final initialValue = editedData.value.canEditRunAttendence ?? -2;
+    runAttendance.value = initialValue;
+
+    uiControls[fieldKey] = UiControlDefinition(
+      controlType: UiControlType.dropdown,
+      sidebarEntryKey: fieldKey,
+      sidebarExitKey: '${tabKey}_generic',
+      sidebarData: const SideBarData(
+        'Edit Run Attendance',
+        FontAwesome5Solid.users,
+        'Controls who can edit attendance for this run after it has taken place.\n\n'
+            'Select "Use Kennel Setting" to inherit the default from your '
+            'kennel configuration.',
+      ),
+      dropdownItems: CAN_EDIT_RUN_ATTENDANCE_OPTIONS,
+      editedFieldValue: initialValue.toString(),
+      originalFieldValue: (originalData.canEditRunAttendence ?? -2).toString(),
+      globalKey: GlobalKey<FormFieldState>(),
+      label: 'Can edit run attendance',
+      tabIndex: tabIndex,
+      onUndo: () {
+        runAttendance.value = originalData.canEditRunAttendence ?? -2;
+      },
+      updateEditedValue: (dynamic value) {
+        final intVal = int.tryParse(value.toString()) ?? -2;
+        runAttendance.value = intVal;
+        editedData.value = editedData.value.copyWith(
+          canEditRunAttendence: intVal,
         );
         uiControls[fieldKey]?.editedFieldValue = intVal.toString();
       },

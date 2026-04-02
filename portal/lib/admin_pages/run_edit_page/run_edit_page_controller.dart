@@ -164,6 +164,9 @@ class RunEditPageController extends TabUiController
   /// Allow web link sharing (evtDisseminateAllowWebLinks). 2 = Use Kennel Setting.
   final RxInt allowWebLink = 2.obs;
 
+  /// Can edit run attendance (canEditRunAttendence). -2 = Use Kennel Setting.
+  final RxInt runAttendance = (-2).obs;
+
   // ---------------------------------------------------------------------------
   // State - Tags
   // ---------------------------------------------------------------------------
@@ -581,6 +584,7 @@ class RunEditPageController extends TabUiController
     publishOnHashruns.value = originalData.evtDisseminateHashRunsDotOrg ?? -2;
     runAudience.value = originalData.evtDisseminationAudience ?? -2;
     allowWebLink.value = originalData.evtDisseminateAllowWebLinks ?? 2;
+    runAttendance.value = originalData.canEditRunAttendence ?? -2;
 
     // Reset tags
     tags1.value = originalData.tags1;
@@ -822,6 +826,12 @@ class RunEditPageController extends TabUiController
             original.evtDisseminateAllowWebLinks) {
       changes['evtDisseminateAllowWebLinks'] =
           edited.evtDisseminateAllowWebLinks;
+    }
+
+    // Can edit run attendance (canEditRunAttendence)
+    if (isAddMode ||
+        edited.canEditRunAttendence != original.canEditRunAttendence) {
+      changes['canEditRunAttendence'] = edited.canEditRunAttendence;
     }
 
     // -------------------------------------------------------------------------
