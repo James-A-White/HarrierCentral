@@ -1,4 +1,7 @@
 
+1.3.5+606
+    • Relabelled "Can edit run attendance" to "User can set run attendance"
+
 1.3.4+605
     • Location Lookup: dialog now auto-searches on open using the place description value
     • Auto-selects when exactly 1 past run matches; filters list for multiple matches; falls through to gazetteer search when no match
