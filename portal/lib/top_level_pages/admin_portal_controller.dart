@@ -3,6 +3,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:hcportal/firebase_options.dart';
 import 'package:hcportal/imports.dart';
+import 'package:web/web.dart' as web;
 
 class AdminPortalController extends GetxController {
   final String authCode = const Uuid().v4();
@@ -334,6 +335,19 @@ class AdminPortalController extends GetxController {
     debugPrint(jsonResult.startsWith(ERROR_PREFIX)
         ? 'SP 13 [getLandingPageData] called — FAILED'
         : 'SP 13 [getLandingPageData] called — success');
+
+    // Stale device credentials (e.g. device record deleted server-side) cause
+    // auth to fail even though HIVE_IS_LOGGED_IN is still true.  Without
+    // clearing Hive the user is stuck — every reload fails the same way.
+    // A private/incognito window fixes it because it starts with empty Hive.
+    // Reproduce that fix automatically: clear Hive and reload to force a fresh
+    // QR-code login whenever the startup SP call returns an auth error.
+    if (jsonResult.startsWith(ERROR_PREFIX)) {
+      await box.clear();
+      web.window.location.reload();
+      return;
+    }
+
     if (jsonResult.length > 10) {
       final items = ((json.decode(jsonResult) as List<dynamic>)[0]
           as List<dynamic>)[0] as Map<String, dynamic>;

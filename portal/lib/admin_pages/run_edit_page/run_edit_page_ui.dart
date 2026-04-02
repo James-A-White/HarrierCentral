@@ -731,6 +731,13 @@ class RunMiscTabContent extends StatelessWidget {
             RunMiscField.allowWebLink,
             controller.allowWebLink,
           ),
+
+          // Attendance Section
+          HelperWidgets().categoryLabelWidget('Attendance'),
+          _buildPublishingDropdown(
+            RunMiscField.runAttendance,
+            controller.runAttendance,
+          ),
         ],
       );
     });

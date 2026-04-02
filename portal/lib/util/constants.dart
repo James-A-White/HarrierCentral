@@ -237,6 +237,13 @@ const Map<String, int> CAN_EDIT_RUN_ATTENDENCE_STRINGS = <String, int>{
   "Use the Kennel's default setting for run attendence": 2,
 };
 
+// int-keyed version for the run editor dropdown (-2 = use kennel setting sentinel)
+const Map<int, String> CAN_EDIT_RUN_ATTENDANCE_OPTIONS = <int, String>{
+  -2: 'Use Kennel Setting',
+  0: 'No',
+  1: 'Yes',
+};
+
 const Map<String, int> YES_NO_INHERIT = <String, int>{
   'No': 0,
   'Yes': 1,
