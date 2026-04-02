@@ -1,4 +1,9 @@
 
+1.3.3+604
+    • Add "Can Edit Run Attendance" dropdown to run editor Misc tab
+    • Make Kennel admin email list optional
+    • Fix: stale device credentials no longer cause a permanent auth failure on login
+
 1.3.2+603
     • Kennel admin email field made editable (was read-only)
 
