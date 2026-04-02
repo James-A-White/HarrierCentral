@@ -1,4 +1,9 @@
 
+1.3.4+605
+    • Location Lookup: dialog now auto-searches on open using the place description value
+    • Auto-selects when exactly 1 past run matches; filters list for multiple matches; falls through to gazetteer search when no match
+    • Gazetteer: "Searching…" text while loading, better spinner contrast, auto-selects single result
+
 1.3.3+604
     • Add "Can Edit Run Attendance" dropdown to run editor Misc tab
     • Make Kennel admin email list optional

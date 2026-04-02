@@ -142,7 +142,7 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
     _filteredLocations = List.of(_allLocations);
     _initMapController();
     _initGazetteerMapController();
-    _preselectFromPlaceDescription();
+    _applyInitialSearch();
 
     // After the first frame, scroll the list to centre the pre-selected item.
     if (_selectedIndex != null) {
@@ -206,24 +206,41 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
     _allLocations = result;
   }
 
-  /// If [initialPlaceDescription] matches a location in the list, select it
-  /// and centre the map on its coordinates.
-  void _preselectFromPlaceDescription() {
-    final desc = widget.initialPlaceDescription?.trim().toLowerCase() ?? '';
+  /// Applies [initialPlaceDescription] on open:
+  /// 1. Pre-fills the search field and filters the previous-runs list.
+  /// 2. Exactly one match → auto-selects it.
+  /// 3. Multiple matches → shows the filtered list (user picks).
+  /// 4. No matches → switches to the gazetteer tab, pre-fills it, and
+  ///    automatically fires a search.
+  void _applyInitialSearch() {
+    final desc = widget.initialPlaceDescription?.trim() ?? '';
     if (desc.isEmpty) return;
 
-    for (var i = 0; i < _filteredLocations.length; i++) {
-      if (_filteredLocations[i].label.toLowerCase() == desc) {
-        _selectedIndex = i;
-        final loc = _filteredLocations[i];
-        if (loc.lat != null && loc.lon != null) {
-          _mapController.center =
-              LatLng(Angle.degree(loc.lat!), Angle.degree(loc.lon!));
-          _mapController.zoom = 14;
-        }
-        break;
+    // Pre-fill the search field and filter the list
+    _searchController.text = desc;
+    final query = desc.toLowerCase();
+    _filteredLocations = _allLocations
+        .where((loc) => loc.label.toLowerCase().contains(query))
+        .toList();
+
+    if (_filteredLocations.length == 1) {
+      // Exactly one match — auto-select it and centre the map
+      _selectedIndex = 0;
+      final loc = _filteredLocations[0];
+      if (loc.lat != null && loc.lon != null) {
+        _mapController.center =
+            LatLng(Angle.degree(loc.lat!), Angle.degree(loc.lon!));
+        _mapController.zoom = 14;
       }
+    } else if (_filteredLocations.isEmpty) {
+      // No matches in past runs — switch to gazetteer and auto-search
+      _gazetteerSearchController.text = desc;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _tabController.animateTo(1);
+        unawaited(_performGazetteerSearch());
+      });
     }
+    // Multiple matches: just show the filtered list, no auto-selection needed
   }
 
   /// Centres the map on the kennel's coordinates.
@@ -616,8 +633,10 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
                     builder: (context, x, y, z) {
                       final url =
                           'https://www.google.com/maps/vt/pb=!1m4!1m3!1i$z!2i$x!3i$y!2m3!1e0!2sm!3i420120488!3m7!2sen!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0!5m1!1e0!23i4111425';
-                      return Image.network(url, fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const SizedBox.shrink());
+                      return Image.network(url,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              const SizedBox.shrink());
                     },
                   ),
 
@@ -670,7 +689,7 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
                   border: Border.all(color: Colors.white, width: 2),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.4),
+                      color: Colors.black.withValues(alpha: 0.4),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -694,7 +713,7 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
                   color: isSelected ? Colors.green : Colors.red[800],
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
+                      color: Colors.black.withValues(alpha: 0.3),
                       blurRadius: 2,
                     ),
                   ],
@@ -790,6 +809,7 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
                           color: Colors.white,
+                          backgroundColor: Colors.blue,
                         ),
                       )
                     : const Text(
@@ -808,9 +828,11 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 32),
                     child: Text(
-                      _gazetteerSearchController.text.isEmpty
-                          ? 'Enter a place name, address, or establishment'
-                          : 'No results found',
+                      _isSearching
+                          ? 'Searching…'
+                          : _gazetteerSearchController.text.isEmpty
+                              ? 'Enter a place name, address, or establishment'
+                              : 'No results found',
                       style:
                           bodyStyleBlack.copyWith(color: Colors.grey.shade700),
                       textAlign: TextAlign.center,
@@ -911,7 +933,6 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
         );
         setState(() {
           _gazetteerResults = azurePlace.results ?? [];
-          // Centre map on first result if available
           if (_gazetteerResults.isNotEmpty) {
             final first = _gazetteerResults[0];
             if (first.position?.lat != null && first.position?.lon != null) {
@@ -919,7 +940,13 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
                 Angle.degree(first.position!.lat!),
                 Angle.degree(first.position!.lon!),
               );
-              _gazetteerMapController.zoom = 12;
+              // Zoom closer when there's only one result
+              _gazetteerMapController.zoom =
+                  _gazetteerResults.length == 1 ? 14 : 12;
+            }
+            // Auto-select when only one result returned
+            if (_gazetteerResults.length == 1) {
+              _gazetteerSelectedIndex = 0;
             }
           }
         });
@@ -1011,8 +1038,10 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
                     builder: (context, x, y, z) {
                       final url =
                           'https://www.google.com/maps/vt/pb=!1m4!1m3!1i$z!2i$x!3i$y!2m3!1e0!2sm!3i420120488!3m7!2sen!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0!5m1!1e0!23i4111425';
-                      return Image.network(url, fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const SizedBox.shrink());
+                      return Image.network(url,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              const SizedBox.shrink());
                     },
                   ),
 
@@ -1064,7 +1093,7 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
                     border: Border.all(color: Colors.white, width: 2),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.4),
+                        color: Colors.black.withValues(alpha: 0.4),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),
@@ -1088,7 +1117,7 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
                     color: isSelected ? Colors.green : Colors.blue[700],
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
+                        color: Colors.black.withValues(alpha: 0.3),
                         blurRadius: 2,
                       ),
                     ],
