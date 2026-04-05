@@ -1,0 +1,94 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getGlobalCalendar",
+  "version": "1.0.0",
+  "description": "Returns one row per (event date, kennel) for all kennels with publicly visible events in the given date window. All kennels are included regardless of whether they have a KennelWebsite row — logo and colour are NULL for unconfigured kennels and the frontend falls back to an initial-letter placeholder. Used by the harriercentral.com global run calendar with load-more pagination.",
+  "parameters": [
+    {
+      "name": "fromDate",
+      "type": "DATE",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Start date (inclusive). Defaults to today (UTC) if NULL."
+    },
+    {
+      "name": "daysLimit",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Number of days to include (default 30, clamped to 1–365)."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Sentinel",
+      "description": "Always returns a single row (CalendarAvailable = 1) so the shim does not emit HTTP 404 when the calendar window has no events. An empty window is a valid response, not a missing resource.",
+      "columns": [
+        {
+          "name": "CalendarAvailable",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "CalendarRows",
+      "description": "One row per (EventDate, Kennel) combination. DISTINCT collapses multiple events on the same day for the same kennel. Ordered by EventDate ASC, KennelName ASC. Empty rowset = no events in the date window.",
+      "columns": [
+        {
+          "name": "EventDate",
+          "type": "DATE",
+          "nullable": false,
+          "description": "Local date of the event as stored in EventStartDatetime (datetimeoffset cast to DATE)."
+        },
+        {
+          "name": "KennelSlug",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "URL slug (Kennel.KennelUniqueShortName). Used to build the kennel homepage URL."
+        },
+        {
+          "name": "KennelName",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Full kennel name for display and alt text."
+        },
+        {
+          "name": "KennelLogo",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Logo URL from HC.KennelWebsite.LogoUrl. May be NULL or a bundle:// ref — caller should check for https:// prefix before rendering as an image."
+        },
+        {
+          "name": "PrimaryColor",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "CSS hex colour from HC.KennelWebsite.PrimaryColor. Used as the background for the logo placeholder when no valid image URL is available."
+        },
+        {
+          "name": "PublicKennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Public kennel GUID. Used as a stable React list key."
+        },
+        {
+          "name": "EventNumber",
+          "type": "INT",
+          "nullable": false,
+          "description": "MIN(EventNumber) for this kennel on this date. Used to build the run detail URL (/runs/{EventNumber}). May be 0 for uncounted events; caller falls back to the kennel homepage in that case."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never remove the sentinel rowset (rowset 0) — callers rely on it to distinguish empty-window from error"
+  ]
+}

@@ -159,16 +159,32 @@ export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false }: Stic
             {/* Right — nav links + login */}
             <div className="flex items-center gap-8">
               <nav className="hidden items-center gap-8 text-xl dark:text-white text-zinc-900 md:flex">
-                {["Home", "Runs", "Photos", "Stats", "Songs", "About"].map((item) => (
+                {["Home", "Runs", "Events", "Stats", "Songs", "About"].map((item) => (
                   <a
                     key={item}
-                    href={item === "Home" ? `/${slug}` : item === "Runs" ? `/${slug}/runs` : item === "Songs" ? `/${slug}/songs` : item === "Stats" ? `/${slug}/stats` : `#${item.toLowerCase()}`}
+                    href={
+                      item === "Home"   ? `/${slug}`
+                      : item === "Runs"   ? `/${slug}/runs`
+                      : item === "Events" ? `/${slug}/events`
+                      : item === "Songs"  ? `/${slug}/songs`
+                      : item === "Stats"  ? `/${slug}/stats`
+                      : `#${item.toLowerCase()}`
+                    }
                     className="transition-colors hover:dark:text-white hover:text-zinc-900"
                   >
                     {item}
                   </a>
                 ))}
               </nav>
+
+              {/* Harrier Central — back to the global run calendar */}
+              <a
+                href="/"
+                className="hidden md:block text-xl dark:text-white/50 text-zinc-400 transition-colors hover:dark:text-white hover:text-zinc-900"
+              >
+                Harrier Central
+              </a>
+
               <Button
                 size="sm"
                 className="hidden rounded-full text-base font-semibold md:flex"
@@ -205,16 +221,32 @@ export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false }: Stic
             className="relative overflow-hidden md:hidden border-t dark:border-white/[0.08] border-zinc-200/50"
           >
             <nav className="flex flex-col px-4 py-3 gap-1">
-              {["Home", "Runs", "Photos", "Stats", "Songs", "About"].map((item) => (
+              {["Home", "Runs", "Events", "Stats", "Songs", "About"].map((item) => (
                 <a
                   key={item}
-                  href={item === "Home" ? `/${slug}` : item === "Runs" ? `/${slug}/runs` : item === "Songs" ? `/${slug}/songs` : item === "Stats" ? `/${slug}/stats` : `#${item.toLowerCase()}`}
+                  href={
+                    item === "Home"   ? `/${slug}`
+                    : item === "Runs"   ? `/${slug}/runs`
+                    : item === "Events" ? `/${slug}/events`
+                    : item === "Songs"  ? `/${slug}/songs`
+                    : item === "Stats"  ? `/${slug}/stats`
+                    : `#${item.toLowerCase()}`
+                  }
                   className="rounded-xl px-3 py-3 text-xl font-medium dark:text-white text-zinc-900 dark:hover:bg-white/[0.06] hover:bg-zinc-100 transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {item}
                 </a>
               ))}
+              <div className="pt-2 mt-1 border-t dark:border-white/[0.08] border-zinc-200/50">
+                <a
+                  href="/"
+                  className="block rounded-xl px-3 py-3 text-xl font-medium dark:text-white/50 text-zinc-400 dark:hover:bg-white/[0.06] hover:bg-zinc-100 transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Harrier Central
+                </a>
+              </div>
               <div className="pt-2 mt-1 border-t dark:border-white/[0.08] border-zinc-200/50">
                 <button
                   className="w-full rounded-full py-3 text-xl font-semibold"

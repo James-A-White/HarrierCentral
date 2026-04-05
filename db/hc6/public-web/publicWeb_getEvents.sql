@@ -38,8 +38,14 @@ AS
 --              On validation or runtime error: { Success=0, ErrorMessage }.
 -- Author:      Harrier Central
 -- Created:     2026-03-28
+-- Updated:     2026-04-05 — Fee columns now COALESCE event-level override with
+--                           kennel defaults (DefaultEventPriceForMembers/NonMembers/
+--                           CurrencyType). Event fee fields are NULL when the event
+--                           uses the kennel default; non-NULL only for per-event
+--                           overrides. Column names and types are unchanged.
 -- HC5 Source:  None — new for HC6 public web
--- Breaking Changes: None
+-- Breaking Changes: None — column names unchanged; values now non-null when kennel
+--                   has a default fee set.
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -98,6 +104,20 @@ BEGIN TRY
         RETURN;
     END;
 
+    -- ── Kennel-level fee defaults ────────────────────────────────────────────
+    -- Event fee fields are NULL when the event uses the kennel's default fee.
+    -- Resolved here so Rowset 1 can COALESCE without an extra join.
+
+    DECLARE @DefaultPriceForMembers    DECIMAL(10,4);
+    DECLARE @DefaultPriceForNonMembers DECIMAL(10,4);
+    DECLARE @DefaultCurrencyType       NVARCHAR(10);
+
+    SELECT @DefaultPriceForMembers    = k.DefaultEventPriceForMembers,
+           @DefaultPriceForNonMembers = k.DefaultEventPriceForNonMembers,
+           @DefaultCurrencyType       = k.DefaultEventCurrencyType
+    FROM   HC.Kennel k
+    WHERE  k.id = @KennelId;
+
     -- ── Compute boundary date ────────────────────────────────────────────────
 
     DECLARE @BoundaryDate DATETIMEOFFSET(7) = NULL;
@@ -148,10 +168,11 @@ BEGIN TRY
         -- Event type display name (NULL when ThemeRunType has no matching row)
         ett.EventEnumName        AS EventTypeName,
 
-        -- Fees
-        e.EventPriceForMembers,
-        e.EventPriceForNonMembers,
-        e.EventCurrencyType,
+        -- Fees: event-level value overrides the kennel default; fall back to
+        -- kennel default when the event has no explicit fee set (NULL).
+        COALESCE(e.EventPriceForMembers,    @DefaultPriceForMembers)    AS EventPriceForMembers,
+        COALESCE(e.EventPriceForNonMembers, @DefaultPriceForNonMembers) AS EventPriceForNonMembers,
+        COALESCE(e.EventCurrencyType,       @DefaultCurrencyType)       AS EventCurrencyType,
 
         -- People
         e.Hares,

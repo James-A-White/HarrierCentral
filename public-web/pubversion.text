@@ -1,0 +1,11 @@
+
+0.6.0
+    • Global run calendar at root URL — all kennel runs by date with infinite scroll (365-day horizon)
+    • Calendar: every day shown; empty days display "No runs yet for today."
+    • Calendar: kennel logos link directly to that kennel's specific run detail page
+    • Nav: replaced "Photos" with "Events" (placeholder page at /{slug}/events)
+    • Nav: added "Harrier Central" link (far right, before Member Login) back to global calendar
+    • Fix: run fees now fall back to kennel default when no per-event override is set
+
+0.5.0
+    • Initial public web release — kennel landing pages, runs, stats, songs, run detail

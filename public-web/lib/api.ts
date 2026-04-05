@@ -286,6 +286,53 @@ export async function getStats(publicKennelId: string): Promise<GetStatsResult |
   };
 }
 
+// ─── getGlobalCalendar ────────────────────────────────────────────────────────
+
+/** Shape of a single row from publicWeb_getGlobalCalendar (Rowset 1). */
+export interface GlobalCalendarRow {
+  /** Local date of the event in YYYY-MM-DD form (DATE cast from EventStartDatetime). */
+  EventDate: string;
+  /** URL slug — used to build the kennel homepage link. */
+  KennelSlug: string;
+  KennelName: string;
+  /** Logo URL or null. Caller must verify it starts with "https://" before rendering. */
+  KennelLogo: string | null;
+  /** CSS hex colour for the logo placeholder. May be null; fall back to a default. */
+  PrimaryColor: string | null;
+  /** Stable public GUID — safe to use as a React list key. */
+  PublicKennelId: string;
+  /**
+   * EventNumber of the first event that day for this kennel (MIN when multiple).
+   * Used to build the run detail URL. May be 0 for uncounted events — fall back
+   * to the kennel homepage in that case.
+   */
+  EventNumber: number;
+}
+
+/**
+ * Fetches upcoming runs across all kennels for a given date window.
+ * Returns one entry per (date, kennel) — multiple events on the same day
+ * for the same kennel are collapsed to a single row by the SP.
+ *
+ * Returns an empty array when there are no events in the window (not an error).
+ */
+export async function getGlobalCalendar(options: {
+  fromDate: string;
+  daysLimit?: number;
+}): Promise<GlobalCalendarRow[]> {
+  const params: Record<string, string> = { fromDate: options.fromDate };
+  if (options.daysLimit !== undefined)
+    params.daysLimit = String(options.daysLimit);
+
+  // SP returns rowset 0 (sentinel) + rowset 1 (calendar rows). The sentinel
+  // ensures the shim never emits 404 for an empty date window.
+  const data = await callPublicWebApiAllRowsets("getGlobalCalendar", params);
+  if (!data) return [];
+
+  const [, calendarRows] = data as [unknown[], GlobalCalendarRow[]];
+  return calendarRows ?? [];
+}
+
 /**
  * Fetches landing page data for a kennel by its unique short name (URL slug).
  * Returns null when the kennel does not exist or is not publicly visible.

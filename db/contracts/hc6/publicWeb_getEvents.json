@@ -1,0 +1,236 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getEvents",
+  "version": "1.1.0",
+  "description": "Returns upcoming or past events for a single kennel, optionally limited by count, absolute date cutoff, or relative days offset. Fee columns reflect the resolved fee: event-level override when set, otherwise the kennel's default fee. Supports summary mode to omit heavy text fields for list views.",
+  "parameters": [
+    {
+      "name": "PublicKennelId",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "Public kennel GUID. Used to resolve the internal KennelId. Empty rowset (Rowset 0) returned if not found — shim emits 404."
+    },
+    {
+      "name": "IsFuture",
+      "type": "BIT",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "1 = upcoming events (EventStartDatetime >= now); 0 = past events."
+    },
+    {
+      "name": "MaxEvents",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Cap on the number of events returned. At least one of MaxEvents, DateCutoff, or DaysOffset must be supplied. May be combined with a date param (AND logic)."
+    },
+    {
+      "name": "DateCutoff",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Absolute far-boundary date (ISO 8601). Mutually exclusive with DaysOffset."
+    },
+    {
+      "name": "DaysOffset",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Relative boundary in days from now (always positive; direction from IsFuture). Mutually exclusive with DateCutoff."
+    },
+    {
+      "name": "SummaryOnly",
+      "type": "BIT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "When 1, heavy text fields (EventDescription, EventUrl, w3wJson) are returned as NULL. Use for list views to reduce payload."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "CountHeader",
+      "description": "Always exactly 1 row when the kennel exists. Empty (0 rows) = kennel not found → shim returns 404. Prevents a false 404 when the kennel simply has no matching events.",
+      "columns": [
+        {
+          "name": "TotalMatchingEvents",
+          "type": "INT",
+          "nullable": false,
+          "description": "Total events matching the filter before the MaxEvents cap is applied."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Events",
+      "description": "One row per event, ordered by EventStartDatetime ASC (upcoming) or DESC (past). Empty when no events match the filter.",
+      "columns": [
+        {
+          "name": "PublicEventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Public event GUID."
+        },
+        {
+          "name": "EventNumber",
+          "type": "INT",
+          "nullable": false,
+          "description": "Sequential run number for the kennel. Used in public-facing URLs (/runs/{EventNumber})."
+        },
+        {
+          "name": "EventName",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Display name of the event."
+        },
+        {
+          "name": "EventStartDatetime",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "Event start time with timezone offset."
+        },
+        {
+          "name": "EventEndDatetime",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Event end time, or NULL if not set."
+        },
+        {
+          "name": "EventTypeName",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "Human-readable event type from DomainValues.EventThemeType. NULL when ThemeRunType has no matching row."
+        },
+        {
+          "name": "EventPriceForMembers",
+          "type": "DECIMAL(10,4)",
+          "nullable": false,
+          "description": "Resolved member fee: COALESCE(Event.EventPriceForMembers, Kennel.DefaultEventPriceForMembers). Event-level value takes precedence when set (non-NULL); kennel default used otherwise. 0 means free. Never NULL in the result."
+        },
+        {
+          "name": "EventPriceForNonMembers",
+          "type": "DECIMAL(10,4)",
+          "nullable": false,
+          "description": "Resolved non-member fee: COALESCE(Event.EventPriceForNonMembers, Kennel.DefaultEventPriceForNonMembers). Same resolution logic as EventPriceForMembers. Never NULL in the result."
+        },
+        {
+          "name": "EventCurrencyType",
+          "type": "NVARCHAR(10)",
+          "nullable": true,
+          "description": "Resolved currency code: COALESCE(Event.EventCurrencyType, Kennel.DefaultEventCurrencyType). NULL only when neither the event nor the kennel has a currency set."
+        },
+        {
+          "name": "Hares",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "Comma-separated hare names, or NULL if not set."
+        },
+        {
+          "name": "LocationOneLineDesc",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "Single-line location description."
+        },
+        {
+          "name": "LocationStreet",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "Street address from SyncLocationStreet computed column (handles Facebook data override)."
+        },
+        {
+          "name": "LocationCity",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "City from SyncLocationCity computed column."
+        },
+        {
+          "name": "LocationPostCode",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "Postcode from SyncLocationPostCode computed column."
+        },
+        {
+          "name": "Latitude",
+          "type": "FLOAT",
+          "nullable": true,
+          "description": "Latitude from SyncLatitude computed column. NULL if no coordinates set."
+        },
+        {
+          "name": "Longitude",
+          "type": "FLOAT",
+          "nullable": true,
+          "description": "Longitude from SyncLongitude computed column. NULL if no coordinates set."
+        },
+        {
+          "name": "w3wJson",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "What3Words JSON blob. NULL when SummaryOnly = 1."
+        },
+        {
+          "name": "EventDescription",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Full event description from SyncDescription computed column. NULL when SummaryOnly = 1."
+        },
+        {
+          "name": "EventImage",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "Event image URL, or NULL if not set."
+        },
+        {
+          "name": "EventUrl",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "External event URL (e.g. Facebook event). NULL when SummaryOnly = 1."
+        },
+        {
+          "name": "Tags1",
+          "type": "INT",
+          "nullable": false,
+          "description": "Bitflag column 1 for run tags. Decoded client-side against the RunTag enum."
+        },
+        {
+          "name": "Tags2",
+          "type": "INT",
+          "nullable": false,
+          "description": "Bitflag column 2 for run tags."
+        },
+        {
+          "name": "Tags3",
+          "type": "INT",
+          "nullable": false,
+          "description": "Bitflag column 3 for run tags (reserved for future use)."
+        },
+        {
+          "name": "IsCountedRun",
+          "type": "BIT",
+          "nullable": false,
+          "description": "1 if this event counts toward a member's run tally."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "feeResolutionLogic": {
+    "description": "Fee fields follow a two-level fallback. The event record stores a per-event fee override; NULL means 'use the kennel default'. The SP resolves this at query time so callers always receive the effective fee.",
+    "precedence": [
+      "1. Event.EventPriceForMembers / EventPriceForNonMembers / EventCurrencyType — per-event override, set only when the event charges a different fee from the kennel default",
+      "2. Kennel.DefaultEventPriceForMembers / DefaultEventPriceForNonMembers / DefaultEventCurrencyType — kennel-wide default; applied when event fields are NULL"
+    ],
+    "notes": [
+      "EventPriceForMembers and EventPriceForNonMembers are never NULL in the result — kennel defaults (DECIMAL NOT NULL DEFAULT 0) guarantee a value",
+      "EventCurrencyType may still be NULL if neither the event nor the kennel has a currency configured",
+      "0 means free — callers should display 'Free' rather than '0.00'"
+    ]
+  },
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never make EventPriceForMembers or EventPriceForNonMembers nullable in the result — callers depend on non-null values after the kennel default fallback"
+  ]
+}

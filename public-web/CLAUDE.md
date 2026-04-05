@@ -382,4 +382,24 @@ In production, `HC_API_URL` is set as an environment variable on the hosting pla
 
 ---
 
-*Last updated: March 2026 — initial design brief*
+## Deployment Rule
+
+**Never deploy the public web autonomously.** James may want to group multiple
+features into a single deployment. Always make code changes and stop there —
+do not run the build, package, or `az webapp deploy` steps unless James
+explicitly says to deploy in that conversation turn.
+
+The deploy steps when James does ask:
+```bash
+cd public-web
+npm run build
+cp -r public .next/standalone/public
+cp -r .next/static .next/standalone/.next/static
+cd .next/standalone && zip -rq ../../deploy.zip . && cd ../..
+az webapp deploy --name harriercentralpublicweb --resource-group harrier --src-path deploy.zip --type zip
+rm deploy.zip
+```
+
+---
+
+*Last updated: April 2026 — added deployment rule; Events nav item; global calendar page*
