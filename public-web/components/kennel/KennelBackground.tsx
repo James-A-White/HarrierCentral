@@ -4,68 +4,54 @@ interface KennelBackgroundProps {
   kennel: MockKennel;
 }
 
+/** Platform default background — used when a kennel has no image configured. */
+const DEFAULT_BG = "/images/default-background.png";
+
+/**
+ * Blur applied to the default background tile. 0 = no blur (the tile is
+ * already dark and low-contrast). Increase slightly if a softening effect
+ * is ever desired (e.g. 4 for subtle, 14 for full match with kennel images).
+ */
+const DEFAULT_BG_BLUR_PX = 0;
+
 /**
  * Fixed background for non-hero kennel pages (songs, about, run detail, etc.).
  *
- * Mirrors ScrollHero's visual but frozen at a "comfortable reading" state:
- *   - Sharp base image (like landing page at scroll=0)
- *   - Blurred layer at 70% opacity on top (partial blur)
- *   - Colour overlay at 50% of the kennel's configured max opacity
- *     so the image stays clearly visible — not the 0.88 wall of black
- *     you'd see on the fully-scrolled landing page.
+ * When the kennel has a background image: mirrors ScrollHero's visual frozen at
+ * a "comfortable reading" state — sharp base + blurred layer + colour overlay.
  *
- * Falls back to the same gradient as ScrollHero when no image is set.
+ * When no kennel image is set: uses the platform default seamless tile
+ * (DEFAULT_BG) with the same layering, so every kennel has a rich backdrop.
  */
 export function KennelBackground({ kennel }: KennelBackgroundProps) {
-  if (kennel.backgroundImageUrl) {
-    return (
-      <>
-        {/* Layer 1 — sharp base image, always visible */}
-        <div
-          className="fixed inset-0 -z-10 scale-[1.08] bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${kennel.backgroundImageUrl})` }}
-        />
-        {/* Layer 2 — blurred image at full opacity (matches fully-scrolled landing page) */}
-        <div
-          className="fixed inset-0 -z-10 scale-[1.08] bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url(${kennel.backgroundImageUrl})`,
-            filter: "blur(14px)",
-          }}
-        />
-        {/* Layer 3 — colour overlay at full configured opacity */}
-        <div
-          className="fixed inset-0 -z-[9]"
-          style={{
-            backgroundColor: kennel.backgroundOverlayColor,
-            opacity: kennel.backgroundOverlayMaxOpacity,
-          }}
-        />
-      </>
-    );
-  }
+  const usingDefault = !kennel.backgroundImageUrl;
+  const imageUrl = kennel.backgroundImageUrl ?? DEFAULT_BG;
+  const blurPx = usingDefault ? DEFAULT_BG_BLUR_PX : 14;
+  const overlayColor = usingDefault ? "#000000" : kennel.backgroundOverlayColor;
+  const overlayOpacity = usingDefault ? 0.55 : kennel.backgroundOverlayMaxOpacity;
 
   return (
-    <div className="fixed inset-0 -z-10">
+    <>
+      {/* Layer 1 — sharp base image */}
       <div
-        className="absolute inset-0 hidden dark:block"
+        className="fixed inset-0 -z-10 scale-[1.08] bg-repeat"
+        style={{ backgroundImage: `url(${imageUrl})`, backgroundSize: kennel.backgroundImageUrl ? "cover" : "512px 512px", backgroundPosition: "center" }}
+      />
+      {/* Layer 2 — blurred image */}
+      <div
+        className="fixed inset-0 -z-10 scale-[1.08] bg-repeat"
         style={{
-          background: `
-            radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--kennel-primary) 18%, transparent) 0%, transparent 55%),
-            linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 40%),
-            linear-gradient(135deg, #1c1917 0%, #18181b 35%, #09090b 100%)
-          `,
+          backgroundImage: `url(${imageUrl})`,
+          backgroundSize: kennel.backgroundImageUrl ? "cover" : "512px 512px",
+          backgroundPosition: "center",
+          filter: "blur(14px)",
         }}
       />
+      {/* Layer 3 — colour overlay */}
       <div
-        className="absolute inset-0 block dark:hidden"
-        style={{
-          background: `
-            radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--kennel-primary) 8%, transparent) 0%, transparent 55%),
-            linear-gradient(135deg, #fafafa 0%, #f4f4f5 100%)
-          `,
-        }}
+        className="fixed inset-0 -z-[9]"
+        style={{ backgroundColor: overlayColor, opacity: overlayOpacity }}
       />
-    </div>
+    </>
   );
 }

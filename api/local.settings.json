@@ -9,7 +9,8 @@
     "BOX_CLIENT_SECRET":   "i4HEIBO3kbUTBCir7CDNJRsbuccD00JU",
     "BOX_REDIRECT_URI":    "http://localhost:7071/api/auth/callback",
     "APP_BASE_URL":        "http://localhost:8000",
-    "DOS_TOKENS_TABLE_NAME":"BoxAccessTokens"     
+    "DOS_TOKENS_TABLE_NAME":"BoxAccessTokens",
+    "TsaApiKey":"55eec54d9786654ea3a0dcbad989391ac6eaeb0d79cd50beec650a0ff82938ba"
   },
   "Host": {
     "CORS": "*",

@@ -29,6 +29,9 @@ AS
 --                           WelcomeText, and TitleText (falls back to
 --                           KennelName). Applies when the kennel has no
 --                           KennelWebsite row or the column is NULL.
+--             2026-04-06 — BackgroundImage no longer inherited from FILTH;
+--                           returns NULL when kennel has none — frontend uses
+--                           platform default tile in that case.
 --             2026-03-28 — Added k.PublicKennelId so the frontend can pass
 --                           it to subsequent public-web SPs (e.g.
 --                           publicWeb_getEvents) that take a GUID key
@@ -72,10 +75,13 @@ BEGIN TRY
         k.KennelDescription,
 
         -- ── Branding — kennel → FILTH ────────────────────────────────────────
-        COALESCE(kw.LogoUrl,         kwf.LogoUrl)         AS KennelLogo,
-        COALESCE(kw.FaviconUrl,      kwf.FaviconUrl)      AS FaviconUrl,
-        COALESCE(kw.BannerImage,     kwf.BannerImage)     AS BannerImage,
-        COALESCE(kw.BackgroundImage, kwf.BackgroundImage) AS WebsiteBackgroundImage,
+        COALESCE(kw.LogoUrl,     kwf.LogoUrl)     AS KennelLogo,
+        COALESCE(kw.FaviconUrl,  kwf.FaviconUrl)  AS FaviconUrl,
+        COALESCE(kw.BannerImage, kwf.BannerImage) AS BannerImage,
+
+        -- BackgroundImage is kennel-specific — not inherited from FILTH.
+        -- NULL here means the frontend uses the platform default tile.
+        kw.BackgroundImage                         AS WebsiteBackgroundImage,
 
         -- ── HC6 theming — kennel → FILTH → literal last resort ───────────────
         COALESCE(kw.ThemeMode,    kwf.ThemeMode,    'dark') AS ThemeMode,
