@@ -1,0 +1,57 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_respondToNewsflash",
+  "version": "1.0.0",
+  "description": "Records the authenticated user's response to a newsflash. Upserts a single HC.PortalNewsflashRead row per user per newsflash. 'I've read it' (@isDismissed=1) permanently dismisses the newsflash. 'Read Later' (@isDismissed=0) snoozes it until the next calendar day (NextShowDate = tomorrow's UTC date). Responds to soft-deleted newsflashes: a user may dismiss a newsflash that was deleted after it was shown to them.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token. Validated via HC6.ValidatePortalAuth with NULL callerParamString."
+    },
+    {
+      "name": "newsflashId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "PortalNewsflash.NewsflashId",
+      "description": "Required: the newsflash being responded to. Validated for NULL before auth."
+    },
+    {
+      "name": "isDismissed",
+      "type": "BIT",
+      "nullable": true,
+      "mapsToColumn": "PortalNewsflashRead.IsDismissed",
+      "description": "Required: 1 = permanently dismissed ('I've read it'); 0 = snoozed until tomorrow ('Read Later'). Validated for NULL before auth."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "Returned on any outcome — success, validation failure, auth failure, or runtime error.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "1 on success, 0 on any error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "NULL on success, error message on failure" }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPSERT HC.PortalNewsflashRead (NewsflashId, HasherId, IsDismissed, NextShowDate, UpdatedAt) — UPDATE if row exists, INSERT otherwise"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change the snooze logic (1 calendar day) without coordinating with the portal client"
+  ]
+}

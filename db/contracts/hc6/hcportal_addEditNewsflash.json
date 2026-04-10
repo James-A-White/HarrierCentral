@@ -1,0 +1,93 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_addEditNewsflash",
+  "version": "1.0.0",
+  "description": "Creates or updates a portal newsflash. When @newsflashId is NULL a new row is inserted with the calling admin's hasherId recorded as CreatedByHasherId. When @newsflashId is provided the existing active (IsDeleted=0) newsflash is updated. Image upload to Azure Blob Storage is handled by the Flutter portal before calling this SP — @imageUrl receives the resulting blob URL. An empty or whitespace-only @imageUrl is treated as NULL (no image / clear existing image). Validation is fast-failed before the auth round-trip.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: device ID. Validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token. Validated via HC6.ValidatePortalAuth with NULL callerParamString."
+    },
+    {
+      "name": "newsflashId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "PortalNewsflash.NewsflashId",
+      "description": "NULL to add a new newsflash; provide an existing GUID to edit. On edit, the newsflash must exist and not be soft-deleted."
+    },
+    {
+      "name": "title",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "PortalNewsflash.Title",
+      "description": "Required. Trimmed before storage. Validated for NULL/empty before auth."
+    },
+    {
+      "name": "bodyText",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "PortalNewsflash.BodyText",
+      "description": "Required. Trimmed before storage. Validated for NULL/empty before auth."
+    },
+    {
+      "name": "imageUrl",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "PortalNewsflash.ImageUrl",
+      "description": "Optional Azure Blob URL. NULL or empty string sets ImageUrl to NULL (no image / clears existing image)."
+    },
+    {
+      "name": "startDate",
+      "type": "DATE",
+      "nullable": true,
+      "mapsToColumn": "PortalNewsflash.StartDate",
+      "description": "Required. The date from which the newsflash becomes active. Validated for NULL before auth."
+    },
+    {
+      "name": "endDate",
+      "type": "DATE",
+      "nullable": true,
+      "mapsToColumn": "PortalNewsflash.EndDate",
+      "description": "Optional. If provided must be >= @startDate. NULL = no expiry."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "PortalNewsflash.KennelId",
+      "description": "Optional. NULL = platform-wide newsflash shown to all users. When provided, the kennel must exist in HC.Kennel."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "Returned on any outcome — success, validation failure, auth failure, or runtime error.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "1 on success, 0 on any error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "NULL on success, error message on failure" }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.PortalNewsflash — when @newsflashId is NULL",
+    "UPDATE HC.PortalNewsflash SET Title, BodyText, ImageUrl, StartDate, EndDate, KennelId, UpdatedAt — when @newsflashId is provided"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change the empty-string-to-NULL normalisation for @imageUrl without coordinating with the portal client"
+  ]
+}

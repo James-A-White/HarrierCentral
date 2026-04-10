@@ -222,6 +222,21 @@ Rules:
 - Never compare two UUID strings with raw `==` unless both are guaranteed
   to already be lowercase (e.g. both came through `UuidValue`).
 
+**BIT columns in Flutter/Dart `fromJson` (API serialisation gotcha):**
+
+The .NET Azure Functions API shim serialises SQL Server `BIT` columns as JSON
+booleans (`true`/`false`), not as integers (`1`/`0`). All other integer column
+types (`INT`, `SMALLINT`, etc.) come back as `num`/`int` as expected.
+
+Rules:
+- Never cast a `BIT`-sourced field with `(json['field'] as int?) == 1` — this
+  throws a `TypeError` at runtime when the value is `false` or `true`.
+- Always parse `BIT` fields with:
+  `json['field'] == true || json['field'] == 1`
+  The `== 1` guard defends against any future API behaviour change.
+- This applies to every `fromJson` factory that reads a column declared as
+  `BIT` in the base table, including hand-written and Freezed models.
+
 **Always flag as code smells:**
 - Sentinel magic values (`-1`, `-2`, `'<null>'`, `-99.0`, `-999.0`)
 - Inconsistent sentinel values across parameters in the same SP

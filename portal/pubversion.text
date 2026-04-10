@@ -1,4 +1,11 @@
 
+1.3.6+607
+    • Added Newsflash feature — admin management page, startup dialog, 6 HC6 SPs and two new DB tables (HC.PortalNewsflash, HC.PortalNewsflashRead)
+    • Added HC Admin Tools hub page replacing the Monitor nav button
+    • Fixed BIT column JSON parsing (SQL Server BIT serialises as bool, not int)
+    • AVIF image support via HcNetworkImage in newsflash dialog and management page
+    • Updated portal deploy process to Azure Static Web Apps
+
 1.3.5+606
     • Relabelled "Can edit run attendance" to "User can set run attendance"
 

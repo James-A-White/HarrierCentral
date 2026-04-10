@@ -1,0 +1,60 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_getNewsflashList",
+  "version": "1.0.0",
+  "description": "Returns all newsflashes, including soft-deleted ones (IsDeleted=1), for the HC Admin Tools management screen. Includes a dismissedCount per newsflash (number of users who clicked 'I've read it'). Ordered by StartDate DESC. Intended for portal admins only — auth gates this to registered portal admin devices.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: device ID. Validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token. Validated via HC6.ValidatePortalAuth with NULL callerParamString."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on auth failure or runtime error.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "NewsflashList",
+      "description": "Zero or more rows, one per newsflash, ordered by StartDate DESC. Includes soft-deleted rows (IsDeleted=1).",
+      "columns": [
+        { "name": "newsflashId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Primary key of HC.PortalNewsflash" },
+        { "name": "title", "type": "NVARCHAR(250)", "nullable": false, "description": "Newsflash heading" },
+        { "name": "bodyText", "type": "NVARCHAR(MAX)", "nullable": false, "description": "Newsflash body content" },
+        { "name": "imageUrl", "type": "NVARCHAR(500)", "nullable": true, "description": "Optional Azure Blob URL for the header image" },
+        { "name": "startDate", "type": "DATE", "nullable": false, "description": "Date from which this newsflash is active" },
+        { "name": "endDate", "type": "DATE", "nullable": true, "description": "Optional expiry date (inclusive). NULL = no expiry." },
+        { "name": "kennelId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "Targeted kennel ID. NULL = platform-wide newsflash." },
+        { "name": "kennelName", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Display name of the targeted kennel. NULL when kennelId is NULL." },
+        { "name": "isDeleted", "type": "BIT", "nullable": false, "description": "1 if soft-deleted, 0 if active" },
+        { "name": "createdAt", "type": "DATETIME", "nullable": false, "description": "UTC timestamp when the newsflash was created" },
+        { "name": "updatedAt", "type": "DATETIME", "nullable": false, "description": "UTC timestamp of last update" },
+        { "name": "dismissedCount", "type": "INT", "nullable": false, "description": "Number of users who have permanently dismissed this newsflash (IsDismissed=1). 0 if no readers yet." }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change the ordering (StartDate DESC) without coordinating with the portal client"
+  ]
+}

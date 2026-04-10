@@ -49,6 +49,7 @@ class RunListPageController extends GetxController
   Worker? _worker;
   bool firstLoad = true;
   bool _isDebounceRunning = false;
+  bool _newsflashShown = false;
 
   int? messageCount;
 
@@ -102,8 +103,9 @@ class RunListPageController extends GetxController
           }
           isNarrowScreen.value = narrow;
         } catch (e) {
-          if (kDebugMode)
+          if (kDebugMode) {
             debugPrint('RunListPageController debounce error: $e');
+          }
         } finally {
           _isDebounceRunning = false;
         }
@@ -290,6 +292,14 @@ class RunListPageController extends GetxController
     }
 
     isLoaded.value = true;
+
+    if (!_newsflashShown) {
+      _newsflashShown = true;
+      final pending = await queryPendingNewsflashes();
+      if (pending.isNotEmpty) {
+        await showPendingNewsflashes(pending);
+      }
+    }
   }
 
   void resetBadgeCount(String publicEventId) {

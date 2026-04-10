@@ -1,0 +1,50 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_deleteNewsflash",
+  "version": "1.0.0",
+  "description": "Soft-deletes a portal newsflash by setting IsDeleted=1 and UpdatedAt=GETUTCDATE(). The newsflash immediately stops being returned by hcportal_getPendingNewsflashes. Associated HC.PortalNewsflashRead records are retained for audit; hcportal_getNewsflashReaders continues to work on soft-deleted newsflashes.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: device ID. Validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token. Validated via HC6.ValidatePortalAuth with NULL callerParamString."
+    },
+    {
+      "name": "newsflashId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "PortalNewsflash.NewsflashId",
+      "description": "Required: the newsflash to soft-delete. Validated for NULL before auth. Must exist and not already be soft-deleted."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "Returned on any outcome — success, validation failure, auth failure, or runtime error.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "1 on success, 0 on any error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "NULL on success, error message on failure" }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.PortalNewsflash SET IsDeleted=1, UpdatedAt=GETUTCDATE() WHERE NewsflashId=@newsflashId"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change soft-delete to hard-delete — PortalNewsflashRead rows depend on the parent row existing"
+  ]
+}

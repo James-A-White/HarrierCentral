@@ -82,6 +82,11 @@ enum DocumentType {
     'images/other/upload_image.png',
     '',
   ),
+  newsflashImage(
+    'Newsflash Image',
+    'images/other/upload_image.png',
+    '',
+  ),
   ;
 
   const DocumentType(

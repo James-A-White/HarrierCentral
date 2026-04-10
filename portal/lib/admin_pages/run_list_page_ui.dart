@@ -230,10 +230,12 @@ class RunListPage extends StatelessWidget {
                                 (publicHasherId.toUpperCase() ==
                                     HC_PORTAL_ADMIN_TUNA)) ...[
                               _appBarBtn(
-                                'Monitor',
+                                'HC Admin Tools',
                                 onPressed: () async {
-                                  await Get.to<UsageDataPage>(
-                                      UsageDataPage.new);
+                                  await Get.to<HcAdminToolsPage>(
+                                    () => HcAdminToolsPage(
+                                        allKennels: allKennels),
+                                  );
                                 },
                               ),
                               const SizedBox(width: 8),

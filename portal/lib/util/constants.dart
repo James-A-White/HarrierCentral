@@ -38,6 +38,10 @@ const String BASE_EVENT_IMAGE_URL =
     'https://harriercentral.blob.core.windows.net/event-images/';
 const String BASE_PROMO_IMAGE_URL =
     'https://harriercentral.blob.core.windows.net/promos/';
+const String BASE_NEWSFLASH_IMAGE_URL =
+    'https://harriercentral.blob.core.windows.net/newsflash/';
+const String NEWSFLASH_IMAGE_UPLOAD_SAS =
+    '?sv=2025-07-05&spr=https&st=2026-04-10T20%3A45%3A21Z&se=2100-01-01T21%3A45%3A00Z&sr=c&sp=racw&sig=1%2Bkjc3ATaqcD0%2ByjPUDFbl1M14gUWexW3dT0fqoLUbA%3D';
 
 const String BASE_KENNEL_LOGOS_URL =
     'https://harriercentral.blob.core.windows.net/harrier/';

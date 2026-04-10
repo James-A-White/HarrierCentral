@@ -1,0 +1,60 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_getNewsflashReaders",
+  "version": "1.0.0",
+  "description": "Returns all users who have interacted with a specific newsflash (dismissed or snoozed), ordered by UpdatedAt DESC. Only users who have responded at least once are included — users who have never seen or responded to the newsflash are not included. Works on soft-deleted newsflashes so admins can inspect the reader list after deletion.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: device ID. Validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token. Validated via HC6.ValidatePortalAuth with NULL callerParamString."
+    },
+    {
+      "name": "newsflashId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "PortalNewsflash.NewsflashId",
+      "description": "Required: the newsflash to query. Validated for NULL before auth. Must exist (including soft-deleted)."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on NULL @newsflashId, auth failure, newsflash not found, or runtime error.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "ReaderList",
+      "description": "Zero or more rows, one per user who has interacted with this newsflash, ordered by UpdatedAt DESC.",
+      "columns": [
+        { "name": "publicHasherId", "type": "NVARCHAR(MAX)", "nullable": false, "description": "Public-facing hasher identifier from HC.Hasher.PublicHasherId" },
+        { "name": "hashName", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User's hash name from HC.Hasher.HashName" },
+        { "name": "displayName", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User's display name from HC.Hasher.DisplayName" },
+        { "name": "isDismissed", "type": "BIT", "nullable": false, "description": "1 = user permanently dismissed; 0 = user snoozed (Read Later)" },
+        { "name": "nextShowDate", "type": "DATE", "nullable": true, "description": "Date from which the newsflash will be shown again after a snooze. NULL when isDismissed=1." },
+        { "name": "updatedAt", "type": "DATETIME", "nullable": false, "description": "UTC timestamp of the last interaction" }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}

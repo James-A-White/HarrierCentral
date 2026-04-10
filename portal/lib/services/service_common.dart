@@ -64,13 +64,17 @@ class ServiceCommon {
     final prefix = filenamePrefix ?? 'dos_';
 
     final bool isKennelLogo = fileTypeName == DocumentType.kennelLogo.name;
-    var fileName = isKennelLogo
+    final bool isNewsflashImage =
+        fileTypeName == DocumentType.newsflashImage.name;
+    var fileName = (isKennelLogo || isNewsflashImage)
         ? '$prefix$datetime.$fileExtension'
-        : '${prefix}${publicEventId}_${fileTypeName}_$datetime.$fileExtension';
+        : '$prefix${publicEventId}_${fileTypeName}_$datetime.$fileExtension';
     final uri = Uri.parse(
       isKennelLogo
           ? '$BASE_KENNEL_LOGOS_URL$fileName$KENNEL_LOGO_UPLOAD_SAS'
-          : 'https://harriercentral.blob.core.windows.net/event-images/$fileName?sv=2020-04-08&st=2021-09-15T14%3A03%3A04Z&se=2100-09-16T14%3A03%3A00Z&sr=c&sp=racwdxlt&sig=q%2BVTH8wcrKOlSZK1FH7cUoaoYFPtjGpblCAVUqA4WFY%3D',
+          : isNewsflashImage
+              ? '$BASE_NEWSFLASH_IMAGE_URL$fileName$NEWSFLASH_IMAGE_UPLOAD_SAS'
+              : 'https://harriercentral.blob.core.windows.net/event-images/$fileName?sv=2020-04-08&st=2021-09-15T14%3A03%3A04Z&se=2100-09-16T14%3A03%3A00Z&sr=c&sp=racwdxlt&sig=q%2BVTH8wcrKOlSZK1FH7cUoaoYFPtjGpblCAVUqA4WFY%3D',
     );
 
     http.Response response;

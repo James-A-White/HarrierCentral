@@ -1,0 +1,54 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_getPendingNewsflashes",
+  "version": "1.0.0",
+  "description": "Returns all newsflashes that are currently due to be shown to the authenticated user, ordered by StartDate ASC. A newsflash is due when it is active (not deleted, within its date range), visible to the user (platform-wide or the user is a current member/follower of the targeted kennel), and has not already been permanently dismissed or snoozed until a future date. The portal receives the full list in a single round trip and iterates through them client-side.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token. Validated via HC6.ValidatePortalAuth with NULL callerParamString."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on auth failure or runtime error.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "PendingNewsflashes",
+      "description": "Zero or more rows, one per newsflash due for this user. Empty result set (not an error envelope) when no newsflashes are pending.",
+      "columns": [
+        { "name": "newsflashId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Primary key of HC.PortalNewsflash" },
+        { "name": "title", "type": "NVARCHAR(250)", "nullable": false, "description": "Newsflash heading" },
+        { "name": "bodyText", "type": "NVARCHAR(MAX)", "nullable": false, "description": "Newsflash body content" },
+        { "name": "imageUrl", "type": "NVARCHAR(500)", "nullable": true, "description": "Optional Azure Blob URL for the header image" },
+        { "name": "startDate", "type": "DATE", "nullable": false, "description": "Date from which this newsflash is active" },
+        { "name": "endDate", "type": "DATE", "nullable": true, "description": "Optional expiry date (inclusive). NULL = no expiry." }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change the ordering logic (StartDate ASC) without coordinating with the portal client"
+  ]
+}
