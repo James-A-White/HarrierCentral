@@ -1,0 +1,6 @@
+
+1.0.0+1
+    • Added HcExternalDataIntegration timer function — polls HC.Integration every minute, dispatches to registered handlers
+    • Added GenericJsonQuery handler — fetches external JSON feeds, reverse-geocodes Google map links, persists to DB
+    • Added AzureGeocode — Azure Maps fuzzy-search and reverse-geocode client
+    • Added HtmlAgilityPack for HTML parsing in URL expansion
