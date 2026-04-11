@@ -1,4 +1,9 @@
 
+1.3.7+608
+    • Removed circular clip and border from kennel logo strip — logos now display at their natural shape
+    • Flutter 3.41.2 → 3.41.6
+    • 35 pub dependency updates (Firebase, build_runner, badges, trina_grid, pdf, printing, etc.)
+
 1.3.6+607
     • Added Newsflash feature — admin management page, startup dialog, 6 HC6 SPs and two new DB tables (HC.PortalNewsflash, HC.PortalNewsflashRead)
     • Added HC Admin Tools hub page replacing the Monitor nav button

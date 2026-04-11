@@ -579,14 +579,12 @@ class RunListPage extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ClipOval(
-            child: KennelLogo(
-              kennelLogoUrl: k.kennelLogo,
-              kennelShortName: k.kennelShortName,
-              logoHeight: 52,
-              leftPadding: 0,
-              rightPadding: 0,
-            ),
+          KennelLogo(
+            kennelLogoUrl: k.kennelLogo,
+            kennelShortName: k.kennelShortName,
+            logoHeight: 52,
+            leftPadding: 0,
+            rightPadding: 0,
           ),
           const SizedBox(width: 10),
           ConstrainedBox(
@@ -607,24 +605,12 @@ class RunListPage extends StatelessWidget {
   }
 
   Widget _unselectedKennelCircle(HasherKennelsModel k) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 150),
-      decoration: BoxDecoration(
-        // Use borderRadius instead of BoxShape.circle so the decoration can
-        // safely lerp with the selected pill's borderRadius during transition.
-        borderRadius: BorderRadius.circular(36),
-        color: Colors.white,
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: ClipOval(
-        child: KennelLogo(
-          kennelLogoUrl: k.kennelLogo,
-          kennelShortName: k.kennelShortName,
-          logoHeight: 72,
-          leftPadding: 0,
-          rightPadding: 0,
-        ),
-      ),
+    return KennelLogo(
+      kennelLogoUrl: k.kennelLogo,
+      kennelShortName: k.kennelShortName,
+      logoHeight: 72,
+      leftPadding: 0,
+      rightPadding: 0,
     );
   }
 
