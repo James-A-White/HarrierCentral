@@ -61,6 +61,26 @@ function clampScrollBlur(raw: number | null): number {
   return Math.min(100, Math.max(0, value));
 }
 
+function parseMenuBackground(raw: string | null, theme: "dark" | "light"): {
+  menuBackgroundColor: string;
+  menuBackgroundOpacity: number;
+} {
+  const s = raw?.trim() ?? "";
+  if (/^#[0-9A-Fa-f]{8}$/.test(s)) {
+    // 8-digit hex: RRGGBBAA — alpha byte drives opacity
+    const maxOpacity = parseInt(s.slice(7, 9), 16) / 255;
+    return { menuBackgroundColor: `#${s.slice(1, 7)}`, menuBackgroundOpacity: maxOpacity };
+  }
+  if (/^#[0-9A-Fa-f]{6}$/.test(s)) {
+    // 6-digit hex: fully opaque (use 8-digit hex to set partial opacity)
+    return { menuBackgroundColor: s, menuBackgroundOpacity: 1.0 };
+  }
+  // null or unrecognised: theme-appropriate default
+  return theme === "dark"
+    ? { menuBackgroundColor: "#09090b", menuBackgroundOpacity: 0.8 }
+    : { menuBackgroundColor: "#ffffff", menuBackgroundOpacity: 0.8 };
+}
+
 /**
  * Converts the live KennelLandingData from the API into the shape that
  * the existing components expect. Theme and colour defaults are used
@@ -74,9 +94,9 @@ function toKennelContext(data: KennelLandingData): KennelContext {
     tagline: "",
     city: "",
     foundedYear: 0,
-    primaryColor: "#dc2626",
+    primaryColor: data.PrimaryColor ?? "#dc2626",
     primaryFg: "#ffffff",
-    accentColor: "#f97316",
+    accentColor: data.AccentColor ?? "#f97316",
     theme: "dark",
     titleText: data.WebsiteTitleText ?? undefined,
     titleTextColor: data.TitleTextColor ?? undefined,
@@ -85,6 +105,8 @@ function toKennelContext(data: KennelLandingData): KennelContext {
     backgroundImageUrl: data.WebsiteBackgroundImage?.startsWith("https://") ? data.WebsiteBackgroundImage : "/images/jungle_background.jpg",
     ...parseOverlayColor(data.WebsiteBackgroundColor),
     scrollBlur: clampScrollBlur(data.ScrollBlur),
+    ...parseMenuBackground(data.MenuBackgroundColor ?? null, data.ThemeMode === "light" ? "light" : "dark"),
+    menuTextColor: data.MenuTextColor ?? (data.ThemeMode === "light" ? "#18181b" : "#ffffff"),
     socialLinks: {},
     stats: {
       totalRuns: 0,
@@ -115,9 +137,9 @@ export default async function KennelPage({ params }: PageProps) {
       lang="en"
       className="dark"
       style={{
-        "--color-primary": kennel.primaryColor,
-        "--color-primary-fg": kennel.primaryFg,
-        "--color-accent": kennel.accentColor,
+        "--kennel-primary": kennel.primaryColor,
+        "--kennel-primary-fg": kennel.primaryFg,
+        "--kennel-accent": kennel.accentColor,
       } as React.CSSProperties}
     >
       <body className={`${kennel.backgroundImageUrl ? "" : "dark:bg-zinc-950 bg-zinc-50"} text-zinc-100 antialiased overflow-x-hidden`}>

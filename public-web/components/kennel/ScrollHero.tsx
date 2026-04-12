@@ -123,26 +123,39 @@ export function ScrollHero({ kennel, slug, nextRun }: ScrollHeroProps) {
   const blurPx = (clampedScrollBlur / 100) * 120;
   const overlayOpacity = useTransform(scrollY, [0, BACKGROUND_SCROLL_BLEND_END], [0, kennel.backgroundOverlayMaxOpacity]);
 
+  // Local paths (e.g. /images/jungle_background.jpg) are the default tile fallback —
+  // render them tiled at 1024×1024 to match the top-level calendar page.
+  // Remote https:// images are kennel-specific and should fill via bg-cover.
+  const isDefaultBackground = kennel.backgroundImageUrl && !kennel.backgroundImageUrl.startsWith("https://");
+  const bgLayerClass = isDefaultBackground
+    ? "fixed inset-0 -z-10 bg-repeat"
+    : "fixed inset-0 -z-10 scale-[1.08] bg-cover bg-center bg-no-repeat";
+  const bgLayerStyle = isDefaultBackground
+    ? { backgroundImage: `url(${kennel.backgroundImageUrl})`, backgroundSize: "1024px 1024px" }
+    : { backgroundImage: `url(${kennel.backgroundImageUrl})` };
+
   return (
     <section ref={sectionRef} className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden">
       {/* Background */}
       {kennel.backgroundImageUrl ? (
         <>
-          {/* Layer 1 — sharp image, always visible. scale-[1.08] hides blur-bleed. */}
-          <div
-            className="fixed inset-0 -z-10 scale-[1.08] bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url(${kennel.backgroundImageUrl})` }}
-          />
-          {/* Layer 2 — pre-blurred image, fades in on scroll.
-              Opacity-only animation runs on the compositor (GPU) — no CPU blur per frame. */}
-          <motion.div
-            className="fixed inset-0 -z-10 scale-[1.08] bg-cover bg-center bg-no-repeat"
-            style={{
-              backgroundImage: `url(${kennel.backgroundImageUrl})`,
-              filter: `blur(${blurPx}px)`,
-              opacity: blurredLayerOpacity,
-            }}
-          />
+          {/* Layer 1 — sharp image, always visible.
+              Kennel images: scale-[1.08] hides blur-bleed at edges.
+              Default tile (jungle): bg-repeat at 1024×1024, matching the global calendar page. */}
+          <div className={bgLayerClass} style={bgLayerStyle} />
+          {/* Layer 2 — pre-blurred image, fades in on scroll (kennel images only).
+              Opacity-only animation runs on the compositor (GPU) — no CPU blur per frame.
+              Skipped for the default tiled background. */}
+          {!isDefaultBackground && (
+            <motion.div
+              className={bgLayerClass}
+              style={{
+                ...bgLayerStyle,
+                filter: `blur(${blurPx}px)`,
+                opacity: blurredLayerOpacity,
+              }}
+            />
+          )}
           {/* Fixed darkening overlay — reaches max opacity and stays there,
               providing contrast behind all content sections below the hero. */}
           <motion.div

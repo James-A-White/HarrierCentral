@@ -19,6 +19,9 @@ export interface KennelContext {
   backgroundOverlayColor: string;      // CSS #RRGGBB hex color for scroll overlay
   backgroundOverlayMaxOpacity: number; // 0–1, max opacity reached at full scroll
   scrollBlur: number;                  // KennelWebsite.ScrollBlur — 0 = no blur, 100 = full blur (120px)
+  menuBackgroundColor: string;         // CSS #RRGGBB hex color for sticky nav background
+  menuBackgroundOpacity: number;       // 0–1, opacity of nav background at full scroll
+  menuTextColor: string;               // CSS color string for sticky nav text (hex or any valid CSS color)
   socialLinks: {
     facebook?: string;
     instagram?: string;
