@@ -1,15 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence, useScroll, useTransform, useMotionValueEvent } from "framer-motion";
+import { motion, AnimatePresence, useTransform, useMotionValueEvent } from "framer-motion";
 import { Menu, X, MapPin, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import type { MockKennel } from "@/lib/mock/kennel";
+import type { KennelContext } from "@/lib/types/kennel";
 import type { RunEvent } from "@/lib/api";
+import { useWindowScrollMotionValue } from "@/lib/useWindowScrollMotionValue";
 
 interface StickyNavProps {
-  kennel: MockKennel;
+  kennel: KennelContext;
   nextRun?: RunEvent | null;
   slug: string;
   alwaysVisible?: boolean;
@@ -27,7 +28,7 @@ function mapsUrl(lat: number, lon: number) {
 }
 
 export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false }: StickyNavProps) {
-  const { scrollY } = useScroll();
+  const scrollY = useWindowScrollMotionValue();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 

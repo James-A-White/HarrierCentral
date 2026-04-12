@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getGlobalCalendar",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Returns one row per (event date, kennel) for all kennels with publicly visible events in the given date window. All kennels are included regardless of whether they have a KennelWebsite row — logo and colour are NULL for unconfigured kennels and the frontend falls back to an initial-letter placeholder. Used by the harriercentral.com global run calendar with load-more pagination.",
   "parameters": [
     {
@@ -59,8 +59,8 @@
         {
           "name": "KennelLogo",
           "type": "NVARCHAR(500)",
-          "nullable": true,
-          "description": "Logo URL from HC.KennelWebsite.LogoUrl. May be NULL or a bundle:// ref — caller should check for https:// prefix before rendering as an image."
+          "nullable": false,
+          "description": "Logo URL from HC.Kennel.KennelLogo (NOT NULL). May be a bundle:// ref (e.g. 'bundle://defaultKennelLogo') — caller must check for https:// prefix before rendering as an image."
         },
         {
           "name": "PrimaryColor",

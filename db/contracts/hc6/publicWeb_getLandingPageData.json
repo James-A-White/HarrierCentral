@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getLandingPageData",
-  "version": "1.0.0",
-  "description": "Returns the minimum kennel identity data needed to render a public-web landing page. Looked up by KennelUniqueShortName, which maps directly to the kennel's URL slug (e.g. 'lh3' → lh3.harriercentral.com). No authentication required.",
+  "version": "1.1.0",
+  "description": "Returns kennel identity and website configuration needed to render a public-web landing page. Looked up by KennelUniqueShortName (URL slug). No authentication required. Style columns return NULL when the kennel has no KennelWebsite row — the frontend applies its own platform defaults. The FILTH-kennel fallback that existed in v1.0.0 has been removed; style defaults are now hardcoded in the SP so FILTH kennel changes cannot affect other kennels.",
   "parameters": [
     {
       "name": "kennelUniqueShortName",
@@ -19,16 +19,16 @@
       "description": "Single row when the kennel is found and publicly visible. Empty rowset (0 rows) when not found or inactive — the caller must treat this as a 404.",
       "columns": [
         {
-          "name": "KennelLogo",
-          "type": "NVARCHAR(500)",
+          "name": "PublicKennelId",
+          "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": "URL of the kennel logo image"
+          "description": "Public kennel GUID. Safe to expose — used by subsequent public-web SPs (e.g. publicWeb_getEvents) that take a GUID key instead of the URL slug."
         },
         {
-          "name": "KennelDescription",
-          "type": "NVARCHAR(4000)",
-          "nullable": true,
-          "description": "Free-text description of the kennel"
+          "name": "KennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Full kennel name (e.g. 'London Hash House Harriers')"
         },
         {
           "name": "KennelShortName",
@@ -43,22 +43,142 @@
           "description": "URL slug — echoed back from input so the caller can confirm the match"
         },
         {
-          "name": "KennelName",
-          "type": "NVARCHAR(250)",
+          "name": "KennelDescription",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Free-text description of the kennel. NULL when not set."
+        },
+        {
+          "name": "KennelLogo",
+          "type": "NVARCHAR(500)",
           "nullable": false,
-          "description": "Full kennel name (e.g. 'London Hash House Harriers')"
+          "description": "Logo URL from HC.Kennel.KennelLogo. NOT NULL — but may be a bundle:// ref (e.g. 'bundle://defaultKennelLogo') for kennels that have not uploaded a logo. Callers must check for an https:// prefix before rendering as an image."
+        },
+        {
+          "name": "FaviconUrl",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Favicon URL from HC.Kennel.KennelFavicon. NULL when not set. Callers must check for https:// prefix."
+        },
+        {
+          "name": "BannerImage",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Hero/header banner image URL from KennelWebsite.BannerImage. NULL when not set."
         },
         {
           "name": "WebsiteBackgroundImage",
           "type": "NVARCHAR(500)",
           "nullable": true,
-          "description": "URL of the kennel's website background image"
+          "description": "Background image URL from KennelWebsite.BackgroundImage. NULL when not set — frontend uses the platform default tile in that case. Not inherited from FILTH."
+        },
+        {
+          "name": "ThemeMode",
+          "type": "NVARCHAR(10)",
+          "nullable": false,
+          "description": "Theme mode for the kennel website: 'light' or 'dark'. Defaults to 'dark' when not configured."
+        },
+        {
+          "name": "PrimaryColor",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "CSS hex primary brand colour (e.g. '#dc2626'). Injected as --color-primary. NULL when not configured."
+        },
+        {
+          "name": "AccentColor",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "CSS hex accent colour. Injected as --color-accent; falls back to PrimaryColor in the frontend when NULL."
+        },
+        {
+          "name": "ScrollBlur",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Scroll blur intensity: 0 = no blur, 100 = full blur (40px CSS blur — image detail completely obscured). Defaults to 0 when not configured. Full blur is reached when the hero logo has faded out, not at bottom of page."
+        },
+        {
+          "name": "OgImageUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Open Graph image URL (1200×630px recommended). Used when pages are shared on social/messaging. NULL when not set."
         },
         {
           "name": "WebsiteTitleText",
           "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Custom display name shown in the hero below the logo. COALESCE(KennelWebsite.TitleText, Kennel.KennelName) — always non-null."
+        },
+        {
+          "name": "Tagline",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Short strapline. COALESCE(KennelWebsite.Tagline, 'A Drinking Club with a Running Problem') — always non-null."
+        },
+        {
+          "name": "WelcomeText",
+          "type": "NVARCHAR(4000)",
+          "nullable": false,
+          "description": "Homepage welcome/intro copy. COALESCE(KennelWebsite.WelcomeText, hardcoded platform default) — always non-null."
+        },
+        {
+          "name": "SeoTitle",
+          "type": "NVARCHAR(60)",
           "nullable": true,
-          "description": "Override title text for the kennel's website hero (falls back to KennelName if null)"
+          "description": "Per-tenant <title> tag override. NULL when not set — caller constructs a default title from KennelName."
+        },
+        {
+          "name": "SeoDescription",
+          "type": "NVARCHAR(155)",
+          "nullable": true,
+          "description": "Per-tenant <meta description>. NULL when not set."
+        },
+        {
+          "name": "SeoStructuredDataJson",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "JSON-LD structured data override. NULL when not set — caller generates a default from kennel identity fields."
+        },
+        {
+          "name": "CustomDomain",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Tier 3 custom domain (e.g. 'lh3.com'). NULL = subdomain-only kennel (tier 2)."
+        },
+        {
+          "name": "WebsiteEnabled",
+          "type": "BIT",
+          "nullable": true,
+          "description": "Whether the HC6 public website is enabled for this kennel. NULL when no KennelWebsite row exists."
+        },
+        {
+          "name": "WebsiteBackgroundColor",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "HC5 legacy background colour. Superseded by PrimaryColor + ThemeMode in HC6. Retained for migration completeness."
+        },
+        {
+          "name": "MenuBackgroundColor",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "HC5 legacy menu background colour. Superseded by HC6 theming."
+        },
+        {
+          "name": "MenuTextColor",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "HC5 legacy menu text colour. Superseded by HC6 theming."
+        },
+        {
+          "name": "BodyTextColor",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "HC5 legacy body text colour. Superseded by HC6 theming."
+        },
+        {
+          "name": "TitleTextColor",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "HC5 legacy title text colour. Used for the hero TitleText when set."
         }
       ]
     }
@@ -69,6 +189,8 @@
     "Never remove a column from any rowset",
     "Never rename a parameter",
     "Never change a parameter type",
-    "Never change the empty-rowset-means-404 contract"
+    "Never change the empty-rowset-means-404 contract",
+    "Never change ThemeMode values without updating all frontend theme consumers",
+    "Never change ScrollBlur range (0–100) without updating the frontend mapping"
   ]
 }

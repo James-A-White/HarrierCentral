@@ -281,15 +281,21 @@ All public web SPs live in `/db/hc6/public-web/` and use the `publicWeb_` prefix
   in HC5's `WebsiteBannerImage`, `WebsiteBackgroundColor`, `KennelLogo`, `KennelFavicon`,
   `WebsiteTitleText`, `KennelSeoTitle`, `KennelSeoDescription`, etc. for the HC6 public web.
   All website styling and content comes from `HC.KennelWebsite` only.
-- **FILTH is the platform-level style default.** When a kennel has no value in
-  `HC.KennelWebsite`, style columns fall back to the FILTH kennel's row via a second
-  `LEFT JOIN HC.KennelWebsite kwf ON kwf.KennelId = '5029DE3A-D231-47AA-BE72-ECE9BCCD55D1'`.
-  COALESCE order: `kw` (kennel) → `kwf` (FILTH) → hardcoded literal (ThemeMode/ScrollBlur only).
-- **Kennel-specific content never inherits from FILTH.** `TitleText`, `Tagline`,
+- **No FILTH fallback join.** Style columns were previously COALESCEd against the FILTH
+  kennel's `KennelWebsite` row as a platform default. This was removed — changes to
+  FILTH's own site settings must not affect other kennels. Style columns now return
+  `NULL` when a kennel has no `KennelWebsite` row; the frontend applies its own defaults.
+  The only hardcoded DB-level defaults are `ThemeMode` (`'dark'`) and `ScrollBlur` (`0`),
+  applied via `COALESCE(kw.Column, literal)`.
+- **Logo and favicon come from `HC.Kennel`, not `HC.KennelWebsite`.** `KennelLogo` and
+  `KennelFavicon` are read directly from `HC.Kennel` (already the canonical source).
+  `HC.KennelWebsite.LogoUrl` and `FaviconUrl` were removed from the table.
+- **Kennel-specific content is never defaulted.** `TitleText`, `Tagline`,
   `WelcomeText`, `SeoTitle`, `SeoDescription`, `SeoStructuredDataJson` are always
-  kennel-owned — return NULL if not set, never a FILTH default.
-- **HC.Kennel is joined for slug resolution and core identity only** (`KennelName`,
-  `KennelShortName`, `KennelUniqueShortName`, `KennelDescription`, `deleted`, `removed`).
+  kennel-owned — return NULL if not set.
+- **HC.Kennel is joined for slug resolution, core identity, and branding** (`KennelName`,
+  `KennelShortName`, `KennelUniqueShortName`, `KennelDescription`, `KennelLogo`,
+  `KennelFavicon`, `deleted`, `removed`).
 
 ### Client (`lib/api.ts`)
 
@@ -302,15 +308,15 @@ const data = await getKennelLandingData("lh3");
 ```
 
 - Reads `HC_API_URL` from environment (`.env.local` in dev)
-- Uses `next: { revalidate: 60 }` — cached for 60s, revalidated on demand
+- Uses `cache: "no-store"` — never cached; every request hits the DB fresh so edits are visible immediately
 - Throws on network / server errors (let Next.js error boundary handle it)
 
 ### Dynamic Route
 
 `app/[slug]/page.tsx` catches any kennel slug, fetches live data, and calls
-`notFound()` if the kennel doesn't exist. The `toMockKennel()` adapter bridges
-the live `KennelLandingData` type to the `MockKennel` shape the components
-currently expect — it will be replaced once colour/theme fields are added to the SP.
+`notFound()` if the kennel doesn't exist. `toKennelContext()` adapts the raw
+`KennelLandingData` API response into the `KennelContext` shape that all page
+components accept. `KennelContext` is defined in `lib/types/kennel.ts`.
 
 ### Environment Variables
 
@@ -347,9 +353,10 @@ In production, `HC_API_URL` is set as an environment variable on the hosting pla
     /maps                ← Leaflet map and GPX components
     /charts              ← Recharts elevation profile
   /lib
+    /types/kennel.ts     ← KennelContext and KennelTheme types (shared by all components)
     /tenant.ts           ← tenant resolution logic
     /auth.ts             ← NextAuth config
-    /api.ts              ← API shim client
+    /api.ts              ← API shim client (KennelLandingData and other API types live here)
   /styles
     /globals.css         ← CSS custom properties, base resets
 ```
@@ -360,14 +367,13 @@ In production, `HC_API_URL` is set as an environment variable on the hosting pla
 
 - Never hardcode a kennel slug, name, or colour in any component
 - Never fetch data outside the resolved kennel context
-- Always use ISR (`revalidate`) — never fully dynamic unless behind auth
+- API calls use `cache: "no-store"` — never cache DB responses; edits must be visible on the next page load
 - Member and admin pages must be server-side protected — middleware + server
   component auth check, never rely on client-side hiding alone
 - Leaflet maps must not SSR (use `dynamic(() => import(...), { ssr: false })`)
 - Test all components with both light and dark kennel primary colours
 - `publicWeb_` SPs must never fall back to `HC.Kennel` Website\* columns — all
-  website data comes from `HC.KennelWebsite`; FILTH is the platform style default
-  (see SP Rules above)
+  website styling and content comes from `HC.KennelWebsite` (see SP Rules above)
 - **All non-hero sub-pages** (songs, about, run detail, etc.) must use
   `KennelBackground` (`components/kennel/KennelBackground.tsx`) to render the
   kennel's background image at full blur + max overlay opacity, matching the
@@ -402,4 +408,4 @@ rm deploy.zip
 
 ---
 
-*Last updated: April 2026 — added deployment rule; Events nav item; global calendar page*
+*Last updated: April 2026 — removed FILTH fallback join from SP rules; logo/favicon now from HC.Kennel; MockKennel → KennelContext (lib/types/kennel.ts); toMockKennel → toKennelContext*

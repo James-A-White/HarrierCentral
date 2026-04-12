@@ -78,8 +78,8 @@ async function callPublicWebApi<T>(
   }
 
   const res = await fetch(url.toString(), {
-    // Cache for 60 seconds — public data changes infrequently
-    next: { revalidate: 60 },
+    // Always read fresh data so DB edits are visible on the next refresh.
+    cache: "no-store",
   });
 
   if (res.status === 404) return null;
@@ -113,7 +113,8 @@ async function callPublicWebApiAllRowsets(
   }
 
   const res = await fetch(url.toString(), {
-    next: { revalidate: 60 },
+    // Always read fresh data so DB edits are visible on the next refresh.
+    cache: "no-store",
   });
 
   if (res.status === 404) return null;

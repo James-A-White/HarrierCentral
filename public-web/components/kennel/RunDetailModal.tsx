@@ -5,11 +5,11 @@ import Link from "next/link";
 import { X, MapPin, Clock, Users, Tag, Navigation, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 import type { RunEvent } from "@/lib/api";
-import type { MockKennel } from "@/lib/mock/kennel";
+import type { KennelContext } from "@/lib/types/kennel";
 
 interface RunDetailModalProps {
   run: RunEvent;
-  kennel: MockKennel;
+  kennel: KennelContext;
   slug: string;
   onClose: () => void;
 }

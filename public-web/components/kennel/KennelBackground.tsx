@@ -1,11 +1,11 @@
-import type { MockKennel } from "@/lib/mock/kennel";
+import type { KennelContext } from "@/lib/types/kennel";
 
 interface KennelBackgroundProps {
-  kennel: MockKennel;
+  kennel: KennelContext;
 }
 
 /** Platform default background — used when a kennel has no image configured. */
-const DEFAULT_BG = "/images/default-background.png";
+const DEFAULT_BG = "/images/jungle_background.jpg";
 
 /**
  * Blur applied to the default background tile. 0 = no blur (the tile is
@@ -26,7 +26,8 @@ const DEFAULT_BG_BLUR_PX = 0;
 export function KennelBackground({ kennel }: KennelBackgroundProps) {
   const usingDefault = !kennel.backgroundImageUrl;
   const imageUrl = kennel.backgroundImageUrl ?? DEFAULT_BG;
-  const blurPx = usingDefault ? DEFAULT_BG_BLUR_PX : 14;
+  const clampedScrollBlur = Math.min(100, Math.max(0, kennel.scrollBlur));
+  const blurPx = usingDefault ? DEFAULT_BG_BLUR_PX : (clampedScrollBlur / 100) * 120;
   const overlayColor = usingDefault ? "#000000" : kennel.backgroundOverlayColor;
   const overlayOpacity = usingDefault ? 0.55 : kennel.backgroundOverlayMaxOpacity;
 
@@ -35,16 +36,16 @@ export function KennelBackground({ kennel }: KennelBackgroundProps) {
       {/* Layer 1 — sharp base image */}
       <div
         className="fixed inset-0 -z-10 scale-[1.08] bg-repeat"
-        style={{ backgroundImage: `url(${imageUrl})`, backgroundSize: kennel.backgroundImageUrl ? "cover" : "512px 512px", backgroundPosition: "center" }}
+        style={{ backgroundImage: `url(${imageUrl})`, backgroundSize: kennel.backgroundImageUrl ? "cover" : "1024px 1024px", backgroundPosition: "center" }}
       />
       {/* Layer 2 — blurred image */}
       <div
         className="fixed inset-0 -z-10 scale-[1.08] bg-repeat"
         style={{
           backgroundImage: `url(${imageUrl})`,
-          backgroundSize: kennel.backgroundImageUrl ? "cover" : "512px 512px",
+          backgroundSize: kennel.backgroundImageUrl ? "cover" : "1024px 1024px",
           backgroundPosition: "center",
-          filter: "blur(14px)",
+          filter: `blur(${blurPx}px)`,
         }}
       />
       {/* Layer 3 — colour overlay */}

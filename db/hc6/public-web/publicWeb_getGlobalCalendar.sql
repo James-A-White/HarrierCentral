@@ -56,7 +56,7 @@ BEGIN TRY
         CAST(e.EventStartDatetime AS DATE)  AS EventDate,
         k.KennelUniqueShortName             AS KennelSlug,
         k.KennelName,
-        kw.LogoUrl                          AS KennelLogo,
+        k.KennelLogo                        AS KennelLogo,
         kw.PrimaryColor,
         k.PublicKennelId,
         MIN(e.EventNumber)                  AS EventNumber
@@ -74,7 +74,7 @@ BEGIN TRY
         CAST(e.EventStartDatetime AS DATE),
         k.KennelUniqueShortName,
         k.KennelName,
-        kw.LogoUrl,
+        k.KennelLogo,
         kw.PrimaryColor,
         k.PublicKennelId
     ORDER BY EventDate, KennelName;

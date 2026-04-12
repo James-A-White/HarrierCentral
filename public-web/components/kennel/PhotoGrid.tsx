@@ -4,12 +4,12 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import type { RunEvent } from "@/lib/api";
-import type { MockKennel } from "@/lib/mock/kennel";
+import type { KennelContext } from "@/lib/types/kennel";
 import { RunDetailModal } from "./RunDetailModal";
 
 interface PhotoGridProps {
   runs: RunEvent[];
-  kennel: MockKennel;
+  kennel: KennelContext;
   slug: string;
 }
 

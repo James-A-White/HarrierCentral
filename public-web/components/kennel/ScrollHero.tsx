@@ -1,14 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { usePathname } from "next/navigation";
+import { motion, useTransform } from "framer-motion";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
-import type { MockKennel } from "@/lib/mock/kennel";
+import type { KennelContext } from "@/lib/types/kennel";
 import type { RunEvent } from "@/lib/api";
+import { useWindowScrollMotionValue } from "@/lib/useWindowScrollMotionValue";
 
 interface ScrollHeroProps {
-  kennel: MockKennel;
+  kennel: KennelContext;
   slug: string;
   nextRun?: RunEvent | null;
 }
@@ -23,7 +25,8 @@ const BACKGROUND_SCROLL_BLEND_END = 300;
 const HERO_BUTTON_TEXT_PX = 22.4;
 
 export function ScrollHero({ kennel, slug, nextRun }: ScrollHeroProps) {
-  const { scrollY } = useScroll();
+  const pathname = usePathname();
+  const scrollY = useWindowScrollMotionValue();
   const sectionRef = useRef<HTMLElement | null>(null);
   const heroContentRef = useRef<HTMLDivElement | null>(null);
   const frameRef = useRef<number | null>(null);
@@ -72,7 +75,11 @@ export function ScrollHero({ kennel, slug, nextRun }: ScrollHeroProps) {
     };
 
     const queueComputeLayout = () => {
-      if (frameRef.current !== null) return;
+      // Always keep only the latest RAF callback so a stale queued frame can't
+      // block future layout work after route/bfcache restores.
+      if (frameRef.current !== null) {
+        window.cancelAnimationFrame(frameRef.current);
+      }
       frameRef.current = window.requestAnimationFrame(computeLayout);
     };
 
@@ -88,16 +95,21 @@ export function ScrollHero({ kennel, slug, nextRun }: ScrollHeroProps) {
 
     window.addEventListener("resize", queueComputeLayout);
     window.addEventListener("scroll", queueComputeLayout, { passive: true });
+    window.addEventListener("pageshow", queueComputeLayout);
+    window.addEventListener("popstate", queueComputeLayout);
 
     return () => {
       resizeObserver.disconnect();
       window.removeEventListener("resize", queueComputeLayout);
       window.removeEventListener("scroll", queueComputeLayout);
+      window.removeEventListener("pageshow", queueComputeLayout);
+      window.removeEventListener("popstate", queueComputeLayout);
       if (frameRef.current !== null) {
         window.cancelAnimationFrame(frameRef.current);
+        frameRef.current = null;
       }
     };
-  }, []);
+  }, [pathname]);
 
   const scale = fitScale;
   const opacity = useTransform(scrollY, [HERO_FADE_SCROLL_START, HERO_FADE_SCROLL_END], [1, 0]);
@@ -105,6 +117,10 @@ export function ScrollHero({ kennel, slug, nextRun }: ScrollHeroProps) {
   // that runs on the CPU per frame and will peg all cores on a large display.
   // Instead we cross-fade between an un-blurred and a pre-blurred layer.
   const blurredLayerOpacity = useTransform(scrollY, [0, BACKGROUND_SCROLL_BLEND_END], [0, 1]);
+  // ScrollBlur 0–100 maps to 0–120px. Pre-baked as a static filter; only opacity animates.
+  // 120px gives a much stronger full-blur state when value reaches 100.
+  const clampedScrollBlur = Math.min(100, Math.max(0, kennel.scrollBlur));
+  const blurPx = (clampedScrollBlur / 100) * 120;
   const overlayOpacity = useTransform(scrollY, [0, BACKGROUND_SCROLL_BLEND_END], [0, kennel.backgroundOverlayMaxOpacity]);
 
   return (
@@ -123,7 +139,7 @@ export function ScrollHero({ kennel, slug, nextRun }: ScrollHeroProps) {
             className="fixed inset-0 -z-10 scale-[1.08] bg-cover bg-center bg-no-repeat"
             style={{
               backgroundImage: `url(${kennel.backgroundImageUrl})`,
-              filter: "blur(14px)",
+              filter: `blur(${blurPx}px)`,
               opacity: blurredLayerOpacity,
             }}
           />
@@ -175,7 +191,6 @@ export function ScrollHero({ kennel, slug, nextRun }: ScrollHeroProps) {
         {/* Logo */}
         {kennel.logoUrl ? (
           <motion.img
-            // eslint-disable-next-line @next/next/no-img-element
             src={kennel.logoUrl}
             alt={kennel.shortName}
             className="mb-6 h-auto max-h-[52svh] w-[min(56vw,56svh)] max-w-[620px] object-contain drop-shadow-2xl"

@@ -33,11 +33,10 @@ CREATE TABLE [HC].[KennelWebsite]
     [AccentColor]               NVARCHAR(25)        NULL,       -- CSS hex; injected as --color-accent; falls back to PrimaryColor if NULL
 
     -- ── HC6 scroll effect ──────────────────────────────────────────────
-    [ScrollBlur]                SMALLINT            NOT NULL    CONSTRAINT [DF_KennelWebsite_ScrollBlur] DEFAULT (0),     -- 0 = no blur, 100 = full blur on hero scroll; frontend maps to backdrop-filter intensity
+    [ScrollBlur]                SMALLINT            NOT NULL    CONSTRAINT [DF_KennelWebsite_ScrollBlur] DEFAULT (0),     -- 0 = no blur, 100 = full blur (40px CSS blur) on hero scroll; reaches maximum when hero logo fades out
 
     -- ── Branding & imagery ─────────────────────────────────────────────
-    [LogoUrl]                   NVARCHAR(500)       NULL,       -- HC.Kennel: KennelLogo
-    [FaviconUrl]                NVARCHAR(250)       NULL,       -- HC.Kennel: KennelFavicon
+    -- LogoUrl and FaviconUrl removed — use HC.Kennel.KennelLogo and HC.Kennel.KennelFavicon directly.
     [BannerImage]               NVARCHAR(500)       NULL,       -- HC5: WebsiteBannerImage; hero/header image
     [OgImageUrl]                NVARCHAR(500)       NULL,       -- Open Graph image (1200×630px recommended); used when page is shared on social/messaging; falls back to BannerImage if NULL
     [BackgroundImage]           NVARCHAR(500)       NULL,       -- HC5: WebsiteBackgroundImage

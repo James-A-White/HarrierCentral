@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_getNewsflashList",
-  "version": "1.0.0",
-  "description": "Returns all newsflashes, including soft-deleted ones (IsDeleted=1), for the HC Admin Tools management screen. Includes a dismissedCount per newsflash (number of users who clicked 'I've read it'). Ordered by StartDate DESC. Intended for portal admins only — auth gates this to registered portal admin devices.",
+  "version": "1.0.1",
+  "description": "Returns all newsflashes, including soft-deleted ones (IsDeleted=1), for the HC Admin Tools management screen. Includes a dismissedCount per newsflash (number of users who clicked 'I've read it'). Ordered by CreatedAt DESC so the most recently created newsflash appears first. Intended for portal admins only — auth gates this to registered portal admin devices.",
   "parameters": [
     {
       "name": "deviceId",
@@ -32,7 +32,7 @@
     {
       "index": 0,
       "name": "NewsflashList",
-      "description": "Zero or more rows, one per newsflash, ordered by StartDate DESC. Includes soft-deleted rows (IsDeleted=1).",
+      "description": "Zero or more rows, one per newsflash, ordered by CreatedAt DESC (most recently created first). Includes soft-deleted rows (IsDeleted=1).",
       "columns": [
         { "name": "newsflashId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Primary key of HC.PortalNewsflash" },
         { "name": "title", "type": "NVARCHAR(250)", "nullable": false, "description": "Newsflash heading" },
@@ -55,6 +55,6 @@
     "Never remove a column from any rowset",
     "Never rename a parameter",
     "Never change a parameter type",
-    "Never change the ordering (StartDate DESC) without coordinating with the portal client"
+    "Never change the ordering (CreatedAt DESC) without coordinating with the portal client"
   ]
 }

@@ -1,6 +1,6 @@
 export type KennelTheme = "light" | "dark";
 
-export interface MockKennel {
+export interface KennelContext {
   slug: string;
   name: string;
   shortName: string;
@@ -18,6 +18,7 @@ export interface MockKennel {
   backgroundImageUrl?: string;   // https:// URL only — WebsiteBackgroundImage field
   backgroundOverlayColor: string;      // CSS #RRGGBB hex color for scroll overlay
   backgroundOverlayMaxOpacity: number; // 0–1, max opacity reached at full scroll
+  scrollBlur: number;                  // KennelWebsite.ScrollBlur — 0 = no blur, 100 = full blur (120px)
   socialLinks: {
     facebook?: string;
     instagram?: string;

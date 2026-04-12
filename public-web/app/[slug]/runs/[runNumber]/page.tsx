@@ -5,7 +5,7 @@ import { getKennelLandingData, getEvents, type KennelLandingData, type RunEvent 
 import { StickyNav } from "@/components/StickyNav";
 import { KennelBackground } from "@/components/kennel/KennelBackground";
 import { Card, CardContent } from "@/components/ui/card";
-import type { MockKennel } from "@/lib/mock/kennel";
+import type { KennelContext } from "@/lib/types/kennel";
 
 interface PageProps {
   params: Promise<{ slug: string; runNumber: string }>;
@@ -62,7 +62,7 @@ async function resolveKennelAndEvent(
 
 // ── Kennel theming ────────────────────────────────────────────────────────────
 
-function toMockKennel(data: KennelLandingData): MockKennel {
+function toKennelContext(data: KennelLandingData): KennelContext {
   return {
     slug: data.KennelUniqueShortName,
     name: data.KennelName,
@@ -81,6 +81,7 @@ function toMockKennel(data: KennelLandingData): MockKennel {
     backgroundImageUrl: data.WebsiteBackgroundImage?.startsWith("https://") ? data.WebsiteBackgroundImage : undefined,
     backgroundOverlayColor: "#000000",
     backgroundOverlayMaxOpacity: 0.88,
+    scrollBlur: Math.min(100, Math.max(0, data.ScrollBlur ?? 0)),
     socialLinks: {},
     stats: { totalRuns: 0, activeMembers: 0, photosUploaded: 0, yearsRunning: 0 },
   };
@@ -153,7 +154,7 @@ export default async function RunDetailPage({ params }: PageProps) {
   if (!event) notFound();
 
   const kennel = {
-    ...toMockKennel(kennelData),
+    ...toKennelContext(kennelData),
     ...parseOverlayColor(kennelData.WebsiteBackgroundColor),
   };
   const { date, time } = formatDateLong(event.EventStartDatetime);

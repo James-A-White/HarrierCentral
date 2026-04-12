@@ -23,8 +23,7 @@ export default async function GlobalCalendarPage() {
     <html lang="en" className="dark">
       <body className="text-zinc-100 antialiased overflow-x-hidden">
         {/* Default platform background — same tile used by kennels without their own image */}
-        <div className="fixed inset-0 -z-10 scale-[1.08] bg-repeat" style={{ backgroundImage: "url(/images/default-background.png)", backgroundSize: "512px 512px" }} />
-        <div className="fixed inset-0 -z-10 scale-[1.08] bg-repeat" style={{ backgroundImage: "url(/images/default-background.png)", backgroundSize: "512px 512px", filter: "blur(14px)" }} />
+        <div className="fixed inset-0 -z-10 bg-repeat" style={{ backgroundImage: "url(/images/jungle_background.jpg)", backgroundSize: "1024px 1024px" }} />
         <div className="fixed inset-0 -z-[9]" style={{ backgroundColor: "#000000", opacity: 0.55 }} />
         {/* Sticky header */}
         <header className="sticky top-0 z-50 border-b border-white/10 bg-zinc-950/80 px-4 py-4 backdrop-blur-lg">

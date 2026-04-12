@@ -5,6 +5,24 @@ on the Harrier Central codebase. Read this before making any changes.
 
 ---
 
+## Serena MCP — Semantic Code Tools
+
+Serena is configured for this project and provides symbol-level code navigation.
+Prefer Serena tools over basic Read/Grep for these tasks:
+
+- **Finding a symbol** (function, class, method, type): `mcp__serena__find_symbol`
+- **Understanding a file's structure** without reading the whole thing: `mcp__serena__get_symbols_overview`
+- **Finding all usages** of a symbol across the codebase: `mcp__serena__find_referencing_symbols`
+- **Editing a function/method body** precisely: `mcp__serena__replace_symbol_body`
+- **Locating a file by name pattern**: `mcp__serena__find_file`
+- **Regex search across files**: `mcp__serena__search_for_pattern`
+
+Use Read for files you need to read top-to-bottom. Use Grep for exact string
+matches. Use Serena when you need to understand structure, navigate relationships,
+or edit at the symbol level.
+
+---
+
 ## What This Project Is
 
 Harrier Central is a hash running club management platform built and

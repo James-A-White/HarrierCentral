@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import type { RunEvent } from "@/lib/api";
-import type { MockKennel } from "@/lib/mock/kennel";
+import type { KennelContext } from "@/lib/types/kennel";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -193,7 +193,7 @@ function RunDetail({
   run, kennel, slug,
 }: {
   run: RunEvent;
-  kennel: MockKennel;
+  kennel: KennelContext;
   slug: string;
 }) {
   const { long: longDate, time } = formatDate(run.EventStartDatetime);
@@ -367,7 +367,7 @@ function RunDetail({
 interface RunsPageClientProps {
   futureRuns: RunEvent[];
   pastRuns: RunEvent[];
-  kennel: MockKennel;
+  kennel: KennelContext;
   slug: string;
 }
 

@@ -141,7 +141,7 @@ class NewsflashManagementPage extends StatelessWidget {
         TextButton(
             onPressed: () => Get.back(result: true),
             child:
-                const Text('Delete', style: TextStyle(color: Color(0xFFDC2626)))),
+                const Text('Delete', style: TextStyle(color: Colors.white))),
       ],
     );
     if (confirmed == true) {

@@ -70,27 +70,31 @@ function KennelLogo({ kennel }: { kennel: GlobalCalendarRow }) {
   const initial = kennel.KennelName.charAt(0).toUpperCase();
   const bg = kennel.PrimaryColor ?? "#dc2626";
 
+  if (hasImage) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <a href={href} title={kennel.KennelName} className="block flex-shrink-0 transition-transform duration-150 hover:scale-105">
+        <img
+          src={kennel.KennelLogo!}
+          alt={kennel.KennelName}
+          className="h-12 w-12 object-contain"
+        />
+      </a>
+    );
+  }
+
   return (
     <a
       href={href}
       title={kennel.KennelName}
       className="block h-12 w-12 flex-shrink-0 overflow-hidden rounded-full ring-2 ring-white/10 transition-all duration-150 hover:ring-white/50 hover:scale-105"
     >
-      {hasImage ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={kennel.KennelLogo!}
-          alt={kennel.KennelName}
-          className="h-full w-full object-cover"
-        />
-      ) : (
-        <span
-          className="flex h-full w-full items-center justify-center text-lg font-bold text-white"
-          style={{ backgroundColor: bg }}
-        >
-          {initial}
-        </span>
-      )}
+      <span
+        className="flex h-full w-full items-center justify-center text-lg font-bold text-white"
+        style={{ backgroundColor: bg }}
+      >
+        {initial}
+      </span>
     </a>
   );
 }

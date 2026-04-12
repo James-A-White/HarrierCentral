@@ -11,7 +11,7 @@ AS
 --              screen. Includes a DismissedCount per newsflash showing
 --              how many users have clicked "I've read it".
 -- Parameters: @deviceId, @accessToken (auth)
--- Returns: Rowset 0: all newsflashes ordered by StartDate DESC,
+-- Returns: Rowset 0: all newsflashes ordered by CreatedAt DESC,
 --          or error envelope on auth failure
 -- Author: Harrier Central
 -- Created: 2026-04-10
@@ -61,7 +61,7 @@ BEGIN TRY
         WHERE IsDismissed = 1
         GROUP BY NewsflashId
     ) rc ON rc.NewsflashId = nf.NewsflashId
-    ORDER BY nf.StartDate DESC;
+    ORDER BY nf.CreatedAt DESC;
 
 END TRY
 BEGIN CATCH

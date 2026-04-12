@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import { Trophy, Users, Camera, Hash } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import type { MockKennel } from "@/lib/mock/kennel";
+import type { KennelContext } from "@/lib/types/kennel";
 
 function useCountUp(target: number, duration = 1800, active: boolean) {
   const [count, setCount] = useState(0);
@@ -57,7 +57,7 @@ function StatRow({
   );
 }
 
-export function StatsSection({ kennel }: { kennel: MockKennel }) {
+export function StatsSection({ kennel }: { kennel: KennelContext }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
 

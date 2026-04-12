@@ -3,7 +3,7 @@ import { getKennelLandingData, getEvents, type KennelLandingData } from "@/lib/a
 import { StickyNav } from "@/components/StickyNav";
 import { ScrollHero } from "@/components/kennel/ScrollHero";
 import { StatsSection } from "@/components/kennel/StatsSection";
-import type { MockKennel } from "@/lib/mock/kennel";
+import type { KennelContext } from "@/lib/types/kennel";
 import { FeaturedRunCard } from "@/components/kennel/FeaturedRunCard";
 import { UpcomingRunsList } from "@/components/kennel/UpcomingRunsList";
 import { PhotoGrid } from "@/components/kennel/PhotoGrid";
@@ -56,12 +56,17 @@ function parseOverlayColor(raw: string | null): {
   };
 }
 
+function clampScrollBlur(raw: number | null): number {
+  const value = raw ?? 0;
+  return Math.min(100, Math.max(0, value));
+}
+
 /**
  * Converts the live KennelLandingData from the API into the shape that
  * the existing components expect. Theme and colour defaults are used
  * until those fields are added to the SP in a future iteration.
  */
-function toMockKennel(data: KennelLandingData): MockKennel {
+function toKennelContext(data: KennelLandingData): KennelContext {
   return {
     slug: data.KennelUniqueShortName,
     name: data.KennelName,
@@ -77,8 +82,9 @@ function toMockKennel(data: KennelLandingData): MockKennel {
     titleTextColor: data.TitleTextColor ?? undefined,
     logoLetter: data.KennelShortName.charAt(0).toUpperCase(),
     logoUrl: data.KennelLogo?.startsWith("https://") ? data.KennelLogo : undefined,
-    backgroundImageUrl: data.WebsiteBackgroundImage?.startsWith("https://") ? data.WebsiteBackgroundImage : undefined,
+    backgroundImageUrl: data.WebsiteBackgroundImage?.startsWith("https://") ? data.WebsiteBackgroundImage : "/images/jungle_background.jpg",
     ...parseOverlayColor(data.WebsiteBackgroundColor),
+    scrollBlur: clampScrollBlur(data.ScrollBlur),
     socialLinks: {},
     stats: {
       totalRuns: 0,
@@ -95,7 +101,7 @@ export default async function KennelPage({ params }: PageProps) {
 
   if (!kennelData) notFound();
 
-  const kennel = toMockKennel(kennelData);
+  const kennel = toKennelContext(kennelData);
 
   const [eventsResult, pastResult] = await Promise.all([
     getEvents(kennelData.PublicKennelId, { isFuture: true, maxEvents: 10 }),
