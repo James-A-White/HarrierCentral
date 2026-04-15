@@ -404,6 +404,118 @@ type RawRunEvent = Omit<RunEvent, "tags"> & {
   Tags3: number;
 };
 
+// ─── getGlobalRuns ────────────────────────────────────────────────────────────
+
+/**
+ * Shape of a single row from publicWeb_getGlobalRuns (Rowset 1).
+ * Includes full kennel context so the detail panel needs no second API call.
+ */
+export interface GlobalRunRow {
+  // Event identity
+  PublicEventId: string;
+  EventNumber: number;
+  EventName: string;
+
+  // Timing
+  EventStartDatetime: string;
+  EventEndDatetime: string | null;
+
+  // Event type
+  EventTypeName: string | null;
+
+  // Fees
+  EventPriceForMembers: number | null;
+  EventPriceForNonMembers: number | null;
+  EventCurrencyType: string | null;
+
+  // People
+  Hares: string | null;
+
+  // Location
+  LocationOneLineDesc: string | null;
+  LocationStreet: string | null;
+  LocationCity: string | null;
+  LocationPostCode: string | null;
+  LocationRegion: string | null;
+  LocationCountry: string | null;
+
+  Latitude: number | null;
+  Longitude: number | null;
+  w3wJson: string | null;
+
+  // Content
+  EventDescription: string | null;
+  EventImage: string | null;
+  EventUrl: string | null;
+
+  // Tags (decoded from bitflags by getGlobalRuns())
+  tags: string[];
+
+  // Metadata
+  IsCountedRun: number;
+
+  // Kennel context
+  KennelSlug: string;
+  KennelName: string;
+  KennelLogo: string | null;
+  PrimaryColor: string | null;
+  PublicKennelId: string;
+  /** Custom domain (e.g. 'www.cityhash.org'). NULL when kennel has none. */
+  KennelWebsiteDomain: string | null;
+}
+
+export interface GetGlobalRunsOptions {
+  isFuture: boolean;
+  /** Events per page (default 50, clamped 1–200 server-side). */
+  pageSize?: number;
+  /** Zero-based row offset for pagination (default 0). */
+  offset?: number;
+}
+
+export interface GetGlobalRunsResult {
+  /** Total events matching the isFuture filter before the pageSize cap. */
+  totalMatchingEvents: number;
+  runs: GlobalRunRow[];
+}
+
+// Raw shape before tag decoding
+type RawGlobalRunRow = Omit<GlobalRunRow, "tags"> & {
+  Tags1: number;
+  Tags2: number;
+  Tags3: number;
+};
+
+/**
+ * Fetches individual runs across all kennels, sorted by date.
+ * Returns the first page of future runs by default.
+ */
+export async function getGlobalRuns(
+  options: GetGlobalRunsOptions
+): Promise<GetGlobalRunsResult> {
+  const params: Record<string, string> = {
+    isFuture: options.isFuture ? "1" : "0",
+  };
+  if (options.pageSize !== undefined) params.pageSize = String(options.pageSize);
+  if (options.offset   !== undefined) params.offset   = String(options.offset);
+
+  const data = await callPublicWebApiAllRowsets("getGlobalRuns", params);
+  if (!data) return { totalMatchingEvents: 0, runs: [] };
+
+  const [headerRows, runRows] = data as [
+    Array<{ TotalMatchingEvents: number }>,
+    RawGlobalRunRow[],
+  ];
+
+  const totalMatchingEvents = headerRows?.[0]?.TotalMatchingEvents ?? 0;
+
+  const runs: GlobalRunRow[] = (runRows ?? []).map((row) => {
+    const { Tags1, Tags2, Tags3, ...rest } = row;
+    return { ...rest, tags: decodeTags(Tags1, Tags2, Tags3) };
+  });
+
+  return { totalMatchingEvents, runs };
+}
+
 /**
  * Fetches upcoming or past events for a kennel by its PublicKennelId.
  * Returns null when the kennel does not exist or is not publicly visible.

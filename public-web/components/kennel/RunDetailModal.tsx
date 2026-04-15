@@ -217,7 +217,7 @@ export function RunDetailModal({ run, kennel, slug, onClose }: RunDetailModalPro
                   </a>
                 )}
                 <Link
-                  href={`/${slug}/runs/${run.EventNumber}`}
+                  href={`/${slug}/${run.EventNumber}`}
                   onClick={onClose}
                   className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xl font-semibold transition-opacity hover:opacity-90"
                   style={{ backgroundColor: "var(--kennel-primary)", color: "var(--kennel-primary-fg)" }}

@@ -48,7 +48,7 @@ export function UpcomingRunsList({ runs, slug }: UpcomingRunsListProps) {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.07, ease: [0.19, 1, 0.22, 1] }}
             >
-              <Link className="block min-w-0" href={`/${slug}/runs/${run.EventNumber}`}>
+              <Link className="block min-w-0" href={`/${slug}/${run.EventNumber}`}>
               <Card className="w-full max-w-full rounded-2xl gap-0 py-0 dark:border-white/25 dark:bg-white/[0.12] border-zinc-200 bg-white shadow-lg dark:shadow-black/50 hover:shadow-xl transition-shadow cursor-pointer group">
                 <CardContent className="flex items-center gap-4 p-4">
                   {/* Run number badge */}

@@ -1,0 +1,23 @@
+0.7.1
+    • Global runs page: background image fills entire page including behind the run list
+    • Run list left panel: transparent background, all 4 card corners now visible
+    • Tab switcher: redesigned as segmented control pill (Future Runs / Past Runs)
+    • Kennel logos: no longer clipped to circles — display at natural shape with rounded corners
+    • Card typography: larger fonts throughout (event name/kennel name 24px, details 20px)
+    • Kennel logo size increased (64px → 112px)
+    • Left panel widened to 560px on desktop
+    • Card vertical padding significantly reduced
+    • Selected card indicator: 3× wider (9px), absolutely positioned so content does not shift
+    • Font: Avenir Next applied globally via --font-sans CSS variable
+
+0.7.0
+    • ScrollBlur component on kennel landing pages
+    • KennelContext rename (toMockKennel → toKennelContext, MockKennel → KennelContext)
+    • Removed FILTH fallback join — kennel styles now sourced exclusively from HC.KennelWebsite
+    • Logo and favicon now sourced from HC.Kennel (canonical source)
+    • Theme colours read from DB at runtime
+
+0.6.0
+    • Global calendar page
+    • Nav updates
+    • Fee display fix

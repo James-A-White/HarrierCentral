@@ -268,7 +268,7 @@ export function ScrollHero({ kennel, slug, nextRun }: ScrollHeroProps) {
         >
           {nextRun && (
             <Link
-              href={`/${slug}/runs/${nextRun.EventNumber}`}
+              href={`/${slug}/${nextRun.EventNumber}`}
               className="rounded-full px-8 py-3 text-base font-semibold transition-opacity hover:opacity-90"
               style={{
                 backgroundColor: "var(--kennel-primary)",

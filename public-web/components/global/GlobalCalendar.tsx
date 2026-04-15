@@ -65,7 +65,7 @@ function KennelLogo({ kennel }: { kennel: GlobalCalendarRow }) {
   const hasImage = kennel.KennelLogo?.startsWith("https://");
   const href =
     kennel.EventNumber > 0
-      ? `/${kennel.KennelSlug}/runs/${kennel.EventNumber}`
+      ? `/${kennel.KennelSlug}/${kennel.EventNumber}`
       : `/${kennel.KennelSlug}/`;
   const initial = kennel.KennelName.charAt(0).toUpperCase();
   const bg = kennel.PrimaryColor ?? "#dc2626";

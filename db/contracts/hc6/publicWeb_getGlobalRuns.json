@@ -1,0 +1,284 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getGlobalRuns",
+  "version": "1.0.0",
+  "description": "Returns one row per event across all kennels for the hashruns.org global [Runs] discovery tab. Unlike publicWeb_getGlobalCalendar (which collapses multiple events per day per kennel into one row), this SP returns individual events with full kennel and event detail so the client detail panel needs no second API call. Supports offset-based pagination for infinite scroll.",
+  "parameters": [
+    {
+      "name": "IsFuture",
+      "type": "BIT",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "1 = upcoming events (EventStartDatetime >= now, ordered ASC). 0 = past events (EventStartDatetime < now, ordered DESC)."
+    },
+    {
+      "name": "PageSize",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Events per page. Defaults to 50. Clamped to 1–200 server-side."
+    },
+    {
+      "name": "Offset",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Zero-based row offset for pagination. Defaults to 0."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "TotalCount",
+      "description": "Always exactly one row. Lets the client compute hasMore (offset + pageSize < totalMatchingEvents) without a separate count query.",
+      "columns": [
+        {
+          "name": "TotalMatchingEvents",
+          "type": "INT",
+          "nullable": false,
+          "description": "Total events matching the IsFuture filter before the PageSize cap is applied."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "GlobalRuns",
+      "description": "One row per event, ordered by EventStartDatetime ASC (future) or DESC (past), with KennelName and PublicEventId as deterministic tiebreakers. Empty rowset when no events exist.",
+      "columns": [
+        {
+          "name": "PublicEventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "mapsToColumn": "Event.PublicEventId",
+          "description": "Public event GUID. Safe to use as a React list key."
+        },
+        {
+          "name": "EventNumber",
+          "type": "SMALLINT",
+          "nullable": false,
+          "mapsToColumn": "Event.EventNumber",
+          "description": "Run number. Used to build the run permalink URL (/{slug}/{eventNumber})."
+        },
+        {
+          "name": "EventName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "mapsToColumn": "Event.EventName",
+          "description": "Display name for the event."
+        },
+        {
+          "name": "EventStartDatetime",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "mapsToColumn": "Event.EventStartDatetime",
+          "description": "Event start date and time with timezone offset."
+        },
+        {
+          "name": "EventEndDatetime",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "mapsToColumn": "Event.EventEndDatetime",
+          "description": "Event end time. NULL when not specified."
+        },
+        {
+          "name": "EventTypeName",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "mapsToColumn": "DomainValues.EventThemeType.EventEnumName",
+          "description": "Human-readable event type (e.g. 'Normal run', 'Red Dress Run'). NULL when ThemeRunType has no matching row."
+        },
+        {
+          "name": "EventPriceForMembers",
+          "type": "DECIMAL(10,4)",
+          "nullable": true,
+          "mapsToColumn": "Event.EventPriceForMembers",
+          "description": "Fee for members. COALESCEd with Kennel.DefaultEventPriceForMembers — non-NULL when either event or kennel has a fee set."
+        },
+        {
+          "name": "EventPriceForNonMembers",
+          "type": "DECIMAL(10,4)",
+          "nullable": true,
+          "mapsToColumn": "Event.EventPriceForNonMembers",
+          "description": "Fee for non-members. COALESCEd with Kennel.DefaultEventPriceForNonMembers."
+        },
+        {
+          "name": "EventCurrencyType",
+          "type": "NVARCHAR(10)",
+          "nullable": true,
+          "mapsToColumn": "Event.EventCurrencyType",
+          "description": "ISO currency code (e.g. 'GBP', 'USD'). COALESCEd with Kennel.DefaultEventCurrencyType."
+        },
+        {
+          "name": "Hares",
+          "type": "NVARCHAR(2500)",
+          "nullable": true,
+          "mapsToColumn": "Event.Hares",
+          "description": "Comma-separated hare names."
+        },
+        {
+          "name": "LocationOneLineDesc",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "mapsToColumn": "Event.LocationOneLineDesc",
+          "description": "Single-line venue description (e.g. 'The Queens Head')."
+        },
+        {
+          "name": "LocationStreet",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "mapsToColumn": "Event.SyncLocationStreet",
+          "description": "Street address. Computed from SyncLocationStreet (handles Facebook override)."
+        },
+        {
+          "name": "LocationCity",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "mapsToColumn": "Event.SyncLocationCity",
+          "description": "City. Computed from SyncLocationCity."
+        },
+        {
+          "name": "LocationPostCode",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "mapsToColumn": "Event.SyncLocationPostCode",
+          "description": "Post/zip code. Computed from SyncLocationPostCode."
+        },
+        {
+          "name": "LocationRegion",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "mapsToColumn": "Event.SyncLocationRegion",
+          "description": "State/county/region. Computed from SyncLocationRegion (Facebook override aware)."
+        },
+        {
+          "name": "LocationCountry",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "mapsToColumn": "Event.SyncLocationCountry",
+          "description": "Country name. Computed from SyncLocationCountry (Facebook override aware)."
+        },
+        {
+          "name": "Latitude",
+          "type": "DECIMAL(18,15)",
+          "nullable": true,
+          "mapsToColumn": "Event.SyncLatitude",
+          "description": "Latitude for map link generation. Computed from SyncLatitude."
+        },
+        {
+          "name": "Longitude",
+          "type": "DECIMAL(19,15)",
+          "nullable": true,
+          "mapsToColumn": "Event.SyncLongitude",
+          "description": "Longitude for map link generation. Computed from SyncLongitude."
+        },
+        {
+          "name": "w3wJson",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "mapsToColumn": "Event.w3wJson",
+          "description": "What3Words JSON blob containing 'map' (URL) and/or 'words' fields."
+        },
+        {
+          "name": "EventDescription",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "mapsToColumn": "Event.SyncDescription",
+          "description": "Event description text. Computed from SyncDescription (handles Facebook override)."
+        },
+        {
+          "name": "EventImage",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "mapsToColumn": "Event.EventImage",
+          "description": "Event image URL. Caller must verify https:// prefix before rendering."
+        },
+        {
+          "name": "EventUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "mapsToColumn": "Event.EventUrl",
+          "description": "External event page URL."
+        },
+        {
+          "name": "Tags1",
+          "type": "INT",
+          "nullable": false,
+          "mapsToColumn": "Event.Tags1",
+          "description": "Bitflag column 1. Decoded client-side using the RunTag enum into human-readable tag strings."
+        },
+        {
+          "name": "Tags2",
+          "type": "INT",
+          "nullable": false,
+          "mapsToColumn": "Event.Tags2",
+          "description": "Bitflag column 2."
+        },
+        {
+          "name": "Tags3",
+          "type": "INT",
+          "nullable": false,
+          "mapsToColumn": "Event.Tags3",
+          "description": "Bitflag column 3 (reserved for future use)."
+        },
+        {
+          "name": "IsCountedRun",
+          "type": "SMALLINT",
+          "nullable": false,
+          "mapsToColumn": "Event.IsCountedRun",
+          "description": "1 when the EventNumber counts toward the kennel's official run sequence, 0 for uncounted events."
+        },
+        {
+          "name": "KennelSlug",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "mapsToColumn": "Kennel.KennelUniqueShortName",
+          "description": "URL slug. Used to build run permalinks (/{slug}/{eventNumber}) and kennel page links (/{slug})."
+        },
+        {
+          "name": "KennelName",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "mapsToColumn": "Kennel.KennelName",
+          "description": "Full kennel name for display in the list card and detail panel."
+        },
+        {
+          "name": "KennelLogo",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "mapsToColumn": "Kennel.KennelLogo",
+          "description": "Kennel logo URL. Caller must verify https:// prefix before rendering."
+        },
+        {
+          "name": "PrimaryColor",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "mapsToColumn": "KennelWebsite.PrimaryColor",
+          "description": "CSS hex colour used for kennel name text and logo placeholder background in the list."
+        },
+        {
+          "name": "PublicKennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "mapsToColumn": "Kennel.PublicKennelId",
+          "description": "Public kennel GUID."
+        },
+        {
+          "name": "KennelWebsiteDomain",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "mapsToColumn": "KennelWebsite.CustomDomain",
+          "description": "The kennel's custom domain (e.g. 'www.cityhash.org'). NULL for kennels without a custom domain. Used for the 'Open Kennel website' button and fourth QR code — omit both when NULL."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never remove Rowset 0 — callers rely on TotalMatchingEvents to compute hasMore",
+    "Never change the sort order within a tab — callers rely on stable pagination"
+  ]
+}

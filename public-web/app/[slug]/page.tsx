@@ -149,7 +149,7 @@ export default async function KennelPage({ params }: PageProps) {
         <main className="relative z-10 mx-auto max-w-7xl px-4 pb-24 md:px-6">
           <section id="runs" className="grid min-w-0 gap-6 lg:grid-cols-[1.1fr_0.9fr]">
             <div className="min-w-0">
-              {events[0] && <FeaturedRunCard run={events[0]} href={`/${slug}/runs/${events[0].EventNumber}`} />}
+              {events[0] && <FeaturedRunCard run={events[0]} href={`/${slug}/${events[0].EventNumber}`} />}
             </div>
             <div className="min-w-0">
               <UpcomingRunsList runs={events.slice(1)} slug={slug} />

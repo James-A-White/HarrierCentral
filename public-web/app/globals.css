@@ -55,6 +55,9 @@
 }
 
 :root {
+  /* Font — Avenir Next on all Apple devices; clean system font on everything else */
+  --font-sans: "Avenir Next", "Avenir", system-ui, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+
   /* Default kennel theme tokens — overridden per-tenant at runtime */
   --kennel-primary: #dc2626;
   --kennel-primary-fg: #ffffff;

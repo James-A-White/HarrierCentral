@@ -350,7 +350,7 @@ function RunDetail({
           </a>
         )}
         <Link
-          href={`/${slug}/runs/${run.EventNumber}`}
+          href={`/${slug}/${run.EventNumber}`}
           className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-xl font-semibold transition-opacity hover:opacity-90"
           style={{ backgroundColor: "var(--kennel-primary)", color: "var(--kennel-primary-fg)" }}
         >
@@ -396,7 +396,7 @@ export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageC
 
   const handleSelect = (run: RunEvent) => {
     if (typeof window !== "undefined" && window.innerWidth < 1024) {
-      router.push(`/${slug}/runs/${run.EventNumber}`);
+      router.push(`/${slug}/${run.EventNumber}`);
     } else {
       setSelectedRun(run);
     }
