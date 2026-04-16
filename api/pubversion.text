@@ -1,4 +1,7 @@
 
+1.0.1+2
+    • Added 10-second CommandTimeout to PublicWebApi SQL commands to prevent slow SP queries from hanging the HTTP connection
+
 1.0.0+1
     • Added HcExternalDataIntegration timer function — polls HC.Integration every minute, dispatches to registered handlers
     • Added GenericJsonQuery handler — fetches external JSON feeds, reverse-geocodes Google map links, persists to DB

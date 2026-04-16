@@ -60,6 +60,7 @@ namespace HcWebApi.Endpoints
 
                     using SqlCommand cmd = new(procedureName, conn);
                     cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandTimeout = 10; // seconds — short enough to fail fast, long enough for large queries
 
                     foreach (string key in req.Query.Keys)
                     {
