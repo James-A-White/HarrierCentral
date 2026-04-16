@@ -87,6 +87,11 @@ function parseMenuBackground(raw: string | null, theme: "dark" | "light"): {
  * until those fields are added to the SP in a future iteration.
  */
 function toKennelContext(data: KennelLandingData): KennelContext {
+  // The SP COALESCEs ScrollBlur to 0 at the DB level, so ?? never triggers
+  // for an unset kennel. Use || so that a DB-returned 0 falls through to
+  // the platform default (10) when the kennel has no custom background.
+  const hasCustomBackground = data.WebsiteBackgroundImage?.startsWith("https://") ?? false;
+
   return {
     slug: data.KennelUniqueShortName,
     name: data.KennelName,
@@ -102,9 +107,9 @@ function toKennelContext(data: KennelLandingData): KennelContext {
     titleTextColor: data.TitleTextColor ?? undefined,
     logoLetter: data.KennelShortName.charAt(0).toUpperCase(),
     logoUrl: data.KennelLogo?.startsWith("https://") ? data.KennelLogo : undefined,
-    backgroundImageUrl: data.WebsiteBackgroundImage?.startsWith("https://") ? data.WebsiteBackgroundImage : "/images/jungle_background.jpg",
-    ...parseOverlayColor(data.WebsiteBackgroundColor),
-    scrollBlur: clampScrollBlur(data.ScrollBlur),
+    backgroundImageUrl: hasCustomBackground ? data.WebsiteBackgroundImage! : "/images/jungle_background.jpg",
+    ...parseOverlayColor(data.WebsiteBackgroundColor ?? "#00000080"),
+    scrollBlur: clampScrollBlur(hasCustomBackground ? (data.ScrollBlur ?? 0) : (data.ScrollBlur || 5)),
     ...parseMenuBackground(data.MenuBackgroundColor ?? null, data.ThemeMode === "light" ? "light" : "dark"),
     menuTextColor: data.MenuTextColor ?? (data.ThemeMode === "light" ? "#18181b" : "#ffffff"),
     socialLinks: {},

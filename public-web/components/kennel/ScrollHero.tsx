@@ -123,41 +123,27 @@ export function ScrollHero({ kennel, slug, nextRun }: ScrollHeroProps) {
   const blurPx = (clampedScrollBlur / 100) * 120;
   const overlayOpacity = useTransform(scrollY, [0, BACKGROUND_SCROLL_BLEND_END], [0, kennel.backgroundOverlayMaxOpacity]);
 
-  // Local paths (e.g. /images/jungle_background.jpg) are the default tile fallback —
-  // render them tiled at 1024×1024 to match the top-level calendar page.
-  // Remote https:// images are kennel-specific and should fill via bg-cover.
-  const isDefaultBackground = kennel.backgroundImageUrl && !kennel.backgroundImageUrl.startsWith("https://");
-  const bgLayerClass = isDefaultBackground
-    ? "fixed inset-0 -z-10 bg-repeat"
-    : "fixed inset-0 -z-10 scale-[1.08] bg-cover bg-center bg-no-repeat";
-  const bgLayerStyle = isDefaultBackground
-    ? { backgroundImage: `url(${kennel.backgroundImageUrl})`, backgroundSize: "1024px 1024px" }
-    : { backgroundImage: `url(${kennel.backgroundImageUrl})` };
+  // All kennel background images — local default or kennel-uploaded — use bg-cover.
+  // scale-[1.08] on the blur layer prevents CSS blur from feathering to transparent
+  // at viewport edges. The base layer uses the same class for consistency.
+  const bgLayerClass = "fixed inset-0 -z-10 scale-[1.08] bg-cover bg-center bg-no-repeat";
+  const bgLayerStyle = { backgroundImage: `url(${kennel.backgroundImageUrl})` };
 
   return (
     <section ref={sectionRef} className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden">
       {/* Background */}
       {kennel.backgroundImageUrl ? (
         <>
-          {/* Layer 1 — sharp image, always visible.
-              Kennel images: scale-[1.08] hides blur-bleed at edges.
-              Default tile (jungle): bg-repeat at 1024×1024, matching the global calendar page. */}
+          {/* Layer 1 — sharp base image, always visible */}
           <div className={bgLayerClass} style={bgLayerStyle} />
-          {/* Layer 2 — pre-blurred image, fades in on scroll (kennel images only).
-              Opacity-only animation runs on the compositor (GPU) — no CPU blur per frame.
-              Skipped for the default tiled background. */}
-          {!isDefaultBackground && (
+          {/* Layer 2 — pre-blurred image, fades in on scroll (opacity only, GPU compositor) */}
+          {blurPx > 0 && (
             <motion.div
               className={bgLayerClass}
-              style={{
-                ...bgLayerStyle,
-                filter: `blur(${blurPx}px)`,
-                opacity: blurredLayerOpacity,
-              }}
+              style={{ ...bgLayerStyle, filter: `blur(${blurPx}px)`, opacity: blurredLayerOpacity }}
             />
           )}
-          {/* Fixed darkening overlay — reaches max opacity and stays there,
-              providing contrast behind all content sections below the hero. */}
+          {/* Colour overlay — fades in on scroll alongside the blur layer */}
           <motion.div
             className="fixed inset-0"
             style={{ backgroundColor: kennel.backgroundOverlayColor, opacity: overlayOpacity, zIndex: -9 }}
@@ -165,28 +151,20 @@ export function ScrollHero({ kennel, slug, nextRun }: ScrollHeroProps) {
         </>
       ) : (
         <div className="absolute inset-0 -z-10 overflow-hidden">
-          {/* Fallback gradient (no background image set) */}
+          {/* Solid dark base */}
+          <div className="absolute inset-0 bg-zinc-950" />
+          {/* Kennel-colour radial tint — keeps brand identity visible */}
           <div
-            className="absolute inset-0 hidden dark:block"
+            className="absolute inset-0"
             style={{
-              background: `
-                radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--kennel-primary) 18%, transparent) 0%, transparent 55%),
-                linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 40%),
-                linear-gradient(135deg, #1c1917 0%, #18181b 35%, #09090b 100%)
-              `,
+              background: `radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--kennel-primary) 18%, transparent) 0%, transparent 55%)`,
             }}
           />
+          {/* Static colour overlay at DB max opacity — no scroll animation */}
           <div
-            className="absolute inset-0 block dark:hidden"
-            style={{
-              background: `
-                radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--kennel-primary) 8%, transparent) 0%, transparent 55%),
-                linear-gradient(135deg, #fafafa 0%, #f4f4f5 100%)
-              `,
-            }}
+            className="absolute inset-0"
+            style={{ backgroundColor: kennel.backgroundOverlayColor, opacity: kennel.backgroundOverlayMaxOpacity }}
           />
-          <div className="absolute -top-32 right-[-10rem] h-96 w-96 rounded-full dark:bg-white/5 bg-black/[0.03] blur-3xl" />
-          <div className="absolute top-[30rem] left-[-8rem] h-80 w-80 rounded-full dark:bg-white/5 bg-black/[0.03] blur-3xl" />
         </div>
       )}
 

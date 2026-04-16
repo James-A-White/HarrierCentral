@@ -85,11 +85,11 @@ function normalizeWebsiteUrl(domain: string): string {
 
 // ─── KennelLogo ───────────────────────────────────────────────────────────────
 
-function KennelLogo({ run, size = "sm" }: { run: GlobalRunRow; size?: "sm" | "md" }) {
+function KennelLogo({ run, size = "sm" }: { run: GlobalRunRow; size?: "sm" | "md" | "lg" }) {
   const hasImage = run.KennelLogo?.startsWith("https://");
   const bg = run.PrimaryColor ?? "#dc2626";
-  const dim = size === "sm" ? "h-12 w-12" : "h-28 w-28";
-  const text = size === "sm" ? "text-lg" : "text-3xl";
+  const dim = size === "sm" ? "h-12 w-12" : size === "md" ? "h-16 w-16" : "h-20 w-20";
+  const text = size === "sm" ? "text-lg" : size === "md" ? "text-xl" : "text-2xl";
 
   if (hasImage) {
     return (
@@ -138,14 +138,14 @@ function GlobalRunCard({
       {/* Selected indicator — absolutely positioned so it overlays content without shifting it */}
       {isSelected && (
         <div
-          className="absolute left-0 top-0 bottom-0 w-[9px] z-10"
+          className="absolute left-0 top-0 bottom-0 w-1 z-10"
           style={{ backgroundColor: primaryColor }}
         />
       )}
 
       {/* Bold title */}
-      <div className="px-5 pt-2 pb-1.5">
-        <p className="text-2xl font-bold text-zinc-900 leading-tight truncate">
+      <div className="px-3 pt-2 pb-1">
+        <p className="text-sm font-bold text-zinc-900 leading-tight truncate">
           {run.EventName}
         </p>
       </div>
@@ -154,36 +154,36 @@ function GlobalRunCard({
       <hr className="border-zinc-200 mx-0" />
 
       {/* Content: logo + details */}
-      <div className="flex items-start gap-4 px-5 py-2">
+      <div className="flex items-start gap-2.5 px-3 py-1.5">
         <KennelLogo run={run} size="md" />
 
         <div className="min-w-0 flex-1">
           {/* Kennel name — primary colour, bold */}
           <p
-            className="text-2xl font-bold leading-tight truncate"
+            className="text-sm font-bold leading-tight truncate"
             style={{ color: primaryColor }}
           >
             {run.KennelName}
           </p>
 
           {/* Run number + relative time — bold black */}
-          <p className="text-xl font-bold text-zinc-900 leading-tight truncate" suppressHydrationWarning>
+          <p className="text-xs font-bold text-zinc-900 leading-tight truncate" suppressHydrationWarning>
             {run.IsCountedRun ? `Run #${run.EventNumber}, ` : ""}{rel}
           </p>
 
           {/* Date and time */}
-          <p className="text-xl text-zinc-700 leading-tight truncate" suppressHydrationWarning>
+          <p className="text-xs text-zinc-700 leading-tight truncate" suppressHydrationWarning>
             {short} at {time}
           </p>
 
           {/* City, Country */}
           {location && (
-            <p className="text-xl text-zinc-700 leading-tight truncate">{location}</p>
+            <p className="text-xs text-zinc-700 leading-tight truncate">{location}</p>
           )}
 
           {/* Venue */}
           {run.LocationOneLineDesc && (
-            <p className="text-xl text-zinc-700 leading-tight truncate">
+            <p className="text-xs text-zinc-700 leading-tight truncate">
               Location: {run.LocationOneLineDesc}
             </p>
           )}
@@ -193,9 +193,21 @@ function GlobalRunCard({
   );
 }
 
-// ─── Detail row ───────────────────────────────────────────────────────────────
+// ─── Section divider ──────────────────────────────────────────────────────────
 
-function DetailRow({
+function SectionDivider() {
+  return (
+    <div className="flex items-center px-6 py-1">
+      <div className="flex-1 h-px bg-white/20" />
+      <div className="mx-2 h-2 w-2 rounded-full bg-white/40" />
+      <div className="flex-1 h-px bg-white/20" />
+    </div>
+  );
+}
+
+// ─── Field row ────────────────────────────────────────────────────────────────
+
+function FieldRow({
   label,
   value,
   suppressHydration,
@@ -205,12 +217,12 @@ function DetailRow({
   suppressHydration?: boolean;
 }) {
   return (
-    <div className="flex gap-4 py-2 border-b border-white/[0.08] last:border-0">
-      <span className="w-24 shrink-0 text-sm text-white/60 text-right leading-snug pt-0.5">
+    <div className="flex gap-3 py-0.5">
+      <span className="w-28 shrink-0 text-sm text-amber-400 text-right leading-snug">
         {label}
       </span>
       <span
-        className="flex-1 min-w-0 text-sm text-white font-medium leading-snug"
+        className="flex-1 min-w-0 text-sm text-white font-bold leading-snug"
         suppressHydrationWarning={suppressHydration}
       >
         {value}
@@ -242,7 +254,7 @@ function QRSection({ run }: { run: GlobalRunRow }) {
           ...(siteUrl ? [{ label: "Website", url: siteUrl }] : []),
         ].map(({ label, url }) => (
           <div key={label} className="flex flex-col items-center gap-2">
-            <p className="text-xs font-semibold text-center text-white/80">{label}</p>
+            <p className="text-2xl font-semibold text-center text-white/80">{label}</p>
             <div className="p-2 bg-white rounded-lg">
               <QRCode value={url} {...qrProps} />
             </div>
@@ -251,31 +263,6 @@ function QRSection({ run }: { run: GlobalRunRow }) {
       </div>
     </div>
   );
-}
-
-// ─── Action button ────────────────────────────────────────────────────────────
-
-function ActionBtn({
-  onClick,
-  href,
-  children,
-  active,
-}: {
-  onClick?: () => void;
-  href?: string;
-  children: React.ReactNode;
-  active?: boolean;
-}) {
-  const cls = [
-    "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
-    active
-      ? "border-white/30 bg-white/20 text-white"
-      : "border-white/15 bg-white/[0.08] text-white hover:bg-white/[0.14]",
-  ].join(" ");
-
-  if (href)
-    return <a href={href} target="_blank" rel="noopener noreferrer" className={cls}>{children}</a>;
-  return <button onClick={onClick} className={cls}>{children}</button>;
 }
 
 // ─── Run detail panel ─────────────────────────────────────────────────────────
@@ -289,7 +276,6 @@ function GlobalRunDetail({ run }: { run: GlobalRunRow }) {
   const w3wLink  = parseW3w(run.w3wJson);
   const siteUrl  = run.KennelWebsiteDomain ? normalizeWebsiteUrl(run.KennelWebsiteDomain) : null;
   const runUrl   = `${HASHRUNS_ORIGIN}/${run.KennelSlug}/${run.EventNumber}`;
-  const bg       = run.PrimaryColor ?? "#dc2626";
 
   useEffect(() => { setShowQr(false); setCopied(false); }, [run.PublicEventId]);
 
@@ -300,130 +286,121 @@ function GlobalRunDetail({ run }: { run: GlobalRunRow }) {
     });
   };
 
+  const btnCls = "inline-flex items-center gap-2 rounded-full bg-red-600 hover:bg-red-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors";
+
   return (
     <div className="flex flex-col overflow-y-auto h-full">
-      {/* Header: kennel logo + name + event name */}
-      <div
-        className="flex items-center gap-3 px-5 py-4 border-b border-white/[0.08] shrink-0"
-        style={{ borderLeftColor: bg, borderLeftWidth: 4 }}
-      >
-        <KennelLogo run={run} size="md" />
-        <div className="min-w-0">
-          <h2 className="text-base font-bold text-white leading-tight truncate">
-            {run.KennelName}
-          </h2>
-          <p className="text-sm text-white/60 truncate">{run.EventName}</p>
-        </div>
+
+      {/* ── Run image ── */}
+      {run.EventImage && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={run.EventImage}
+          alt={run.EventName}
+          className="w-full h-auto block shrink-0"
+        />
+      )}
+
+      {/* ── Kennel logo + event name ── */}
+      <div className="flex items-center justify-center gap-4 px-6 py-5 shrink-0">
+        <KennelLogo run={run} size="lg" />
+        <h2 className="text-lg font-bold text-white leading-snug">{run.EventName}</h2>
       </div>
 
-      {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto">
-        {/* Event details */}
-        <div className="px-5 py-4">
-          {run.IsCountedRun && (
-            <DetailRow label="Run #" value={String(run.EventNumber)} />
-          )}
-          <DetailRow label="Date" value={longDate} suppressHydration />
-          <DetailRow label="Time" value={time} suppressHydration />
-          {run.LocationOneLineDesc && (
-            <DetailRow label="Place" value={run.LocationOneLineDesc} />
-          )}
-          {run.LocationStreet && (
-            <DetailRow label="Street" value={run.LocationStreet} />
-          )}
-          {run.LocationCity && (
-            <DetailRow label="City" value={run.LocationCity} />
-          )}
-          {run.LocationRegion && (
-            <DetailRow label="Region" value={run.LocationRegion} />
-          )}
-          {run.LocationCountry && (
-            <DetailRow label="Country" value={run.LocationCountry} />
-          )}
-          {run.EventTypeName && (
-            <DetailRow label="Event type" value={run.EventTypeName} />
-          )}
+      <SectionDivider />
+
+      {/* ── Event details ── */}
+      <div className="px-6 py-4">
+        <p className="text-center text-amber-400 text-2xl font-semibold mb-3">Event details</p>
+        <div className="flex flex-col gap-1">
+          <FieldRow label="Kennel:" value={run.KennelName} />
+          {run.IsCountedRun && <FieldRow label="Run #:" value={String(run.EventNumber)} />}
+          <FieldRow label="Date:" value={longDate} suppressHydration />
+          <FieldRow label="Time:" value={time} suppressHydration />
+          {run.LocationOneLineDesc && <FieldRow label="Place:" value={run.LocationOneLineDesc} />}
           {(run.EventPriceForMembers !== null || run.EventPriceForNonMembers !== null) && (
-            <DetailRow
-              label="Fees"
+            <FieldRow
+              label="Run fees:"
               value={
                 <span>
-                  {formatFee(run.EventPriceForMembers, run.EventCurrencyType)}{" "}
-                  <span className="text-white/60">members</span>
+                  {run.EventPriceForMembers !== null && (
+                    <span className="block">{formatFee(run.EventPriceForMembers, run.EventCurrencyType)} (members)</span>
+                  )}
                   {run.EventPriceForNonMembers !== null && (
-                    <>
-                      {" · "}
-                      {formatFee(run.EventPriceForNonMembers, run.EventCurrencyType)}{" "}
-                      <span className="text-white/60">non-members</span>
-                    </>
+                    <span className="block">{formatFee(run.EventPriceForNonMembers, run.EventCurrencyType)} (non-members)</span>
                   )}
                 </span>
               }
             />
           )}
-          {run.Hares && <DetailRow label="Hares" value={run.Hares} />}
+          {run.LocationStreet && <FieldRow label="Street:" value={run.LocationStreet} />}
+          {run.LocationPostCode && <FieldRow label="Post code:" value={run.LocationPostCode} />}
+          {run.LocationCity && <FieldRow label="City:" value={run.LocationCity} />}
+          {run.LocationRegion && <FieldRow label="Region:" value={run.LocationRegion} />}
+          {run.LocationCountry && <FieldRow label="Country:" value={run.LocationCountry} />}
+          {run.EventTypeName && <FieldRow label="Event type:" value={run.EventTypeName} />}
+          {run.Hares && <FieldRow label="Hares:" value={run.Hares} />}
         </div>
+      </div>
 
-        {/* Action buttons */}
-        <div className="px-5 pb-4 flex flex-wrap gap-2 border-t border-white/[0.08] pt-4">
-          {mapsLink && (
-            <ActionBtn href={mapsLink}>
-              <Navigation className="h-3.5 w-3.5" />
-              Map
-            </ActionBtn>
-          )}
-          {w3wLink && (
-            <ActionBtn href={w3wLink}>
-              <MapPin className="h-3.5 w-3.5" />
-              W3W
-            </ActionBtn>
-          )}
-          <ActionBtn onClick={handleCopy}>
-            <Copy className="h-3.5 w-3.5" />
-            {copied ? "Copied!" : "Copy link"}
-          </ActionBtn>
-          <ActionBtn onClick={() => setShowQr((v) => !v)} active={showQr}>
-            <QrCode className="h-3.5 w-3.5" />
-            {showQr ? "Hide QR" : "Show QR"}
-          </ActionBtn>
-          {siteUrl && (
-            <ActionBtn href={siteUrl}>
-              {run.KennelName} website
-            </ActionBtn>
-          )}
-        </div>
+      <SectionDivider />
 
-        {/* QR section */}
-        {showQr && <QRSection run={run} />}
+      {/* ── Action buttons ── */}
+      <div className="px-6 py-4 flex flex-wrap gap-3 justify-center">
+        {mapsLink && (
+          <a href={mapsLink} target="_blank" rel="noopener noreferrer" className={btnCls}>
+            <Navigation className="h-3.5 w-3.5" />Open Map
+          </a>
+        )}
+        {w3wLink && (
+          <a href={w3wLink} target="_blank" rel="noopener noreferrer" className={btnCls}>
+            <MapPin className="h-3.5 w-3.5" />W3W
+          </a>
+        )}
+        <button onClick={handleCopy} className={btnCls}>
+          <Copy className="h-3.5 w-3.5" />{copied ? "Copied!" : "Copy link to run"}
+        </button>
+        <button onClick={() => setShowQr((v) => !v)} className={btnCls}>
+          <QrCode className="h-3.5 w-3.5" />{showQr ? "Hide QR codes" : "Show QR codes"}
+        </button>
+        {siteUrl && (
+          <a href={siteUrl} target="_blank" rel="noopener noreferrer" className={btnCls}>
+            Open {run.KennelName} website
+          </a>
+        )}
+      </div>
 
-        {/* Tags */}
-        {run.tags.length > 0 && (
-          <div className="px-5 pb-4 border-t border-white/[0.08] pt-4">
-            <div className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-white/60 mb-2">
-              <Tag className="h-3 w-3" /> Tags
-            </div>
-            <div className="flex flex-wrap gap-2">
+      {/* ── QR section ── */}
+      {showQr && <QRSection run={run} />}
+
+      {/* ── Tags ── */}
+      {run.tags.length > 0 && (
+        <>
+          <SectionDivider />
+          <div className="px-6 py-4">
+            <p className="text-center text-amber-400 text-2xl font-semibold mb-3">Event tags</p>
+            <div className="flex flex-wrap gap-2 justify-center">
               {run.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-full border border-white/15 bg-white/[0.08] px-3 py-1 text-xs text-white"
-                >
+                <span key={tag} className="rounded-full border border-white/15 bg-white/[0.08] px-3 py-1 text-lg font-semibold text-white">
                   {tag}
                 </span>
               ))}
             </div>
           </div>
-        )}
+        </>
+      )}
 
-        {/* Description */}
-        {run.EventDescription && (
-          <div className="px-5 pb-6 border-t border-white/[0.08] pt-4">
-            <p className="text-sm leading-6 text-white/80 whitespace-pre-wrap">
-              {run.EventDescription}
-            </p>
+      {/* ── Description ── */}
+      {run.EventDescription && (
+        <>
+          <SectionDivider />
+          <div className="px-6 py-4">
+            <p className="text-center text-amber-400 text-2xl font-semibold mb-3">Event description</p>
+            <p className="text-lg leading-7 font-medium text-white/90 whitespace-pre-wrap px-6">{run.EventDescription}</p>
           </div>
-        )}
-      </div>
+        </>
+      )}
+
     </div>
   );
 }
@@ -456,29 +433,45 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
   const loadMore = useCallback(async () => {
     if (loading || !hasMore) return;
     setLoading(true);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15_000);
     try {
       const res = await fetch(
-        `/api/global-runs?isFuture=${tab === "future" ? "1" : "0"}&pageSize=${PAGE_SIZE}&offset=${offset}`
+        `/api/global-runs?isFuture=${tab === "future" ? "1" : "0"}&pageSize=${PAGE_SIZE}&offset=${offset}`,
+        { signal: controller.signal }
       );
       if (!res.ok) throw new Error("Failed");
       const data: GetGlobalRunsResult = await res.json();
       setRuns((prev) => [...prev, ...data.runs]);
-      setOffset((prev) => prev + data.runs.length);
-      setHasMore(offset + data.runs.length < data.totalMatchingEvents);
-    } catch { /* silently retry on next scroll */ }
-    finally { setLoading(false); }
+      const newOffset = offset + data.runs.length;
+      setOffset(newOffset);
+      setHasMore(newOffset < data.totalMatchingEvents);
+    } catch {
+      setHasMore(false); // Stop infinite retry — user can refresh to try again
+    }
+    finally {
+      clearTimeout(timeout);
+      setLoading(false);
+    }
   }, [loading, hasMore, tab, offset]);
 
+  // Keep a ref to the latest loadMore so the IntersectionObserver callback
+  // is always current without the effect needing to re-run on every render.
+  const loadMoreRef = useRef(loadMore);
+  useEffect(() => { loadMoreRef.current = loadMore; }, [loadMore]);
+
+  // Only re-create the observer when hasMore changes (not on every loadMore
+  // ref change — that causes an infinite re-fire loop when sentinel is visible).
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel || !hasMore) return;
     const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) loadMore(); },
+      ([entry]) => { if (entry.isIntersecting) loadMoreRef.current(); },
       { rootMargin: "400px" }
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [loadMore, hasMore]);
+  }, [hasMore]);
 
   // ── Tab switching ────────────────────────────────────────────────────────────
 
@@ -492,9 +485,12 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
     setHasMore(true);
     setTotal(0);
     setLoading(true);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15_000);
     try {
       const res = await fetch(
-        `/api/global-runs?isFuture=${newTab === "future" ? "1" : "0"}&pageSize=${PAGE_SIZE}&offset=0`
+        `/api/global-runs?isFuture=${newTab === "future" ? "1" : "0"}&pageSize=${PAGE_SIZE}&offset=0`,
+        { signal: controller.signal }
       );
       if (!res.ok) throw new Error("Failed");
       const data: GetGlobalRunsResult = await res.json();
@@ -503,8 +499,13 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
       setOffset(data.runs.length);
       setHasMore(data.totalMatchingEvents > data.runs.length);
       setSelectedRun(data.runs[0] ?? null);
-    } catch { /* leave list empty */ }
-    finally { setLoading(false); }
+    } catch {
+      setHasMore(false); // Stop the observer retrying on API failure
+    }
+    finally {
+      clearTimeout(timeout);
+      setLoading(false);
+    }
   }, [tab]);
 
   // ── Search filter ────────────────────────────────────────────────────────────
@@ -515,11 +516,17 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
     return runs.filter(
       (r) =>
         r.KennelName.toLowerCase().includes(q) ||
+        r.KennelShortName.toLowerCase().includes(q) ||
+        r.KennelSlug.toLowerCase().includes(q) ||
         r.EventName.toLowerCase().includes(q) ||
         String(r.EventNumber).includes(q) ||
         (r.LocationCity?.toLowerCase().includes(q) ?? false) ||
         (r.LocationCountry?.toLowerCase().includes(q) ?? false) ||
-        (r.LocationOneLineDesc?.toLowerCase().includes(q) ?? false)
+        (r.LocationRegion?.toLowerCase().includes(q) ?? false) ||
+        (r.LocationOneLineDesc?.toLowerCase().includes(q) ?? false) ||
+        (r.Hares?.toLowerCase().includes(q) ?? false) ||
+        (r.EventDescription?.toLowerCase().includes(q) ?? false) ||
+        (r.KennelContinent?.toLowerCase().includes(q) ?? false)
     );
   }, [runs, query]);
 
@@ -527,7 +534,7 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
 
   const handleSelect = (run: GlobalRunRow) => {
     if (typeof window !== "undefined" && window.innerWidth < 1024) {
-      router.push(`/${run.KennelSlug}/${run.EventNumber}`);
+      router.push(`/${run.KennelSlug}/${run.EventNumber}?back=${encodeURIComponent("/")}`);
     } else {
       setSelectedRun(run);
     }
@@ -537,11 +544,14 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
 
   return (
     <div
-      className="flex w-full min-w-0 overflow-hidden"
+      className="flex flex-col w-full min-w-0"
       style={{ height: "calc(100svh - 56px)" }}
     >
+      {/* ── Panels row ────────────────────────────────────────────────────── */}
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+
       {/* ── Left panel ────────────────────────────────────────────────────── */}
-      <div className="flex w-full shrink-0 flex-col overflow-hidden lg:w-[560px]">
+      <div className="flex w-full shrink-0 flex-col overflow-hidden lg:w-[468px] lg:pb-3">
 
         {/* Search */}
         <div className="px-3 py-2.5 shrink-0">
@@ -568,13 +578,13 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
 
         {/* Future / Past segmented control */}
         <div className="px-3 py-3 shrink-0">
-          <div className="flex rounded-full bg-zinc-300/75 p-1.5">
+          <div className="flex rounded-full bg-zinc-300/75 p-1">
             {(["future", "past"] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => switchTab(t)}
                 className={[
-                  "flex-1 py-4 rounded-full text-2xl font-semibold transition-colors",
+                  "flex-1 py-2 rounded-full text-sm font-semibold transition-colors",
                   tab === t
                     ? "bg-red-600 text-white shadow-sm"
                     : "text-zinc-800 hover:text-zinc-950",
@@ -594,8 +604,7 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
             </div>
           ) : (
             <>
-              {/* Padding here (not on cards) gives each card a proper w-full within a constrained container */}
-              <div className="px-1 pt-3 pb-3 flex flex-col gap-4">
+              <div className="px-3 pt-3 pb-3 flex flex-col gap-2">
                 {filtered.map((run) => (
                   <GlobalRunCard
                     key={run.PublicEventId}
@@ -621,19 +630,47 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
       </div>
 
       {/* ── Right panel: detail (desktop only) ───────────────────────────── */}
-      <div className="max-lg:hidden min-w-0 flex-1 flex flex-col overflow-hidden">
-        {selectedRun ? (
-          <GlobalRunDetail key={selectedRun.PublicEventId} run={selectedRun} />
-        ) : (
-          <div className="h-full flex items-center justify-center">
-            <div className="text-center">
-              <ArrowLeft className="h-8 w-8 text-white/30 mx-auto mb-3" />
-              <p className="text-lg text-white/50">
-                Select a run from the list to the left to see details
-              </p>
-            </div>
+      <div className="max-lg:hidden min-w-0 flex-1 overflow-hidden pl-2 pr-4 py-3">
+        <div className="h-full rounded-xl border-[3px] border-white bg-white/[0.04] overflow-hidden flex flex-col">
+          <div className="flex-1 overflow-hidden min-h-0">
+            {selectedRun ? (
+              <GlobalRunDetail key={selectedRun.PublicEventId} run={selectedRun} />
+            ) : (
+              <div className="h-full flex items-center justify-center">
+                <div className="text-center">
+                  <ArrowLeft className="h-16 w-16 text-white/30 mx-auto mb-4" />
+                  <p className="text-2xl font-semibold text-white/50">
+                    Select a run from the list to the left to see details
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
-        )}
+          {/* Pinned scroll hint — matches reference */}
+          <div className="shrink-0 px-4 py-2 text-center border-t border-white/10">
+            <p className="text-xs italic text-white/40">
+              NOTE: To scroll the web page, move your cursor out of this scrollable box
+            </p>
+          </div>
+        </div>
+      </div>
+
+      </div>{/* end panels row */}
+
+      {/* ── Footer ────────────────────────────────────────────────────────── */}
+      <div className="shrink-0 py-3 w-screen text-center">
+        <p className="text-2xl text-white/70">
+          Powered by Harrier Central. Sign your Kennel up today at{" "}
+          <a
+            href="https://www.harriercentral.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-orange-400 hover:underline"
+          >
+            www.harriercentral.com
+          </a>
+        </p>
+        <p className="text-sm italic text-white/40 mt-0.5">Version: 0.7.1</p>
       </div>
     </div>
   );

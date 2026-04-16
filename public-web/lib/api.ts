@@ -456,12 +456,15 @@ export interface GlobalRunRow {
 
   // Kennel context
   KennelSlug: string;
+  KennelShortName: string;
   KennelName: string;
   KennelLogo: string | null;
   PrimaryColor: string | null;
   PublicKennelId: string;
   /** Custom domain (e.g. 'www.cityhash.org'). NULL when kennel has none. */
   KennelWebsiteDomain: string | null;
+  /** Continent name from HC.Country via Kennel.CountryId. NULL when kennel has no country set. */
+  KennelContinent: string | null;
 }
 
 export interface GetGlobalRunsOptions {

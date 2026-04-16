@@ -42,10 +42,13 @@ BEGIN TRY
     IF @Offset IS NULL OR @Offset < 0
         SET @Offset = 0;
 
+    -- Past events: rolling 1-year window.
+    -- Declared once and reused in both the count and data queries so the
+    -- optimizer sees the same predicate and the plan is consistent.
+    DECLARE @PastWindowStart DATETIMEOFFSET = DATEADD(DAY, -365, SYSDATETIMEOFFSET());
+
     -- ── Rowset 0: total count ────────────────────────────────────────────────
     -- Always one row — lets the client compute hasMore without a separate query.
-    -- Note: for past events this can be a large count; the WHERE clause relies
-    -- on the index on EventStartDatetime for efficiency.
 
     SELECT COUNT(*) AS TotalMatchingEvents
     FROM   HC.Event  e
@@ -56,7 +59,8 @@ BEGIN TRY
       AND  k.deleted   = 0
       AND  k.removed   = 0
       AND  (   (@IsFuture = 1 AND e.EventStartDatetime >= SYSDATETIMEOFFSET())
-            OR (@IsFuture = 0 AND e.EventStartDatetime <  SYSDATETIMEOFFSET()));
+            OR (@IsFuture = 0 AND e.EventStartDatetime >= @PastWindowStart
+                              AND e.EventStartDatetime <  SYSDATETIMEOFFSET()));
 
     -- ── Rowset 1: events with kennel context ─────────────────────────────────
 
@@ -107,6 +111,7 @@ BEGIN TRY
 
         -- ── Kennel context (needed for list card and detail panel) ───────────
         k.KennelUniqueShortName                                         AS KennelSlug,
+        k.KennelShortName,
         k.KennelName,
         k.KennelLogo,
         kw.PrimaryColor,
@@ -115,11 +120,15 @@ BEGIN TRY
         -- KennelWebsiteDomain: the kennel's custom domain (e.g. www.cityhash.org).
         -- NULL for kennels without a custom domain. Used for the "Open Kennel
         -- website" QR code — omit that QR entry when NULL.
-        kw.CustomDomain                                                 AS KennelWebsiteDomain
+        kw.CustomDomain                                                 AS KennelWebsiteDomain,
+
+        -- Continent derived from the kennel's country — used for search/filter.
+        ctr.ContinentName                                               AS KennelContinent
 
     FROM   HC.Event             e
     JOIN   HC.Kennel            k   ON k.id          = e.KennelId
     LEFT JOIN HC.KennelWebsite  kw  ON kw.KennelId   = k.id
+    LEFT JOIN HC.Country        ctr ON ctr.id         = k.CountryId
     LEFT JOIN DomainValues.EventThemeType ett ON ett.EventEnumId = e.ThemeRunType
     WHERE  e.IsVisible = 1
       AND  e.deleted   = 0
@@ -127,7 +136,8 @@ BEGIN TRY
       AND  k.deleted   = 0
       AND  k.removed   = 0
       AND  (   (@IsFuture = 1 AND e.EventStartDatetime >= SYSDATETIMEOFFSET())
-            OR (@IsFuture = 0 AND e.EventStartDatetime <  SYSDATETIMEOFFSET()))
+            OR (@IsFuture = 0 AND e.EventStartDatetime >= @PastWindowStart
+                              AND e.EventStartDatetime <  SYSDATETIMEOFFSET()))
     ORDER BY
         -- Conditional sort: only one branch is active per call.
         -- The inactive branch evaluates to NULL for every row and

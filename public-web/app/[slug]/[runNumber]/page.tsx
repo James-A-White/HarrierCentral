@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, MapPin, Clock, Users, Tag, ExternalLink, Navigation } from "lucide-react";
+import { ArrowLeft, Home, MapPin, Clock, Users, Tag, ExternalLink, Navigation } from "lucide-react";
 import { getKennelLandingData, getEvents, type KennelLandingData, type RunEvent } from "@/lib/api";
 import { StickyNav } from "@/components/StickyNav";
 import { KennelBackground } from "@/components/kennel/KennelBackground";
@@ -9,6 +9,7 @@ import type { KennelContext } from "@/lib/types/kennel";
 
 interface PageProps {
   params: Promise<{ slug: string; runNumber: string }>;
+  searchParams: Promise<{ back?: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps) {
@@ -164,8 +165,9 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
 
 // ── Page ───────────────────────────────────────────────────────────────────────
 
-export default async function RunDetailPage({ params }: PageProps) {
+export default async function RunDetailPage({ params, searchParams }: PageProps) {
   const { slug, runNumber } = await params;
+  const { back } = await searchParams;
   const [kennelData, event] = await resolveKennelAndEvent(slug, runNumber);
 
   if (!kennelData) notFound();
@@ -188,6 +190,14 @@ export default async function RunDetailPage({ params }: PageProps) {
 
   const BADGE = "inline-flex rounded-full border dark:border-white/20 border-zinc-200 dark:bg-white/10 bg-zinc-100 px-3 py-1 text-base font-semibold dark:text-white/90 text-zinc-700";
 
+  const backHref = back ?? `/${slug}`;
+  const showKennelHomeBtn = !!back && back !== `/${slug}`;
+  let backLabel = `Back to ${kennelData.KennelShortName}`;
+  if (back === `/${slug}/runs`) backLabel = "Back to runs";
+  else if (back === "/") backLabel = "Back to global runs";
+  else if (back === "/calendar") backLabel = "Back to calendar";
+  else if (back && back !== `/${slug}`) backLabel = "Back";
+
   return (
     <html
       lang="en"
@@ -202,15 +212,24 @@ export default async function RunDetailPage({ params }: PageProps) {
         <KennelBackground kennel={kennel} />
         <StickyNav kennel={kennel} slug={slug} alwaysVisible />
 
-        {/* Back button — always above the hero, clear of the fixed nav */}
-        <div className="relative z-10 pt-20 pb-4 mx-auto w-full px-4 md:px-6">
+        {/* Back navigation — always above the hero, clear of the fixed nav */}
+        <div className="relative z-10 pt-20 pb-4 mx-auto w-full px-4 md:px-6 flex items-center justify-between gap-3">
           <Link
-            href={`/${slug}`}
+            href={backHref}
             className="inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-xl font-semibold shadow-sm transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:text-white dark:hover:bg-white/[0.14] border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-900"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to {kennelData.KennelShortName}
+            {backLabel}
           </Link>
+          {showKennelHomeBtn && (
+            <Link
+              href={`/${slug}`}
+              className="inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-xl font-semibold shadow-sm transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:text-white dark:hover:bg-white/[0.14] border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-900"
+            >
+              <Home className="h-4 w-4" />
+              {kennelData.KennelShortName}
+            </Link>
+          )}
         </div>
 
         {/* Hero — image (clean) or gradient fallback */}
