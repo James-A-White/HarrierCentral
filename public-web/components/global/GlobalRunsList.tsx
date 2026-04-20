@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import QRCode from "react-qr-code";
 import {
@@ -10,7 +10,7 @@ import type { GlobalRunRow, GetGlobalRunsResult } from "@/lib/api";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 200;
 const HASHRUNS_ORIGIN = "https://hashruns.org";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -405,6 +405,45 @@ function GlobalRunDetail({ run }: { run: GlobalRunRow }) {
   );
 }
 
+// ─── Quarter bucket utilities ─────────────────────────────────────────────────
+
+interface PastRunBucket {
+  minEventDate: string;
+  maxEventDate: string;
+}
+
+// Returns up to 20 fixed calendar-quarter buckets (5 years), most-recent first.
+// Boundaries are stable — "Q1 2026" is always Jan 1–Apr 1 2026 regardless of
+// when it is requested, so the Next.js fetch cache key never shifts.
+function getPastRunBuckets(): PastRunBucket[] {
+  const now        = new Date();
+  const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+
+  let year    = now.getUTCFullYear();
+  let quarter = Math.floor(now.getUTCMonth() / 3); // 0–3
+
+  const buckets: PastRunBucket[] = [];
+
+  for (let i = 0; i < 20; i++) {
+    const minDate = new Date(Date.UTC(year, quarter * 3, 1));
+
+    let nextQ = quarter + 1;
+    let nextY = year;
+    if (nextQ > 3) { nextQ = 0; nextY++; }
+    // Current quarter ends at today (partial); completed quarters end at next-quarter start.
+    const maxDate = i === 0 ? todayStart : new Date(Date.UTC(nextY, nextQ * 3, 1));
+
+    if (minDate < maxDate) {
+      buckets.push({ minEventDate: minDate.toISOString(), maxEventDate: maxDate.toISOString() });
+    }
+
+    quarter--;
+    if (quarter < 0) { quarter = 3; year--; }
+  }
+
+  return buckets;
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 interface GlobalRunsListProps {
@@ -415,100 +454,131 @@ interface GlobalRunsListProps {
 export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProps) {
   const router = useRouter();
 
-  const [tab, setTab]           = useState<"future" | "past">("future");
-  const [runs, setRuns]         = useState<GlobalRunRow[]>(initialRuns);
-  const [total, setTotal]       = useState(initialTotal);
-  const [offset, setOffset]     = useState(initialRuns.length);
-  const [hasMore, setHasMore]   = useState(initialTotal > initialRuns.length);
-  const [loading, setLoading]   = useState(false);
-  const [query, setQuery]       = useState("");
-  const [selectedRun, setSelectedRun] = useState<GlobalRunRow | null>(
-    initialRuns[0] ?? null
-  );
+  const [tab, setTab]                   = useState<"future" | "past">("future");
+  // On tab switch, render the first 100 items synchronously (fast), then
+  // defer the rest via startTransition so it doesn't block the button paint.
+  const [displayCount, setDisplayCount] = useState<number>(Infinity);
+  const [isPending, startTransition]    = useTransition();
 
-  const sentinelRef = useRef<HTMLDivElement>(null);
+  // Future runs — persisted across tab switches (pre-loaded from SSR).
+  // Never reset on switch; switching back is instantaneous.
+  const [futureRuns, setFutureRuns]       = useState<GlobalRunRow[]>(initialRuns);
+  const [futureTotal, setFutureTotal]     = useState(initialTotal);
+  const [futureOffset, setFutureOffset]   = useState(initialRuns.length);
+  const [futureHasMore, setFutureHasMore] = useState(initialTotal > initialRuns.length);
+  const [futureLoading, setFutureLoading] = useState(false);
 
-  // ── Pagination ───────────────────────────────────────────────────────────────
+  // Past runs — persisted across tab switches, loaded progressively on first visit.
+  const [pastRuns, setPastRuns] = useState<GlobalRunRow[]>([]);
+  const [pastDone, setPastDone] = useState(false);
+
+  const [query, setQuery]             = useState("");
+  const [selectedRun, setSelectedRun] = useState<GlobalRunRow | null>(initialRuns[0] ?? null);
+
+  const sentinelRef    = useRef<HTMLDivElement>(null);
+  const cancelRef      = useRef(false);  // stops bucket loop on unmount
+  const pastStartedRef = useRef(false);  // ensures bucket loading starts only once
+  const tabRef         = useRef(tab);
+  useEffect(() => { tabRef.current = tab; }, [tab]);
+  useEffect(() => () => { cancelRef.current = true; }, []);
+
+  // Derived — no shared mutable "runs" state to reset on switch.
+  const runs = tab === "future" ? futureRuns : pastRuns;
+
+  // ── Future runs: infinite scroll ──────────────────────────────────────────
 
   const loadMore = useCallback(async () => {
-    if (loading || !hasMore) return;
-    setLoading(true);
+    if (tab !== "future" || futureLoading || !futureHasMore) return;
+    setFutureLoading(true);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15_000);
+    const timeout    = setTimeout(() => controller.abort(), 15_000);
     try {
       const res = await fetch(
-        `/api/global-runs?isFuture=${tab === "future" ? "1" : "0"}&pageSize=${PAGE_SIZE}&offset=${offset}`,
+        `/api/global-runs?isFuture=1&pageSize=${PAGE_SIZE}&offset=${futureOffset}`,
         { signal: controller.signal }
       );
       if (!res.ok) throw new Error("Failed");
       const data: GetGlobalRunsResult = await res.json();
-      setRuns((prev) => [...prev, ...data.runs]);
-      const newOffset = offset + data.runs.length;
-      setOffset(newOffset);
-      setHasMore(newOffset < data.totalMatchingEvents);
+      setFutureRuns((prev) => [...prev, ...data.runs]);
+      const newOffset = futureOffset + data.runs.length;
+      setFutureOffset(newOffset);
+      setFutureHasMore(newOffset < data.totalMatchingEvents);
     } catch {
-      setHasMore(false); // Stop infinite retry — user can refresh to try again
-    }
-    finally {
+      setFutureHasMore(false);
+    } finally {
       clearTimeout(timeout);
-      setLoading(false);
+      setFutureLoading(false);
     }
-  }, [loading, hasMore, tab, offset]);
+  }, [tab, futureLoading, futureHasMore, futureOffset]);
 
-  // Keep a ref to the latest loadMore so the IntersectionObserver callback
-  // is always current without the effect needing to re-run on every render.
   const loadMoreRef = useRef(loadMore);
   useEffect(() => { loadMoreRef.current = loadMore; }, [loadMore]);
 
-  // Only re-create the observer when hasMore changes (not on every loadMore
-  // ref change — that causes an infinite re-fire loop when sentinel is visible).
   useEffect(() => {
+    if (tab !== "future") return;
     const sentinel = sentinelRef.current;
-    if (!sentinel || !hasMore) return;
+    if (!sentinel || !futureHasMore) return;
     const observer = new IntersectionObserver(
       ([entry]) => { if (entry.isIntersecting) loadMoreRef.current(); },
       { rootMargin: "400px" }
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [hasMore]);
+  }, [tab, futureHasMore]);
 
-  // ── Tab switching ────────────────────────────────────────────────────────────
+  // ── Tab switching ─────────────────────────────────────────────────────────
+  // No data is fetched or reset here — both tab's runs live in persistent state.
+  // Switching is immediate in both directions.
 
-  const switchTab = useCallback(async (newTab: "future" | "past") => {
+  const switchTab = useCallback((newTab: "future" | "past") => {
     if (newTab === tab) return;
+    // Render the first 100 items in this commit (fast), then defer the rest.
     setTab(newTab);
     setQuery("");
-    setSelectedRun(null);
-    setRuns([]);
-    setOffset(0);
-    setHasMore(true);
-    setTotal(0);
-    setLoading(true);
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15_000);
-    try {
-      const res = await fetch(
-        `/api/global-runs?isFuture=${newTab === "future" ? "1" : "0"}&pageSize=${PAGE_SIZE}&offset=0`,
-        { signal: controller.signal }
-      );
-      if (!res.ok) throw new Error("Failed");
-      const data: GetGlobalRunsResult = await res.json();
-      setRuns(data.runs);
-      setTotal(data.totalMatchingEvents);
-      setOffset(data.runs.length);
-      setHasMore(data.totalMatchingEvents > data.runs.length);
-      setSelectedRun(data.runs[0] ?? null);
-    } catch {
-      setHasMore(false); // Stop the observer retrying on API failure
-    }
-    finally {
-      clearTimeout(timeout);
-      setLoading(false);
-    }
-  }, [tab]);
+    setSelectedRun(newTab === "future" ? (futureRuns[0] ?? null) : (pastRuns[0] ?? null));
+    setDisplayCount(100);
+    startTransition(() => setDisplayCount(Infinity));
 
-  // ── Search filter ────────────────────────────────────────────────────────────
+    // Start past bucket loading on first visit — runs to completion in the
+    // background regardless of subsequent tab switches.
+    if (newTab === "past" && !pastStartedRef.current) {
+      pastStartedRef.current = true;
+      (async () => {
+        const buckets = getPastRunBuckets();
+        try {
+          const { minEventDate, maxEventDate } = buckets[0];
+          const res = await fetch(
+            `/api/global-runs?isFuture=0&minEventDate=${minEventDate}&maxEventDate=${maxEventDate}`
+          );
+          if (res.ok) {
+            const data: GetGlobalRunsResult = await res.json();
+            setPastRuns(data.runs);
+            // Auto-select first run only if the user is still on the past tab
+            // and hasn't manually selected anything.
+            if (tabRef.current === "past" && data.runs.length > 0) {
+              setSelectedRun((prev) => prev ?? data.runs[0]);
+            }
+          }
+        } catch { /* degrade gracefully */ }
+
+        for (let i = 1; i < buckets.length; i++) {
+          if (cancelRef.current) return;
+          const { minEventDate, maxEventDate } = buckets[i];
+          try {
+            const res = await fetch(
+              `/api/global-runs?isFuture=0&minEventDate=${minEventDate}&maxEventDate=${maxEventDate}`
+            );
+            if (!res.ok || cancelRef.current) break;
+            const data: GetGlobalRunsResult = await res.json();
+            if (!cancelRef.current) setPastRuns((prev) => [...prev, ...data.runs]);
+          } catch { /* skip failed bucket, continue */ }
+        }
+        if (!cancelRef.current) setPastDone(true);
+      })();
+    }
+  }, [tab, futureRuns, pastRuns]);
+
+  // ── Search filter ─────────────────────────────────────────────────────────
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase().trim();
@@ -530,7 +600,7 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
     );
   }, [runs, query]);
 
-  // ── Run selection ────────────────────────────────────────────────────────────
+  // ── Run selection ─────────────────────────────────────────────────────────
 
   const handleSelect = (run: GlobalRunRow) => {
     if (typeof window !== "undefined" && window.innerWidth < 1024) {
@@ -540,7 +610,11 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
     }
   };
 
-  // ─────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const pastLoading  = tab === "past" && !pastDone;
+  // Don't show "No runs found" while the first past bucket is still in flight.
+  const pastStarting = tab === "past" && pastRuns.length === 0 && !pastDone;
 
   return (
     <div
@@ -562,7 +636,7 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
               placeholder="Search..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full h-9 rounded-full border border-zinc-200 pl-9 pr-9 text-sm outline-none bg-white text-zinc-900 placeholder:text-zinc-400 focus:ring-1 focus:ring-zinc-300"
+              className="w-full h-9 rounded-full border border-zinc-200 pl-9 pr-9 text-base sm:text-sm outline-none bg-white text-zinc-900 placeholder:text-zinc-400 focus:ring-1 focus:ring-zinc-300"
             />
             {query && (
               <button
@@ -574,6 +648,11 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
               </button>
             )}
           </div>
+          {pastLoading && pastRuns.length > 0 && (
+            <p className="mt-1.5 text-center text-xs text-zinc-400">
+              Loading older runs…
+            </p>
+          )}
         </div>
 
         {/* Future / Past segmented control */}
@@ -598,14 +677,18 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
 
         {/* Run list */}
         <div className="flex-1 overflow-y-auto">
-          {filtered.length === 0 && !loading ? (
+          {pastStarting ? (
+            <div className="flex h-full items-center justify-center">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600" />
+            </div>
+          ) : filtered.length === 0 && !futureLoading ? (
             <div className="py-16 text-center text-sm text-zinc-400">
               {query ? `No runs match "${query}"` : "No runs found"}
             </div>
           ) : (
             <>
               <div className="px-3 pt-3 pb-3 flex flex-col gap-2">
-                {filtered.map((run) => (
+                {filtered.slice(0, displayCount).map((run) => (
                   <GlobalRunCard
                     key={run.PublicEventId}
                     run={run}
@@ -615,13 +698,16 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
                 ))}
               </div>
 
-              {/* Infinite scroll sentinel — outside the flex col so gap doesn't affect it */}
+              {/* Sentinel: infinite scroll (future) / background load indicator (past) */}
               <div ref={sentinelRef} className="flex justify-center py-4">
-                {loading && (
+                {(futureLoading || pastLoading || isPending) && (
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600" />
                 )}
-                {!hasMore && runs.length > 0 && (
-                  <p className="text-xs text-zinc-400">{total.toLocaleString()} runs</p>
+                {tab === "future" && !futureHasMore && futureRuns.length > 0 && (
+                  <p className="text-xs text-zinc-400">{futureTotal.toLocaleString()} runs</p>
+                )}
+                {tab === "past" && pastDone && pastRuns.length > 0 && (
+                  <p className="text-xs text-zinc-400">{pastRuns.length.toLocaleString()} runs</p>
                 )}
               </div>
             </>
@@ -646,7 +732,7 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
               </div>
             )}
           </div>
-          {/* Pinned scroll hint — matches reference */}
+          {/* Pinned scroll hint */}
           <div className="shrink-0 px-4 py-2 text-center border-t border-white/10">
             <p className="text-xs italic text-white/40">
               NOTE: To scroll the web page, move your cursor out of this scrollable box
@@ -659,7 +745,7 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
 
       {/* ── Footer ────────────────────────────────────────────────────────── */}
       <div className="shrink-0 py-3 w-screen text-center">
-        <p className="text-2xl text-white/70">
+        <p className="text-sm sm:text-lg md:text-2xl text-white/70">
           Powered by Harrier Central. Sign your Kennel up today at{" "}
           <a
             href="https://www.harriercentral.com/"
@@ -670,7 +756,7 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
             www.harriercentral.com
           </a>
         </p>
-        <p className="text-sm italic text-white/40 mt-0.5">Version: 0.7.1</p>
+        <p className="text-sm italic text-white/40 mt-0.5">Version: 0.8.0</p>
       </div>
     </div>
   );

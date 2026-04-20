@@ -103,7 +103,8 @@ async function callPublicWebApi<T>(
  */
 async function callPublicWebApiAllRowsets(
   queryType: string,
-  params: Record<string, string>
+  params: Record<string, string>,
+  fetchOptions?: RequestInit
 ): Promise<unknown[][] | null> {
   const base = API_URL ?? "http://localhost:7071";
   const url = new URL(`${base}/api/PublicWebApi`);
@@ -112,10 +113,7 @@ async function callPublicWebApiAllRowsets(
     url.searchParams.set(key, value);
   }
 
-  const res = await fetch(url.toString(), {
-    // Always read fresh data so DB edits are visible on the next refresh.
-    cache: "no-store",
-  });
+  const res = await fetch(url.toString(), fetchOptions ?? { cache: "no-store" });
 
   if (res.status === 404) return null;
 
@@ -469,10 +467,14 @@ export interface GlobalRunRow {
 
 export interface GetGlobalRunsOptions {
   isFuture: boolean;
-  /** Events per page (default 50, clamped 1–200 server-side). */
+  /** Events per page (default 50, clamped 1–5000 by the SP). */
   pageSize?: number;
   /** Zero-based row offset for pagination (default 0). */
   offset?: number;
+  /** ISO 8601 — lower bound (inclusive) for past events. Overrides the SP's default 5-year window. */
+  minEventDate?: string;
+  /** ISO 8601 — upper bound (exclusive) for past events. Overrides now. */
+  maxEventDate?: string;
 }
 
 export interface GetGlobalRunsResult {
@@ -491,17 +493,24 @@ type RawGlobalRunRow = Omit<GlobalRunRow, "tags"> & {
 /**
  * Fetches individual runs across all kennels, sorted by date.
  * Returns the first page of future runs by default.
+ *
+ * Pass fetchOptions to control caching behaviour — e.g.
+ * `{ next: { revalidate: 604_800 } }` for archived past runs.
+ * Defaults to `{ cache: "no-store" }` (always fresh).
  */
 export async function getGlobalRuns(
-  options: GetGlobalRunsOptions
+  options: GetGlobalRunsOptions,
+  fetchOptions?: RequestInit
 ): Promise<GetGlobalRunsResult> {
   const params: Record<string, string> = {
     isFuture: options.isFuture ? "1" : "0",
   };
-  if (options.pageSize !== undefined) params.pageSize = String(options.pageSize);
-  if (options.offset   !== undefined) params.offset   = String(options.offset);
+  if (options.pageSize     !== undefined) params.pageSize     = String(options.pageSize);
+  if (options.offset       !== undefined) params.offset       = String(options.offset);
+  if (options.minEventDate !== undefined) params.minEventDate = options.minEventDate;
+  if (options.maxEventDate !== undefined) params.maxEventDate = options.maxEventDate;
 
-  const data = await callPublicWebApiAllRowsets("getGlobalRuns", params);
+  const data = await callPublicWebApiAllRowsets("getGlobalRuns", params, fetchOptions);
   if (!data) return { totalMatchingEvents: 0, runs: [] };
 
   const [headerRows, runRows] = data as [

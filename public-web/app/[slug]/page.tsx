@@ -7,6 +7,7 @@ import type { KennelContext } from "@/lib/types/kennel";
 import { FeaturedRunCard } from "@/components/kennel/FeaturedRunCard";
 import { UpcomingRunsList } from "@/components/kennel/UpcomingRunsList";
 import { PhotoGrid } from "@/components/kennel/PhotoGrid";
+import { KennelWelcome } from "@/components/kennel/KennelWelcome";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -152,6 +153,8 @@ export default async function KennelPage({ params }: PageProps) {
         <ScrollHero kennel={kennel} slug={slug} nextRun={events[0] ?? null} />
 
         <main className="relative z-10 mx-auto max-w-7xl px-4 pb-24 md:px-6">
+          <KennelWelcome bannerImage={kennelData.OgImageUrl} welcomeText={kennelData.WelcomeText} slug={slug} />
+
           <section id="runs" className="grid min-w-0 gap-6 lg:grid-cols-[1.1fr_0.9fr]">
             <div className="min-w-0">
               {events[0] && <FeaturedRunCard run={events[0]} href={`/${slug}/${events[0].EventNumber}`} />}

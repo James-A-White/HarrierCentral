@@ -1,7 +1,9 @@
 CREATE OR ALTER PROCEDURE [HC6].[publicWeb_getGlobalRuns]
-    @IsFuture   BIT,
-    @PageSize   INT  = 50,
-    @Offset     INT  = 0
+    @IsFuture     BIT,
+    @PageSize     INT            = 50,
+    @Offset       INT            = 0,
+    @MinEventDate DATETIMEOFFSET = NULL,
+    @MaxEventDate DATETIMEOFFSET = NULL
 AS
 -- =====================================================================
 -- Procedure:   HC6.publicWeb_getGlobalRuns
@@ -11,12 +13,22 @@ AS
 --              events per day per kennel into one row), this SP returns
 --              individual events with full kennel and event detail so
 --              the client detail panel needs no second API call.
--- Parameters:  @IsFuture   BIT  — 1 = upcoming events (>= now, ASC);
---                                 0 = past events (< now, DESC)
---              @PageSize   INT  — events per page (default 50,
---                                clamped to 1–200)
---              @Offset     INT  — zero-based row offset for pagination
---                                (default 0)
+-- Parameters:  @IsFuture     BIT  — 1 = upcoming events (>= now, ASC);
+--                                   0 = past events (< now, DESC)
+--              @PageSize     INT  — events per page (default 50,
+--                                  clamped to 1–5000). Use a large value
+--                                  (e.g. 5000) to load all future runs in
+--                                  a single SSR request.
+--              @Offset       INT  — zero-based row offset for pagination
+--                                  (default 0)
+--              @MinEventDate DATETIMEOFFSET (optional) — lower bound
+--                                  (inclusive) for past events; overrides
+--                                  the default 5-year window start.
+--                                  Use to fetch only recent runs.
+--              @MaxEventDate DATETIMEOFFSET (optional) — upper bound
+--                                  (exclusive) for past events; overrides
+--                                  SYSDATETIMEOFFSET(). Use to fetch only
+--                                  archived runs older than a cutoff date.
 -- Returns:     Rowset 0: { TotalMatchingEvents INT } — total count before
 --                        the @PageSize cap; always one row so the client
 --                        can determine whether more pages exist without
@@ -37,15 +49,20 @@ SET XACT_ABORT ON;
 BEGIN TRY
 
     -- Clamp inputs
-    IF @PageSize IS NULL OR @PageSize < 1 OR @PageSize > 200
+    IF @PageSize IS NULL OR @PageSize < 1 OR @PageSize > 5000
         SET @PageSize = 50;
     IF @Offset IS NULL OR @Offset < 0
         SET @Offset = 0;
 
-    -- Past events: rolling 1-year window.
+    -- Future events: show all runs on today's date regardless of time —
+    -- a run that started at 6am stays on the future list until midnight.
+    -- Using midnight-today means a run never disappears mid-day.
+    DECLARE @TodayStart     DATETIMEOFFSET = CAST(CAST(SYSDATETIMEOFFSET() AS DATE) AS DATETIMEOFFSET);
+
+    -- Past events: rolling 5-year window.
     -- Declared once and reused in both the count and data queries so the
     -- optimizer sees the same predicate and the plan is consistent.
-    DECLARE @PastWindowStart DATETIMEOFFSET = DATEADD(DAY, -365, SYSDATETIMEOFFSET());
+    DECLARE @PastWindowStart DATETIMEOFFSET = DATEADD(DAY, -1825, SYSDATETIMEOFFSET());
 
     -- ── Rowset 0: total count ────────────────────────────────────────────────
     -- Always one row — lets the client compute hasMore without a separate query.
@@ -58,9 +75,9 @@ BEGIN TRY
       AND  e.removed   = 0
       AND  k.deleted   = 0
       AND  k.removed   = 0
-      AND  (   (@IsFuture = 1 AND e.EventStartDatetime >= SYSDATETIMEOFFSET())
-            OR (@IsFuture = 0 AND e.EventStartDatetime >= @PastWindowStart
-                              AND e.EventStartDatetime <  SYSDATETIMEOFFSET()));
+      AND  (   (@IsFuture = 1 AND e.EventStartDatetime >= @TodayStart)
+            OR (@IsFuture = 0 AND e.EventStartDatetime >= ISNULL(@MinEventDate, @PastWindowStart)
+                              AND e.EventStartDatetime <  ISNULL(@MaxEventDate, @TodayStart)));
 
     -- ── Rowset 1: events with kennel context ─────────────────────────────────
 
@@ -135,9 +152,9 @@ BEGIN TRY
       AND  e.removed   = 0
       AND  k.deleted   = 0
       AND  k.removed   = 0
-      AND  (   (@IsFuture = 1 AND e.EventStartDatetime >= SYSDATETIMEOFFSET())
-            OR (@IsFuture = 0 AND e.EventStartDatetime >= @PastWindowStart
-                              AND e.EventStartDatetime <  SYSDATETIMEOFFSET()))
+      AND  (   (@IsFuture = 1 AND e.EventStartDatetime >= @TodayStart)
+            OR (@IsFuture = 0 AND e.EventStartDatetime >= ISNULL(@MinEventDate, @PastWindowStart)
+                              AND e.EventStartDatetime <  ISNULL(@MaxEventDate, @TodayStart)))
     ORDER BY
         -- Conditional sort: only one branch is active per call.
         -- The inactive branch evaluates to NULL for every row and
