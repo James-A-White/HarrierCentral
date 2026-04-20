@@ -17,8 +17,8 @@ export function GlobalTabBar() {
     <header className="sticky top-0 z-50 border-b border-white/10 bg-zinc-950/80 backdrop-blur-lg">
       <div className="relative mx-auto max-w-[90rem] flex items-center justify-center h-14 px-4">
 
-        {/* Branding — pinned left */}
-        <span className="absolute left-4 text-sm font-semibold tracking-widest text-zinc-400 uppercase select-none">
+        {/* Branding — pinned left, hidden on small screens to avoid overlap */}
+        <span className="absolute left-4 text-sm font-semibold tracking-widest text-zinc-400 uppercase select-none hidden sm:block">
           hashruns.org
         </span>
 

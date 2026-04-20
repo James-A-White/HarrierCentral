@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  Search, X, MapPin, Clock, Users, Navigation, ExternalLink,
+  Search, X, Navigation, ExternalLink,
   ChevronRight, CalendarDays, Tag,
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -13,28 +13,6 @@ import type { KennelContext } from "@/lib/types/kennel";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function relativeTime(iso: string): string {
-  const diffDays = Math.round(
-    (new Date(iso).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-  );
-  if (diffDays === 0) return "TODAY";
-  if (diffDays === 1) return "tomorrow";
-  if (diffDays > 1 && diffDays < 14) return `in ${diffDays} days`;
-  if (diffDays >= 14 && diffDays < 60) return `in ${Math.round(diffDays / 7)} weeks`;
-  if (diffDays >= 60) {
-    const m = Math.round(diffDays / 30);
-    return `in ${m} month${m !== 1 ? "s" : ""}`;
-  }
-  if (diffDays === -1) return "yesterday";
-  if (diffDays > -14) return `${Math.abs(diffDays)} days ago`;
-  if (diffDays > -60) return `${Math.round(Math.abs(diffDays) / 7)} weeks ago`;
-  if (diffDays > -365) {
-    const m = Math.round(Math.abs(diffDays) / 30);
-    return `${m} month${m !== 1 ? "s" : ""} ago`;
-  }
-  const y = Math.round(Math.abs(diffDays) / 365);
-  return `${y} year${y !== 1 ? "s" : ""} ago`;
-}
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -98,8 +76,6 @@ function RunListItem({
   index: number;
 }) {
   const { short, time } = formatDate(run.EventStartDatetime);
-  const rel = relativeTime(run.EventStartDatetime);
-  const isToday = rel === "TODAY";
 
   return (
     <motion.button
@@ -123,65 +99,31 @@ function RunListItem({
         />
       )}
 
-      {/* Header bar */}
+      {/* Caption: title + date/time on one line */}
       <div
-        className="flex min-w-0 items-center justify-between gap-2 px-4 py-2.5"
+        className="flex min-w-0 items-center gap-2 px-3 py-2"
         style={isSelected ? { backgroundColor: "var(--kennel-primary)" } : undefined}
       >
         <span
-          className={`min-w-0 text-xl font-bold line-clamp-1 leading-snug ${
+          className={`min-w-0 flex-1 text-sm font-semibold truncate ${
             isSelected ? "text-white" : "dark:text-white text-zinc-900"
           }`}
         >
           {run.EventName}
-        </span>
-        {run.IsCountedRun ? (
-          <span
-            className={`shrink-0 text-base font-bold rounded-full px-2.5 py-0.5 border whitespace-nowrap ${
-              isSelected
-                ? "border-white/30 bg-white/20 text-white"
-                : "dark:border-white/20 border-zinc-200 dark:text-white/80 text-zinc-700"
-            }`}
-          >
-            #{run.EventNumber}
-          </span>
-        ) : null}
-      </div>
-
-      {/* Body */}
-      <div className="px-4 py-3 space-y-1.5">
-        <div className="flex items-center gap-2" suppressHydrationWarning>
-          <Clock className="h-4 w-4 shrink-0 dark:text-white/40 text-zinc-400" />
-          <span className="text-xl dark:text-white text-zinc-900 truncate" suppressHydrationWarning>
-            {short} · {time}
-          </span>
-          <span
-            className={`ml-auto shrink-0 text-base font-semibold rounded-full px-2.5 py-0.5 whitespace-nowrap ${
-              isToday
-                ? "bg-red-500 text-white"
-                : "dark:bg-white/[0.08] bg-zinc-100 dark:text-white text-zinc-700"
-            }`}
-            suppressHydrationWarning
-          >
-            {rel}
-          </span>
-        </div>
-
-        {(run.LocationOneLineDesc ?? run.LocationCity) && (
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 shrink-0 dark:text-white/40 text-zinc-400" />
-            <span className="text-xl dark:text-white text-zinc-900 truncate">
-              {run.LocationOneLineDesc ?? run.LocationCity}
+          {run.IsCountedRun ? (
+            <span className={`ml-1.5 font-normal ${isSelected ? "text-white/70" : "dark:text-white/50 text-zinc-500"}`}>
+              #{run.EventNumber}
             </span>
-          </div>
-        )}
-
-        {run.Hares && (
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 shrink-0 dark:text-white/40 text-zinc-400" />
-            <span className="text-xl dark:text-white text-zinc-900 truncate">{run.Hares}</span>
-          </div>
-        )}
+          ) : null}
+        </span>
+        <span
+          className={`shrink-0 text-xs whitespace-nowrap ${
+            isSelected ? "text-white/80" : "dark:text-white/60 text-zinc-500"
+          }`}
+          suppressHydrationWarning
+        >
+          {short} · {time}
+        </span>
       </div>
     </motion.button>
   );

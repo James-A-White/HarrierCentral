@@ -17,6 +17,10 @@ function shortDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
+function shortTime(iso: string) {
+  return new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+}
+
 export function PhotoGrid({ runs, kennel, slug }: PhotoGridProps) {
   const [selected, setSelected] = useState<RunEvent | null>(null);
 
@@ -44,11 +48,11 @@ export function PhotoGrid({ runs, kennel, slug }: PhotoGridProps) {
               </span>
             </div>
 
-            <div className="columns-1 gap-2 sm:columns-2 lg:columns-3 [column-fill:_balance]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {runs.map((run, idx) => (
                 <motion.button
                   key={run.PublicEventId}
-                  className="relative mb-2 block w-full break-inside-avoid overflow-hidden rounded-xl group text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                  className="block w-full overflow-hidden rounded-xl text-left border dark:border-white/[0.1] border-zinc-200/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                   onClick={() => setSelected(run)}
                   initial={{ opacity: 0, y: 12 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -58,7 +62,6 @@ export function PhotoGrid({ runs, kennel, slug }: PhotoGridProps) {
                     delay: idx * 0.03,
                     ease: [0.19, 1, 0.22, 1],
                   }}
-                  whileHover={{ scale: 1.02 }}
                 >
                   {run.EventImage ? (
                     <>
@@ -69,15 +72,22 @@ export function PhotoGrid({ runs, kennel, slug }: PhotoGridProps) {
                         className="w-full h-auto block"
                         loading="lazy"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" />
-                      <div className="absolute bottom-0 left-0 right-0 p-2.5 translate-y-1 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none">
-                        <div className="text-base text-white">#{run.EventNumber}</div>
-                        <div className="text-xl font-semibold text-white truncate leading-snug">{run.EventName}</div>
+                      {/* Static caption */}
+                      <div className="px-2.5 py-1.5 dark:bg-white/[0.07] bg-zinc-100 border-t dark:border-white/[0.08] border-zinc-200/60">
+                        <p className="text-sm font-semibold dark:text-white text-zinc-900 truncate leading-snug">
+                          {run.EventName}
+                          {run.IsCountedRun ? (
+                            <span className="ml-1.5 font-normal dark:text-white/50 text-zinc-500">#{run.EventNumber}</span>
+                          ) : null}
+                        </p>
+                        <p className="text-xs dark:text-white/50 text-zinc-500 truncate mt-0.5" suppressHydrationWarning>
+                          {shortDate(run.EventStartDatetime)} · {shortTime(run.EventStartDatetime)}
+                        </p>
                       </div>
                     </>
                   ) : (
                     <div
-                      className="p-3 flex flex-col justify-between dark:bg-white/[0.06] bg-zinc-50 dark:group-hover:bg-white/[0.10] group-hover:bg-zinc-100 transition-colors duration-200"
+                      className="p-3 flex flex-col justify-between dark:bg-white/[0.06] bg-zinc-50"
                       style={{ minHeight: "80px" }}
                     >
                       <span className="text-base font-semibold dark:text-white text-zinc-900">

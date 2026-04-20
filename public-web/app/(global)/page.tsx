@@ -14,7 +14,7 @@ export default async function GlobalRunsPage() {
     runs: [],
   };
   try {
-    initialRuns = await getGlobalRuns({ isFuture: true, pageSize: 50, offset: 0 });
+    initialRuns = await getGlobalRuns({ isFuture: true, pageSize: 5000, offset: 0 });
   } catch {
     // Gracefully degrade — client will retry on tab switch
   }

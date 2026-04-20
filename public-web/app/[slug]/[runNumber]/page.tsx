@@ -219,7 +219,8 @@ export default async function RunDetailPage({ params, searchParams }: PageProps)
             className="inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-xl font-semibold shadow-sm transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:text-white dark:hover:bg-white/[0.14] border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-900"
           >
             <ArrowLeft className="h-4 w-4" />
-            {backLabel}
+            <span className="sm:hidden">Back</span>
+            <span className="hidden sm:inline">{backLabel}</span>
           </Link>
           {showKennelHomeBtn && (
             <Link
