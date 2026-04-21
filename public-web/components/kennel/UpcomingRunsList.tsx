@@ -25,13 +25,12 @@ export function UpcomingRunsList({ runs, slug }: UpcomingRunsListProps) {
     <div className="min-w-0 w-full max-w-full">
       <div className="mb-4 flex min-w-0 items-center justify-between gap-3">
         <h2 className="min-w-0 text-2xl font-bold dark:text-white text-zinc-900">Upcoming runs</h2>
-        <a
-          href="#"
-          className="shrink-0 text-xl font-medium"
-          style={{ color: "var(--kennel-primary)" }}
+        <Link
+          href={`/${slug}/runs`}
+          className="shrink-0 text-xl font-medium dark:text-white text-zinc-900"
         >
           Full calendar →
-        </a>
+        </Link>
       </div>
       <div className="space-y-3">
         {runs.length === 0 && (
@@ -51,18 +50,20 @@ export function UpcomingRunsList({ runs, slug }: UpcomingRunsListProps) {
               <Link className="block min-w-0" href={`/${slug}/${run.EventNumber}`}>
               <Card className="w-full max-w-full rounded-2xl gap-0 py-0 dark:border-white/25 dark:bg-white/[0.12] border-zinc-200 bg-white shadow-lg dark:shadow-black/50 hover:shadow-xl transition-shadow cursor-pointer group">
                 <CardContent className="flex items-center gap-4 p-4">
-                  {/* Run number badge */}
-                  <div
-                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-base font-bold"
-                    style={{
-                      backgroundColor: `color-mix(in srgb, var(--kennel-primary) 15%, transparent)`,
-                      color: "var(--kennel-primary)",
-                    }}
-                  >
-                    #{run.EventNumber}
+                  {/* Left column: date above run number badge */}
+                  <div className="flex shrink-0 flex-col items-center gap-1.5">
+                    <div className="text-sm font-semibold dark:text-white/70 text-zinc-500 text-center" suppressHydrationWarning>
+                      {shortDate}
+                    </div>
+                    <div
+                      className="flex min-w-[48px] items-center justify-center rounded-xl px-2 py-1.5 text-sm font-bold"
+                      style={{ backgroundColor: "var(--kennel-primary)", color: "var(--kennel-menu-text)" }}
+                    >
+                      #{run.EventNumber}
+                    </div>
                   </div>
 
-                  {/* Details */}
+                  {/* Details — full remaining width */}
                   <div className="min-w-0 flex-1">
                     <div className="text-2xl font-semibold dark:text-white text-zinc-900 truncate transition-colors group-hover:text-[var(--kennel-primary)]">
                       {run.EventName}
@@ -79,19 +80,12 @@ export function UpcomingRunsList({ runs, slug }: UpcomingRunsListProps) {
                         </span>
                       )}
                     </div>
-                  </div>
-
-                  {/* Hares */}
-                  {run.Hares && (
-                    <div className="hidden shrink-0 text-right md:block">
-                      <div className="text-base uppercase tracking-[0.12em] dark:text-white text-zinc-900">Hares</div>
-                      <div className="text-xl font-medium dark:text-white text-zinc-900 max-w-[120px] truncate">{run.Hares}</div>
-                    </div>
-                  )}
-
-                  {/* Date badge */}
-                  <div className="shrink-0 rounded-full border px-2.5 py-1 text-xl font-semibold dark:border-white/10 dark:text-white border-zinc-200 text-zinc-900" suppressHydrationWarning>
-                    {shortDate}
+                    {run.Hares && (
+                      <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-xl dark:text-white/80 text-zinc-600">
+                        <span className="shrink-0 text-sm uppercase tracking-[0.12em]">Hares:</span>
+                        <span className="min-w-0 truncate font-medium dark:text-white text-zinc-900">{run.Hares}</span>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>

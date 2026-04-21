@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback, useEffect, useRef, useTransition } from
 import { useRouter } from "next/navigation";
 import QRCode from "react-qr-code";
 import {
-  Search, X, MapPin, Navigation, Tag, Copy, QrCode, ArrowLeft,
+  Search, X, MapPin, Navigation, Tag, Copy, QrCode, ArrowLeft, LayoutList, CalendarDays,
 } from "lucide-react";
 import type { GlobalRunRow, GetGlobalRunsResult } from "@/lib/api";
 
@@ -12,6 +12,7 @@ import type { GlobalRunRow, GetGlobalRunsResult } from "@/lib/api";
 
 const PAGE_SIZE = 200;
 const HASHRUNS_ORIGIN = "https://hashruns.org";
+const CURRENT_YEAR = new Date().getFullYear();
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -41,18 +42,15 @@ function relativeTime(iso: string): string {
 
 function formatDate(iso: string) {
   const d = new Date(iso);
+  const showYear = d.getFullYear() !== CURRENT_YEAR;
   return {
     short: d.toLocaleDateString("en-GB", {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-      year: "numeric",
+      weekday: "short", day: "numeric", month: "short",
+      ...(showYear && { year: "numeric" }),
     }),
     long: d.toLocaleDateString("en-GB", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
+      weekday: "long", day: "numeric", month: "long",
+      ...(showYear && { year: "numeric" }),
     }),
     time: d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
   };
@@ -405,6 +403,112 @@ function GlobalRunDetail({ run }: { run: GlobalRunRow }) {
   );
 }
 
+// ─── Calendar view ────────────────────────────────────────────────────────────
+
+function CalendarView({
+  runs,
+  selectedRun,
+  onSelect,
+  sortDesc = false,
+}: {
+  runs: GlobalRunRow[];
+  selectedRun: GlobalRunRow | null;
+  onSelect: (run: GlobalRunRow) => void;
+  sortDesc?: boolean;
+}) {
+  const todayStr = useMemo(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  }, []);
+
+  const groups = useMemo(() => {
+    const map = new Map<string, GlobalRunRow[]>();
+    for (const run of runs) {
+      const key = run.EventStartDatetime.slice(0, 10);
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(run);
+    }
+    return Array.from(map.entries()).sort(([a], [b]) =>
+      sortDesc ? b.localeCompare(a) : a.localeCompare(b)
+    );
+  }, [runs, sortDesc]);
+
+  if (groups.length === 0) {
+    return <div className="py-16 text-center text-sm text-zinc-400">No runs found</div>;
+  }
+
+  return (
+    <table className="w-full border-collapse">
+      <tbody>
+        {groups.map(([date, dayRuns]) => {
+          const isToday = date === todayStr;
+          const d = new Date(date + "T12:00:00Z");
+          const showYear = d.getUTCFullYear() !== CURRENT_YEAR;
+          const dayOfWeek = d.toLocaleDateString("en-GB", { weekday: "short", timeZone: "UTC" });
+          const shortDate = d.toLocaleDateString("en-GB", {
+            day: "numeric", month: "short", timeZone: "UTC",
+            ...(showYear && { year: "numeric" }),
+          });
+          return (
+            <tr
+              key={date}
+              className={`border-b border-white/[0.08] transition-colors ${isToday ? "bg-white/[0.06]" : "hover:bg-white/[0.03]"}`}
+            >
+              {/* Date column */}
+              <td className="w-20 shrink-0 px-4 py-4 align-middle">
+                <div className="flex flex-col leading-none">
+                  <span className="flex items-center gap-2">
+                    <span className={`text-base font-semibold ${isToday ? "text-white" : "text-zinc-300"}`}>
+                      {dayOfWeek}
+                    </span>
+                    {isToday && (
+                      <span className="rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                        Today
+                      </span>
+                    )}
+                  </span>
+                  <span className={`mt-1 text-xs ${isToday ? "text-white" : "text-zinc-300"}`}>{shortDate}</span>
+                </div>
+              </td>
+
+              {/* Logos column */}
+              <td className="px-4 py-3 align-middle">
+                <div className="flex min-w-0 flex-wrap gap-2">
+                  {dayRuns.map((run) => {
+                    const hasImage = run.KennelLogo?.startsWith("https://");
+                    const bg = run.PrimaryColor ?? "#dc2626";
+                    const isSelected = selectedRun?.PublicEventId === run.PublicEventId;
+                    return (
+                      <button
+                        key={run.PublicEventId}
+                        onClick={() => onSelect(run)}
+                        title={run.KennelName}
+                        className={`flex-shrink-0 rounded-full overflow-hidden ring-2 transition-all duration-150 hover:scale-105 ${isSelected ? "ring-white" : "ring-white/10 hover:ring-white/50"}`}
+                      >
+                        {hasImage ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={run.KennelLogo!} alt={run.KennelName} className="h-12 w-12 object-contain" />
+                        ) : (
+                          <span
+                            className="flex h-12 w-12 items-center justify-center text-lg font-bold text-white"
+                            style={{ backgroundColor: bg }}
+                          >
+                            {run.KennelName.charAt(0).toUpperCase()}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  );
+}
+
 // ─── Quarter bucket utilities ─────────────────────────────────────────────────
 
 interface PastRunBucket {
@@ -455,6 +559,7 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
   const router = useRouter();
 
   const [tab, setTab]                   = useState<"future" | "past">("future");
+  const [view, setView]                 = useState<"list" | "calendar">("list");
   // On tab switch, render the first 100 items synchronously (fast), then
   // defer the rest via startTransition so it doesn't block the button paint.
   const [displayCount, setDisplayCount] = useState<number>(Infinity);
@@ -578,6 +683,10 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
     }
   }, [tab, futureRuns, pastRuns]);
 
+  const handleViewChange = (newView: "list" | "calendar") => {
+    setView(newView);
+  };
+
   // ── Search filter ─────────────────────────────────────────────────────────
 
   const filtered = useMemo(() => {
@@ -619,7 +728,7 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
   return (
     <div
       className="flex flex-col w-full min-w-0"
-      style={{ height: "calc(100svh - 56px)" }}
+      style={{ height: "100svh" }}
     >
       {/* ── Panels row ────────────────────────────────────────────────────── */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
@@ -648,16 +757,20 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
               </button>
             )}
           </div>
-          {pastLoading && pastRuns.length > 0 && (
-            <p className="mt-1.5 text-center text-xs text-zinc-400">
-              Loading older runs…
+          <div className="mt-1.5 flex items-center justify-between px-1">
+            <p className="text-xs text-zinc-400">
+              {filtered.length.toLocaleString()} {filtered.length === 1 ? "run" : "runs"}
+              {query ? " found" : ""}
             </p>
-          )}
+            {pastLoading && pastRuns.length > 0 && (
+              <p className="text-xs text-zinc-400">Loading older runs…</p>
+            )}
+          </div>
         </div>
 
-        {/* Future / Past segmented control */}
-        <div className="px-3 py-3 shrink-0">
-          <div className="flex rounded-full bg-zinc-300/75 p-1">
+        {/* Future / Past segmented control + list/calendar toggle */}
+        <div className="px-3 py-3 shrink-0 flex items-center gap-2">
+          <div className="flex flex-1 rounded-full bg-zinc-300/75 p-1">
             {(["future", "past"] as const).map((t) => (
               <button
                 key={t}
@@ -673,6 +786,22 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
               </button>
             ))}
           </div>
+          <div className="flex items-center rounded-full bg-zinc-300/75 p-1 gap-0.5">
+            <button
+              onClick={() => handleViewChange("list")}
+              className={`p-1.5 rounded-full transition-colors ${view === "list" ? "bg-white shadow-sm" : ""}`}
+              aria-label="List view"
+            >
+              <LayoutList className="h-4 w-4 text-zinc-800" />
+            </button>
+            <button
+              onClick={() => handleViewChange("calendar")}
+              className={`p-1.5 rounded-full transition-colors ${view === "calendar" ? "bg-white shadow-sm" : ""}`}
+              aria-label="Calendar view"
+            >
+              <CalendarDays className="h-4 w-4 text-zinc-800" />
+            </button>
+          </div>
         </div>
 
         {/* Run list */}
@@ -685,6 +814,8 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
             <div className="py-16 text-center text-sm text-zinc-400">
               {query ? `No runs match "${query}"` : "No runs found"}
             </div>
+          ) : view === "calendar" ? (
+            <CalendarView runs={filtered} selectedRun={selectedRun} onSelect={handleSelect} sortDesc={tab === "past"} />
           ) : (
             <>
               <div className="px-3 pt-3 pb-3 flex flex-col gap-2">
@@ -702,12 +833,6 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
               <div ref={sentinelRef} className="flex justify-center py-4">
                 {(futureLoading || pastLoading || isPending) && (
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600" />
-                )}
-                {tab === "future" && !futureHasMore && futureRuns.length > 0 && (
-                  <p className="text-xs text-zinc-400">{futureTotal.toLocaleString()} runs</p>
-                )}
-                {tab === "past" && pastDone && pastRuns.length > 0 && (
-                  <p className="text-xs text-zinc-400">{pastRuns.length.toLocaleString()} runs</p>
                 )}
               </div>
             </>
@@ -756,7 +881,7 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
             www.harriercentral.com
           </a>
         </p>
-        <p className="text-sm italic text-white/40 mt-0.5">Version: 0.8.0</p>
+        <p className="text-sm italic text-white/40 mt-0.5">Version: 0.9.0</p>
       </div>
     </div>
   );

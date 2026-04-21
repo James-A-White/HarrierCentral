@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import { getKennelLandingData, getEvents, type KennelLandingData } from "@/lib/api";
 import { StickyNav } from "@/components/StickyNav";
 import { ScrollHero } from "@/components/kennel/ScrollHero";
-import { StatsSection } from "@/components/kennel/StatsSection";
 import type { KennelContext } from "@/lib/types/kennel";
 import { FeaturedRunCard } from "@/components/kennel/FeaturedRunCard";
 import { UpcomingRunsList } from "@/components/kennel/UpcomingRunsList";
@@ -146,6 +145,7 @@ export default async function KennelPage({ params }: PageProps) {
         "--kennel-primary": kennel.primaryColor,
         "--kennel-primary-fg": kennel.primaryFg,
         "--kennel-accent": kennel.accentColor,
+        "--kennel-menu-text": kennel.menuTextColor,
       } as React.CSSProperties}
     >
       <body className={`${kennel.backgroundImageUrl ? "" : "dark:bg-zinc-950 bg-zinc-50"} text-zinc-100 antialiased overflow-x-hidden`}>
@@ -164,9 +164,8 @@ export default async function KennelPage({ params }: PageProps) {
             </div>
           </section>
 
-          <section className="mt-8 grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
+          <section className="mt-8">
             <PhotoGrid runs={pastRuns} kennel={kennel} slug={slug} />
-            <StatsSection kennel={kennel} />
           </section>
 
         </main>

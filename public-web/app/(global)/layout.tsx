@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { GlobalTabBar } from "@/components/global/GlobalTabBar";
 
 export const metadata: Metadata = {
   title: "hashruns.org — Global Hash Run Discovery",
@@ -27,8 +26,6 @@ export default function GlobalLayout({
           className="fixed inset-0 -z-[9]"
           style={{ backgroundColor: "#000000", opacity: 0.55 }}
         />
-
-        <GlobalTabBar />
 
         {children}
       </body>
