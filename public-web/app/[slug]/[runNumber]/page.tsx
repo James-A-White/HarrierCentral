@@ -251,12 +251,12 @@ export default async function RunDetailPage({ params, searchParams }: PageProps)
           </>
         ) : (
           <div
-            className="relative z-10 min-h-[35vh] flex flex-col justify-end pb-10"
+            className="relative z-10 px-4 md:px-6 pt-6 pb-10"
             style={{
               backgroundImage: `linear-gradient(160deg, color-mix(in srgb, var(--kennel-primary) 30%, transparent) 0%, color-mix(in srgb, var(--kennel-primary) 55%, #09090b) 100%)`,
             }}
           >
-            <div className="mx-auto w-full px-4 md:px-6">
+            <div>
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 <span className={BADGE}>Run #{event.EventNumber}</span>
                 {event.EventTypeName && <span className={BADGE}>{event.EventTypeName}</span>}

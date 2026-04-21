@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence, useTransform, useMotionValueEvent } from "framer-motion";
-import { Menu, X, MapPin, ArrowRight } from "lucide-react";
+import { Menu, X, MapPin, ArrowRight, Globe } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import type { KennelContext } from "@/lib/types/kennel";
@@ -164,7 +164,7 @@ export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false }: Stic
 
             {/* Right — nav links + login */}
             <div className="flex items-center gap-8">
-              <nav className="hidden items-center gap-8 text-xl md:flex">
+              <nav className="hidden items-center gap-8 text-xl lg:flex">
                 {["Home", "Runs", "Events", "Stats", "Songs", "About"].map((item) => (
                   <a
                     key={item}
@@ -183,34 +183,42 @@ export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false }: Stic
                 ))}
               </nav>
 
-              {/* Harrier Central — back to the global run calendar */}
-              <a
-                href="/"
-                style={{ opacity: 0.5 }}
-                className="hidden md:block text-xl transition-opacity hover:opacity-100"
-              >
-                Harrier Central
-              </a>
-
-              <Button
+              {/* <Button
                 size="sm"
-                className="hidden rounded-full text-base font-semibold md:flex"
+                className="hidden rounded-full text-base font-semibold lg:flex"
                 style={{
                   backgroundColor: "var(--kennel-primary)",
                   color: "var(--kennel-primary-fg)",
                 }}
               >
                 Member login
-              </Button>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="md:hidden"
-                onClick={() => setMobileMenuOpen((o) => !o)}
-                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              </Button> */}
+
+              {/* Globe — desktop: far-right item; mobile: left of hamburger */}
+              <Link
+                href="/"
+                className="hidden lg:flex items-center justify-center h-10 w-10 rounded-md transition-opacity opacity-60 hover:opacity-100"
+                aria-label="Global runs"
               >
-                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              </Button>
+                <Globe className="h-6 w-6" />
+              </Link>
+
+              <div className="lg:hidden flex items-center gap-3">
+                <Link
+                  href="/"
+                  className="flex items-center justify-center h-10 w-10 rounded-md transition-opacity opacity-60 hover:opacity-100"
+                  aria-label="Global runs"
+                >
+                  <Globe className="h-6 w-6" />
+                </Link>
+                <button
+                  onClick={() => setMobileMenuOpen((o) => !o)}
+                  aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+                  className="flex items-center justify-center rounded-md transition-opacity opacity-80 hover:opacity-100"
+                >
+                  {mobileMenuOpen ? <X className="h-7 w-7" /> : <Menu className="h-7 w-7" />}
+                </button>
+              </div>
             </div>
           </div>
         </motion.div>
@@ -225,7 +233,7 @@ export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false }: Stic
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2, ease: [0.19, 1, 0.22, 1] }}
-            className="relative overflow-hidden md:hidden border-t dark:border-white/[0.08] border-zinc-200/50"
+            className="relative overflow-hidden lg:hidden border-t dark:border-white/[0.08] border-zinc-200/50"
             style={{ backgroundColor: hexToRgba(kennel.menuBackgroundColor, kennel.menuBackgroundOpacity) }}
           >
             <nav className="flex flex-col px-4 py-3 gap-1">
@@ -256,14 +264,14 @@ export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false }: Stic
                   Harrier Central
                 </a>
               </div>
-              <div className="pt-2 mt-1 border-t dark:border-white/[0.08] border-zinc-200/50">
+              {/* <div className="pt-2 mt-1 border-t dark:border-white/[0.08] border-zinc-200/50">
                 <button
                   className="w-full rounded-full py-3 text-xl font-semibold"
                   style={{ backgroundColor: "var(--kennel-primary)", color: "var(--kennel-primary-fg)" }}
                 >
                   Member login
                 </button>
-              </div>
+              </div> */}
             </nav>
           </motion.div>
         )}

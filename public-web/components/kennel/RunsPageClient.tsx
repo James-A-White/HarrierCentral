@@ -158,19 +158,12 @@ function RunDetail({
       className="flex flex-col min-h-full"
     >
       {/* Hero image */}
-      {run.EventImage ? (
+      {run.EventImage && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={run.EventImage}
           alt={run.EventName}
           className="w-full h-auto block"
-        />
-      ) : (
-        <div
-          className="h-36 shrink-0"
-          style={{
-            backgroundImage: `linear-gradient(160deg, color-mix(in srgb, var(--kennel-primary) 30%, transparent) 0%, color-mix(in srgb, var(--kennel-primary) 55%, #09090b) 100%)`,
-          }}
         />
       )}
 

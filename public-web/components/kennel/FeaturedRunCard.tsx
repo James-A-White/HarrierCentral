@@ -48,17 +48,10 @@ export function FeaturedRunCard({ run, href }: FeaturedRunCardProps) {
           </span>
         </div>
 
-        {/* Image — full width, no gradient so image text stays readable */}
-        {heroUrl ? (
+        {/* Image — only rendered when one exists */}
+        {heroUrl && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={heroUrl} alt={run.EventName} className="w-full h-auto block" />
-        ) : (
-          <div
-            className="h-56 md:h-64"
-            style={{
-              backgroundImage: `linear-gradient(160deg, color-mix(in srgb, var(--kennel-primary) 30%, transparent) 0%, color-mix(in srgb, var(--kennel-primary) 60%, #09090b) 100%)`,
-            }}
-          />
         )}
 
         <CardContent className="p-5 md:p-6">
