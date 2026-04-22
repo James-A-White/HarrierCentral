@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback, useEffect, useRef, useTransition } from
 import { useRouter } from "next/navigation";
 import QRCode from "react-qr-code";
 import {
-  Search, X, MapPin, Navigation, Tag, Copy, QrCode, ArrowLeft, LayoutList, CalendarDays, Loader2, Map, Info,
+  Search, X, MapPin, Navigation, Tag, Copy, QrCode, ArrowLeft, LayoutList, CalendarDays, Loader2, Map as MapIcon, Info,
 } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import dynamic from "next/dynamic";
@@ -969,7 +969,7 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
               onClick={() => setDetailView("map")}
               className={`flex flex-1 items-center justify-center gap-1 py-1 rounded-full text-sm font-semibold transition-colors ${detailView === "map" ? "bg-red-600 text-white shadow-sm" : "text-zinc-800 hover:text-zinc-950"}`}
             >
-              <Map className="h-3.5 w-3.5" />
+              <MapIcon className="h-3.5 w-3.5" />
               Map
             </button>
           </div>
