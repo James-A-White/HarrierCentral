@@ -22,9 +22,8 @@ AS
 --              @Offset       INT  — zero-based row offset for pagination
 --                                  (default 0)
 --              @MinEventDate DATETIMEOFFSET (optional) — lower bound
---                                  (inclusive) for past events; overrides
---                                  the default 5-year window start.
---                                  Use to fetch only recent runs.
+--                                  (inclusive) for past events. When NULL,
+--                                  no lower bound is applied (all history).
 --              @MaxEventDate DATETIMEOFFSET (optional) — upper bound
 --                                  (exclusive) for past events; overrides
 --                                  SYSDATETIMEOFFSET(). Use to fetch only
@@ -59,11 +58,6 @@ BEGIN TRY
     -- Using midnight-today means a run never disappears mid-day.
     DECLARE @TodayStart     DATETIMEOFFSET = CAST(CAST(SYSDATETIMEOFFSET() AS DATE) AS DATETIMEOFFSET);
 
-    -- Past events: rolling 5-year window.
-    -- Declared once and reused in both the count and data queries so the
-    -- optimizer sees the same predicate and the plan is consistent.
-    DECLARE @PastWindowStart DATETIMEOFFSET = DATEADD(DAY, -1825, SYSDATETIMEOFFSET());
-
     -- ── Rowset 0: total count ────────────────────────────────────────────────
     -- Always one row — lets the client compute hasMore without a separate query.
 
@@ -76,7 +70,7 @@ BEGIN TRY
       AND  k.deleted   = 0
       AND  k.removed   = 0
       AND  (   (@IsFuture = 1 AND e.EventStartDatetime >= @TodayStart)
-            OR (@IsFuture = 0 AND e.EventStartDatetime >= ISNULL(@MinEventDate, @PastWindowStart)
+            OR (@IsFuture = 0 AND (@MinEventDate IS NULL OR e.EventStartDatetime >= @MinEventDate)
                               AND e.EventStartDatetime <  ISNULL(@MaxEventDate, @TodayStart)));
 
     -- ── Rowset 1: events with kennel context ─────────────────────────────────
@@ -153,7 +147,7 @@ BEGIN TRY
       AND  k.deleted   = 0
       AND  k.removed   = 0
       AND  (   (@IsFuture = 1 AND e.EventStartDatetime >= @TodayStart)
-            OR (@IsFuture = 0 AND e.EventStartDatetime >= ISNULL(@MinEventDate, @PastWindowStart)
+            OR (@IsFuture = 0 AND (@MinEventDate IS NULL OR e.EventStartDatetime >= @MinEventDate)
                               AND e.EventStartDatetime <  ISNULL(@MaxEventDate, @TodayStart)))
     ORDER BY
         -- Conditional sort: only one branch is active per call.
