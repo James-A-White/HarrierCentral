@@ -4,15 +4,24 @@ import { useState, useMemo, useCallback, useEffect, useRef, useTransition } from
 import { useRouter } from "next/navigation";
 import QRCode from "react-qr-code";
 import {
-  Search, X, MapPin, Navigation, Tag, Copy, QrCode, ArrowLeft, LayoutList, CalendarDays,
+  Search, X, MapPin, Navigation, Tag, Copy, QrCode, ArrowLeft, LayoutList, CalendarDays, Loader2, Map as MapIcon, Info,
 } from "lucide-react";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import dynamic from "next/dynamic";
 import type { GlobalRunRow, GetGlobalRunsResult } from "@/lib/api";
+
+const RunLocationMap = dynamic(() => import("./RunLocationMap"), { ssr: false });
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const PAGE_SIZE = 200;
 const HASHRUNS_ORIGIN = "https://hashruns.org";
 const CURRENT_YEAR = new Date().getFullYear();
+
+// Module-level cache — survives client-side navigation for the lifetime of the
+// browser tab. Updated after every bucket so partial progress is preserved on
+// back-navigation even if the user leaves before loading completes.
+const _pastCache: { runs: GlobalRunRow[]; done: boolean } = { runs: [], done: false };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -139,6 +148,12 @@ function GlobalRunCard({
           className="absolute left-0 top-0 bottom-0 w-1 z-10"
           style={{ backgroundColor: primaryColor }}
         />
+      )}
+
+      {/* Run image */}
+      {run.EventImage && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={run.EventImage} alt={run.EventName} className="w-full h-auto block" />
       )}
 
       {/* Bold title */}
@@ -416,6 +431,8 @@ function CalendarView({
   onSelect: (run: GlobalRunRow) => void;
   sortDesc?: boolean;
 }) {
+  const parentRef = useRef<HTMLDivElement>(null);
+
   const todayStr = useMemo(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
@@ -433,14 +450,22 @@ function CalendarView({
     );
   }, [runs, sortDesc]);
 
+  const virtualizer = useVirtualizer({
+    count: groups.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 72,
+    overscan: 5,
+  });
+
   if (groups.length === 0) {
-    return <div className="py-16 text-center text-sm text-zinc-400">No runs found</div>;
+    return <div className="flex-1 py-16 text-center text-sm text-zinc-400">No runs found</div>;
   }
 
   return (
-    <table className="w-full border-collapse">
-      <tbody>
-        {groups.map(([date, dayRuns]) => {
+    <div ref={parentRef} className="flex-1 overflow-y-auto bg-transparent">
+      <div style={{ height: virtualizer.getTotalSize(), position: "relative" }}>
+        {virtualizer.getVirtualItems().map((vItem) => {
+          const [date, dayRuns] = groups[vItem.index];
           const isToday = date === todayStr;
           const d = new Date(date + "T12:00:00Z");
           const showYear = d.getUTCFullYear() !== CURRENT_YEAR;
@@ -450,12 +475,15 @@ function CalendarView({
             ...(showYear && { year: "numeric" }),
           });
           return (
-            <tr
-              key={date}
-              className={`border-b border-white/[0.08] transition-colors ${isToday ? "bg-white/[0.06]" : "hover:bg-white/[0.03]"}`}
+            <div
+              key={vItem.key}
+              data-index={vItem.index}
+              ref={virtualizer.measureElement}
+              style={{ position: "absolute", top: 0, left: 0, right: 0, transform: `translateY(${vItem.start}px)` }}
+              className={`flex items-center border-b border-white/[0.08] transition-colors ${isToday ? "bg-white/[0.06]" : "hover:bg-white/[0.03]"}`}
             >
               {/* Date column */}
-              <td className="w-20 shrink-0 px-4 py-4 align-middle">
+              <div className="w-20 shrink-0 px-4 py-4">
                 <div className="flex flex-col leading-none">
                   <span className="flex items-center gap-2">
                     <span className={`text-base font-semibold ${isToday ? "text-white" : "text-zinc-300"}`}>
@@ -469,10 +497,10 @@ function CalendarView({
                   </span>
                   <span className={`mt-1 text-xs ${isToday ? "text-white" : "text-zinc-300"}`}>{shortDate}</span>
                 </div>
-              </td>
+              </div>
 
               {/* Logos column */}
-              <td className="px-4 py-3 align-middle">
+              <div className="flex-1 min-w-0 px-4 py-3">
                 <div className="flex min-w-0 flex-wrap gap-2">
                   {dayRuns.map((run) => {
                     const hasImage = run.KennelLogo?.startsWith("https://");
@@ -483,14 +511,14 @@ function CalendarView({
                         key={run.PublicEventId}
                         onClick={() => onSelect(run)}
                         title={run.KennelName}
-                        className={`flex-shrink-0 rounded-full overflow-hidden ring-2 transition-all duration-150 hover:scale-105 ${isSelected ? "ring-white" : "ring-white/10 hover:ring-white/50"}`}
+                        className={`flex-shrink-0 transition-all duration-150 hover:scale-105 ${isSelected ? "opacity-100" : "opacity-80 hover:opacity-100"}`}
                       >
                         {hasImage ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={run.KennelLogo!} alt={run.KennelName} className="h-12 w-12 object-contain" />
                         ) : (
                           <span
-                            className="flex h-12 w-12 items-center justify-center text-lg font-bold text-white"
+                            className="flex h-12 w-12 items-center justify-center rounded-lg text-lg font-bold text-white"
                             style={{ backgroundColor: bg }}
                           >
                             {run.KennelName.charAt(0).toUpperCase()}
@@ -500,12 +528,12 @@ function CalendarView({
                     );
                   })}
                 </div>
-              </td>
-            </tr>
+              </div>
+            </div>
           );
         })}
-      </tbody>
-    </table>
+      </div>
+    </div>
   );
 }
 
@@ -516,9 +544,11 @@ interface PastRunBucket {
   maxEventDate: string;
 }
 
-// Returns up to 20 fixed calendar-quarter buckets (5 years), most-recent first.
+// Returns fixed calendar-quarter buckets back to 1990, most-recent first.
 // Boundaries are stable — "Q1 2026" is always Jan 1–Apr 1 2026 regardless of
 // when it is requested, so the Next.js fetch cache key never shifts.
+// The loading loop stops early after 4 consecutive empty buckets so we don't
+// walk all the way to 1990 if the club's records only go back a few years.
 function getPastRunBuckets(): PastRunBucket[] {
   const now        = new Date();
   const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
@@ -528,14 +558,14 @@ function getPastRunBuckets(): PastRunBucket[] {
 
   const buckets: PastRunBucket[] = [];
 
-  for (let i = 0; i < 20; i++) {
+  while (year >= 1990) {
     const minDate = new Date(Date.UTC(year, quarter * 3, 1));
 
     let nextQ = quarter + 1;
     let nextY = year;
     if (nextQ > 3) { nextQ = 0; nextY++; }
     // Current quarter ends at today (partial); completed quarters end at next-quarter start.
-    const maxDate = i === 0 ? todayStart : new Date(Date.UTC(nextY, nextQ * 3, 1));
+    const maxDate = buckets.length === 0 ? todayStart : new Date(Date.UTC(nextY, nextQ * 3, 1));
 
     if (minDate < maxDate) {
       buckets.push({ minEventDate: minDate.toISOString(), maxEventDate: maxDate.toISOString() });
@@ -560,9 +590,6 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
 
   const [tab, setTab]                   = useState<"future" | "past">("future");
   const [view, setView]                 = useState<"list" | "calendar">("list");
-  // On tab switch, render the first 100 items synchronously (fast), then
-  // defer the rest via startTransition so it doesn't block the button paint.
-  const [displayCount, setDisplayCount] = useState<number>(Infinity);
   const [isPending, startTransition]    = useTransition();
 
   // Future runs — persisted across tab switches (pre-loaded from SSR).
@@ -577,15 +604,40 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
   const [pastRuns, setPastRuns] = useState<GlobalRunRow[]>([]);
   const [pastDone, setPastDone] = useState(false);
 
+  const [inputValue, setInputValue]   = useState("");
   const [query, setQuery]             = useState("");
+  useEffect(() => {
+    const t = setTimeout(() => startTransition(() => setQuery(inputValue)), 1000);
+    return () => clearTimeout(t);
+  }, [inputValue]); // startTransition is stable, intentionally omitted
   const [selectedRun, setSelectedRun] = useState<GlobalRunRow | null>(initialRuns[0] ?? null);
+  const [detailView, setDetailView]   = useState<"detail" | "map">("detail");
 
-  const sentinelRef    = useRef<HTMLDivElement>(null);
+  const listContainerRef = useRef<HTMLDivElement>(null);
   const cancelRef      = useRef(false);  // stops bucket loop on unmount
   const pastStartedRef = useRef(false);  // ensures bucket loading starts only once
   const tabRef         = useRef(tab);
   useEffect(() => { tabRef.current = tab; }, [tab]);
   useEffect(() => () => { cancelRef.current = true; }, []);
+
+  // On mount: restore past runs from the module-level cache and restore tab from URL.
+  // The cache holds whatever was loaded last — full or partial — so back-navigation
+  // always shows something immediately even if the previous load was interrupted.
+  useEffect(() => {
+    if (_pastCache.runs.length > 0) {
+      setPastRuns(_pastCache.runs);
+      if (_pastCache.done) {
+        setPastDone(true);
+        pastStartedRef.current = true; // already complete — skip bucket loading
+      }
+      // If not done, pastStartedRef stays false so the [tab] effect restarts loading.
+    }
+    const urlTab = new URLSearchParams(window.location.search).get("tab");
+    if (urlTab === "past") {
+      setTab("past");
+      setSelectedRun(_pastCache.runs[0] ?? null);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Derived — no shared mutable "runs" state to reset on switch.
   const runs = tab === "future" ? futureRuns : pastRuns;
@@ -616,20 +668,6 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
     }
   }, [tab, futureLoading, futureHasMore, futureOffset]);
 
-  const loadMoreRef = useRef(loadMore);
-  useEffect(() => { loadMoreRef.current = loadMore; }, [loadMore]);
-
-  useEffect(() => {
-    if (tab !== "future") return;
-    const sentinel = sentinelRef.current;
-    if (!sentinel || !futureHasMore) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) loadMoreRef.current(); },
-      { rootMargin: "400px" }
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [tab, futureHasMore]);
 
   // ── Tab switching ─────────────────────────────────────────────────────────
   // No data is fetched or reset here — both tab's runs live in persistent state.
@@ -637,51 +675,74 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
 
   const switchTab = useCallback((newTab: "future" | "past") => {
     if (newTab === tab) return;
-    // Render the first 100 items in this commit (fast), then defer the rest.
     setTab(newTab);
+    setInputValue("");
     setQuery("");
     setSelectedRun(newTab === "future" ? (futureRuns[0] ?? null) : (pastRuns[0] ?? null));
-    setDisplayCount(100);
-    startTransition(() => setDisplayCount(Infinity));
 
-    // Start past bucket loading on first visit — runs to completion in the
-    // background regardless of subsequent tab switches.
-    if (newTab === "past" && !pastStartedRef.current) {
-      pastStartedRef.current = true;
-      (async () => {
-        const buckets = getPastRunBuckets();
+    // Keep URL in sync so the back button restores the correct tab.
+    const params = new URLSearchParams(window.location.search);
+    if (newTab === "future") params.delete("tab");
+    else params.set("tab", newTab);
+    const search = params.toString();
+    window.history.replaceState(null, "", search ? `/?${search}` : "/");
+  }, [tab, futureRuns, pastRuns]);
+
+  // Bucket loading — starts whenever tab becomes "past" and hasn't started yet.
+  // Lives here (not inside switchTab) so it also fires when the mount effect
+  // restores tab="past" from the URL with no cached data.
+  useEffect(() => {
+    if (tab !== "past" || pastStartedRef.current) return;
+    pastStartedRef.current = true;
+    (async () => {
+      const buckets = getPastRunBuckets();
+      let allPastRuns: GlobalRunRow[] = [];
+      try {
+        const { minEventDate, maxEventDate } = buckets[0];
+        const res = await fetch(
+          `/api/global-runs?isFuture=0&minEventDate=${minEventDate}&maxEventDate=${maxEventDate}`
+        );
+        if (res.ok) {
+          const data: GetGlobalRunsResult = await res.json();
+          allPastRuns = data.runs;
+          _pastCache.runs = allPastRuns;
+          setPastRuns(data.runs);
+          // Auto-select first run only if the user is still on the past tab
+          // and hasn't manually selected anything.
+          if (tabRef.current === "past" && data.runs.length > 0) {
+            setSelectedRun((prev) => prev ?? data.runs[0]);
+          }
+        }
+      } catch { /* degrade gracefully */ }
+
+      let consecutiveEmpty = 0;
+      for (let i = 1; i < buckets.length; i++) {
+        if (cancelRef.current) return;
+        const { minEventDate, maxEventDate } = buckets[i];
         try {
-          const { minEventDate, maxEventDate } = buckets[0];
           const res = await fetch(
             `/api/global-runs?isFuture=0&minEventDate=${minEventDate}&maxEventDate=${maxEventDate}`
           );
-          if (res.ok) {
-            const data: GetGlobalRunsResult = await res.json();
-            setPastRuns(data.runs);
-            // Auto-select first run only if the user is still on the past tab
-            // and hasn't manually selected anything.
-            if (tabRef.current === "past" && data.runs.length > 0) {
-              setSelectedRun((prev) => prev ?? data.runs[0]);
-            }
+          if (!res.ok || cancelRef.current) break;
+          const data: GetGlobalRunsResult = await res.json();
+          if (data.runs.length === 0) {
+            // Stop after 4 consecutive empty quarters (1 year) — we've reached
+            // the beginning of this club's recorded history.
+            if (++consecutiveEmpty >= 4) break;
+          } else {
+            consecutiveEmpty = 0;
+            allPastRuns = [...allPastRuns, ...data.runs];
+            _pastCache.runs = allPastRuns;
+            if (!cancelRef.current) setPastRuns(allPastRuns);
           }
-        } catch { /* degrade gracefully */ }
-
-        for (let i = 1; i < buckets.length; i++) {
-          if (cancelRef.current) return;
-          const { minEventDate, maxEventDate } = buckets[i];
-          try {
-            const res = await fetch(
-              `/api/global-runs?isFuture=0&minEventDate=${minEventDate}&maxEventDate=${maxEventDate}`
-            );
-            if (!res.ok || cancelRef.current) break;
-            const data: GetGlobalRunsResult = await res.json();
-            if (!cancelRef.current) setPastRuns((prev) => [...prev, ...data.runs]);
-          } catch { /* skip failed bucket, continue */ }
-        }
-        if (!cancelRef.current) setPastDone(true);
-      })();
-    }
-  }, [tab, futureRuns, pastRuns]);
+        } catch { /* skip failed bucket, continue */ }
+      }
+      if (!cancelRef.current) {
+        _pastCache.done = true;
+        setPastDone(true);
+      }
+    })();
+  }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleViewChange = (newView: "list" | "calendar") => {
     setView(newView);
@@ -709,11 +770,41 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
     );
   }, [runs, query]);
 
+  // ── Virtual list ──────────────────────────────────────────────────────────
+  // futureLoading adds a spinner row as the last virtual item so the user
+  // sees feedback while the next page arrives.
+
+  const virtualizerCount = filtered.length + (tab === "future" && futureLoading ? 1 : 0);
+
+  const virtualizer = useVirtualizer({
+    count: virtualizerCount,
+    getScrollElement: () => listContainerRef.current,
+    estimateSize: (i) => (i === filtered.length ? 52 : 108),
+    overscan: 5,
+  });
+
+  // Trigger future-runs infinite scroll when the last rendered item is visible.
+  const virtualItems       = virtualizer.getVirtualItems();
+  const lastVirtualItem    = virtualItems[virtualItems.length - 1];
+  useEffect(() => {
+    if (!lastVirtualItem) return;
+    if (lastVirtualItem.index >= filtered.length - 1 && tab === "future" && futureHasMore && !futureLoading) {
+      loadMore();
+    }
+  }, [lastVirtualItem?.index, filtered.length, tab, futureHasMore, futureLoading, loadMore]);
+
+  // ── Filter pending indicator ──────────────────────────────────────────────
+  // True while the debounce is counting down OR while React is computing the
+  // filtered list after the debounce fires (startTransition isPending).
+
+  const isFiltering = inputValue !== query || isPending;
+
   // ── Run selection ─────────────────────────────────────────────────────────
 
   const handleSelect = (run: GlobalRunRow) => {
     if (typeof window !== "undefined" && window.innerWidth < 1024) {
-      router.push(`/${run.KennelSlug}/${run.EventNumber}?back=${encodeURIComponent("/")}`);
+      const backUrl = window.location.pathname + window.location.search;
+      router.push(`/${run.KennelSlug}/${run.EventNumber}?back=${encodeURIComponent(backUrl)}`);
     } else {
       setSelectedRun(run);
     }
@@ -734,22 +825,60 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
       <div className="flex flex-1 min-h-0 overflow-hidden">
 
       {/* ── Left panel ────────────────────────────────────────────────────── */}
-      <div className="flex w-full shrink-0 flex-col overflow-hidden lg:w-[468px] lg:pb-3">
+      <div className="flex w-full shrink-0 flex-col overflow-hidden lg:w-[468px] lg:pb-3 bg-transparent">
+
+        {/* Future / Past segmented control + view toggle */}
+        <div className="px-3 pt-3 pb-2 shrink-0 flex items-center gap-2">
+          <div className="flex flex-[2] rounded-full bg-zinc-300/75 p-1">
+            {(["future", "past"] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => switchTab(t)}
+                className={[
+                  "flex-1 py-1 rounded-full text-sm font-semibold transition-colors",
+                  tab === t
+                    ? "bg-red-600 text-white shadow-sm"
+                    : "text-zinc-800 hover:text-zinc-950",
+                ].join(" ")}
+              >
+                {t === "future" ? "Future" : "Past"}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-[3] rounded-full bg-zinc-300/75 p-1">
+            <button
+              onClick={() => handleViewChange("list")}
+              className={`flex flex-1 items-center justify-center gap-1 py-1 rounded-full text-sm font-semibold transition-colors ${view === "list" ? "bg-red-600 text-white shadow-sm" : "text-zinc-800 hover:text-zinc-950"}`}
+              aria-label="List view"
+            >
+              <LayoutList className="h-3.5 w-3.5" />
+              List
+            </button>
+            <button
+              onClick={() => handleViewChange("calendar")}
+              className={`flex flex-1 items-center justify-center gap-1 py-1 rounded-full text-sm font-semibold transition-colors ${view === "calendar" ? "bg-red-600 text-white shadow-sm" : "text-zinc-800 hover:text-zinc-950"}`}
+              aria-label="Calendar view"
+            >
+              <CalendarDays className="h-3.5 w-3.5" />
+              <span>Cal<span className="hidden sm:inline">endar</span></span>
+            </button>
+          </div>
+        </div>
 
         {/* Search */}
-        <div className="px-3 py-2.5 shrink-0">
+        <div className="px-3 pb-2.5 shrink-0">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
             <input
               type="search"
               placeholder="Search..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
               className="w-full h-9 rounded-full border border-zinc-200 pl-9 pr-9 text-base sm:text-sm outline-none bg-white text-zinc-900 placeholder:text-zinc-400 focus:ring-1 focus:ring-zinc-300"
             />
-            {query && (
+            {inputValue && (
               <button
-                onClick={() => setQuery("")}
+                onClick={() => { setInputValue(""); setQuery(""); }}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500"
                 aria-label="Clear search"
               >
@@ -757,55 +886,25 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
               </button>
             )}
           </div>
-          <div className="mt-1.5 flex items-center justify-between px-1">
-            <p className="text-xs text-zinc-400">
+          <div className="mt-2 flex items-center justify-center gap-2 px-1">
+            <p className="text-sm font-medium text-white text-center">
               {filtered.length.toLocaleString()} {filtered.length === 1 ? "run" : "runs"}
               {query ? " found" : ""}
             </p>
-            {pastLoading && pastRuns.length > 0 && (
-              <p className="text-xs text-zinc-400">Loading older runs…</p>
+            {(isFiltering || (pastLoading && pastRuns.length > 0)) && (
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-white/70 shrink-0" />
             )}
           </div>
         </div>
 
-        {/* Future / Past segmented control + list/calendar toggle */}
-        <div className="px-3 py-3 shrink-0 flex items-center gap-2">
-          <div className="flex flex-1 rounded-full bg-zinc-300/75 p-1">
-            {(["future", "past"] as const).map((t) => (
-              <button
-                key={t}
-                onClick={() => switchTab(t)}
-                className={[
-                  "flex-1 py-2 rounded-full text-sm font-semibold transition-colors",
-                  tab === t
-                    ? "bg-red-600 text-white shadow-sm"
-                    : "text-zinc-800 hover:text-zinc-950",
-                ].join(" ")}
-              >
-                {t === "future" ? "Future Runs" : "Past Runs"}
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center rounded-full bg-zinc-300/75 p-1 gap-0.5">
-            <button
-              onClick={() => handleViewChange("list")}
-              className={`p-1.5 rounded-full transition-colors ${view === "list" ? "bg-white shadow-sm" : ""}`}
-              aria-label="List view"
-            >
-              <LayoutList className="h-4 w-4 text-zinc-800" />
-            </button>
-            <button
-              onClick={() => handleViewChange("calendar")}
-              className={`p-1.5 rounded-full transition-colors ${view === "calendar" ? "bg-white shadow-sm" : ""}`}
-              aria-label="Calendar view"
-            >
-              <CalendarDays className="h-4 w-4 text-zinc-800" />
-            </button>
-          </div>
-        </div>
+        {/* Calendar view — owns its own scroll container and virtualizer */}
+        {view === "calendar" && (
+          <CalendarView runs={filtered} selectedRun={selectedRun} onSelect={handleSelect} sortDesc={tab === "past"} />
+        )}
 
-        {/* Run list */}
-        <div className="flex-1 overflow-y-auto">
+        {/* List view */}
+        {view === "list" && (
+        <div ref={listContainerRef} className="flex-1 overflow-y-auto bg-transparent">
           {pastStarting ? (
             <div className="flex h-full items-center justify-center">
               <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600" />
@@ -814,38 +913,73 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
             <div className="py-16 text-center text-sm text-zinc-400">
               {query ? `No runs match "${query}"` : "No runs found"}
             </div>
-          ) : view === "calendar" ? (
-            <CalendarView runs={filtered} selectedRun={selectedRun} onSelect={handleSelect} sortDesc={tab === "past"} />
           ) : (
-            <>
-              <div className="px-3 pt-3 pb-3 flex flex-col gap-2">
-                {filtered.slice(0, displayCount).map((run) => (
-                  <GlobalRunCard
-                    key={run.PublicEventId}
-                    run={run}
-                    isSelected={selectedRun?.PublicEventId === run.PublicEventId}
-                    onClick={() => handleSelect(run)}
-                  />
-                ))}
-              </div>
-
-              {/* Sentinel: infinite scroll (future) / background load indicator (past) */}
-              <div ref={sentinelRef} className="flex justify-center py-4">
-                {(futureLoading || pastLoading || isPending) && (
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600" />
-                )}
-              </div>
-            </>
+            <div
+              className="pt-3"
+              style={{ height: virtualizer.getTotalSize(), position: "relative" }}
+            >
+              {virtualizer.getVirtualItems().map((vItem) => {
+                // Spinner row appended while the next future-runs page is loading.
+                if (vItem.index === filtered.length) {
+                  return (
+                    <div
+                      key="loading"
+                      style={{ position: "absolute", top: 0, left: 0, right: 0, transform: `translateY(${vItem.start}px)` }}
+                      className="flex justify-center py-4"
+                    >
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600" />
+                    </div>
+                  );
+                }
+                const run = filtered[vItem.index];
+                return (
+                  <div
+                    key={vItem.key}
+                    data-index={vItem.index}
+                    ref={virtualizer.measureElement}
+                    style={{ position: "absolute", top: 0, left: 0, right: 0, transform: `translateY(${vItem.start}px)`, paddingLeft: "12px", paddingRight: "12px", paddingBottom: "8px" }}
+                  >
+                    <GlobalRunCard
+                      run={run}
+                      isSelected={selectedRun?.PublicEventId === run.PublicEventId}
+                      onClick={() => handleSelect(run)}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
+        )}
+
       </div>
 
       {/* ── Right panel: detail (desktop only) ───────────────────────────── */}
-      <div className="max-lg:hidden min-w-0 flex-1 overflow-hidden pl-2 pr-4 py-3">
-        <div className="h-full rounded-xl border-[3px] border-white bg-white/[0.04] overflow-hidden flex flex-col">
+      <div className="max-lg:hidden min-w-0 flex-1 overflow-hidden pl-2 pr-4 py-3 flex flex-col gap-2">
+        <div className="shrink-0">
+          <div className="flex w-60 rounded-full bg-zinc-300/75 p-1">
+            <button
+              onClick={() => setDetailView("detail")}
+              className={`flex flex-1 items-center justify-center gap-1 py-1 rounded-full text-sm font-semibold transition-colors ${detailView === "detail" ? "bg-red-600 text-white shadow-sm" : "text-zinc-800 hover:text-zinc-950"}`}
+            >
+              <Info className="h-3.5 w-3.5" />
+              Detail
+            </button>
+            <button
+              onClick={() => setDetailView("map")}
+              className={`flex flex-1 items-center justify-center gap-1 py-1 rounded-full text-sm font-semibold transition-colors ${detailView === "map" ? "bg-red-600 text-white shadow-sm" : "text-zinc-800 hover:text-zinc-950"}`}
+            >
+              <MapIcon className="h-3.5 w-3.5" />
+              Map
+            </button>
+          </div>
+        </div>
+        <div className="flex-1 min-h-0 rounded-xl border-[3px] border-white bg-white/[0.04] overflow-hidden flex flex-col">
           <div className="flex-1 overflow-hidden min-h-0">
             {selectedRun ? (
-              <GlobalRunDetail key={selectedRun.PublicEventId} run={selectedRun} />
+              detailView === "map"
+                ? <RunLocationMap key={selectedRun.PublicEventId} run={selectedRun} />
+                : <GlobalRunDetail key={selectedRun.PublicEventId} run={selectedRun} />
             ) : (
               <div className="h-full flex items-center justify-center">
                 <div className="text-center">

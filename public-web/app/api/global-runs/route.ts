@@ -11,8 +11,9 @@ import { getGlobalRuns } from "@/lib/api";
  *   Expects minEventDate + maxEventDate defining a fixed calendar-quarter bucket.
  *   The revalidation period is computed from how old the bucket is:
  *     - Current quarter (maxEventDate >= today):  5 minutes
- *     - Previous quarter (bucket started < 6 months ago):  1 hour
- *     - Older quarters:  1 week
+ *     - Recent past (bucket started < 6 months ago):  1 hour
+ *     - Mid-range past (6 months – 5 years old):  1 week
+ *     - Deep history (older than 5 years):  1 month
  *
  *   Fixed-quarter boundaries never shift when new runs are added, so every
  *   cache entry for a completed quarter is permanently stable until it
@@ -30,7 +31,9 @@ function getRevalidateSeconds(minEventDate: string, maxEventDate: string): numbe
   const ageMs     = todayStart.getTime() - new Date(minEventDate).getTime();
   const ageMonths = ageMs / (1000 * 60 * 60 * 24 * 30.44);
 
-  return ageMonths < 6 ? 3_600 : 604_800;
+  if (ageMonths <   6) return   3_600;  // 1 hour  — recent, edits still likely
+  if (ageMonths <  60) return 604_800;  // 1 week  — stable completed quarters
+  return 2_592_000;                     // 1 month — deep history, rarely changes
 }
 
 export async function GET(request: NextRequest) {
@@ -75,5 +78,7 @@ export async function GET(request: NextRequest) {
     { next: { revalidate } }
   );
 
-  return NextResponse.json(result);
+  return NextResponse.json(result, {
+    headers: { "Cache-Control": `public, max-age=${revalidate}, stale-while-revalidate=${revalidate * 2}` },
+  });
 }

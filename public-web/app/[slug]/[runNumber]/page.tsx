@@ -212,8 +212,8 @@ export default async function RunDetailPage({ params, searchParams }: PageProps)
         <KennelBackground kennel={kennel} />
         <StickyNav kennel={kennel} slug={slug} alwaysVisible />
 
-        {/* Back navigation — always above the hero, clear of the fixed nav */}
-        <div className="relative z-10 pt-20 pb-4 mx-auto w-full px-4 md:px-6 flex items-center justify-between gap-3">
+        {/* Back navigation — sits below the fixed nav with breathing room */}
+        <div className="relative z-10 pb-4 mx-auto w-full px-4 md:px-6 flex items-center justify-between gap-3" style={{ paddingTop: "calc(80px + 1rem)" }}>
           <Link
             href={backHref}
             className="inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-xl font-semibold shadow-sm transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:text-white dark:hover:bg-white/[0.14] border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-900"

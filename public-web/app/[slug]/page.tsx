@@ -7,6 +7,7 @@ import { FeaturedRunCard } from "@/components/kennel/FeaturedRunCard";
 import { UpcomingRunsList } from "@/components/kennel/UpcomingRunsList";
 import { PhotoGrid } from "@/components/kennel/PhotoGrid";
 import { KennelWelcome } from "@/components/kennel/KennelWelcome";
+import { kennelBaseUrl } from "@/lib/seo";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -26,11 +27,28 @@ export async function generateMetadata({ params }: PageProps) {
     : kennel.KennelLogo?.startsWith("https://") ? kennel.KennelLogo
     : undefined;
 
+  const base = kennelBaseUrl(slug, kennel.CustomDomain);
+  const description = kennel.KennelDescription ?? `${kennel.KennelName} — hash running club`;
+
   return {
-    title: `${kennel.KennelName} | Harrier Central`,
-    description: kennel.KennelDescription ?? `${kennel.KennelName} — hash running club`,
+    metadataBase: new URL(base),
+    title: kennel.KennelName,
+    description,
     ...(faviconUrl && { icons: { icon: faviconUrl } }),
-    ...(ogImageUrl && { openGraph: { images: [{ url: ogImageUrl }] } }),
+    alternates: { canonical: base },
+    openGraph: {
+      type: "website",
+      siteName: kennel.KennelName,
+      title: kennel.KennelName,
+      description,
+      url: base,
+      ...(ogImageUrl && { images: [{ url: ogImageUrl, alt: kennel.KennelName }] }),
+    },
+    twitter: {
+      card: ogImageUrl ? "summary_large_image" : "summary",
+      title: kennel.KennelName,
+      description,
+    },
   };
 }
 

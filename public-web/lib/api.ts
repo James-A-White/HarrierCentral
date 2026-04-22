@@ -336,6 +336,11 @@ export async function getGlobalCalendar(options: {
  * Fetches landing page data for a kennel by its unique short name (URL slug).
  * Returns null when the kennel does not exist or is not publicly visible.
  */
+export async function getAllKennelSlugs(): Promise<string[]> {
+  const rows = await callPublicWebApi<{ Slug: string }>("getKennels", {});
+  return (rows ?? []).map((r) => r.Slug);
+}
+
 export async function getKennelLandingData(
   kennelUniqueShortName: string
 ): Promise<KennelLandingData | null> {
