@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -132,11 +132,12 @@ function RunListItem({
 // ─── Run detail panel ─────────────────────────────────────────────────────────
 
 function RunDetail({
-  run, kennel, slug,
+  run, kennel, slug, backHref,
 }: {
   run: RunEvent;
   kennel: KennelContext;
   slug: string;
+  backHref: string;
 }) {
   const { long: longDate, time } = formatDate(run.EventStartDatetime);
   const mapsLink = mapsUrl(run.Latitude, run.Longitude);
@@ -285,7 +286,7 @@ function RunDetail({
           </a>
         )}
         <Link
-          href={`/${slug}/${run.EventNumber}?back=${encodeURIComponent(`/${slug}/runs`)}`}
+          href={`/${slug}/${run.EventNumber}?back=${encodeURIComponent(backHref)}`}
           className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-xl font-semibold transition-opacity hover:opacity-90"
           style={{ backgroundColor: "var(--kennel-primary)", color: "var(--kennel-primary-fg)" }}
         >
@@ -314,6 +315,15 @@ export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageC
     futureRuns[0] ?? pastRuns[0] ?? null
   );
 
+  // Restore tab from URL on mount so the back button returns to the correct tab.
+  useEffect(() => {
+    const urlTab = new URLSearchParams(window.location.search).get("tab");
+    if (urlTab === "past") {
+      setTab("past");
+      setSelectedRun(pastRuns[0] ?? null);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const activeRuns = tab === "future" ? futureRuns : pastRuns;
 
   const filtered = useMemo(() => {
@@ -331,7 +341,8 @@ export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageC
 
   const handleSelect = (run: RunEvent) => {
     if (typeof window !== "undefined" && window.innerWidth < 1024) {
-      router.push(`/${slug}/${run.EventNumber}?back=${encodeURIComponent(`/${slug}/runs`)}`);
+      const backUrl = window.location.pathname + window.location.search;
+      router.push(`/${slug}/${run.EventNumber}?back=${encodeURIComponent(backUrl)}`);
     } else {
       setSelectedRun(run);
     }
@@ -341,6 +352,11 @@ export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageC
     setTab(t);
     setQuery("");
     setSelectedRun(t === "future" ? (futureRuns[0] ?? null) : (pastRuns[0] ?? null));
+    const params = new URLSearchParams(window.location.search);
+    if (t === "future") params.delete("tab");
+    else params.set("tab", t);
+    const search = params.toString();
+    window.history.replaceState(null, "", window.location.pathname + (search ? `?${search}` : ""));
   };
 
   return (
@@ -429,7 +445,7 @@ export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageC
       {/* ── Right panel: detail (desktop only) ─────────────────────────────── */}
       <div className="hidden min-w-0 flex-1 overflow-y-auto lg:block">
         {selectedRun ? (
-          <RunDetail run={selectedRun} kennel={kennel} slug={slug} />
+          <RunDetail run={selectedRun} kennel={kennel} slug={slug} backHref={`/${slug}/runs${tab === "past" ? "?tab=past" : ""}`} />
         ) : (
           <div className="h-full flex items-center justify-center">
             <div className="text-center">

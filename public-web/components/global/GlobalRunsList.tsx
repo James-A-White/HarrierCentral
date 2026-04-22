@@ -4,16 +4,24 @@ import { useState, useMemo, useCallback, useEffect, useRef, useTransition } from
 import { useRouter } from "next/navigation";
 import QRCode from "react-qr-code";
 import {
-  Search, X, MapPin, Navigation, Tag, Copy, QrCode, ArrowLeft, LayoutList, CalendarDays, Map as MapIcon, Loader2,
+  Search, X, MapPin, Navigation, Tag, Copy, QrCode, ArrowLeft, LayoutList, CalendarDays, Loader2, Map, Info,
 } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import dynamic from "next/dynamic";
 import type { GlobalRunRow, GetGlobalRunsResult } from "@/lib/api";
+
+const RunLocationMap = dynamic(() => import("./RunLocationMap"), { ssr: false });
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const PAGE_SIZE = 200;
 const HASHRUNS_ORIGIN = "https://hashruns.org";
 const CURRENT_YEAR = new Date().getFullYear();
+
+// Module-level cache — survives client-side navigation for the lifetime of the
+// browser tab. Updated after every bucket so partial progress is preserved on
+// back-navigation even if the user leaves before loading completes.
+const _pastCache: { runs: GlobalRunRow[]; done: boolean } = { runs: [], done: false };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -140,6 +148,12 @@ function GlobalRunCard({
           className="absolute left-0 top-0 bottom-0 w-1 z-10"
           style={{ backgroundColor: primaryColor }}
         />
+      )}
+
+      {/* Run image */}
+      {run.EventImage && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={run.EventImage} alt={run.EventName} className="w-full h-auto block" />
       )}
 
       {/* Bold title */}
@@ -597,6 +611,7 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
     return () => clearTimeout(t);
   }, [inputValue]); // startTransition is stable, intentionally omitted
   const [selectedRun, setSelectedRun] = useState<GlobalRunRow | null>(initialRuns[0] ?? null);
+  const [detailView, setDetailView]   = useState<"detail" | "map">("detail");
 
   const listContainerRef = useRef<HTMLDivElement>(null);
   const cancelRef      = useRef(false);  // stops bucket loop on unmount
@@ -604,6 +619,25 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
   const tabRef         = useRef(tab);
   useEffect(() => { tabRef.current = tab; }, [tab]);
   useEffect(() => () => { cancelRef.current = true; }, []);
+
+  // On mount: restore past runs from the module-level cache and restore tab from URL.
+  // The cache holds whatever was loaded last — full or partial — so back-navigation
+  // always shows something immediately even if the previous load was interrupted.
+  useEffect(() => {
+    if (_pastCache.runs.length > 0) {
+      setPastRuns(_pastCache.runs);
+      if (_pastCache.done) {
+        setPastDone(true);
+        pastStartedRef.current = true; // already complete — skip bucket loading
+      }
+      // If not done, pastStartedRef stays false so the [tab] effect restarts loading.
+    }
+    const urlTab = new URLSearchParams(window.location.search).get("tab");
+    if (urlTab === "past") {
+      setTab("past");
+      setSelectedRun(_pastCache.runs[0] ?? null);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Derived — no shared mutable "runs" state to reset on switch.
   const runs = tab === "future" ? futureRuns : pastRuns;
@@ -641,58 +675,74 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
 
   const switchTab = useCallback((newTab: "future" | "past") => {
     if (newTab === tab) return;
-    // Render the first 100 items in this commit (fast), then defer the rest.
     setTab(newTab);
     setInputValue("");
     setQuery("");
     setSelectedRun(newTab === "future" ? (futureRuns[0] ?? null) : (pastRuns[0] ?? null));
 
-    // Start past bucket loading on first visit — runs to completion in the
-    // background regardless of subsequent tab switches.
-    if (newTab === "past" && !pastStartedRef.current) {
-      pastStartedRef.current = true;
-      (async () => {
-        const buckets = getPastRunBuckets();
+    // Keep URL in sync so the back button restores the correct tab.
+    const params = new URLSearchParams(window.location.search);
+    if (newTab === "future") params.delete("tab");
+    else params.set("tab", newTab);
+    const search = params.toString();
+    window.history.replaceState(null, "", search ? `/?${search}` : "/");
+  }, [tab, futureRuns, pastRuns]);
+
+  // Bucket loading — starts whenever tab becomes "past" and hasn't started yet.
+  // Lives here (not inside switchTab) so it also fires when the mount effect
+  // restores tab="past" from the URL with no cached data.
+  useEffect(() => {
+    if (tab !== "past" || pastStartedRef.current) return;
+    pastStartedRef.current = true;
+    (async () => {
+      const buckets = getPastRunBuckets();
+      let allPastRuns: GlobalRunRow[] = [];
+      try {
+        const { minEventDate, maxEventDate } = buckets[0];
+        const res = await fetch(
+          `/api/global-runs?isFuture=0&minEventDate=${minEventDate}&maxEventDate=${maxEventDate}`
+        );
+        if (res.ok) {
+          const data: GetGlobalRunsResult = await res.json();
+          allPastRuns = data.runs;
+          _pastCache.runs = allPastRuns;
+          setPastRuns(data.runs);
+          // Auto-select first run only if the user is still on the past tab
+          // and hasn't manually selected anything.
+          if (tabRef.current === "past" && data.runs.length > 0) {
+            setSelectedRun((prev) => prev ?? data.runs[0]);
+          }
+        }
+      } catch { /* degrade gracefully */ }
+
+      let consecutiveEmpty = 0;
+      for (let i = 1; i < buckets.length; i++) {
+        if (cancelRef.current) return;
+        const { minEventDate, maxEventDate } = buckets[i];
         try {
-          const { minEventDate, maxEventDate } = buckets[0];
           const res = await fetch(
             `/api/global-runs?isFuture=0&minEventDate=${minEventDate}&maxEventDate=${maxEventDate}`
           );
-          if (res.ok) {
-            const data: GetGlobalRunsResult = await res.json();
-            setPastRuns(data.runs);
-            // Auto-select first run only if the user is still on the past tab
-            // and hasn't manually selected anything.
-            if (tabRef.current === "past" && data.runs.length > 0) {
-              setSelectedRun((prev) => prev ?? data.runs[0]);
-            }
+          if (!res.ok || cancelRef.current) break;
+          const data: GetGlobalRunsResult = await res.json();
+          if (data.runs.length === 0) {
+            // Stop after 4 consecutive empty quarters (1 year) — we've reached
+            // the beginning of this club's recorded history.
+            if (++consecutiveEmpty >= 4) break;
+          } else {
+            consecutiveEmpty = 0;
+            allPastRuns = [...allPastRuns, ...data.runs];
+            _pastCache.runs = allPastRuns;
+            if (!cancelRef.current) setPastRuns(allPastRuns);
           }
-        } catch { /* degrade gracefully */ }
-
-        let consecutiveEmpty = 0;
-        for (let i = 1; i < buckets.length; i++) {
-          if (cancelRef.current) return;
-          const { minEventDate, maxEventDate } = buckets[i];
-          try {
-            const res = await fetch(
-              `/api/global-runs?isFuture=0&minEventDate=${minEventDate}&maxEventDate=${maxEventDate}`
-            );
-            if (!res.ok || cancelRef.current) break;
-            const data: GetGlobalRunsResult = await res.json();
-            if (data.runs.length === 0) {
-              // Stop after 4 consecutive empty quarters (1 year) — we've reached
-              // the beginning of this club's recorded history.
-              if (++consecutiveEmpty >= 4) break;
-            } else {
-              consecutiveEmpty = 0;
-              if (!cancelRef.current) setPastRuns((prev) => [...prev, ...data.runs]);
-            }
-          } catch { /* skip failed bucket, continue */ }
-        }
-        if (!cancelRef.current) setPastDone(true);
-      })();
-    }
-  }, [tab, futureRuns, pastRuns]);
+        } catch { /* skip failed bucket, continue */ }
+      }
+      if (!cancelRef.current) {
+        _pastCache.done = true;
+        setPastDone(true);
+      }
+    })();
+  }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleViewChange = (newView: "list" | "calendar") => {
     setView(newView);
@@ -753,7 +803,8 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
 
   const handleSelect = (run: GlobalRunRow) => {
     if (typeof window !== "undefined" && window.innerWidth < 1024) {
-      router.push(`/${run.KennelSlug}/${run.EventNumber}?back=${encodeURIComponent("/")}`);
+      const backUrl = window.location.pathname + window.location.search;
+      router.push(`/${run.KennelSlug}/${run.EventNumber}?back=${encodeURIComponent(backUrl)}`);
     } else {
       setSelectedRun(run);
     }
@@ -797,7 +848,7 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
           <div className="flex flex-[3] rounded-full bg-zinc-300/75 p-1">
             <button
               onClick={() => handleViewChange("list")}
-              className={`flex flex-1 items-center justify-center gap-1 py-1 rounded-full text-xs font-semibold transition-colors ${view === "list" ? "bg-red-600 text-white shadow-sm" : "text-zinc-800 hover:text-zinc-950"}`}
+              className={`flex flex-1 items-center justify-center gap-1 py-1 rounded-full text-sm font-semibold transition-colors ${view === "list" ? "bg-red-600 text-white shadow-sm" : "text-zinc-800 hover:text-zinc-950"}`}
               aria-label="List view"
             >
               <LayoutList className="h-3.5 w-3.5" />
@@ -805,19 +856,11 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
             </button>
             <button
               onClick={() => handleViewChange("calendar")}
-              className={`flex flex-1 items-center justify-center gap-1 py-1 rounded-full text-xs font-semibold transition-colors ${view === "calendar" ? "bg-red-600 text-white shadow-sm" : "text-zinc-800 hover:text-zinc-950"}`}
+              className={`flex flex-1 items-center justify-center gap-1 py-1 rounded-full text-sm font-semibold transition-colors ${view === "calendar" ? "bg-red-600 text-white shadow-sm" : "text-zinc-800 hover:text-zinc-950"}`}
               aria-label="Calendar view"
             >
               <CalendarDays className="h-3.5 w-3.5" />
               <span>Cal<span className="hidden sm:inline">endar</span></span>
-            </button>
-            <button
-              disabled
-              className="flex flex-1 items-center justify-center gap-1 py-1 rounded-full text-xs font-semibold text-zinc-400 cursor-not-allowed"
-              aria-label="Map view (coming soon)"
-            >
-              <MapIcon className="h-3.5 w-3.5" />
-              Map
             </button>
           </div>
         </div>
@@ -912,11 +955,31 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
       </div>
 
       {/* ── Right panel: detail (desktop only) ───────────────────────────── */}
-      <div className="max-lg:hidden min-w-0 flex-1 overflow-hidden pl-2 pr-4 py-3">
-        <div className="h-full rounded-xl border-[3px] border-white bg-white/[0.04] overflow-hidden flex flex-col">
+      <div className="max-lg:hidden min-w-0 flex-1 overflow-hidden pl-2 pr-4 py-3 flex flex-col gap-2">
+        <div className="shrink-0">
+          <div className="flex w-60 rounded-full bg-zinc-300/75 p-1">
+            <button
+              onClick={() => setDetailView("detail")}
+              className={`flex flex-1 items-center justify-center gap-1 py-1 rounded-full text-sm font-semibold transition-colors ${detailView === "detail" ? "bg-red-600 text-white shadow-sm" : "text-zinc-800 hover:text-zinc-950"}`}
+            >
+              <Info className="h-3.5 w-3.5" />
+              Detail
+            </button>
+            <button
+              onClick={() => setDetailView("map")}
+              className={`flex flex-1 items-center justify-center gap-1 py-1 rounded-full text-sm font-semibold transition-colors ${detailView === "map" ? "bg-red-600 text-white shadow-sm" : "text-zinc-800 hover:text-zinc-950"}`}
+            >
+              <Map className="h-3.5 w-3.5" />
+              Map
+            </button>
+          </div>
+        </div>
+        <div className="flex-1 min-h-0 rounded-xl border-[3px] border-white bg-white/[0.04] overflow-hidden flex flex-col">
           <div className="flex-1 overflow-hidden min-h-0">
             {selectedRun ? (
-              <GlobalRunDetail key={selectedRun.PublicEventId} run={selectedRun} />
+              detailView === "map"
+                ? <RunLocationMap key={selectedRun.PublicEventId} run={selectedRun} />
+                : <GlobalRunDetail key={selectedRun.PublicEventId} run={selectedRun} />
             ) : (
               <div className="h-full flex items-center justify-center">
                 <div className="text-center">

@@ -6,6 +6,7 @@ import { StickyNav } from "@/components/StickyNav";
 import { KennelBackground } from "@/components/kennel/KennelBackground";
 import { Card, CardContent } from "@/components/ui/card";
 import type { KennelContext } from "@/lib/types/kennel";
+import { kennelBaseUrl } from "@/lib/seo";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -20,10 +21,24 @@ export async function generateMetadata({ params }: PageProps) {
     : kennel.KennelLogo?.startsWith("https://") ? kennel.KennelLogo
     : undefined;
 
+  const base = kennelBaseUrl(slug, kennel.CustomDomain);
+  const canonical = `${base}/about`;
+  const description = kennel.KennelDescription ?? `About ${kennel.KennelName}`;
+
   return {
+    metadataBase: new URL(base),
     title: `About | ${kennel.KennelName}`,
-    description: kennel.KennelDescription ?? `About ${kennel.KennelName}`,
+    description,
     ...(faviconUrl && { icons: { icon: faviconUrl } }),
+    alternates: { canonical },
+    openGraph: {
+      type: "website",
+      siteName: kennel.KennelName,
+      title: `About | ${kennel.KennelName}`,
+      description,
+      url: canonical,
+    },
+    twitter: { card: "summary", title: `About | ${kennel.KennelName}`, description },
   };
 }
 

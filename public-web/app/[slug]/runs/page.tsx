@@ -4,6 +4,7 @@ import { StickyNav } from "@/components/StickyNav";
 import { KennelBackground } from "@/components/kennel/KennelBackground";
 import { RunsPageClient } from "@/components/kennel/RunsPageClient";
 import type { KennelContext } from "@/lib/types/kennel";
+import { kennelBaseUrl } from "@/lib/seo";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -18,10 +19,24 @@ export async function generateMetadata({ params }: PageProps) {
     : kennel.KennelLogo?.startsWith("https://") ? kennel.KennelLogo
     : undefined;
 
+  const base = kennelBaseUrl(slug, kennel.CustomDomain);
+  const canonical = `${base}/runs`;
+  const description = `Run schedule for ${kennel.KennelName}`;
+
   return {
+    metadataBase: new URL(base),
     title: `Runs | ${kennel.KennelShortName}`,
-    description: `Run schedule for ${kennel.KennelName}`,
+    description,
     ...(faviconUrl && { icons: { icon: faviconUrl } }),
+    alternates: { canonical },
+    openGraph: {
+      type: "website",
+      siteName: kennel.KennelName,
+      title: `Runs | ${kennel.KennelShortName}`,
+      description,
+      url: canonical,
+    },
+    twitter: { card: "summary", title: `Runs | ${kennel.KennelShortName}`, description },
   };
 }
 
@@ -89,7 +104,7 @@ export default async function RunsPage({ params }: PageProps) {
 
   const [futureResult, pastResult] = await Promise.all([
     getEvents(kennelData.PublicKennelId, { isFuture: true, maxEvents: 100, summaryOnly: true }),
-    getEvents(kennelData.PublicKennelId, { isFuture: false, daysOffset: 730, maxEvents: 200, summaryOnly: true }),
+    getEvents(kennelData.PublicKennelId, { isFuture: false, summaryOnly: true }),
   ]);
 
   const futureRuns = futureResult?.events ?? [];
