@@ -1,5 +1,15 @@
 # public-web Changelog
 
+## 0.12.0 — 2026-04-24
+
+### SEO — per-kennel sitemaps
+- Added `app/[slug]/sitemap.xml/route.ts` — a per-kennel sitemap served at `/{slug}/sitemap.xml` (or at the root of the custom domain)
+- Each sitemap covers the kennel home, `/runs`, `/about`, all future runs (`changefreq: daily`), and past runs from the last 90 days (`changefreq: monthly`)
+- Canonical URLs use the kennel's custom domain when configured, falling back to `hashruns.org/{slug}`
+- Referenced by the global sitemap index so Google discovers all kennels from a single submission
+
+---
+
 ## 0.8.0 — 2026-04-20
 
 ### Global Runs — past runs caching
