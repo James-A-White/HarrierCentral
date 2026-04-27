@@ -1,3 +1,7 @@
+0.12.2
+    • Fix /<slug>/runs server error — past events call was missing required boundary parameter (daysOffset: 3650)
+    • Legacy redirect shim now points to /<slug>/runs to match old hashruns.org run list behaviour
+
 0.12.1
     • Legacy URL redirect shim for old hashruns.org /#/RD?publicKennelIds=<uuid> links
     • New SP publicWeb_resolveKennelsByUuid — resolves kennel UUIDs to slugs and custom domains
