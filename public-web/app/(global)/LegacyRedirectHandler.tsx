@@ -56,33 +56,43 @@ export function LegacyRedirectHandler() {
   const [state, setState] = useState<State | null>(null);
 
   useEffect(() => {
+    const clearLegacy = () =>
+      document.documentElement.removeAttribute("data-legacy");
+
     const parsed = extractUuid(window.location.hash);
-    if (!parsed) return;
+    if (!parsed) {
+      // Not a legacy URL — reveal the global page immediately.
+      clearLegacy();
+      return;
+    }
 
     if ("single" in parsed) {
       fetch(`/api/legacy-runs?uuid=${encodeURIComponent(parsed.single)}`)
         .then((r) => (r.ok ? r.json() : null))
         .then((data: KennelRuns | null) => {
           if (data) setState({ kind: "runs", data });
+          else clearLegacy();
         })
-        .catch(() => undefined);
+        .catch(clearLegacy);
     } else {
       fetch(`/api/resolve-kennels?ids=${encodeURIComponent(parsed.multi)}`)
         .then((r) => r.json())
         .then((kennels: SelectorKennel[]) => {
           if (kennels.length === 1) {
-            // Resolved to one kennel — fetch inline view
             fetch(`/api/legacy-runs?uuid=${encodeURIComponent(parsed.multi)}`)
               .then((r) => (r.ok ? r.json() : null))
               .then((data: KennelRuns | null) => {
                 if (data) setState({ kind: "runs", data });
+                else clearLegacy();
               })
-              .catch(() => undefined);
+              .catch(clearLegacy);
           } else if (kennels.length > 1) {
             setState({ kind: "selector", kennels, origin: window.location.origin });
+          } else {
+            clearLegacy();
           }
         })
-        .catch(() => undefined);
+        .catch(clearLegacy);
     }
   }, []);
 

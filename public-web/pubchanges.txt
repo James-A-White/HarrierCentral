@@ -1,3 +1,7 @@
+0.12.5
+    • Eliminate global runs flash on legacy hash URLs — inline script hides global page before first paint
+    • Global page revealed immediately if hash is not a legacy URL or kennel resolution fails
+
 0.12.4
     • Version strip added to bottom of runs page — fixed 20px bar, always visible, reads from package.json at build time
 
