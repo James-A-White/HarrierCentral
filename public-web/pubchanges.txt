@@ -1,3 +1,9 @@
+0.12.6
+    • Legacy hash URLs now redirect to a real server-side page (/rd/<uuid>) — no overlay, no flash, back button works correctly
+    • /rd/[uuid] resolves the kennel UUID server-side and renders the runs page identically to /<slug>/runs
+    • LegacyRedirectHandler stripped to multi-kennel picker only — single UUID handled by inline script before first paint
+    • Deleted /api/legacy-runs route (no longer needed)
+
 0.12.5
     • Eliminate global runs flash on legacy hash URLs — inline script hides global page before first paint
     • Global page revealed immediately if hash is not a legacy URL or kennel resolution fails
