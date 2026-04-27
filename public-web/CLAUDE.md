@@ -15,19 +15,24 @@ identity, URL, and content — served from shared page templates.
 
 ## URL / Tenancy Model
 
-| Tier | URL Form | Who controls DNS? | Status |
-|------|----------|-------------------|--------|
-| 2 (default) | `a.harriercentral.com` | Harrier Central (wildcard `*.harriercentral.com`) | Every kennel gets this automatically |
-| 3 (upgrade) | `a.com` | The kennel | Custom domain; requires `Kennel.customDomain` record in DB |
+| Tier | URL Form | Who controls DNS? | Notes |
+|------|----------|-------------------|-------|
+| 2 (default) | `www.hashruns.org/a` | Harrier Central | Path-based — no wildcard cert needed |
+| 3 (upgrade) | `a.com` | The kennel | Custom domain; middleware rewrites to internal `/a` path |
 
-Tier 1 (`harriercentral.com/a/`) is intentionally skipped.
+Tier 1 (`hashruns.org/` root) is the global discovery page — runs across all kennels.
+
+**`harriercentral.com` subdomains** (`a.harriercentral.com`) are listed in `SYSTEM_HOSTS`
+in the middleware but are not the active URL scheme. All kennel pages are served under
+`www.hashruns.org/<slug>`.
 
 ### Tenant Resolution
 
-Next.js middleware inspects every request's hostname and resolves a kennel slug:
+The middleware only acts on custom domains (Tier 3). Tier 2 is handled natively by
+Next.js routing — `www.hashruns.org/<slug>` maps directly to `app/[slug]`.
 
-- `a.harriercentral.com` → slug `a`
-- `a.com` → slug looked up from `Kennel.customDomain` in DB → `a`
+- `www.hashruns.org/a` → `app/[slug]/page.tsx` with `slug = "a"` (no middleware needed)
+- `a.com` → middleware resolves `HC.KennelWebsite.CustomDomain` → rewrites to `/a`
 
 All page components receive the resolved `KennelContext` and may only fetch
 data scoped to that kennel. Cross-kennel data access is never permitted.
@@ -37,6 +42,18 @@ data scoped to that kennel. Cross-kennel data access is never permitted.
 If a kennel is on tier 3, all tier 2 URLs must redirect (301) to the custom
 domain. The canonical `<link>` always points to the authoritative domain to
 avoid duplicate content penalties.
+
+### Legacy URL Shim
+
+The old hashruns.org site used hash-based SPA URLs — **deprecated**:
+
+```
+www.hashruns.org/#/RD?publicKennelIds=<uuid>[,<uuid>...]
+```
+
+`LegacyRedirectHandler` (`app/(global)/LegacyRedirectHandler.tsx`) intercepts
+these on load, resolves UUIDs via `/api/resolve-kennels`, and redirects to the
+new path-based URL. Remove once no inbound legacy links remain.
 
 ---
 
