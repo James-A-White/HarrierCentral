@@ -1,3 +1,6 @@
+0.12.4
+    • Version strip added to bottom of runs page — fixed 20px bar, always visible, reads from package.json at build time
+
 0.12.3
     • Legacy hash URLs now render the kennel runs page inline — no redirect, no navigation
     • Handles both #/RD?publicKennelIds=<uuid> (query string) and #/RD/<uuid> (path) formats

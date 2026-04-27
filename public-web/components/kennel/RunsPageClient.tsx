@@ -455,6 +455,13 @@ export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageC
           </div>
         )}
       </div>
+
+      {/* ── Version strip ───────────────────────────────────────────────────── */}
+      <div className="fixed bottom-0 inset-x-0 h-5 flex items-center justify-center pointer-events-none z-50">
+        <span className="text-[10px] tabular-nums text-white/30">
+          v{process.env.NEXT_PUBLIC_APP_VERSION}
+        </span>
+      </div>
     </div>
   );
 }
