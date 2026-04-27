@@ -1,3 +1,9 @@
+0.12.3
+    • Legacy hash URLs now render the kennel runs page inline — no redirect, no navigation
+    • Handles both #/RD?publicKennelIds=<uuid> (query string) and #/RD/<uuid> (path) formats
+    • New /api/legacy-runs route — fetches kennel context + runs in a single server-side call
+    • Extracted toKennelContext and helpers to lib/kennel-utils.ts — shared by all kennel pages
+
 0.12.2
     • Fix /<slug>/runs server error — past events call was missing required boundary parameter (daysOffset: 3650)
     • Legacy redirect shim now points to /<slug>/runs to match old hashruns.org run list behaviour
