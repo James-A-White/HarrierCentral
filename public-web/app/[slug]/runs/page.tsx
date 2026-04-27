@@ -104,7 +104,7 @@ export default async function RunsPage({ params }: PageProps) {
 
   const [futureResult, pastResult] = await Promise.all([
     getEvents(kennelData.PublicKennelId, { isFuture: true, maxEvents: 100, summaryOnly: true }),
-    getEvents(kennelData.PublicKennelId, { isFuture: false, summaryOnly: true }),
+    getEvents(kennelData.PublicKennelId, { isFuture: false, daysOffset: 3650, summaryOnly: true }),
   ]);
 
   const futureRuns = futureResult?.events ?? [];

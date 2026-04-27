@@ -7,9 +7,9 @@ import { useEffect, useState } from "react";
 //
 //   www.hashruns.org/#/RD?publicKennelIds=<uuid>[,<uuid>...]
 //
-// This scheme is DEPRECATED. The new site uses path-based kennel URLs:
+// This scheme is DEPRECATED. The new site uses path-based kennel run URLs:
 //
-//   www.hashruns.org/<slug>
+//   www.hashruns.org/<slug>/runs
 //
 // This component runs client-side on every global page load. If it detects a
 // legacy hash URL it resolves the UUID(s) to slug(s) and redirects silently.
@@ -38,8 +38,8 @@ export function LegacyRedirectHandler() {
           // Custom domains get their own origin; otherwise use path-based URL
           // on the current origin (www.hashruns.org/slug — no wildcard cert needed).
           window.location.href = customDomain
-            ? `https://${customDomain}`
-            : `${window.location.origin}/${slug}`;
+            ? `https://${customDomain}/runs`
+            : `${window.location.origin}/${slug}/runs`;
         } else if (kennels.length > 1) {
           setState({ kennels, baseDomain: window.location.origin });
         }
@@ -59,8 +59,8 @@ export function LegacyRedirectHandler() {
         <ul className="space-y-2">
           {state.kennels.map((k) => {
             const dest = k.customDomain
-              ? `https://${k.customDomain}`
-              : `${state.baseDomain}/${k.slug}`;
+              ? `https://${k.customDomain}/runs`
+              : `${state.baseDomain}/${k.slug}/runs`;
             return (
               <li key={k.slug}>
                 <a
