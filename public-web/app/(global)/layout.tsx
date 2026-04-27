@@ -63,16 +63,18 @@ export default function GlobalLayout({ children }: { children: React.ReactNode }
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        {/* Hides the global page content before first paint when a legacy hash
-            URL is detected, so the global runs list never flashes into view.
-            React removes the attribute once the kennel overlay is ready. */}
+        {/* Legacy hash URL shim — runs before first paint.
+            Single UUID: replace() to /rd/<uuid> (real server page, back button skips this).
+            Multiple UUIDs: do nothing — LegacyRedirectHandler shows a picker. */}
         <script dangerouslySetInnerHTML={{ __html:
-          `(function(){try{var h=window.location.hash;` +
-          `if(h&&(h.indexOf('#/RD?')===0||/^#\\/RD\\/[a-fA-F0-9\\-]+$/i.test(h)))` +
-          `{document.documentElement.setAttribute('data-legacy','');}}catch(e){}})();`
-        }} />
-        <style dangerouslySetInnerHTML={{ __html:
-          `html[data-legacy] [data-global-page]{display:none}`
+          `(function(){try{var h=window.location.hash,m,ids,parts;` +
+          `if(!h)return;` +
+          `if(m=h.match(/^#\\/RD\\/([a-fA-F0-9\\-]+)$/i)){window.location.replace('/rd/'+m[1]);return;}` +
+          `if(h.indexOf('#/RD?')===0){` +
+          `ids=(new URLSearchParams(h.slice(5))).get('publicKennelIds');` +
+          `if(ids){parts=ids.split(',').map(function(s){return s.trim();}).filter(Boolean);` +
+          `if(parts.length===1){window.location.replace('/rd/'+parts[0]);}}}` +
+          `}catch(e){}})();`
         }} />
       </head>
       <body className="text-zinc-100 antialiased overflow-x-hidden">
@@ -89,7 +91,7 @@ export default function GlobalLayout({ children }: { children: React.ReactNode }
           style={{ backgroundColor: "#000000", opacity: 0.55 }}
         />
         <LegacyRedirectHandler />
-        <div data-global-page>{children}</div>
+        {children}
       </body>
     </html>
   );

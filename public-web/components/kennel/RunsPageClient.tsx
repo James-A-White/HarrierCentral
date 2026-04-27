@@ -271,7 +271,7 @@ function RunDetail({
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-xl font-semibold transition-colors dark:border-white/15 dark:bg-white/[0.06] dark:text-white dark:hover:bg-white/[0.10] border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-900"
           >
-            /// What3Words
+            What3Words
           </a>
         )}
         {run.EventUrl && (
@@ -307,22 +307,69 @@ interface RunsPageClientProps {
   slug: string;
 }
 
-export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageClientProps) {
-  const router = useRouter();
-  const [tab, setTab] = useState<"future" | "past">("future");
-  const [query, setQuery] = useState("");
-  const [selectedRun, setSelectedRun] = useState<RunEvent | null>(
-    futureRuns[0] ?? pastRuns[0] ?? null
-  );
+function getInitialRunsViewState(futureRuns: RunEvent[], pastRuns: RunEvent[]) {
+  const fallbackTab: "future" | "past" = "future";
+  const fallbackRun = futureRuns[0] ?? pastRuns[0] ?? null;
 
-  // Restore tab from URL on mount so the back button returns to the correct tab.
+  if (typeof window === "undefined") {
+    return { tab: fallbackTab, query: "", selectedRun: fallbackRun };
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const tab: "future" | "past" = params.get("tab") === "past" ? "past" : "future";
+  const query = params.get("q") ?? "";
+  const sourceRuns = tab === "past" ? pastRuns : futureRuns;
+  const runFromUrl = Number.parseInt(params.get("run") ?? "", 10);
+  const selectedRun = Number.isNaN(runFromUrl)
+    ? sourceRuns[0] ?? null
+    : sourceRuns.find((r) => r.EventNumber === runFromUrl) ?? sourceRuns[0] ?? null;
+
+  return { tab, query, selectedRun };
+}
+
+export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageClientProps) {
+  const initialState = getInitialRunsViewState(futureRuns, pastRuns);
+  const router = useRouter();
+  const [tab, setTab] = useState<"future" | "past">(initialState.tab);
+  const [query, setQuery] = useState(initialState.query);
+  const [isEmbedded] = useState(
+    () => typeof window !== "undefined" && window.self !== window.top
+  );
+  const [viewportHeight, setViewportHeight] = useState<number | null>(null);
+  const [selectedRun, setSelectedRun] = useState<RunEvent | null>(initialState.selectedRun);
+
+  const writeUrlState = (nextTab: "future" | "past", nextQuery: string, nextRun: RunEvent | null) => {
+    const params = new URLSearchParams(window.location.search);
+
+    if (nextTab === "past") params.set("tab", "past");
+    else params.delete("tab");
+
+    const q = nextQuery.trim();
+    if (q) params.set("q", q);
+    else params.delete("q");
+
+    if (nextRun) params.set("run", String(nextRun.EventNumber));
+    else params.delete("run");
+
+    const search = params.toString();
+    window.history.replaceState(null, "", `${window.location.pathname}${search ? `?${search}` : ""}`);
+  };
+
+  // Capture iframe viewport sizing on mount and keep it current on resize.
   useEffect(() => {
-    const urlTab = new URLSearchParams(window.location.search).get("tab");
-    if (urlTab === "past") {
-      setTab("past");
-      setSelectedRun(pastRuns[0] ?? null);
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    const updateViewportHeight = () => setViewportHeight(window.innerHeight);
+    updateViewportHeight();
+    window.addEventListener("resize", updateViewportHeight);
+
+    return () => {
+      window.removeEventListener("resize", updateViewportHeight);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    writeUrlState(tab, query, selectedRun);
+  }, [tab, query, selectedRun]);
 
   const activeRuns = tab === "future" ? futureRuns : pastRuns;
 
@@ -352,18 +399,30 @@ export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageC
     setTab(t);
     setQuery("");
     setSelectedRun(t === "future" ? (futureRuns[0] ?? null) : (pastRuns[0] ?? null));
-    const params = new URLSearchParams(window.location.search);
-    if (t === "future") params.delete("tab");
-    else params.set("tab", t);
-    const search = params.toString();
-    window.history.replaceState(null, "", window.location.pathname + (search ? `?${search}` : ""));
   };
 
+  const panelHeight = useMemo(() => {
+    if (isEmbedded && viewportHeight !== null) {
+      return `${Math.max(320, viewportHeight - 80)}px`;
+    }
+    return "calc(100dvh - 80px)";
+  }, [isEmbedded, viewportHeight]);
+
+  const backHref = useMemo(() => {
+    const params = new URLSearchParams();
+    if (tab === "past") params.set("tab", "past");
+    const q = query.trim();
+    if (q) params.set("q", q);
+    if (selectedRun) params.set("run", String(selectedRun.EventNumber));
+    const search = params.toString();
+    return `/${slug}/runs${search ? `?${search}` : ""}`;
+  }, [query, selectedRun, slug, tab]);
+
   return (
-    <div className="flex w-full min-w-0 overflow-hidden" style={{ height: "calc(100svh - 80px)" }}>
+    <div className="flex w-full min-w-0 min-h-0" style={{ height: panelHeight, minHeight: panelHeight }}>
 
       {/* ── Left panel: list ────────────────────────────────────────────────── */}
-      <div className="flex w-full min-w-0 shrink-0 flex-col overflow-hidden lg:w-[420px] lg:border-r dark:border-white/[0.08] border-zinc-200/50">
+      <div className="relative z-20 flex w-full min-w-0 min-h-0 shrink-0 flex-col lg:w-[420px] lg:border-r dark:border-white/[0.08] border-zinc-200/50">
 
         {/* Search */}
         <div className="px-4 py-3 border-b dark:border-white/[0.08] border-zinc-200/50 shrink-0">
@@ -421,7 +480,7 @@ export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageC
         </div>
 
         {/* Run list */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain touch-pan-y">
           {filtered.length === 0 ? (
             <div className="py-16 text-center text-xl dark:text-white/50 text-zinc-400">
               {query ? `No runs match "${query}"` : "No runs found"}
@@ -443,9 +502,9 @@ export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageC
       </div>
 
       {/* ── Right panel: detail (desktop only) ─────────────────────────────── */}
-      <div className="hidden min-w-0 flex-1 overflow-y-auto lg:block">
+      <div className="relative z-10 hidden min-w-0 flex-1 overflow-y-auto lg:block">
         {selectedRun ? (
-          <RunDetail run={selectedRun} kennel={kennel} slug={slug} backHref={`/${slug}/runs${tab === "past" ? "?tab=past" : ""}`} />
+          <RunDetail run={selectedRun} kennel={kennel} slug={slug} backHref={backHref} />
         ) : (
           <div className="h-full flex items-center justify-center">
             <div className="text-center">
@@ -457,11 +516,13 @@ export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageC
       </div>
 
       {/* ── Version strip ───────────────────────────────────────────────────── */}
-      <div className="fixed bottom-0 inset-x-0 h-5 flex items-center justify-center pointer-events-none z-50">
-        <span className="text-[10px] tabular-nums text-white/30">
-          v{process.env.NEXT_PUBLIC_APP_VERSION}
-        </span>
-      </div>
+      {!isEmbedded && (
+        <div className="fixed bottom-0 inset-x-0 h-5 flex items-center justify-center pointer-events-none z-50">
+          <span className="text-[10px] tabular-nums text-white/30">
+            v{process.env.NEXT_PUBLIC_APP_VERSION}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
