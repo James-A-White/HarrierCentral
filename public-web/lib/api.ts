@@ -571,3 +571,24 @@ export async function getEvents(
 
   return { totalMatchingEvents, events };
 }
+
+// ─── Legacy URL resolution ─────────────────────────────────────────────────────
+
+export interface ResolvedKennel {
+  KennelSlug: string;
+  KennelName: string;
+  CustomDomain: string | null;
+}
+
+/**
+ * Resolves one or more comma-separated PublicKennelId UUIDs to kennel slugs.
+ * Used by the legacy URL shim to redirect old hashruns.org /#/RD?publicKennelIds=…
+ * links to the new per-kennel subdomain URLs.
+ * Returns an empty array when no UUIDs resolve.
+ */
+export async function resolveKennelsByUuid(ids: string): Promise<ResolvedKennel[]> {
+  const rows = await callPublicWebApi<ResolvedKennel>("resolveKennelsByUuid", {
+    PublicKennelIds: ids,
+  });
+  return rows ?? [];
+}

@@ -1,3 +1,9 @@
+0.12.1
+    • Legacy URL redirect shim for old hashruns.org /#/RD?publicKennelIds=<uuid> links
+    • New SP publicWeb_resolveKennelsByUuid — resolves kennel UUIDs to slugs and custom domains
+    • New /api/resolve-kennels route — server-side UUID lookup called by the shim
+    • Updated CLAUDE.md files to document path-based URL scheme and mark old format deprecated
+
 0.7.1
     • Global runs page: background image fills entire page including behind the run list
     • Run list left panel: transparent background, all 4 card corners now visible

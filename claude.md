@@ -104,21 +104,39 @@ from a single deployment. It is entirely separate from the Flutter admin portal.
 
 | Tier | URL Form | Who controls DNS? | Notes |
 |------|----------|-------------------|-------|
-| 2 (default) | `a.harriercentral.com` | Harrier Central (wildcard `*.harriercentral.com`) | Every kennel gets this automatically |
-| 3 (upgrade) | `a.com` | The kennel | Custom domain; requires a domain→slug mapping record in DB |
+| 2 (default) | `www.hashruns.org/a` | Harrier Central | Path-based — no wildcard cert needed for hashruns.org |
+| 3 (upgrade) | `a.com` | The kennel | Custom domain; middleware rewrites to internal `/a` path |
 
-Tier 1 (`harriercentral.com/a/`) is intentionally skipped — subdomains give each
-kennel a cleaner identity and the custom domain upgrade is a hostname swap, not a
-URL structure change.
+Tier 1 (`hashruns.org/` root) is the global discovery page — upcoming runs across all kennels.
+
+**Note:** `harriercentral.com` subdomain URLs (`a.harriercentral.com`) are defined in
+`SYSTEM_HOSTS` in the middleware but are not the primary URL scheme. All kennel pages
+are served under `www.hashruns.org/<slug>` to avoid the need for a wildcard SSL cert.
 
 ### Tenant Resolution
 
-Next.js middleware inspects each request's hostname to derive the kennel slug:
+The Next.js middleware handles only custom domains (Tier 3). For Tier 2, Next.js
+routes `www.hashruns.org/<slug>` natively via the `app/[slug]` dynamic route — no
+middleware intervention needed.
 
-- `a.harriercentral.com` → slug `a`
-- `a.com` → slug looked up from `Kennel.customDomain` in DB → `a`
+- `www.hashruns.org/a` → `app/[slug]/page.tsx` with `slug = "a"`
+- `a.com` → middleware looks up slug from `HC.KennelWebsite.CustomDomain` in DB,
+  rewrites request to internal `/a` path
 
 All page templates receive the resolved kennel context and fetch only that kennel's data.
+
+### Legacy URL Shim
+
+The old hashruns.org site (pre-HC6) used a hash-based SPA URL scheme:
+
+```
+www.hashruns.org/#/RD?publicKennelIds=<uuid>[,<uuid>...]
+```
+
+This scheme is **deprecated**. The `LegacyRedirectHandler` client component
+(`app/(global)/LegacyRedirectHandler.tsx`) detects these URLs on load, calls
+`/api/resolve-kennels` to resolve UUIDs to slugs, and redirects to the new
+path-based URL. Remove the shim once no inbound legacy links remain in the wild.
 
 ### User Populations (three tiers)
 

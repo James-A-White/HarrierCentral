@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { GLOBAL_BASE_URL } from "@/lib/seo";
+import { LegacyRedirectHandler } from "./LegacyRedirectHandler";
 
 const SITE_NAME = "hashruns.org";
 const DESCRIPTION =
@@ -76,6 +77,7 @@ export default function GlobalLayout({ children }: { children: React.ReactNode }
           className="fixed inset-0 -z-[9]"
           style={{ backgroundColor: "#000000", opacity: 0.55 }}
         />
+        <LegacyRedirectHandler />
         {children}
       </body>
     </html>
