@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -41,6 +41,15 @@ function parseW3w(json: string | null): string | null {
   } catch { return null; }
 }
 
+function relativeTime(iso: string): string {
+  const diffDays = Math.round((new Date(iso).getTime() - Date.now()) / 86_400_000);
+  if (diffDays === 0) return "today";
+  if (diffDays === 1) return "tomorrow";
+  if (diffDays === -1) return "yesterday";
+  if (diffDays > 0) return `in ${diffDays} days`;
+  return `${Math.abs(diffDays)} days ago`;
+}
+
 // ─── Detail row ───────────────────────────────────────────────────────────────
 
 function DetailRow({
@@ -68,62 +77,92 @@ function DetailRow({
 // ─── Run list item ────────────────────────────────────────────────────────────
 
 function RunListItem({
-  run, isSelected, onClick, index,
+  run, kennel, isSelected, onClick, index, isRestoring, showKennelBranding = true,
 }: {
   run: RunEvent;
+  kennel: KennelContext;
   isSelected: boolean;
   onClick: () => void;
   index: number;
+  isRestoring: boolean;
+  showKennelBranding?: boolean;
 }) {
-  const { short, time } = formatDate(run.EventStartDatetime);
+  const d = new Date(run.EventStartDatetime);
+  const cardDate = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  const cardTime = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  const rel = relativeTime(run.EventStartDatetime);
+
+  const addressParts = [run.LocationStreet, run.LocationCity].filter(Boolean).join(", ");
 
   return (
     <motion.button
-      className={`w-full text-left rounded-2xl overflow-hidden border transition-all dark:bg-white/25 bg-black/25 ${
+      className={`w-full text-left rounded-xl overflow-hidden border transition-all dark:bg-black/30 bg-white/30 ${
         isSelected
-          ? "border-transparent shadow-lg"
-          : "dark:border-white/[0.08] border-zinc-200 dark:hover:border-white/[0.14] hover:border-zinc-300"
+          ? "border-[var(--kennel-primary)] shadow-md"
+          : "dark:border-white/60 border-zinc-600 dark:hover:border-white/80 hover:border-zinc-800"
       }`}
       onClick={onClick}
-      initial={{ opacity: 0 }}
+      initial={isRestoring ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.25, delay: Math.min(index * 0.025, 0.4) }}
+      transition={isRestoring ? undefined : { duration: 0.25, delay: Math.min(index * 0.025, 0.4) }}
     >
-      {/* Image — full natural aspect ratio */}
+      {/* Title row */}
+      <div
+        className="px-3 py-2"
+        style={isSelected ? { backgroundColor: "color-mix(in srgb, var(--kennel-primary) 18%, transparent)" } : undefined}
+      >
+        <span className="text-sm font-semibold dark:text-white text-zinc-900 leading-snug">
+          {run.EventName}
+        </span>
+      </div>
+
+      {/* Hairline */}
+      <div className="border-b dark:border-white/30 border-zinc-400" />
+
+      {/* Run image — full width, natural aspect ratio */}
       {run.EventImage && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={run.EventImage}
-          alt={run.EventName}
-          className="w-full h-auto block"
-        />
+        <img src={run.EventImage} alt={run.EventName} className="w-full h-auto block" />
       )}
 
-      {/* Caption: title + date/time on one line */}
-      <div
-        className="flex min-w-0 items-center gap-2 px-3 py-2"
-        style={isSelected ? { backgroundColor: "var(--kennel-primary)" } : undefined}
-      >
-        <span
-          className={`min-w-0 flex-1 text-sm font-semibold truncate ${
-            isSelected ? "text-white" : "dark:text-white text-zinc-900"
-          }`}
-        >
-          {run.EventName}
-          {run.IsCountedRun ? (
-            <span className={`ml-1.5 font-normal ${isSelected ? "text-white/70" : "dark:text-white/50 text-zinc-500"}`}>
-              #{run.EventNumber}
+      {/* Body: logo + text column */}
+      <div className="flex gap-3 px-3 py-2.5">
+        {showKennelBranding && kennel.logoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={kennel.logoUrl}
+            alt={kennel.shortName}
+            className="h-14 w-14 rounded-full object-contain shrink-0 self-center"
+          />
+        )}
+        <div className="flex flex-col gap-0.5 min-w-0">
+          {showKennelBranding && (
+            <span className="text-sm font-bold leading-snug" style={{ color: "var(--kennel-primary)" }}>
+              {kennel.name}
             </span>
-          ) : null}
-        </span>
-        <span
-          className={`shrink-0 text-xs whitespace-nowrap ${
-            isSelected ? "text-white/80" : "dark:text-white/60 text-zinc-500"
-          }`}
-          suppressHydrationWarning
-        >
-          {short} · {time}
-        </span>
+          )}
+          <span className="text-sm font-semibold dark:text-white text-zinc-900 leading-snug" suppressHydrationWarning>
+            {run.IsCountedRun ? `Run #${run.EventNumber}, ${rel}` : rel}
+          </span>
+          <span className="text-sm dark:text-white/60 text-zinc-500 leading-snug" suppressHydrationWarning>
+            {cardDate} at {cardTime}
+          </span>
+          {addressParts && (
+            <span className="text-sm dark:text-white/60 text-zinc-500 leading-snug">
+              {addressParts}
+            </span>
+          )}
+          {run.LocationOneLineDesc && (
+            <span className="text-sm dark:text-white/60 text-zinc-500 leading-snug">
+              Location: {run.LocationOneLineDesc}
+            </span>
+          )}
+          {run.EventTypeName && (
+            <span className="text-sm font-bold leading-snug" style={{ color: "var(--kennel-primary)" }}>
+              {run.EventTypeName}
+            </span>
+          )}
+        </div>
       </div>
     </motion.button>
   );
@@ -307,36 +346,66 @@ interface RunsPageClientProps {
   slug: string;
 }
 
-function getInitialRunsViewState(futureRuns: RunEvent[], pastRuns: RunEvent[]) {
-  const fallbackTab: "future" | "past" = "future";
-  const fallbackRun = futureRuns[0] ?? pastRuns[0] ?? null;
+const sessionKey = (slug: string) => `hc:runs:restore:${slug}`;
 
+function getInitialRunsViewState(futureRuns: RunEvent[], pastRuns: RunEvent[], slug: string) {
   if (typeof window === "undefined") {
-    return { tab: fallbackTab, query: "", selectedRun: fallbackRun };
+    return { tab: "future" as const, query: "", selectedRun: futureRuns[0] ?? pastRuns[0] ?? null, isRestoring: false };
   }
 
+  // Back-navigation restore — written by handleSelect before navigating to the detail page.
+  // sessionStorage survives Next.js's router which ignores window.history.replaceState calls.
+  try {
+    const raw = sessionStorage.getItem(sessionKey(slug));
+    if (raw) {
+      sessionStorage.removeItem(sessionKey(slug));
+      const { run: runNum, tab: t, query: q } = JSON.parse(raw) as { run: number; tab: "future" | "past"; query: string };
+      const sourceRuns = t === "past" ? pastRuns : futureRuns;
+      const run = sourceRuns.find((r) => r.EventNumber === runNum) ?? null;
+      if (run) return { tab: t, query: q ?? "", selectedRun: run, isRestoring: true };
+    }
+  } catch {}
+
+  // URL-based state for deep links / shared URLs
   const params = new URLSearchParams(window.location.search);
   const tab: "future" | "past" = params.get("tab") === "past" ? "past" : "future";
   const query = params.get("q") ?? "";
   const sourceRuns = tab === "past" ? pastRuns : futureRuns;
   const runFromUrl = Number.parseInt(params.get("run") ?? "", 10);
-  const selectedRun = Number.isNaN(runFromUrl)
-    ? sourceRuns[0] ?? null
-    : sourceRuns.find((r) => r.EventNumber === runFromUrl) ?? sourceRuns[0] ?? null;
+  const isRestoring = !Number.isNaN(runFromUrl);
+  const selectedRun = isRestoring
+    ? sourceRuns.find((r) => r.EventNumber === runFromUrl) ?? sourceRuns[0] ?? null
+    : sourceRuns[0] ?? null;
 
-  return { tab, query, selectedRun };
+  return { tab, query, selectedRun, isRestoring };
 }
 
 export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageClientProps) {
-  const initialState = getInitialRunsViewState(futureRuns, pastRuns);
+  const initialState = getInitialRunsViewState(futureRuns, pastRuns, slug);
   const router = useRouter();
   const [tab, setTab] = useState<"future" | "past">(initialState.tab);
   const [query, setQuery] = useState(initialState.query);
+  const [isRestoring] = useState(initialState.isRestoring);
+  const navTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isEmbedded] = useState(
     () => typeof window !== "undefined" && window.self !== window.top
   );
-  const [viewportHeight, setViewportHeight] = useState<number | null>(null);
   const [selectedRun, setSelectedRun] = useState<RunEvent | null>(initialState.selectedRun);
+  const [panelHeight, setPanelHeight] = useState<string>("calc(100dvh - 80px)");
+
+  useEffect(() => {
+    if (!isEmbedded) return;
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    const update = () => setPanelHeight(`${window.innerHeight - 80}px`);
+    update();
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("resize", update);
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    };
+  }, [isEmbedded]);
 
   const writeUrlState = (nextTab: "future" | "past", nextQuery: string, nextRun: RunEvent | null) => {
     const params = new URLSearchParams(window.location.search);
@@ -354,17 +423,6 @@ export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageC
     const search = params.toString();
     window.history.replaceState(null, "", `${window.location.pathname}${search ? `?${search}` : ""}`);
   };
-
-  // Capture iframe viewport sizing on mount and keep it current on resize.
-  useEffect(() => {
-    const updateViewportHeight = () => setViewportHeight(window.innerHeight);
-    updateViewportHeight();
-    window.addEventListener("resize", updateViewportHeight);
-
-    return () => {
-      window.removeEventListener("resize", updateViewportHeight);
-    };
-  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -387,11 +445,15 @@ export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageC
   }, [activeRuns, query]);
 
   const handleSelect = (run: RunEvent) => {
+    setSelectedRun(run);
     if (typeof window !== "undefined" && window.innerWidth < 1024) {
-      const backUrl = window.location.pathname + window.location.search;
-      router.push(`/${slug}/${run.EventNumber}?back=${encodeURIComponent(backUrl)}`);
-    } else {
-      setSelectedRun(run);
+      try {
+        sessionStorage.setItem(sessionKey(slug), JSON.stringify({ run: run.EventNumber, tab, query }));
+      } catch {}
+      if (navTimeoutRef.current) clearTimeout(navTimeoutRef.current);
+      navTimeoutRef.current = setTimeout(() => {
+        router.push(`/${slug}/${run.EventNumber}?back=${encodeURIComponent(`/${slug}/runs`)}`);
+      }, 250);
     }
   };
 
@@ -400,13 +462,6 @@ export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageC
     setQuery("");
     setSelectedRun(t === "future" ? (futureRuns[0] ?? null) : (pastRuns[0] ?? null));
   };
-
-  const panelHeight = useMemo(() => {
-    if (isEmbedded && viewportHeight !== null) {
-      return `${Math.max(320, viewportHeight - 80)}px`;
-    }
-    return "calc(100dvh - 80px)";
-  }, [isEmbedded, viewportHeight]);
 
   const backHref = useMemo(() => {
     const params = new URLSearchParams();
@@ -419,7 +474,10 @@ export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageC
   }, [query, selectedRun, slug, tab]);
 
   return (
-    <div className="flex w-full min-w-0 min-h-0" style={{ height: panelHeight, minHeight: panelHeight }}>
+    <div
+      className={`flex w-full min-w-0 min-h-0${isEmbedded ? " px-6 overflow-hidden" : ""}`}
+      style={{ height: isEmbedded ? panelHeight : "calc(100dvh - 80px)" }}
+    >
 
       {/* ── Left panel: list ────────────────────────────────────────────────── */}
       <div className="relative z-20 flex w-full min-w-0 min-h-0 shrink-0 flex-col lg:w-[420px] lg:border-r dark:border-white/[0.08] border-zinc-200/50">
@@ -479,8 +537,17 @@ export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageC
           ))}
         </div>
 
+        {/* Version — visible below tabs when embedded */}
+        {isEmbedded && (
+          <div className="shrink-0 pb-1 flex items-center justify-center">
+            <span className="text-[10px] tabular-nums text-white/30">
+              v{process.env.NEXT_PUBLIC_APP_VERSION}
+            </span>
+          </div>
+        )}
+
         {/* Run list */}
-        <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain touch-pan-y">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           {filtered.length === 0 ? (
             <div className="py-16 text-center text-xl dark:text-white/50 text-zinc-400">
               {query ? `No runs match "${query}"` : "No runs found"}
@@ -491,9 +558,12 @@ export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageC
                 <RunListItem
                   key={run.PublicEventId}
                   run={run}
+                  kennel={kennel}
                   isSelected={selectedRun?.PublicEventId === run.PublicEventId}
                   onClick={() => handleSelect(run)}
                   index={i}
+                  isRestoring={isRestoring}
+                  showKennelBranding={false}
                 />
               ))}
             </div>
