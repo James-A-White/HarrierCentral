@@ -69,9 +69,6 @@ export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false }: Stic
             className="absolute inset-0"
             style={{ opacity: bannerOpacity, pointerEvents: scrolled ? "none" : "auto" }}
           >
-            {/* Gradient scrim — separates banner from hero content below */}
-            <div className="absolute inset-0 bg-gradient-to-b dark:from-white/15 dark:to-white/30 from-black/15 to-black/30" />
-
             {/* Content */}
             <div className="relative h-full flex min-w-0 items-center px-4 md:px-6">
               <div className="mx-auto flex w-full min-w-0 max-w-7xl items-center gap-4">
@@ -102,7 +99,11 @@ export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false }: Stic
                       href={mapsUrl(nextRun.Latitude, nextRun.Longitude)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="hidden items-center gap-1.5 rounded-full border px-3 py-1.5 text-base font-semibold transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:hover:bg-white/[0.12] border-black/10 bg-black/5 hover:bg-black/10 backdrop-blur-md min-[420px]:inline-flex"
+                      className="hidden items-center gap-1.5 rounded-full border border-white/15 px-3 py-1.5 text-base font-semibold transition-opacity hover:opacity-90 min-[420px]:inline-flex"
+                      style={{
+                        backgroundColor: "var(--kennel-btn-secondary, rgba(255,255,255,0.08))",
+                        color: "var(--kennel-primary-fg)",
+                      }}
                     >
                       <MapPin className="h-3.5 w-3.5 shrink-0" />
                       <span className="hidden sm:inline">Map</span>
@@ -110,9 +111,9 @@ export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false }: Stic
                   )}
                   <Link
                     href={`/${slug}/${nextRun.EventNumber}`}
-                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-base font-semibold"
+                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-base font-semibold transition-opacity hover:opacity-90"
                     style={{
-                      backgroundColor: "var(--kennel-primary)",
+                      backgroundColor: "var(--kennel-btn-primary, var(--kennel-primary))",
                       color: "var(--kennel-primary-fg)",
                     }}
                   >

@@ -61,6 +61,9 @@ export default async function AboutPage({ params }: PageProps) {
         "--kennel-text-title": kennel.textTitleColor,
         "--kennel-text-body": kennel.textBodyColor,
         "--kennel-text-muted": kennel.textMutedColor,
+        "--kennel-btn-primary": kennel.buttonPrimaryColor,
+        "--kennel-btn-cancel": kennel.buttonCancelColor,
+        "--kennel-btn-secondary": kennel.buttonSecondaryColor,
       } as React.CSSProperties}
     >
       <body className="text-zinc-100 antialiased overflow-x-hidden">

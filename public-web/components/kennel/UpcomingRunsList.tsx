@@ -49,7 +49,7 @@ export function UpcomingRunsList({ runs, slug }: UpcomingRunsListProps) {
               transition={{ duration: 0.5, delay: i * 0.07, ease: [0.19, 1, 0.22, 1] }}
             >
               <Link className="block min-w-0" href={`/${slug}/${run.EventNumber}`}>
-              <Card className="w-full max-w-full rounded-2xl gap-0 py-0 dark:border-white/25 dark:bg-white/[0.12] border-zinc-200 bg-white shadow-lg dark:shadow-black/50 hover:shadow-xl transition-shadow cursor-pointer group">
+              <Card className="w-full max-w-full rounded-2xl gap-0 py-0 dark:border-white/25 border-zinc-200 shadow-lg dark:shadow-black/50 hover:shadow-xl transition-shadow cursor-pointer group" style={{ backgroundColor: "var(--kennel-run-card-bg, var(--kennel-card-bg))" }}>
                 <CardContent className="flex items-center gap-4 p-4">
                   {/* Left column: date above run number badge */}
                   <div className="flex shrink-0 flex-col items-center gap-1.5">
@@ -58,7 +58,7 @@ export function UpcomingRunsList({ runs, slug }: UpcomingRunsListProps) {
                     </div>
                     <div
                       className="flex min-w-[48px] items-center justify-center rounded-xl px-2 py-1.5 text-sm font-bold"
-                      style={{ backgroundColor: "var(--kennel-primary)", color: "var(--kennel-menu-text)" }}
+                      style={{ backgroundColor: "var(--kennel-accent, var(--kennel-primary))", color: "var(--kennel-primary-fg)" }}
                     >
                       #{run.EventNumber}
                     </div>

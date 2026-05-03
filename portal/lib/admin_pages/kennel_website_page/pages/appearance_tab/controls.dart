@@ -15,6 +15,10 @@ extension AppearanceControlsExtension on KennelWebsiteController {
     _registerBodyTextColorControl(tabKey, tabIndex);
     _registerTextMutedColorControl(tabKey, tabIndex);
     _registerCardBackgroundColorControl(tabKey, tabIndex);
+    _registerButtonPrimaryColorControl(tabKey, tabIndex);
+    _registerButtonCancelColorControl(tabKey, tabIndex);
+    _registerButtonSecondaryColorControl(tabKey, tabIndex);
+    _registerRunCardColorControl(tabKey, tabIndex);
   }
 
   void _registerThemeModeControl(String tabKey, int tabIndex) {
@@ -362,6 +366,149 @@ extension AppearanceControlsExtension on KennelWebsiteController {
       updateEditedValue: (String? value) {
         editedData.value = editedData.value.copyWith(
             cardBackgroundColor: value?.isEmpty == true ? null : value);
+        uiControls[fieldKey]?.editedFieldValue = value;
+      },
+    );
+  }
+
+  void _registerButtonPrimaryColorControl(String tabKey, int tabIndex) {
+    final fieldKey =
+        '${tabKey}_${KennelWebsiteAppearanceField.buttonPrimaryColor.name}';
+
+    uiControls[fieldKey] = UiControlDefinition(
+      controlType: UiControlType.string,
+      sidebarEntryKey: fieldKey,
+      sidebarExitKey: '${tabKey}_generic',
+      sidebarData: const SideBarData(
+        'Primary Button Colour',
+        MaterialCommunityIcons.gesture_tap_button,
+        'Background colour for your primary action buttons — '
+            'these are the main call-to-action buttons such as '
+            '"Register", "See next run", or "Sign in" '
+            '(8-digit hex #RRGGBBAA recommended).\n\n'
+            'Leave empty to fall back to your primary brand colour.',
+      ),
+      editedFieldValue: editedData.value.buttonPrimaryColor,
+      originalFieldValue: originalData.buttonPrimaryColor,
+      globalKey: GlobalKey<FormFieldState>(),
+      label: 'Primary button colour (optional)',
+      maxStringLength: 9,
+      minStringLength: 0,
+      maxLines: 1,
+      allowEmpty: true,
+      textController:
+          textControllers[fieldKey] = TextEditingController(),
+      tabIndex: tabIndex,
+      updateEditedValue: (String? value) {
+        editedData.value = editedData.value.copyWith(
+            buttonPrimaryColor: value?.isEmpty == true ? null : value);
+        uiControls[fieldKey]?.editedFieldValue = value;
+      },
+    );
+  }
+
+  void _registerButtonCancelColorControl(String tabKey, int tabIndex) {
+    final fieldKey =
+        '${tabKey}_${KennelWebsiteAppearanceField.buttonCancelColor.name}';
+
+    uiControls[fieldKey] = UiControlDefinition(
+      controlType: UiControlType.string,
+      sidebarEntryKey: fieldKey,
+      sidebarExitKey: '${tabKey}_generic',
+      sidebarData: const SideBarData(
+        'Cancel Button Colour',
+        MaterialCommunityIcons.cancel,
+        'Background colour for cancel and undo action buttons — '
+            'used wherever a member is backing out of an action, '
+            'such as cancelling a registration '
+            '(8-digit hex #RRGGBBAA recommended).\n\n'
+            'Leave empty for no custom cancel button colour.',
+      ),
+      editedFieldValue: editedData.value.buttonCancelColor,
+      originalFieldValue: originalData.buttonCancelColor,
+      globalKey: GlobalKey<FormFieldState>(),
+      label: 'Cancel button colour (optional)',
+      maxStringLength: 9,
+      minStringLength: 0,
+      maxLines: 1,
+      allowEmpty: true,
+      textController:
+          textControllers[fieldKey] = TextEditingController(),
+      tabIndex: tabIndex,
+      updateEditedValue: (String? value) {
+        editedData.value = editedData.value.copyWith(
+            buttonCancelColor: value?.isEmpty == true ? null : value);
+        uiControls[fieldKey]?.editedFieldValue = value;
+      },
+    );
+  }
+
+  void _registerButtonSecondaryColorControl(String tabKey, int tabIndex) {
+    final fieldKey =
+        '${tabKey}_${KennelWebsiteAppearanceField.buttonSecondaryColor.name}';
+
+    uiControls[fieldKey] = UiControlDefinition(
+      controlType: UiControlType.string,
+      sidebarEntryKey: fieldKey,
+      sidebarExitKey: '${tabKey}_generic',
+      sidebarData: const SideBarData(
+        'Secondary Button Colour',
+        MaterialCommunityIcons.gesture_tap_button,
+        'Background colour for secondary action buttons — '
+            'used infrequently for actions that are neither the main '
+            'call-to-action nor a cancel/undo, such as "View all runs" '
+            'or "Download GPX" '
+            '(8-digit hex #RRGGBBAA recommended).\n\n'
+            'Leave empty for no custom secondary button colour.',
+      ),
+      editedFieldValue: editedData.value.buttonSecondaryColor,
+      originalFieldValue: originalData.buttonSecondaryColor,
+      globalKey: GlobalKey<FormFieldState>(),
+      label: 'Secondary button colour (optional)',
+      maxStringLength: 9,
+      minStringLength: 0,
+      maxLines: 1,
+      allowEmpty: true,
+      textController:
+          textControllers[fieldKey] = TextEditingController(),
+      tabIndex: tabIndex,
+      updateEditedValue: (String? value) {
+        editedData.value = editedData.value.copyWith(
+            buttonSecondaryColor: value?.isEmpty == true ? null : value);
+        uiControls[fieldKey]?.editedFieldValue = value;
+      },
+    );
+  }
+
+  void _registerRunCardColorControl(String tabKey, int tabIndex) {
+    final fieldKey =
+        '${tabKey}_${KennelWebsiteAppearanceField.runCardColor.name}';
+
+    uiControls[fieldKey] = UiControlDefinition(
+      controlType: UiControlType.string,
+      sidebarEntryKey: fieldKey,
+      sidebarExitKey: '${tabKey}_generic',
+      sidebarData: const SideBarData(
+        'Run Card Colour',
+        MaterialCommunityIcons.run_fast,
+        'Background colour for run cards — the featured run and upcoming '
+            'runs list (8-digit hex #RRGGBBAA recommended).\n\n'
+            'Leave empty to use the card background colour.',
+      ),
+      editedFieldValue: editedData.value.runCardColor,
+      originalFieldValue: originalData.runCardColor,
+      globalKey: GlobalKey<FormFieldState>(),
+      label: 'Run card colour (optional)',
+      maxStringLength: 9,
+      minStringLength: 0,
+      maxLines: 1,
+      allowEmpty: true,
+      textController:
+          textControllers[fieldKey] = TextEditingController(),
+      tabIndex: tabIndex,
+      updateEditedValue: (String? value) {
+        editedData.value = editedData.value.copyWith(
+            runCardColor: value?.isEmpty == true ? null : value);
         uiControls[fieldKey]?.editedFieldValue = value;
       },
     );

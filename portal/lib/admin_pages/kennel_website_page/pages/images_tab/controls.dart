@@ -20,17 +20,21 @@ extension ImagesControlsExtension on KennelWebsiteController {
       sidebarEntryKey: fieldKey,
       sidebarExitKey: '${tabKey}_generic',
       sidebarData: const SideBarData(
-        'Banner Image',
+        'Hero Image',
         FontAwesome5Solid.image,
-        'The hero / header image displayed at the top of your kennel '
-            'website.\n\n'
-            'Recommended size: 1920×600 px or wider. '
-            'Accepted formats: JPG, PNG.',
+        'The image displayed at the top of the landing page in the hero '
+            'section. When set, it replaces the kennel logo in the hero.\n\n'
+            'Use a PNG or AVIF with a transparent background to let the '
+            'hero backdrop show through, or a JPG for a solid image.\n\n'
+            'This image is also used as the social share preview — if not '
+            'set, the Kennel Welcome Image is used instead.\n\n'
+            'Recommended size: 800×800 px (square with transparency). '
+            'Accepted formats: JPG, PNG, AVIF.',
       ),
       editedFieldValue: editedData.value.bannerImage,
       originalFieldValue: originalData.bannerImage,
       globalKey: GlobalKey<FormFieldState>(),
-      label: 'Banner image',
+      label: 'Hero image',
       tabIndex: tabIndex,
       allowEmpty: true,
       updateEditedValue: (String? value) {
@@ -85,17 +89,18 @@ extension ImagesControlsExtension on KennelWebsiteController {
       sidebarEntryKey: fieldKey,
       sidebarExitKey: '${tabKey}_generic',
       sidebarData: const SideBarData(
-        'Social Share Image (OG)',
-        FontAwesome5Solid.share_alt,
-        'Shown when your page is shared on social media or messaging '
-            'apps.\n\n'
-            'Recommended size: 1200×630 px. Falls back to the banner '
-            'image if left empty. Accepted formats: JPG, PNG.',
+        'Kennel Welcome Image',
+        FontAwesome5Solid.image,
+        'The image displayed alongside your welcome text on the kennel '
+            'home page.\n\n'
+            'This image is also used when your page is shared on social '
+            'media or messaging apps (Open Graph). '
+            'Recommended size: 1200×630 px. Accepted formats: JPG, PNG.',
       ),
       editedFieldValue: editedData.value.ogImageUrl,
       originalFieldValue: originalData.ogImageUrl,
       globalKey: GlobalKey<FormFieldState>(),
-      label: 'Social share image (OG)',
+      label: 'Kennel welcome image',
       tabIndex: tabIndex,
       allowEmpty: true,
       updateEditedValue: (String? value) {

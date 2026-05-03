@@ -110,7 +110,8 @@ export function SongsSection({ songs, slug }: SongsSectionProps) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-80px" }}
         transition={{ duration: 0.6, ease: [0.19, 1, 0.22, 1] }}
-        className="rounded-[2rem] overflow-hidden dark:border dark:border-white/[0.08] border border-zinc-200 dark:bg-white/[0.04] bg-white"
+        className="rounded-[2rem] overflow-hidden dark:border dark:border-white/[0.08] border border-zinc-200"
+        style={{ backgroundColor: "var(--kennel-card-bg)" }}
       >
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-5 border-b dark:border-white/[0.07] border-zinc-100">

@@ -31,8 +31,11 @@ mixin _$KennelWebsiteModel {
   String? get titleTextColor;
   String? get bodyTextColor;
   String? get textMutedColor;
-  String?
-      get cardBackgroundColor; // HC5 nav colours (legacy — superseded by primaryColor + accentColor + themeMode)
+  String? get cardBackgroundColor;
+  String? get buttonPrimaryColor;
+  String? get buttonCancelColor;
+  String? get buttonSecondaryColor;
+  String? get runCardColor; // HC5 nav colours (legacy — superseded by primaryColor + accentColor + themeMode)
   String? get backgroundColor;
   String? get menuBackgroundColor;
   String? get menuTextColor; // HC5 fonts (legacy)
@@ -95,6 +98,14 @@ mixin _$KennelWebsiteModel {
                 other.textMutedColor == textMutedColor) &&
             (identical(other.cardBackgroundColor, cardBackgroundColor) ||
                 other.cardBackgroundColor == cardBackgroundColor) &&
+            (identical(other.buttonPrimaryColor, buttonPrimaryColor) ||
+                other.buttonPrimaryColor == buttonPrimaryColor) &&
+            (identical(other.buttonCancelColor, buttonCancelColor) ||
+                other.buttonCancelColor == buttonCancelColor) &&
+            (identical(other.buttonSecondaryColor, buttonSecondaryColor) ||
+                other.buttonSecondaryColor == buttonSecondaryColor) &&
+            (identical(other.runCardColor, runCardColor) ||
+                other.runCardColor == runCardColor) &&
             (identical(other.backgroundColor, backgroundColor) ||
                 other.backgroundColor == backgroundColor) &&
             (identical(other.menuBackgroundColor, menuBackgroundColor) ||
@@ -148,6 +159,10 @@ mixin _$KennelWebsiteModel {
         bodyTextColor,
         textMutedColor,
         cardBackgroundColor,
+        buttonPrimaryColor,
+        buttonCancelColor,
+        buttonSecondaryColor,
+        runCardColor,
         backgroundColor,
         menuBackgroundColor,
         menuTextColor,
@@ -168,7 +183,7 @@ mixin _$KennelWebsiteModel {
 
   @override
   String toString() {
-    return 'KennelWebsiteModel(kennelId: $kennelId, enabled: $enabled, customDomain: $customDomain, urlShortcode: $urlShortcode, themeMode: $themeMode, primaryColor: $primaryColor, accentColor: $accentColor, scrollBlur: $scrollBlur, bannerImage: $bannerImage, ogImageUrl: $ogImageUrl, backgroundImage: $backgroundImage, titleTextColor: $titleTextColor, bodyTextColor: $bodyTextColor, textMutedColor: $textMutedColor, cardBackgroundColor: $cardBackgroundColor, backgroundColor: $backgroundColor, menuBackgroundColor: $menuBackgroundColor, menuTextColor: $menuTextColor, titleFont: $titleFont, bodyFont: $bodyFont, titleText: $titleText, tagline: $tagline, welcomeText: $welcomeText, seoTitle: $seoTitle, seoDescription: $seoDescription, seoStructuredDataJson: $seoStructuredDataJson, mismanagementDescription: $mismanagementDescription, mismanagementJson: $mismanagementJson, extraMenusJson: $extraMenusJson, contactDetailsJson: $contactDetailsJson, controlFlags: $controlFlags)';
+    return 'KennelWebsiteModel(kennelId: $kennelId, enabled: $enabled, customDomain: $customDomain, urlShortcode: $urlShortcode, themeMode: $themeMode, primaryColor: $primaryColor, accentColor: $accentColor, scrollBlur: $scrollBlur, bannerImage: $bannerImage, ogImageUrl: $ogImageUrl, backgroundImage: $backgroundImage, titleTextColor: $titleTextColor, bodyTextColor: $bodyTextColor, textMutedColor: $textMutedColor, cardBackgroundColor: $cardBackgroundColor, buttonPrimaryColor: $buttonPrimaryColor, buttonCancelColor: $buttonCancelColor, buttonSecondaryColor: $buttonSecondaryColor, runCardColor: $runCardColor, backgroundColor: $backgroundColor, menuBackgroundColor: $menuBackgroundColor, menuTextColor: $menuTextColor, titleFont: $titleFont, bodyFont: $bodyFont, titleText: $titleText, tagline: $tagline, welcomeText: $welcomeText, seoTitle: $seoTitle, seoDescription: $seoDescription, seoStructuredDataJson: $seoStructuredDataJson, mismanagementDescription: $mismanagementDescription, mismanagementJson: $mismanagementJson, extraMenusJson: $extraMenusJson, contactDetailsJson: $contactDetailsJson, controlFlags: $controlFlags)';
   }
 }
 
@@ -194,6 +209,10 @@ abstract mixin class $KennelWebsiteModelCopyWith<$Res> {
       String? bodyTextColor,
       String? textMutedColor,
       String? cardBackgroundColor,
+      String? buttonPrimaryColor,
+      String? buttonCancelColor,
+      String? buttonSecondaryColor,
+      String? runCardColor,
       String? backgroundColor,
       String? menuBackgroundColor,
       String? menuTextColor,
@@ -240,6 +259,10 @@ class _$KennelWebsiteModelCopyWithImpl<$Res>
     Object? bodyTextColor = freezed,
     Object? textMutedColor = freezed,
     Object? cardBackgroundColor = freezed,
+    Object? buttonPrimaryColor = freezed,
+    Object? buttonCancelColor = freezed,
+    Object? buttonSecondaryColor = freezed,
+    Object? runCardColor = freezed,
     Object? backgroundColor = freezed,
     Object? menuBackgroundColor = freezed,
     Object? menuTextColor = freezed,
@@ -317,6 +340,22 @@ class _$KennelWebsiteModelCopyWithImpl<$Res>
       cardBackgroundColor: freezed == cardBackgroundColor
           ? _self.cardBackgroundColor
           : cardBackgroundColor // ignore: cast_nullable_to_non_nullable
+              as String?,
+      buttonPrimaryColor: freezed == buttonPrimaryColor
+          ? _self.buttonPrimaryColor
+          : buttonPrimaryColor // ignore: cast_nullable_to_non_nullable
+              as String?,
+      buttonCancelColor: freezed == buttonCancelColor
+          ? _self.buttonCancelColor
+          : buttonCancelColor // ignore: cast_nullable_to_non_nullable
+              as String?,
+      buttonSecondaryColor: freezed == buttonSecondaryColor
+          ? _self.buttonSecondaryColor
+          : buttonSecondaryColor // ignore: cast_nullable_to_non_nullable
+              as String?,
+      runCardColor: freezed == runCardColor
+          ? _self.runCardColor
+          : runCardColor // ignore: cast_nullable_to_non_nullable
               as String?,
       backgroundColor: freezed == backgroundColor
           ? _self.backgroundColor
@@ -495,6 +534,10 @@ extension KennelWebsiteModelPatterns on KennelWebsiteModel {
             String? bodyTextColor,
             String? textMutedColor,
             String? cardBackgroundColor,
+            String? buttonPrimaryColor,
+            String? buttonCancelColor,
+            String? buttonSecondaryColor,
+            String? runCardColor,
             String? backgroundColor,
             String? menuBackgroundColor,
             String? menuTextColor,
@@ -533,6 +576,10 @@ extension KennelWebsiteModelPatterns on KennelWebsiteModel {
             _that.bodyTextColor,
             _that.textMutedColor,
             _that.cardBackgroundColor,
+            _that.buttonPrimaryColor,
+            _that.buttonCancelColor,
+            _that.buttonSecondaryColor,
+            _that.runCardColor,
             _that.backgroundColor,
             _that.menuBackgroundColor,
             _that.menuTextColor,
@@ -585,6 +632,10 @@ extension KennelWebsiteModelPatterns on KennelWebsiteModel {
             String? bodyTextColor,
             String? textMutedColor,
             String? cardBackgroundColor,
+            String? buttonPrimaryColor,
+            String? buttonCancelColor,
+            String? buttonSecondaryColor,
+            String? runCardColor,
             String? backgroundColor,
             String? menuBackgroundColor,
             String? menuTextColor,
@@ -622,6 +673,10 @@ extension KennelWebsiteModelPatterns on KennelWebsiteModel {
             _that.bodyTextColor,
             _that.textMutedColor,
             _that.cardBackgroundColor,
+            _that.buttonPrimaryColor,
+            _that.buttonCancelColor,
+            _that.buttonSecondaryColor,
+            _that.runCardColor,
             _that.backgroundColor,
             _that.menuBackgroundColor,
             _that.menuTextColor,
@@ -673,6 +728,10 @@ extension KennelWebsiteModelPatterns on KennelWebsiteModel {
             String? bodyTextColor,
             String? textMutedColor,
             String? cardBackgroundColor,
+            String? buttonPrimaryColor,
+            String? buttonCancelColor,
+            String? buttonSecondaryColor,
+            String? runCardColor,
             String? backgroundColor,
             String? menuBackgroundColor,
             String? menuTextColor,
@@ -710,6 +769,10 @@ extension KennelWebsiteModelPatterns on KennelWebsiteModel {
             _that.bodyTextColor,
             _that.textMutedColor,
             _that.cardBackgroundColor,
+            _that.buttonPrimaryColor,
+            _that.buttonCancelColor,
+            _that.buttonSecondaryColor,
+            _that.runCardColor,
             _that.backgroundColor,
             _that.menuBackgroundColor,
             _that.menuTextColor,
@@ -751,6 +814,10 @@ class _KennelWebsiteModel implements KennelWebsiteModel {
       this.bodyTextColor,
       this.textMutedColor,
       this.cardBackgroundColor,
+      this.buttonPrimaryColor,
+      this.buttonCancelColor,
+      this.buttonSecondaryColor,
+      this.runCardColor,
       this.backgroundColor,
       this.menuBackgroundColor,
       this.menuTextColor,
@@ -806,6 +873,14 @@ class _KennelWebsiteModel implements KennelWebsiteModel {
   final String? textMutedColor;
   @override
   final String? cardBackgroundColor;
+  @override
+  final String? buttonPrimaryColor;
+  @override
+  final String? buttonCancelColor;
+  @override
+  final String? buttonSecondaryColor;
+  @override
+  final String? runCardColor;
 // HC5 nav colours (legacy — superseded by primaryColor + accentColor + themeMode)
   @override
   final String? backgroundColor;
@@ -894,6 +969,14 @@ class _KennelWebsiteModel implements KennelWebsiteModel {
                 other.textMutedColor == textMutedColor) &&
             (identical(other.cardBackgroundColor, cardBackgroundColor) ||
                 other.cardBackgroundColor == cardBackgroundColor) &&
+            (identical(other.buttonPrimaryColor, buttonPrimaryColor) ||
+                other.buttonPrimaryColor == buttonPrimaryColor) &&
+            (identical(other.buttonCancelColor, buttonCancelColor) ||
+                other.buttonCancelColor == buttonCancelColor) &&
+            (identical(other.buttonSecondaryColor, buttonSecondaryColor) ||
+                other.buttonSecondaryColor == buttonSecondaryColor) &&
+            (identical(other.runCardColor, runCardColor) ||
+                other.runCardColor == runCardColor) &&
             (identical(other.backgroundColor, backgroundColor) ||
                 other.backgroundColor == backgroundColor) &&
             (identical(other.menuBackgroundColor, menuBackgroundColor) ||
@@ -947,6 +1030,10 @@ class _KennelWebsiteModel implements KennelWebsiteModel {
         bodyTextColor,
         textMutedColor,
         cardBackgroundColor,
+        buttonPrimaryColor,
+        buttonCancelColor,
+        buttonSecondaryColor,
+        runCardColor,
         backgroundColor,
         menuBackgroundColor,
         menuTextColor,
@@ -967,7 +1054,7 @@ class _KennelWebsiteModel implements KennelWebsiteModel {
 
   @override
   String toString() {
-    return 'KennelWebsiteModel(kennelId: $kennelId, enabled: $enabled, customDomain: $customDomain, urlShortcode: $urlShortcode, themeMode: $themeMode, primaryColor: $primaryColor, accentColor: $accentColor, scrollBlur: $scrollBlur, bannerImage: $bannerImage, ogImageUrl: $ogImageUrl, backgroundImage: $backgroundImage, titleTextColor: $titleTextColor, bodyTextColor: $bodyTextColor, textMutedColor: $textMutedColor, cardBackgroundColor: $cardBackgroundColor, backgroundColor: $backgroundColor, menuBackgroundColor: $menuBackgroundColor, menuTextColor: $menuTextColor, titleFont: $titleFont, bodyFont: $bodyFont, titleText: $titleText, tagline: $tagline, welcomeText: $welcomeText, seoTitle: $seoTitle, seoDescription: $seoDescription, seoStructuredDataJson: $seoStructuredDataJson, mismanagementDescription: $mismanagementDescription, mismanagementJson: $mismanagementJson, extraMenusJson: $extraMenusJson, contactDetailsJson: $contactDetailsJson, controlFlags: $controlFlags)';
+    return 'KennelWebsiteModel(kennelId: $kennelId, enabled: $enabled, customDomain: $customDomain, urlShortcode: $urlShortcode, themeMode: $themeMode, primaryColor: $primaryColor, accentColor: $accentColor, scrollBlur: $scrollBlur, bannerImage: $bannerImage, ogImageUrl: $ogImageUrl, backgroundImage: $backgroundImage, titleTextColor: $titleTextColor, bodyTextColor: $bodyTextColor, textMutedColor: $textMutedColor, cardBackgroundColor: $cardBackgroundColor, buttonPrimaryColor: $buttonPrimaryColor, buttonCancelColor: $buttonCancelColor, buttonSecondaryColor: $buttonSecondaryColor, runCardColor: $runCardColor, backgroundColor: $backgroundColor, menuBackgroundColor: $menuBackgroundColor, menuTextColor: $menuTextColor, titleFont: $titleFont, bodyFont: $bodyFont, titleText: $titleText, tagline: $tagline, welcomeText: $welcomeText, seoTitle: $seoTitle, seoDescription: $seoDescription, seoStructuredDataJson: $seoStructuredDataJson, mismanagementDescription: $mismanagementDescription, mismanagementJson: $mismanagementJson, extraMenusJson: $extraMenusJson, contactDetailsJson: $contactDetailsJson, controlFlags: $controlFlags)';
   }
 }
 
@@ -995,6 +1082,10 @@ abstract mixin class _$KennelWebsiteModelCopyWith<$Res>
       String? bodyTextColor,
       String? textMutedColor,
       String? cardBackgroundColor,
+      String? buttonPrimaryColor,
+      String? buttonCancelColor,
+      String? buttonSecondaryColor,
+      String? runCardColor,
       String? backgroundColor,
       String? menuBackgroundColor,
       String? menuTextColor,
@@ -1041,6 +1132,10 @@ class __$KennelWebsiteModelCopyWithImpl<$Res>
     Object? bodyTextColor = freezed,
     Object? textMutedColor = freezed,
     Object? cardBackgroundColor = freezed,
+    Object? buttonPrimaryColor = freezed,
+    Object? buttonCancelColor = freezed,
+    Object? buttonSecondaryColor = freezed,
+    Object? runCardColor = freezed,
     Object? backgroundColor = freezed,
     Object? menuBackgroundColor = freezed,
     Object? menuTextColor = freezed,
@@ -1118,6 +1213,22 @@ class __$KennelWebsiteModelCopyWithImpl<$Res>
       cardBackgroundColor: freezed == cardBackgroundColor
           ? _self.cardBackgroundColor
           : cardBackgroundColor // ignore: cast_nullable_to_non_nullable
+              as String?,
+      buttonPrimaryColor: freezed == buttonPrimaryColor
+          ? _self.buttonPrimaryColor
+          : buttonPrimaryColor // ignore: cast_nullable_to_non_nullable
+              as String?,
+      buttonCancelColor: freezed == buttonCancelColor
+          ? _self.buttonCancelColor
+          : buttonCancelColor // ignore: cast_nullable_to_non_nullable
+              as String?,
+      buttonSecondaryColor: freezed == buttonSecondaryColor
+          ? _self.buttonSecondaryColor
+          : buttonSecondaryColor // ignore: cast_nullable_to_non_nullable
+              as String?,
+      runCardColor: freezed == runCardColor
+          ? _self.runCardColor
+          : runCardColor // ignore: cast_nullable_to_non_nullable
               as String?,
       backgroundColor: freezed == backgroundColor
           ? _self.backgroundColor

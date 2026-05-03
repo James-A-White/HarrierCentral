@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getLandingPageData",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Returns kennel identity and website configuration needed to render a public-web landing page. Looked up by KennelUniqueShortName (URL slug). No authentication required. Style columns return NULL when the kennel has no KennelWebsite row — the frontend applies its own platform defaults. The FILTH-kennel fallback that existed in v1.0.0 has been removed; style defaults are now hardcoded in the SP so FILTH kennel changes cannot affect other kennels.",
   "parameters": [
     {
@@ -82,19 +82,19 @@
           "name": "PrimaryColor",
           "type": "NVARCHAR(25)",
           "nullable": true,
-          "description": "CSS hex primary brand colour (e.g. '#dc2626'). Injected as --color-primary. NULL when not configured."
+          "description": "CSS hex primary brand colour (e.g. '#dc2626'). Injected as --kennel-primary. NULL when not configured — frontend uses its own default."
         },
         {
           "name": "AccentColor",
           "type": "NVARCHAR(25)",
           "nullable": true,
-          "description": "CSS hex accent colour. Injected as --color-accent; falls back to PrimaryColor in the frontend when NULL."
+          "description": "CSS hex accent colour. Injected as --kennel-accent; falls back to PrimaryColor in the frontend when NULL."
         },
         {
           "name": "ScrollBlur",
           "type": "SMALLINT",
           "nullable": false,
-          "description": "Scroll blur intensity: 0 = no blur, 100 = full blur (40px CSS blur — image detail completely obscured). Defaults to 0 when not configured. Full blur is reached when the hero logo has faded out, not at bottom of page."
+          "description": "Scroll blur intensity: 0 = no blur, 100 = full blur (40px CSS blur). Defaults to 0 when not configured."
         },
         {
           "name": "OgImageUrl",
@@ -151,34 +151,70 @@
           "description": "Whether the HC6 public website is enabled for this kennel. NULL when no KennelWebsite row exists."
         },
         {
-          "name": "WebsiteBackgroundColor",
+          "name": "TitleTextColor",
           "type": "NVARCHAR(25)",
           "nullable": true,
-          "description": "HC5 legacy background colour. Superseded by PrimaryColor + ThemeMode in HC6. Retained for migration completeness."
-        },
-        {
-          "name": "MenuBackgroundColor",
-          "type": "NVARCHAR(25)",
-          "nullable": true,
-          "description": "HC5 legacy menu background colour. Superseded by HC6 theming."
-        },
-        {
-          "name": "MenuTextColor",
-          "type": "NVARCHAR(25)",
-          "nullable": true,
-          "description": "HC5 legacy menu text colour. Superseded by HC6 theming."
+          "description": "HC6 style token: heading and event-name text colour (#RRGGBBAA). NULL = frontend uses #FFFFFFFF."
         },
         {
           "name": "BodyTextColor",
           "type": "NVARCHAR(25)",
           "nullable": true,
-          "description": "HC5 legacy body text colour. Superseded by HC6 theming."
+          "description": "HC6 style token: body and row-value text colour (#RRGGBBAA). NULL = frontend uses #FFFFFFFF."
         },
         {
-          "name": "TitleTextColor",
+          "name": "TextMutedColor",
+          "type": "NVARCHAR(9)",
+          "nullable": true,
+          "description": "HC6 style token: secondary / label text colour (#RRGGBBAA). NULL = frontend uses #FFFFFF80 (50% white)."
+        },
+        {
+          "name": "CardBackgroundColor",
+          "type": "NVARCHAR(9)",
+          "nullable": true,
+          "description": "HC6 style token: card and panel surface colour (#RRGGBBAA). NULL = frontend uses #FFFFFF0A (dark) or #FFFFFFFF (light)."
+        },
+        {
+          "name": "ButtonPrimaryColor",
+          "type": "NVARCHAR(9)",
+          "nullable": true,
+          "description": "HC6 style token: primary action button background (#RRGGBBAA). NULL = frontend falls back to --kennel-primary via CSS var()."
+        },
+        {
+          "name": "ButtonCancelColor",
+          "type": "NVARCHAR(9)",
+          "nullable": true,
+          "description": "HC6 style token: cancel/undo action button background (#RRGGBBAA). NULL = no override."
+        },
+        {
+          "name": "ButtonSecondaryColor",
+          "type": "NVARCHAR(9)",
+          "nullable": true,
+          "description": "HC6 style token: secondary (non-primary, non-cancel) button background (#RRGGBBAA). NULL = frontend uses rgba(255,255,255,0.08) glassmorphism fallback."
+        },
+        {
+          "name": "RunCardColor",
+          "type": "NVARCHAR(9)",
+          "nullable": true,
+          "description": "HC6 style token: run card surface colour (#RRGGBBAA). NULL = frontend falls back to --kennel-card-bg via CSS var()."
+        },
+        {
+          "name": "WebsiteBackgroundColor",
           "type": "NVARCHAR(25)",
           "nullable": true,
-          "description": "HC5 legacy title text colour. Used for the hero TitleText when set."
+          "description": "HC5 legacy background overlay colour. Used by the frontend for the scroll overlay effect. #RRGGBBAA — the alpha byte encodes max overlay opacity."
+        },
+        {
+          "name": "MenuBackgroundColor",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "HC5 legacy sticky nav background colour. #RRGGBBAA — alpha byte encodes nav background opacity. NULL = frontend uses theme default."
+        },
+        {
+          "name": "MenuTextColor",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "Sticky nav text colour. NULL = frontend uses theme default (white on dark, near-black on light)."
         }
       ]
     }

@@ -316,12 +316,28 @@ class _ColorPickerDialogState extends State<_ColorPickerDialog> {
       ),
       actionsAlignment: MainAxisAlignment.spaceBetween,
       actions: [
-        TextButton(
+        ElevatedButton(
+          style: ButtonStyle(
+            backgroundColor: WidgetStateProperty.resolveWith<Color>(
+              (states) => states.contains(WidgetState.disabled)
+                  ? Colors.grey
+                  : Colors.blueGrey.shade400,
+            ),
+            foregroundColor:
+                WidgetStateProperty.all<Color>(Colors.white),
+            shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+              RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
+              const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            ),
+          ),
           onPressed: () {
             widget.onUseDefault();
             Navigator.of(context).pop();
           },
-          child: Text('Use default', style: bodyStyleBlack),
+          child: Text('Use default', style: buttonLabelStyleMedium),
         ),
         Row(
           mainAxisSize: MainAxisSize.min,

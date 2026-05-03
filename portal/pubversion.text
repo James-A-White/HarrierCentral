@@ -1,4 +1,14 @@
 
+1.4.0+610
+    • Three-button colour system: primary, cancel, secondary (replaces single button colour)
+    • Hero Image field: replaces kennel logo in hero when set; accepts PNG/AVIF for transparency; used as primary OG/social share image
+    • Content tab: shows Tagline + Welcome Text only; fixed welcome text field not rendering
+
+1.3.8+609
+    • New Kennel Website editor (tabbed UI): identity, appearance, images, content, SEO, advanced tabs
+    • EditableColorField widget with colour picker dialog
+    • Edit Website button on run list page
+
 1.3.7+608
     • Removed circular clip and border from kennel logo strip — logos now display at their natural shape
     • Flutter 3.41.2 → 3.41.6

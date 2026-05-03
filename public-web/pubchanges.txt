@@ -1,3 +1,15 @@
+0.15.0
+    • Three-button colour system applied site-wide: --kennel-btn-primary, --kennel-btn-secondary, --kennel-btn-cancel
+    • Accent colour for run number badge surfaces and detail icons
+    • Hero Image renders in place of kennel logo in hero; OG priority: hero → welcome image → logo
+    • Removed gradient tint from Next Run banner in sticky nav
+
+0.14.1
+    • Timezone-aware run boundaries; sticky nav and version display fixes
+
+0.14.0
+    • Unified run detail component and redesigned layout
+
 0.13.3
     • Run card: kennel logo and name hidden on single-kennel runs page — showKennelBranding prop controls this; multi-kennel lists retain branding
 

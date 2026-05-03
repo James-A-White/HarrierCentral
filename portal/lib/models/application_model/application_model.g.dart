@@ -167,4 +167,9 @@ const _$DocumentTypeEnumMap = {
   DocumentType.applicationImage: 'applicationImage',
   DocumentType.stakeholderImage: 'stakeholderImage',
   DocumentType.eventImage: 'eventImage',
+  DocumentType.kennelLogo: 'kennelLogo',
+  DocumentType.newsflashImage: 'newsflashImage',
+  DocumentType.kennelWebsiteBanner: 'kennelWebsiteBanner',
+  DocumentType.kennelWebsiteBackground: 'kennelWebsiteBackground',
+  DocumentType.kennelWebsiteOgImage: 'kennelWebsiteOgImage',
 };

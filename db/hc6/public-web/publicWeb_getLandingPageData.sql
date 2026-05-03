@@ -99,6 +99,10 @@ BEGIN TRY
         kw.BodyTextColor,
         kw.TextMutedColor,
         kw.CardBackgroundColor,
+        kw.ButtonPrimaryColor,
+        kw.ButtonCancelColor,
+        kw.ButtonSecondaryColor,
+        kw.RunCardColor,
 
         -- ── Nav colours ──────────────────────────────────────────────────────
         kw.BackgroundColor                                          AS WebsiteBackgroundColor,

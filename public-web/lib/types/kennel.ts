@@ -11,15 +11,20 @@ export interface KennelContext {
   primaryFg: string;
   accentColor: string;
   // Style tokens — all 8-digit hex (#RRGGBBAA); opacity encoded in the value
-  textTitleColor: string;        // heading / event-name text; default #FFFFFFFF
-  textBodyColor: string;         // body / row-value text; default #FFFFFFFF
-  textMutedColor: string;        // label / secondary text; default #FFFFFF80
-  cardBackgroundColor: string;   // card / panel surface; default #FFFFFF0A
+  textTitleColor: string;         // heading / event-name text; default #FFFFFFFF
+  textBodyColor: string;          // body / row-value text; default #FFFFFFFF
+  textMutedColor: string;         // label / secondary text; default #FFFFFF80
+  cardBackgroundColor: string;    // card / panel surface; default theme-dependent
+  buttonPrimaryColor?: string;    // primary action button background; falls back to --kennel-primary via CSS
+  buttonCancelColor?: string;     // cancel/undo button background; no CSS fallback
+  buttonSecondaryColor?: string;  // secondary (non-primary, non-cancel) button background; no CSS fallback
+  runCardBackgroundColor?: string;// run card surface; falls back to --kennel-card-bg via CSS
   theme: KennelTheme;
   logoLetter: string;
   titleText?: string;            // KennelWebsite.TitleText — custom display name shown below logo
   titleTextColor?: string;       // KennelWebsite.TitleTextColor — CSS color for hero title text
   logoUrl?: string;              // https:// URL only — bundle:// refs are excluded
+  heroImageUrl?: string;         // BannerImage — replaces logoUrl in hero when set; primary OG image
   backgroundImageUrl?: string;   // https:// URL only — WebsiteBackgroundImage field
   backgroundOverlayColor: string;      // CSS #RRGGBB hex color for scroll overlay
   backgroundOverlayMaxOpacity: number; // 0–1, max opacity reached at full scroll

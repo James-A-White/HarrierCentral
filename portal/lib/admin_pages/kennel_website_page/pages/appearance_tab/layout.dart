@@ -22,6 +22,11 @@ class _AppearanceTabContent extends StatelessWidget {
     final bodyColorCtrl = ctrl(KennelWebsiteAppearanceField.bodyTextColor);
     final mutedColorCtrl = ctrl(KennelWebsiteAppearanceField.textMutedColor);
     final cardBgCtrl = ctrl(KennelWebsiteAppearanceField.cardBackgroundColor);
+    final btnPrimaryCtrl = ctrl(KennelWebsiteAppearanceField.buttonPrimaryColor);
+    final btnCancelCtrl = ctrl(KennelWebsiteAppearanceField.buttonCancelColor);
+    final btnSecondaryCtrl =
+        ctrl(KennelWebsiteAppearanceField.buttonSecondaryColor);
+    final runCardColorCtrl = ctrl(KennelWebsiteAppearanceField.runCardColor);
 
     if (themeCtrl == null) return const SizedBox.shrink();
 
@@ -109,6 +114,38 @@ class _AppearanceTabContent extends StatelessWidget {
           EditableColorField(
             controller: controller,
             uiControl: cardBgCtrl,
+            enableAlpha: true,
+            onChanged: (_) => controller.checkIfFormIsDirty(),
+          ),
+        const SizedBox(height: 16),
+        if (btnPrimaryCtrl != null)
+          EditableColorField(
+            controller: controller,
+            uiControl: btnPrimaryCtrl,
+            enableAlpha: true,
+            onChanged: (_) => controller.checkIfFormIsDirty(),
+          ),
+        const SizedBox(height: 16),
+        if (btnCancelCtrl != null)
+          EditableColorField(
+            controller: controller,
+            uiControl: btnCancelCtrl,
+            enableAlpha: true,
+            onChanged: (_) => controller.checkIfFormIsDirty(),
+          ),
+        const SizedBox(height: 16),
+        if (btnSecondaryCtrl != null)
+          EditableColorField(
+            controller: controller,
+            uiControl: btnSecondaryCtrl,
+            enableAlpha: true,
+            onChanged: (_) => controller.checkIfFormIsDirty(),
+          ),
+        const SizedBox(height: 16),
+        if (runCardColorCtrl != null)
+          EditableColorField(
+            controller: controller,
+            uiControl: runCardColorCtrl,
             enableAlpha: true,
             onChanged: (_) => controller.checkIfFormIsDirty(),
           ),

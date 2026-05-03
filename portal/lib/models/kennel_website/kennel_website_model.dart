@@ -51,6 +51,10 @@ abstract class KennelWebsiteModel with _$KennelWebsiteModel {
     String? bodyTextColor,
     String? textMutedColor,
     String? cardBackgroundColor,
+    String? buttonPrimaryColor,
+    String? buttonCancelColor,
+    String? buttonSecondaryColor,
+    String? runCardColor,
 
     // HC5 nav colours (legacy — superseded by primaryColor + accentColor + themeMode)
     String? backgroundColor,

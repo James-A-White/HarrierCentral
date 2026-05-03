@@ -66,12 +66,16 @@ class ServiceCommon {
     final bool isKennelLogo = fileTypeName == DocumentType.kennelLogo.name;
     final bool isNewsflashImage =
         fileTypeName == DocumentType.newsflashImage.name;
-    var fileName = (isKennelLogo || isNewsflashImage)
+    final bool isKennelWebsiteImage =
+        fileTypeName == DocumentType.kennelWebsiteBanner.name ||
+        fileTypeName == DocumentType.kennelWebsiteBackground.name ||
+        fileTypeName == DocumentType.kennelWebsiteOgImage.name;
+    var fileName = (isKennelLogo || isNewsflashImage || isKennelWebsiteImage)
         ? '$prefix$datetime.$fileExtension'
         : '$prefix${publicEventId}_${fileTypeName}_$datetime.$fileExtension';
     final uri = Uri.parse(
-      isKennelLogo
-          ? '$BASE_KENNEL_LOGOS_URL$fileName$KENNEL_LOGO_UPLOAD_SAS'
+      isKennelLogo || isKennelWebsiteImage
+          ? '$BASE_KENNEL_WEBSITE_IMAGES_URL$fileName$KENNEL_WEBSITE_UPLOAD_SAS'
           : isNewsflashImage
               ? '$BASE_NEWSFLASH_IMAGE_URL$fileName$NEWSFLASH_IMAGE_UPLOAD_SAS'
               : 'https://harriercentral.blob.core.windows.net/event-images/$fileName?sv=2020-04-08&st=2021-09-15T14%3A03%3A04Z&se=2100-09-16T14%3A03%3A00Z&sr=c&sp=racwdxlt&sig=q%2BVTH8wcrKOlSZK1FH7cUoaoYFPtjGpblCAVUqA4WFY%3D',

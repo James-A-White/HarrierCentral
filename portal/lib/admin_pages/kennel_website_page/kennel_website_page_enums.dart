@@ -120,6 +120,10 @@ enum KennelWebsiteAppearanceField {
   bodyTextColor,
   textMutedColor,
   cardBackgroundColor,
+  buttonPrimaryColor,
+  buttonCancelColor,
+  buttonSecondaryColor,
+  runCardColor,
 }
 
 enum KennelWebsiteImagesField {

@@ -59,7 +59,7 @@ export function AudioPlayer({ src }: AudioPlayerProps) {
   const pct = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
-    <div className="flex items-center gap-4 rounded-2xl border dark:border-white/[0.08] dark:bg-white/[0.06] border-zinc-200 bg-zinc-50 px-5 py-4">
+    <div className="flex items-center gap-4 rounded-2xl border dark:border-white/[0.08] border-zinc-200 px-5 py-4" style={{ backgroundColor: "var(--kennel-card-bg)" }}>
       <audio ref={audioRef} src={src} preload="metadata" />
 
       <button

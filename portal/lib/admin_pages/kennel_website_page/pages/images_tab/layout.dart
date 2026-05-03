@@ -28,7 +28,7 @@ class _ImagesTabContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        HelperWidgets().categoryLabelWidget('Banner Image'),
+        HelperWidgets().categoryLabelWidget('Hero Image'),
         const SizedBox(height: 12),
         DocumentManagerField(
           controller: controller,
@@ -37,10 +37,12 @@ class _ImagesTabContent extends StatelessWidget {
           recordId: controller.publicKennelId,
           uploading: controller.uploadingState[bannerKey]!,
           uploadStatus: controller.uploadStatusState[bannerKey],
-          placeholderText: 'No banner image\n\nClick to upload',
+          placeholderText: 'No hero image\n\nClick to upload\n(replaces kennel logo in hero)',
           height: 200,
           width: 400,
           expandToFit: true,
+          allowedExtensions: const ['jpg', 'jpeg', 'png', 'avif'],
+          preserveFormat: true,
           onUploadComplete: (String fileName) {
             final fullUrl = BASE_KENNEL_WEBSITE_IMAGES_URL + fileName;
             bannerCtrl.editedFieldValue = fullUrl;
@@ -85,7 +87,7 @@ class _ImagesTabContent extends StatelessWidget {
             onAfterRemove: () => controller.checkIfFormIsDirty(),
           ),
         const SizedBox(height: 32),
-        HelperWidgets().categoryLabelWidget('Social Share Image (OG)'),
+        HelperWidgets().categoryLabelWidget('Kennel Welcome Image'),
         const SizedBox(height: 12),
         if (ogCtrl != null)
           DocumentManagerField(

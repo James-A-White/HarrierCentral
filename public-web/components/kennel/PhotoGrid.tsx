@@ -30,7 +30,7 @@ export function PhotoGrid({ runs, kennel: _kennel, slug }: PhotoGridProps) {
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.7, ease: [0.19, 1, 0.22, 1] }}
     >
-      <Card className="rounded-[2.5rem] gap-0 py-0 dark:border-white/25 dark:bg-white/[0.12] border-zinc-200 bg-white shadow-2xl dark:shadow-black/50 dark:backdrop-blur-xl">
+      <Card className="rounded-[2.5rem] gap-0 py-0 dark:border-white/25 border-zinc-200 shadow-2xl dark:shadow-black/50 dark:backdrop-blur-xl" style={{ backgroundColor: "var(--kennel-card-bg)" }}>
         <CardContent className="p-5 md:p-6">
           <div className="mb-5 flex items-center justify-between">
             <div>

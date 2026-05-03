@@ -93,6 +93,10 @@ export default async function RunDetailPage({ params, searchParams }: PageProps)
         "--kennel-text-body": kennel.textBodyColor,
         "--kennel-text-muted": kennel.textMutedColor,
         "--kennel-card-bg": kennel.cardBackgroundColor,
+        "--kennel-btn-primary": kennel.buttonPrimaryColor,
+        "--kennel-btn-cancel": kennel.buttonCancelColor,
+        "--kennel-btn-secondary": kennel.buttonSecondaryColor,
+        "--kennel-run-card-bg": kennel.runCardBackgroundColor,
       } as React.CSSProperties}
     >
       <body className="text-zinc-100 antialiased overflow-x-hidden">

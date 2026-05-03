@@ -228,7 +228,10 @@ class KennelWebsiteController extends TabUiController
 
     editedJson.forEach((key, value) {
       if (editedJson[key] != originalJson[key]) {
-        changed[key] = editedJson[key];
+        final v = editedJson[key];
+        // Send empty string as sentinel for deliberately-cleared string fields.
+        // The SP interprets '' as "set this column to NULL".
+        changed[key] = (v == null && originalJson[key] is String) ? '' : v;
       }
     });
 

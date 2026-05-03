@@ -69,7 +69,7 @@ export function StatsSection({ kennel }: { kennel: KennelContext }) {
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.7, ease: [0.19, 1, 0.22, 1] }}
     >
-      <Card className="rounded-[2rem] dark:border-white/10 dark:bg-white/[0.06] border-zinc-200 bg-white shadow-xl dark:shadow-black/30 dark:backdrop-blur-xl">
+      <Card className="rounded-[2rem] dark:border-white/10 border-zinc-200 shadow-xl dark:shadow-black/30 dark:backdrop-blur-xl" style={{ backgroundColor: "var(--kennel-card-bg)" }}>
         <CardContent className="p-6 md:p-7">
           <div className="mb-5">
             <div className="text-xl uppercase tracking-[0.15em] mb-1" style={{ color: "var(--kennel-text-muted)" }}>

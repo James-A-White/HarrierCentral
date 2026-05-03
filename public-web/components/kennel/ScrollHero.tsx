@@ -179,10 +179,10 @@ export function ScrollHero({ kennel, slug, nextRun }: ScrollHeroProps) {
             ref={heroContentRef}
             className="mx-auto flex w-full max-w-6xl flex-col items-center justify-center px-4 text-center"
           >
-        {/* Logo */}
-        {kennel.logoUrl ? (
+        {/* Logo — hero image takes precedence over kennel logo when set */}
+        {(kennel.heroImageUrl ?? kennel.logoUrl) ? (
           <motion.img
-            src={kennel.logoUrl}
+            src={(kennel.heroImageUrl ?? kennel.logoUrl)!}
             alt={kennel.shortName}
             className="mb-6 h-auto max-h-[52svh] w-[min(56vw,56svh)] max-w-[620px] object-contain drop-shadow-2xl"
             initial={{ scale: 0.8, opacity: 0 }}
@@ -245,12 +245,22 @@ export function ScrollHero({ kennel, slug, nextRun }: ScrollHeroProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4, ease: [0.19, 1, 0.22, 1] }}
         >
+          <button
+            className="rounded-full border border-white/15 px-8 py-3 text-base font-semibold transition-opacity hover:opacity-90"
+            style={{
+              fontSize: `${HERO_BUTTON_TEXT_PX}px`,
+              backgroundColor: "var(--kennel-btn-secondary, rgba(255,255,255,0.08))",
+              color: "var(--kennel-text-body)",
+            }}
+          >
+            New runner info
+          </button>
           {nextRun && (
             <Link
               href={`/${slug}/${nextRun.EventNumber}`}
               className="rounded-full px-8 py-3 text-base font-semibold transition-opacity hover:opacity-90"
               style={{
-                backgroundColor: "var(--kennel-primary)",
+                backgroundColor: "var(--kennel-btn-primary, var(--kennel-primary))",
                 color: "var(--kennel-primary-fg)",
                 fontSize: `${HERO_BUTTON_TEXT_PX}px`,
               }}
@@ -258,12 +268,6 @@ export function ScrollHero({ kennel, slug, nextRun }: ScrollHeroProps) {
               See next run
             </Link>
           )}
-          <button
-            className="rounded-full border px-8 py-3 text-base font-semibold transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:hover:bg-white/[0.12] border-zinc-200 bg-transparent hover:bg-zinc-50"
-            style={{ fontSize: `${HERO_BUTTON_TEXT_PX}px`, color: "var(--kennel-text-body)" }}
-          >
-            New runner info
-          </button>
         </motion.div>
           </div>
         </motion.div>

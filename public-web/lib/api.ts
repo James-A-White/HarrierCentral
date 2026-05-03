@@ -56,6 +56,10 @@ export interface KennelLandingData {
   BodyTextColor: string | null;
   TextMutedColor: string | null;
   CardBackgroundColor: string | null;
+  ButtonPrimaryColor: string | null;
+  ButtonCancelColor: string | null;
+  ButtonSecondaryColor: string | null;
+  RunCardColor: string | null;
 
   // Nav colours (#RRGGBBAA)
   WebsiteBackgroundColor: string | null;

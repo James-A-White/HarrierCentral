@@ -20,6 +20,10 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_updateKennelWebsite]
 	@bodyTextColor NVARCHAR(25) = NULL,
 	@textMutedColor NVARCHAR(9) = NULL,
 	@cardBackgroundColor NVARCHAR(9) = NULL,
+	@buttonPrimaryColor NVARCHAR(9) = NULL,
+	@buttonCancelColor NVARCHAR(9) = NULL,
+	@buttonSecondaryColor NVARCHAR(9) = NULL,
+	@runCardColor NVARCHAR(9) = NULL,
 	@backgroundColor NVARCHAR(25) = NULL,
 	@menuBackgroundColor NVARCHAR(25) = NULL,
 	@menuTextColor NVARCHAR(25) = NULL,
@@ -111,38 +115,45 @@ BEGIN TRY
 	-- Main update (wrapped in transaction)
 	BEGIN TRANSACTION;
 
+	-- Empty string ('') is the sentinel for "clear this field to NULL".
+	-- Non-string fields (BIT, INT) use plain COALESCE — they are never cleared.
+	-- Nullable NVARCHAR fields use CASE WHEN to honour the sentinel.
 	UPDATE HC.KennelWebsite
 	SET
 		  [Enabled]                  = COALESCE(@enabled, [Enabled])
 		, [ThemeMode]                = COALESCE(@themeMode, [ThemeMode])
-		, [PrimaryColor]             = COALESCE(@primaryColor, [PrimaryColor])
-		, [AccentColor]              = COALESCE(@accentColor, [AccentColor])
 		, [ScrollBlur]               = COALESCE(@scrollBlur, [ScrollBlur])
-		, [CustomDomain]             = COALESCE(@customDomain, [CustomDomain])
-		, [UrlShortcode]             = COALESCE(@urlShortcode, [UrlShortcode])
-		, [BannerImage]              = COALESCE(@bannerImage, [BannerImage])
-		, [OgImageUrl]               = COALESCE(@ogImageUrl, [OgImageUrl])
-		, [BackgroundImage]          = COALESCE(@backgroundImage, [BackgroundImage])
-		, [TitleTextColor]           = COALESCE(@titleTextColor, [TitleTextColor])
-		, [BodyTextColor]            = COALESCE(@bodyTextColor, [BodyTextColor])
-		, [TextMutedColor]           = COALESCE(@textMutedColor, [TextMutedColor])
-		, [CardBackgroundColor]      = COALESCE(@cardBackgroundColor, [CardBackgroundColor])
-		, [BackgroundColor]          = COALESCE(@backgroundColor, [BackgroundColor])
-		, [MenuBackgroundColor]      = COALESCE(@menuBackgroundColor, [MenuBackgroundColor])
-		, [MenuTextColor]            = COALESCE(@menuTextColor, [MenuTextColor])
-		, [TitleFont]                = COALESCE(@titleFont, [TitleFont])
-		, [BodyFont]                 = COALESCE(@bodyFont, [BodyFont])
-		, [TitleText]                = COALESCE(@titleText, [TitleText])
-		, [Tagline]                  = COALESCE(@tagline, [Tagline])
-		, [WelcomeText]              = COALESCE(@welcomeText, [WelcomeText])
-		, [SeoTitle]                 = COALESCE(@seoTitle, [SeoTitle])
-		, [SeoDescription]           = COALESCE(@seoDescription, [SeoDescription])
-		, [SeoStructuredDataJson]    = COALESCE(@seoStructuredDataJson, [SeoStructuredDataJson])
-		, [MismanagementDescription] = COALESCE(@mismanagementDescription, [MismanagementDescription])
-		, [MismanagementJson]        = COALESCE(@mismanagementJson, [MismanagementJson])
-		, [ExtraMenusJson]           = COALESCE(@extraMenusJson, [ExtraMenusJson])
-		, [ContactDetailsJson]       = COALESCE(@contactDetailsJson, [ContactDetailsJson])
-		, [ControlFlags]             = COALESCE(@controlFlags, [ControlFlags])
+		, [PrimaryColor]             = CASE WHEN @primaryColor             = '' THEN NULL ELSE COALESCE(@primaryColor,             [PrimaryColor])             END
+		, [AccentColor]              = CASE WHEN @accentColor              = '' THEN NULL ELSE COALESCE(@accentColor,              [AccentColor])              END
+		, [CustomDomain]             = CASE WHEN @customDomain             = '' THEN NULL ELSE COALESCE(@customDomain,             [CustomDomain])             END
+		, [UrlShortcode]             = CASE WHEN @urlShortcode             = '' THEN NULL ELSE COALESCE(@urlShortcode,             [UrlShortcode])             END
+		, [BannerImage]              = CASE WHEN @bannerImage              = '' THEN NULL ELSE COALESCE(@bannerImage,              [BannerImage])              END
+		, [OgImageUrl]               = CASE WHEN @ogImageUrl               = '' THEN NULL ELSE COALESCE(@ogImageUrl,               [OgImageUrl])               END
+		, [BackgroundImage]          = CASE WHEN @backgroundImage          = '' THEN NULL ELSE COALESCE(@backgroundImage,          [BackgroundImage])          END
+		, [TitleTextColor]           = CASE WHEN @titleTextColor           = '' THEN NULL ELSE COALESCE(@titleTextColor,           [TitleTextColor])           END
+		, [BodyTextColor]            = CASE WHEN @bodyTextColor            = '' THEN NULL ELSE COALESCE(@bodyTextColor,            [BodyTextColor])            END
+		, [TextMutedColor]           = CASE WHEN @textMutedColor           = '' THEN NULL ELSE COALESCE(@textMutedColor,           [TextMutedColor])           END
+		, [CardBackgroundColor]      = CASE WHEN @cardBackgroundColor      = '' THEN NULL ELSE COALESCE(@cardBackgroundColor,      [CardBackgroundColor])      END
+		, [ButtonPrimaryColor]        = CASE WHEN @buttonPrimaryColor        = '' THEN NULL ELSE COALESCE(@buttonPrimaryColor,        [ButtonPrimaryColor])        END
+		, [ButtonCancelColor]         = CASE WHEN @buttonCancelColor         = '' THEN NULL ELSE COALESCE(@buttonCancelColor,         [ButtonCancelColor])         END
+		, [ButtonSecondaryColor]      = CASE WHEN @buttonSecondaryColor      = '' THEN NULL ELSE COALESCE(@buttonSecondaryColor,      [ButtonSecondaryColor])      END
+		, [RunCardColor]             = CASE WHEN @runCardColor             = '' THEN NULL ELSE COALESCE(@runCardColor,             [RunCardColor])             END
+		, [BackgroundColor]          = CASE WHEN @backgroundColor          = '' THEN NULL ELSE COALESCE(@backgroundColor,          [BackgroundColor])          END
+		, [MenuBackgroundColor]      = CASE WHEN @menuBackgroundColor      = '' THEN NULL ELSE COALESCE(@menuBackgroundColor,      [MenuBackgroundColor])      END
+		, [MenuTextColor]            = CASE WHEN @menuTextColor            = '' THEN NULL ELSE COALESCE(@menuTextColor,            [MenuTextColor])            END
+		, [TitleFont]                = CASE WHEN @titleFont                = '' THEN NULL ELSE COALESCE(@titleFont,                [TitleFont])                END
+		, [BodyFont]                 = CASE WHEN @bodyFont                 = '' THEN NULL ELSE COALESCE(@bodyFont,                [BodyFont])                 END
+		, [TitleText]                = CASE WHEN @titleText                = '' THEN NULL ELSE COALESCE(@titleText,                [TitleText])                END
+		, [Tagline]                  = CASE WHEN @tagline                  = '' THEN NULL ELSE COALESCE(@tagline,                  [Tagline])                  END
+		, [WelcomeText]              = CASE WHEN @welcomeText              = '' THEN NULL ELSE COALESCE(@welcomeText,              [WelcomeText])              END
+		, [SeoTitle]                 = CASE WHEN @seoTitle                 = '' THEN NULL ELSE COALESCE(@seoTitle,                 [SeoTitle])                 END
+		, [SeoDescription]           = CASE WHEN @seoDescription           = '' THEN NULL ELSE COALESCE(@seoDescription,           [SeoDescription])           END
+		, [SeoStructuredDataJson]    = CASE WHEN @seoStructuredDataJson    = '' THEN NULL ELSE COALESCE(@seoStructuredDataJson,    [SeoStructuredDataJson])    END
+		, [MismanagementDescription] = CASE WHEN @mismanagementDescription = '' THEN NULL ELSE COALESCE(@mismanagementDescription, [MismanagementDescription]) END
+		, [MismanagementJson]        = CASE WHEN @mismanagementJson        = '' THEN NULL ELSE COALESCE(@mismanagementJson,        [MismanagementJson])        END
+		, [ExtraMenusJson]           = CASE WHEN @extraMenusJson           = '' THEN NULL ELSE COALESCE(@extraMenusJson,           [ExtraMenusJson])           END
+		, [ContactDetailsJson]       = CASE WHEN @contactDetailsJson       = '' THEN NULL ELSE COALESCE(@contactDetailsJson,       [ContactDetailsJson])       END
+		, [ControlFlags]             = CASE WHEN @controlFlags             = '' THEN NULL ELSE COALESCE(@controlFlags,             [ControlFlags])             END
 	WHERE KennelId = @kennelId;
 
 	COMMIT TRANSACTION;

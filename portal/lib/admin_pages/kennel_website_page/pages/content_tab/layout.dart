@@ -12,29 +12,21 @@ class _ContentTabContent extends StatelessWidget {
     UiControlDefinition? ctrl(KennelWebsiteContentField f) =>
         controller.uiControls['${tabKey}_${f.name}'];
 
-    final titleCtrl = ctrl(KennelWebsiteContentField.titleText);
     final taglineCtrl = ctrl(KennelWebsiteContentField.tagline);
     final welcomeCtrl = ctrl(KennelWebsiteContentField.welcomeText);
 
-    if (titleCtrl == null) return const SizedBox.shrink();
+    if (taglineCtrl == null) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        HelperWidgets().categoryLabelWidget('Hero Section'),
+        HelperWidgets().categoryLabelWidget('Tagline'),
         const SizedBox(height: 12),
         EditableOverrideTextField(
           controller: controller,
-          uiControl: titleCtrl,
+          uiControl: taglineCtrl,
           onChanged: (_) => controller.checkIfFormIsDirty(),
         ),
-        const SizedBox(height: 16),
-        if (taglineCtrl != null)
-          EditableOverrideTextField(
-            controller: controller,
-            uiControl: taglineCtrl,
-            onChanged: (_) => controller.checkIfFormIsDirty(),
-          ),
         const SizedBox(height: 32),
         HelperWidgets().categoryLabelWidget('Welcome Text'),
         const SizedBox(height: 12),
@@ -43,7 +35,6 @@ class _ContentTabContent extends StatelessWidget {
             controller: controller,
             uiControl: welcomeCtrl,
             onChanged: (_) => controller.checkIfFormIsDirty(),
-            expandToFill: true,
           ),
       ],
     );
