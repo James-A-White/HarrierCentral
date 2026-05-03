@@ -51,12 +51,16 @@ export interface KennelLandingData {
   CustomDomain: string | null;
   WebsiteEnabled: boolean | null;
 
-  // HC5 legacy colours (null until data migration)
+  // Style tokens — text + surface (#RRGGBBAA; null = use frontend default)
+  TitleTextColor: string | null;
+  BodyTextColor: string | null;
+  TextMutedColor: string | null;
+  CardBackgroundColor: string | null;
+
+  // Nav colours (#RRGGBBAA)
   WebsiteBackgroundColor: string | null;
   MenuBackgroundColor: string | null;
   MenuTextColor: string | null;
-  BodyTextColor: string | null;
-  TitleTextColor: string | null;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -371,6 +375,8 @@ export interface RunEvent {
   LocationStreet: string | null;
   LocationCity: string | null;
   LocationPostCode: string | null;
+  LocationRegion: string | null;
+  LocationCountry: string | null;
   Latitude: number | null;
   Longitude: number | null;
   w3wJson: string | null;
@@ -463,6 +469,7 @@ export interface GlobalRunRow {
   KennelName: string;
   KennelLogo: string | null;
   PrimaryColor: string | null;
+  AccentColor: string | null;
   PublicKennelId: string;
   /** Custom domain (e.g. 'www.cityhash.org'). NULL when kennel has none. */
   KennelWebsiteDomain: string | null;

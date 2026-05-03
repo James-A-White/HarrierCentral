@@ -1,3 +1,39 @@
+0.13.3
+    • Run card: kennel logo and name hidden on single-kennel runs page — showKennelBranding prop controls this; multi-kennel lists retain branding
+
+0.13.2
+    • Card border now fully visible: dark:white/60, light:zinc-600 — border always renders above run image via overflow-hidden
+    • Hairline opacity increased: dark:white/30, light:zinc-400
+    • Kennel logo vertically centred within card body
+
+0.13.1
+    • Run images restored — appear between hairline and body section, full width, natural aspect ratio
+    • Card background: dark:bg-black/30 (darkens by 30%) / bg-white/30 (lightens by 30%)
+
+0.13.0
+    • Run card redesigned: event name header + hairline, then kennel logo + text column
+    • Text column shows: kennel name (primary colour), run number with relative time, date/time, address, location description, event type
+    • relativeTime helper: "today", "tomorrow", "in N days", "N days ago"
+    • Selected card: primary-colour border + subtle primary tint on title bar
+
+0.12.9
+    • Wix embed side margins trimmed from 40px to 24px
+
+0.12.8
+    • Wix embed: panel height now computed from window.innerHeight − 80px, updated on resize
+    • html/body overflow locked to hidden when embedded — prevents Wix auto-resize from expanding iframe
+    • Sticky header in embedded mode: search bar, Future/Past tabs, version number stay fixed; only card list scrolls
+    • Outer container clipped with overflow-hidden so Wix designers can see true content boundary
+    • Version number moved below Future/Past tabs when embedded (always visible for testing)
+
+0.12.7
+    • Fix runs page on iOS mobile: cards below the first card are now clickable in Wix embed and direct browser
+    • Removed overflow-x:hidden + touch-pan-y from the run list container — combination caused iOS to restrict tap targets
+    • Simplified panel height to CSS dvh — removes window.innerHeight snapshot that produced wrong height at mount time in Wix iframes
+    • Back button now restores selected run and card highlight on mobile
+    • Run card highlights immediately on tap before navigating to detail
+    • No stagger animation when returning via back button (instant card restore)
+
 0.12.6
     • Legacy hash URLs now redirect to a real server-side page (/rd/<uuid>) — no overlay, no flash, back button works correctly
     • /rd/[uuid] resolves the kennel UUID server-side and renders the runs page identically to /<slug>/runs

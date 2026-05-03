@@ -126,6 +126,7 @@ BEGIN TRY
         k.KennelName,
         k.KennelLogo,
         kw.PrimaryColor,
+        kw.AccentColor,
         k.PublicKennelId,
 
         -- KennelWebsiteDomain: the kennel's custom domain (e.g. www.cityhash.org).

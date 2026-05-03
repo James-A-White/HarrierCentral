@@ -182,6 +182,8 @@ BEGIN TRY
         e.SyncLocationStreet     AS LocationStreet,
         e.SyncLocationCity       AS LocationCity,
         e.SyncLocationPostCode   AS LocationPostCode,
+        e.SyncLocationRegion     AS LocationRegion,
+        e.SyncLocationCountry    AS LocationCountry,
         e.SyncLatitude           AS Latitude,
         e.SyncLongitude          AS Longitude,
         CASE WHEN @SummaryOnly = 1 THEN NULL ELSE e.w3wJson           END AS w3wJson,

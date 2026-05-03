@@ -10,10 +10,15 @@ export interface KennelContext {
   primaryColor: string;
   primaryFg: string;
   accentColor: string;
+  // Style tokens — all 8-digit hex (#RRGGBBAA); opacity encoded in the value
+  textTitleColor: string;        // heading / event-name text; default #FFFFFFFF
+  textBodyColor: string;         // body / row-value text; default #FFFFFFFF
+  textMutedColor: string;        // label / secondary text; default #FFFFFF80
+  cardBackgroundColor: string;   // card / panel surface; default #FFFFFF0A
   theme: KennelTheme;
   logoLetter: string;
   titleText?: string;            // KennelWebsite.TitleText — custom display name shown below logo
-  titleTextColor?: string;       // KennelWebsite.TitleTextColor — CSS color; falls back to white/black per theme
+  titleTextColor?: string;       // KennelWebsite.TitleTextColor — CSS color for hero title text
   logoUrl?: string;              // https:// URL only — bundle:// refs are excluded
   backgroundImageUrl?: string;   // https:// URL only — WebsiteBackgroundImage field
   backgroundOverlayColor: string;      // CSS #RRGGBB hex color for scroll overlay

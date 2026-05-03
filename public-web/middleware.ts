@@ -40,7 +40,9 @@ export async function middleware(request: NextRequest) {
 
   if (!hostname || isSystemHost(hostname)) return NextResponse.next();
 
-  const slug = await resolveCustomDomain(hostname);
+  // Strip www. so both apex and www resolve to the same DB entry.
+  const lookupHostname = hostname.startsWith("www.") ? hostname.slice(4) : hostname;
+  const slug = await resolveCustomDomain(lookupHostname);
   if (!slug) return NextResponse.next();
 
   const pathname = request.nextUrl.pathname;

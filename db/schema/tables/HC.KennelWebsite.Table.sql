@@ -41,15 +41,18 @@ CREATE TABLE [HC].[KennelWebsite]
     [OgImageUrl]                NVARCHAR(500)       NULL,       -- Open Graph image (1200×630px recommended); used when page is shared on social/messaging; falls back to BannerImage if NULL
     [BackgroundImage]           NVARCHAR(500)       NULL,       -- HC5: WebsiteBackgroundImage
 
-    -- ── HC5 colours (legacy) ───────────────────────────────────────────
-    -- These were individually managed in HC5. In HC6, PrimaryColor +
-    -- AccentColor + ThemeMode cover most use cases. Retained for migration
-    -- completeness; evaluate before using in new HC6 templates.
-    [BackgroundColor]           NVARCHAR(25)        NULL,       -- HC5: WebsiteBackgroundColor
-    [MenuBackgroundColor]       NVARCHAR(25)        NULL,       -- HC5: WebsiteMenuBackgroundColor
-    [MenuTextColor]             NVARCHAR(25)        NULL,       -- HC5: WebsiteMenuTextColor
-    [BodyTextColor]             NVARCHAR(25)        NULL,       -- HC5: WebsiteBodyTextColor
-    [TitleTextColor]            NVARCHAR(25)        NULL,       -- HC5: WebsiteTitleTextColor
+    -- ── HC6 style tokens (text + surface) ─────────────────────────────
+    -- All colour values use 8-digit hex (#RRGGBBAA). Opacity is encoded
+    -- in the colour; no separate opacity columns.
+    [TitleTextColor]            NVARCHAR(25)        NULL,       -- heading / event-name text colour; default #FFFFFFFF
+    [BodyTextColor]             NVARCHAR(25)        NULL,       -- body / row-value text colour; default #FFFFFFFF
+    [TextMutedColor]            NVARCHAR(9)         NULL,       -- label / secondary text colour; default #FFFFFF80
+    [CardBackgroundColor]       NVARCHAR(9)         NULL,       -- card / panel surface colour; default #FFFFFF0A
+
+    -- ── HC5 nav colours ────────────────────────────────────────────────
+    [BackgroundColor]           NVARCHAR(25)        NULL,       -- page background overlay (#RRGGBBAA)
+    [MenuBackgroundColor]       NVARCHAR(25)        NULL,       -- sticky nav background (#RRGGBBAA)
+    [MenuTextColor]             NVARCHAR(25)        NULL,       -- sticky nav text colour
 
     -- ── HC5 fonts (legacy) ─────────────────────────────────────────────
     [TitleFont]                 NVARCHAR(100)       NULL,       -- HC5: WebsiteTitleFont

@@ -62,7 +62,7 @@
   /* Default kennel theme tokens — overridden per-tenant at runtime */
   --kennel-primary: #dc2626;
   --kennel-primary-fg: #ffffff;
-  --kennel-accent: #f97316;
+  --kennel-accent: #eab308;
 
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);

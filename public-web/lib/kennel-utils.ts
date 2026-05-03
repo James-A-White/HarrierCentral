@@ -1,6 +1,19 @@
 import type { KennelLandingData } from "./api";
 import type { KennelContext } from "./types/kennel";
 
+/**
+ * Normalises a DB colour value to 8-digit hex (#RRGGBBAA).
+ * - 8-digit hex: returned as-is
+ * - 6-digit hex: appended with FF (fully opaque)
+ * - null / invalid: returns the provided fallback
+ */
+export function hexColor(raw: string | null | undefined, fallback: string): string {
+  if (!raw) return fallback;
+  if (/^#[0-9A-Fa-f]{8}$/.test(raw)) return raw;
+  if (/^#[0-9A-Fa-f]{6}$/.test(raw)) return `${raw}FF`;
+  return fallback;
+}
+
 export function parseOverlayColor(raw: string | null): {
   backgroundOverlayColor: string;
   backgroundOverlayMaxOpacity: number;
@@ -49,7 +62,11 @@ export function toKennelContext(data: KennelLandingData): KennelContext {
     foundedYear: 0,
     primaryColor: data.PrimaryColor ?? "#dc2626",
     primaryFg: "#ffffff",
-    accentColor: data.AccentColor ?? "#f97316",
+    accentColor: data.AccentColor ?? "#eab308",
+    textTitleColor: hexColor(data.TitleTextColor, "#FFFFFFFF"),
+    textBodyColor:  hexColor(data.BodyTextColor,  "#FFFFFFFF"),
+    textMutedColor: hexColor(data.TextMutedColor, "#FFFFFF80"),
+    cardBackgroundColor: hexColor(data.CardBackgroundColor, "#FFFFFF0A"),
     theme,
     titleText: data.WebsiteTitleText ?? undefined,
     titleTextColor: data.TitleTextColor ?? undefined,

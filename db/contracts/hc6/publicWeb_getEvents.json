@@ -151,6 +151,20 @@
           "description": "Postcode from SyncLocationPostCode computed column."
         },
         {
+          "name": "LocationRegion",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "mapsToColumn": "Event.SyncLocationRegion",
+          "description": "State/county/region from SyncLocationRegion computed column (Facebook override aware)."
+        },
+        {
+          "name": "LocationCountry",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "mapsToColumn": "Event.SyncLocationCountry",
+          "description": "Country name from SyncLocationCountry computed column (Facebook override aware)."
+        },
+        {
           "name": "Latitude",
           "type": "FLOAT",
           "nullable": true,
