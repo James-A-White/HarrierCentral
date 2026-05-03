@@ -23,8 +23,8 @@ export async function generateMetadata({ params }: PageProps) {
     : kennel.KennelLogo?.startsWith("https://") ? kennel.KennelLogo
     : undefined;
 
-  const ogImageUrl = kennel.OgImageUrl?.startsWith("https://") ? kennel.OgImageUrl
-    : kennel.BannerImage?.startsWith("https://") ? kennel.BannerImage
+  const ogImageUrl = kennel.BannerImage?.startsWith("https://") ? kennel.BannerImage
+    : kennel.OgImageUrl?.startsWith("https://") ? kennel.OgImageUrl
     : kennel.KennelLogo?.startsWith("https://") ? kennel.KennelLogo
     : undefined;
 
@@ -89,6 +89,10 @@ export default async function KennelPage({ params }: PageProps) {
         "--kennel-text-body": kennel.textBodyColor,
         "--kennel-text-muted": kennel.textMutedColor,
         "--kennel-card-bg": kennel.cardBackgroundColor,
+        "--kennel-btn-primary": kennel.buttonPrimaryColor,
+        "--kennel-btn-cancel": kennel.buttonCancelColor,
+        "--kennel-btn-secondary": kennel.buttonSecondaryColor,
+        "--kennel-run-card-bg": kennel.runCardBackgroundColor,
         "--kennel-menu-text": kennel.menuTextColor,
       } as React.CSSProperties}
     >

@@ -66,12 +66,17 @@ export function toKennelContext(data: KennelLandingData): KennelContext {
     textTitleColor: hexColor(data.TitleTextColor, "#FFFFFFFF"),
     textBodyColor:  hexColor(data.BodyTextColor,  "#FFFFFFFF"),
     textMutedColor: hexColor(data.TextMutedColor, "#FFFFFF80"),
-    cardBackgroundColor: hexColor(data.CardBackgroundColor, "#FFFFFF0A"),
+    cardBackgroundColor: hexColor(data.CardBackgroundColor, theme === "dark" ? "#FFFFFF0A" : "#FFFFFFFF"),
+    buttonPrimaryColor: data.ButtonPrimaryColor ? hexColor(data.ButtonPrimaryColor, "") : undefined,
+    buttonCancelColor: data.ButtonCancelColor ? hexColor(data.ButtonCancelColor, "") : undefined,
+    buttonSecondaryColor: data.ButtonSecondaryColor ? hexColor(data.ButtonSecondaryColor, "") : undefined,
+    runCardBackgroundColor: data.RunCardColor ? hexColor(data.RunCardColor, "") : undefined,
     theme,
     titleText: data.WebsiteTitleText ?? undefined,
     titleTextColor: data.TitleTextColor ?? undefined,
     logoLetter: data.KennelShortName.charAt(0).toUpperCase(),
     logoUrl: data.KennelLogo?.startsWith("https://") ? data.KennelLogo : undefined,
+    heroImageUrl: data.BannerImage?.startsWith("https://") ? data.BannerImage : undefined,
     backgroundImageUrl: hasCustomBackground
       ? data.WebsiteBackgroundImage!
       : "/images/jungle_background.jpg",

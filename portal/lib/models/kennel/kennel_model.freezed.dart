@@ -62,7 +62,9 @@ mixin _$KennelModel {
   String? get kennelCoverPhoto;
   String? get countryFlag;
   String? get regionFlag;
-  String? get cityFlag;
+  String?
+      get cityFlag; // DEPRECATED: These website* fields are superseded by HC.KennelWebsite
+// (KennelWebsiteModel). Remove after all callers are migrated.
   String? get websiteBackgroundColor;
   String? get websiteBackgroundImage;
   String? get websiteTitleText;
@@ -1784,6 +1786,8 @@ class _KennelModel implements KennelModel {
   final String? regionFlag;
   @override
   final String? cityFlag;
+// DEPRECATED: These website* fields are superseded by HC.KennelWebsite
+// (KennelWebsiteModel). Remove after all callers are migrated.
   @override
   final String? websiteBackgroundColor;
   @override

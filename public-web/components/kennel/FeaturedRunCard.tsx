@@ -33,7 +33,7 @@ export function FeaturedRunCard({ run, href }: FeaturedRunCardProps) {
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.7, ease: [0.19, 1, 0.22, 1] }}
     >
-      <Card className="w-full max-w-full overflow-hidden rounded-[2.5rem] gap-0 py-0 dark:border-white/25 dark:bg-white/[0.12] border-zinc-200 bg-white shadow-2xl dark:shadow-black/60 dark:backdrop-blur-2xl">
+      <Card className="w-full max-w-full overflow-hidden rounded-[2.5rem] gap-0 py-0 dark:border-white/25 border-zinc-200 shadow-2xl dark:shadow-black/60 dark:backdrop-blur-2xl" style={{ backgroundColor: "var(--kennel-run-card-bg, var(--kennel-card-bg))" }}>
 
         {/* Header bar — primary colour strip with title + run number */}
         <div
@@ -43,7 +43,13 @@ export function FeaturedRunCard({ run, href }: FeaturedRunCardProps) {
           <h2 className="min-w-0 text-2xl font-bold text-white leading-snug line-clamp-2">
             {run.EventName}
           </h2>
-          <span className="shrink-0 rounded-full border border-white/30 bg-white/20 px-3 py-1 text-xl font-bold text-white">
+          <span
+            className="shrink-0 rounded-full px-3 py-1 text-xl font-bold"
+            style={{
+              backgroundColor: "var(--kennel-accent, var(--kennel-primary))",
+              color: "var(--kennel-primary-fg)",
+            }}
+          >
             #{run.EventNumber}
           </span>
         </div>
@@ -57,25 +63,25 @@ export function FeaturedRunCard({ run, href }: FeaturedRunCardProps) {
         <CardContent className="p-5 md:p-6">
           {/* Detail rows */}
           <div className="space-y-2.5 mb-5">
-            <div className="flex items-center gap-2.5 text-2xl dark:text-white text-zinc-900" suppressHydrationWarning>
-              <Clock className="h-4 w-4 shrink-0 dark:text-white/40 text-zinc-400" />
+            <div className="flex items-center gap-2.5 text-2xl" style={{ color: "var(--kennel-text-body)" }} suppressHydrationWarning>
+              <Clock className="h-4 w-4 shrink-0" style={{ color: "var(--kennel-accent, var(--kennel-primary))" }} />
               <span className="min-w-0 truncate">{longDate} · {time}</span>
             </div>
             {run.LocationCity && (
-              <div className="flex items-center gap-2.5 text-2xl dark:text-white text-zinc-900">
-                <MapPin className="h-4 w-4 shrink-0 dark:text-white/40 text-zinc-400" />
+              <div className="flex items-center gap-2.5 text-2xl" style={{ color: "var(--kennel-text-body)" }}>
+                <MapPin className="h-4 w-4 shrink-0" style={{ color: "var(--kennel-accent, var(--kennel-primary))" }} />
                 <span className="min-w-0 truncate">{run.LocationCity}</span>
               </div>
             )}
             {run.LocationOneLineDesc && (
-              <div className="flex items-center gap-2.5 text-2xl dark:text-white text-zinc-900">
-                <MapPin className="h-4 w-4 shrink-0 dark:text-white/40 text-zinc-400" />
+              <div className="flex items-center gap-2.5 text-2xl" style={{ color: "var(--kennel-text-body)" }}>
+                <MapPin className="h-4 w-4 shrink-0" style={{ color: "var(--kennel-accent, var(--kennel-primary))" }} />
                 <span className="min-w-0 truncate">{run.LocationOneLineDesc}</span>
               </div>
             )}
             {run.Hares && (
-              <div className="flex items-center gap-2.5 text-2xl dark:text-white text-zinc-900">
-                <Users className="h-4 w-4 shrink-0 dark:text-white/40 text-zinc-400" />
+              <div className="flex items-center gap-2.5 text-2xl" style={{ color: "var(--kennel-text-body)" }}>
+                <Users className="h-4 w-4 shrink-0" style={{ color: "var(--kennel-accent, var(--kennel-primary))" }} />
                 <span className="min-w-0 truncate">{run.Hares}</span>
               </div>
             )}
@@ -83,7 +89,7 @@ export function FeaturedRunCard({ run, href }: FeaturedRunCardProps) {
 
           {/* Description */}
           {run.EventDescription && (
-            <p className="text-2xl leading-9 dark:text-white text-zinc-900 mb-5 line-clamp-3 break-words">
+            <p className="text-2xl leading-9 mb-5 line-clamp-3 break-words" style={{ color: "var(--kennel-text-body)" }}>
               {run.EventDescription}
             </p>
           )}
@@ -93,7 +99,7 @@ export function FeaturedRunCard({ run, href }: FeaturedRunCardProps) {
             href={href}
             className="flex w-full min-w-0 items-center justify-center gap-1 rounded-full px-4 py-2.5 text-center text-xl font-semibold whitespace-normal transition-opacity hover:opacity-90 sm:text-2xl"
             style={{
-              backgroundColor: "var(--kennel-primary)",
+              backgroundColor: "var(--kennel-btn-primary, var(--kennel-primary))",
               color: "var(--kennel-primary-fg)",
             }}
           >

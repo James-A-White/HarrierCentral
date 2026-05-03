@@ -179,10 +179,10 @@ export function ScrollHero({ kennel, slug, nextRun }: ScrollHeroProps) {
             ref={heroContentRef}
             className="mx-auto flex w-full max-w-6xl flex-col items-center justify-center px-4 text-center"
           >
-        {/* Logo */}
-        {kennel.logoUrl ? (
+        {/* Logo — hero image takes precedence over kennel logo when set */}
+        {(kennel.heroImageUrl ?? kennel.logoUrl) ? (
           <motion.img
-            src={kennel.logoUrl}
+            src={(kennel.heroImageUrl ?? kennel.logoUrl)!}
             alt={kennel.shortName}
             className="mb-6 h-auto max-h-[52svh] w-[min(56vw,56svh)] max-w-[620px] object-contain drop-shadow-2xl"
             initial={{ scale: 0.8, opacity: 0 }}
@@ -208,7 +208,7 @@ export function ScrollHero({ kennel, slug, nextRun }: ScrollHeroProps) {
           <motion.p
             className="mt-3 text-[clamp(1.5rem,4.2vh,3.25rem)] font-bold tracking-wide"
             style={{
-              color: kennel.titleTextColor ?? (kennel.theme === "dark" ? "#ffffff" : "#18181b"),
+              color: kennel.titleTextColor ?? "var(--kennel-text-title)",
             }}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -220,8 +220,8 @@ export function ScrollHero({ kennel, slug, nextRun }: ScrollHeroProps) {
 
         {/* Short name */}
         <motion.h1
-          className="text-[clamp(2.5rem,9vh,7rem)] font-black uppercase text-zinc-900 dark:text-white"
-          style={{ letterSpacing: "0.06em" }}
+          className="text-[clamp(2.5rem,9vh,7rem)] font-black uppercase"
+          style={{ letterSpacing: "0.06em", color: "var(--kennel-text-title)" }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.1, ease: [0.19, 1, 0.22, 1] }}
@@ -230,7 +230,8 @@ export function ScrollHero({ kennel, slug, nextRun }: ScrollHeroProps) {
         </motion.h1>
 
         <motion.p
-          className="mt-2 text-[clamp(1.1rem,3.8vh,2rem)] font-semibold text-zinc-700 dark:text-white/80"
+          className="mt-2 text-[clamp(1.1rem,3.8vh,2rem)] font-semibold"
+          style={{ color: "var(--kennel-text-body)" }}
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.2, ease: [0.19, 1, 0.22, 1] }}
@@ -244,12 +245,22 @@ export function ScrollHero({ kennel, slug, nextRun }: ScrollHeroProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4, ease: [0.19, 1, 0.22, 1] }}
         >
+          <button
+            className="rounded-full border border-white/15 px-8 py-3 text-base font-semibold transition-opacity hover:opacity-90"
+            style={{
+              fontSize: `${HERO_BUTTON_TEXT_PX}px`,
+              backgroundColor: "var(--kennel-btn-secondary, rgba(255,255,255,0.08))",
+              color: "var(--kennel-text-body)",
+            }}
+          >
+            New runner info
+          </button>
           {nextRun && (
             <Link
               href={`/${slug}/${nextRun.EventNumber}`}
               className="rounded-full px-8 py-3 text-base font-semibold transition-opacity hover:opacity-90"
               style={{
-                backgroundColor: "var(--kennel-primary)",
+                backgroundColor: "var(--kennel-btn-primary, var(--kennel-primary))",
                 color: "var(--kennel-primary-fg)",
                 fontSize: `${HERO_BUTTON_TEXT_PX}px`,
               }}
@@ -257,12 +268,6 @@ export function ScrollHero({ kennel, slug, nextRun }: ScrollHeroProps) {
               See next run
             </Link>
           )}
-          <button
-            className="rounded-full border px-8 py-3 text-base font-semibold transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:text-white dark:hover:bg-white/[0.12] border-zinc-200 bg-transparent hover:bg-zinc-50 text-zinc-900"
-            style={{ fontSize: `${HERO_BUTTON_TEXT_PX}px` }}
-          >
-            New runner info
-          </button>
         </motion.div>
           </div>
         </motion.div>

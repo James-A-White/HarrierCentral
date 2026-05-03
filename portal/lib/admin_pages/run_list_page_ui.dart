@@ -2,6 +2,8 @@
 
 import 'package:hcportal/admin_pages/checkin_sheet/checkin_sheet_ui.dart';
 import 'package:hcportal/admin_pages/kennel_page_new/kennel_page_new_ui.dart';
+import 'package:hcportal/admin_pages/kennel_website_page/kennel_website_page_controller.dart';
+import 'package:hcportal/admin_pages/kennel_website_page/kennel_website_page_ui.dart';
 import 'package:hcportal/admin_pages/run_list_detail_panel.dart';
 import 'package:hcportal/admin_pages/run_list_page_controller.dart';
 import 'package:hcportal/imports.dart';
@@ -191,6 +193,30 @@ class RunListPage extends StatelessWidget {
                                       );
                                       await Get.delete<
                                           KennelPageFormController>(
+                                        force: true,
+                                      );
+                                    }
+                                  },
+                                ),
+                                const SizedBox(width: 8),
+                                _appBarBtn(
+                                  'Edit Website',
+                                  onPressed: () async {
+                                    final websiteData = await _getKennelWebsite(
+                                      k.publicKennelId,
+                                    );
+                                    if (websiteData != null) {
+                                      await Get.to<KennelWebsiteEditPage>(
+                                        () => KennelWebsiteEditPage(
+                                          key: UniqueKey(),
+                                          websiteData: websiteData,
+                                          publicKennelId: k.publicKennelId,
+                                          kennelName: k.kennelName,
+                                          kennelUniqueShortName:
+                                              k.kennelUniqueShortName,
+                                        ),
+                                      );
+                                      await Get.delete<KennelWebsiteController>(
                                         force: true,
                                       );
                                     }
@@ -669,7 +695,7 @@ class RunListPage extends StatelessWidget {
             ),
           const SizedBox(height: 16),
           if (formController.kennel.canManageKennel ||
-              formController.kennel.canManageHashCash)
+              formController.kennel.canManageHashCash) ...[
             _appBarBtn(
               'Edit Kennel',
               onPressed: () async {
@@ -690,6 +716,29 @@ class RunListPage extends StatelessWidget {
                 }
               },
             ),
+            const SizedBox(height: 16),
+            _appBarBtn(
+              'Edit Website',
+              onPressed: () async {
+                final websiteData = await _getKennelWebsite(
+                  formController.kennel.publicKennelId,
+                );
+                if (websiteData != null) {
+                  await Get.to<KennelWebsiteEditPage>(
+                    () => KennelWebsiteEditPage(
+                      key: UniqueKey(),
+                      websiteData: websiteData,
+                      publicKennelId: formController.kennel.publicKennelId,
+                      kennelName: formController.kennel.kennelName,
+                      kennelUniqueShortName:
+                          formController.kennel.kennelUniqueShortName,
+                    ),
+                  );
+                  await Get.delete<KennelWebsiteController>(force: true);
+                }
+              },
+            ),
+          ],
         ],
       ),
     );
@@ -1078,6 +1127,38 @@ class RunListPage extends StatelessWidget {
     }
 
     return rdm;
+  }
+
+  Future<KennelWebsiteModel?> _getKennelWebsite(String publicKennelId) async {
+    final deviceId = box.get(HIVE_DEVICE_ID) as String;
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
+
+    final accessToken = Utilities.generateToken(
+      deviceId,
+      'hcportal_getKennelWebsite',
+      paramString: deviceSecret,
+    );
+
+    final body = <String, String>{
+      'queryType': 'getKennelWebsite',
+      'deviceId': deviceId,
+      'accessToken': accessToken,
+      'publicKennelId': publicKennelId,
+    };
+
+    final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+    debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+        ? 'SP [getKennelWebsite] called — FAILED'
+        : 'SP [getKennelWebsite] called — success');
+    if (!jsonResult.startsWith(ERROR_PREFIX)) {
+      final jsonItems = json.decode(jsonResult) as List<dynamic>;
+      final rows = jsonItems[0] as List<dynamic>;
+      if (rows.isNotEmpty) {
+        return KennelWebsiteModel.fromJson(rows[0] as Map<String, dynamic>);
+      }
+    }
+
+    return null;
   }
 
   Widget _renderRunDetail(EventDetailsResult edr) {

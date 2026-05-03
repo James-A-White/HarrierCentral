@@ -87,6 +87,21 @@ enum DocumentType {
     'images/other/upload_image.png',
     '',
   ),
+  kennelWebsiteBanner(
+    'Website Banner Image',
+    'images/other/upload_image.png',
+    '',
+  ),
+  kennelWebsiteBackground(
+    'Website Background Image',
+    'images/other/upload_image.png',
+    '',
+  ),
+  kennelWebsiteOgImage(
+    'Website OG Image',
+    'images/other/upload_image.png',
+    '',
+  ),
   ;
 
   const DocumentType(

@@ -63,6 +63,8 @@ abstract class KennelModel with _$KennelModel {
     String? countryFlag,
     String? regionFlag,
     String? cityFlag,
+    // DEPRECATED: These website* fields are superseded by HC.KennelWebsite
+    // (KennelWebsiteModel). Remove after all callers are migrated.
     String? websiteBackgroundColor,
     String? websiteBackgroundImage,
     String? websiteTitleText,

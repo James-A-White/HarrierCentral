@@ -93,6 +93,10 @@ export default async function RunDetailPage({ params, searchParams }: PageProps)
         "--kennel-text-body": kennel.textBodyColor,
         "--kennel-text-muted": kennel.textMutedColor,
         "--kennel-card-bg": kennel.cardBackgroundColor,
+        "--kennel-btn-primary": kennel.buttonPrimaryColor,
+        "--kennel-btn-cancel": kennel.buttonCancelColor,
+        "--kennel-btn-secondary": kennel.buttonSecondaryColor,
+        "--kennel-run-card-bg": kennel.runCardBackgroundColor,
       } as React.CSSProperties}
     >
       <body className="text-zinc-100 antialiased overflow-x-hidden">
@@ -106,7 +110,8 @@ export default async function RunDetailPage({ params, searchParams }: PageProps)
         >
           <Link
             href={backHref}
-            className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold shadow-sm transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:text-white dark:hover:bg-white/[0.14] border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-900"
+            className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold shadow-sm transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:hover:bg-white/[0.14] border-zinc-300 bg-white hover:bg-zinc-50"
+            style={{ color: "var(--kennel-text-body)" }}
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             <span className="sm:hidden">Back</span>
@@ -115,7 +120,8 @@ export default async function RunDetailPage({ params, searchParams }: PageProps)
           {showKennelHomeBtn && (
             <Link
               href={`/${slug}`}
-              className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold shadow-sm transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:text-white dark:hover:bg-white/[0.14] border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-900"
+              className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold shadow-sm transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:hover:bg-white/[0.14] border-zinc-300 bg-white hover:bg-zinc-50"
+              style={{ color: "var(--kennel-text-body)" }}
             >
               <Home className="h-3.5 w-3.5" />
               {kennelData.KennelShortName}

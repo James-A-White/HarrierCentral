@@ -48,6 +48,10 @@ CREATE TABLE [HC].[KennelWebsite]
     [BodyTextColor]             NVARCHAR(25)        NULL,       -- body / row-value text colour; default #FFFFFFFF
     [TextMutedColor]            NVARCHAR(9)         NULL,       -- label / secondary text colour; default #FFFFFF80
     [CardBackgroundColor]       NVARCHAR(9)         NULL,       -- card / panel surface colour; default #FFFFFF0A
+    [ButtonPrimaryColor]        NVARCHAR(9)         NULL,       -- primary/default action button background (#RRGGBBAA); default = PrimaryColor
+    [ButtonCancelColor]         NVARCHAR(9)         NULL,       -- cancel/undo action button background (#RRGGBBAA); no system default
+    [ButtonSecondaryColor]      NVARCHAR(9)         NULL,       -- secondary (non-primary, non-cancel) button background (#RRGGBBAA); no system default
+    [RunCardColor]              NVARCHAR(9)         NULL,       -- run card surface colour (#RRGGBBAA); default = CardBackgroundColor
 
     -- ── HC5 nav colours ────────────────────────────────────────────────
     [BackgroundColor]           NVARCHAR(25)        NULL,       -- page background overlay (#RRGGBBAA)

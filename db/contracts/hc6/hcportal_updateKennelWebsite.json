@@ -1,0 +1,324 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_updateKennelWebsite",
+  "version": "1.0.0",
+  "description": "Updates a kennel's HC6 public website configuration in HC.KennelWebsite. Update-only — the row is created on kennel insert via the TR_Kennel_AfterInsert_CreateKennelWebsite trigger. All style and content parameters use COALESCE so omitted parameters preserve existing values. Nullable NVARCHAR fields use the empty-string sentinel: sending '' sets the column to NULL (clears the value); omitting the parameter leaves it unchanged.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: device GUID from the portal's device-bound token system. Accepts NULL so SQL can return a structured error rather than causing an execution failure."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived (30s) cryptographic token generated from the device shared secret."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "Routing: the kennel to update. Resolved to HC.Kennel.id internally. Accepts NULL so SQL can return a structured error."
+    },
+    {
+      "name": "enabled",
+      "type": "BIT",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.Enabled",
+      "description": "Whether the public website is enabled. NULL = no change."
+    },
+    {
+      "name": "themeMode",
+      "type": "NVARCHAR(10)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.ThemeMode",
+      "description": "Theme mode: 'light' or 'dark'. Validated — any other value returns an error. NULL = no change."
+    },
+    {
+      "name": "primaryColor",
+      "type": "NVARCHAR(25)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.PrimaryColor",
+      "description": "Primary brand colour (CSS hex). '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "accentColor",
+      "type": "NVARCHAR(25)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.AccentColor",
+      "description": "Secondary accent colour (CSS hex). '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "scrollBlur",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.ScrollBlur",
+      "description": "Hero scroll blur intensity 0–100. Validated — out-of-range returns an error. NULL = no change."
+    },
+    {
+      "name": "customDomain",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.CustomDomain",
+      "description": "Tier 3 custom domain (e.g. 'lh3.com'). '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "urlShortcode",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.UrlShortcode",
+      "description": "Legacy HC5 URL shortcode. '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "bannerImage",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.BannerImage",
+      "description": "Hero/header banner image URL. '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "ogImageUrl",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.OgImageUrl",
+      "description": "Open Graph image URL. '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "backgroundImage",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.BackgroundImage",
+      "description": "Page background image URL. '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "titleTextColor",
+      "type": "NVARCHAR(25)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.TitleTextColor",
+      "description": "Heading text colour (#RRGGBBAA). '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "bodyTextColor",
+      "type": "NVARCHAR(25)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.BodyTextColor",
+      "description": "Body text colour (#RRGGBBAA). '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "textMutedColor",
+      "type": "NVARCHAR(9)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.TextMutedColor",
+      "description": "Secondary/label text colour (#RRGGBBAA). '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "cardBackgroundColor",
+      "type": "NVARCHAR(9)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.CardBackgroundColor",
+      "description": "Card/panel surface colour (#RRGGBBAA). '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "buttonPrimaryColor",
+      "type": "NVARCHAR(9)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.ButtonPrimaryColor",
+      "description": "Primary action button background (#RRGGBBAA). '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "buttonCancelColor",
+      "type": "NVARCHAR(9)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.ButtonCancelColor",
+      "description": "Cancel/undo action button background (#RRGGBBAA). '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "buttonSecondaryColor",
+      "type": "NVARCHAR(9)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.ButtonSecondaryColor",
+      "description": "Secondary (non-primary, non-cancel) button background (#RRGGBBAA). '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "runCardColor",
+      "type": "NVARCHAR(9)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.RunCardColor",
+      "description": "Run card surface colour (#RRGGBBAA). '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "backgroundColor",
+      "type": "NVARCHAR(25)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.BackgroundColor",
+      "description": "HC5 legacy page background overlay colour (#RRGGBBAA). '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "menuBackgroundColor",
+      "type": "NVARCHAR(25)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.MenuBackgroundColor",
+      "description": "Sticky nav background colour (#RRGGBBAA). '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "menuTextColor",
+      "type": "NVARCHAR(25)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.MenuTextColor",
+      "description": "Sticky nav text colour. '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "titleFont",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.TitleFont",
+      "description": "HC5 legacy title font name. '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "bodyFont",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.BodyFont",
+      "description": "HC5 legacy body font name. '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "titleText",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.TitleText",
+      "description": "Custom hero display name (distinct from KennelName). '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "tagline",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.Tagline",
+      "description": "Short strapline. '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "welcomeText",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.WelcomeText",
+      "description": "Homepage welcome/intro copy. '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "seoTitle",
+      "type": "NVARCHAR(60)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.SeoTitle",
+      "description": "Per-tenant <title> tag (max 60 chars). '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "seoDescription",
+      "type": "NVARCHAR(155)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.SeoDescription",
+      "description": "Per-tenant <meta description> (max 155 chars). '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "seoStructuredDataJson",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.SeoStructuredDataJson",
+      "description": "JSON-LD structured data override. '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "mismanagementDescription",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.MismanagementDescription",
+      "description": "Mis-management page intro copy. '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "mismanagementJson",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.MismanagementJson",
+      "description": "Committee contacts as JSON. '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "extraMenusJson",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.ExtraMenusJson",
+      "description": "Custom nav items as JSON. '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "contactDetailsJson",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.ContactDetailsJson",
+      "description": "Contact details as JSON. '' clears to NULL; NULL = no change."
+    },
+    {
+      "name": "controlFlags",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.ControlFlags",
+      "description": "HC5 legacy feature toggle bitflags. NULL = no change. Note: the SP has a dead CASE WHEN @controlFlags = '' check that can never fire on INT — harmless but inert."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "SuccessResult",
+      "description": "Single row on success.",
+      "columns": [
+        {
+          "name": "result",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "'Website settings updated successfully'"
+        },
+        {
+          "name": "resultCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success"
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "ErrorResult",
+      "description": "Returned on auth failure, validation error, or kennel not found — in place of SuccessResult.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "BIT",
+          "nullable": false,
+          "description": "0 on error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Human-readable error description"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Updates HC.KennelWebsite WHERE KennelId = resolved @publicKennelId"
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Dead sentinel check on INT column",
+      "detail": "controlFlags uses CASE WHEN @controlFlags = '' THEN NULL which can never be true on an INT parameter. The COALESCE path still works correctly — the CASE is simply dead code."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a parameter",
+    "Never change a parameter type",
+    "Never change the empty-string sentinel meaning for NVARCHAR fields",
+    "Never change the resultCode value (1 = success) without updating all callers",
+    "Never change the SuccessResult column names (result, resultCode) without updating all callers"
+  ]
+}

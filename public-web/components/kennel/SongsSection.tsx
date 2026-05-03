@@ -49,11 +49,11 @@ function SongRow({ song, slug, index }: { song: Song; slug: string; index: numbe
       >
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <span className="text-2xl font-semibold dark:text-white text-zinc-900 transition-colors group-hover:dark:text-white group-hover:text-zinc-900">
+            <span className="text-2xl font-semibold transition-colors" style={{ color: "var(--kennel-text-body)" }}>
               {song.SongName}
             </span>
             {song.TuneOf && (
-              <span className="text-xl dark:text-white text-zinc-900">
+              <span className="text-xl" style={{ color: "var(--kennel-text-body)" }}>
                 Tune of: <em>{song.TuneOf}</em>
               </span>
             )}
@@ -63,7 +63,8 @@ function SongRow({ song, slug, index }: { song: Song; slug: string; index: numbe
               {song.Tags.split(",").map((tag) => tag.trim()).filter(Boolean).map((tag) => (
                 <span
                   key={tag}
-                  className="inline-block rounded-full px-2.5 py-0.5 text-base font-medium dark:bg-white/[0.08] dark:text-white bg-zinc-100 text-zinc-900"
+                  className="inline-block rounded-full px-2.5 py-0.5 text-base font-medium dark:bg-white/[0.08] bg-zinc-100"
+                  style={{ color: "var(--kennel-text-body)" }}
                 >
                   {tag}
                 </span>
@@ -74,10 +75,10 @@ function SongRow({ song, slug, index }: { song: Song; slug: string; index: numbe
 
         <div className="flex items-center gap-3 shrink-0">
           {song.AudioUrl && (
-            <Volume2 className="h-4 w-4 dark:text-white/30 text-zinc-400" />
+            <Volume2 className="h-4 w-4" style={{ color: "var(--kennel-text-muted)" }} />
           )}
           <BawdyRating rating={song.BawdyRating} />
-          <ChevronRight className="h-4 w-4 dark:text-white/20 text-zinc-300 transition-colors group-hover:dark:text-white/60 group-hover:text-zinc-500" />
+          <ChevronRight className="h-4 w-4 transition-colors" style={{ color: "var(--kennel-text-muted)" }} />
         </div>
       </Link>
     </motion.div>
@@ -109,22 +110,23 @@ export function SongsSection({ songs, slug }: SongsSectionProps) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-80px" }}
         transition={{ duration: 0.6, ease: [0.19, 1, 0.22, 1] }}
-        className="rounded-[2rem] overflow-hidden dark:border dark:border-white/[0.08] border border-zinc-200 dark:bg-white/[0.04] bg-white"
+        className="rounded-[2rem] overflow-hidden dark:border dark:border-white/[0.08] border border-zinc-200"
+        style={{ backgroundColor: "var(--kennel-card-bg)" }}
       >
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-5 border-b dark:border-white/[0.07] border-zinc-100">
           <div className="flex items-center gap-3">
-            <Music2 className="h-5 w-5 dark:text-white/40 text-zinc-400 shrink-0" />
-            <h2 className="text-xl uppercase tracking-[0.15em] dark:text-white text-zinc-900">
+            <Music2 className="h-5 w-5 shrink-0" style={{ color: "var(--kennel-text-muted)" }} />
+            <h2 className="text-xl uppercase tracking-[0.15em]" style={{ color: "var(--kennel-text-title)" }}>
               Songs
             </h2>
-            <span className="text-xl dark:text-white text-zinc-900 tabular-nums">
+            <span className="text-xl tabular-nums" style={{ color: "var(--kennel-text-body)" }}>
               {songs.length}
             </span>
           </div>
 
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 dark:text-white/30 text-zinc-400 pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none" style={{ color: "var(--kennel-text-muted)" }} />
             <input
               type="search"
               placeholder="Search songs…"
@@ -138,7 +140,7 @@ export function SongsSection({ songs, slug }: SongsSectionProps) {
         {/* Song list */}
         <div className="px-6">
           {filtered.length === 0 ? (
-            <p className="py-10 text-center text-xl dark:text-white text-zinc-900">
+            <p className="py-10 text-center text-xl" style={{ color: "var(--kennel-text-body)" }}>
               No songs match &ldquo;{query}&rdquo;
             </p>
           ) : (
