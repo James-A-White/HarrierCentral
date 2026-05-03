@@ -3,67 +3,96 @@ import 'package:hcportal/imports.dart';
 
 /// A form field that displays a colour swatch + hex value.
 /// Tapping opens a colour picker dialog. The value is stored as a CSS hex
-/// string (e.g. `#3a7bd5`). Null means "not set / inherit from theme".
+/// string — 6-digit `#RRGGBB` when [enableAlpha] is false, 8-digit
+/// `#RRGGBBAA` when true. Null means "not set / inherit from theme".
 class EditableColorField extends StatelessWidget {
   const EditableColorField({
     super.key,
     required this.controller,
     required this.uiControl,
     required this.onChanged,
+    this.enableAlpha = false,
   });
 
   final TabUiController controller;
   final UiControlDefinition uiControl;
   final ValueChanged<String?> onChanged;
 
+  /// When true the colour picker shows an alpha slider and the stored value
+  /// uses 8-digit hex (#RRGGBBAA). Use for surface / overlay colours where
+  /// opacity is meaningful. Leave false for text and brand colours.
+  final bool enableAlpha;
+
   // ---------------------------------------------------------------------------
   // Helpers
   // ---------------------------------------------------------------------------
 
+  /// Parses a 6- or 8-digit CSS hex string into a [Color].
+  /// Alpha is preserved for 8-digit values.
   static Color? parseHex(String? hex) {
     if (hex == null || hex.isEmpty) return null;
     final clean = hex.replaceAll('#', '').trim().toLowerCase();
-    // Accept #RRGGBB (6) or #RRGGBBAA (8) — alpha is stripped since we store RGB only
-    final rgb = clean.length == 8 ? clean.substring(0, 6) : clean;
-    if (rgb.length != 6) return null;
-    final r = int.tryParse(rgb.substring(0, 2), radix: 16);
-    final g = int.tryParse(rgb.substring(2, 4), radix: 16);
-    final b = int.tryParse(rgb.substring(4, 6), radix: 16);
-    if (r == null || g == null || b == null) return null;
-    return Color.fromARGB(255, r, g, b);
+    if (clean.length == 8) {
+      final r = int.tryParse(clean.substring(0, 2), radix: 16);
+      final g = int.tryParse(clean.substring(2, 4), radix: 16);
+      final b = int.tryParse(clean.substring(4, 6), radix: 16);
+      final a = int.tryParse(clean.substring(6, 8), radix: 16);
+      if (r == null || g == null || b == null || a == null) return null;
+      return Color.fromARGB(a, r, g, b);
+    }
+    if (clean.length == 6) {
+      final r = int.tryParse(clean.substring(0, 2), radix: 16);
+      final g = int.tryParse(clean.substring(2, 4), radix: 16);
+      final b = int.tryParse(clean.substring(4, 6), radix: 16);
+      if (r == null || g == null || b == null) return null;
+      return Color.fromARGB(255, r, g, b);
+    }
+    return null;
   }
 
-  static String colorToHex(Color color) {
+  static String colorToHex(Color color, {bool includeAlpha = false}) {
     final r = (color.r * 255).round();
     final g = (color.g * 255).round();
     final b = (color.b * 255).round();
-    return '#${r.toRadixString(16).padLeft(2, '0')}'
+    final hex = '#${r.toRadixString(16).padLeft(2, '0')}'
         '${g.toRadixString(16).padLeft(2, '0')}'
         '${b.toRadixString(16).padLeft(2, '0')}';
+    if (!includeAlpha) return hex;
+    final a = (color.a * 255).round();
+    return '$hex${a.toRadixString(16).padLeft(2, '0')}';
   }
 
   // ---------------------------------------------------------------------------
   // Color picker dialog
   // ---------------------------------------------------------------------------
 
+  void _clearValue(TextEditingController? tc) {
+    if (tc != null) tc.clear();
+    uiControl.editedFieldValue = null;
+    uiControl.updateEditedValue(null);
+    onChanged(null);
+  }
+
   Future<void> _showPicker(BuildContext context) async {
     final tc = uiControl.textController;
     final currentHex =
         (tc != null && tc.text.isNotEmpty) ? tc.text : uiControl.editedFieldValue;
-    Color picked = parseHex(currentHex) ?? const Color(0xFF2196F3);
+    final Color initial = parseHex(currentHex) ?? const Color(0xFF2196F3);
 
     await showDialog<void>(
       context: context,
       builder: (ctx) => _ColorPickerDialog(
-        initial: picked,
+        initial: initial,
         label: uiControl.label,
+        enableAlpha: enableAlpha,
         onApply: (color) {
-          final hex = colorToHex(color);
+          final hex = colorToHex(color, includeAlpha: enableAlpha);
           if (tc != null) tc.text = hex;
           uiControl.editedFieldValue = hex;
           uiControl.updateEditedValue(hex);
           onChanged(hex);
         },
+        onUseDefault: () => _clearValue(tc),
       ),
     );
   }
@@ -89,22 +118,13 @@ class EditableColorField extends StatelessWidget {
                   builder: (_, value, __) => _FieldRow(
                     label: uiControl.label,
                     hexValue: value.text.isNotEmpty ? value.text : null,
-                    onClear: () {
-                      tc.clear();
-                      uiControl.editedFieldValue = null;
-                      uiControl.updateEditedValue(null);
-                      onChanged(null);
-                    },
+                    onClear: () => _clearValue(tc),
                   ),
                 )
               : _FieldRow(
                   label: uiControl.label,
                   hexValue: uiControl.editedFieldValue,
-                  onClear: () {
-                    uiControl.editedFieldValue = null;
-                    uiControl.updateEditedValue(null);
-                    onChanged(null);
-                  },
+                  onClear: () => _clearValue(null),
                 ),
         ),
       ),
@@ -173,7 +193,7 @@ class _FieldRow extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Colour swatch square
+// Colour swatch square — checkered background reveals transparency
 // ---------------------------------------------------------------------------
 
 class _ColorSwatch extends StatelessWidget {
@@ -185,19 +205,42 @@ class _ColorSwatch extends StatelessWidget {
     return Container(
       width: 36,
       height: 36,
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: color,
         borderRadius: BorderRadius.circular(6),
         border: Border.all(color: Colors.grey.shade400, width: 1.5),
       ),
       child: color == null
-          ? ClipRRect(
-              borderRadius: BorderRadius.circular(5),
-              child: CustomPaint(painter: _UnsetPainter()),
-            )
-          : null,
+          ? CustomPaint(painter: _UnsetPainter())
+          : Stack(
+              fit: StackFit.expand,
+              children: [
+                CustomPaint(painter: _CheckerPainter()),
+                ColoredBox(color: color!),
+              ],
+            ),
     );
   }
+}
+
+class _CheckerPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    const cell = 6.0;
+    final paint = Paint();
+    var row = 0;
+    for (var y = 0.0; y < size.height; y += cell, row++) {
+      var col = 0;
+      for (var x = 0.0; x < size.width; x += cell, col++) {
+        paint.color =
+            (row + col).isEven ? Colors.white : Colors.grey.shade300;
+        canvas.drawRect(Rect.fromLTWH(x, y, cell, cell), paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter old) => false;
 }
 
 class _UnsetPainter extends CustomPainter {
@@ -228,12 +271,16 @@ class _ColorPickerDialog extends StatefulWidget {
   const _ColorPickerDialog({
     required this.initial,
     required this.label,
+    required this.enableAlpha,
     required this.onApply,
+    required this.onUseDefault,
   });
 
   final Color initial;
   final String label;
+  final bool enableAlpha;
   final ValueChanged<Color> onApply;
+  final VoidCallback onUseDefault;
 
   @override
   State<_ColorPickerDialog> createState() => _ColorPickerDialogState();
@@ -257,7 +304,7 @@ class _ColorPickerDialogState extends State<_ColorPickerDialog> {
         child: ColorPicker(
           pickerColor: _picked,
           onColorChanged: (c) => setState(() => _picked = c),
-          enableAlpha: false,
+          enableAlpha: widget.enableAlpha,
           hexInputBar: true,
           portraitOnly: true,
           colorPickerWidth: 280,
@@ -267,19 +314,33 @@ class _ColorPickerDialogState extends State<_ColorPickerDialog> {
           labelTypes: const [],
         ),
       ),
+      actionsAlignment: MainAxisAlignment.spaceBetween,
       actions: [
-        ElevatedButton(
-          style: defaultButtonStyle,
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text('Cancel', style: buttonLabelStyleMedium),
-        ),
-        ElevatedButton(
-          style: defaultButtonStyle,
+        TextButton(
           onPressed: () {
-            widget.onApply(_picked);
+            widget.onUseDefault();
             Navigator.of(context).pop();
           },
-          child: Text('Apply', style: buttonLabelStyleMedium),
+          child: Text('Use default', style: bodyStyleBlack),
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ElevatedButton(
+              style: defaultButtonStyle,
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancel', style: buttonLabelStyleMedium),
+            ),
+            const SizedBox(width: 8),
+            ElevatedButton(
+              style: defaultButtonStyle,
+              onPressed: () {
+                widget.onApply(_picked);
+                Navigator.of(context).pop();
+              },
+              child: Text('Apply', style: buttonLabelStyleMedium),
+            ),
+          ],
         ),
       ],
     );

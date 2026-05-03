@@ -106,7 +106,8 @@ export default async function RunDetailPage({ params, searchParams }: PageProps)
         >
           <Link
             href={backHref}
-            className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold shadow-sm transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:text-white dark:hover:bg-white/[0.14] border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-900"
+            className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold shadow-sm transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:hover:bg-white/[0.14] border-zinc-300 bg-white hover:bg-zinc-50"
+            style={{ color: "var(--kennel-text-body)" }}
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             <span className="sm:hidden">Back</span>
@@ -115,7 +116,8 @@ export default async function RunDetailPage({ params, searchParams }: PageProps)
           {showKennelHomeBtn && (
             <Link
               href={`/${slug}`}
-              className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold shadow-sm transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:text-white dark:hover:bg-white/[0.14] border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-900"
+              className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold shadow-sm transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:hover:bg-white/[0.14] border-zinc-300 bg-white hover:bg-zinc-50"
+              style={{ color: "var(--kennel-text-body)" }}
             >
               <Home className="h-3.5 w-3.5" />
               {kennelData.KennelShortName}

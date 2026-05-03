@@ -208,7 +208,7 @@ export function ScrollHero({ kennel, slug, nextRun }: ScrollHeroProps) {
           <motion.p
             className="mt-3 text-[clamp(1.5rem,4.2vh,3.25rem)] font-bold tracking-wide"
             style={{
-              color: kennel.titleTextColor ?? (kennel.theme === "dark" ? "#ffffff" : "#18181b"),
+              color: kennel.titleTextColor ?? "var(--kennel-text-title)",
             }}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -220,8 +220,8 @@ export function ScrollHero({ kennel, slug, nextRun }: ScrollHeroProps) {
 
         {/* Short name */}
         <motion.h1
-          className="text-[clamp(2.5rem,9vh,7rem)] font-black uppercase text-zinc-900 dark:text-white"
-          style={{ letterSpacing: "0.06em" }}
+          className="text-[clamp(2.5rem,9vh,7rem)] font-black uppercase"
+          style={{ letterSpacing: "0.06em", color: "var(--kennel-text-title)" }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.1, ease: [0.19, 1, 0.22, 1] }}
@@ -230,7 +230,8 @@ export function ScrollHero({ kennel, slug, nextRun }: ScrollHeroProps) {
         </motion.h1>
 
         <motion.p
-          className="mt-2 text-[clamp(1.1rem,3.8vh,2rem)] font-semibold text-zinc-700 dark:text-white/80"
+          className="mt-2 text-[clamp(1.1rem,3.8vh,2rem)] font-semibold"
+          style={{ color: "var(--kennel-text-body)" }}
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.2, ease: [0.19, 1, 0.22, 1] }}
@@ -258,8 +259,8 @@ export function ScrollHero({ kennel, slug, nextRun }: ScrollHeroProps) {
             </Link>
           )}
           <button
-            className="rounded-full border px-8 py-3 text-base font-semibold transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:text-white dark:hover:bg-white/[0.12] border-zinc-200 bg-transparent hover:bg-zinc-50 text-zinc-900"
-            style={{ fontSize: `${HERO_BUTTON_TEXT_PX}px` }}
+            className="rounded-full border px-8 py-3 text-base font-semibold transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:hover:bg-white/[0.12] border-zinc-200 bg-transparent hover:bg-zinc-50"
+            style={{ fontSize: `${HERO_BUTTON_TEXT_PX}px`, color: "var(--kennel-text-body)" }}
           >
             New runner info
           </button>

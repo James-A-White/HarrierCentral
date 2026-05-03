@@ -71,6 +71,9 @@ export default async function SongDetailPage({ params }: PageProps) {
         "--kennel-primary": kennel.primaryColor,
         "--kennel-primary-fg": kennel.primaryFg,
         "--kennel-accent": kennel.accentColor,
+        "--kennel-text-title": kennel.textTitleColor,
+        "--kennel-text-body": kennel.textBodyColor,
+        "--kennel-text-muted": kennel.textMutedColor,
       } as React.CSSProperties}
     >
       <body className="text-zinc-100 antialiased overflow-x-hidden">
@@ -81,7 +84,8 @@ export default async function SongDetailPage({ params }: PageProps) {
         <div className="pt-20 pb-4 mx-auto w-full max-w-3xl px-4 md:px-6">
           <Link
             href={`/${slug}/songs`}
-            className="inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-xl font-semibold shadow-sm transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:text-white dark:hover:bg-white/[0.14] border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-900"
+            className="inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-xl font-semibold shadow-sm transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:hover:bg-white/[0.14] border-zinc-300 bg-white hover:bg-zinc-50"
+            style={{ color: "var(--kennel-text-body)" }}
           >
             <ArrowLeft className="h-4 w-4" />
             Back to songs
@@ -102,11 +106,11 @@ export default async function SongDetailPage({ params }: PageProps) {
 
           {/* Title block */}
           <div>
-            <h1 className="text-4xl font-black dark:text-white text-zinc-900 md:text-5xl leading-tight">
+            <h1 className="text-4xl font-black md:text-5xl leading-tight" style={{ color: "var(--kennel-text-title)" }}>
               {song.SongName}
             </h1>
             {song.TuneOf && (
-              <p className="mt-2 text-2xl dark:text-white text-zinc-900">
+              <p className="mt-2 text-2xl" style={{ color: "var(--kennel-text-body)" }}>
                 Tune of: <em>{song.TuneOf}</em>
               </p>
             )}
@@ -120,7 +124,8 @@ export default async function SongDetailPage({ params }: PageProps) {
                 {song.Tags.split(",").map((tag) => tag.trim()).filter(Boolean).map((tag) => (
                   <span
                     key={tag}
-                    className="inline-block rounded-full px-3 py-1 text-xl font-medium dark:bg-white/[0.08] dark:text-white bg-zinc-100 text-zinc-900"
+                    className="inline-block rounded-full px-3 py-1 text-xl font-medium dark:bg-white/[0.08] bg-zinc-100"
+                  style={{ color: "var(--kennel-text-body)" }}
                   >
                     {tag}
                   </span>
@@ -138,10 +143,10 @@ export default async function SongDetailPage({ params }: PageProps) {
           {song.Lyrics && (
             <Card className="rounded-2xl dark:border-white/[0.08] dark:bg-white/[0.04] border-zinc-200 bg-white">
               <CardContent className="p-5 md:p-6">
-                <h2 className="text-xl uppercase tracking-[0.15em] dark:text-white text-zinc-900 mb-4">
+                <h2 className="text-xl uppercase tracking-[0.15em] mb-4" style={{ color: "var(--kennel-text-title)" }}>
                   Lyrics
                 </h2>
-                <pre className="text-2xl leading-9 dark:text-white text-zinc-900 whitespace-pre-wrap font-sans break-words">
+                <pre className="text-2xl leading-9 whitespace-pre-wrap font-sans break-words" style={{ color: "var(--kennel-text-body)" }}>
                   {song.Lyrics}
                 </pre>
               </CardContent>
@@ -152,10 +157,10 @@ export default async function SongDetailPage({ params }: PageProps) {
           {song.Actions && (
             <Card className="rounded-2xl dark:border-white/[0.08] dark:bg-white/[0.04] border-zinc-200 bg-white">
               <CardContent className="p-5 md:p-6">
-                <h2 className="text-xl uppercase tracking-[0.15em] dark:text-white text-zinc-900 mb-3">
+                <h2 className="text-xl uppercase tracking-[0.15em] mb-3" style={{ color: "var(--kennel-text-title)" }}>
                   Actions
                 </h2>
-                <p className="text-2xl leading-9 dark:text-white text-zinc-900">
+                <p className="text-2xl leading-9" style={{ color: "var(--kennel-text-body)" }}>
                   {song.Actions}
                 </p>
               </CardContent>
@@ -166,10 +171,10 @@ export default async function SongDetailPage({ params }: PageProps) {
           {song.Notes && (
             <Card className="rounded-2xl dark:border-white/[0.08] dark:bg-white/[0.04] border-zinc-200 bg-white">
               <CardContent className="p-5 md:p-6">
-                <h2 className="text-xl uppercase tracking-[0.15em] dark:text-white text-zinc-900 mb-3">
+                <h2 className="text-xl uppercase tracking-[0.15em] mb-3" style={{ color: "var(--kennel-text-title)" }}>
                   Notes
                 </h2>
-                <p className="text-2xl leading-9 dark:text-white text-zinc-900">
+                <p className="text-2xl leading-9" style={{ color: "var(--kennel-text-body)" }}>
                   {song.Notes}
                 </p>
               </CardContent>
@@ -180,10 +185,10 @@ export default async function SongDetailPage({ params }: PageProps) {
           {song.Variants && (
             <Card className="rounded-2xl dark:border-white/[0.08] dark:bg-white/[0.04] border-zinc-200 bg-white">
               <CardContent className="p-5 md:p-6">
-                <h2 className="text-xl uppercase tracking-[0.15em] dark:text-white text-zinc-900 mb-4">
+                <h2 className="text-xl uppercase tracking-[0.15em] mb-4" style={{ color: "var(--kennel-text-title)" }}>
                   Variants
                 </h2>
-                <pre className="text-2xl leading-9 dark:text-white text-zinc-900 whitespace-pre-wrap font-sans break-words">
+                <pre className="text-2xl leading-9 whitespace-pre-wrap font-sans break-words" style={{ color: "var(--kennel-text-body)" }}>
                   {song.Variants}
                 </pre>
               </CardContent>

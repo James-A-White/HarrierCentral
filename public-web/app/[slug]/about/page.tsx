@@ -58,6 +58,9 @@ export default async function AboutPage({ params }: PageProps) {
         "--kennel-primary": kennel.primaryColor,
         "--kennel-primary-fg": kennel.primaryFg,
         "--kennel-accent": kennel.accentColor,
+        "--kennel-text-title": kennel.textTitleColor,
+        "--kennel-text-body": kennel.textBodyColor,
+        "--kennel-text-muted": kennel.textMutedColor,
       } as React.CSSProperties}
     >
       <body className="text-zinc-100 antialiased overflow-x-hidden">
@@ -67,7 +70,8 @@ export default async function AboutPage({ params }: PageProps) {
         <div className="relative z-10 pt-20 pb-4 mx-auto w-full max-w-3xl px-4 md:px-6">
           <Link
             href={`/${slug}`}
-            className="inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-base font-semibold shadow-sm transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:text-white dark:hover:bg-white/[0.14] border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-900"
+            className="inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-base font-semibold shadow-sm transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:hover:bg-white/[0.14] border-zinc-300 bg-white hover:bg-zinc-50"
+            style={{ color: "var(--kennel-text-body)" }}
           >
             <ArrowLeft className="h-4 w-4" />
             <span className="sm:hidden">Back</span>
@@ -76,13 +80,13 @@ export default async function AboutPage({ params }: PageProps) {
         </div>
 
         <main className="relative z-10 mx-auto w-full max-w-3xl px-4 pb-24 md:px-6">
-          <h1 className="text-4xl font-black dark:text-white text-zinc-900 mb-6 md:text-5xl">
+          <h1 className="text-4xl font-black mb-6 md:text-5xl" style={{ color: "var(--kennel-text-title)" }}>
             About {kennelData.KennelName}
           </h1>
 
           <Card className="rounded-2xl dark:border-white/[0.08] dark:bg-white/[0.04] border-zinc-200 bg-white">
             <CardContent className="p-6 md:p-8">
-              <p className="text-lg leading-relaxed dark:text-white/70 text-zinc-600">
+              <p className="text-lg leading-relaxed" style={{ color: "var(--kennel-text-muted)" }}>
                 More information about this kennel is coming soon.
               </p>
             </CardContent>

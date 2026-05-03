@@ -110,8 +110,8 @@ async function copyToClipboard(rows: KennelStatRow[]): Promise<void> {
 function SortIcon({ col, sort }: { col: SortKey; sort: SortState }) {
   if (sort.key !== col) return <ChevronsUpDown className="h-3 w-3 opacity-30 shrink-0" />;
   return sort.dir === "asc"
-    ? <ChevronUp className="h-3 w-3 shrink-0 text-white" />
-    : <ChevronDown className="h-3 w-3 shrink-0 text-white" />;
+    ? <ChevronUp className="h-3 w-3 shrink-0" style={{ color: "var(--kennel-text-body)" }} />
+    : <ChevronDown className="h-3 w-3 shrink-0" style={{ color: "var(--kennel-text-body)" }} />;
 }
 
 // ─── Shared cell class helpers ────────────────────────────────────────────────
@@ -180,9 +180,9 @@ export function StatsPageClient({ rows, kennelName, kennelShortName }: StatsPage
   if (rows.length === 0) {
     return (
       <div className="mt-8 rounded-[2rem] border dark:border-white/[0.08] dark:bg-white/[0.04] border-zinc-200 bg-white p-12 flex flex-col items-center gap-3 text-center">
-        <BarChart3 className="h-8 w-8 dark:text-white/20 text-zinc-300" />
-        <p className="text-2xl dark:text-white text-zinc-900">No stats available yet.</p>
-        <p className="text-xl dark:text-white/60 text-zinc-500">
+        <BarChart3 className="h-8 w-8" style={{ color: "var(--kennel-text-muted)" }} />
+        <p className="text-2xl" style={{ color: "var(--kennel-text-body)" }}>No stats available yet.</p>
+        <p className="text-xl" style={{ color: "var(--kennel-text-muted)" }}>
           Stats will appear once members have runs recorded.
         </p>
       </div>
@@ -196,13 +196,13 @@ export function StatsPageClient({ rows, kennelName, kennelShortName }: StatsPage
       {/* Header + toolbar */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xl uppercase tracking-[0.15em] dark:text-white/50 text-zinc-500 mb-1">
+          <p className="text-xl uppercase tracking-[0.15em] mb-1" style={{ color: "var(--kennel-text-muted)" }}>
             Run statistics
           </p>
-          <h1 className="text-4xl font-black dark:text-white text-zinc-900 leading-tight">
+          <h1 className="text-4xl font-black leading-tight" style={{ color: "var(--kennel-text-title)" }}>
             {kennelShortName}
           </h1>
-          <p className="text-2xl dark:text-white/60 text-zinc-500 mt-1">
+          <p className="text-2xl mt-1" style={{ color: "var(--kennel-text-muted)" }}>
             {rows.length} {rows.length === 1 ? "hasher" : "hashers"}
           </p>
         </div>
@@ -212,7 +212,8 @@ export function StatsPageClient({ rows, kennelName, kennelShortName }: StatsPage
             variant="outline"
             size="sm"
             onClick={handleExportCSV}
-            className="rounded-full text-base gap-2 dark:border-white/15 dark:bg-white/[0.06] dark:text-white dark:hover:bg-white/[0.12]"
+            className="rounded-full text-base gap-2 dark:border-white/15 dark:bg-white/[0.06] dark:hover:bg-white/[0.12]"
+            style={{ color: "var(--kennel-text-body)" }}
           >
             <Download className="h-4 w-4" />
             CSV
@@ -221,7 +222,8 @@ export function StatsPageClient({ rows, kennelName, kennelShortName }: StatsPage
             variant="outline"
             size="sm"
             onClick={handleCopy}
-            className="rounded-full text-base gap-2 dark:border-white/15 dark:bg-white/[0.06] dark:text-white dark:hover:bg-white/[0.12]"
+            className="rounded-full text-base gap-2 dark:border-white/15 dark:bg-white/[0.06] dark:hover:bg-white/[0.12]"
+            style={{ color: "var(--kennel-text-body)" }}
           >
             <ClipboardCopy className="h-4 w-4" />
             {copyState === "copied" ? "Copied!" : "Copy"}
@@ -230,7 +232,8 @@ export function StatsPageClient({ rows, kennelName, kennelShortName }: StatsPage
             variant="outline"
             size="sm"
             onClick={() => window.print()}
-            className="rounded-full text-base gap-2 dark:border-white/15 dark:bg-white/[0.06] dark:text-white dark:hover:bg-white/[0.12]"
+            className="rounded-full text-base gap-2 dark:border-white/15 dark:bg-white/[0.06] dark:hover:bg-white/[0.12]"
+            style={{ color: "var(--kennel-text-body)" }}
           >
             <Printer className="h-4 w-4" />
             Print
@@ -255,14 +258,15 @@ export function StatsPageClient({ rows, kennelName, kennelShortName }: StatsPage
             <ColGroup />
             <thead>
               <tr>
-                <th rowSpan={2} className={`${TH_BASE} text-center dark:text-white/50 text-zinc-400`}>
+                <th rowSpan={2} className={`${TH_BASE} text-center`} style={{ color: "var(--kennel-text-muted)" }}>
                   #
                 </th>
                 {GROUPS.map(({ label, span }) => (
                   <th
                     key={label || "__name__"}
                     colSpan={span}
-                    className={`${TH_BASE} text-center uppercase tracking-[0.1em] dark:text-white/50 text-zinc-400`}
+                    className={`${TH_BASE} text-center uppercase tracking-[0.1em]`}
+                    style={{ color: "var(--kennel-text-muted)" }}
                   >
                     {label}
                   </th>
@@ -273,9 +277,10 @@ export function StatsPageClient({ rows, kennelName, kennelShortName }: StatsPage
                   <th
                     key={col.key}
                     onClick={() => handleSort(col.key)}
-                    className={`${TH_BASE} cursor-pointer select-none whitespace-nowrap dark:text-white text-zinc-700 hover:dark:bg-white/[0.10] hover:bg-zinc-100 transition-colors ${
+                    className={`${TH_BASE} cursor-pointer select-none whitespace-nowrap hover:dark:bg-white/[0.10] hover:bg-zinc-100 transition-colors ${
                       col.key === "DisplayName" ? "text-left" : "text-right"
                     } ${sort.key === col.key ? "dark:bg-white/[0.10] bg-zinc-100" : ""}`}
+                    style={{ color: "var(--kennel-text-body)" }}
                   >
                     <span className={`inline-flex items-center gap-1 ${col.key !== "DisplayName" ? "flex-row-reverse" : ""}`}>
                       {col.label}
@@ -295,18 +300,18 @@ export function StatsPageClient({ rows, kennelName, kennelShortName }: StatsPage
               <tbody>
                 {sorted.map((row, idx) => (
                   <tr key={idx} className="dark:hover:bg-white/[0.04] hover:bg-zinc-50/50 transition-colors">
-                    <td className={`${TD_BORDER} px-3 py-2.5 text-center tabular-nums text-2xl dark:text-white/40 text-zinc-400`}>
+                    <td className={`${TD_BORDER} px-3 py-2.5 text-center tabular-nums text-2xl`} style={{ color: "var(--kennel-text-muted)" }}>
                       {idx + 1}
                     </td>
-                    <td className={`${TD_BORDER} px-3 py-2.5 text-2xl font-semibold dark:text-white text-zinc-900`}>
+                    <td className={`${TD_BORDER} px-3 py-2.5 text-2xl font-semibold`} style={{ color: "var(--kennel-text-body)" }}>
                       {row.DisplayName}
                     </td>
-                    <td className={`${TD_NUM} dark:text-white text-zinc-900`}>{row.TotalRuns}</td>
-                    <td className={`${TD_NUM} dark:text-white/70 text-zinc-500`}>{row.TotalHaring}</td>
-                    <td className={`${TD_NUM} dark:text-white text-zinc-900`}>{row.YtdRuns}</td>
-                    <td className={`${TD_NUM} dark:text-white/70 text-zinc-500`}>{row.YtdHaring}</td>
-                    <td className={`${TD_NUM} font-semibold dark:text-white text-zinc-900`}>{row.RollingYearRuns}</td>
-                    <td className={`${TD_NUM} dark:text-white/70 text-zinc-500`}>{row.RollingYearHaring}</td>
+                    <td className={TD_NUM} style={{ color: "var(--kennel-text-body)" }}>{row.TotalRuns}</td>
+                    <td className={TD_NUM} style={{ color: "var(--kennel-text-muted)" }}>{row.TotalHaring}</td>
+                    <td className={TD_NUM} style={{ color: "var(--kennel-text-body)" }}>{row.YtdRuns}</td>
+                    <td className={TD_NUM} style={{ color: "var(--kennel-text-muted)" }}>{row.YtdHaring}</td>
+                    <td className={`${TD_NUM} font-semibold`} style={{ color: "var(--kennel-text-body)" }}>{row.RollingYearRuns}</td>
+                    <td className={TD_NUM} style={{ color: "var(--kennel-text-muted)" }}>{row.RollingYearHaring}</td>
                   </tr>
                 ))}
               </tbody>
@@ -316,7 +321,7 @@ export function StatsPageClient({ rows, kennelName, kennelShortName }: StatsPage
         </div>
       </div>
 
-      <p className="text-sm dark:text-white/30 text-zinc-400 text-center print:hidden">
+      <p className="text-sm text-center print:hidden" style={{ color: "var(--kennel-text-muted)" }}>
         Click any column header to sort · {rows.length} members shown
       </p>
     </div>

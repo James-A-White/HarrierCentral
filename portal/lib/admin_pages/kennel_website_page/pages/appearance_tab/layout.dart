@@ -59,6 +59,7 @@ class _AppearanceTabContent extends StatelessWidget {
           EditableColorField(
             controller: controller,
             uiControl: menuBgCtrl,
+            enableAlpha: true,
             onChanged: (_) => controller.checkIfFormIsDirty(),
           ),
         const SizedBox(height: 16),
@@ -98,6 +99,7 @@ class _AppearanceTabContent extends StatelessWidget {
           EditableColorField(
             controller: controller,
             uiControl: mutedColorCtrl,
+            enableAlpha: true,
             onChanged: (_) => controller.checkIfFormIsDirty(),
           ),
         const SizedBox(height: 32),
@@ -107,6 +109,7 @@ class _AppearanceTabContent extends StatelessWidget {
           EditableColorField(
             controller: controller,
             uiControl: cardBgCtrl,
+            enableAlpha: true,
             onChanged: (_) => controller.checkIfFormIsDirty(),
           ),
       ],

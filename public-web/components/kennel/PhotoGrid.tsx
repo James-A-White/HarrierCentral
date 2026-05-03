@@ -34,12 +34,12 @@ export function PhotoGrid({ runs, kennel: _kennel, slug }: PhotoGridProps) {
         <CardContent className="p-5 md:p-6">
           <div className="mb-5 flex items-center justify-between">
             <div>
-              <div className="text-xl uppercase tracking-[0.15em] dark:text-white text-zinc-900 mb-1">
+              <div className="text-xl uppercase tracking-[0.15em] mb-1" style={{ color: "var(--kennel-text-muted)" }}>
                 Past runs
               </div>
-              <h2 className="text-2xl font-bold dark:text-white text-zinc-900">Recent runs</h2>
+              <h2 className="text-2xl font-bold" style={{ color: "var(--kennel-text-title)" }}>Recent runs</h2>
             </div>
-            <span className="text-xl font-medium dark:text-white text-zinc-900">
+            <span className="text-xl font-medium" style={{ color: "var(--kennel-text-body)" }}>
               {runs.length} {runs.length === 1 ? "run" : "runs"}
             </span>
           </div>
@@ -67,13 +67,13 @@ export function PhotoGrid({ runs, kennel: _kennel, slug }: PhotoGridProps) {
                         loading="lazy"
                       />
                       <div className="px-2.5 py-1.5 dark:bg-white/[0.07] bg-zinc-100 border-t dark:border-white/[0.08] border-zinc-200/60">
-                        <p className="text-sm font-semibold dark:text-white text-zinc-900 truncate leading-snug">
+                        <p className="text-sm font-semibold truncate leading-snug" style={{ color: "var(--kennel-text-body)" }}>
                           {run.EventName}
                           {run.IsCountedRun ? (
-                            <span className="ml-1.5 font-normal dark:text-white/50 text-zinc-500">#{run.EventNumber}</span>
+                            <span className="ml-1.5 font-normal" style={{ color: "var(--kennel-text-muted)" }}>#{run.EventNumber}</span>
                           ) : null}
                         </p>
-                        <p className="text-xs dark:text-white/50 text-zinc-500 truncate mt-0.5" suppressHydrationWarning>
+                        <p className="text-xs truncate mt-0.5" style={{ color: "var(--kennel-text-muted)" }} suppressHydrationWarning>
                           {shortDate(run.EventStartDatetime)} · {shortTime(run.EventStartDatetime)}
                         </p>
                       </div>
@@ -83,14 +83,14 @@ export function PhotoGrid({ runs, kennel: _kennel, slug }: PhotoGridProps) {
                       className="p-3 flex flex-col justify-between dark:bg-white/[0.06] bg-zinc-50"
                       style={{ minHeight: "80px" }}
                     >
-                      <span className="text-base font-semibold dark:text-white text-zinc-900">
+                      <span className="text-base font-semibold" style={{ color: "var(--kennel-text-body)" }}>
                         #{run.EventNumber}
                       </span>
                       <div>
-                        <div className="text-xl font-bold dark:text-white text-zinc-900 line-clamp-2 leading-snug">
+                        <div className="text-xl font-bold line-clamp-2 leading-snug" style={{ color: "var(--kennel-text-title)" }}>
                           {run.EventName}
                         </div>
-                        <div className="text-base dark:text-white text-zinc-900 mt-1" suppressHydrationWarning>
+                        <div className="text-base mt-1" style={{ color: "var(--kennel-text-body)" }} suppressHydrationWarning>
                           {shortDate(run.EventStartDatetime)}
                         </div>
                       </div>

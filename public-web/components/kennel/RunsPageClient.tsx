@@ -59,7 +59,7 @@ function RunListItem({
         className="px-3 py-2"
         style={isSelected ? { backgroundColor: "color-mix(in srgb, var(--kennel-primary) 18%, transparent)" } : undefined}
       >
-        <span className="text-sm font-semibold dark:text-white text-zinc-900 leading-snug">
+        <span className="text-sm font-semibold leading-snug" style={{ color: "var(--kennel-text-body)" }}>
           {run.EventName}
         </span>
       </div>
@@ -89,19 +89,19 @@ function RunListItem({
               {kennel.name}
             </span>
           )}
-          <span className="text-sm font-semibold dark:text-white text-zinc-900 leading-snug" suppressHydrationWarning>
+          <span className="text-sm font-semibold leading-snug" style={{ color: "var(--kennel-text-body)" }} suppressHydrationWarning>
             {run.IsCountedRun ? `Run #${run.EventNumber}, ${rel}` : rel}
           </span>
-          <span className="text-sm dark:text-white/60 text-zinc-500 leading-snug" suppressHydrationWarning>
+          <span className="text-sm leading-snug" style={{ color: "var(--kennel-text-muted)" }} suppressHydrationWarning>
             {cardDate} at {cardTime}
           </span>
           {addressParts && (
-            <span className="text-sm dark:text-white/60 text-zinc-500 leading-snug">
+            <span className="text-sm leading-snug" style={{ color: "var(--kennel-text-muted)" }}>
               {addressParts}
             </span>
           )}
           {run.LocationOneLineDesc && (
-            <span className="text-sm dark:text-white/60 text-zinc-500 leading-snug">
+            <span className="text-sm leading-snug" style={{ color: "var(--kennel-text-muted)" }}>
               Location: {run.LocationOneLineDesc}
             </span>
           )}
@@ -264,7 +264,7 @@ export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageC
         {/* Search */}
         <div className="px-4 py-3 border-b dark:border-white/[0.08] border-zinc-200/50 shrink-0">
           <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 dark:text-white/40 text-zinc-400 pointer-events-none" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 pointer-events-none" style={{ color: "var(--kennel-text-muted)" }} />
             <input
               type="search"
               placeholder="Search runs…"
@@ -278,7 +278,7 @@ export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageC
                 className="absolute right-3 top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full dark:bg-white/20 bg-zinc-200"
                 aria-label="Clear search"
               >
-                <X className="h-3 w-3 dark:text-white text-zinc-700" />
+                <X className="h-3 w-3" style={{ color: "var(--kennel-text-body)" }} />
               </button>
             )}
           </div>
@@ -290,11 +290,8 @@ export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageC
             <button
               key={t}
               onClick={() => switchTab(t)}
-              className={`flex-1 py-3 text-xl font-semibold transition-colors ${
-                tab === t
-                  ? "dark:text-white text-zinc-900"
-                  : "dark:text-white/50 text-zinc-500 dark:hover:text-white/80 hover:text-zinc-700"
-              }`}
+              className="flex-1 py-3 text-xl font-semibold transition-colors"
+              style={{ color: tab === t ? "var(--kennel-text-body)" : "var(--kennel-text-muted)" }}
             >
               <span>{t === "future" ? "Future" : "Past"}</span>
               <span
@@ -328,7 +325,7 @@ export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageC
         {/* Run list */}
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           {filtered.length === 0 ? (
-            <div className="py-16 text-center text-xl dark:text-white/50 text-zinc-400">
+            <div className="py-16 text-center text-xl" style={{ color: "var(--kennel-text-muted)" }}>
               {query ? `No runs match "${query}"` : "No runs found"}
             </div>
           ) : (
@@ -380,8 +377,8 @@ export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageC
         ) : (
           <div className="h-full flex items-center justify-center">
             <div className="text-center">
-              <CalendarDays className="h-12 w-12 dark:text-white/20 text-zinc-300 mx-auto mb-3" />
-              <p className="text-2xl dark:text-white/50 text-zinc-400">Select a run to see details</p>
+              <CalendarDays className="h-12 w-12 mx-auto mb-3" style={{ color: "var(--kennel-text-muted)" }} />
+              <p className="text-2xl" style={{ color: "var(--kennel-text-muted)" }}>Select a run to see details</p>
             </div>
           </div>
         )}

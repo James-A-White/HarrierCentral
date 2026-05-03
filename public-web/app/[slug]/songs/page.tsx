@@ -47,6 +47,9 @@ export default async function SongsPage({ params }: PageProps) {
         "--kennel-primary": kennel.primaryColor,
         "--kennel-primary-fg": kennel.primaryFg,
         "--kennel-accent": kennel.accentColor,
+        "--kennel-text-title": kennel.textTitleColor,
+        "--kennel-text-body": kennel.textBodyColor,
+        "--kennel-text-muted": kennel.textMutedColor,
       } as React.CSSProperties}
     >
       <body className="text-zinc-100 antialiased overflow-x-hidden">
@@ -56,7 +59,8 @@ export default async function SongsPage({ params }: PageProps) {
         <div className="pt-20 pb-4 mx-auto w-full max-w-3xl px-4 md:px-6">
           <Link
             href={`/${slug}`}
-            className="inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-xl font-semibold shadow-sm transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:text-white dark:hover:bg-white/[0.14] border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-900"
+            className="inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-xl font-semibold shadow-sm transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:hover:bg-white/[0.14] border-zinc-300 bg-white hover:bg-zinc-50"
+            style={{ color: "var(--kennel-text-body)" }}
           >
             <ArrowLeft className="h-4 w-4" />
             Back to {kennelData.KennelShortName}
@@ -66,8 +70,8 @@ export default async function SongsPage({ params }: PageProps) {
         <main className="mx-auto max-w-3xl px-4 pb-24 md:px-6">
           {songs.length === 0 ? (
             <div className="mt-8 rounded-[2rem] border dark:border-white/[0.08] dark:bg-white/[0.04] border-zinc-200 bg-white p-12 flex flex-col items-center gap-3 text-center">
-              <Music2 className="h-8 w-8 dark:text-white/20 text-zinc-300" />
-              <p className="text-2xl dark:text-white text-zinc-900">
+              <Music2 className="h-8 w-8" style={{ color: "var(--kennel-text-muted)" }} />
+              <p className="text-2xl" style={{ color: "var(--kennel-text-body)" }}>
                 No songs have been added yet.
               </p>
             </div>

@@ -94,7 +94,7 @@ export function AudioPlayer({ src }: AudioPlayerProps) {
         </div>
 
         {/* Times */}
-        <div className="flex justify-between text-base dark:text-white text-zinc-900 tabular-nums select-none">
+        <div className="flex justify-between text-base tabular-nums select-none" style={{ color: "var(--kennel-text-body)" }}>
           <span>{formatTime(currentTime)}</span>
           <span>{formatTime(duration)}</span>
         </div>

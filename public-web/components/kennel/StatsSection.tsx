@@ -46,11 +46,11 @@ function StatRow({
     <div className="flex items-center justify-between rounded-2xl border dark:border-white/[0.08] dark:bg-black/[0.15] border-zinc-100 bg-zinc-50 px-4 py-4">
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl dark:border-white/[0.08] dark:bg-white/[0.08] border border-zinc-200 bg-white">
-          <Icon className="h-5 w-5 dark:text-white/60 text-zinc-500" />
+          <Icon className="h-5 w-5" style={{ color: "var(--kennel-text-muted)" }} />
         </div>
-        <span className="text-2xl font-medium dark:text-white text-zinc-900">{label}</span>
+        <span className="text-2xl font-medium" style={{ color: "var(--kennel-text-body)" }}>{label}</span>
       </div>
-      <div className="text-3xl font-bold dark:text-white text-zinc-900 tabular-nums">
+      <div className="text-3xl font-bold tabular-nums" style={{ color: "var(--kennel-text-body)" }}>
         {display}{suffix}
       </div>
     </div>
@@ -72,13 +72,13 @@ export function StatsSection({ kennel }: { kennel: KennelContext }) {
       <Card className="rounded-[2rem] dark:border-white/10 dark:bg-white/[0.06] border-zinc-200 bg-white shadow-xl dark:shadow-black/30 dark:backdrop-blur-xl">
         <CardContent className="p-6 md:p-7">
           <div className="mb-5">
-            <div className="text-xl uppercase tracking-[0.15em] dark:text-white text-zinc-900 mb-1">
+            <div className="text-xl uppercase tracking-[0.15em] mb-1" style={{ color: "var(--kennel-text-muted)" }}>
               By the numbers
             </div>
-            <h2 className="text-3xl font-bold dark:text-white text-zinc-900">
+            <h2 className="text-3xl font-bold" style={{ color: "var(--kennel-text-title)" }}>
               {kennel.name}
             </h2>
-            <p className="text-2xl dark:text-white text-zinc-900 mt-1">
+            <p className="text-2xl mt-1" style={{ color: "var(--kennel-text-body)" }}>
               Est. {kennel.foundedYear} · {kennel.city}
             </p>
           </div>
