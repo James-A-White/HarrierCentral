@@ -24,17 +24,18 @@ export function UpcomingRunsList({ runs, slug }: UpcomingRunsListProps) {
   return (
     <div className="min-w-0 w-full max-w-full">
       <div className="mb-4 flex min-w-0 items-center justify-between gap-3">
-        <h2 className="min-w-0 text-2xl font-bold dark:text-white text-zinc-900">Upcoming runs</h2>
+        <h2 className="min-w-0 text-2xl font-bold" style={{ color: "var(--kennel-text-title)" }}>Upcoming runs</h2>
         <Link
           href={`/${slug}/runs`}
-          className="shrink-0 text-xl font-medium dark:text-white text-zinc-900"
+          className="shrink-0 text-xl font-medium"
+          style={{ color: "var(--kennel-text-body)" }}
         >
           Full calendar →
         </Link>
       </div>
       <div className="space-y-3">
         {runs.length === 0 && (
-          <p className="text-xl dark:text-white text-zinc-900 py-4">No upcoming runs scheduled.</p>
+          <p className="text-xl py-4" style={{ color: "var(--kennel-text-body)" }}>No upcoming runs scheduled.</p>
         )}
         {runs.map((run, i) => {
           const { dayTime, shortDate } = formatShortDate(run.EventStartDatetime);
@@ -52,7 +53,7 @@ export function UpcomingRunsList({ runs, slug }: UpcomingRunsListProps) {
                 <CardContent className="flex items-center gap-4 p-4">
                   {/* Left column: date above run number badge */}
                   <div className="flex shrink-0 flex-col items-center gap-1.5">
-                    <div className="text-sm font-semibold dark:text-white/70 text-zinc-500 text-center" suppressHydrationWarning>
+                    <div className="text-sm font-semibold text-center" style={{ color: "var(--kennel-text-muted)" }} suppressHydrationWarning>
                       {shortDate}
                     </div>
                     <div
@@ -65,10 +66,10 @@ export function UpcomingRunsList({ runs, slug }: UpcomingRunsListProps) {
 
                   {/* Details — full remaining width */}
                   <div className="min-w-0 flex-1">
-                    <div className="text-2xl font-semibold dark:text-white text-zinc-900 truncate transition-colors group-hover:text-[var(--kennel-primary)]">
+                    <div className="text-2xl font-semibold truncate transition-colors group-hover:text-[var(--kennel-primary)]" style={{ color: "var(--kennel-text-title)" }}>
                       {run.EventName}
                     </div>
-                    <div className="mt-1 flex min-w-0 flex-wrap gap-x-3 gap-y-0.5 text-xl dark:text-white text-zinc-900">
+                    <div className="mt-1 flex min-w-0 flex-wrap gap-x-3 gap-y-0.5 text-xl" style={{ color: "var(--kennel-text-body)" }}>
                       <span className="flex items-center gap-1" suppressHydrationWarning>
                         <Clock className="h-3 w-3" />
                         {dayTime}
@@ -81,9 +82,9 @@ export function UpcomingRunsList({ runs, slug }: UpcomingRunsListProps) {
                       )}
                     </div>
                     {run.Hares && (
-                      <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-xl dark:text-white/80 text-zinc-600">
+                      <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-xl" style={{ color: "var(--kennel-text-muted)" }}>
                         <span className="shrink-0 text-sm uppercase tracking-[0.12em]">Hares:</span>
-                        <span className="min-w-0 truncate font-medium dark:text-white text-zinc-900">{run.Hares}</span>
+                        <span className="min-w-0 truncate font-medium" style={{ color: "var(--kennel-text-body)" }}>{run.Hares}</span>
                       </div>
                     )}
                   </div>

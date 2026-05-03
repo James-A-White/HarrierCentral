@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
@@ -32,14 +32,16 @@ const ENTRANCE = {
 };
 
 const DIVIDER = "dark:border-white/[0.1] border-zinc-200/60";
-const TEXT_BODY = "text-lg leading-relaxed dark:text-white/80 text-zinc-700";
+const TEXT_BODY_CLASS = "text-lg leading-relaxed";
+const TEXT_BODY_STYLE = { color: "var(--kennel-text-body)" } as React.CSSProperties;
 const TEXT_PADDING = "px-6 py-5 md:px-8 md:py-6";
 
 function AboutButton({ slug }: { slug: string }) {
   return (
     <Link
       href={`/${slug}/about`}
-      className="mt-4 inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-base font-semibold transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:text-white dark:hover:bg-white/[0.14] border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-900"
+      className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.08] hover:bg-white/[0.14] px-5 py-2.5 text-base font-semibold transition-colors"
+      style={{ color: "var(--kennel-text-body)" }}
     >
       About us
     </Link>
@@ -62,7 +64,7 @@ export function KennelWelcome({ bannerImage, welcomeText, slug }: KennelWelcomeP
       <motion.div className="mb-6" {...ENTRANCE}>
         <Card className={CARD}>
           <div className={TEXT_PADDING}>
-            <p className={TEXT_BODY}>{welcomeText}</p>
+            <p className={TEXT_BODY_CLASS} style={TEXT_BODY_STYLE}>{welcomeText}</p>
             <AboutButton slug={slug} />
           </div>
         </Card>
@@ -93,7 +95,7 @@ export function KennelWelcome({ bannerImage, welcomeText, slug }: KennelWelcomeP
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={bannerImage} alt="" className="w-full h-auto block" onLoad={handleLoad} />
           <div className={`${TEXT_PADDING} border-t ${DIVIDER}`}>
-            <p className={TEXT_BODY}>{welcomeText}</p>
+            <p className={TEXT_BODY_CLASS} style={TEXT_BODY_STYLE}>{welcomeText}</p>
             <AboutButton slug={slug} />
           </div>
         </Card>
@@ -117,7 +119,7 @@ export function KennelWelcome({ bannerImage, welcomeText, slug }: KennelWelcomeP
               />
             </div>
             <div className={`flex-1 flex flex-col justify-center ${TEXT_PADDING} border-t ${DIVIDER} sm:border-t-0 sm:border-l`}>
-              <p className={TEXT_BODY}>{welcomeText}</p>
+              <p className={TEXT_BODY_CLASS} style={TEXT_BODY_STYLE}>{welcomeText}</p>
               <AboutButton slug={slug} />
             </div>
           </div>
@@ -132,7 +134,7 @@ export function KennelWelcome({ bannerImage, welcomeText, slug }: KennelWelcomeP
       <Card className={CARD}>
         <div className="flex flex-col sm:flex-row">
           <div className={`flex-1 flex flex-col justify-center ${TEXT_PADDING} border-b ${DIVIDER} sm:border-b-0 sm:border-r`}>
-            <p className={TEXT_BODY}>{welcomeText}</p>
+            <p className={TEXT_BODY_CLASS} style={TEXT_BODY_STYLE}>{welcomeText}</p>
             <AboutButton slug={slug} />
           </div>
           <div className="sm:w-2/5 shrink-0 sm:max-h-[480px] overflow-hidden">

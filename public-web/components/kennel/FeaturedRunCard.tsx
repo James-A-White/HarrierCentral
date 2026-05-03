@@ -57,25 +57,25 @@ export function FeaturedRunCard({ run, href }: FeaturedRunCardProps) {
         <CardContent className="p-5 md:p-6">
           {/* Detail rows */}
           <div className="space-y-2.5 mb-5">
-            <div className="flex items-center gap-2.5 text-2xl dark:text-white text-zinc-900" suppressHydrationWarning>
-              <Clock className="h-4 w-4 shrink-0 dark:text-white/40 text-zinc-400" />
+            <div className="flex items-center gap-2.5 text-2xl" style={{ color: "var(--kennel-text-body)" }} suppressHydrationWarning>
+              <Clock className="h-4 w-4 shrink-0" style={{ color: "var(--kennel-text-muted)" }} />
               <span className="min-w-0 truncate">{longDate} · {time}</span>
             </div>
             {run.LocationCity && (
-              <div className="flex items-center gap-2.5 text-2xl dark:text-white text-zinc-900">
-                <MapPin className="h-4 w-4 shrink-0 dark:text-white/40 text-zinc-400" />
+              <div className="flex items-center gap-2.5 text-2xl" style={{ color: "var(--kennel-text-body)" }}>
+                <MapPin className="h-4 w-4 shrink-0" style={{ color: "var(--kennel-text-muted)" }} />
                 <span className="min-w-0 truncate">{run.LocationCity}</span>
               </div>
             )}
             {run.LocationOneLineDesc && (
-              <div className="flex items-center gap-2.5 text-2xl dark:text-white text-zinc-900">
-                <MapPin className="h-4 w-4 shrink-0 dark:text-white/40 text-zinc-400" />
+              <div className="flex items-center gap-2.5 text-2xl" style={{ color: "var(--kennel-text-body)" }}>
+                <MapPin className="h-4 w-4 shrink-0" style={{ color: "var(--kennel-text-muted)" }} />
                 <span className="min-w-0 truncate">{run.LocationOneLineDesc}</span>
               </div>
             )}
             {run.Hares && (
-              <div className="flex items-center gap-2.5 text-2xl dark:text-white text-zinc-900">
-                <Users className="h-4 w-4 shrink-0 dark:text-white/40 text-zinc-400" />
+              <div className="flex items-center gap-2.5 text-2xl" style={{ color: "var(--kennel-text-body)" }}>
+                <Users className="h-4 w-4 shrink-0" style={{ color: "var(--kennel-text-muted)" }} />
                 <span className="min-w-0 truncate">{run.Hares}</span>
               </div>
             )}
@@ -83,7 +83,7 @@ export function FeaturedRunCard({ run, href }: FeaturedRunCardProps) {
 
           {/* Description */}
           {run.EventDescription && (
-            <p className="text-2xl leading-9 dark:text-white text-zinc-900 mb-5 line-clamp-3 break-words">
+            <p className="text-2xl leading-9 mb-5 line-clamp-3 break-words" style={{ color: "var(--kennel-text-body)" }}>
               {run.EventDescription}
             </p>
           )}
