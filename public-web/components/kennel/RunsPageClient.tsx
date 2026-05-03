@@ -4,42 +4,14 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  Search, X, Navigation, ExternalLink,
-  ChevronRight, CalendarDays, Tag,
+  Search, X, ChevronRight, CalendarDays,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import type { RunEvent } from "@/lib/api";
 import type { KennelContext } from "@/lib/types/kennel";
+import { RunDetail } from "./RunDetail";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-
-function formatDate(iso: string) {
-  const d = new Date(iso);
-  return {
-    short: d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" }),
-    long: d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" }),
-    time: d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
-  };
-}
-
-function mapsUrl(lat: number | null, lon: number | null): string | null {
-  if (!lat || !lon) return null;
-  return `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
-}
-
-function formatFee(amount: number | null | undefined, currency: string | null): string {
-  if (!amount) return "Free";
-  return currency ? `${currency} ${amount.toFixed(2)}` : amount.toFixed(2);
-}
-
-function parseW3w(json: string | null): string | null {
-  if (!json) return null;
-  try {
-    const p = JSON.parse(json) as { map?: string; words?: string };
-    return p.map ?? (p.words ? `https://what3words.com/${p.words}` : null);
-  } catch { return null; }
-}
 
 function relativeTime(iso: string): string {
   const diffDays = Math.round((new Date(iso).getTime() - Date.now()) / 86_400_000);
@@ -48,30 +20,6 @@ function relativeTime(iso: string): string {
   if (diffDays === -1) return "yesterday";
   if (diffDays > 0) return `in ${diffDays} days`;
   return `${Math.abs(diffDays)} days ago`;
-}
-
-// ─── Detail row ───────────────────────────────────────────────────────────────
-
-function DetailRow({
-  label, value, suppressHydration,
-}: {
-  label: string;
-  value: React.ReactNode;
-  suppressHydration?: boolean;
-}) {
-  return (
-    <div className="flex gap-4 py-2.5 border-b dark:border-white/[0.06] border-zinc-100 last:border-0">
-      <span className="w-28 shrink-0 text-xl dark:text-white/60 text-zinc-500 text-right leading-snug pt-0.5">
-        {label}
-      </span>
-      <span
-        className="flex-1 min-w-0 text-xl dark:text-white text-zinc-900 font-medium leading-snug"
-        suppressHydrationWarning={suppressHydration}
-      >
-        {value}
-      </span>
-    </div>
-  );
 }
 
 // ─── Run list item ────────────────────────────────────────────────────────────
@@ -165,175 +113,6 @@ function RunListItem({
         </div>
       </div>
     </motion.button>
-  );
-}
-
-// ─── Run detail panel ─────────────────────────────────────────────────────────
-
-function RunDetail({
-  run, kennel, slug, backHref,
-}: {
-  run: RunEvent;
-  kennel: KennelContext;
-  slug: string;
-  backHref: string;
-}) {
-  const { long: longDate, time } = formatDate(run.EventStartDatetime);
-  const mapsLink = mapsUrl(run.Latitude, run.Longitude);
-  const w3wLink = parseW3w(run.w3wJson);
-
-  const locationParts = [
-    run.LocationOneLineDesc,
-    run.LocationStreet,
-    run.LocationCity,
-    run.LocationPostCode,
-  ].filter(Boolean).join(", ");
-
-  return (
-    <motion.div
-      key={run.PublicEventId}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.25 }}
-      className="flex flex-col min-h-full"
-    >
-      {/* Hero image */}
-      {run.EventImage && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={run.EventImage}
-          alt={run.EventName}
-          className="w-full h-auto block"
-        />
-      )}
-
-      {/* Run title */}
-      <div className="px-6 py-5 border-b dark:border-white/[0.08] border-zinc-200/50">
-        <div className="flex items-start gap-4">
-          {kennel.logoUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={kennel.logoUrl}
-              alt={kennel.shortName}
-              className="h-14 w-14 rounded-xl object-contain shrink-0 border dark:border-white/10 border-zinc-200 dark:bg-white/5 bg-white p-0.5"
-            />
-          )}
-          <div className="min-w-0">
-            <h2 className="text-3xl font-black dark:text-white text-zinc-900 leading-tight">
-              {run.EventName}
-            </h2>
-            {run.IsCountedRun ? (
-              <p className="mt-1 text-xl dark:text-white text-zinc-700">
-                Run #{run.EventNumber}
-              </p>
-            ) : null}
-          </div>
-        </div>
-      </div>
-
-      {/* Details */}
-      <div className="px-6 py-5 flex-1">
-        <h3 className="text-xl uppercase tracking-[0.15em] dark:text-white text-zinc-900 mb-3">
-          Event details
-        </h3>
-
-        <div>
-          <DetailRow label="Date" value={longDate} suppressHydration />
-          <DetailRow label="Time" value={time} suppressHydration />
-          {locationParts && <DetailRow label="Location" value={locationParts} />}
-          {run.Hares && <DetailRow label="Hares" value={run.Hares} />}
-          {run.EventTypeName && <DetailRow label="Event type" value={run.EventTypeName} />}
-          {(run.EventPriceForMembers !== null || run.EventPriceForNonMembers !== null) && (
-            <DetailRow
-              label="Fees"
-              value={
-                <span>
-                  {formatFee(run.EventPriceForMembers, run.EventCurrencyType)}{" "}
-                  <span className="dark:text-white/60 text-zinc-500">members</span>
-                  {run.EventPriceForNonMembers !== null && (
-                    <>
-                      {" · "}
-                      {formatFee(run.EventPriceForNonMembers, run.EventCurrencyType)}{" "}
-                      <span className="dark:text-white/60 text-zinc-500">non-members</span>
-                    </>
-                  )}
-                </span>
-              }
-            />
-          )}
-        </div>
-
-        {/* Tags */}
-        {run.tags.length > 0 && (
-          <div className="mt-4">
-            <div className="text-xl uppercase tracking-[0.15em] dark:text-white text-zinc-900 mb-2 flex items-center gap-1.5">
-              <Tag className="h-4 w-4" /> Tags
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {run.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-full border px-3 py-1 text-xl dark:border-white/10 dark:bg-white/5 dark:text-white border-zinc-200 bg-zinc-50 text-zinc-900"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Description */}
-        {run.EventDescription && (
-          <p className="mt-4 text-xl leading-8 dark:text-white text-zinc-900 whitespace-pre-wrap">
-            {run.EventDescription}
-          </p>
-        )}
-      </div>
-
-      {/* Action buttons */}
-      <div className="px-6 pb-6 pt-2 flex flex-wrap gap-3 border-t dark:border-white/[0.08] border-zinc-200/50">
-        {mapsLink && (
-          <a
-            href={mapsLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-xl font-semibold transition-colors dark:border-white/15 dark:bg-white/[0.06] dark:text-white dark:hover:bg-white/[0.10] border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-900"
-          >
-            <Navigation className="h-4 w-4" />
-            Open in Maps
-          </a>
-        )}
-        {w3wLink && (
-          <a
-            href={w3wLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-xl font-semibold transition-colors dark:border-white/15 dark:bg-white/[0.06] dark:text-white dark:hover:bg-white/[0.10] border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-900"
-          >
-            What3Words
-          </a>
-        )}
-        {run.EventUrl && (
-          <a
-            href={run.EventUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-xl font-semibold transition-colors dark:border-white/15 dark:bg-white/[0.06] dark:text-white dark:hover:bg-white/[0.10] border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-900"
-          >
-            <ExternalLink className="h-4 w-4" />
-            Event page
-          </a>
-        )}
-        <Link
-          href={`/${slug}/${run.EventNumber}?back=${encodeURIComponent(backHref)}`}
-          className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-xl font-semibold transition-opacity hover:opacity-90"
-          style={{ backgroundColor: "var(--kennel-primary)", color: "var(--kennel-primary-fg)" }}
-        >
-          Full details
-          <ChevronRight className="h-4 w-4" />
-        </Link>
-      </div>
-    </motion.div>
   );
 }
 
@@ -574,7 +353,30 @@ export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageC
       {/* ── Right panel: detail (desktop only) ─────────────────────────────── */}
       <div className="relative z-10 hidden min-w-0 flex-1 overflow-y-auto lg:block">
         {selectedRun ? (
-          <RunDetail run={selectedRun} kennel={kennel} slug={slug} backHref={backHref} />
+          <motion.div
+            key={selectedRun.PublicEventId}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.25 }}
+          >
+            {selectedRun.EventImage && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={selectedRun.EventImage} alt={selectedRun.EventName} className="w-full h-auto block" />
+            )}
+            <div className="p-5">
+              <RunDetail run={selectedRun} kennel={kennel} canonicalPath={`/${slug}/${selectedRun.EventNumber}`} />
+            </div>
+            <div className="px-5 pb-5 flex justify-end border-t border-white/[0.08]">
+              <Link
+                href={`/${slug}/${selectedRun.EventNumber}?back=${encodeURIComponent(backHref)}`}
+                className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-opacity hover:opacity-90"
+                style={{ backgroundColor: "var(--kennel-primary)", color: "var(--kennel-primary-fg)" }}
+              >
+                Full details
+                <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          </motion.div>
         ) : (
           <div className="h-full flex items-center justify-center">
             <div className="text-center">

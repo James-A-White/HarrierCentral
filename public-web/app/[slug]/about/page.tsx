@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { getKennelLandingData, type KennelLandingData } from "@/lib/api";
+import { getKennelLandingData } from "@/lib/api";
+import { toKennelContext } from "@/lib/kennel-utils";
 import { StickyNav } from "@/components/StickyNav";
 import { KennelBackground } from "@/components/kennel/KennelBackground";
 import { Card, CardContent } from "@/components/ui/card";
-import type { KennelContext } from "@/lib/types/kennel";
 import { kennelBaseUrl } from "@/lib/seo";
 
 interface PageProps {
@@ -42,34 +42,6 @@ export async function generateMetadata({ params }: PageProps) {
   };
 }
 
-function toKennelContext(data: KennelLandingData): KennelContext {
-  const hasCustomBackground = data.WebsiteBackgroundImage?.startsWith("https://") ?? false;
-  return {
-    slug: data.KennelUniqueShortName,
-    name: data.KennelName,
-    shortName: data.KennelShortName,
-    tagline: "",
-    city: "",
-    foundedYear: 0,
-    primaryColor: data.PrimaryColor ?? "#dc2626",
-    primaryFg: "#ffffff",
-    accentColor: data.AccentColor ?? "#f97316",
-    theme: "dark",
-    titleText: data.WebsiteTitleText ?? undefined,
-    titleTextColor: data.TitleTextColor ?? undefined,
-    logoLetter: data.KennelShortName.charAt(0).toUpperCase(),
-    logoUrl: data.KennelLogo?.startsWith("https://") ? data.KennelLogo : undefined,
-    backgroundImageUrl: hasCustomBackground ? data.WebsiteBackgroundImage! : "/images/jungle_background.jpg",
-    backgroundOverlayColor: "#000000",
-    backgroundOverlayMaxOpacity: 0.88,
-    scrollBlur: Math.min(100, Math.max(0, data.ScrollBlur ?? 0)),
-    menuBackgroundColor: data.MenuBackgroundColor ?? "#09090b",
-    menuBackgroundOpacity: 0.8,
-    menuTextColor: data.MenuTextColor ?? "#ffffff",
-    socialLinks: {},
-    stats: { totalRuns: 0, activeMembers: 0, photosUploaded: 0, yearsRunning: 0 },
-  };
-}
 
 export default async function AboutPage({ params }: PageProps) {
   const { slug } = await params;

@@ -85,6 +85,10 @@ export default async function KennelPage({ params }: PageProps) {
         "--kennel-primary": kennel.primaryColor,
         "--kennel-primary-fg": kennel.primaryFg,
         "--kennel-accent": kennel.accentColor,
+        "--kennel-text-title": kennel.textTitleColor,
+        "--kennel-text-body": kennel.textBodyColor,
+        "--kennel-text-muted": kennel.textMutedColor,
+        "--kennel-card-bg": kennel.cardBackgroundColor,
         "--kennel-menu-text": kennel.menuTextColor,
       } as React.CSSProperties}
     >

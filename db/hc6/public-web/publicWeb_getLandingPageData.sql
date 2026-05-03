@@ -31,6 +31,9 @@ AS
 --                           HC.Kennel.KennelLogo / KennelFavicon directly;
 --                           LogoUrl and FaviconUrl removed from
 --                           HC.KennelWebsite.
+--             2026-05-03 — Added HC6 style tokens: TitleTextColor,
+--                           BodyTextColor (activated from HC5 legacy),
+--                           TextMutedColor, CardBackgroundColor (new).
 -- HC5 Source:  None — new for HC6 public web
 -- Breaking Changes: None
 -- =====================================================================
@@ -91,12 +94,16 @@ BEGIN TRY
         kw.CustomDomain,
         kw.Enabled                                                  AS WebsiteEnabled,
 
-        -- ── HC5 legacy colours ────────────────────────────────────────────────
+        -- ── Style tokens (text + surface) ────────────────────────────────────
+        kw.TitleTextColor,
+        kw.BodyTextColor,
+        kw.TextMutedColor,
+        kw.CardBackgroundColor,
+
+        -- ── Nav colours ──────────────────────────────────────────────────────
         kw.BackgroundColor                                          AS WebsiteBackgroundColor,
         kw.MenuBackgroundColor,
-        kw.MenuTextColor,
-        kw.BodyTextColor,
-        kw.TitleTextColor
+        kw.MenuTextColor
 
     FROM HC.Kennel k
     LEFT JOIN HC.KennelWebsite kw ON kw.KennelId = k.id

@@ -4,11 +4,12 @@ import { useState, useMemo, useCallback, useEffect, useRef, useTransition } from
 import { useRouter } from "next/navigation";
 import QRCode from "react-qr-code";
 import {
-  Search, X, MapPin, Navigation, Tag, Copy, QrCode, ArrowLeft, LayoutList, CalendarDays, Loader2, Map as MapIcon, Info,
+  Search, X, MapPin, Navigation, Copy, QrCode, ArrowLeft, LayoutList, CalendarDays, Loader2, Map as MapIcon, Info,
 } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import dynamic from "next/dynamic";
 import type { GlobalRunRow, GetGlobalRunsResult } from "@/lib/api";
+import { RunDetail } from "@/components/kennel/RunDetail";
 
 const RunLocationMap = dynamic(() => import("./RunLocationMap"), { ssr: false });
 
@@ -218,32 +219,6 @@ function SectionDivider() {
   );
 }
 
-// ─── Field row ────────────────────────────────────────────────────────────────
-
-function FieldRow({
-  label,
-  value,
-  suppressHydration,
-}: {
-  label: string;
-  value: React.ReactNode;
-  suppressHydration?: boolean;
-}) {
-  return (
-    <div className="flex gap-3 py-0.5">
-      <span className="w-28 shrink-0 text-sm text-amber-400 text-right leading-snug">
-        {label}
-      </span>
-      <span
-        className="flex-1 min-w-0 text-sm text-white font-bold leading-snug"
-        suppressHydrationWarning={suppressHydration}
-      >
-        {value}
-      </span>
-    </div>
-  );
-}
-
 // ─── QR section ───────────────────────────────────────────────────────────────
 
 function QRSection({ run }: { run: GlobalRunRow }) {
@@ -282,138 +257,63 @@ function QRSection({ run }: { run: GlobalRunRow }) {
 
 function GlobalRunDetail({ run }: { run: GlobalRunRow }) {
   const [showQr, setShowQr] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const siteUrl = run.KennelWebsiteDomain ? normalizeWebsiteUrl(run.KennelWebsiteDomain) : null;
 
-  const { long: longDate, time } = formatDate(run.EventStartDatetime);
-  const mapsLink = mapsUrl(run.Latitude, run.Longitude);
-  const w3wLink  = parseW3w(run.w3wJson);
-  const siteUrl  = run.KennelWebsiteDomain ? normalizeWebsiteUrl(run.KennelWebsiteDomain) : null;
-  const runUrl   = `${HASHRUNS_ORIGIN}/${run.KennelSlug}/${run.EventNumber}`;
+  useEffect(() => { setShowQr(false); }, [run.PublicEventId]);
 
-  useEffect(() => { setShowQr(false); setCopied(false); }, [run.PublicEventId]);
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(runUrl).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
+  const kennel = {
+    name: run.KennelName,
+    shortName: run.KennelShortName,
+    logoUrl: run.KennelLogo?.startsWith("https://") ? run.KennelLogo : undefined,
   };
 
-  const btnCls = "inline-flex items-center gap-2 rounded-full bg-red-600 hover:bg-red-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors";
-
   return (
-    <div className="flex flex-col overflow-y-auto h-full">
-
-      {/* ── Run image ── */}
+    <div
+      className="overflow-y-auto h-full"
+      style={{
+        "--kennel-primary":    run.PrimaryColor ?? "#dc2626",
+        "--kennel-primary-fg": "#ffffff",
+        "--kennel-accent":     run.AccentColor  ?? "#eab308",
+        "--kennel-text-title": "#ffffffff",
+        "--kennel-text-body":  "#ffffffff",
+        "--kennel-text-muted": "#ffffff80",
+        "--kennel-card-bg":    "#ffffff0a",
+      } as React.CSSProperties}
+    >
       {run.EventImage && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={run.EventImage}
-          alt={run.EventName}
-          className="w-full h-auto block shrink-0"
+        <img src={run.EventImage} alt={run.EventName} className="w-full h-auto block shrink-0" />
+      )}
+      <div className="p-5">
+        <RunDetail
+          run={run}
+          kennel={kennel}
+          canonicalPath={`/${run.KennelSlug}/${run.EventNumber}`}
+          extraButtons={
+            <>
+              <button
+                onClick={() => setShowQr((v) => !v)}
+                className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-opacity hover:opacity-85"
+                style={{ backgroundColor: "var(--kennel-primary)", color: "var(--kennel-primary-fg)" }}
+              >
+                <QrCode className="h-4 w-4" />{showQr ? "Hide QR codes" : "QR codes"}
+              </button>
+              {siteUrl && (
+                <a
+                  href={siteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-opacity hover:opacity-85"
+                  style={{ backgroundColor: "var(--kennel-primary)", color: "var(--kennel-primary-fg)" }}
+                >
+                  {run.KennelName} website
+                </a>
+              )}
+            </>
+          }
         />
-      )}
-
-      {/* ── Kennel logo + event name ── */}
-      <div className="flex items-center justify-center gap-4 px-6 py-5 shrink-0">
-        <KennelLogo run={run} size="lg" />
-        <h2 className="text-lg font-bold text-white leading-snug">{run.EventName}</h2>
       </div>
-
-      <SectionDivider />
-
-      {/* ── Event details ── */}
-      <div className="px-6 py-4">
-        <p className="text-center text-amber-400 text-2xl font-semibold mb-3">Event details</p>
-        <div className="flex flex-col gap-1">
-          <FieldRow label="Kennel:" value={run.KennelName} />
-          {run.IsCountedRun && <FieldRow label="Run #:" value={String(run.EventNumber)} />}
-          <FieldRow label="Date:" value={longDate} suppressHydration />
-          <FieldRow label="Time:" value={time} suppressHydration />
-          {run.LocationOneLineDesc && <FieldRow label="Place:" value={run.LocationOneLineDesc} />}
-          {(run.EventPriceForMembers !== null || run.EventPriceForNonMembers !== null) && (
-            <FieldRow
-              label="Run fees:"
-              value={
-                <span>
-                  {run.EventPriceForMembers !== null && (
-                    <span className="block">{formatFee(run.EventPriceForMembers, run.EventCurrencyType)} (members)</span>
-                  )}
-                  {run.EventPriceForNonMembers !== null && (
-                    <span className="block">{formatFee(run.EventPriceForNonMembers, run.EventCurrencyType)} (non-members)</span>
-                  )}
-                </span>
-              }
-            />
-          )}
-          {run.LocationStreet && <FieldRow label="Street:" value={run.LocationStreet} />}
-          {run.LocationPostCode && <FieldRow label="Post code:" value={run.LocationPostCode} />}
-          {run.LocationCity && <FieldRow label="City:" value={run.LocationCity} />}
-          {run.LocationRegion && <FieldRow label="Region:" value={run.LocationRegion} />}
-          {run.LocationCountry && <FieldRow label="Country:" value={run.LocationCountry} />}
-          {run.EventTypeName && <FieldRow label="Event type:" value={run.EventTypeName} />}
-          {run.Hares && <FieldRow label="Hares:" value={run.Hares} />}
-        </div>
-      </div>
-
-      <SectionDivider />
-
-      {/* ── Action buttons ── */}
-      <div className="px-6 py-4 flex flex-wrap gap-3 justify-center">
-        {mapsLink && (
-          <a href={mapsLink} target="_blank" rel="noopener noreferrer" className={btnCls}>
-            <Navigation className="h-3.5 w-3.5" />Open Map
-          </a>
-        )}
-        {w3wLink && (
-          <a href={w3wLink} target="_blank" rel="noopener noreferrer" className={btnCls}>
-            <MapPin className="h-3.5 w-3.5" />W3W
-          </a>
-        )}
-        <button onClick={handleCopy} className={btnCls}>
-          <Copy className="h-3.5 w-3.5" />{copied ? "Copied!" : "Copy link to run"}
-        </button>
-        <button onClick={() => setShowQr((v) => !v)} className={btnCls}>
-          <QrCode className="h-3.5 w-3.5" />{showQr ? "Hide QR codes" : "Show QR codes"}
-        </button>
-        {siteUrl && (
-          <a href={siteUrl} target="_blank" rel="noopener noreferrer" className={btnCls}>
-            Open {run.KennelName} website
-          </a>
-        )}
-      </div>
-
-      {/* ── QR section ── */}
       {showQr && <QRSection run={run} />}
-
-      {/* ── Tags ── */}
-      {run.tags.length > 0 && (
-        <>
-          <SectionDivider />
-          <div className="px-6 py-4">
-            <p className="text-center text-amber-400 text-2xl font-semibold mb-3">Event tags</p>
-            <div className="flex flex-wrap gap-2 justify-center">
-              {run.tags.map((tag) => (
-                <span key={tag} className="rounded-full border border-white/15 bg-white/[0.08] px-3 py-1 text-lg font-semibold text-white">
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* ── Description ── */}
-      {run.EventDescription && (
-        <>
-          <SectionDivider />
-          <div className="px-6 py-4">
-            <p className="text-center text-amber-400 text-2xl font-semibold mb-3">Event description</p>
-            <p className="text-lg leading-7 font-medium text-white/90 whitespace-pre-wrap px-6">{run.EventDescription}</p>
-          </div>
-        </>
-      )}
-
     </div>
   );
 }

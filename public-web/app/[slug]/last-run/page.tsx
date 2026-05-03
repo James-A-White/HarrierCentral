@@ -4,10 +4,10 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, MapPin, Clock, Users, Tag, ExternalLink, Navigation } from "lucide-react";
 import { getKennelLandingData, getEvents, type KennelLandingData, type RunEvent } from "@/lib/api";
+import { toKennelContext } from "@/lib/kennel-utils";
 import { StickyNav } from "@/components/StickyNav";
 import { KennelBackground } from "@/components/kennel/KennelBackground";
 import { Card, CardContent } from "@/components/ui/card";
-import type { KennelContext } from "@/lib/types/kennel";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -47,64 +47,6 @@ async function resolveKennelAndRun(
   return [kennelData, event];
 }
 
-// ── Kennel theming ────────────────────────────────────────────────────────────
-
-function toKennelContext(data: KennelLandingData): KennelContext {
-  return {
-    slug: data.KennelUniqueShortName,
-    name: data.KennelName,
-    shortName: data.KennelShortName,
-    tagline: "",
-    city: "",
-    foundedYear: 0,
-    primaryColor: data.PrimaryColor ?? "#dc2626",
-    primaryFg: "#ffffff",
-    accentColor: data.AccentColor ?? "#f97316",
-    theme: "dark",
-    titleText: data.WebsiteTitleText ?? undefined,
-    titleTextColor: data.TitleTextColor ?? undefined,
-    logoLetter: data.KennelShortName.charAt(0).toUpperCase(),
-    logoUrl: data.KennelLogo?.startsWith("https://") ? data.KennelLogo : undefined,
-    backgroundImageUrl: data.WebsiteBackgroundImage?.startsWith("https://") ? data.WebsiteBackgroundImage : undefined,
-    ...parseOverlayColor(data.WebsiteBackgroundColor ?? null),
-    scrollBlur: Math.min(100, Math.max(0, data.ScrollBlur ?? 0)),
-    ...parseMenuBackground(data.MenuBackgroundColor ?? null, data.ThemeMode === "light" ? "light" : "dark"),
-    menuTextColor: data.MenuTextColor ?? (data.ThemeMode === "light" ? "#18181b" : "#ffffff"),
-    socialLinks: {},
-    stats: { totalRuns: 0, activeMembers: 0, photosUploaded: 0, yearsRunning: 0 },
-  };
-}
-
-function parseOverlayColor(raw: string | null): {
-  backgroundOverlayColor: string;
-  backgroundOverlayMaxOpacity: number;
-} {
-  if (raw && /^#[0-9A-Fa-f]{8}$/.test(raw)) {
-    const maxOpacity = parseInt(raw.slice(7, 9), 16) / 255;
-    return { backgroundOverlayColor: `#${raw.slice(1, 7)}`, backgroundOverlayMaxOpacity: maxOpacity };
-  }
-  return {
-    backgroundOverlayColor: raw && /^#[0-9A-Fa-f]{6}$/.test(raw) ? raw : "#000000",
-    backgroundOverlayMaxOpacity: 0.88,
-  };
-}
-
-function parseMenuBackground(raw: string | null, theme: "dark" | "light"): {
-  menuBackgroundColor: string;
-  menuBackgroundOpacity: number;
-} {
-  const s = raw?.trim() ?? "";
-  if (/^#[0-9A-Fa-f]{8}$/.test(s)) {
-    const maxOpacity = parseInt(s.slice(7, 9), 16) / 255;
-    return { menuBackgroundColor: `#${s.slice(1, 7)}`, menuBackgroundOpacity: maxOpacity };
-  }
-  if (/^#[0-9A-Fa-f]{6}$/.test(s)) {
-    return { menuBackgroundColor: s, menuBackgroundOpacity: 1.0 };
-  }
-  return theme === "dark"
-    ? { menuBackgroundColor: "#09090b", menuBackgroundOpacity: 0.8 }
-    : { menuBackgroundColor: "#ffffff", menuBackgroundOpacity: 0.8 };
-}
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -158,10 +100,7 @@ export default async function LastRunPage({ params }: PageProps) {
   if (!kennelData) notFound();
   if (!event) notFound();
 
-  const kennel = {
-    ...toKennelContext(kennelData),
-    ...parseOverlayColor(kennelData.WebsiteBackgroundColor),
-  };
+  const kennel = toKennelContext(kennelData);
   const { date, time } = formatDateLong(event.EventStartDatetime);
   const mapsLink = mapsUrl(event.Latitude, event.Longitude, event.LocationOneLineDesc ?? event.EventName);
   const w3wLink = parseW3w(event.w3wJson);

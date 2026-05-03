@@ -256,6 +256,13 @@
           "description": "CSS hex colour used for kennel name text and logo placeholder background in the list."
         },
         {
+          "name": "AccentColor",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "mapsToColumn": "KennelWebsite.AccentColor",
+          "description": "Secondary accent colour for the kennel. Used for row labels and section headings in the detail panel."
+        },
+        {
           "name": "PublicKennelId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
