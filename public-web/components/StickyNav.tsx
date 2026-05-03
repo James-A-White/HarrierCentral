@@ -125,12 +125,12 @@ export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false }: Stic
           </motion.div>
         )}
 
-        {/* Sticky nav — fades in as you scroll */}
+        {/* Sticky nav — fades in as you scroll (or immediately when there's no banner) */}
         <motion.div
           className="absolute inset-0 flex items-center px-4 md:px-6"
           style={{
-            opacity: alwaysVisible ? 1 : navOpacity,
-            y: alwaysVisible ? 0 : navY,
+            opacity: (alwaysVisible || !nextRun) ? 1 : navOpacity,
+            y: (alwaysVisible || !nextRun) ? 0 : navY,
             pointerEvents: (alwaysVisible || !nextRun || scrolled) ? "auto" : "none",
           }}
         >

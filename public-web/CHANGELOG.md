@@ -1,5 +1,23 @@
 # public-web Changelog
 
+## 0.14.1 — 2026-05-03
+
+### Timezone-aware future/past run boundaries
+- Future runs: a run stays in the upcoming list for 8 hours after its local start time, so a morning run is still visible that evening
+- Past runs: a run appears in the past list as soon as its local start time passes
+- Runs appear in both lists during the 8-hour overlap window — intentional
+- Uses `EventStartDateTimeGmt` (UTC equivalent maintained by trigger via Kennel→City→Timezone); falls back to `EventStartDatetime` for kennels without a city/timezone configured
+- Applied to both `publicWeb_getGlobalRuns` and `publicWeb_getEvents`
+
+### No upcoming run — sticky nav fix
+- When a kennel has no upcoming run the sticky nav now shows immediately at full opacity instead of rendering as an invisible bar waiting to fade in
+
+### Version display
+- `GlobalRunsList` was showing a hardcoded `0.9.0`; now reads `NEXT_PUBLIC_APP_VERSION` like the rest of the app
+- `NEXT_PUBLIC_APP_VERSION` is injected at build time from `package.json` in `next.config.ts` — single source of truth
+
+---
+
 ## 0.14.0 — 2026-05-03
 
 ### Run detail — unified shared component

@@ -25,9 +25,17 @@ AS
 --                                  (inclusive) for past events. When NULL,
 --                                  no lower bound is applied (all history).
 --              @MaxEventDate DATETIMEOFFSET (optional) — upper bound
---                                  (exclusive) for past events; overrides
---                                  SYSDATETIMEOFFSET(). Use to fetch only
---                                  archived runs older than a cutoff date.
+--                                  (exclusive) for past events. When NULL,
+--                                  defaults to @UtcNow (current UTC time).
+-- Future/past boundary (timezone-aware):
+--              Uses EventStartDateTimeGmt (true UTC equivalent of the local
+--              run start, maintained by trigger via Kennel→City→Timezone).
+--              Falls back to EventStartDatetime when EventStartDateTimeGmt
+--              is NULL (kennel has no city/timezone configured).
+--              Future: run stays in upcoming list until 8 hours after local
+--                      start (so a morning run is still visible that evening).
+--              Past:   run appears in past list as soon as local start passes.
+--              A run therefore appears in both lists for up to 8 hours.
 -- Returns:     Rowset 0: { TotalMatchingEvents INT } — total count before
 --                        the @PageSize cap; always one row so the client
 --                        can determine whether more pages exist without
@@ -39,6 +47,9 @@ AS
 --              On runtime error: { Success = 0, ErrorMessage } from CATCH.
 -- Author:      Harrier Central
 -- Created:     2026-04-14
+-- Updated:     2026-05-03 — timezone-aware future/past boundary using
+--                           EventStartDateTimeGmt; 8-hour grace window for
+--                           future runs; overlap allowed between the two lists.
 -- HC5 Source:  None — new for HC6 public web (hashruns.org)
 -- Breaking Changes: None
 -- =====================================================================
@@ -53,10 +64,11 @@ BEGIN TRY
     IF @Offset IS NULL OR @Offset < 0
         SET @Offset = 0;
 
-    -- Future events: show all runs on today's date regardless of time —
-    -- a run that started at 6am stays on the future list until midnight.
-    -- Using midnight-today means a run never disappears mid-day.
-    DECLARE @TodayStart     DATETIMEOFFSET = CAST(CAST(SYSDATETIMEOFFSET() AS DATE) AS DATETIMEOFFSET);
+    -- Current UTC time used for all future/past boundary comparisons.
+    -- EventStartDateTimeGmt is the true UTC equivalent of the local run start
+    -- (trigger: Kennel→City→Timezone). Falls back to EventStartDatetime when NULL.
+    DECLARE @UtcNow         DATETIMEOFFSET = SYSDATETIMEOFFSET() AT TIME ZONE 'UTC';
+    DECLARE @FutureCutoff   DATETIMEOFFSET = DATEADD(HOUR, -8, @UtcNow);
 
     -- ── Rowset 0: total count ────────────────────────────────────────────────
     -- Always one row — lets the client compute hasMore without a separate query.
@@ -69,9 +81,11 @@ BEGIN TRY
       AND  e.removed   = 0
       AND  k.deleted   = 0
       AND  k.removed   = 0
-      AND  (   (@IsFuture = 1 AND e.EventStartDatetime >= @TodayStart)
-            OR (@IsFuture = 0 AND (@MinEventDate IS NULL OR e.EventStartDatetime >= @MinEventDate)
-                              AND e.EventStartDatetime <  ISNULL(@MaxEventDate, @TodayStart)));
+      AND  (   (@IsFuture = 1
+                    AND COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) >= @FutureCutoff)
+            OR (@IsFuture = 0
+                    AND (@MinEventDate IS NULL OR e.EventStartDatetime >= @MinEventDate)
+                    AND COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) < ISNULL(@MaxEventDate, @UtcNow)));
 
     -- ── Rowset 1: events with kennel context ─────────────────────────────────
 
@@ -147,9 +161,11 @@ BEGIN TRY
       AND  e.removed   = 0
       AND  k.deleted   = 0
       AND  k.removed   = 0
-      AND  (   (@IsFuture = 1 AND e.EventStartDatetime >= @TodayStart)
-            OR (@IsFuture = 0 AND (@MinEventDate IS NULL OR e.EventStartDatetime >= @MinEventDate)
-                              AND e.EventStartDatetime <  ISNULL(@MaxEventDate, @TodayStart)))
+      AND  (   (@IsFuture = 1
+                    AND COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) >= @FutureCutoff)
+            OR (@IsFuture = 0
+                    AND (@MinEventDate IS NULL OR e.EventStartDatetime >= @MinEventDate)
+                    AND COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) < ISNULL(@MaxEventDate, @UtcNow)))
     ORDER BY
         -- Conditional sort: only one branch is active per call.
         -- The inactive branch evaluates to NULL for every row and

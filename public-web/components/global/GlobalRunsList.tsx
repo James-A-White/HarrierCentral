@@ -915,7 +915,7 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
             www.harriercentral.com
           </a>
         </p>
-        <p className="text-sm italic text-white/40 mt-0.5">Version: 0.9.0</p>
+        <p className="text-sm italic text-white/40 mt-0.5">Version: {process.env.NEXT_PUBLIC_APP_VERSION}</p>
       </div>
     </div>
   );

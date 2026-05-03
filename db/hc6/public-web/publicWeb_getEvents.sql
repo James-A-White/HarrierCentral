@@ -46,6 +46,9 @@ AS
 -- HC5 Source:  None — new for HC6 public web
 -- Breaking Changes: None — column names unchanged; values now non-null when kennel
 --                   has a default fee set.
+-- Updated:     2026-05-03 — timezone-aware future/past boundary using
+--                           EventStartDateTimeGmt; 8-hour grace window for
+--                           future runs; overlap between lists allowed.
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -120,6 +123,12 @@ BEGIN TRY
 
     -- ── Compute boundary date ────────────────────────────────────────────────
 
+    -- Current UTC time for timezone-aware future/past comparisons.
+    -- EventStartDateTimeGmt holds the true UTC equivalent of the local run start
+    -- (trigger: Kennel→City→Timezone). Falls back to EventStartDatetime when NULL.
+    DECLARE @UtcNow         DATETIMEOFFSET = SYSDATETIMEOFFSET() AT TIME ZONE 'UTC';
+    DECLARE @FutureCutoff   DATETIMEOFFSET = DATEADD(HOUR, -8, @UtcNow);
+
     DECLARE @BoundaryDate DATETIMEOFFSET(7) = NULL;
 
     IF @DateCutoff IS NOT NULL
@@ -130,7 +139,7 @@ BEGIN TRY
                                      THEN  @DaysOffset
                                      ELSE -@DaysOffset
                                 END,
-                                SYSDATETIMEOFFSET());
+                                @UtcNow);
 
     -- ── TOP cap (INT max when no explicit limit) ─────────────────────────────
 
@@ -146,11 +155,15 @@ BEGIN TRY
       AND  e.IsVisible = 1
       AND  e.deleted   = 0
       AND  e.removed   = 0
-      AND  (   (@IsFuture = 1 AND e.EventStartDatetime >= SYSDATETIMEOFFSET())
-            OR (@IsFuture = 0 AND e.EventStartDatetime <  SYSDATETIMEOFFSET()))
+      AND  (   (@IsFuture = 1
+                    AND COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) >= @FutureCutoff)
+            OR (@IsFuture = 0
+                    AND COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) < @UtcNow))
       AND  (   @BoundaryDate IS NULL
-            OR (@IsFuture = 1 AND e.EventStartDatetime <= @BoundaryDate)
-            OR (@IsFuture = 0 AND e.EventStartDatetime >= @BoundaryDate));
+            OR (@IsFuture = 1
+                    AND COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) <= @BoundaryDate)
+            OR (@IsFuture = 0
+                    AND COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) >= @BoundaryDate));
 
     -- ── Rowset 1: events ─────────────────────────────────────────────────────
 
@@ -207,11 +220,15 @@ BEGIN TRY
       AND  e.IsVisible = 1
       AND  e.deleted   = 0
       AND  e.removed   = 0
-      AND  (   (@IsFuture = 1 AND e.EventStartDatetime >= SYSDATETIMEOFFSET())
-            OR (@IsFuture = 0 AND e.EventStartDatetime <  SYSDATETIMEOFFSET()))
+      AND  (   (@IsFuture = 1
+                    AND COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) >= @FutureCutoff)
+            OR (@IsFuture = 0
+                    AND COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) < @UtcNow))
       AND  (   @BoundaryDate IS NULL
-            OR (@IsFuture = 1 AND e.EventStartDatetime <= @BoundaryDate)
-            OR (@IsFuture = 0 AND e.EventStartDatetime >= @BoundaryDate))
+            OR (@IsFuture = 1
+                    AND COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) <= @BoundaryDate)
+            OR (@IsFuture = 0
+                    AND COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) >= @BoundaryDate))
     ORDER BY
         -- Upcoming: earliest first; past: most recent first.
         -- Only one branch is active per call; the other evaluates to NULL
