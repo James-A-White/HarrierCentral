@@ -11,12 +11,15 @@ interface UpcomingRunsListProps {
   slug: string;
 }
 
-function formatShortDate(iso: string): { dayTime: string; shortDate: string } {
-  const d = new Date(iso);
+function formatShortDate(run: RunEvent): { dayTime: string; shortDate: string } {
+  const gmt = run.EventStartDatetimeGmt;
+  const tz  = run.KennelIANATimezone;
+  const src = gmt && tz ? new Date(gmt) : new Date(run.EventStartDatetime);
+  const displayTz = gmt && tz ? tz : "UTC";
   return {
-    dayTime: d.toLocaleDateString("en-GB", { weekday: "short" }) + " · " +
-             d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
-    shortDate: d.toLocaleDateString("en-GB", { day: "numeric", month: "short" }),
+    dayTime: src.toLocaleDateString("en-GB", { weekday: "short", timeZone: displayTz }) + " · " +
+             src.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: displayTz }),
+    shortDate: src.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: displayTz }),
   };
 }
 
@@ -38,7 +41,7 @@ export function UpcomingRunsList({ runs, slug }: UpcomingRunsListProps) {
           <p className="text-xl py-4" style={{ color: "var(--kennel-text-body)" }}>No upcoming runs scheduled.</p>
         )}
         {runs.map((run, i) => {
-          const { dayTime, shortDate } = formatShortDate(run.EventStartDatetime);
+          const { dayTime, shortDate } = formatShortDate(run);
           return (
             <motion.div
               key={run.PublicEventId}

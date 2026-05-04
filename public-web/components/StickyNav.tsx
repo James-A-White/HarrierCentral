@@ -24,10 +24,13 @@ function hexToRgba(hex: string | undefined | null, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-function formatBannerDate(iso: string) {
-  const d = new Date(iso);
-  const date = d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
-  const time = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+function formatBannerDate(nextRun: RunEvent) {
+  const gmt = nextRun.EventStartDatetimeGmt;
+  const tz  = nextRun.KennelIANATimezone;
+  const src = gmt && tz ? new Date(gmt) : new Date(nextRun.EventStartDatetime);
+  const displayTz = gmt && tz ? tz : "UTC";
+  const date = src.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: displayTz });
+  const time = src.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: displayTz });
   return `${date} · ${time}`;
 }
 
@@ -101,7 +104,7 @@ export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false }: Stic
                     {nextRun.EventName}
                   </span>
                   <span className="truncate text-base" suppressHydrationWarning>
-                    {formatBannerDate(nextRun.EventStartDatetime)}
+                    {formatBannerDate(nextRun)}
                   </span>
                 </div>
 

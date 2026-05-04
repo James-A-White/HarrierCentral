@@ -11,18 +11,22 @@ interface FeaturedRunCardProps {
   href: string;
 }
 
-function formatDatetime(iso: string): { longDate: string; time: string } {
-  const d = new Date(iso);
+function formatDatetime(run: RunEvent): { longDate: string; time: string } {
+  const gmt = run.EventStartDatetimeGmt;
+  const tz  = run.KennelIANATimezone;
+  const src = gmt && tz ? new Date(gmt) : new Date(run.EventStartDatetime);
+  const displayTz = gmt && tz ? tz : "UTC";
   return {
-    longDate: d.toLocaleDateString("en-GB", {
+    longDate: src.toLocaleDateString("en-GB", {
       weekday: "long", day: "numeric", month: "long", year: "numeric",
+      timeZone: displayTz,
     }),
-    time: d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+    time: src.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: displayTz }),
   };
 }
 
 export function FeaturedRunCard({ run, href }: FeaturedRunCardProps) {
-  const { longDate, time } = formatDatetime(run.EventStartDatetime);
+  const { longDate, time } = formatDatetime(run);
   const heroUrl = run.EventImage ?? null;
 
   return (

@@ -35,10 +35,13 @@ function RunListItem({
   isRestoring: boolean;
   showKennelBranding?: boolean;
 }) {
-  const d = new Date(run.EventStartDatetime);
-  const cardDate = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
-  const cardTime = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-  const rel = relativeTime(run.EventStartDatetime);
+  const gmt = run.EventStartDatetimeGmt;
+  const tz  = run.KennelIANATimezone;
+  const src = gmt && tz ? new Date(gmt) : new Date(run.EventStartDatetime);
+  const displayTz = gmt && tz ? tz : "UTC";
+  const cardDate = src.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: displayTz });
+  const cardTime = src.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: displayTz });
+  const rel = relativeTime(gmt ?? run.EventStartDatetime);
 
   const addressParts = [run.LocationStreet, run.LocationCity].filter(Boolean).join(", ");
 

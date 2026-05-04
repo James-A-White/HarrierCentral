@@ -373,6 +373,8 @@ export interface RunEvent {
   EventName: string;
   EventStartDatetime: string;
   EventEndDatetime: string | null;
+  EventStartDatetimeGmt: string | null;
+  KennelIANATimezone: string | null;
   EventTypeName: string | null;
   EventPriceForMembers: number | null;
   EventPriceForNonMembers: number | null;
@@ -435,6 +437,8 @@ export interface GlobalRunRow {
   // Timing
   EventStartDatetime: string;
   EventEndDatetime: string | null;
+  EventStartDatetimeGmt: string | null;
+  KennelIANATimezone: string | null;
 
   // Event type
   EventTypeName: string | null;
