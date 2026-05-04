@@ -6,6 +6,8 @@ import { Navigation, ExternalLink, Copy, Check } from "lucide-react";
 export interface RunDetailRun {
   PublicEventId: string;
   EventStartDatetime: string;
+  EventStartDatetimeGmt: string | null;
+  KennelIANATimezone: string | null;
   EventName: string;
   EventNumber: number;
   Hares: string | null;
@@ -74,11 +76,60 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-function fmt(iso: string) {
-  const d = new Date(iso);
-  const date = d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
-  const time = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-  return { date, time };
+// Returns a timezone abbreviation for display.
+// For the browser's own timezone (no explicit timeZone arg), en-GB already gives the
+// correct local abbreviation (e.g. "BST"). For foreign timezones, en-GB gives "GMT+9"
+// style offsets — we fall back to abbreviating the long English name instead
+// ("Japan Standard Time" → "JST", "British Summer Time" → "BST").
+function getTimezoneAbbr(date: Date, timeZone?: string): string {
+  const locale = timeZone ? "en" : "en-GB";
+  const opts: Intl.DateTimeFormatOptions = {
+    timeZoneName: "short", ...(timeZone ? { timeZone } : {}),
+  };
+  const short = new Intl.DateTimeFormat(locale, opts)
+    .formatToParts(date).find(p => p.type === "timeZoneName")?.value ?? "";
+
+  if (/^GMT[+-]/.test(short)) {
+    const long = new Intl.DateTimeFormat("en", { timeZoneName: "long", ...(timeZone ? { timeZone } : {}) })
+      .formatToParts(date).find(p => p.type === "timeZoneName")?.value ?? "";
+    const abbr = long.split(/\s+/).map(w => w[0]).join("");
+    if (abbr) return abbr;
+  }
+  return short;
+}
+
+function fmtTimeWithTz(date: Date, timeZone?: string): string {
+  const time = new Intl.DateTimeFormat("en-GB", {
+    hour: "2-digit", minute: "2-digit", ...(timeZone ? { timeZone } : {}),
+  }).format(date);
+  const abbr = getTimezoneAbbr(date, timeZone);
+  return abbr ? `${time} ${abbr}` : time;
+}
+
+function fmtRunTime(run: RunDetailRun): { date: string; kennelTime: string; browserTime: string | null } {
+  const gmt = run.EventStartDatetimeGmt;
+  const tz  = run.KennelIANATimezone;
+
+  const src = gmt && tz ? new Date(gmt) : new Date(run.EventStartDatetime);
+  const displayTz = gmt && tz ? tz : "UTC";
+
+  const date = src.toLocaleDateString("en-GB", {
+    weekday: "long", day: "numeric", month: "long",
+    timeZone: displayTz,
+  });
+
+  // "en-GB" gives "GMT+9" for Asia/Tokyo; "en" gives "JST". Format time and
+  // timezone abbreviation separately so we can use en-GB for 24h HH:mm ordering
+  // and "en" for the abbreviation.
+  const kennelTime = fmtTimeWithTz(src, displayTz);
+
+  let browserTime: string | null = null;
+  if (gmt) {
+    const bt = fmtTimeWithTz(new Date(gmt));
+    browserTime = bt !== kennelTime ? bt : null;
+  }
+
+  return { date, kennelTime, browserTime };
 }
 
 function formatFee(amount: number | null, currency: string | null): string {
@@ -101,7 +152,7 @@ function parseW3w(json: string | null): string | null {
 
 export function RunDetail({ run, kennel, canonicalPath, extraButtons }: RunDetailProps) {
   const [copied, setCopied] = useState(false);
-  const { date, time } = fmt(run.EventStartDatetime);
+  const { date, kennelTime, browserTime } = fmtRunTime(run);
   const mapsLink = mapsUrl(run.Latitude, run.Longitude, run.LocationOneLineDesc ?? run.EventName);
   const w3wLink = parseW3w(run.w3wJson);
 
@@ -161,7 +212,19 @@ export function RunDetail({ run, kennel, canonicalPath, extraButtons }: RunDetai
         <Row label="Kennel" value={kennel.name} />
         <Row label="Run" value={`#${run.EventNumber}`} />
         <Row label="Date" value={<span suppressHydrationWarning>{date}</span>} />
-        <Row label="Time" value={<span suppressHydrationWarning>{time}</span>} />
+        <Row
+          label="Time"
+          value={
+            <span suppressHydrationWarning>
+              {kennelTime}
+              {browserTime && (
+                <span className="block text-sm font-normal mt-0.5">
+                  {browserTime} your time
+                </span>
+              )}
+            </span>
+          }
+        />
         {run.Hares && <Row label="Hares" value={run.Hares} />}
         {run.EventTypeName && <Row label="Run type" value={run.EventTypeName} />}
         {hasFees && (

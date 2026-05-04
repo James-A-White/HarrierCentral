@@ -49,6 +49,14 @@ AS
 -- Updated:     2026-05-03 — timezone-aware future/past boundary using
 --                           EventStartDateTimeGmt; 8-hour grace window for
 --                           future runs; overlap between lists allowed.
+-- Updated:     2026-05-04 — return EventStartDatetimeGmt and KennelIANATimezone so
+--                           the browser can display both kennel-local and viewer-local
+--                           times; cast EventStartDatetime to datetime2(7) to strip
+--                           the spurious +00:00 offset stored by SQL Server when no
+--                           offset is supplied on insert. Also capture @WindowsTimezone
+--                           alongside @IANATimezone so EventStartDatetimeGmt can be
+--                           computed on-the-fly for runs where the trigger has not yet
+--                           populated it (COALESCE fallback via AT TIME ZONE).
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -106,6 +114,23 @@ BEGIN TRY
         SELECT TOP 0 CAST(NULL AS INT) AS TotalMatchingEvents;
         RETURN;
     END;
+
+    -- ── Kennel IANA timezone ─────────────────────────────────────────────────────
+    -- Passed through to the browser so it can format EventStartDatetimeGmt in
+    -- the kennel's local timezone (e.g. "Asia/Tokyo"). territory = '001' is the
+    -- primary/global CLDR mapping; fall back to any territory if absent.
+
+    DECLARE @IANATimezone    NVARCHAR(MAX) = NULL;
+    DECLARE @WindowsTimezone NVARCHAR(300) = NULL;
+
+    SELECT TOP 1
+        @IANATimezone    = tzm.IANATimeZone,
+        @WindowsTimezone = tz.Timezone
+    FROM   HC.City                  c
+    JOIN   DomainValues.Timezone    tz  ON tz.id               = c.TimezoneId
+    JOIN   DomainValues.TimeZoneMap tzm ON tzm.WindowsTimeZone = tz.Timezone COLLATE DATABASE_DEFAULT
+    WHERE  c.id = (SELECT CityId FROM HC.Kennel WHERE id = @KennelId)
+    ORDER  BY CASE WHEN tzm.territory = '001' THEN 0 ELSE 1 END, tzm.territory;
 
     -- ── Kennel-level fee defaults ────────────────────────────────────────────
     -- Event fee fields are NULL when the event uses the kennel's default fee.
@@ -175,8 +200,26 @@ BEGIN TRY
         e.EventName,
 
         -- Timing
-        e.EventStartDatetime,
-        e.EventEndDatetime,
+        -- EventStartDatetime cast to datetime2(7): strips the spurious +00:00 stored
+        -- by SQL Server when the portal inserts local time without an offset. The
+        -- browser uses EventStartDatetimeGmt + KennelIANATimezone for display.
+        CAST(e.EventStartDatetime AS datetime2(7)) AS EventStartDatetime,
+        CAST(e.EventEndDatetime   AS datetime2(7)) AS EventEndDatetime,
+        -- COALESCE: use stored GMT value when available (trigger-populated).
+        -- Fall back to computing it on-the-fly via AT TIME ZONE for older runs
+        -- where the trigger had not yet run (EventStartDatetimeGmt IS NULL).
+        COALESCE(
+            e.EventStartDatetimeGmt,
+            CASE WHEN @WindowsTimezone IS NOT NULL
+                 THEN CAST(
+                          (CAST(e.EventStartDatetime AS datetime)
+                               AT TIME ZONE @WindowsTimezone)
+                          AT TIME ZONE 'UTC'
+                      AS datetimeoffset(7))
+                 ELSE NULL
+            END
+        )                                          AS EventStartDatetimeGmt,
+        @IANATimezone                              AS KennelIANATimezone,
 
         -- Event type display name (NULL when ThemeRunType has no matching row)
         ett.EventEnumName        AS EventTypeName,

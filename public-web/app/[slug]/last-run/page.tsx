@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, MapPin, Clock, Users, Tag, ExternalLink, Navigation } from "lucide-react";
 import { getKennelLandingData, getEvents, type KennelLandingData, type RunEvent } from "@/lib/api";
+import { BrowserLocalTime } from "@/components/kennel/BrowserLocalTime";
 import { toKennelContext } from "@/lib/kennel-utils";
 import { StickyNav } from "@/components/StickyNav";
 import { KennelBackground } from "@/components/kennel/KennelBackground";
@@ -50,11 +51,20 @@ async function resolveKennelAndRun(
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-function formatDateLong(iso: string) {
-  const d = new Date(iso);
+function formatDateLong(run: RunEvent): { date: string; kennelTime: string } {
+  const gmt = run.EventStartDatetimeGmt;
+  const tz  = run.KennelIANATimezone;
+  const src = gmt && tz ? new Date(gmt) : new Date(run.EventStartDatetime);
+  const displayTz = gmt && tz ? tz : "UTC";
   return {
-    date: d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" }),
-    time: d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+    date: src.toLocaleDateString("en-GB", {
+      weekday: "long", day: "numeric", month: "long", year: "numeric",
+      timeZone: displayTz,
+    }),
+    kennelTime: new Intl.DateTimeFormat("en-GB", {
+      hour: "2-digit", minute: "2-digit", timeZoneName: "short",
+      timeZone: displayTz,
+    }).format(src),
   };
 }
 
@@ -101,7 +111,7 @@ export default async function LastRunPage({ params }: PageProps) {
   if (!event) notFound();
 
   const kennel = toKennelContext(kennelData);
-  const { date, time } = formatDateLong(event.EventStartDatetime);
+  const { date, kennelTime } = formatDateLong(event);
   const mapsLink = mapsUrl(event.Latitude, event.Longitude, event.LocationOneLineDesc ?? event.EventName);
   const w3wLink = parseW3w(event.w3wJson);
 
@@ -152,7 +162,7 @@ export default async function LastRunPage({ params }: PageProps) {
               </div>
               <h1 className="text-4xl font-black dark:text-white text-zinc-900 md:text-5xl">{event.EventName}</h1>
               <p className="mt-2 text-2xl dark:text-white text-zinc-900" suppressHydrationWarning>
-                {date} · {time}
+                {date} · {kennelTime}
               </p>
             </div>
           </>
@@ -171,7 +181,7 @@ export default async function LastRunPage({ params }: PageProps) {
               </div>
               <h1 className="text-4xl font-black text-white md:text-5xl">{event.EventName}</h1>
               <p className="mt-2 text-2xl text-white" suppressHydrationWarning>
-                {date} · {time}
+                {date} · {kennelTime}
               </p>
             </div>
           </div>
@@ -202,9 +212,18 @@ export default async function LastRunPage({ params }: PageProps) {
               <DetailRow
                 label="Date"
                 value={
-                  <span className="flex items-center gap-1.5" suppressHydrationWarning>
-                    <Clock className="h-4 w-4 dark:text-white/40 text-zinc-400 shrink-0" />
-                    {date} at {time}
+                  <span suppressHydrationWarning>
+                    <span className="flex items-center gap-1.5">
+                      <Clock className="h-4 w-4 dark:text-white/40 text-zinc-400 shrink-0" />
+                      {date} at {kennelTime}
+                    </span>
+                    {event.EventStartDatetimeGmt && (
+                      <BrowserLocalTime
+                        gmtIso={event.EventStartDatetimeGmt}
+                        kennelFormatted={kennelTime}
+                        className="block text-base opacity-60 mt-0.5 ml-5"
+                      />
+                    )}
                   </span>
                 }
               />

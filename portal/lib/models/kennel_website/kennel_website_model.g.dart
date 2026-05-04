@@ -43,6 +43,7 @@ _KennelWebsiteModel _$KennelWebsiteModelFromJson(Map<String, dynamic> json) =>
       extraMenusJson: json['extraMenusJson'] as String?,
       contactDetailsJson: json['contactDetailsJson'] as String?,
       controlFlags: (json['controlFlags'] as num?)?.toInt(),
+      pageFeaturesJson: json['pageFeaturesJson'] as String?,
     );
 
 Map<String, dynamic> _$KennelWebsiteModelToJson(_KennelWebsiteModel instance) =>
@@ -82,4 +83,5 @@ Map<String, dynamic> _$KennelWebsiteModelToJson(_KennelWebsiteModel instance) =>
       'extraMenusJson': instance.extraMenusJson,
       'contactDetailsJson': instance.contactDetailsJson,
       'controlFlags': instance.controlFlags,
+      'pageFeaturesJson': instance.pageFeaturesJson,
     };

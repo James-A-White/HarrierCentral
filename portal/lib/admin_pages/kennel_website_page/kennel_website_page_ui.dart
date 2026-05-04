@@ -8,6 +8,7 @@ part 'pages/appearance_tab/layout.dart';
 part 'pages/images_tab/layout.dart';
 part 'pages/content_tab/layout.dart';
 part 'pages/seo_tab/layout.dart';
+part 'pages/features_tab/layout.dart';
 part 'pages/advanced_tab/layout.dart';
 
 // ---------------------------------------------------------------------------
@@ -140,6 +141,8 @@ class _WebsiteScaffold extends StatelessWidget {
       KennelWebsiteTabType.content =>
         _ContentTabContent(controller: controller),
       KennelWebsiteTabType.seo => _SeoTabContent(controller: controller),
+      KennelWebsiteTabType.features =>
+        _FeaturesTabContent(controller: controller),
       KennelWebsiteTabType.advanced =>
         _AdvancedTabContent(controller: controller),
     };

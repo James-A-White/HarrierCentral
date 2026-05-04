@@ -107,7 +107,10 @@ BEGIN TRY
         -- ── Nav colours ──────────────────────────────────────────────────────
         kw.BackgroundColor                                          AS WebsiteBackgroundColor,
         kw.MenuBackgroundColor,
-        kw.MenuTextColor
+        kw.MenuTextColor,
+
+        -- ── Page features ─────────────────────────────────────────────────────
+        kw.PageFeaturesJson
 
     FROM HC.Kennel k
     LEFT JOIN HC.KennelWebsite kw ON kw.KennelId = k.id

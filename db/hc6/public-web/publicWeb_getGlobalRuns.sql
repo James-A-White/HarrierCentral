@@ -47,6 +47,13 @@ AS
 --              On runtime error: { Success = 0, ErrorMessage } from CATCH.
 -- Author:      Harrier Central
 -- Created:     2026-04-14
+-- Updated:     2026-05-04 — return EventStartDatetimeGmt and KennelIANATimezone per
+--                           row; cast EventStartDatetime to datetime2(7) to strip the
+--                           spurious +00:00 offset. OUTER APPLY replaced with a
+--                           pre-aggregated LEFT JOIN on TimeZoneMap to avoid row
+--                           multiplication. COALESCE fallback computes
+--                           EventStartDatetimeGmt on-the-fly via AT TIME ZONE for
+--                           older runs where the trigger column is NULL.
 -- Updated:     2026-05-03 — timezone-aware future/past boundary using
 --                           EventStartDateTimeGmt; 8-hour grace window for
 --                           future runs; overlap allowed between the two lists.
@@ -96,8 +103,22 @@ BEGIN TRY
         e.EventName,
 
         -- ── Timing ──────────────────────────────────────────────────────────
-        e.EventStartDatetime,
-        e.EventEndDatetime,
+        CAST(e.EventStartDatetime AS datetime2(7)) AS EventStartDatetime,
+        CAST(e.EventEndDatetime   AS datetime2(7)) AS EventEndDatetime,
+        -- COALESCE: use stored GMT value when available; fall back to computing
+        -- it via AT TIME ZONE for older runs where the trigger column is NULL.
+        COALESCE(
+            e.EventStartDatetimeGmt,
+            CASE WHEN tz.Timezone IS NOT NULL
+                 THEN CAST(
+                          (CAST(e.EventStartDatetime AS datetime)
+                               AT TIME ZONE tz.Timezone)
+                          AT TIME ZONE 'UTC'
+                      AS datetimeoffset(7))
+                 ELSE NULL
+            END
+        )                                          AS EventStartDatetimeGmt,
+        COALESCE(tzmap.IANATimeZone_001, tzmap.IANATimeZone_any) AS KennelIANATimezone,
 
         -- ── Event type ──────────────────────────────────────────────────────
         ett.EventEnumName                                               AS EventTypeName,
@@ -156,6 +177,18 @@ BEGIN TRY
     LEFT JOIN HC.KennelWebsite  kw  ON kw.KennelId   = k.id
     LEFT JOIN HC.Country        ctr ON ctr.id         = k.CountryId
     LEFT JOIN DomainValues.EventThemeType ett ON ett.EventEnumId = e.ThemeRunType
+    LEFT JOIN HC.City                  c   ON c.id    = k.CityId
+    LEFT JOIN DomainValues.Timezone    tz  ON tz.id   = c.TimezoneId
+    -- Pre-aggregated join avoids row multiplication when multiple territory rows
+    -- exist in TimeZoneMap for the same Windows timezone name.
+    LEFT JOIN (
+        SELECT
+            WindowsTimeZone,
+            MAX(CASE WHEN territory = '001' THEN IANATimeZone ELSE NULL END) AS IANATimeZone_001,
+            MIN(IANATimeZone)                                                 AS IANATimeZone_any
+        FROM   DomainValues.TimeZoneMap
+        GROUP  BY WindowsTimeZone
+    ) tzmap ON tzmap.WindowsTimeZone = tz.Timezone COLLATE DATABASE_DEFAULT
     WHERE  e.IsVisible = 1
       AND  e.deleted   = 0
       AND  e.removed   = 0

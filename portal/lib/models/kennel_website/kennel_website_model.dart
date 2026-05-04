@@ -83,6 +83,9 @@ abstract class KennelWebsiteModel with _$KennelWebsiteModel {
 
     // System
     int? controlFlags,
+
+    // Page features (JSON)
+    String? pageFeaturesJson,
   }) = _KennelWebsiteModel;
 
   factory KennelWebsiteModel.empty() => KennelWebsiteModel(

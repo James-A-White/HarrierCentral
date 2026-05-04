@@ -65,6 +65,9 @@ export interface KennelLandingData {
   WebsiteBackgroundColor: string | null;
   MenuBackgroundColor: string | null;
   MenuTextColor: string | null;
+
+  // Page features
+  PageFeaturesJson: string | null;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -370,6 +373,8 @@ export interface RunEvent {
   EventName: string;
   EventStartDatetime: string;
   EventEndDatetime: string | null;
+  EventStartDatetimeGmt: string | null;
+  KennelIANATimezone: string | null;
   EventTypeName: string | null;
   EventPriceForMembers: number | null;
   EventPriceForNonMembers: number | null;
@@ -432,6 +437,8 @@ export interface GlobalRunRow {
   // Timing
   EventStartDatetime: string;
   EventEndDatetime: string | null;
+  EventStartDatetimeGmt: string | null;
+  KennelIANATimezone: string | null;
 
   // Event type
   EventTypeName: string | null;

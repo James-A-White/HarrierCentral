@@ -50,19 +50,23 @@ function relativeTime(iso: string): string {
   return `${y} year${y !== 1 ? "s" : ""} ago`;
 }
 
-function formatDate(iso: string) {
-  const d = new Date(iso);
-  const showYear = d.getFullYear() !== CURRENT_YEAR;
+function formatDate(run: GlobalRunRow) {
+  const gmt = run.EventStartDatetimeGmt;
+  const tz  = run.KennelIANATimezone;
+  const src = gmt && tz ? new Date(gmt) : new Date(run.EventStartDatetime);
+  const displayTz = gmt && tz ? tz : "UTC";
+  const year = parseInt(src.toLocaleDateString("en-CA", { year: "numeric", timeZone: displayTz }), 10);
+  const showYear = year !== CURRENT_YEAR;
   return {
-    short: d.toLocaleDateString("en-GB", {
-      weekday: "short", day: "numeric", month: "short",
+    short: src.toLocaleDateString("en-GB", {
+      weekday: "short", day: "numeric", month: "short", timeZone: displayTz,
       ...(showYear && { year: "numeric" }),
     }),
-    long: d.toLocaleDateString("en-GB", {
-      weekday: "long", day: "numeric", month: "long",
+    long: src.toLocaleDateString("en-GB", {
+      weekday: "long", day: "numeric", month: "long", timeZone: displayTz,
       ...(showYear && { year: "numeric" }),
     }),
-    time: d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+    time: src.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: displayTz }),
   };
 }
 
@@ -131,8 +135,8 @@ function GlobalRunCard({
   onClick: () => void;
 }) {
   const primaryColor = run.PrimaryColor ?? "#dc2626";
-  const rel = relativeTime(run.EventStartDatetime);
-  const { short, time } = formatDate(run.EventStartDatetime);
+  const rel = relativeTime(run.EventStartDatetimeGmt ?? run.EventStartDatetime);
+  const { short, time } = formatDate(run);
   const location = [run.LocationCity, run.LocationCountry].filter(Boolean).join(", ");
 
   return (
@@ -341,7 +345,9 @@ function CalendarView({
   const groups = useMemo(() => {
     const map = new Map<string, GlobalRunRow[]>();
     for (const run of runs) {
-      const key = run.EventStartDatetime.slice(0, 10);
+      const key = run.EventStartDatetimeGmt && run.KennelIANATimezone
+        ? new Intl.DateTimeFormat("en-CA", { timeZone: run.KennelIANATimezone }).format(new Date(run.EventStartDatetimeGmt))
+        : run.EventStartDatetime.slice(0, 10);
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(run);
     }
