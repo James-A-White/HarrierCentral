@@ -1,5 +1,6 @@
 import type { KennelLandingData } from "./api";
-import type { KennelContext } from "./types/kennel";
+import type { KennelContext, KennelPageFeatures } from "./types/kennel";
+import { DEFAULT_PAGE_FEATURES } from "./types/kennel";
 
 /**
  * Normalises a DB colour value to 8-digit hex (#RRGGBBAA).
@@ -49,6 +50,27 @@ export function parseMenuBackground(raw: string | null, theme: "dark" | "light")
     : { menuBackgroundColor: "#ffffff", menuBackgroundOpacity: 0.8 };
 }
 
+export function parsePageFeatures(raw: string | null | undefined): KennelPageFeatures {
+  if (!raw) return { ...DEFAULT_PAGE_FEATURES };
+  try {
+    const parsed = JSON.parse(raw) as Partial<KennelPageFeatures>;
+    return {
+      showLanding:    parsed.showLanding    ?? DEFAULT_PAGE_FEATURES.showLanding,
+      showAbout:      parsed.showAbout      ?? DEFAULT_PAGE_FEATURES.showAbout,
+      showHistory:    parsed.showHistory    ?? DEFAULT_PAGE_FEATURES.showHistory,
+      showRuns:       parsed.showRuns       ?? DEFAULT_PAGE_FEATURES.showRuns,
+      showEvents:     parsed.showEvents     ?? DEFAULT_PAGE_FEATURES.showEvents,
+      showStats:      parsed.showStats      ?? DEFAULT_PAGE_FEATURES.showStats,
+      showSongs:      parsed.showSongs      ?? DEFAULT_PAGE_FEATURES.showSongs,
+      pastRunsCount:  typeof parsed.pastRunsCount === "number"
+                        ? Math.max(1, Math.min(100, parsed.pastRunsCount))
+                        : DEFAULT_PAGE_FEATURES.pastRunsCount,
+    };
+  } catch {
+    return { ...DEFAULT_PAGE_FEATURES };
+  }
+}
+
 export function toKennelContext(data: KennelLandingData): KennelContext {
   const hasCustomBackground = data.WebsiteBackgroundImage?.startsWith("https://") ?? false;
   const theme = data.ThemeMode === "light" ? "light" : "dark";
@@ -84,6 +106,7 @@ export function toKennelContext(data: KennelLandingData): KennelContext {
     scrollBlur: clampScrollBlur(hasCustomBackground ? (data.ScrollBlur ?? 0) : (data.ScrollBlur || 5)),
     ...parseMenuBackground(data.MenuBackgroundColor ?? null, theme),
     menuTextColor: data.MenuTextColor ?? (theme === "light" ? "#18181b" : "#ffffff"),
+    pageFeatures: parsePageFeatures(data.PageFeaturesJson),
     socialLinks: {},
     stats: { totalRuns: 0, activeMembers: 0, photosUploaded: 0, yearsRunning: 0 },
   };

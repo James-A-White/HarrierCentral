@@ -3,7 +3,7 @@ part of '../../kennel_website_page_controller.dart';
 extension AdvancedControlsExtension on KennelWebsiteController {
   void initAdvancedControls() {
     final tabKey = KennelWebsiteTabType.advanced.key;
-    const tabIndex = 5;
+    const tabIndex = 6;
 
     _registerMismanagementDescriptionControl(tabKey, tabIndex);
     _registerMismanagementJsonControl(tabKey, tabIndex);

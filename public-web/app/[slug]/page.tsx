@@ -68,11 +68,40 @@ export default async function KennelPage({ params }: PageProps) {
 
   if (!kennelData) notFound();
 
+  if (kennelData.WebsiteEnabled === false) {
+    const bgUrl = kennelData.WebsiteBackgroundImage?.startsWith("https://")
+      ? kennelData.WebsiteBackgroundImage
+      : "/images/jungle_background.jpg";
+    const logoUrl = kennelData.KennelLogo?.startsWith("https://") ? kennelData.KennelLogo : null;
+
+    return (
+      <html lang="en" className="dark">
+        <body className="overflow-hidden">
+          <div
+            className="fixed inset-0 scale-[1.08] bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: `url(${bgUrl})` }}
+          />
+          <div className="fixed inset-0 bg-black/60" />
+          {logoUrl && (
+            <div className="fixed inset-0 flex items-center justify-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={logoUrl}
+                alt={kennelData.KennelShortName}
+                className="h-auto w-[min(60vw,60vh)] max-w-[480px] object-contain drop-shadow-2xl"
+              />
+            </div>
+          )}
+        </body>
+      </html>
+    );
+  }
+
   const kennel = toKennelContext(kennelData);
 
   const [eventsResult, pastResult] = await Promise.all([
     getEvents(kennelData.PublicKennelId, { isFuture: true, maxEvents: 10 }),
-    getEvents(kennelData.PublicKennelId, { isFuture: false, daysOffset: 365, maxEvents: 50 }),
+    getEvents(kennelData.PublicKennelId, { isFuture: false, daysOffset: 365, maxEvents: kennel.pageFeatures.pastRunsCount }),
   ]);
   const events = eventsResult?.events ?? [];
   const pastRuns = pastResult?.events ?? [];

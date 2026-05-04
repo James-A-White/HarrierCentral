@@ -230,7 +230,7 @@ export function ScrollHero({ kennel, slug, nextRun }: ScrollHeroProps) {
         </motion.h1>
 
         <motion.p
-          className="mt-2 text-[clamp(1.1rem,3.8vh,2rem)] font-semibold"
+          className="mt-2 text-[clamp(1.65rem,5.7vh,3rem)] font-semibold"
           style={{ color: "var(--kennel-text-body)" }}
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -241,7 +241,7 @@ export function ScrollHero({ kennel, slug, nextRun }: ScrollHeroProps) {
 
         {kennel.tagline && (
           <motion.p
-            className="mt-1.5 text-[clamp(0.9rem,2.8vh,1.5rem)] font-medium"
+            className="mt-1.5 text-[clamp(1.35rem,4.2vh,2.25rem)] font-medium"
             style={{ color: "var(--kennel-text-muted)" }}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}

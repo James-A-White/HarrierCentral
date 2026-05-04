@@ -7,6 +7,7 @@ part 'pages/appearance_tab/controls.dart';
 part 'pages/images_tab/controls.dart';
 part 'pages/content_tab/controls.dart';
 part 'pages/seo_tab/controls.dart';
+part 'pages/features_tab/controls.dart';
 part 'pages/advanced_tab/controls.dart';
 
 // ---------------------------------------------------------------------------
@@ -63,6 +64,19 @@ class KennelWebsiteController extends TabUiController
 
   /// 0 = dark, 1 = light
   final RxInt themeModeIndex = 0.obs;
+
+  // ---------------------------------------------------------------------------
+  // Features tab reactive state (mirrors pageFeaturesJson)
+  // ---------------------------------------------------------------------------
+
+  final RxBool featShowLanding  = true.obs;
+  final RxBool featShowAbout    = true.obs;
+  final RxBool featShowHistory  = true.obs;
+  final RxBool featShowRuns     = true.obs;
+  final RxBool featShowEvents   = false.obs;
+  final RxBool featShowStats    = false.obs;
+  final RxBool featShowSongs    = false.obs;
+  final RxInt  featPastRunsCount = 12.obs;
 
   static const Map<int, String> themeModeItems = {0: 'Dark', 1: 'Light'};
 
@@ -127,6 +141,7 @@ class KennelWebsiteController extends TabUiController
     initImagesControls();
     initContentControls();
     initSeoControls();
+    initFeaturesControls();
     initAdvancedControls();
 
     populateTextControllers();
@@ -164,6 +179,7 @@ class KennelWebsiteController extends TabUiController
   void undoChanges() {
     editedData.value = originalData.copyWith();
     themeModeIndex.value = originalData.themeMode == 'light' ? 1 : 0;
+    undoFeaturesState();
 
     for (final control in uiControls.values) {
       control.undo();
@@ -229,9 +245,13 @@ class KennelWebsiteController extends TabUiController
     editedJson.forEach((key, value) {
       if (editedJson[key] != originalJson[key]) {
         final v = editedJson[key];
-        // Send empty string as sentinel for deliberately-cleared string fields.
-        // The SP interprets '' as "set this column to NULL".
-        changed[key] = (v == null && originalJson[key] is String) ? '' : v;
+        // BIT columns: send 0/1 integers — JSON booleans are unreliable through ADO.NET.
+        // Empty string sentinel: deliberately-cleared string fields → SP sets column to NULL.
+        if (v is bool) {
+          changed[key] = v ? 1 : 0;
+        } else {
+          changed[key] = (v == null && originalJson[key] is String) ? '' : v;
+        }
       }
     });
 

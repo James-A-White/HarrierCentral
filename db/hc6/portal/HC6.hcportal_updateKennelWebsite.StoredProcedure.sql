@@ -39,7 +39,8 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_updateKennelWebsite]
 	@mismanagementJson NVARCHAR(4000) = NULL,
 	@extraMenusJson NVARCHAR(4000) = NULL,
 	@contactDetailsJson NVARCHAR(4000) = NULL,
-	@controlFlags INT = NULL
+	@controlFlags INT = NULL,
+	@pageFeaturesJson NVARCHAR(4000) = NULL
 
 AS
 -- =====================================================================
@@ -154,6 +155,7 @@ BEGIN TRY
 		, [ExtraMenusJson]           = CASE WHEN @extraMenusJson           = '' THEN NULL ELSE COALESCE(@extraMenusJson,           [ExtraMenusJson])           END
 		, [ContactDetailsJson]       = CASE WHEN @contactDetailsJson       = '' THEN NULL ELSE COALESCE(@contactDetailsJson,       [ContactDetailsJson])       END
 		, [ControlFlags]             = CASE WHEN @controlFlags             = '' THEN NULL ELSE COALESCE(@controlFlags,             [ControlFlags])             END
+		, [PageFeaturesJson]         = CASE WHEN @pageFeaturesJson         = '' THEN NULL ELSE COALESCE(@pageFeaturesJson,         [PageFeaturesJson])         END
 	WHERE KennelId = @kennelId;
 
 	COMMIT TRANSACTION;

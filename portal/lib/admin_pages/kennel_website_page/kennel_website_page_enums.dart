@@ -68,6 +68,19 @@ enum KennelWebsiteTabType {
     showTabInSubmitSummary: true,
   ),
 
+  features(
+    key: 'features',
+    title: 'Features',
+    description: 'Control which pages and sections are enabled on your kennel website.\n\n'
+        'Disabled pages are hidden from menus and show a "not available" message if '
+        'visited directly. The past runs count controls how many run cards appear in '
+        'the photo grid on the home page.',
+    icon: MaterialCommunityIcons.toggle_switch,
+    isTabLockable: true,
+    hasCustomTabStatusFunction: true,
+    showTabInSubmitSummary: true,
+  ),
+
   advanced(
     key: 'advanced',
     title: 'Advanced',
@@ -148,4 +161,15 @@ enum KennelWebsiteAdvancedField {
   mismanagementJson,
   extraMenusJson,
   contactDetailsJson,
+}
+
+enum KennelWebsiteFeaturesField {
+  showLanding,
+  showAbout,
+  showHistory,
+  showRuns,
+  showEvents,
+  showStats,
+  showSongs,
+  pastRunsCount,
 }

@@ -99,6 +99,7 @@ BEGIN TRY
 		, kw.[ExtraMenusJson]           AS extraMenusJson
 		, kw.[ContactDetailsJson]       AS contactDetailsJson
 		, kw.[ControlFlags]             AS controlFlags
+		, kw.[PageFeaturesJson]         AS pageFeaturesJson
 	FROM HC.KennelWebsite kw
 	WHERE kw.KennelId = @kennelId;
 

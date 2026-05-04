@@ -65,6 +65,9 @@ export interface KennelLandingData {
   WebsiteBackgroundColor: string | null;
   MenuBackgroundColor: string | null;
   MenuTextColor: string | null;
+
+  // Page features
+  PageFeaturesJson: string | null;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

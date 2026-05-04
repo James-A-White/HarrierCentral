@@ -51,7 +51,8 @@ mixin _$KennelWebsiteModel {
   String? get mismanagementJson;
   String? get extraMenusJson;
   String? get contactDetailsJson; // System
-  int? get controlFlags;
+  int? get controlFlags; // Page features (JSON)
+  String? get pageFeaturesJson;
 
   /// Create a copy of KennelWebsiteModel
   /// with the given fields replaced by the non-null parameter values.
@@ -137,7 +138,9 @@ mixin _$KennelWebsiteModel {
             (identical(other.contactDetailsJson, contactDetailsJson) ||
                 other.contactDetailsJson == contactDetailsJson) &&
             (identical(other.controlFlags, controlFlags) ||
-                other.controlFlags == controlFlags));
+                other.controlFlags == controlFlags) &&
+            (identical(other.pageFeaturesJson, pageFeaturesJson) ||
+                other.pageFeaturesJson == pageFeaturesJson));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -178,12 +181,13 @@ mixin _$KennelWebsiteModel {
         mismanagementJson,
         extraMenusJson,
         contactDetailsJson,
-        controlFlags
+        controlFlags,
+        pageFeaturesJson,
       ]);
 
   @override
   String toString() {
-    return 'KennelWebsiteModel(kennelId: $kennelId, enabled: $enabled, customDomain: $customDomain, urlShortcode: $urlShortcode, themeMode: $themeMode, primaryColor: $primaryColor, accentColor: $accentColor, scrollBlur: $scrollBlur, bannerImage: $bannerImage, ogImageUrl: $ogImageUrl, backgroundImage: $backgroundImage, titleTextColor: $titleTextColor, bodyTextColor: $bodyTextColor, textMutedColor: $textMutedColor, cardBackgroundColor: $cardBackgroundColor, buttonPrimaryColor: $buttonPrimaryColor, buttonCancelColor: $buttonCancelColor, buttonSecondaryColor: $buttonSecondaryColor, runCardColor: $runCardColor, backgroundColor: $backgroundColor, menuBackgroundColor: $menuBackgroundColor, menuTextColor: $menuTextColor, titleFont: $titleFont, bodyFont: $bodyFont, titleText: $titleText, tagline: $tagline, welcomeText: $welcomeText, seoTitle: $seoTitle, seoDescription: $seoDescription, seoStructuredDataJson: $seoStructuredDataJson, mismanagementDescription: $mismanagementDescription, mismanagementJson: $mismanagementJson, extraMenusJson: $extraMenusJson, contactDetailsJson: $contactDetailsJson, controlFlags: $controlFlags)';
+    return 'KennelWebsiteModel(kennelId: $kennelId, enabled: $enabled, customDomain: $customDomain, urlShortcode: $urlShortcode, themeMode: $themeMode, primaryColor: $primaryColor, accentColor: $accentColor, scrollBlur: $scrollBlur, bannerImage: $bannerImage, ogImageUrl: $ogImageUrl, backgroundImage: $backgroundImage, titleTextColor: $titleTextColor, bodyTextColor: $bodyTextColor, textMutedColor: $textMutedColor, cardBackgroundColor: $cardBackgroundColor, buttonPrimaryColor: $buttonPrimaryColor, buttonCancelColor: $buttonCancelColor, buttonSecondaryColor: $buttonSecondaryColor, runCardColor: $runCardColor, backgroundColor: $backgroundColor, menuBackgroundColor: $menuBackgroundColor, menuTextColor: $menuTextColor, titleFont: $titleFont, bodyFont: $bodyFont, titleText: $titleText, tagline: $tagline, welcomeText: $welcomeText, seoTitle: $seoTitle, seoDescription: $seoDescription, seoStructuredDataJson: $seoStructuredDataJson, mismanagementDescription: $mismanagementDescription, mismanagementJson: $mismanagementJson, extraMenusJson: $extraMenusJson, contactDetailsJson: $contactDetailsJson, controlFlags: $controlFlags, pageFeaturesJson: $pageFeaturesJson)';
   }
 }
 
@@ -228,7 +232,8 @@ abstract mixin class $KennelWebsiteModelCopyWith<$Res> {
       String? mismanagementJson,
       String? extraMenusJson,
       String? contactDetailsJson,
-      int? controlFlags});
+      int? controlFlags,
+      String? pageFeaturesJson});
 }
 
 /// @nodoc
@@ -279,6 +284,7 @@ class _$KennelWebsiteModelCopyWithImpl<$Res>
     Object? extraMenusJson = freezed,
     Object? contactDetailsJson = freezed,
     Object? controlFlags = freezed,
+    Object? pageFeaturesJson = freezed,
   }) {
     return _then(_self.copyWith(
       kennelId: null == kennelId
@@ -421,6 +427,10 @@ class _$KennelWebsiteModelCopyWithImpl<$Res>
           ? _self.controlFlags
           : controlFlags // ignore: cast_nullable_to_non_nullable
               as int?,
+      pageFeaturesJson: freezed == pageFeaturesJson
+          ? _self.pageFeaturesJson
+          : pageFeaturesJson // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -553,7 +563,8 @@ extension KennelWebsiteModelPatterns on KennelWebsiteModel {
             String? mismanagementJson,
             String? extraMenusJson,
             String? contactDetailsJson,
-            int? controlFlags)?
+            int? controlFlags,
+            String? pageFeaturesJson)?
         $default, {
     required TResult orElse(),
   }) {
@@ -595,7 +606,8 @@ extension KennelWebsiteModelPatterns on KennelWebsiteModel {
             _that.mismanagementJson,
             _that.extraMenusJson,
             _that.contactDetailsJson,
-            _that.controlFlags);
+            _that.controlFlags,
+            _that.pageFeaturesJson);
       case _:
         return orElse();
     }
@@ -651,7 +663,8 @@ extension KennelWebsiteModelPatterns on KennelWebsiteModel {
             String? mismanagementJson,
             String? extraMenusJson,
             String? contactDetailsJson,
-            int? controlFlags)
+            int? controlFlags,
+            String? pageFeaturesJson)
         $default,
   ) {
     final _that = this;
@@ -692,7 +705,8 @@ extension KennelWebsiteModelPatterns on KennelWebsiteModel {
             _that.mismanagementJson,
             _that.extraMenusJson,
             _that.contactDetailsJson,
-            _that.controlFlags);
+            _that.controlFlags,
+            _that.pageFeaturesJson);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -747,7 +761,8 @@ extension KennelWebsiteModelPatterns on KennelWebsiteModel {
             String? mismanagementJson,
             String? extraMenusJson,
             String? contactDetailsJson,
-            int? controlFlags)?
+            int? controlFlags,
+            String? pageFeaturesJson)?
         $default,
   ) {
     final _that = this;
@@ -788,7 +803,8 @@ extension KennelWebsiteModelPatterns on KennelWebsiteModel {
             _that.mismanagementJson,
             _that.extraMenusJson,
             _that.contactDetailsJson,
-            _that.controlFlags);
+            _that.controlFlags,
+            _that.pageFeaturesJson);
       case _:
         return null;
     }
@@ -833,7 +849,8 @@ class _KennelWebsiteModel implements KennelWebsiteModel {
       this.mismanagementJson,
       this.extraMenusJson,
       this.contactDetailsJson,
-      this.controlFlags});
+      this.controlFlags,
+      this.pageFeaturesJson});
   factory _KennelWebsiteModel.fromJson(Map<String, dynamic> json) =>
       _$KennelWebsiteModelFromJson(json);
 
@@ -919,6 +936,9 @@ class _KennelWebsiteModel implements KennelWebsiteModel {
 // System
   @override
   final int? controlFlags;
+// Page features (JSON)
+  @override
+  final String? pageFeaturesJson;
 
   /// Create a copy of KennelWebsiteModel
   /// with the given fields replaced by the non-null parameter values.
@@ -1008,7 +1028,9 @@ class _KennelWebsiteModel implements KennelWebsiteModel {
             (identical(other.contactDetailsJson, contactDetailsJson) ||
                 other.contactDetailsJson == contactDetailsJson) &&
             (identical(other.controlFlags, controlFlags) ||
-                other.controlFlags == controlFlags));
+                other.controlFlags == controlFlags) &&
+            (identical(other.pageFeaturesJson, pageFeaturesJson) ||
+                other.pageFeaturesJson == pageFeaturesJson));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1049,12 +1071,13 @@ class _KennelWebsiteModel implements KennelWebsiteModel {
         mismanagementJson,
         extraMenusJson,
         contactDetailsJson,
-        controlFlags
+        controlFlags,
+        pageFeaturesJson,
       ]);
 
   @override
   String toString() {
-    return 'KennelWebsiteModel(kennelId: $kennelId, enabled: $enabled, customDomain: $customDomain, urlShortcode: $urlShortcode, themeMode: $themeMode, primaryColor: $primaryColor, accentColor: $accentColor, scrollBlur: $scrollBlur, bannerImage: $bannerImage, ogImageUrl: $ogImageUrl, backgroundImage: $backgroundImage, titleTextColor: $titleTextColor, bodyTextColor: $bodyTextColor, textMutedColor: $textMutedColor, cardBackgroundColor: $cardBackgroundColor, buttonPrimaryColor: $buttonPrimaryColor, buttonCancelColor: $buttonCancelColor, buttonSecondaryColor: $buttonSecondaryColor, runCardColor: $runCardColor, backgroundColor: $backgroundColor, menuBackgroundColor: $menuBackgroundColor, menuTextColor: $menuTextColor, titleFont: $titleFont, bodyFont: $bodyFont, titleText: $titleText, tagline: $tagline, welcomeText: $welcomeText, seoTitle: $seoTitle, seoDescription: $seoDescription, seoStructuredDataJson: $seoStructuredDataJson, mismanagementDescription: $mismanagementDescription, mismanagementJson: $mismanagementJson, extraMenusJson: $extraMenusJson, contactDetailsJson: $contactDetailsJson, controlFlags: $controlFlags)';
+    return 'KennelWebsiteModel(kennelId: $kennelId, enabled: $enabled, customDomain: $customDomain, urlShortcode: $urlShortcode, themeMode: $themeMode, primaryColor: $primaryColor, accentColor: $accentColor, scrollBlur: $scrollBlur, bannerImage: $bannerImage, ogImageUrl: $ogImageUrl, backgroundImage: $backgroundImage, titleTextColor: $titleTextColor, bodyTextColor: $bodyTextColor, textMutedColor: $textMutedColor, cardBackgroundColor: $cardBackgroundColor, buttonPrimaryColor: $buttonPrimaryColor, buttonCancelColor: $buttonCancelColor, buttonSecondaryColor: $buttonSecondaryColor, runCardColor: $runCardColor, backgroundColor: $backgroundColor, menuBackgroundColor: $menuBackgroundColor, menuTextColor: $menuTextColor, titleFont: $titleFont, bodyFont: $bodyFont, titleText: $titleText, tagline: $tagline, welcomeText: $welcomeText, seoTitle: $seoTitle, seoDescription: $seoDescription, seoStructuredDataJson: $seoStructuredDataJson, mismanagementDescription: $mismanagementDescription, mismanagementJson: $mismanagementJson, extraMenusJson: $extraMenusJson, contactDetailsJson: $contactDetailsJson, controlFlags: $controlFlags, pageFeaturesJson: $pageFeaturesJson)';
   }
 }
 
@@ -1101,7 +1124,8 @@ abstract mixin class _$KennelWebsiteModelCopyWith<$Res>
       String? mismanagementJson,
       String? extraMenusJson,
       String? contactDetailsJson,
-      int? controlFlags});
+      int? controlFlags,
+      String? pageFeaturesJson});
 }
 
 /// @nodoc
@@ -1152,6 +1176,7 @@ class __$KennelWebsiteModelCopyWithImpl<$Res>
     Object? extraMenusJson = freezed,
     Object? contactDetailsJson = freezed,
     Object? controlFlags = freezed,
+    Object? pageFeaturesJson = freezed,
   }) {
     return _then(_KennelWebsiteModel(
       kennelId: null == kennelId
@@ -1294,6 +1319,10 @@ class __$KennelWebsiteModelCopyWithImpl<$Res>
           ? _self.controlFlags
           : controlFlags // ignore: cast_nullable_to_non_nullable
               as int?,
+      pageFeaturesJson: freezed == pageFeaturesJson
+          ? _self.pageFeaturesJson
+          : pageFeaturesJson // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
