@@ -1,3 +1,9 @@
+0.15.1
+    • Run times now show kennel-local timezone (e.g. 19:15 JST)
+    • Detail panel shows viewer's local time below when it differs (e.g. 11:15 BST your time)
+    • Timezone abbreviations derived from long English name when short form returns GMT+X offset
+    • SPs return EventStartDatetimeGmt and KennelIANATimezone with on-the-fly fallback for older runs
+
 0.15.0
     • Three-button colour system applied site-wide: --kennel-btn-primary, --kennel-btn-secondary, --kennel-btn-cancel
     • Accent colour for run number badge surfaces and detail icons
