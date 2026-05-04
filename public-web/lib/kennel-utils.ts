@@ -57,7 +57,7 @@ export function toKennelContext(data: KennelLandingData): KennelContext {
     slug: data.KennelUniqueShortName,
     name: data.KennelName,
     shortName: data.KennelShortName,
-    tagline: "",
+    tagline: data.Tagline ?? "",
     city: "",
     foundedYear: 0,
     primaryColor: data.PrimaryColor ?? "#dc2626",

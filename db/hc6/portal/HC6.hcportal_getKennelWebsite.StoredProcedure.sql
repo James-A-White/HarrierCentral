@@ -79,6 +79,10 @@ BEGIN TRY
 		, kw.[BodyTextColor]            AS bodyTextColor
 		, kw.[TextMutedColor]           AS textMutedColor
 		, kw.[CardBackgroundColor]      AS cardBackgroundColor
+		, kw.[ButtonPrimaryColor]       AS buttonPrimaryColor
+		, kw.[ButtonCancelColor]        AS buttonCancelColor
+		, kw.[ButtonSecondaryColor]     AS buttonSecondaryColor
+		, kw.[RunCardColor]             AS runCardColor
 		, kw.[BackgroundColor]          AS backgroundColor
 		, kw.[MenuBackgroundColor]      AS menuBackgroundColor
 		, kw.[MenuTextColor]            AS menuTextColor

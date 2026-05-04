@@ -239,6 +239,18 @@ export function ScrollHero({ kennel, slug, nextRun }: ScrollHeroProps) {
           {kennel.name}
         </motion.p>
 
+        {kennel.tagline && (
+          <motion.p
+            className="mt-1.5 text-[clamp(0.9rem,2.8vh,1.5rem)] font-medium"
+            style={{ color: "var(--kennel-text-muted)" }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.28, ease: [0.19, 1, 0.22, 1] }}
+          >
+            {kennel.tagline}
+          </motion.p>
+        )}
+
         <motion.div
           className="mt-[clamp(1.25rem,4vh,2.5rem)] flex flex-col gap-3 sm:flex-row"
           initial={{ opacity: 0, y: 12 }}
