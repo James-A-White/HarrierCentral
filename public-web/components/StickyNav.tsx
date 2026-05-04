@@ -5,7 +5,7 @@ import { motion, AnimatePresence, useTransform, useMotionValueEvent } from "fram
 import { Menu, X, MapPin, ArrowRight, Globe } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import type { KennelContext } from "@/lib/types/kennel";
+import type { KennelContext, KennelPageFeatures } from "@/lib/types/kennel";
 import type { RunEvent } from "@/lib/api";
 import { useWindowScrollMotionValue } from "@/lib/useWindowScrollMotionValue";
 
@@ -35,10 +35,23 @@ function mapsUrl(lat: number, lon: number) {
   return `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
 }
 
+const NAV_ITEMS: { label: string; featureKey?: keyof KennelPageFeatures; href: (slug: string) => string }[] = [
+  { label: "Home",   href: (s) => `/${s}` },
+  { label: "Runs",   featureKey: "showRuns",   href: (s) => `/${s}/runs` },
+  { label: "Events", featureKey: "showEvents", href: (s) => `/${s}/events` },
+  { label: "Stats",  featureKey: "showStats",  href: (s) => `/${s}/stats` },
+  { label: "Songs",  featureKey: "showSongs",  href: (s) => `/${s}/songs` },
+  { label: "About",  featureKey: "showAbout",  href: (s) => `#about` },
+];
+
 export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false }: StickyNavProps) {
   const scrollY = useWindowScrollMotionValue();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const visibleNavItems = NAV_ITEMS.filter(
+    (item) => !item.featureKey || kennel.pageFeatures[item.featureKey]
+  );
 
   useMotionValueEvent(scrollY, "change", (v) => setScrolled(v > 60));
 
@@ -166,20 +179,13 @@ export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false }: Stic
             {/* Right — nav links + login */}
             <div className="flex items-center gap-8">
               <nav className="hidden items-center gap-8 text-xl lg:flex">
-                {["Home", "Runs", "Events", "Stats", "Songs", "About"].map((item) => (
+                {visibleNavItems.map((item) => (
                   <a
-                    key={item}
-                    href={
-                      item === "Home"   ? `/${slug}`
-                      : item === "Runs"   ? `/${slug}/runs`
-                      : item === "Events" ? `/${slug}/events`
-                      : item === "Songs"  ? `/${slug}/songs`
-                      : item === "Stats"  ? `/${slug}/stats`
-                      : `#${item.toLowerCase()}`
-                    }
+                    key={item.label}
+                    href={item.href(slug)}
                     className="transition-opacity hover:opacity-70"
                   >
-                    {item}
+                    {item.label}
                   </a>
                 ))}
               </nav>
@@ -238,21 +244,14 @@ export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false }: Stic
             style={{ backgroundColor: hexToRgba(kennel.menuBackgroundColor, kennel.menuBackgroundOpacity) }}
           >
             <nav className="flex flex-col px-4 py-3 gap-1">
-              {["Home", "Runs", "Events", "Stats", "Songs", "About"].map((item) => (
+              {visibleNavItems.map((item) => (
                 <a
-                  key={item}
-                  href={
-                    item === "Home"   ? `/${slug}`
-                    : item === "Runs"   ? `/${slug}/runs`
-                    : item === "Events" ? `/${slug}/events`
-                    : item === "Songs"  ? `/${slug}/songs`
-                    : item === "Stats"  ? `/${slug}/stats`
-                    : `#${item.toLowerCase()}`
-                  }
+                  key={item.label}
+                  href={item.href(slug)}
                   className="rounded-xl px-3 py-3 text-xl font-medium dark:hover:bg-white/[0.06] hover:bg-zinc-100 transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  {item}
+                  {item.label}
                 </a>
               ))}
               <div className="pt-2 mt-1 border-t dark:border-white/[0.08] border-zinc-200/50">
