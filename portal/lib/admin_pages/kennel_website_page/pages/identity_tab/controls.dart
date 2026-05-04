@@ -26,19 +26,19 @@ extension IdentityControlsExtension on KennelWebsiteController {
             'public website even if they have the URL.',
       ),
       editedFieldValue:
-          editedData.value.enabled ? 'true' : 'false',
+          editedData.value.enabled ? '1' : '0',
       originalFieldValue:
-          originalData.enabled ? 'true' : 'false',
+          originalData.enabled ? '1' : '0',
       globalKey: GlobalKey<FormFieldState>(),
       label: 'Website enabled',
       tabIndex: tabIndex,
       allowEmpty: true,
       updateEditedValue: (String? value) {
-        final isEnabled = value == 'true';
+        final isEnabled = value == '1';
         editedData.value =
             editedData.value.copyWith(enabled: isEnabled);
         uiControls[fieldKey]?.editedFieldValue =
-            isEnabled ? 'true' : 'false';
+            isEnabled ? '1' : '0';
       },
     );
   }
