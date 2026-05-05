@@ -590,6 +590,22 @@ export async function getEvents(
   return { totalMatchingEvents, events };
 }
 
+// ─── getPageLayout ────────────────────────────────────────────────────────────
+
+/**
+ * Fetches the saved Puck page layout JSON for a kennel by its slug.
+ * Returns null when the kennel is not found or has no saved layout yet.
+ * The caller should fall back to defaultLayout in both cases.
+ */
+export async function getPageLayout(kennelSlug: string): Promise<string | null> {
+  const rows = await callPublicWebApi<{ PageLayoutJson?: string | null }>(
+    "getPageLayout",
+    { KennelSlug: kennelSlug }
+  );
+  if (!rows || rows.length === 0) return null;
+  return rows[0].PageLayoutJson ?? null;
+}
+
 // ─── Legacy URL resolution ─────────────────────────────────────────────────────
 
 export interface ResolvedKennel {
