@@ -1,4 +1,7 @@
 
+1.0.3+1
+    • PublicWebAdminApi: added redeemAdminToken to allowlist for OTP session exchange
+
 1.0.2+1
     • Added PublicWebAdminApi POST endpoint — routes to publicWeb_ SPs via JSON body; allowlisted queryTypes only
 
