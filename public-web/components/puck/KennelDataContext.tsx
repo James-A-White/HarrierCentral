@@ -1,13 +1,16 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import type { RunEvent, KennelLandingData } from "@/lib/api";
+import type { RunEvent, KennelLandingData, Song, KennelStatRow } from "@/lib/api";
 
 export interface KennelPageData {
   kennelData: KennelLandingData;
   slug: string;
   futureRuns: RunEvent[];
   pastRuns: RunEvent[];
+  songs?: Song[];
+  statsRows?: KennelStatRow[];
+  hasherCount?: number;
 }
 
 const KennelDataContext = createContext<KennelPageData | null>(null);

@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { getKennelLandingData } from "@/lib/api";
+import { getKennelLandingData, getPageLayout } from "@/lib/api";
 import { toKennelContext } from "@/lib/kennel-utils";
 import { StickyNav } from "@/components/StickyNav";
 import { KennelBackground } from "@/components/kennel/KennelBackground";
-import { Card, CardContent } from "@/components/ui/card";
+import { PuckRenderer } from "@/components/puck/PuckRenderer";
+import type { PageLayoutBlob } from "@/lib/page-layout";
+import { defaultLayouts } from "@/lib/page-layout";
 import { kennelBaseUrl } from "@/lib/seo";
 
 interface PageProps {
@@ -48,7 +48,11 @@ export default async function AboutPage({ params }: PageProps) {
   const kennelData = await getKennelLandingData(slug);
   if (!kennelData) notFound();
 
+  const layoutJson = await getPageLayout(slug);
   const kennel = toKennelContext(kennelData);
+
+  const blob: PageLayoutBlob = layoutJson ? (JSON.parse(layoutJson) as PageLayoutBlob) : {};
+  const pageLayout = blob.about ?? defaultLayouts.about;
 
   return (
     <html
@@ -69,32 +73,12 @@ export default async function AboutPage({ params }: PageProps) {
       <body className="text-zinc-100 antialiased overflow-x-hidden">
         <KennelBackground kennel={kennel} />
         <StickyNav kennel={kennel} slug={slug} alwaysVisible />
-
-        <div className="relative z-10 pt-20 pb-4 mx-auto w-full max-w-3xl px-4 md:px-6">
-          <Link
-            href={`/${slug}`}
-            className="inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-base font-semibold shadow-sm transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:hover:bg-white/[0.14] border-zinc-300 bg-white hover:bg-zinc-50"
-            style={{ color: "var(--kennel-text-body)" }}
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span className="sm:hidden">Back</span>
-            <span className="hidden sm:inline">Back to {kennelData.KennelShortName}</span>
-          </Link>
+        <div className="pt-20">
+          <PuckRenderer
+            data={pageLayout}
+            pageData={{ kennelData, slug, futureRuns: [], pastRuns: [] }}
+          />
         </div>
-
-        <main className="relative z-10 mx-auto w-full max-w-3xl px-4 pb-24 md:px-6">
-          <h1 className="text-4xl font-black mb-6 md:text-5xl" style={{ color: "var(--kennel-text-title)" }}>
-            About {kennelData.KennelName}
-          </h1>
-
-          <Card className="rounded-2xl dark:border-white/[0.08] dark:bg-white/[0.04] border-zinc-200 bg-white">
-            <CardContent className="p-6 md:p-8">
-              <p className="text-lg leading-relaxed" style={{ color: "var(--kennel-text-muted)" }}>
-                More information about this kennel is coming soon.
-              </p>
-            </CardContent>
-          </Card>
-        </main>
       </body>
     </html>
   );

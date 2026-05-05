@@ -1,5 +1,35 @@
 # public-web Changelog
 
+## 0.17.0 — 2026-05-05
+
+### Multi-page Puck editor
+
+- Page dropdown in the editor header lets admins switch between Home, Runs, About, Events, Songs, and Stats
+- Switching pages with unpublished changes prompts "Publish & Switch", "Discard & Switch", or "Cancel"
+- Publish shows a green/red toast confirming success or failure
+- All six page layouts stored in a single `PageLayoutJson` blob (keyed by page type); backward-compatible with existing single-page blobs
+- `lib/page-layout.ts` centralises `PageType`, `PageLayoutBlob`, page labels, and per-page default layouts
+
+### New Puck blocks
+
+- `RunsPageBlock` — wraps the full runs page client (search, filter, pagination, side panel)
+- `AboutBlock` — renders kennel description / welcome text with fallback copy
+- `EventsListBlock` — placeholder for the upcoming Events feature
+- `SongsListBlock` — wraps the full songs list; shows empty state when kennel has no songs
+- `StatsListBlock` — wraps the full stats table with sort controls
+
+### Public page routes updated
+
+- `/[slug]/runs`, `/about`, `/events`, `/songs`, `/stats` now all load the saved Puck layout (or page default) and render via `PuckRenderer`
+- Each page only fetches the data its blocks need; page-specific data (songs, stats, runs) is passed through `KennelDataContext`
+
+### KennelDataContext
+
+- Added optional `songs`, `statsRows`, and `hasherCount` fields so all page data is accessible to blocks
+- Editor page fetches all data up-front so any block can be placed on any page
+
+---
+
 ## 0.14.1 — 2026-05-03
 
 ### Timezone-aware future/past run boundaries

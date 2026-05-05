@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft, Music2 } from "lucide-react";
-import { getKennelLandingData, getSongs } from "@/lib/api";
+import { getKennelLandingData, getSongs, getPageLayout } from "@/lib/api";
 import { toKennelContext } from "@/lib/kennel-utils";
 import { StickyNav } from "@/components/StickyNav";
 import { KennelBackground } from "@/components/kennel/KennelBackground";
-import { SongsSection } from "@/components/kennel/SongsSection";
+import { PuckRenderer } from "@/components/puck/PuckRenderer";
+import type { PageLayoutBlob } from "@/lib/page-layout";
+import { defaultLayouts } from "@/lib/page-layout";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -33,11 +33,15 @@ export default async function SongsPage({ params }: PageProps) {
   const kennelData = await getKennelLandingData(slug);
   if (!kennelData) notFound();
 
-  const [songs] = await Promise.all([
+  const [songs, layoutJson] = await Promise.all([
     getSongs(kennelData.PublicKennelId),
+    getPageLayout(slug),
   ]);
 
   const kennel = toKennelContext(kennelData);
+
+  const blob: PageLayoutBlob = layoutJson ? (JSON.parse(layoutJson) as PageLayoutBlob) : {};
+  const pageLayout = blob.songs ?? defaultLayouts.songs;
 
   return (
     <html
@@ -58,30 +62,12 @@ export default async function SongsPage({ params }: PageProps) {
       <body className="text-zinc-100 antialiased overflow-x-hidden">
         <KennelBackground kennel={kennel} />
         <StickyNav kennel={kennel} slug={slug} alwaysVisible />
-
-        <div className="pt-20 pb-4 mx-auto w-full max-w-3xl px-4 md:px-6">
-          <Link
-            href={`/${slug}`}
-            className="inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-xl font-semibold shadow-sm transition-colors dark:border-white/15 dark:bg-white/[0.08] dark:hover:bg-white/[0.14] border-zinc-300 bg-white hover:bg-zinc-50"
-            style={{ color: "var(--kennel-text-body)" }}
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to {kennelData.KennelShortName}
-          </Link>
+        <div className="pt-20 pb-24">
+          <PuckRenderer
+            data={pageLayout}
+            pageData={{ kennelData, slug, futureRuns: [], pastRuns: [], songs }}
+          />
         </div>
-
-        <main className="mx-auto max-w-3xl px-4 pb-24 md:px-6">
-          {songs.length === 0 ? (
-            <div className="mt-8 rounded-[2rem] border dark:border-white/[0.08] dark:bg-white/[0.04] border-zinc-200 bg-white p-12 flex flex-col items-center gap-3 text-center">
-              <Music2 className="h-8 w-8" style={{ color: "var(--kennel-text-muted)" }} />
-              <p className="text-2xl" style={{ color: "var(--kennel-text-body)" }}>
-                No songs have been added yet.
-              </p>
-            </div>
-          ) : (
-            <SongsSection songs={songs} slug={slug} />
-          )}
-        </main>
       </body>
     </html>
   );

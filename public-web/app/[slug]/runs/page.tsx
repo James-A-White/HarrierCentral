@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
-import { getKennelLandingData, getEvents } from "@/lib/api";
+import { getKennelLandingData, getEvents, getPageLayout } from "@/lib/api";
 import { toKennelContext } from "@/lib/kennel-utils";
 import { StickyNav } from "@/components/StickyNav";
 import { KennelBackground } from "@/components/kennel/KennelBackground";
-import { RunsPageClient } from "@/components/kennel/RunsPageClient";
+import { PuckRenderer } from "@/components/puck/PuckRenderer";
+import type { PageLayoutBlob } from "@/lib/page-layout";
+import { defaultLayouts } from "@/lib/page-layout";
 import { kennelBaseUrl } from "@/lib/seo";
 
 interface PageProps {
@@ -46,14 +48,18 @@ export default async function RunsPage({ params }: PageProps) {
   const kennelData = await getKennelLandingData(slug);
   if (!kennelData) notFound();
 
-  const [futureResult, pastResult] = await Promise.all([
+  const [futureResult, pastResult, layoutJson] = await Promise.all([
     getEvents(kennelData.PublicKennelId, { isFuture: true, maxEvents: 100, summaryOnly: true }),
     getEvents(kennelData.PublicKennelId, { isFuture: false, daysOffset: 3650, summaryOnly: true }),
+    getPageLayout(slug),
   ]);
 
   const futureRuns = futureResult?.events ?? [];
   const pastRuns = pastResult?.events ?? [];
   const kennel = toKennelContext(kennelData);
+
+  const blob: PageLayoutBlob = layoutJson ? (JSON.parse(layoutJson) as PageLayoutBlob) : {};
+  const pageLayout = blob.runs ?? defaultLayouts.runs;
 
   return (
     <html
@@ -69,11 +75,9 @@ export default async function RunsPage({ params }: PageProps) {
         <KennelBackground kennel={kennel} />
         <StickyNav kennel={kennel} slug={slug} alwaysVisible />
         <div className="pt-20">
-          <RunsPageClient
-            futureRuns={futureRuns}
-            pastRuns={pastRuns}
-            kennel={kennel}
-            slug={slug}
+          <PuckRenderer
+            data={pageLayout}
+            pageData={{ kennelData, slug, futureRuns, pastRuns }}
           />
         </div>
       </body>

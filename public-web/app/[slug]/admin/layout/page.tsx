@@ -1,11 +1,10 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { notFound } from "next/navigation";
-import { getKennelLandingData, getEvents, getPageLayout } from "@/lib/api";
+import { getKennelLandingData, getEvents, getPageLayout, getSongs, getStats } from "@/lib/api";
 import { verifySession } from "@/lib/admin-session";
 import { PuckEditor } from "@/components/puck/PuckEditor";
-import { defaultLayout } from "@/components/puck/defaultLayout";
-import type { Data } from "@measured/puck";
+import type { PageLayoutBlob } from "@/lib/page-layout";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -18,7 +17,6 @@ export default async function AdminLayoutPage({ params, searchParams }: PageProp
   const { slug } = await params;
   const { token } = await searchParams;
 
-  // Session check — httpOnly cookie set by /api/admin/auth after token redemption
   const cookieStore = await cookies();
   const session = verifySession(cookieStore.get("hc_admin_session")?.value);
 
@@ -35,30 +33,39 @@ export default async function AdminLayoutPage({ params, searchParams }: PageProp
     );
   }
 
-  const [kennelData, layoutJson] = await Promise.all([
-    getKennelLandingData(slug),
-    getPageLayout(slug),
-  ]);
-
+  const kennelData = await getKennelLandingData(slug);
   if (!kennelData) notFound();
 
-  const [eventsResult, pastResult] = await Promise.all([
+  const [futureResult, pastResult, layoutJson, songs, statsResult] = await Promise.all([
     getEvents(kennelData.PublicKennelId, { isFuture: true,  maxEvents: 20 }),
     getEvents(kennelData.PublicKennelId, { isFuture: false, daysOffset: 365, maxEvents: 20 }),
+    getPageLayout(slug),
+    getSongs(kennelData.PublicKennelId),
+    getStats(kennelData.PublicKennelId),
   ]);
 
-  const futureRuns = eventsResult?.events ?? [];
+  const futureRuns = futureResult?.events ?? [];
   const pastRuns   = pastResult?.events   ?? [];
 
-  const initialData: Data = layoutJson ? (JSON.parse(layoutJson) as Data) : defaultLayout;
+  const initialBlob: PageLayoutBlob = layoutJson
+    ? (JSON.parse(layoutJson) as PageLayoutBlob)
+    : {};
 
   return (
     <html lang="en">
       <body style={{ margin: 0, height: "100vh", overflow: "hidden" }}>
         <PuckEditor
           slug={slug}
-          initialData={initialData}
-          pageData={{ kennelData, slug, futureRuns, pastRuns }}
+          initialBlob={initialBlob}
+          pageData={{
+            kennelData,
+            slug,
+            futureRuns,
+            pastRuns,
+            songs,
+            statsRows: statsResult?.rows ?? [],
+            hasherCount: statsResult?.hasherCount ?? 0,
+          }}
         />
       </body>
     </html>

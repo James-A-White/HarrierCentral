@@ -5,8 +5,8 @@ import { StickyNav } from "@/components/StickyNav";
 import { ScrollHero } from "@/components/kennel/ScrollHero";
 import { SiteFooter } from "@/components/kennel/SiteFooter";
 import { PuckRenderer } from "@/components/puck/PuckRenderer";
-import { defaultLayout } from "@/components/puck/defaultLayout";
-import type { Data } from "@measured/puck";
+import type { PageLayoutBlob } from "@/lib/page-layout";
+import { defaultLayouts } from "@/lib/page-layout";
 import { kennelBaseUrl } from "@/lib/seo";
 
 interface PageProps {
@@ -98,7 +98,8 @@ export default async function KennelPage({ params }: PageProps) {
   ]);
   const futureRuns = eventsResult?.events ?? [];
   const pastRuns   = pastResult?.events   ?? [];
-  const pageLayout: Data = layoutJson ? (JSON.parse(layoutJson) as Data) : defaultLayout;
+  const blob: PageLayoutBlob = layoutJson ? (JSON.parse(layoutJson) as PageLayoutBlob) : {};
+  const pageLayout = blob.home ?? defaultLayouts.home;
 
   return (
     <html
