@@ -1,0 +1,49 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getSongs",
+  "version": "1.0.0",
+  "description": "Returns all non-removed songs assigned to a kennel via HC.KennelSongMap, ordered by Rank ASC then SongName ASC. Used by the public songs page. Returns an empty rowset when the kennel is not found or has no assigned songs. No authentication required.",
+  "parameters": [
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "Public GUID of the kennel whose songs to return"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Songs",
+      "description": "Zero or more song rows ordered by Rank ASC, SongName ASC. Empty when the kennel is not found, inactive, or has no assigned songs. On validation error the standard Success/ErrorMessage envelope is returned instead.",
+      "columns": [
+        { "name": "id",          "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Song GUID" },
+        { "name": "SongName",    "type": "NVARCHAR(120)",    "nullable": false, "description": "Song title" },
+        { "name": "TuneOf",      "type": "NVARCHAR(500)",    "nullable": true,  "description": "Tune this song is sung to" },
+        { "name": "BawdyRating", "type": "SMALLINT",         "nullable": true,  "description": "Bawdiness rating (e.g. 1–5)" },
+        { "name": "Lyrics",      "type": "NVARCHAR(MAX)",    "nullable": true,  "description": "Full lyrics text" },
+        { "name": "Notes",       "type": "NVARCHAR(MAX)",    "nullable": true,  "description": "Additional notes" },
+        { "name": "Actions",     "type": "NVARCHAR(MAX)",    "nullable": true,  "description": "Physical actions / choreography notes" },
+        { "name": "Variants",    "type": "NVARCHAR(MAX)",    "nullable": true,  "description": "Variant lyrics or versions" },
+        { "name": "ImageUrl",    "type": "NVARCHAR(500)",    "nullable": true,  "description": "Song illustration image URL" },
+        { "name": "AudioUrl",    "type": "NVARCHAR(500)",    "nullable": true,  "description": "Audio recording URL" },
+        { "name": "Rank",        "type": "SMALLINT",         "nullable": true,  "description": "Sort order" },
+        { "name": "Tags",        "type": "NVARCHAR(MAX)",    "nullable": true,  "description": "Tag string for filtering" }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Kennel-not-found returns empty rowset instead of error envelope",
+      "detail": "When the kennel is not found, the SP returns an empty typed rowset (WHERE 1=0) rather than a Success=0 error envelope. The comment says 'shim will treat as 404' but the shim actually returns [] for an empty first rowset. This is inconsistent with publicWeb_getSong which returns an error envelope for the same condition. The behaviour is harmless (callers show an empty list) but the intent is ambiguous."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from the rowset",
+    "Never change the sort order without confirming with callers",
+    "The column set must exactly match publicWeb_getSong rowset 0 — they're consumed by the same TypeScript type"
+  ]
+}

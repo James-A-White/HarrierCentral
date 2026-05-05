@@ -1,0 +1,48 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_resolveKennelsByUuid",
+  "version": "1.0.0",
+  "description": "Resolves one or more comma-separated PublicKennelId UUIDs to kennel slugs and optional custom domains. Used by the legacy URL shim to redirect old hashruns.org hash-based URLs (/#/RD?publicKennelIds=...) to the new path-based site. Malformed UUIDs are silently skipped via TRY_CAST. Requires SQL Server 2016+ for STRING_SPLIT. No authentication required.",
+  "parameters": [
+    {
+      "name": "PublicKennelIds",
+      "type": "NVARCHAR(MAX)",
+      "nullable": false,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "Comma-separated list of PublicKennelId UUIDs, e.g. '934306c8-035a-4af8-b4fa-a593bc28bf36' or '934306c8-...,7a1b2c3d-...'. Invalid UUID strings are silently ignored."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ResolvedKennels",
+      "description": "One row per UUID that resolves to an active kennel. Zero rows when none of the UUIDs match. Order is not guaranteed.",
+      "columns": [
+        {
+          "name": "KennelSlug",
+          "type": "NVARCHAR(100)",
+          "nullable": false,
+          "description": "HC.Kennel.KennelUniqueShortName — used to build the new path-based URL"
+        },
+        {
+          "name": "KennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Full kennel name — used for display in the multi-kennel picker when more than one UUID resolves"
+        },
+        {
+          "name": "CustomDomain",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Custom domain (e.g. 'lh3.com') if the kennel is on tier 3; NULL otherwise. The redirect should use the custom domain when present."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove KennelSlug, KennelName, or CustomDomain columns — all three are consumed by the Next.js shim",
+    "Never change malformed-UUID behaviour to throw — silent skip is intentional for robustness with old inbound links"
+  ]
+}

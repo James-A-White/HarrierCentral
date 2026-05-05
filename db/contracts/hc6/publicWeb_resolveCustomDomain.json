@@ -1,0 +1,37 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_resolveCustomDomain",
+  "version": "1.0.0",
+  "description": "Resolves a custom domain hostname to the kennel slug that should handle requests for it. Called by the Next.js middleware on every inbound request from an unrecognised hostname; result is cached in-process. Only returns slugs for kennels with Enabled = 1 — disabled kennels do not route. No authentication required.",
+  "parameters": [
+    {
+      "name": "CustomDomain",
+      "type": "NVARCHAR(253)",
+      "nullable": false,
+      "mapsToColumn": "KennelWebsite.CustomDomain",
+      "description": "Hostname without port (e.g. 'www.decisionhall.com' or 'decisionhall.com') — exact match against HC.KennelWebsite.CustomDomain"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ResolvedKennel",
+      "description": "Zero or one row. Zero rows means no active kennel owns this domain — middleware should return 404 or pass through. One row means the domain resolves to this kennel.",
+      "columns": [
+        {
+          "name": "KennelSlug",
+          "type": "NVARCHAR(100)",
+          "nullable": false,
+          "description": "HC.Kennel.KennelUniqueShortName — the internal path segment to rewrite the request to"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove the KennelSlug column",
+    "Never change the zero-row = no match contract — middleware depends on this",
+    "Never remove the kw.Enabled = 1 filter — routing disabled kennels would expose their content at their custom domain"
+  ]
+}

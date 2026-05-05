@@ -1,0 +1,60 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_generateWebAdminToken",
+  "version": "1.0.0",
+  "description": "Generates a short-lived one-time token (10 min) that the Flutter portal passes to the Next.js public-web admin UI via URL parameter. The browser redeems the token via publicWeb_redeemAdminToken to obtain a session cookie. Requires the caller to have AppAccessFlags bit 0 (0x00000001) set in HC.HasherKennelMap for the target kennel.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal device ID — passed to ValidatePortalAuth for authentication"
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived device token for this SP name — passed to ValidatePortalAuth"
+    },
+    {
+      "name": "kennelSlug",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelUniqueShortName",
+      "description": "URL slug of the kennel whose website the admin wants to edit"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "TokenResult",
+      "description": "Returned on success — one row containing the lowercase UUID token to pass in the redirect URL. On any error the SP returns the standard Success/ErrorMessage envelope instead.",
+      "columns": [
+        {
+          "name": "Token",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "Lowercase UUID of the newly created HC.PublicWebAdminToken row — valid for 10 minutes, single use"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Purges all expired rows from HC.PublicWebAdminToken (DELETE WHERE ExpiresAt < SYSDATETIMEOFFSET())",
+    "Inserts one row into HC.PublicWebAdminToken with a 10-minute expiry"
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "No transaction around DELETE + INSERT",
+      "detail": "The purge DELETE and the INSERT into PublicWebAdminToken run outside an explicit transaction. A crash between them leaves no partial inconsistency (the purged rows were expired anyway), so the risk is negligible. Consider wrapping if atomicity ever matters."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove the Token column from the success rowset",
+    "Never change the token lifetime without updating the Next.js session cookie maxAge",
+    "Never change the auth flag from 0x00000001 without updating all callers"
+  ]
+}

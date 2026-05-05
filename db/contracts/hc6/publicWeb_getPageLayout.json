@@ -1,0 +1,43 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getPageLayout",
+  "version": "1.0.0",
+  "description": "Returns the saved Puck page layout JSON blob for a kennel. Uses LEFT JOIN so kennels without a KennelWebsite row return one row with PageLayoutJson = NULL rather than zero rows (which the shim would misread as 404). Callers fall back to the hardcoded default layout when the value is NULL. No authentication required.",
+  "parameters": [
+    {
+      "name": "KennelSlug",
+      "type": "NVARCHAR(100)",
+      "nullable": false,
+      "mapsToColumn": "Kennel.KennelUniqueShortName",
+      "description": "URL slug of the kennel whose layout to load"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "PageLayoutResult",
+      "description": "Always one row for a valid active kennel. Zero rows means kennel not found or inactive — shim returns 404. One row with PageLayoutJson NULL means the kennel exists but has no saved layout yet.",
+      "columns": [
+        {
+          "name": "PageLayoutJson",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "JSON blob of shape PageLayoutBlob = Partial<Record<PageType, Data>> where PageType is 'home'|'runs'|'about'|'events'|'songs'|'stats'. NULL when no layout has been saved."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Does not check kw.Enabled",
+      "detail": "Returns the layout even when the kennel website is disabled (Enabled = 0). This is intentional — the admin editor needs to load the layout regardless of published state — but callers rendering the public page should independently check WebsiteEnabled before rendering."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove the PageLayoutJson column",
+    "Never change the zero-row = 404 / null-value = no layout contract — Next.js callers depend on this distinction",
+    "Never change from LEFT JOIN to INNER JOIN — that would break the null-layout signal"
+  ]
+}

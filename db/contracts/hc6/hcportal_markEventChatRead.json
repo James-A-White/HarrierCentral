@@ -1,0 +1,66 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_markEventChatRead",
+  "version": "1.0.0",
+  "description": "Records that the calling user has read all current messages in an event chat. Upserts HC.EventMessageBadgeCounts with the current message count, timestamp, and latest message ID. Returns the FCM tokens of the user's other devices so the API shim can fan out a silent read_sync push to zero the badge without showing a notification. Service accounts are explicitly blocked.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Calling device — used for auth and excluded from the FCM fan-out rowset"
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived device token for this SP name"
+    },
+    {
+      "name": "publicEventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.PublicEventId",
+      "description": "Public GUID of the event whose chat the user just read"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ReadResult",
+      "description": "Single row confirming the sequence count written. On any error the SP returns the standard Success/ErrorMessage envelope instead.",
+      "columns": [
+        {
+          "name": "LastSequenceCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "The total non-removed message count for this event at the time of the read — written to HC.EventMessageBadgeCounts.LastSequenceCount"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "FcmFanoutTargets",
+      "description": "FCM tokens of the calling user's other devices (not the current device). The API shim sends a silent read_sync push to each so their badge counts are zeroed. Zero rows when the user has only one device.",
+      "columns": [
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "FCM registration token for one of the user's other devices"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Upserts HC.EventMessageBadgeCounts for (eventId, hasherId) — sets LastSequenceCount, LastReadAt, LastReadMessageId"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove or rename the LastSequenceCount column — Flutter reads it to confirm the write succeeded",
+    "Never remove the FcmToken column from rowset 1 — the API shim depends on it for fan-out",
+    "Never change the exclusion logic for the current device — it must not receive its own read_sync push"
+  ]
+}

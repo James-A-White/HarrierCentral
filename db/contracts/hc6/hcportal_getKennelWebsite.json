@@ -1,0 +1,94 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_getKennelWebsite",
+  "version": "1.0.0",
+  "description": "Retrieves all HC.KennelWebsite configuration columns for a kennel. If no KennelWebsite row exists yet, inserts a default row (Enabled=0, ThemeMode='dark', ScrollBlur=0) so the Edit Website form always has something to load. Auth is scoped to the kennel via ValidatePortalAuth.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal device ID — passed to ValidatePortalAuth"
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived device token for this SP name"
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "Public GUID of the kennel to load website config for — also used as the auth scope in ValidatePortalAuth"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "KennelWebsiteConfig",
+      "description": "All columns from HC.KennelWebsite for the resolved kennel. Always one row — a default row is auto-inserted if none exists. On error the standard Success/ErrorMessage envelope is returned instead.",
+      "columns": [
+        { "name": "kennelId",                 "type": "UNIQUEIDENTIFIER",  "nullable": false, "description": "Internal kennel ID (FK to HC.Kennel.id)" },
+        { "name": "customDomain",             "type": "NVARCHAR(250)",     "nullable": true,  "description": "Custom domain e.g. lh3.com; NULL = subdomain only" },
+        { "name": "urlShortcode",             "type": "NVARCHAR(50)",      "nullable": true,  "description": "HC5 legacy WebsiteUrlShortcode — review vs KennelUniqueShortName" },
+        { "name": "enabled",                  "type": "BIT",               "nullable": false, "description": "Whether the public website is enabled" },
+        { "name": "themeMode",                "type": "NVARCHAR(10)",      "nullable": false, "description": "'light' or 'dark'" },
+        { "name": "primaryColor",             "type": "NVARCHAR(25)",      "nullable": true,  "description": "CSS hex colour injected as --color-primary" },
+        { "name": "accentColor",              "type": "NVARCHAR(25)",      "nullable": true,  "description": "CSS hex colour for accent; falls back to primaryColor if NULL" },
+        { "name": "scrollBlur",               "type": "SMALLINT",          "nullable": false, "description": "0–100; controls backdrop-filter blur intensity on hero scroll" },
+        { "name": "bannerImage",              "type": "NVARCHAR(500)",     "nullable": true,  "description": "Hero/header image URL" },
+        { "name": "ogImageUrl",               "type": "NVARCHAR(500)",     "nullable": true,  "description": "Open Graph share image URL (1200×630px recommended)" },
+        { "name": "backgroundImage",          "type": "NVARCHAR(500)",     "nullable": true,  "description": "Full-page background image URL" },
+        { "name": "titleTextColor",           "type": "NVARCHAR(25)",      "nullable": true,  "description": "Heading text colour (#RRGGBBAA)" },
+        { "name": "bodyTextColor",            "type": "NVARCHAR(25)",      "nullable": true,  "description": "Body text colour (#RRGGBBAA)" },
+        { "name": "textMutedColor",           "type": "NVARCHAR(9)",       "nullable": true,  "description": "Muted/secondary label text colour (#RRGGBBAA)" },
+        { "name": "cardBackgroundColor",      "type": "NVARCHAR(9)",       "nullable": true,  "description": "Card/panel surface colour (#RRGGBBAA)" },
+        { "name": "buttonPrimaryColor",       "type": "NVARCHAR(9)",       "nullable": true,  "description": "Primary action button background (#RRGGBBAA); defaults to primaryColor" },
+        { "name": "buttonCancelColor",        "type": "NVARCHAR(9)",       "nullable": true,  "description": "Cancel/undo button background (#RRGGBBAA)" },
+        { "name": "buttonSecondaryColor",     "type": "NVARCHAR(9)",       "nullable": true,  "description": "Secondary button background (#RRGGBBAA)" },
+        { "name": "runCardColor",             "type": "NVARCHAR(9)",       "nullable": true,  "description": "Run card surface colour; defaults to cardBackgroundColor" },
+        { "name": "backgroundColor",          "type": "NVARCHAR(25)",      "nullable": true,  "description": "Page background overlay colour (#RRGGBBAA)" },
+        { "name": "menuBackgroundColor",      "type": "NVARCHAR(25)",      "nullable": true,  "description": "Sticky nav background colour (#RRGGBBAA)" },
+        { "name": "menuTextColor",            "type": "NVARCHAR(25)",      "nullable": true,  "description": "Sticky nav text colour" },
+        { "name": "titleFont",                "type": "NVARCHAR(100)",     "nullable": true,  "description": "Heading font family" },
+        { "name": "bodyFont",                 "type": "NVARCHAR(100)",     "nullable": true,  "description": "Body font family" },
+        { "name": "titleText",                "type": "NVARCHAR(500)",     "nullable": true,  "description": "Custom display name shown in hero (may differ from KennelName)" },
+        { "name": "tagline",                  "type": "NVARCHAR(250)",     "nullable": true,  "description": "Short strapline shown under logo/title" },
+        { "name": "welcomeText",              "type": "NVARCHAR(4000)",    "nullable": true,  "description": "Homepage welcome/intro copy" },
+        { "name": "seoTitle",                 "type": "NVARCHAR(60)",      "nullable": true,  "description": "Per-kennel <title> tag override" },
+        { "name": "seoDescription",           "type": "NVARCHAR(155)",     "nullable": true,  "description": "Per-kennel <meta description> override" },
+        { "name": "seoStructuredDataJson",    "type": "NVARCHAR(MAX)",     "nullable": true,  "description": "JSON-LD override for Organization/SportsClub schema" },
+        { "name": "mismanagementDescription", "type": "NVARCHAR(4000)",    "nullable": true,  "description": "Committee/mis-management page description text" },
+        { "name": "mismanagementJson",        "type": "NVARCHAR(4000)",    "nullable": true,  "description": "JSON array of committee contact entries" },
+        { "name": "extraMenusJson",           "type": "NVARCHAR(4000)",    "nullable": true,  "description": "JSON array of custom nav menu items" },
+        { "name": "contactDetailsJson",       "type": "NVARCHAR(4000)",    "nullable": true,  "description": "JSON contact details" },
+        { "name": "controlFlags",             "type": "INT",               "nullable": true,  "description": "Bit flags for feature toggles (HC5 WebsiteControlFlags)" },
+        { "name": "pageFeaturesJson",         "type": "NVARCHAR(MAX)",     "nullable": true,  "description": "JSON object controlling which nav pages are enabled; added via migration (not in base table file)" }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Inserts a default HC.KennelWebsite row (Enabled=0, ThemeMode='dark', ScrollBlur=0) if none exists for the kennel"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Auto-insert outside a transaction creates a race condition",
+      "detail": "The IF NOT EXISTS / INSERT block is not wrapped in a transaction. Two concurrent first-time calls could both pass the existence check and both attempt the INSERT, causing a primary key violation on the second. Low probability in practice but could surface under load. Use a MERGE or serializable transaction to fix."
+    },
+    {
+      "severity": "low",
+      "issue": "pageFeaturesJson not in base table definition",
+      "detail": "The column pageFeaturesJson is selected but is not present in db/schema/tables/HC.KennelWebsite.Table.sql — it was added via a run-once migration. The base table file should be updated to reflect the live schema."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from the rowset — Flutter reads all columns by name",
+    "Never rename a column — camelCase aliases are the API contract",
+    "Never change the default values inserted on auto-create without reviewing all callers"
+  ]
+}

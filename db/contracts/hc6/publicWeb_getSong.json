@@ -1,0 +1,49 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getSong",
+  "version": "1.0.0",
+  "description": "Returns a single song for the song detail page, scoped to a kennel via HC.KennelSongMap. The KennelSongMap join prevents cross-kennel access — a caller cannot read another kennel's songs by guessing song IDs. Returns an empty rowset when the song is not found or not assigned to the kennel. No authentication required.",
+  "parameters": [
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "Public GUID of the kennel — used to scope the song lookup"
+    },
+    {
+      "name": "songId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Song.id",
+      "description": "Internal GUID of the song to fetch"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "SongDetail",
+      "description": "Zero or one row. Zero rows means song not found, not assigned to this kennel, or kennel not found. On validation error the standard Success/ErrorMessage envelope is returned instead.",
+      "columns": [
+        { "name": "id",          "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Song GUID" },
+        { "name": "SongName",    "type": "NVARCHAR(120)",    "nullable": false, "description": "Song title" },
+        { "name": "TuneOf",      "type": "NVARCHAR(500)",    "nullable": true,  "description": "Tune this song is sung to" },
+        { "name": "BawdyRating", "type": "SMALLINT",         "nullable": true,  "description": "Bawdiness rating (e.g. 1–5)" },
+        { "name": "Lyrics",      "type": "NVARCHAR(MAX)",    "nullable": true,  "description": "Full lyrics text" },
+        { "name": "Notes",       "type": "NVARCHAR(MAX)",    "nullable": true,  "description": "Additional notes about the song" },
+        { "name": "Actions",     "type": "NVARCHAR(MAX)",    "nullable": true,  "description": "Physical actions / choreography notes" },
+        { "name": "Variants",    "type": "NVARCHAR(MAX)",    "nullable": true,  "description": "Variant lyrics or versions" },
+        { "name": "ImageUrl",    "type": "NVARCHAR(500)",    "nullable": true,  "description": "Song illustration image URL" },
+        { "name": "AudioUrl",    "type": "NVARCHAR(500)",    "nullable": true,  "description": "Audio recording URL" },
+        { "name": "Rank",        "type": "SMALLINT",         "nullable": true,  "description": "Sort order" },
+        { "name": "Tags",        "type": "NVARCHAR(MAX)",    "nullable": true,  "description": "Tag string for filtering" }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from the rowset",
+    "Never change the zero-row = not found contract — Next.js callers check for empty array"
+  ]
+}

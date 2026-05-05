@@ -1,0 +1,59 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_savePageLayout",
+  "version": "1.0.0",
+  "description": "Saves (inserts or updates) the Puck page layout JSON blob for a kennel. Validates that the JSON is well-formed via ISJSON(). If no KennelWebsite row exists yet, inserts a minimal one with Enabled=0 so saving a layout does not auto-publish the website. Called by the Next.js admin layout editor via the PublicWebAdminApi POST endpoint.",
+  "parameters": [
+    {
+      "name": "KennelSlug",
+      "type": "NVARCHAR(100)",
+      "nullable": false,
+      "mapsToColumn": "Kennel.KennelUniqueShortName",
+      "description": "URL slug of the kennel whose layout to save"
+    },
+    {
+      "name": "PageLayoutJson",
+      "type": "NVARCHAR(MAX)",
+      "nullable": false,
+      "mapsToColumn": "KennelWebsite.PageLayoutJson",
+      "description": "JSON blob of shape PageLayoutBlob = Partial<Record<PageType, Data>>. Must pass SQL Server ISJSON() validation."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "SaveResult",
+      "description": "Standard success/error envelope.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success, 0 on any error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "NULL on success; error description on failure"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Updates HC.KennelWebsite.PageLayoutJson and updatedAt for the resolved kennel",
+    "Inserts a minimal HC.KennelWebsite row (KennelId, PageLayoutJson, Enabled=0) if none exists"
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Auto-insert of KennelWebsite row on save",
+      "detail": "If no KennelWebsite row exists, the SP inserts a minimal one with Enabled=0. This is intentional and documented in the SP comment. However, two concurrent first-time saves could produce a primary key violation on the second INSERT. Same race as hcportal_getKennelWebsite — low probability but worth noting."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove the Success/ErrorMessage columns — the Next.js route checks Success to show toast feedback",
+    "Never change the Enabled=0 default on auto-insert — the admin must explicitly enable the website separately",
+    "Never remove the ISJSON() check — it prevents corrupted blobs reaching the DB"
+  ]
+}
