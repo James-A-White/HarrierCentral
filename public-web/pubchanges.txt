@@ -1,3 +1,10 @@
+0.16.0
+    • Kennel landing pages now load layout from the DB (PageLayoutJson), falling back to default when none is saved
+    • Puck page builder blocks: Welcome, Next Run, Run List — kennel data flows server-side via React context
+    • Fixed shell (StickyNav, ScrollHero, SiteFooter) always present, not editable via page builder
+    • Editor available at /lh3/admin/layout (locked to LH3 until OTP auth is implemented)
+    • Original page preserved at /lh3/legacy as a safety net
+
 0.15.1
     • Run times now show kennel-local timezone (e.g. 19:15 JST)
     • Detail panel shows viewer's local time below when it differs (e.g. 11:15 BST your time)
