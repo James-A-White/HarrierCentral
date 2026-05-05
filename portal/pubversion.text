@@ -1,4 +1,9 @@
 
+1.4.1+611
+    • Added "Design Website" button to kennel app bar and detail panel
+    • Tapping generates a one-time token via hcportal_generateWebAdminToken and opens the page builder in the browser
+    • Token expires in 10 minutes; no password required
+
 1.4.0+610
     • Three-button colour system: primary, cancel, secondary (replaces single button colour)
     • Hero Image field: replaces kennel logo in hero when set; accepts PNG/AVIF for transparency; used as primary OG/social share image
