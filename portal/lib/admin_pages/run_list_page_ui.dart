@@ -223,6 +223,13 @@ class RunListPage extends StatelessWidget {
                                   },
                                 ),
                                 const SizedBox(width: 8),
+                                _appBarBtn(
+                                  'Design Website',
+                                  onPressed: () => _openWebsiteDesigner(
+                                    k.kennelUniqueShortName,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
                               ],
                               if (k.canManageRuns) ...[
                                 _appBarBtn(
@@ -738,6 +745,13 @@ class RunListPage extends StatelessWidget {
                 }
               },
             ),
+            const SizedBox(height: 16),
+            _appBarBtn(
+              'Design Website',
+              onPressed: () => _openWebsiteDesigner(
+                formController.kennel.kennelUniqueShortName,
+              ),
+            ),
           ],
         ],
       ),
@@ -1159,6 +1173,50 @@ class RunListPage extends StatelessWidget {
     }
 
     return null;
+  }
+
+  Future<void> _openWebsiteDesigner(String kennelSlug) async {
+    final deviceId = box.get(HIVE_DEVICE_ID) as String;
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
+
+    final accessToken = Utilities.generateToken(
+      deviceId,
+      'hcportal_generateWebAdminToken',
+      paramString: deviceSecret,
+    );
+
+    final body = <String, String>{
+      'queryType': 'generateWebAdminToken',
+      'deviceId': deviceId,
+      'accessToken': accessToken,
+      'kennelSlug': kennelSlug,
+    };
+
+    final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+    if (jsonResult.startsWith(ERROR_PREFIX)) {
+      debugPrint('SP [generateWebAdminToken] — FAILED');
+      return;
+    }
+
+    final decoded = json.decode(jsonResult) as List<dynamic>;
+    final rows = (decoded[0] as List<dynamic>);
+    if (rows.isEmpty) return;
+
+    final row = rows[0] as Map<String, dynamic>;
+    // Error envelope check
+    if ((row['Success'] as int?) == 0) {
+      final msg = row['ErrorMessage'] as String? ?? 'Unable to open designer.';
+      await CoreUtilities.showAlert('Design Website', msg, 'OK');
+      return;
+    }
+
+    final token = row['Token'] as String?;
+    if (token == null || token.isEmpty) return;
+
+    final isLocal = web.window.location.href.contains('localhost');
+    final base = isLocal ? 'http://localhost:3000' : 'https://www.hashruns.org';
+    final url = '$base/$kennelSlug/admin/layout?token=$token';
+    await launchUrl(Uri.parse(url), webOnlyWindowName: '_blank');
   }
 
   Widget _renderRunDetail(EventDetailsResult edr) {

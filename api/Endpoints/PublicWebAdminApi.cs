@@ -27,6 +27,7 @@ namespace HcWebApi.Endpoints
         {
             "savePageLayout",
             "getPageLayout",
+            "redeemAdminToken",
         };
 
         private readonly ILogger<PublicWebAdminApi> _log;

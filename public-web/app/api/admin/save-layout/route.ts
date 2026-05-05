@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { verifySession } from "@/lib/admin-session";
 
 const API_BASE = process.env.HC_API_URL ?? "http://localhost:7071";
 
@@ -14,6 +15,12 @@ export async function POST(req: NextRequest) {
 
   if (!slug || !pageLayoutJson) {
     return NextResponse.json({ error: "Missing required fields: slug, pageLayoutJson." }, { status: 400 });
+  }
+
+  // Validate session cookie — must be for this kennel
+  const session = verifySession(req.cookies.get("hc_admin_session")?.value);
+  if (!session || session.kennelSlug !== slug) {
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
   try {
