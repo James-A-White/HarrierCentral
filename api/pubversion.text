@@ -1,4 +1,7 @@
 
+1.0.2+1
+    • Added PublicWebAdminApi POST endpoint — routes to publicWeb_ SPs via JSON body; allowlisted queryTypes only
+
 1.0.1+2
     • Added 10-second CommandTimeout to PublicWebApi SQL commands to prevent slow SP queries from hanging the HTTP connection
 
