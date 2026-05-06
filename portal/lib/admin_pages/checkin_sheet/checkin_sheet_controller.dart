@@ -60,7 +60,11 @@ class CheckinSheetController extends GetxController {
         pageFormat.value = pdf_lib.PdfPageFormat.a4;
     }
 
-    unawaited(onInitAsync());
+    unawaited(
+      onInitAsync().catchError((Object e, StackTrace st) {
+        debugPrint('CheckinSheet load failed: $e\n$st');
+      }),
+    );
   }
 
   Future<void> onInitAsync() async {
@@ -73,16 +77,16 @@ class CheckinSheetController extends GetxController {
   }
 
   Future<void> getKennelImage() async {
-    if (kennelLogo.toLowerCase().startsWith('http')) {
-      final response = await http.get(
-        Uri.parse(
-          kennelLogo,
-        ),
-      );
-
+    if (!kennelLogo.toLowerCase().startsWith('http')) return;
+    try {
+      final response = await http
+          .get(Uri.parse(kennelLogo))
+          .timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         kennelLogoImage = pw.MemoryImage(response.bodyBytes);
       }
+    } catch (e) {
+      debugPrint('Kennel logo fetch failed: $e');
     }
   }
 
