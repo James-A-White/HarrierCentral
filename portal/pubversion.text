@@ -1,4 +1,8 @@
 
+1.4.2+612
+    • Fixed check-in sheet hanging indefinitely on kennels with slow or unreachable logo URLs
+    • Added 10s timeout + graceful fallback to logo fetch; errors now logged instead of silently swallowed
+
 1.4.1+611
     • Added "Design Website" button to kennel app bar and detail panel
     • Tapping generates a one-time token via hcportal_generateWebAdminToken and opens the page builder in the browser
