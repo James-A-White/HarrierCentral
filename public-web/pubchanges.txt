@@ -1,3 +1,11 @@
+0.17.1
+    • Image upload in Puck ImageTextBlock — uploads to Azure Blob Storage via admin-authenticated API route
+    • Layout dropdown: side-by-side ratios (10–90%), image only, text only, image above text, text above image
+    • Top/bottom padding presets (None/Small/Medium/Large/XL) and left/right padding (0–30%) on ImageTextBlock
+    • Block background colour and text colour dropdowns (theme tokens) on ImageTextBlock
+    • Puck editor canvas shows kennel background (image + blur + colour overlay) for accurate colour preview
+    • Kennel CSS theme variables active in editor so var(--kennel-*) tokens render correctly
+
 0.17.0
     • Multi-page Puck editor — Home, Runs, About, Events, Songs, Stats all editable per kennel
     • Page dropdown in editor header; unsaved-changes guard (Publish & Switch / Discard) when switching

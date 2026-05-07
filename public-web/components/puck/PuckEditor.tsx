@@ -3,8 +3,9 @@
 import { Puck } from "@measured/puck";
 import "@measured/puck/puck.css";
 import type { Data } from "@measured/puck";
-import { useState, useRef, useCallback } from "react";
-import { puckConfig } from "./config";
+import { useState, useRef, useCallback, useMemo } from "react";
+import { createPuckConfig } from "./config";
+import { toKennelContext } from "@/lib/kennel-utils";
 import { KennelDataProvider } from "./KennelDataContext";
 import type { KennelPageData } from "./KennelDataContext";
 import type { PageLayoutBlob, PageType } from "@/lib/page-layout";
@@ -22,6 +23,8 @@ interface Toast {
 }
 
 export function PuckEditor({ slug, initialBlob, pageData }: PuckEditorProps) {
+  const puckConfig = useMemo(() => createPuckConfig(slug), [slug]);
+  const kennel = useMemo(() => toKennelContext(pageData.kennelData), [pageData.kennelData]);
   const [blob, setBlob] = useState<PageLayoutBlob>(initialBlob);
   const [currentPage, setCurrentPage] = useState<PageType>("home");
   const [isDirty, setIsDirty] = useState(false);
@@ -182,6 +185,30 @@ export function PuckEditor({ slug, initialBlob, pageData }: PuckEditorProps) {
         onChange={handleChange}
         iframe={{ enabled: false }}
         overrides={{
+          preview: ({ children }) => {
+            const DEFAULT_BG = "/images/jungle_background.jpg";
+            const usingDefault = !kennel.backgroundImageUrl;
+            const imageUrl = kennel.backgroundImageUrl ?? DEFAULT_BG;
+            const bgSize = usingDefault ? "1024px 1024px" : "cover";
+            const blurPx = usingDefault ? 0 : (Math.min(100, Math.max(0, kennel.scrollBlur)) / 100) * 120;
+            const overlayColor = usingDefault ? "#000000" : kennel.backgroundOverlayColor;
+            const overlayOpacity = usingDefault ? 0.55 : kennel.backgroundOverlayMaxOpacity;
+            const bgStyle = { backgroundImage: `url(${imageUrl})`, backgroundSize: bgSize, backgroundPosition: "center" };
+            return (
+              <div style={{ position: "relative", minHeight: "100%" }}>
+                {/* Layer 1 — sharp base image */}
+                <div style={{ position: "absolute", inset: 0, transform: "scale(1.08)", ...bgStyle }} />
+                {/* Layer 2 — blurred image */}
+                <div style={{ position: "absolute", inset: 0, transform: "scale(1.08)", filter: `blur(${blurPx}px)`, ...bgStyle }} />
+                {/* Layer 3 — colour overlay */}
+                <div style={{ position: "absolute", inset: 0, backgroundColor: overlayColor, opacity: overlayOpacity }} />
+                {/* Content */}
+                <div style={{ position: "relative" }}>
+                  {children}
+                </div>
+              </div>
+            );
+          },
           headerActions: ({ children }) => (
             <>
               <div style={{

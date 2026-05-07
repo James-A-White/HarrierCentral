@@ -1,5 +1,21 @@
 # public-web Changelog
 
+## 0.17.1 — 2026-05-07
+
+### ImageTextBlock enhancements
+
+- Image upload field in the Puck editor — picks a file, uploads to Azure Blob Storage (`kennel-web-images` container) via admin-authenticated API route, stores the public blob URL
+- Layout dropdown: side-by-side ratios (10%–90%), Image only, Text only, Image above text, Text above image
+- Top/bottom padding presets: None / Small (16px) / Medium (40px) / Large (80px) / XL (128px)
+- Left/right padding: 0–30% in 5% steps
+- Block background colour: Transparent (default) or any kennel theme token
+- Text colour: Default or any kennel theme token
+
+### Puck editor canvas
+
+- Canvas now renders the kennel's actual background (image + blur + colour overlay) so text and background colour choices preview accurately
+- Kennel CSS theme variables (`--kennel-primary`, `--kennel-text-title`, etc.) set on `<html>` in the admin layout page so all `var(--kennel-*)` tokens resolve correctly in the editor
+
 ## 0.17.0 — 2026-05-05
 
 ### Multi-page Puck editor

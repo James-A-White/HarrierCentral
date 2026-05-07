@@ -2,7 +2,9 @@
 
 import { Render } from "@measured/puck";
 import type { Data } from "@measured/puck";
-import { puckConfig } from "./config";
+import { createPuckConfig } from "./config";
+
+const puckConfig = createPuckConfig("");
 import { KennelDataProvider } from "./KennelDataContext";
 import type { KennelPageData } from "./KennelDataContext";
 

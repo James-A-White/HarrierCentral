@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { notFound } from "next/navigation";
 import { getKennelLandingData, getEvents, getPageLayout, getSongs, getStats } from "@/lib/api";
 import { verifySession } from "@/lib/admin-session";
+import { toKennelContext } from "@/lib/kennel-utils";
 import { PuckEditor } from "@/components/puck/PuckEditor";
 import type { PageLayoutBlob } from "@/lib/page-layout";
 
@@ -35,6 +36,7 @@ export default async function AdminLayoutPage({ params, searchParams }: PageProp
 
   const kennelData = await getKennelLandingData(slug);
   if (!kennelData) notFound();
+  const kennel = toKennelContext(kennelData);
 
   const [futureResult, pastResult, layoutJson, songs, statsResult] = await Promise.all([
     getEvents(kennelData.PublicKennelId, { isFuture: true,  maxEvents: 20 }),
@@ -52,7 +54,19 @@ export default async function AdminLayoutPage({ params, searchParams }: PageProp
     : {};
 
   return (
-    <html lang="en">
+    <html
+      lang="en"
+      className={kennel.theme === "dark" ? "dark" : ""}
+      style={{
+        "--kennel-primary":    kennel.primaryColor,
+        "--kennel-primary-fg": kennel.primaryFg,
+        "--kennel-accent":     kennel.accentColor,
+        "--kennel-text-title": kennel.textTitleColor,
+        "--kennel-text-body":  kennel.textBodyColor,
+        "--kennel-text-muted": kennel.textMutedColor,
+        "--kennel-card-bg":    kennel.cardBackgroundColor,
+      } as React.CSSProperties}
+    >
       <body style={{ margin: 0, height: "100vh", overflow: "hidden" }}>
         <PuckEditor
           slug={slug}
