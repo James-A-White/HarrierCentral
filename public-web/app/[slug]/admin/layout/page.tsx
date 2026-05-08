@@ -5,7 +5,7 @@ import { getKennelLandingData, getEvents, getPageLayout, getSongs, getStats } fr
 import { verifySession } from "@/lib/admin-session";
 import { toKennelContext } from "@/lib/kennel-utils";
 import { PuckEditor } from "@/components/puck/PuckEditor";
-import type { PageLayoutBlob } from "@/lib/page-layout";
+import { parseSiteConfig } from "@/lib/page-layout";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -49,9 +49,7 @@ export default async function AdminLayoutPage({ params, searchParams }: PageProp
   const futureRuns = futureResult?.events ?? [];
   const pastRuns   = pastResult?.events   ?? [];
 
-  const initialBlob: PageLayoutBlob = layoutJson
-    ? (JSON.parse(layoutJson) as PageLayoutBlob)
-    : {};
+  const initialConfig = parseSiteConfig(layoutJson);
 
   return (
     <html
@@ -70,7 +68,7 @@ export default async function AdminLayoutPage({ params, searchParams }: PageProp
       <body style={{ margin: 0, height: "100vh", overflow: "hidden" }}>
         <PuckEditor
           slug={slug}
-          initialBlob={initialBlob}
+          initialConfig={initialConfig}
           pageData={{
             kennelData,
             slug,

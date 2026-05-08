@@ -8,14 +8,19 @@ type Props = {
   imagePosition: "left" | "right";
   imageWidth: number;
   textColor: string;
+  textAlign: "left" | "center" | "right" | "justify";
   paddingLeft: number;
   paddingRight: number;
   paddingTop: number;
   paddingBottom: number;
   blockBg: string;
+  hasBorder: boolean;
+  borderColor: string;
+  borderWidth: number;
+  borderRadius: number;
 };
 
-export function ImageTextBlock({ imageUrl, imageAlt, heading, body, imagePosition, imageWidth, textColor, paddingLeft, paddingRight, paddingTop, paddingBottom, blockBg }: Props) {
+export function ImageTextBlock({ imageUrl, imageAlt, heading, body, imagePosition, imageWidth, textColor, textAlign, paddingLeft, paddingRight, paddingTop, paddingBottom, blockBg, hasBorder, borderColor, borderWidth, borderRadius }: Props) {
   const headingColor = textColor || "var(--kennel-text-title)";
   const bodyColor    = textColor || "var(--kennel-text-body)";
 
@@ -52,7 +57,10 @@ export function ImageTextBlock({ imageUrl, imageAlt, heading, body, imagePositio
   const textEl = showText && (
     <div
       className="w-full min-w-0 flex flex-col gap-4"
-      style={!isStacked && showImage ? { flex: 100 - imageWidth } : undefined}
+      style={{
+        ...((!isStacked && showImage) ? { flex: 100 - imageWidth } : {}),
+        textAlign: textAlign || "left",
+      }}
     >
       {heading && (
         <h2
@@ -76,6 +84,14 @@ export function ImageTextBlock({ imageUrl, imageAlt, heading, body, imagePositio
   const isLeft = imagePosition !== "right";
   const rowDirection = isLeft ? "md:flex-row" : "md:flex-row-reverse";
 
+  const borderStyle = hasBorder
+    ? {
+        border: `${borderWidth}px solid ${borderColor || "var(--kennel-primary)"}`,
+        borderRadius: borderRadius > 0 ? `${borderRadius}px` : undefined,
+        padding: "1.5rem",
+      }
+    : undefined;
+
   return (
     <div
       className="relative z-10 w-full"
@@ -91,6 +107,7 @@ export function ImageTextBlock({ imageUrl, imageAlt, heading, body, imagePositio
         className={`flex gap-6 md:gap-8 items-center max-w-6xl mx-auto ${
           isStacked ? "flex-col" : `flex-col ${rowDirection}`
         }`}
+        style={borderStyle}
       >
         {isStacked
           ? (imageAbove ? <>{imageEl}{textEl}</> : <>{textEl}{imageEl}</>)

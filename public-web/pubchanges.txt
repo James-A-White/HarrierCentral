@@ -1,3 +1,14 @@
+0.18.0
+    • Page management panel in Puck editor — Globe (active/draft) and Eye (menu visibility) controls per page
+    • Drag-to-reorder pages; default pages bolded; draft pages greyed out
+    • Custom pages: add with auto-generated slug (validated), delete; served at /[slug]/[pageSlug]
+    • Draft custom pages return 404; url-only pages accessible by URL but not shown in nav
+    • ButtonBlock: link button with target page picker, style (primary/outline/ghost), alignment, padding
+    • WelcomeBlock removed from block picker
+    • ImageTextBlock: border toggle, border colour, border width, and corner radius controls
+    • StickyNav reads page visibility from SiteConfig — designer controls the menu, not portal settings
+    • SiteConfig replaces PageLayoutBlob — layout, visibility, and order unified in one JSON blob
+
 0.17.1
     • Image upload in Puck ImageTextBlock — uploads to Azure Blob Storage via admin-authenticated API route
     • Layout dropdown: side-by-side ratios (10–90%), image only, text only, image above text, text above image

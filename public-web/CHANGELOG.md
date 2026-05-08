@@ -1,5 +1,33 @@
 # public-web Changelog
 
+## 0.18.0 — 2026-05-08
+
+### Puck page management panel
+
+- New left-side panel (toggle with Layers icon in editor header) lists all pages with Globe (active/draft) and Eye (in menu/url-only) controls
+- Drag-to-reorder pages; default pages shown in bold; draft pages greyed out
+- Add custom pages with an auto-generated, validated slug; delete custom pages (default pages cannot be deleted)
+- Custom pages served at `/[slug]/[pageSlug]`; draft pages return 404; url-only pages are accessible by URL but hidden from the nav
+- Page dropdown in the editor header replaced with a text label showing the current page name
+
+### Navigation
+
+- `StickyNav` now reads page visibility from `SiteConfig` — the designer controls which pages appear in the menu, replacing the old portal `pageFeatures` flags
+- All public pages (Home, Runs, About, Events, Songs, Stats, custom) pass designer-controlled nav items to the nav bar
+
+### ButtonBlock
+
+- New block: a link button with target page picker (populated from all non-draft pages), style (Primary / Outline / Ghost), alignment (Left / Centre / Right), and top/bottom padding
+
+### ImageTextBlock
+
+- Border toggle (show/hide), border colour (theme token), border width (1–8px), and corner radius (0–64px)
+
+### Data model
+
+- `SiteConfig` replaces `PageLayoutBlob` — page layouts, visibility state, and display order are unified in one JSON blob stored in `HC.KennelWebsite.PageLayoutJson`
+- `WelcomeBlock` removed from the Puck block picker
+
 ## 0.17.1 — 2026-05-07
 
 ### ImageTextBlock enhancements

@@ -5,8 +5,7 @@ import { StickyNav } from "@/components/StickyNav";
 import { ScrollHero } from "@/components/kennel/ScrollHero";
 import { SiteFooter } from "@/components/kennel/SiteFooter";
 import { PuckRenderer } from "@/components/puck/PuckRenderer";
-import type { PageLayoutBlob } from "@/lib/page-layout";
-import { defaultLayouts } from "@/lib/page-layout";
+import { parseSiteConfig, getDefaultLayout, deriveNavItems } from "@/lib/page-layout";
 import { kennelBaseUrl } from "@/lib/seo";
 
 interface PageProps {
@@ -98,8 +97,9 @@ export default async function KennelPage({ params }: PageProps) {
   ]);
   const futureRuns = eventsResult?.events ?? [];
   const pastRuns   = pastResult?.events   ?? [];
-  const blob: PageLayoutBlob = layoutJson ? (JSON.parse(layoutJson) as PageLayoutBlob) : {};
-  const pageLayout = blob.home ?? defaultLayouts.home;
+  const siteConfig = parseSiteConfig(layoutJson);
+  const pageLayout = siteConfig.pages.find(p => p.id === "home")?.layout ?? getDefaultLayout("home");
+  const navItems   = deriveNavItems(siteConfig, slug);
 
   return (
     <html
@@ -123,7 +123,7 @@ export default async function KennelPage({ params }: PageProps) {
       <body className={`${kennel.backgroundImageUrl ? "" : "dark:bg-zinc-950 bg-zinc-50"} text-zinc-100 antialiased overflow-x-hidden`}>
 
         {/* ── Fixed shell — always present, not configurable ───────────── */}
-        <StickyNav kennel={kennel} nextRun={futureRuns[0] ?? null} slug={slug} />
+        <StickyNav kennel={kennel} nextRun={futureRuns[0] ?? null} slug={slug} navItems={navItems} />
         <ScrollHero kennel={kennel} slug={slug} nextRun={futureRuns[0] ?? null} />
 
         {/* ── Puck-rendered content area ───────────────────────────────── */}

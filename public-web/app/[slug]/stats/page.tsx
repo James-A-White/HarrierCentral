@@ -4,8 +4,7 @@ import { toKennelContext } from "@/lib/kennel-utils";
 import { StickyNav } from "@/components/StickyNav";
 import { KennelBackground } from "@/components/kennel/KennelBackground";
 import { PuckRenderer } from "@/components/puck/PuckRenderer";
-import type { PageLayoutBlob } from "@/lib/page-layout";
-import { defaultLayouts } from "@/lib/page-layout";
+import { parseSiteConfig, getDefaultLayout, deriveNavItems } from "@/lib/page-layout";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -40,8 +39,9 @@ export default async function StatsPage({ params }: PageProps) {
 
   const kennel = toKennelContext(kennelData);
 
-  const blob: PageLayoutBlob = layoutJson ? (JSON.parse(layoutJson) as PageLayoutBlob) : {};
-  const pageLayout = blob.stats ?? defaultLayouts.stats;
+  const siteConfig = parseSiteConfig(layoutJson);
+  const pageLayout = siteConfig.pages.find(p => p.id === "stats")?.layout ?? getDefaultLayout("stats");
+  const navItems   = deriveNavItems(siteConfig, slug);
 
   return (
     <html
@@ -61,7 +61,7 @@ export default async function StatsPage({ params }: PageProps) {
     >
       <body className="text-zinc-100 antialiased overflow-x-hidden">
         <KennelBackground kennel={kennel} />
-        <StickyNav kennel={kennel} slug={slug} alwaysVisible />
+        <StickyNav kennel={kennel} slug={slug} alwaysVisible navItems={navItems} />
         <div className="pt-20 pb-24">
           <PuckRenderer
             data={pageLayout}

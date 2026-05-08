@@ -14,6 +14,7 @@ interface StickyNavProps {
   nextRun?: RunEvent | null;
   slug: string;
   alwaysVisible?: boolean;
+  navItems?: { label: string; href: string }[];
 }
 
 function hexToRgba(hex: string | undefined | null, alpha: number): string {
@@ -47,14 +48,15 @@ const NAV_ITEMS: { label: string; featureKey?: keyof KennelPageFeatures; href: (
   { label: "About",  featureKey: "showAbout",  href: (s) => `#about` },
 ];
 
-export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false }: StickyNavProps) {
+export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false, navItems }: StickyNavProps) {
   const scrollY = useWindowScrollMotionValue();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const visibleNavItems = NAV_ITEMS.filter(
-    (item) => !item.featureKey || kennel.pageFeatures[item.featureKey]
-  );
+  const visibleNavItems: { label: string; href: string }[] = navItems
+    ?? NAV_ITEMS
+        .filter(item => !item.featureKey || kennel.pageFeatures[item.featureKey])
+        .map(item => ({ label: item.label, href: item.href(slug) }));
 
   useMotionValueEvent(scrollY, "change", (v) => setScrolled(v > 60));
 
@@ -185,7 +187,7 @@ export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false }: Stic
                 {visibleNavItems.map((item) => (
                   <a
                     key={item.label}
-                    href={item.href(slug)}
+                    href={item.href}
                     className="transition-opacity hover:opacity-70"
                   >
                     {item.label}
@@ -250,7 +252,7 @@ export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false }: Stic
               {visibleNavItems.map((item) => (
                 <a
                   key={item.label}
-                  href={item.href(slug)}
+                  href={item.href}
                   className="rounded-xl px-3 py-3 text-xl font-medium dark:hover:bg-white/[0.06] hover:bg-zinc-100 transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
