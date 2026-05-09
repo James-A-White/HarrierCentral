@@ -1,0 +1,373 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'check_in_pack_model.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+// dart format off
+T _$identity<T>(T value) => value;
+
+/// @nodoc
+mixin _$CheckInPackModel implements DiagnosticableTreeMixin {
+
+ String? get hasherId; String? get hemId; int get isMember; int get isHare; int? get isPaid; String get nameForDisplay; String get nameForSort; String get firstName; String get lastName; int get paymentType; double get creditAmount; String get photo; int get virginVisitorType; int get rsvpState; int get attendenceState; int get discountPercent; double get discountAmount; int get hcTotalRunCount; int get hcHaringCount; int get historicalTotalRunCount; int get historicalHaringCount; int get historicalCountIsEstimate; int get totalRunsThisKennel; int get totalHaringThisKennel; String? get hemUpdatedAt; String? get payUpdatedAt; double get credit; int get isFollowing; String? get homeKennelName;
+/// Create a copy of CheckInPackModel
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$CheckInPackModelCopyWith<CheckInPackModel> get copyWith => _$CheckInPackModelCopyWithImpl<CheckInPackModel>(this as CheckInPackModel, _$identity);
+
+  /// Serializes this CheckInPackModel to a JSON map.
+  Map<String, dynamic> toJson();
+
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'CheckInPackModel'))
+    ..add(DiagnosticsProperty('hasherId', hasherId))..add(DiagnosticsProperty('hemId', hemId))..add(DiagnosticsProperty('isMember', isMember))..add(DiagnosticsProperty('isHare', isHare))..add(DiagnosticsProperty('isPaid', isPaid))..add(DiagnosticsProperty('nameForDisplay', nameForDisplay))..add(DiagnosticsProperty('nameForSort', nameForSort))..add(DiagnosticsProperty('firstName', firstName))..add(DiagnosticsProperty('lastName', lastName))..add(DiagnosticsProperty('paymentType', paymentType))..add(DiagnosticsProperty('creditAmount', creditAmount))..add(DiagnosticsProperty('photo', photo))..add(DiagnosticsProperty('virginVisitorType', virginVisitorType))..add(DiagnosticsProperty('rsvpState', rsvpState))..add(DiagnosticsProperty('attendenceState', attendenceState))..add(DiagnosticsProperty('discountPercent', discountPercent))..add(DiagnosticsProperty('discountAmount', discountAmount))..add(DiagnosticsProperty('hcTotalRunCount', hcTotalRunCount))..add(DiagnosticsProperty('hcHaringCount', hcHaringCount))..add(DiagnosticsProperty('historicalTotalRunCount', historicalTotalRunCount))..add(DiagnosticsProperty('historicalHaringCount', historicalHaringCount))..add(DiagnosticsProperty('historicalCountIsEstimate', historicalCountIsEstimate))..add(DiagnosticsProperty('totalRunsThisKennel', totalRunsThisKennel))..add(DiagnosticsProperty('totalHaringThisKennel', totalHaringThisKennel))..add(DiagnosticsProperty('hemUpdatedAt', hemUpdatedAt))..add(DiagnosticsProperty('payUpdatedAt', payUpdatedAt))..add(DiagnosticsProperty('credit', credit))..add(DiagnosticsProperty('isFollowing', isFollowing))..add(DiagnosticsProperty('homeKennelName', homeKennelName));
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CheckInPackModel&&(identical(other.hasherId, hasherId) || other.hasherId == hasherId)&&(identical(other.hemId, hemId) || other.hemId == hemId)&&(identical(other.isMember, isMember) || other.isMember == isMember)&&(identical(other.isHare, isHare) || other.isHare == isHare)&&(identical(other.isPaid, isPaid) || other.isPaid == isPaid)&&(identical(other.nameForDisplay, nameForDisplay) || other.nameForDisplay == nameForDisplay)&&(identical(other.nameForSort, nameForSort) || other.nameForSort == nameForSort)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.paymentType, paymentType) || other.paymentType == paymentType)&&(identical(other.creditAmount, creditAmount) || other.creditAmount == creditAmount)&&(identical(other.photo, photo) || other.photo == photo)&&(identical(other.virginVisitorType, virginVisitorType) || other.virginVisitorType == virginVisitorType)&&(identical(other.rsvpState, rsvpState) || other.rsvpState == rsvpState)&&(identical(other.attendenceState, attendenceState) || other.attendenceState == attendenceState)&&(identical(other.discountPercent, discountPercent) || other.discountPercent == discountPercent)&&(identical(other.discountAmount, discountAmount) || other.discountAmount == discountAmount)&&(identical(other.hcTotalRunCount, hcTotalRunCount) || other.hcTotalRunCount == hcTotalRunCount)&&(identical(other.hcHaringCount, hcHaringCount) || other.hcHaringCount == hcHaringCount)&&(identical(other.historicalTotalRunCount, historicalTotalRunCount) || other.historicalTotalRunCount == historicalTotalRunCount)&&(identical(other.historicalHaringCount, historicalHaringCount) || other.historicalHaringCount == historicalHaringCount)&&(identical(other.historicalCountIsEstimate, historicalCountIsEstimate) || other.historicalCountIsEstimate == historicalCountIsEstimate)&&(identical(other.totalRunsThisKennel, totalRunsThisKennel) || other.totalRunsThisKennel == totalRunsThisKennel)&&(identical(other.totalHaringThisKennel, totalHaringThisKennel) || other.totalHaringThisKennel == totalHaringThisKennel)&&(identical(other.hemUpdatedAt, hemUpdatedAt) || other.hemUpdatedAt == hemUpdatedAt)&&(identical(other.payUpdatedAt, payUpdatedAt) || other.payUpdatedAt == payUpdatedAt)&&(identical(other.credit, credit) || other.credit == credit)&&(identical(other.isFollowing, isFollowing) || other.isFollowing == isFollowing)&&(identical(other.homeKennelName, homeKennelName) || other.homeKennelName == homeKennelName));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hashAll([runtimeType,hasherId,hemId,isMember,isHare,isPaid,nameForDisplay,nameForSort,firstName,lastName,paymentType,creditAmount,photo,virginVisitorType,rsvpState,attendenceState,discountPercent,discountAmount,hcTotalRunCount,hcHaringCount,historicalTotalRunCount,historicalHaringCount,historicalCountIsEstimate,totalRunsThisKennel,totalHaringThisKennel,hemUpdatedAt,payUpdatedAt,credit,isFollowing,homeKennelName]);
+
+@override
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
+  return 'CheckInPackModel(hasherId: $hasherId, hemId: $hemId, isMember: $isMember, isHare: $isHare, isPaid: $isPaid, nameForDisplay: $nameForDisplay, nameForSort: $nameForSort, firstName: $firstName, lastName: $lastName, paymentType: $paymentType, creditAmount: $creditAmount, photo: $photo, virginVisitorType: $virginVisitorType, rsvpState: $rsvpState, attendenceState: $attendenceState, discountPercent: $discountPercent, discountAmount: $discountAmount, hcTotalRunCount: $hcTotalRunCount, hcHaringCount: $hcHaringCount, historicalTotalRunCount: $historicalTotalRunCount, historicalHaringCount: $historicalHaringCount, historicalCountIsEstimate: $historicalCountIsEstimate, totalRunsThisKennel: $totalRunsThisKennel, totalHaringThisKennel: $totalHaringThisKennel, hemUpdatedAt: $hemUpdatedAt, payUpdatedAt: $payUpdatedAt, credit: $credit, isFollowing: $isFollowing, homeKennelName: $homeKennelName)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $CheckInPackModelCopyWith<$Res>  {
+  factory $CheckInPackModelCopyWith(CheckInPackModel value, $Res Function(CheckInPackModel) _then) = _$CheckInPackModelCopyWithImpl;
+@useResult
+$Res call({
+ String? hasherId, String? hemId, int isMember, int isHare, int? isPaid, String nameForDisplay, String nameForSort, String firstName, String lastName, int paymentType, double creditAmount, String photo, int virginVisitorType, int rsvpState, int attendenceState, int discountPercent, double discountAmount, int hcTotalRunCount, int hcHaringCount, int historicalTotalRunCount, int historicalHaringCount, int historicalCountIsEstimate, int totalRunsThisKennel, int totalHaringThisKennel, String? hemUpdatedAt, String? payUpdatedAt, double credit, int isFollowing, String? homeKennelName
+});
+
+
+
+
+}
+/// @nodoc
+class _$CheckInPackModelCopyWithImpl<$Res>
+    implements $CheckInPackModelCopyWith<$Res> {
+  _$CheckInPackModelCopyWithImpl(this._self, this._then);
+
+  final CheckInPackModel _self;
+  final $Res Function(CheckInPackModel) _then;
+
+/// Create a copy of CheckInPackModel
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? hasherId = freezed,Object? hemId = freezed,Object? isMember = null,Object? isHare = null,Object? isPaid = freezed,Object? nameForDisplay = null,Object? nameForSort = null,Object? firstName = null,Object? lastName = null,Object? paymentType = null,Object? creditAmount = null,Object? photo = null,Object? virginVisitorType = null,Object? rsvpState = null,Object? attendenceState = null,Object? discountPercent = null,Object? discountAmount = null,Object? hcTotalRunCount = null,Object? hcHaringCount = null,Object? historicalTotalRunCount = null,Object? historicalHaringCount = null,Object? historicalCountIsEstimate = null,Object? totalRunsThisKennel = null,Object? totalHaringThisKennel = null,Object? hemUpdatedAt = freezed,Object? payUpdatedAt = freezed,Object? credit = null,Object? isFollowing = null,Object? homeKennelName = freezed,}) {
+  return _then(_self.copyWith(
+hasherId: freezed == hasherId ? _self.hasherId : hasherId // ignore: cast_nullable_to_non_nullable
+as String?,hemId: freezed == hemId ? _self.hemId : hemId // ignore: cast_nullable_to_non_nullable
+as String?,isMember: null == isMember ? _self.isMember : isMember // ignore: cast_nullable_to_non_nullable
+as int,isHare: null == isHare ? _self.isHare : isHare // ignore: cast_nullable_to_non_nullable
+as int,isPaid: freezed == isPaid ? _self.isPaid : isPaid // ignore: cast_nullable_to_non_nullable
+as int?,nameForDisplay: null == nameForDisplay ? _self.nameForDisplay : nameForDisplay // ignore: cast_nullable_to_non_nullable
+as String,nameForSort: null == nameForSort ? _self.nameForSort : nameForSort // ignore: cast_nullable_to_non_nullable
+as String,firstName: null == firstName ? _self.firstName : firstName // ignore: cast_nullable_to_non_nullable
+as String,lastName: null == lastName ? _self.lastName : lastName // ignore: cast_nullable_to_non_nullable
+as String,paymentType: null == paymentType ? _self.paymentType : paymentType // ignore: cast_nullable_to_non_nullable
+as int,creditAmount: null == creditAmount ? _self.creditAmount : creditAmount // ignore: cast_nullable_to_non_nullable
+as double,photo: null == photo ? _self.photo : photo // ignore: cast_nullable_to_non_nullable
+as String,virginVisitorType: null == virginVisitorType ? _self.virginVisitorType : virginVisitorType // ignore: cast_nullable_to_non_nullable
+as int,rsvpState: null == rsvpState ? _self.rsvpState : rsvpState // ignore: cast_nullable_to_non_nullable
+as int,attendenceState: null == attendenceState ? _self.attendenceState : attendenceState // ignore: cast_nullable_to_non_nullable
+as int,discountPercent: null == discountPercent ? _self.discountPercent : discountPercent // ignore: cast_nullable_to_non_nullable
+as int,discountAmount: null == discountAmount ? _self.discountAmount : discountAmount // ignore: cast_nullable_to_non_nullable
+as double,hcTotalRunCount: null == hcTotalRunCount ? _self.hcTotalRunCount : hcTotalRunCount // ignore: cast_nullable_to_non_nullable
+as int,hcHaringCount: null == hcHaringCount ? _self.hcHaringCount : hcHaringCount // ignore: cast_nullable_to_non_nullable
+as int,historicalTotalRunCount: null == historicalTotalRunCount ? _self.historicalTotalRunCount : historicalTotalRunCount // ignore: cast_nullable_to_non_nullable
+as int,historicalHaringCount: null == historicalHaringCount ? _self.historicalHaringCount : historicalHaringCount // ignore: cast_nullable_to_non_nullable
+as int,historicalCountIsEstimate: null == historicalCountIsEstimate ? _self.historicalCountIsEstimate : historicalCountIsEstimate // ignore: cast_nullable_to_non_nullable
+as int,totalRunsThisKennel: null == totalRunsThisKennel ? _self.totalRunsThisKennel : totalRunsThisKennel // ignore: cast_nullable_to_non_nullable
+as int,totalHaringThisKennel: null == totalHaringThisKennel ? _self.totalHaringThisKennel : totalHaringThisKennel // ignore: cast_nullable_to_non_nullable
+as int,hemUpdatedAt: freezed == hemUpdatedAt ? _self.hemUpdatedAt : hemUpdatedAt // ignore: cast_nullable_to_non_nullable
+as String?,payUpdatedAt: freezed == payUpdatedAt ? _self.payUpdatedAt : payUpdatedAt // ignore: cast_nullable_to_non_nullable
+as String?,credit: null == credit ? _self.credit : credit // ignore: cast_nullable_to_non_nullable
+as double,isFollowing: null == isFollowing ? _self.isFollowing : isFollowing // ignore: cast_nullable_to_non_nullable
+as int,homeKennelName: freezed == homeKennelName ? _self.homeKennelName : homeKennelName // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [CheckInPackModel].
+extension CheckInPackModelPatterns on CheckInPackModel {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _CheckInPackModel value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _CheckInPackModel() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _CheckInPackModel value)  $default,){
+final _that = this;
+switch (_that) {
+case _CheckInPackModel():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _CheckInPackModel value)?  $default,){
+final _that = this;
+switch (_that) {
+case _CheckInPackModel() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? hasherId,  String? hemId,  int isMember,  int isHare,  int? isPaid,  String nameForDisplay,  String nameForSort,  String firstName,  String lastName,  int paymentType,  double creditAmount,  String photo,  int virginVisitorType,  int rsvpState,  int attendenceState,  int discountPercent,  double discountAmount,  int hcTotalRunCount,  int hcHaringCount,  int historicalTotalRunCount,  int historicalHaringCount,  int historicalCountIsEstimate,  int totalRunsThisKennel,  int totalHaringThisKennel,  String? hemUpdatedAt,  String? payUpdatedAt,  double credit,  int isFollowing,  String? homeKennelName)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _CheckInPackModel() when $default != null:
+return $default(_that.hasherId,_that.hemId,_that.isMember,_that.isHare,_that.isPaid,_that.nameForDisplay,_that.nameForSort,_that.firstName,_that.lastName,_that.paymentType,_that.creditAmount,_that.photo,_that.virginVisitorType,_that.rsvpState,_that.attendenceState,_that.discountPercent,_that.discountAmount,_that.hcTotalRunCount,_that.hcHaringCount,_that.historicalTotalRunCount,_that.historicalHaringCount,_that.historicalCountIsEstimate,_that.totalRunsThisKennel,_that.totalHaringThisKennel,_that.hemUpdatedAt,_that.payUpdatedAt,_that.credit,_that.isFollowing,_that.homeKennelName);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? hasherId,  String? hemId,  int isMember,  int isHare,  int? isPaid,  String nameForDisplay,  String nameForSort,  String firstName,  String lastName,  int paymentType,  double creditAmount,  String photo,  int virginVisitorType,  int rsvpState,  int attendenceState,  int discountPercent,  double discountAmount,  int hcTotalRunCount,  int hcHaringCount,  int historicalTotalRunCount,  int historicalHaringCount,  int historicalCountIsEstimate,  int totalRunsThisKennel,  int totalHaringThisKennel,  String? hemUpdatedAt,  String? payUpdatedAt,  double credit,  int isFollowing,  String? homeKennelName)  $default,) {final _that = this;
+switch (_that) {
+case _CheckInPackModel():
+return $default(_that.hasherId,_that.hemId,_that.isMember,_that.isHare,_that.isPaid,_that.nameForDisplay,_that.nameForSort,_that.firstName,_that.lastName,_that.paymentType,_that.creditAmount,_that.photo,_that.virginVisitorType,_that.rsvpState,_that.attendenceState,_that.discountPercent,_that.discountAmount,_that.hcTotalRunCount,_that.hcHaringCount,_that.historicalTotalRunCount,_that.historicalHaringCount,_that.historicalCountIsEstimate,_that.totalRunsThisKennel,_that.totalHaringThisKennel,_that.hemUpdatedAt,_that.payUpdatedAt,_that.credit,_that.isFollowing,_that.homeKennelName);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? hasherId,  String? hemId,  int isMember,  int isHare,  int? isPaid,  String nameForDisplay,  String nameForSort,  String firstName,  String lastName,  int paymentType,  double creditAmount,  String photo,  int virginVisitorType,  int rsvpState,  int attendenceState,  int discountPercent,  double discountAmount,  int hcTotalRunCount,  int hcHaringCount,  int historicalTotalRunCount,  int historicalHaringCount,  int historicalCountIsEstimate,  int totalRunsThisKennel,  int totalHaringThisKennel,  String? hemUpdatedAt,  String? payUpdatedAt,  double credit,  int isFollowing,  String? homeKennelName)?  $default,) {final _that = this;
+switch (_that) {
+case _CheckInPackModel() when $default != null:
+return $default(_that.hasherId,_that.hemId,_that.isMember,_that.isHare,_that.isPaid,_that.nameForDisplay,_that.nameForSort,_that.firstName,_that.lastName,_that.paymentType,_that.creditAmount,_that.photo,_that.virginVisitorType,_that.rsvpState,_that.attendenceState,_that.discountPercent,_that.discountAmount,_that.hcTotalRunCount,_that.hcHaringCount,_that.historicalTotalRunCount,_that.historicalHaringCount,_that.historicalCountIsEstimate,_that.totalRunsThisKennel,_that.totalHaringThisKennel,_that.hemUpdatedAt,_that.payUpdatedAt,_that.credit,_that.isFollowing,_that.homeKennelName);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _CheckInPackModel with DiagnosticableTreeMixin implements CheckInPackModel {
+   _CheckInPackModel({this.hasherId, this.hemId, this.isMember = 0, this.isHare = 0, this.isPaid, this.nameForDisplay = '', this.nameForSort = '', this.firstName = '', this.lastName = '', this.paymentType = 0, this.creditAmount = 0.0, this.photo = '', this.virginVisitorType = 0, this.rsvpState = 0, this.attendenceState = 0, this.discountPercent = 0, this.discountAmount = 0.0, this.hcTotalRunCount = 0, this.hcHaringCount = 0, this.historicalTotalRunCount = 0, this.historicalHaringCount = 0, this.historicalCountIsEstimate = 0, this.totalRunsThisKennel = 0, this.totalHaringThisKennel = 0, this.hemUpdatedAt, this.payUpdatedAt, this.credit = 0.0, this.isFollowing = 0, this.homeKennelName});
+  factory _CheckInPackModel.fromJson(Map<String, dynamic> json) => _$CheckInPackModelFromJson(json);
+
+@override final  String? hasherId;
+@override final  String? hemId;
+@override@JsonKey() final  int isMember;
+@override@JsonKey() final  int isHare;
+@override final  int? isPaid;
+@override@JsonKey() final  String nameForDisplay;
+@override@JsonKey() final  String nameForSort;
+@override@JsonKey() final  String firstName;
+@override@JsonKey() final  String lastName;
+@override@JsonKey() final  int paymentType;
+@override@JsonKey() final  double creditAmount;
+@override@JsonKey() final  String photo;
+@override@JsonKey() final  int virginVisitorType;
+@override@JsonKey() final  int rsvpState;
+@override@JsonKey() final  int attendenceState;
+@override@JsonKey() final  int discountPercent;
+@override@JsonKey() final  double discountAmount;
+@override@JsonKey() final  int hcTotalRunCount;
+@override@JsonKey() final  int hcHaringCount;
+@override@JsonKey() final  int historicalTotalRunCount;
+@override@JsonKey() final  int historicalHaringCount;
+@override@JsonKey() final  int historicalCountIsEstimate;
+@override@JsonKey() final  int totalRunsThisKennel;
+@override@JsonKey() final  int totalHaringThisKennel;
+@override final  String? hemUpdatedAt;
+@override final  String? payUpdatedAt;
+@override@JsonKey() final  double credit;
+@override@JsonKey() final  int isFollowing;
+@override final  String? homeKennelName;
+
+/// Create a copy of CheckInPackModel
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$CheckInPackModelCopyWith<_CheckInPackModel> get copyWith => __$CheckInPackModelCopyWithImpl<_CheckInPackModel>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$CheckInPackModelToJson(this, );
+}
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'CheckInPackModel'))
+    ..add(DiagnosticsProperty('hasherId', hasherId))..add(DiagnosticsProperty('hemId', hemId))..add(DiagnosticsProperty('isMember', isMember))..add(DiagnosticsProperty('isHare', isHare))..add(DiagnosticsProperty('isPaid', isPaid))..add(DiagnosticsProperty('nameForDisplay', nameForDisplay))..add(DiagnosticsProperty('nameForSort', nameForSort))..add(DiagnosticsProperty('firstName', firstName))..add(DiagnosticsProperty('lastName', lastName))..add(DiagnosticsProperty('paymentType', paymentType))..add(DiagnosticsProperty('creditAmount', creditAmount))..add(DiagnosticsProperty('photo', photo))..add(DiagnosticsProperty('virginVisitorType', virginVisitorType))..add(DiagnosticsProperty('rsvpState', rsvpState))..add(DiagnosticsProperty('attendenceState', attendenceState))..add(DiagnosticsProperty('discountPercent', discountPercent))..add(DiagnosticsProperty('discountAmount', discountAmount))..add(DiagnosticsProperty('hcTotalRunCount', hcTotalRunCount))..add(DiagnosticsProperty('hcHaringCount', hcHaringCount))..add(DiagnosticsProperty('historicalTotalRunCount', historicalTotalRunCount))..add(DiagnosticsProperty('historicalHaringCount', historicalHaringCount))..add(DiagnosticsProperty('historicalCountIsEstimate', historicalCountIsEstimate))..add(DiagnosticsProperty('totalRunsThisKennel', totalRunsThisKennel))..add(DiagnosticsProperty('totalHaringThisKennel', totalHaringThisKennel))..add(DiagnosticsProperty('hemUpdatedAt', hemUpdatedAt))..add(DiagnosticsProperty('payUpdatedAt', payUpdatedAt))..add(DiagnosticsProperty('credit', credit))..add(DiagnosticsProperty('isFollowing', isFollowing))..add(DiagnosticsProperty('homeKennelName', homeKennelName));
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CheckInPackModel&&(identical(other.hasherId, hasherId) || other.hasherId == hasherId)&&(identical(other.hemId, hemId) || other.hemId == hemId)&&(identical(other.isMember, isMember) || other.isMember == isMember)&&(identical(other.isHare, isHare) || other.isHare == isHare)&&(identical(other.isPaid, isPaid) || other.isPaid == isPaid)&&(identical(other.nameForDisplay, nameForDisplay) || other.nameForDisplay == nameForDisplay)&&(identical(other.nameForSort, nameForSort) || other.nameForSort == nameForSort)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.paymentType, paymentType) || other.paymentType == paymentType)&&(identical(other.creditAmount, creditAmount) || other.creditAmount == creditAmount)&&(identical(other.photo, photo) || other.photo == photo)&&(identical(other.virginVisitorType, virginVisitorType) || other.virginVisitorType == virginVisitorType)&&(identical(other.rsvpState, rsvpState) || other.rsvpState == rsvpState)&&(identical(other.attendenceState, attendenceState) || other.attendenceState == attendenceState)&&(identical(other.discountPercent, discountPercent) || other.discountPercent == discountPercent)&&(identical(other.discountAmount, discountAmount) || other.discountAmount == discountAmount)&&(identical(other.hcTotalRunCount, hcTotalRunCount) || other.hcTotalRunCount == hcTotalRunCount)&&(identical(other.hcHaringCount, hcHaringCount) || other.hcHaringCount == hcHaringCount)&&(identical(other.historicalTotalRunCount, historicalTotalRunCount) || other.historicalTotalRunCount == historicalTotalRunCount)&&(identical(other.historicalHaringCount, historicalHaringCount) || other.historicalHaringCount == historicalHaringCount)&&(identical(other.historicalCountIsEstimate, historicalCountIsEstimate) || other.historicalCountIsEstimate == historicalCountIsEstimate)&&(identical(other.totalRunsThisKennel, totalRunsThisKennel) || other.totalRunsThisKennel == totalRunsThisKennel)&&(identical(other.totalHaringThisKennel, totalHaringThisKennel) || other.totalHaringThisKennel == totalHaringThisKennel)&&(identical(other.hemUpdatedAt, hemUpdatedAt) || other.hemUpdatedAt == hemUpdatedAt)&&(identical(other.payUpdatedAt, payUpdatedAt) || other.payUpdatedAt == payUpdatedAt)&&(identical(other.credit, credit) || other.credit == credit)&&(identical(other.isFollowing, isFollowing) || other.isFollowing == isFollowing)&&(identical(other.homeKennelName, homeKennelName) || other.homeKennelName == homeKennelName));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hashAll([runtimeType,hasherId,hemId,isMember,isHare,isPaid,nameForDisplay,nameForSort,firstName,lastName,paymentType,creditAmount,photo,virginVisitorType,rsvpState,attendenceState,discountPercent,discountAmount,hcTotalRunCount,hcHaringCount,historicalTotalRunCount,historicalHaringCount,historicalCountIsEstimate,totalRunsThisKennel,totalHaringThisKennel,hemUpdatedAt,payUpdatedAt,credit,isFollowing,homeKennelName]);
+
+@override
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
+  return 'CheckInPackModel(hasherId: $hasherId, hemId: $hemId, isMember: $isMember, isHare: $isHare, isPaid: $isPaid, nameForDisplay: $nameForDisplay, nameForSort: $nameForSort, firstName: $firstName, lastName: $lastName, paymentType: $paymentType, creditAmount: $creditAmount, photo: $photo, virginVisitorType: $virginVisitorType, rsvpState: $rsvpState, attendenceState: $attendenceState, discountPercent: $discountPercent, discountAmount: $discountAmount, hcTotalRunCount: $hcTotalRunCount, hcHaringCount: $hcHaringCount, historicalTotalRunCount: $historicalTotalRunCount, historicalHaringCount: $historicalHaringCount, historicalCountIsEstimate: $historicalCountIsEstimate, totalRunsThisKennel: $totalRunsThisKennel, totalHaringThisKennel: $totalHaringThisKennel, hemUpdatedAt: $hemUpdatedAt, payUpdatedAt: $payUpdatedAt, credit: $credit, isFollowing: $isFollowing, homeKennelName: $homeKennelName)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$CheckInPackModelCopyWith<$Res> implements $CheckInPackModelCopyWith<$Res> {
+  factory _$CheckInPackModelCopyWith(_CheckInPackModel value, $Res Function(_CheckInPackModel) _then) = __$CheckInPackModelCopyWithImpl;
+@override @useResult
+$Res call({
+ String? hasherId, String? hemId, int isMember, int isHare, int? isPaid, String nameForDisplay, String nameForSort, String firstName, String lastName, int paymentType, double creditAmount, String photo, int virginVisitorType, int rsvpState, int attendenceState, int discountPercent, double discountAmount, int hcTotalRunCount, int hcHaringCount, int historicalTotalRunCount, int historicalHaringCount, int historicalCountIsEstimate, int totalRunsThisKennel, int totalHaringThisKennel, String? hemUpdatedAt, String? payUpdatedAt, double credit, int isFollowing, String? homeKennelName
+});
+
+
+
+
+}
+/// @nodoc
+class __$CheckInPackModelCopyWithImpl<$Res>
+    implements _$CheckInPackModelCopyWith<$Res> {
+  __$CheckInPackModelCopyWithImpl(this._self, this._then);
+
+  final _CheckInPackModel _self;
+  final $Res Function(_CheckInPackModel) _then;
+
+/// Create a copy of CheckInPackModel
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? hasherId = freezed,Object? hemId = freezed,Object? isMember = null,Object? isHare = null,Object? isPaid = freezed,Object? nameForDisplay = null,Object? nameForSort = null,Object? firstName = null,Object? lastName = null,Object? paymentType = null,Object? creditAmount = null,Object? photo = null,Object? virginVisitorType = null,Object? rsvpState = null,Object? attendenceState = null,Object? discountPercent = null,Object? discountAmount = null,Object? hcTotalRunCount = null,Object? hcHaringCount = null,Object? historicalTotalRunCount = null,Object? historicalHaringCount = null,Object? historicalCountIsEstimate = null,Object? totalRunsThisKennel = null,Object? totalHaringThisKennel = null,Object? hemUpdatedAt = freezed,Object? payUpdatedAt = freezed,Object? credit = null,Object? isFollowing = null,Object? homeKennelName = freezed,}) {
+  return _then(_CheckInPackModel(
+hasherId: freezed == hasherId ? _self.hasherId : hasherId // ignore: cast_nullable_to_non_nullable
+as String?,hemId: freezed == hemId ? _self.hemId : hemId // ignore: cast_nullable_to_non_nullable
+as String?,isMember: null == isMember ? _self.isMember : isMember // ignore: cast_nullable_to_non_nullable
+as int,isHare: null == isHare ? _self.isHare : isHare // ignore: cast_nullable_to_non_nullable
+as int,isPaid: freezed == isPaid ? _self.isPaid : isPaid // ignore: cast_nullable_to_non_nullable
+as int?,nameForDisplay: null == nameForDisplay ? _self.nameForDisplay : nameForDisplay // ignore: cast_nullable_to_non_nullable
+as String,nameForSort: null == nameForSort ? _self.nameForSort : nameForSort // ignore: cast_nullable_to_non_nullable
+as String,firstName: null == firstName ? _self.firstName : firstName // ignore: cast_nullable_to_non_nullable
+as String,lastName: null == lastName ? _self.lastName : lastName // ignore: cast_nullable_to_non_nullable
+as String,paymentType: null == paymentType ? _self.paymentType : paymentType // ignore: cast_nullable_to_non_nullable
+as int,creditAmount: null == creditAmount ? _self.creditAmount : creditAmount // ignore: cast_nullable_to_non_nullable
+as double,photo: null == photo ? _self.photo : photo // ignore: cast_nullable_to_non_nullable
+as String,virginVisitorType: null == virginVisitorType ? _self.virginVisitorType : virginVisitorType // ignore: cast_nullable_to_non_nullable
+as int,rsvpState: null == rsvpState ? _self.rsvpState : rsvpState // ignore: cast_nullable_to_non_nullable
+as int,attendenceState: null == attendenceState ? _self.attendenceState : attendenceState // ignore: cast_nullable_to_non_nullable
+as int,discountPercent: null == discountPercent ? _self.discountPercent : discountPercent // ignore: cast_nullable_to_non_nullable
+as int,discountAmount: null == discountAmount ? _self.discountAmount : discountAmount // ignore: cast_nullable_to_non_nullable
+as double,hcTotalRunCount: null == hcTotalRunCount ? _self.hcTotalRunCount : hcTotalRunCount // ignore: cast_nullable_to_non_nullable
+as int,hcHaringCount: null == hcHaringCount ? _self.hcHaringCount : hcHaringCount // ignore: cast_nullable_to_non_nullable
+as int,historicalTotalRunCount: null == historicalTotalRunCount ? _self.historicalTotalRunCount : historicalTotalRunCount // ignore: cast_nullable_to_non_nullable
+as int,historicalHaringCount: null == historicalHaringCount ? _self.historicalHaringCount : historicalHaringCount // ignore: cast_nullable_to_non_nullable
+as int,historicalCountIsEstimate: null == historicalCountIsEstimate ? _self.historicalCountIsEstimate : historicalCountIsEstimate // ignore: cast_nullable_to_non_nullable
+as int,totalRunsThisKennel: null == totalRunsThisKennel ? _self.totalRunsThisKennel : totalRunsThisKennel // ignore: cast_nullable_to_non_nullable
+as int,totalHaringThisKennel: null == totalHaringThisKennel ? _self.totalHaringThisKennel : totalHaringThisKennel // ignore: cast_nullable_to_non_nullable
+as int,hemUpdatedAt: freezed == hemUpdatedAt ? _self.hemUpdatedAt : hemUpdatedAt // ignore: cast_nullable_to_non_nullable
+as String?,payUpdatedAt: freezed == payUpdatedAt ? _self.payUpdatedAt : payUpdatedAt // ignore: cast_nullable_to_non_nullable
+as String?,credit: null == credit ? _self.credit : credit // ignore: cast_nullable_to_non_nullable
+as double,isFollowing: null == isFollowing ? _self.isFollowing : isFollowing // ignore: cast_nullable_to_non_nullable
+as int,homeKennelName: freezed == homeKennelName ? _self.homeKennelName : homeKennelName // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+
+}
+
+// dart format on

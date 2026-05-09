@@ -1,0 +1,70 @@
+import 'package:harrier_central/imports.dart';
+
+part 'kennels_model_ns.freezed.dart';
+part 'kennels_model_ns.g.dart';
+
+@freezed
+abstract class KennelsModel with _$KennelsModel implements BaseModel {
+  factory KennelsModel({
+    required String kennelId,
+    required String publicKennelId,
+    required String cityId,
+    required String regionId,
+    required String countryId,
+    required String kennelName,
+    String? kennelSearchTags,
+    required String kennelShortName,
+    required String kennelUniqueShortName,
+    String? kennelDescription,
+    required String kennelLogo,
+    required int kennelPinColor,
+    required int disseminateAllowWebLinks,
+    String? kennelCoverPhoto,
+    String? kennelWebsiteUrl,
+    String? defaultEventCurrencyType,
+    String? integrationType,
+    int? kennelInboundIntegrationId,
+    String? kennelEventsUrl,
+    required int kennelStatus,
+    required int canEditRunAttendence,
+    required int allowNegativeCredit,
+    required int allowSelfPayment,
+    double? kennelLatitude,
+    double? kennelLongitude,
+    required double defaultPriceForMembers,
+    required double defaultPriceForNonMembers,
+    required int membershipDurationInMonths,
+    required DateTime defaultRunStartTime,
+    String? currencyCode,
+    String? primaryCultureCode,
+    String? currencySymbol,
+    int? digitsAfterDecimal,
+    String? bankScheme,
+    String? bankAccountNumber,
+    String? bankBic,
+    String? bankBeneficiary,
+    String? kennelPaymentScheme,
+    String? kennelPaymentUrl,
+    DateTime? kennelPaymentUrlExpires,
+    double? kennelPaymentMemberSurcharge,
+    double? kennelPaymentNonMemberSurcharge,
+    String? kennelPaymentScheme2,
+    String? kennelPaymentUrl2,
+    DateTime? kennelPaymentUrlExpires2,
+    double? kennelPaymentMemberSurcharge2,
+    double? kennelPaymentNonMemberSurcharge2,
+    String? kennelPaymentScheme3,
+    String? kennelPaymentUrl3,
+    DateTime? kennelPaymentUrlExpires3,
+    double? kennelPaymentMemberSurcharge3,
+    double? kennelPaymentNonMemberSurcharge3,
+    DateTime? runCountStartDate,
+    String? kennelMismanagementTeam,
+    int? distancePreference,
+    DateTime? updatedAt,
+    int? removed,
+  }) = _KennelsModel;
+
+  factory KennelsModel.fromJson(Map<String, dynamic> json) =>
+      _$KennelsModelFromJson(json);
+}

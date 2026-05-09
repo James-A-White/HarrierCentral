@@ -1,0 +1,204 @@
+2.1.3+1054
+    • A testing only release
+    • Trying to get data collection to work in the background
+
+2.1.3+1053
+    • A testing only release
+    • Added the data collection part of run tracking
+
+2.1.3+1052
+    • Added address page to run editor
+    • Fixed issue where users keep getting prompted to check in at the start of a run even after they select 'No'
+    • Fixed spacing issues on the Run Details page
+
+2.1.3+1051
+    • Minor tweaks to server side badge count
+    • Updated SQL DB script - renamed a TXT file to prevent linting
+
+2.1.3+1050
+    • Move chat badge count logic to the server where it belongs
+
+2.1.3+1047
+    • Added descriptive text to the runs list when no runs are available
+    • Fixed the top chat bubble to always appear, even when there are no unread chat messages
+    • Switched the Hares line and the locaiton one line description line on the RunListTile so the locaiton is now right on top of the distance (makes more sense)
+
+2.1.3+1046
+    • Added one line location to Run detail card (why did it take me so long!)
+    • Added run details to the headers that pop up when you click on a notification for chats or RSVP
+
+2.1.3+1045
+    • Refactored chat badges and centralized in a single notification service
+
+2.1.3+1044
+    • Continued refactoring of internet checking and fixes to regressions in the Reload Data function
+
+2.1.2+1042
+    • Refactored internet connection checking
+    • Added logic that only displays the Tuna and Opee splash screen every 10 launches
+
+2.1.2+1040
+    • Production Release
+    • On the map made pins semi-transparent for past runs
+    • Added date filter to Runs List
+
+2.1.2+1032
+    • Removed unused locales from GetMaterialApp
+    • Report locale back to server for debugging / statistics
+    • Added a BetaFeaturesEnabled capability
+
+2.1.1+1031
+    • Production Release
+    • Cleaned up the UI on the Runs List page
+
+2.1.0+1030
+    • Production Release
+    • Bump Flutter version to 3.35.7
+    • Update dependencies  
+
+2.1.0+1021
+    • More attempted fixes for the grey tab bar and search bar on certain Android phones
+    • Repositioned the buttons on the Runs View to make the interface more intuitive
+
+2.1.0+1020
+    • Production Release
+
+2.1.0+1018
+    • Added "Show List" button to map to switch to the list
+
+2.1.0+1014
+    • Chat icon in main app bar will now toggle to the Chat page and back to the runs list
+    • Added "Open Map" button to the sliver app bar
+    • Fixed Get.put(MainNavigationController(), permanent: true) so it only initializes once
+    • Added new blue RSVP icons for checkbox_on_in_hare, checkbox_on_in, checkbox_on_trail
+
+2.1.0+1012
+    • Implemented the Unseen chats view
+    • Added help for run views
+    • Implemented Map List filter
+    • Added info buttons to QrGroups
+    • Fixed Run# QrGroup to have a valid URL
+    • Attempt to fix the RunDetails tab bar problem on Android
+    • Fixed automatic checkin when at run start to work properly with time zones
+    • Added beta ribbon
+
+2.1.0+1010
+    • Added "On Map" option to runs list... still needs more work
+
+2.1.0+1009
+    • Fixed sorting issue on Tuna's phone
+    • Added debounced loading indicators when it is taking more than 500ms to load new data
+
+2.1.0+1008
+    • Added a result count to the search bar
+    • Debounced search bar text input by 1000ms
+    • Changed backend query to return only past or future results to improve speed
+
+2.1.0+1006
+    • Tweaking the Runs page UI to make it simpler and more intuitive
+    
+2.1.0+1005
+    • Adding ability to filter main run list by future / past runs, and events, my runs, etc.
+    • Added new icons to indicate that user is checked in at the run
+
+2.0.10+1003
+    • Another attempt to fix Android navigation issue by adding SafeArea to all relevant Scaffolds and setting the bottom nav bar to opaque
+    • Fixed a problem with check-in buttons by removing unneeded Global ScaffoldKeys
+    • Slightly darkened the purple accent
+    • Increased the debounce on network detection from 350ms to 5000ms to avoid Offline mode from kicking in when there is a short network outage detected
+    
+
+2.0.8+1000
+    • Fixed Android navigation issue by adding SafeArea to all relevant Scaffolds
+    • Fixed the User Run History feature
+
+2.0.6+998
+    • Fixed the Android navigation issue by adding a SafeArea for Android devices only.
+
+2.0.5+997
+    • Still working on fixing the "TODAY", "Tomorrow" labels on Run List Items
+    • Fixed an issue that caused chats to not work after a "Reload Data" where the ProfilePhoto and HasherPublicId items were not copied forward after the reload.
+
+2.0.4+996
+    • Removed navigation bar from bottom of Android
+    • Added status bar with time and battery power back to the top of Android and iOS phones
+    • Fixed an issue with Hash credits that was causing people to not get charged for runs when they topped up their credit
+    • Fixed an issue with runs indicating "Today" and "Tomorrow" wrong
+
+2.0.3+995
+    • Tweaked some text sizing on buttons and app bar for QR code sharing
+    • Pushed to iOS and Google Play app stores.
+
+2.0.3+994
+    • Fixed timezone issues so runs disappear 4 hours after run start no matter where
+    in the world you are located.
+    • Enhanced generation of QR codes for sharing runs, website, etc.
+    • Upgrade to Flutter 3.35.5 to hopefully resolve rare iOS issue
+
+2.0.0+986
+    Added change that sets the email and notification preference based on the RSVP
+
+2.0.0+985
+    Migrated User Run Count report to new API.
+
+2.0.0+984
+    Migrated Payment Report to new API.
+
+2.0.0+983
+    Updated the Kennel Run Stats report to HC5 with deviceId security.
+
+2.0.0+982
+    Fixed deprecated code that resulted from a Flutter upgrade to 3.35.2
+
+2.0.0+981
+    Fixed the upgrade flow from 1.xx to 2.0.0. Still need to test the
+    reload data option from the user profile page.
+
+2.0.0+980
+    Added audio back in on QR scan. Added "add to calendar" back in. 
+    Fixed issues relating to automated internet connection monitoring.
+
+2.0.0+977
+    Added Internet connection service to constantly monitor for 
+    Internet connection and set UI / functions accordingly. Still need
+    to work on this to confirm that proper error messages are being
+    raised when there is no connection, but wanted to push Intermediate
+    version to TestFlight.
+
+2.0.0+976
+    Fixed notification issues by moving the initialization of the 
+    notification service until after the main page is rendered.
+
+
+======
+
+Build 63: Added cool swipe to pay feature on the PaymentReport screen, added this file to the project.
+Build 64: Only one LINT error left. Added cloud icon to PaymentReport screen to show when info is being sent to server
+Build 66: Added User Run History top page and details page that allows users to choose which Hash events they were at
+Build 67: Added ability to e-mail run reports to users
+Build 69: Added ability to allow mismanagement to show and hide Hash runs and update run numbers, fixed a regression in the e-mail run counts feature
+Build 70: Version 0.6.4 - Added user support features that allow secret recovery mode and a support ID, app now also reports its version on launch and login
+Build 760: Version 0.6.5 - Added basic permissions for Kennel admin features, increased build number to 760 - need full testing prior to release
+Build 362: Version 0.7.0 - Lots of big fixes, added ability for users to update their profile information (names, e-mail and photo)
+Build 137: Version 0.7.0 - Re-designed the profile photo screen to make it more intuitive
+Build 138: Fixed a bug with the Facebook login on the create account screen not filling in the form fields correctly
+Build 140: Version 0.7.1 - Added intro screens and the ability to have people initialize the app using an invite code
+Intermediate: refactored and cleaned up app configuration screens on initial launch
+26 Apr 19 > Build 142: Version 0.7.3 - significant changes. Implemented SQFlite to offload work from the backend server and support eventual offline operation of the app
+**************
+08 Jun 19 > Build 143: Version 0.8.0 - MAJOR CHANGES - completely implemented HC3 and eliminated all obsolete code. Also refactored DB
+08 Jun 19 > Build 144: Version 0.8.1 - Trying to resolve problems with Android build
+08 Jun 19 > Build 144: Version 0.8.1 - Trying to resolve problems with Android build
+09 Jun 19 > Build 145: Version 0.8.2 - Problems now resolved with Android build
+09 Jun 19 > Build 146: Version 0.8.3 - Still fucking with the Android build!!! 
+
+
+Add: Continue implementing permissions
+Debug: find out where I need to dispose of memory
+
+To check out:
+flutter_background_geolocation 0.3.4
+location package
+
+
+
