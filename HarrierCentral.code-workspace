@@ -13,6 +13,14 @@
             "path": "db"
         },
         {
+            "name": "mobile-app",
+            "path": "mobile-app"
+        },
+        {
+            "name": "public-web",
+            "path": "public-web"
+        },
+        {
             "name": "root",
             "path": "."
         }
