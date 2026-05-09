@@ -119,8 +119,8 @@ export function ContentBlock({ imageUrl, imageAlt, heading, headingColor, headin
   const showButton = !!buttonPosition && (buttonIconPosition === "only" ? !!buttonIcon : !!buttonText);
 
   const buttonHAlign =
-    buttonPosition.includes("right")  ? "flex-end"  :
-    buttonPosition.includes("center") ? "center"    : "flex-start";
+    buttonPosition?.includes("right")  ? "flex-end"  :
+    buttonPosition?.includes("center") ? "center"    : "flex-start";
 
   const buttonEl = showButton && (
     <div style={{
@@ -154,7 +154,7 @@ export function ContentBlock({ imageUrl, imageAlt, heading, headingColor, headin
     </div>
   );
 
-  const isButtonTop = buttonPosition.startsWith("top");
+  const isButtonTop = buttonPosition?.startsWith("top") ?? false;
 
   return (
     <div
