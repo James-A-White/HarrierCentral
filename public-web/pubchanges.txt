@@ -1,3 +1,9 @@
+0.19.0
+    • ContentBlock replaces ImageTextBlock — separate heading/body colour and alignment controls; heading/body gap cycling button (—/S/M/L/XL)
+    • ContentBlock button: visual 2×3 position grid, page picker, text/colour/alignment, 20-icon visual picker (songs/runs/events/stats + common), icon position
+    • Padding cross controls replace all padding dropdowns — compact ↑←→↓ cycling widget for block, image, text, and button padding zones
+    • Portal: Welcome Text field removed from Kennel Website content tab
+
 0.18.0
     • Page management panel in Puck editor — Globe (active/draft) and Eye (menu visibility) controls per page
     • Drag-to-reorder pages; default pages bolded; draft pages greyed out

@@ -14,7 +14,6 @@ class _ContentTabContent extends StatelessWidget {
 
     final titleCtrl = ctrl(KennelWebsiteContentField.titleText);
     final taglineCtrl = ctrl(KennelWebsiteContentField.tagline);
-    final welcomeCtrl = ctrl(KennelWebsiteContentField.welcomeText);
 
     if (taglineCtrl == null) return const SizedBox.shrink();
 
@@ -37,15 +36,6 @@ class _ContentTabContent extends StatelessWidget {
           uiControl: taglineCtrl,
           onChanged: (_) => controller.checkIfFormIsDirty(),
         ),
-        const SizedBox(height: 32),
-        HelperWidgets().categoryLabelWidget('Welcome Text'),
-        const SizedBox(height: 12),
-        if (welcomeCtrl != null)
-          EditableOverrideTextField(
-            controller: controller,
-            uiControl: welcomeCtrl,
-            onChanged: (_) => controller.checkIfFormIsDirty(),
-          ),
       ],
     );
   }

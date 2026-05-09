@@ -1,5 +1,33 @@
 # public-web Changelog
 
+## 0.19.0 — 2026-05-09
+
+### ContentBlock (formerly ImageTextBlock)
+
+- Renamed `ImageTextBlock` → `ContentBlock` (display label and internal Puck key; existing saved layouts unaffected)
+- Separate heading and body colour dropdowns (theme tokens + named colours) replacing the single unified text colour
+- Separate heading and body alignment controls — heading supports Left / Centre / Right; body adds Full (justify)
+- Heading / body gap: single cycling button (— / S / M / L / XL) between the two; defaults to L (16px); `—` collapses to flush
+
+### ContentBlock — button
+
+- Optional link button positioned above or below block content via a visual 2×3 grid (↖↑↗ / ↙↓↘); clicking an active cell removes the button
+- Target page picker populated from all non-draft kennel pages
+- Button text, text colour, text alignment, and button colour controls
+- Icon picker: 20 curated Lucide icons shown as a visual 4-column grid, covering template pages (Music/songs, Route/runs, Calendar/events, BarChart2/stats, Info/about, UserPlus/join) and common actions (ArrowRight, ExternalLink, Mail, Phone, Globe, Download, Star, Heart, Share2, Plus)
+- Icon position: Before text / After text / Icon only
+
+### ContentBlock — padding controls
+
+- All four padding dropdowns replaced with a compact cross-shaped control (↑ ← → ↓); each arm cycles through named steps on click and highlights blue when non-zero
+- Block padding (vertical px, horizontal %): — / S / M / L / XL; sits at the top of the panel just below the Layout selector
+- Image padding and Text padding (all sides px): — / S / M / L / XL; zero default, placed below their respective field groups
+- Button padding (spacing between button and adjacent content, all sides px): — / S / M / L / XL; sits below Button colour
+
+### Portal
+
+- Removed the Welcome Text field from the Kennel Website → Content tab; use a Content Block in the page builder instead
+
 ## 0.18.0 — 2026-05-08
 
 ### Puck page management panel

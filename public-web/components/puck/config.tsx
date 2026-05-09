@@ -6,9 +6,14 @@ import { AboutBlock } from "@/components/blocks/AboutBlock";
 import { EventsListBlock } from "@/components/blocks/EventsListBlock";
 import { SongsListBlock } from "@/components/blocks/SongsListBlock";
 import { StatsListBlock } from "@/components/blocks/StatsListBlock";
-import { ImageTextBlock } from "@/components/blocks/ImageTextBlock";
+import { ContentBlock } from "@/components/blocks/ContentBlock";
 import { ButtonBlock } from "@/components/blocks/ButtonBlock";
 import { ImageUploadField } from "@/components/puck/ImageUploadField";
+import { ButtonPositionField } from "@/components/puck/ButtonPositionField";
+import { IconPickerField } from "@/components/puck/IconPickerField";
+import { StepCycleField } from "@/components/puck/StepCycleField";
+import { PaddingCrossField, BLOCK_V, BLOCK_H, SPACING_V, SPACING_H } from "@/components/puck/PaddingCrossField";
+import type { PaddingValue } from "@/components/puck/PaddingCrossField";
 
 type BlockProps = {
   NextRunBlock: Record<string, never>;
@@ -18,24 +23,35 @@ type BlockProps = {
   EventsListBlock: Record<string, never>;
   SongsListBlock: Record<string, never>;
   StatsListBlock: Record<string, never>;
-  ImageTextBlock: {
+  ContentBlock: {
     imageUrl: string;
     imageAlt: string;
     heading: string;
+    headingColor: string;
+    headingAlign: "left" | "center" | "right";
     body: string;
+    bodyColor: string;
+    bodyAlign: "left" | "center" | "right" | "justify";
     imagePosition: "left" | "right";
     imageWidth: number;
-    textColor: string;
-    textAlign: "left" | "center" | "right" | "justify";
-    paddingTop: number;
-    paddingBottom: number;
-    paddingLeft: number;
-    paddingRight: number;
+    padding: PaddingValue;
+    imagePadding: PaddingValue;
+    textPadding: PaddingValue;
+    textGap: number;
     blockBg: string;
     hasBorder: boolean;
     borderColor: string;
     borderWidth: number;
     borderRadius: number;
+    buttonPosition: string;
+    buttonHref: string;
+    buttonText: string;
+    buttonTextColor: string;
+    buttonTextAlign: "left" | "center" | "right";
+    buttonColor: string;
+    buttonIcon: string;
+    buttonIconPosition: "before" | "after" | "only";
+    buttonPadding: PaddingValue;
   };
   ButtonBlock: {
     label: string;
@@ -51,6 +67,14 @@ export interface NavPage {
   label: string;
   href: string;
 }
+
+const TEXT_GAP_OPTIONS = [
+  { label: "—",  value: 0  },
+  { label: "S",  value: 4  },
+  { label: "M",  value: 8  },
+  { label: "L",  value: 16 },
+  { label: "XL", value: 24 },
+];
 
 export function createPuckConfig(slug: string, navPages: NavPage[] = []): Config<BlockProps> {
   return {
@@ -112,27 +136,9 @@ export function createPuckConfig(slug: string, navPages: NavPage[] = []): Config
         defaultProps: {},
         render: () => <StatsListBlock />,
       },
-      ImageTextBlock: {
-        label: "Image + Text",
+      ContentBlock: {
+        label: "Content Block",
         fields: {
-          imageUrl: {
-            type: "custom",
-            label: "Image",
-            render: ({ value, onChange }) => (
-              <ImageUploadField value={value as string} onChange={onChange} slug={slug} />
-            ),
-          },
-          imageAlt: { type: "text", label: "Image alt text" },
-          heading: { type: "text", label: "Heading" },
-          body: { type: "textarea", label: "Body text" },
-          imagePosition: {
-            type: "radio",
-            label: "Image side",
-            options: [
-              { label: "Left", value: "left" },
-              { label: "Right", value: "right" },
-            ],
-          },
           imageWidth: {
             type: "select",
             label: "Layout",
@@ -147,60 +153,52 @@ export function createPuckConfig(slug: string, navPages: NavPage[] = []): Config
               { label: "Text above image", value: -2  },
             ],
           },
-          paddingTop: {
-            type: "select",
-            label: "Top padding",
+          padding: {
+            type: "custom",
+            label: "Block padding",
+            render: ({ value, onChange }) => (
+              <PaddingCrossField
+                label="Block padding"
+                value={value as PaddingValue}
+                onChange={onChange}
+                verticalOptions={BLOCK_V}
+                horizontalOptions={BLOCK_H}
+              />
+            ),
+          },
+          imagePosition: {
+            type: "radio",
+            label: "Image side",
             options: [
-              { label: "None",   value: 0   },
-              { label: "Small",  value: 16  },
-              { label: "Medium", value: 40  },
-              { label: "Large",  value: 80  },
-              { label: "XL",     value: 128 },
+              { label: "Left", value: "left" },
+              { label: "Right", value: "right" },
             ],
           },
-          paddingBottom: {
-            type: "select",
-            label: "Bottom padding",
-            options: [
-              { label: "None",   value: 0   },
-              { label: "Small",  value: 16  },
-              { label: "Medium", value: 40  },
-              { label: "Large",  value: 80  },
-              { label: "XL",     value: 128 },
-            ],
+          imageUrl: {
+            type: "custom",
+            label: "Image",
+            render: ({ value, onChange }) => (
+              <ImageUploadField value={value as string} onChange={onChange} slug={slug} />
+            ),
           },
-          paddingLeft: {
-            type: "select",
-            label: "Left padding",
-            options: [0, 5, 10, 15, 20, 25, 30].map((n) => ({
-              label: n === 0 ? "None" : `${n}%`,
-              value: n,
-            })),
+          imageAlt: { type: "text", label: "Image alt text" },
+          imagePadding: {
+            type: "custom",
+            label: "Image padding",
+            render: ({ value, onChange }) => (
+              <PaddingCrossField
+                label="Image padding"
+                value={value as PaddingValue}
+                onChange={onChange}
+                verticalOptions={SPACING_V}
+                horizontalOptions={SPACING_H}
+              />
+            ),
           },
-          paddingRight: {
+          heading: { type: "text", label: "Heading" },
+          headingColor: {
             type: "select",
-            label: "Right padding",
-            options: [0, 5, 10, 15, 20, 25, 30].map((n) => ({
-              label: n === 0 ? "None" : `${n}%`,
-              value: n,
-            })),
-          },
-          blockBg: {
-            type: "select",
-            label: "Block background",
-            options: [
-              { label: "Transparent",      value: ""                         },
-              { label: "Card background",  value: "var(--kennel-card-bg)"    },
-              { label: "Primary",          value: "var(--kennel-primary)"    },
-              { label: "On primary",       value: "var(--kennel-primary-fg)" },
-              { label: "Accent",           value: "var(--kennel-accent)"     },
-              { label: "White",            value: "#ffffff"                  },
-              { label: "Black",            value: "#000000"                  },
-            ],
-          },
-          textColor: {
-            type: "select",
-            label: "Text colour",
+            label: "Heading colour",
             options: [
               { label: "Default",      value: ""                          },
               { label: "Title colour", value: "var(--kennel-text-title)"  },
@@ -213,14 +211,156 @@ export function createPuckConfig(slug: string, navPages: NavPage[] = []): Config
               { label: "Black",        value: "#000000"                   },
             ],
           },
-          textAlign: {
+          headingAlign: {
             type: "radio",
-            label: "Text alignment",
+            label: "Heading alignment",
+            options: [
+              { label: "Left",   value: "left"   },
+              { label: "Center", value: "center" },
+              { label: "Right",  value: "right"  },
+            ],
+          },
+          textGap: {
+            type: "custom",
+            label: "Heading / body gap",
+            render: ({ value, onChange }) => (
+              <StepCycleField
+                label="Heading / body gap"
+                value={value as number}
+                onChange={onChange}
+                options={TEXT_GAP_OPTIONS}
+              />
+            ),
+          },
+          body: { type: "textarea", label: "Body text" },
+          bodyColor: {
+            type: "select",
+            label: "Body text colour",
+            options: [
+              { label: "Default",      value: ""                          },
+              { label: "Title colour", value: "var(--kennel-text-title)"  },
+              { label: "Body colour",  value: "var(--kennel-text-body)"   },
+              { label: "Muted",        value: "var(--kennel-text-muted)"  },
+              { label: "Primary",      value: "var(--kennel-primary)"     },
+              { label: "On primary",   value: "var(--kennel-primary-fg)"  },
+              { label: "Accent",       value: "var(--kennel-accent)"      },
+              { label: "White",        value: "#ffffff"                   },
+              { label: "Black",        value: "#000000"                   },
+            ],
+          },
+          bodyAlign: {
+            type: "radio",
+            label: "Body text alignment",
             options: [
               { label: "Left",    value: "left"    },
               { label: "Center",  value: "center"  },
               { label: "Right",   value: "right"   },
               { label: "Full",    value: "justify" },
+            ],
+          },
+          textPadding: {
+            type: "custom",
+            label: "Text padding",
+            render: ({ value, onChange }) => (
+              <PaddingCrossField
+                label="Text padding"
+                value={value as PaddingValue}
+                onChange={onChange}
+                verticalOptions={SPACING_V}
+                horizontalOptions={SPACING_H}
+              />
+            ),
+          },
+          buttonPosition: {
+            type: "custom",
+            label: "Button position",
+            render: ({ value, onChange }) => (
+              <ButtonPositionField value={value as string} onChange={onChange} />
+            ),
+          },
+          buttonHref: {
+            type: "select",
+            label: "Button links to",
+            options: navPages.length > 0
+              ? [{ label: "— select a page —", value: "" }, ...navPages.map(p => ({ label: p.label, value: p.href }))]
+              : [{ label: "No active pages", value: "" }],
+          },
+          buttonText: { type: "text", label: "Button text" },
+          buttonTextColor: {
+            type: "select",
+            label: "Button text colour",
+            options: [
+              { label: "Default (on primary)", value: ""                          },
+              { label: "Title colour",         value: "var(--kennel-text-title)"  },
+              { label: "Body colour",          value: "var(--kennel-text-body)"   },
+              { label: "Primary",              value: "var(--kennel-primary)"     },
+              { label: "Accent",               value: "var(--kennel-accent)"      },
+              { label: "White",                value: "#ffffff"                   },
+              { label: "Black",                value: "#000000"                   },
+            ],
+          },
+          buttonTextAlign: {
+            type: "radio",
+            label: "Button text alignment",
+            options: [
+              { label: "Left",   value: "left"   },
+              { label: "Center", value: "center" },
+              { label: "Right",  value: "right"  },
+            ],
+          },
+          buttonColor: {
+            type: "select",
+            label: "Button colour",
+            options: [
+              { label: "Primary",      value: "var(--kennel-primary)"     },
+              { label: "On primary",   value: "var(--kennel-primary-fg)"  },
+              { label: "Accent",       value: "var(--kennel-accent)"      },
+              { label: "Title colour", value: "var(--kennel-text-title)"  },
+              { label: "Body colour",  value: "var(--kennel-text-body)"   },
+              { label: "White",        value: "#ffffff"                   },
+              { label: "Black",        value: "#000000"                   },
+            ],
+          },
+          buttonPadding: {
+            type: "custom",
+            label: "Button padding",
+            render: ({ value, onChange }) => (
+              <PaddingCrossField
+                label="Button padding"
+                value={value as PaddingValue}
+                onChange={onChange}
+                verticalOptions={SPACING_V}
+                horizontalOptions={SPACING_H}
+              />
+            ),
+          },
+          buttonIcon: {
+            type: "custom",
+            label: "Button icon",
+            render: ({ value, onChange }) => (
+              <IconPickerField value={value as string} onChange={onChange} />
+            ),
+          },
+          buttonIconPosition: {
+            type: "radio",
+            label: "Icon position",
+            options: [
+              { label: "Before text", value: "before" },
+              { label: "After text",  value: "after"  },
+              { label: "Icon only",   value: "only"   },
+            ],
+          },
+          blockBg: {
+            type: "select",
+            label: "Block background",
+            options: [
+              { label: "Transparent",      value: ""                         },
+              { label: "Card background",  value: "var(--kennel-card-bg)"    },
+              { label: "Primary",          value: "var(--kennel-primary)"    },
+              { label: "On primary",       value: "var(--kennel-primary-fg)" },
+              { label: "Accent",           value: "var(--kennel-accent)"     },
+              { label: "White",            value: "#ffffff"                  },
+              { label: "Black",            value: "#000000"                  },
             ],
           },
           hasBorder: {
@@ -272,40 +412,62 @@ export function createPuckConfig(slug: string, navPages: NavPage[] = []): Config
           imageUrl: "",
           imageAlt: "",
           heading: "",
+          headingColor: "",
+          headingAlign: "left",
           body: "",
+          bodyColor: "",
+          bodyAlign: "left",
           imagePosition: "left",
           imageWidth: 60,
-          paddingTop: 40,
-          paddingBottom: 40,
-          paddingLeft: 5,
-          paddingRight: 5,
+          padding: { top: 40, right: 5, bottom: 40, left: 5 },
+          imagePadding: { top: 0, right: 0, bottom: 0, left: 0 },
+          textPadding:  { top: 0, right: 0, bottom: 0, left: 0 },
+          textGap: 16,
           blockBg: "",
-          textColor: "",
-          textAlign: "left",
           hasBorder: false,
           borderColor: "var(--kennel-primary)",
           borderWidth: 2,
           borderRadius: 0,
+          buttonPosition: "",
+          buttonHref: "",
+          buttonText: "Learn more",
+          buttonTextColor: "",
+          buttonTextAlign: "center",
+          buttonColor: "var(--kennel-primary)",
+          buttonIcon: "ArrowRight",
+          buttonIconPosition: "after",
+          buttonPadding: { top: 0, right: 0, bottom: 0, left: 0 },
         },
-        render: ({ imageUrl, imageAlt, heading, body, imagePosition, imageWidth, textColor, textAlign, paddingTop, paddingBottom, paddingLeft, paddingRight, blockBg, hasBorder, borderColor, borderWidth, borderRadius }) => (
-          <ImageTextBlock
+        render: ({ imageUrl, imageAlt, heading, headingColor, headingAlign, body, bodyColor, bodyAlign, imagePosition, imageWidth, padding, imagePadding, textPadding, textGap, blockBg, hasBorder, borderColor, borderWidth, borderRadius, buttonPosition, buttonHref, buttonText, buttonTextColor, buttonTextAlign, buttonColor, buttonIcon, buttonIconPosition, buttonPadding }) => (
+          <ContentBlock
             imageUrl={imageUrl}
             imageAlt={imageAlt}
             heading={heading}
+            headingColor={headingColor}
+            headingAlign={headingAlign}
             body={body}
+            bodyColor={bodyColor}
+            bodyAlign={bodyAlign}
             imagePosition={imagePosition}
             imageWidth={imageWidth}
-            textColor={textColor}
-            textAlign={textAlign}
-            paddingTop={paddingTop}
-            paddingBottom={paddingBottom}
-            paddingLeft={paddingLeft}
-            paddingRight={paddingRight}
+            padding={padding}
+            imagePadding={imagePadding}
+            textPadding={textPadding}
+            textGap={textGap}
             blockBg={blockBg}
             hasBorder={hasBorder}
             borderColor={borderColor}
             borderWidth={borderWidth}
             borderRadius={borderRadius}
+            buttonPosition={buttonPosition}
+            buttonHref={buttonHref}
+            buttonText={buttonText}
+            buttonTextColor={buttonTextColor}
+            buttonTextAlign={buttonTextAlign}
+            buttonColor={buttonColor}
+            buttonIcon={buttonIcon}
+            buttonIconPosition={buttonIconPosition}
+            buttonPadding={buttonPadding}
           />
         ),
       },

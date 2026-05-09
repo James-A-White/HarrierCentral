@@ -7,7 +7,6 @@ extension ContentControlsExtension on KennelWebsiteController {
 
     _registerTitleTextControl(tabKey, tabIndex);
     _registerTaglineControl(tabKey, tabIndex);
-    _registerWelcomeTextControl(tabKey, tabIndex);
   }
 
   void _registerTitleTextControl(String tabKey, int tabIndex) {
@@ -78,39 +77,4 @@ extension ContentControlsExtension on KennelWebsiteController {
     );
   }
 
-  void _registerWelcomeTextControl(String tabKey, int tabIndex) {
-    final fieldKey =
-        '${tabKey}_${KennelWebsiteContentField.welcomeText.name}';
-
-    uiControls[fieldKey] = UiControlDefinition(
-      controlType: UiControlType.string,
-      sidebarEntryKey: fieldKey,
-      sidebarExitKey: '${tabKey}_generic',
-      sidebarData: const SideBarData(
-        'Welcome Text',
-        MaterialCommunityIcons.text_long,
-        'Homepage introduction / welcome message shown to visitors.\n\n'
-            'Tell people what your kennel is about, when you run, '
-            'and how to get involved. Max 4000 characters.',
-      ),
-      editedFieldValue: editedData.value.welcomeText,
-      originalFieldValue: originalData.welcomeText,
-      globalKey: GlobalKey<FormFieldState>(),
-      label: 'Welcome text (optional)',
-      maxStringLength: 4000,
-      minStringLength: 0,
-      maxLines: 12,
-      allowEmpty: true,
-      expandToFillSpace: true,
-      minHeight: 200,
-      textController:
-          textControllers[fieldKey] = TextEditingController(),
-      tabIndex: tabIndex,
-      updateEditedValue: (String? value) {
-        editedData.value = editedData.value
-            .copyWith(welcomeText: value?.isEmpty == true ? null : value);
-        uiControls[fieldKey]?.editedFieldValue = value;
-      },
-    );
-  }
 }
