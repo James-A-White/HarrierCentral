@@ -1,3 +1,0 @@
-* Need to reimplement AddToCalendar with new plug in
-* Need to test clickable notifications and make sure they properly deep launch the app
-* Need to test scan to unlock HC Portal

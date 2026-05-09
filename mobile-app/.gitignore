@@ -1,23 +1,46 @@
 .DS_Store
-.dart_tool/
 
+# Dart/Flutter generated
+.dart_tool/
+.dart_tool */
 .packages
 .pub/
-
-build/
-
 .flutter-plugins
+.flutter-plugins-dependencies
+.metadata
+build/
+flutter_*.log
 
-lib/util/remote_config.dart
+# Android generated/local
 android/
-android/.gradle/5.6.2/executionHistory/executionHistory.bin
-android/.gradle/5.6.2/executionHistory/executionHistory.lock
-android/.gradle/5.6.2/fileHashes/fileHashes.bin
-android/.gradle/5.6.2/fileHashes/fileHashes.lock
-android/.gradle/5.6.2/fileHashes/resourceHashesCache.bin
-android/.gradle/5.6.2/javaCompile/classAnalysis.bin
-android/.gradle/5.6.2/javaCompile/jarAnalysis.bin
-android/.gradle/5.6.2/javaCompile/javaCompile.lock
-android/.gradle/5.6.2/javaCompile/taskHistory.bin
-android/.gradle/buildOutputCleanup/buildOutputCleanup.lock
-android/.gradle/buildOutputCleanup/outputFiles.bin
+android/local.properties
+android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+
+# IntelliJ/Android Studio
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# Debug symbols (build artifacts)
+~debug_symbols/
+~debug_symbols_android/
+
+# Azurite local database files
+__azurite_db_*.json
+
+# API test scripts
+~api/
+
+# Dev helpers
+_devHelpers/
+_sqlDbScript/
+
+# Scratch/personal files
+scratchpad.dart
+notes.txt
+HarrierCentralMobile-Flutter.sln
+
+# Secrets
+lib/util/remote_config.dart
