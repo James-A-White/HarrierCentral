@@ -1,4 +1,7 @@
 
+1.4.3+613
+    • Update Flutter SDK constraint to ^3.41.9 and Dart SDK to >=3.11.5
+
 1.4.2+612
     • Fixed check-in sheet hanging indefinitely on kennels with slow or unreachable logo URLs
     • Added 10s timeout + graceful fallback to logo fetch; errors now logged instead of silently swallowed

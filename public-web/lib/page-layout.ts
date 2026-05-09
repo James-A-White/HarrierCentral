@@ -32,7 +32,7 @@ const DEFAULT_LAYOUTS: Record<string, Data> = {
   },
   about: {
     root: { props: {} },
-    content: [{ type: "AboutBlock", props: { id: "about" } }],
+    content: [],
   },
   events: {
     root: { props: {} },

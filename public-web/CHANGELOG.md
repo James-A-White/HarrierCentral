@@ -1,5 +1,19 @@
 # public-web Changelog
 
+## 0.20.0 — 2026-05-09
+
+### Row block
+
+- New Row block: 2, 3, or 4 columns selectable via button group
+- Per-column flex widths via dropdowns (1–10); unused columns greyed out
+- Column gap (None / Small / Medium / Large / XL) and vertical alignment (Top / Centre / Stretch)
+- Any block type can be dropped into each column; RowBlock nesting is disallowed
+
+### Common block properties
+
+- Background colour and padding controls added to all blocks that didn't have them (Next Run, Run List, Runs Page, Events List, Songs List, Stats List, Button, Row)
+- About block removed — Content block covers the same use case
+
 ## 0.19.0 — 2026-05-09
 
 ### ContentBlock (formerly ImageTextBlock)
