@@ -5,6 +5,7 @@ import { RunsPageBlock } from "@/components/blocks/RunsPageBlock";
 import { EventsListBlock } from "@/components/blocks/EventsListBlock";
 import { SongsListBlock } from "@/components/blocks/SongsListBlock";
 import { StatsListBlock } from "@/components/blocks/StatsListBlock";
+import { AboutBlock } from "@/components/blocks/AboutBlock";
 import { ContentBlock } from "@/components/blocks/ContentBlock";
 import { ButtonBlock } from "@/components/blocks/ButtonBlock";
 import { RowBlock } from "@/components/blocks/RowBlock";
@@ -18,6 +19,7 @@ import { PaddingCrossField, BLOCK_V, BLOCK_H, SPACING_V, SPACING_H } from "@/com
 import type { PaddingValue } from "@/components/puck/PaddingCrossField";
 
 type BlockProps = {
+  AboutBlock: { padding: PaddingValue; blockBg: string };
   NextRunBlock: { padding: PaddingValue; blockBg: string };
   RunListBlock: { isFuture: boolean; count: number; padding: PaddingValue; blockBg: string };
   RunsPageBlock: { padding: PaddingValue; blockBg: string };
@@ -130,6 +132,21 @@ function paddingField(): any {
 export function createPuckConfig(slug: string, navPages: NavPage[] = []): Config<BlockProps> {
   return {
     components: {
+
+      // ── AboutBlock (compatibility shim — not shown in editor, kept so existing layouts render)
+      AboutBlock: {
+        label: "About (deprecated — replace with Content Block)",
+        fields: {
+          blockBg: { type: "select", label: "Background", options: BG_OPTIONS },
+          padding: paddingField(),
+        },
+        defaultProps: { blockBg: "", padding: DEFAULT_PADDING },
+        render: ({ blockBg, padding }) => (
+          <div style={blockStyle(padding, blockBg)}>
+            <AboutBlock />
+          </div>
+        ),
+      },
 
       // ── NextRunBlock ──────────────────────────────────────────────────────
       NextRunBlock: {
