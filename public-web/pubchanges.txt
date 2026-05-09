@@ -1,3 +1,8 @@
+0.20.0
+    • Row block: 2–4 columns with per-column flex widths (1–10), gap, and vertical alignment controls; blocks can be dropped into each column
+    • All blocks: background colour and padding controls added universally
+    • About block removed — superseded by Content block
+
 0.19.0
     • ContentBlock replaces ImageTextBlock — separate heading/body colour and alignment controls; heading/body gap cycling button (—/S/M/L/XL)
     • ContentBlock button: visual 2×3 position grid, page picker, text/colour/alignment, 20-icon visual picker (songs/runs/events/stats + common), icon position
