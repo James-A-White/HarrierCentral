@@ -14,7 +14,7 @@ export function RowBlock({ layout, gap, verticalAlign }: Props) {
   return (
     <div style={{ display: "flex", gap, alignItems: verticalAlign }}>
       {Array.from({ length: columns }).map((_, i) => (
-        <div key={i} style={{ flex: flex[i], minWidth: 0 }}>
+        <div key={i} style={{ flex: flex?.[i] ?? 1, minWidth: 0 }}>
           <DropZone zone={`column-${i}`} disallow={["RowBlock"]} />
         </div>
       ))}

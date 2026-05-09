@@ -103,9 +103,9 @@ const DEFAULT_PADDING: PaddingValue = { top: 0, right: 0, bottom: 0, left: 0 };
 
 // ─── Shared render helpers ───────────────────────────────────────────────────
 
-function blockStyle(padding: PaddingValue, blockBg: string): React.CSSProperties {
+function blockStyle(padding: PaddingValue | undefined, blockBg: string | undefined): React.CSSProperties {
   return {
-    padding: `${padding.top}px ${padding.right}px ${padding.bottom}px ${padding.left}px`,
+    padding: `${padding?.top ?? 0}px ${padding?.right ?? 0}px ${padding?.bottom ?? 0}px ${padding?.left ?? 0}px`,
     ...(blockBg ? { background: blockBg } : {}),
   };
 }
