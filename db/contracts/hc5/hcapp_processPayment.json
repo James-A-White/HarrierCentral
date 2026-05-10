@@ -1,0 +1,98 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_processPayment",
+  "version": "1.0.0",
+  "description": "Processes a single payment for a hasher at an event or for membership/haberdashery (productType). Handles payment type codes 1-8 and 100 (bank transfer confirmation). Creates HasherEventMap if not present. Cancels prior payments before inserting new ones. Access token validated against a compound string: DeviceSecret + hemId + '#' + userId + '#' + int(amount) + '#' + eventId. Returns an adHoc result row then delegates to syncEventAdminData or syncUserData.",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Device.id", "description": "Device UUID." },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": null, "description": "Token validated against compound string including hemId, userId, amount (as int), and eventId." },
+    { "name": "userIdWhoPaid", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "Payment.UserId", "description": "The hasher being paid for. Resolved from @hasherEventMapId if null." },
+    { "name": "eventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Payment.EventId", "description": "The event. Required when productType=1." },
+    { "name": "hasherEventMapId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "Payment.HasherEventMapId", "description": "Specific HEM record. Resolved from userId+eventId if null." },
+    { "name": "paymentType", "type": "SMALLINT", "nullable": false, "mapsToColumn": "Payment.PaymentType", "description": "1=not paid, 2=free, 3=cash, 4=bank transfer, 5=cash other, 6=hash credit, 7=bank transfer other, 8=credit other, 100=confirm bank transfer." },
+    { "name": "productType", "type": "SMALLINT", "nullable": true, "mapsToColumn": "Payment.ProductType", "description": "1=event (default), 2=membership, 3=haberdashery." },
+    { "name": "paymentAmount", "type": "DECIMAL(12,6)", "nullable": true, "mapsToColumn": "Payment.CreditAmount", "description": "Amount paid. Required when paymentType < 100. Cast to INT for token derivation (loses decimal precision)." },
+    { "name": "minimumAttendenceValue", "type": "SMALLINT", "nullable": true, "mapsToColumn": "HasherEventMap.AttendenceState", "description": "Minimum attendance state to set when paying." },
+    { "name": "hasherEventMapUpdatedAfter", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": null, "description": "Sync cursor. Default 'ignore'." },
+    { "name": "hasherKennelMapUpdatedAfter", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": null, "description": "Sync cursor. Default 'ignore'." },
+    { "name": "paymentsUpdatedAfter", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": null, "description": "Sync cursor. Default 'ignore'." },
+    { "name": "kennelCreditsUpdatedAfter", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": null, "description": "Sync cursor. Default 'ignore'." },
+    { "name": "doPayForExtras", "type": "SMALLINT", "nullable": true, "mapsToColumn": "Payment.DoPayForExtras", "description": "0=run only, 1=run+extras. Default 0." },
+    { "name": "surcharge", "type": "DECIMAL(10,4)", "nullable": true, "mapsToColumn": "Payment.Surcharge", "description": "Optional surcharge." },
+    { "name": "paymentProvider", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": "Payment.PaymentProvider", "description": "External payment provider name." },
+    { "name": "appDomainType", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": null, "description": "'AppDomainType.event' (default) → syncEventAdminData; otherwise → syncUserData." },
+    { "name": "paymentReference", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": "Payment.PaymentReference", "description": "Auto-generated if null (HC:+base36 random)." },
+    { "name": "transactionTimestamp", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": "Payment.PaidDate", "description": "Payment timestamp as string. Cast to DATETIME — no error handling on invalid formats.", "typeMismatch": "NVARCHAR(50) cast to DATETIME — loses timezone, brittle." },
+    { "name": "specialRunPrice", "type": "SMALLMONEY", "nullable": true, "mapsToColumn": null, "description": "Override price for this hasher. When set, updates HasherKennelMap.DiscountAmount if @useSpecialPriceAsDefault=1." },
+    { "name": "specialRunPriceReason", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": "Payment.SpecialRunPriceReason", "description": "Reason for special price." },
+    { "name": "useSpecialPriceAsDefault", "type": "SMALLINT", "nullable": true, "mapsToColumn": "HasherKennelMap.DiscountAmount", "description": "When non-zero and specialRunPrice is set, saves the price as a permanent discount for the hasher at this kennel." }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "StandardErrors",
+      "description": "Standard error format. errorType=2 for null userId/eventId/null-negative-amount. errorType=3 for auth failure."
+    },
+    {
+      "index": 0,
+      "name": "AdHocPaymentResult",
+      "description": "Single row returned after payment is processed.",
+      "columns": [
+        { "name": "adHocDataId", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "hasherWhoPaid", "type": "NVARCHAR", "nullable": true, "description": "Display name of the hasher." },
+        { "name": "attendenceState", "type": "INT", "nullable": true, "description": "Current attendance state after payment." },
+        { "name": "rsvpState", "type": "INT", "nullable": false, "description": "Always 3 after payment." },
+        { "name": "paymentType", "type": "SMALLINT", "nullable": false, "description": "The payment type used." },
+        { "name": "productType", "type": "SMALLINT", "nullable": false, "description": "The product type." },
+        { "name": "debitAmount", "type": "DECIMAL", "nullable": true, "description": "Amount owed (after discounts)." },
+        { "name": "creditAmount", "type": "DECIMAL", "nullable": true, "description": "Amount paid." },
+        { "name": "paymentAmount", "type": "DECIMAL", "nullable": true, "description": "The @paymentAmount parameter value." },
+        { "name": "creditAvailable", "type": "SMALLMONEY", "nullable": true, "description": "Kennel credit balance after payment." },
+        { "name": "paymentReference", "type": "NVARCHAR(50)", "nullable": true, "description": "Payment reference code." },
+        { "name": "discountAmount", "type": "SMALLMONEY", "nullable": false, "description": "Discount applied." },
+        { "name": "discountPercent", "type": "SMALLINT", "nullable": false, "description": "Discount percentage applied." },
+        { "name": "discountDescription", "type": "NVARCHAR(50)", "nullable": false, "description": "Discount reason." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.HasherEventMap — if no existing HEM for userId+eventId",
+    "UPDATE HC.HasherEventMap SET AttendenceState, RsvpState, UserStartEvent — on payment",
+    "UPDATE HC.Payment SET CancelledDate — cancels prior payments before new insert",
+    "INSERT HC.Payment",
+    "UPDATE HC.Event SET DoTrackHashCash = 1",
+    "UPDATE HC.HasherKennelMap SET DiscountAmount/Percent/Description — if @useSpecialPriceAsDefault",
+    "EXEC HC.nonApi_updateKennelCreditByUser",
+    "EXEC HC.nonApi_updateRunCountsByUser",
+    "EXEC hcapp_syncEventAdminData or hcapp_syncUserData"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "No transaction — multiple writes without BEGIN TRANSACTION",
+      "detail": "HEM INSERT, Payment INSERT, HEM UPDATE, Hasher credit update all occur outside a transaction. Partial failures leave inconsistent state."
+    },
+    {
+      "severity": "high",
+      "issue": "@paymentAmount cast to INT for token derivation — loses decimal precision",
+      "detail": "Token: @deviceSecret + hemId + '#' + userId + '#' + cast(cast(@paymentAmount AS INT) AS nvarchar(50)) + '#' + eventId. Any payment with cents (e.g. $5.50) is treated as $5 in the token."
+    },
+    {
+      "severity": "high",
+      "issue": "@transactionTimestamp is NVARCHAR cast to DATETIME — brittle, no error handling",
+      "detail": "If the client sends an invalid date string, the CAST will throw an unhandled exception."
+    },
+    {
+      "severity": "medium",
+      "issue": "@eventPrice declared as money, not DECIMAL(10,4)",
+      "detail": "money type has 4 decimal places but 4-byte precision — DECIMAL(10,4) is the project standard."
+    },
+    { "severity": "low", "issue": "No TRY/CATCH block", "detail": "No error handling." }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change payment type codes without updating all callers",
+    "Never change the token derivation formula without updating all callers"
+  ]
+}

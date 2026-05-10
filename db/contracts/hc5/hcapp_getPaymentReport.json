@@ -1,0 +1,86 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_getPaymentReport",
+  "version": "1.0.0",
+  "description": "Returns a combined payment report for an event. The single result set is a UNION of four segments: (1) actual payment records, (2) synthetic 'not paid' rows for attendees without payments, (3) aggregate totals by payment type (paymentType+100), and (4) a count of unpaid hashers (paymentType=101). SET NOCOUNT ON is misplaced (after first error checks).",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Device.id", "description": "Device UUID." },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": null, "description": "Short-lived auth token." },
+    { "name": "eventId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": null, "description": "Event to report on. Default null-UUID. Null or null-UUID causes all UNION segments to return empty (WHERE @eventId IS NOT NULL guards)." }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "NullUserError",
+      "description": "Standard error format. errorType=2.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 2." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "Standard error format. errorType=3.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 3." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'Invalid access token'." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "PaymentReport",
+      "description": "UNION of 4 segments — caller must use paymentType to determine row category. paymentType 1-8=normal payments; 1=not paid (synthetic); 101+=aggregate rows (paymentType+100 from original).",
+      "columns": [
+        { "name": "hasherEventMapId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "HasherEventMap.id. '00000000-...' for aggregate rows." },
+        { "name": "userIdWhoPaid", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "Hasher.id of the user who paid (or should pay)." },
+        { "name": "paymentId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "Payment.id. NULL for not-paid and aggregate rows." },
+        { "name": "paidBy", "type": "NVARCHAR", "nullable": true, "description": "Display name of payer. 'not used' for aggregate rows." },
+        { "name": "paidTo", "type": "NVARCHAR", "nullable": true, "description": "Display name of payment receiver. 'none' for not-paid rows." },
+        { "name": "cancelledBy", "type": "NVARCHAR", "nullable": true, "description": "Display name of canceller." },
+        { "name": "creditAmount", "type": "DECIMAL", "nullable": false, "description": "Amount paid. 0 for not-paid rows." },
+        { "name": "debitAmount", "type": "DECIMAL", "nullable": false, "description": "Amount owed (event price)." },
+        { "name": "paymentType", "type": "INT", "nullable": false, "description": "Payment type code. Values 1-8 are actual payments; 101+ are aggregate summary rows (original type + 100)." },
+        { "name": "paymentDate", "type": "DATETIME", "nullable": true, "description": "Payment.PaidDate cast to DATETIME (timezone stripped)." },
+        { "name": "cancelledDate", "type": "DATETIME", "nullable": true, "description": "Payment.CancelledDate cast to DATETIME." },
+        { "name": "paymentReference", "type": "NVARCHAR", "nullable": true, "description": "Payment reference code. For aggregate rows: count of payments or @hashersNotPaidCount." },
+        { "name": "notes", "type": "NVARCHAR", "nullable": true, "description": "Payment.Notes." },
+        { "name": "creditRemaining", "type": "DECIMAL", "nullable": false, "description": "Credit available from kennel credit pool." },
+        { "name": "currencySymbol", "type": "NVARCHAR", "nullable": false, "description": "Currency symbol from Country table. Empty string for aggregate rows." },
+        { "name": "digitsAfterDecimal", "type": "INT", "nullable": false, "description": "Currency decimal places. 0 for aggregate rows." }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "Aggregate sentinel: paymentType+100 — fragile mixed data in single column",
+      "detail": "Aggregate summary rows have paymentType = originalType + 100 (e.g., type 3 → 103). Callers must check paymentType >= 101 to detect aggregate rows. This mixes data and metadata in a single column."
+    },
+    {
+      "severity": "medium",
+      "issue": "SET NOCOUNT ON placed after the first error block",
+      "detail": "The first IF error block fires before SET NOCOUNT ON is reached, meaning the error SELECT may be accompanied by row-count messages."
+    },
+    {
+      "severity": "medium",
+      "issue": "paymentDate and cancelledDate cast to DATETIME — timezone stripped",
+      "detail": "Payment.PaidDate and CancelledDate are CAST to DATETIME, losing any timezone offset."
+    },
+    { "severity": "low", "issue": "No TRY/CATCH block", "detail": "No error handling." }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change paymentType codes or the +100 aggregate convention without updating all callers"
+  ]
+}

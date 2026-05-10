@@ -1,0 +1,61 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_setEventRsvp",
+  "version": "1.0.0",
+  "description": "Sets RSVP state and/or hare designation for a hasher at an event. Creates a new HEM record if none exists. Blocks updates when the user is already checked in (attendenceState >= 20) and the RSVP state would change. Automatically sets notification prefs when @autoSetNotifications=1. Updates Event.Hares string on hare state change. Returns adHoc data + delegates to hcapp_syncEventAdminData.",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Device.id", "description": "Device UUID." },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": null, "description": "Short-lived auth token." },
+    { "name": "eventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "HasherEventMap.EventId", "description": "Event to RSVP for." },
+    { "name": "hasherId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "HasherEventMap.UserId", "description": "Hasher to set RSVP for. Defaults to calling user if null." },
+    { "name": "isHare", "type": "INT", "nullable": true, "mapsToColumn": "HasherEventMap.IsHare", "description": "Sentinel: -1 normalised to NULL (don't update). When @rsvpState=1 (not coming), forced to 0." },
+    { "name": "rsvpState", "type": "INT", "nullable": true, "mapsToColumn": "HasherEventMap.RsvpState", "description": "Sentinel: -1 normalised to NULL. Known values: 1=not coming, 2=maybe, 3=coming." },
+    { "name": "hasherEventMapUpdatedAfter", "type": "NVARCHAR(50)", "nullable": false, "mapsToColumn": null, "description": "Sync cursor." },
+    { "name": "hasherKennelMapUpdatedAfter", "type": "NVARCHAR(50)", "nullable": false, "mapsToColumn": null, "description": "Sync cursor." },
+    { "name": "hemId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "HasherEventMap.id", "description": "Direct HEM lookup. Must match @eventId — mismatch returns error." },
+    { "name": "autoSetNotifications", "type": "SMALLINT", "nullable": true, "mapsToColumn": null, "description": "Default 1. When 1, automatically sets notification prefs: rsvpState=1 → prefs=2, otherwise reads from HKM." }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "StandardErrors",
+      "description": "Standard error format. errorType=2 for null userId, null eventId, mismatched hemId/eventId. errorType=3 for auth failure."
+    },
+    {
+      "index": 0,
+      "name": "AdHocRsvpResult",
+      "description": "Single row returned on all non-error paths (including no-change paths).",
+      "columns": [
+        { "name": "adHocDataId", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "serverMessage", "type": "NVARCHAR", "nullable": false, "description": "Empty string on success. Human-readable reason when RSVP could not be changed (user checked in, no state change, etc.)." },
+        { "name": "hasherEventMapId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The HEM record ID." },
+        { "name": "hasherId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The hasher's ID." },
+        { "name": "rsvpState", "type": "INT", "nullable": true, "description": "Current rsvpState after update (re-read from DB)." },
+        { "name": "willHareState", "type": "INT", "nullable": true, "description": "Current isHare after update (re-read from DB)." },
+        { "name": "hares", "type": "NVARCHAR(2500)", "nullable": true, "description": "Updated Event.Hares string. NULL if @isHare did not change." },
+        { "name": "eventNotificationPreference", "type": "INT", "nullable": true, "description": "Current EventNotificationPreference." },
+        { "name": "emailAlertPreference", "type": "INT", "nullable": true, "description": "Current EventEmailAlertPreference." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.HasherEventMap SET RsvpState, IsHare, EventNotificationPreference, EventEmailAlertPreference — when conditions met",
+    "INSERT HC.HasherEventMap — when no existing HEM record",
+    "UPDATE HC.Event SET hares — when hare state changes (STRING_AGG)",
+    "EXEC HC.nonApi_updateRunCountsByUser",
+    "EXEC hcapp_syncEventAdminData"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Complex update condition — may silently skip update",
+      "detail": "The UPDATE only fires when a complex multi-branch condition is true. If all branches evaluate false (e.g. state unchanged, user checked in), the SP returns an adHoc row with a serverMessage explaining why — but the caller gets a 200 with no error, just a message to display."
+    },
+    { "severity": "low", "issue": "No TRY/CATCH block", "detail": "No error handling." }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change rsvpState integer codes without updating all callers"
+  ]
+}

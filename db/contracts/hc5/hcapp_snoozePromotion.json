@@ -1,0 +1,72 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_snoozePromotion",
+  "version": "1.0.0",
+  "description": "Records that a user has snoozed a promotion until a given date. The authentication check is fully commented out — this SP is effectively unauthenticated. No success/failure rowset is returned.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "Device UUID. Used only to resolve @userId from HC.Device — not used for auth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Auth token. Accepted but never validated — the CHECK_ACCESS_TOKEN call is commented out."
+    },
+    {
+      "name": "promotionId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "HasherPromotionMap.PromotionId",
+      "description": "The promotion to snooze."
+    },
+    {
+      "name": "snoozeUntilDate",
+      "type": "DATETIME",
+      "nullable": false,
+      "mapsToColumn": "HasherPromotionMap.SnoozeUntilDate",
+      "description": "Date until which the promotion is snoozed.",
+      "typeMismatch": "DATETIME parameter — HC convention uses DATETIMEOFFSET throughout. Likely mismatch with the column type."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [
+    "INSERT INTO HC.HasherPromotionMap (UserId, PromotionId, SnoozeUntilDate)"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "Authentication check is fully commented out",
+      "detail": "The entire IF HC.CHECK_ACCESS_TOKEN(...) block is commented out. Any caller who can resolve a userId via any deviceId can snooze any promotion for that user. The commented code also references the older HC.CHECK_ACCESS_TOKEN (not V2)."
+    },
+    {
+      "severity": "high",
+      "issue": "No return rowset — silent success or failure",
+      "detail": "No SELECT is executed after the INSERT. The caller receives no confirmation that the snooze was recorded, and no error indication if the INSERT fails."
+    },
+    {
+      "severity": "medium",
+      "issue": "@snoozeUntilDate is DATETIME not DATETIMEOFFSET",
+      "detail": "All other date parameters in the codebase use DATETIMEOFFSET. DATETIME has no timezone info and only 1/300 second precision. Should be DATETIMEOFFSET(7) to match the project standard."
+    },
+    {
+      "severity": "medium",
+      "issue": "No duplicate guard — multiple snooze rows possible for same user+promotion",
+      "detail": "No INSERT...WHERE NOT EXISTS or ON DUPLICATE KEY handling. If the app calls this multiple times, the table accumulates duplicate snooze records for the same promotion."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH block",
+      "detail": "No error handling."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}

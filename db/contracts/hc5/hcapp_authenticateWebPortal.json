@@ -1,0 +1,84 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_authenticateWebPortal",
+  "version": "1.0.0",
+  "description": "Records a device-authenticated QR code scan for web portal login. The access token is validated against DeviceSecret concatenated with the scan data, making the token single-use per scanData value. On success, inserts a row into HC.WebPortalAuthenticationRequests (idempotent — only inserts if that scanData is not already recorded).",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "Device UUID. Used to look up the user and device credentials."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token validated against DeviceSecret + scanData concatenation — binds the token to the specific scan event."
+    },
+    {
+      "name": "scanData",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": "WebPortalAuthenticationRequests.scanData",
+      "description": "QR code scan data from the web portal login page. Also used as the second factor in token validation."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "NullUserError",
+      "description": "Returned when no Device record is found for the given deviceId (userId lookup returns NULL). Non-standard error format.",
+      "columns": [
+        { "name": "ErrorType", "type": "INT", "nullable": false, "description": "Always 2. Pascal-cased." },
+        { "name": "ErrorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'No user ID provided'." },
+        { "name": "ErrorDescription", "type": "NVARCHAR", "nullable": false, "description": "Error message. Column is 'ErrorDescription' not 'errorUserMessage'." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "Returned when CHECK_ACCESS_TOKEN_V2 fails. Non-standard error format.",
+      "columns": [
+        { "name": "ErrorType", "type": "INT", "nullable": false, "description": "Always 1. Pascal-cased." },
+        { "name": "ErrorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'Unauthorized Access Token'." },
+        { "name": "ErrorDescription", "type": "NVARCHAR", "nullable": false, "description": "Error message. Column is 'ErrorDescription' not 'errorUserMessage'." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "SuccessResult",
+      "description": "Returned on success after the WebPortalAuthenticationRequests record is created.",
+      "columns": [
+        { "name": "result", "type": "NVARCHAR", "nullable": false, "description": "Always 'Success'." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.WebPortalAuthenticationRequests (hasherId, scanData) — only if no existing row with that scanData exists (idempotent)"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "Non-standard error format across all error paths",
+      "detail": "All error rowsets use Pascal-cased column names (ErrorType, ErrorTitle, ErrorDescription) with no errorId or errorProc. Inconsistent with all other app SPs that use the standard camelCase format."
+    },
+    {
+      "severity": "medium",
+      "issue": "errorType=2 for null userId — wrong code",
+      "detail": "A missing device record (userId resolves to NULL) returns errorType=2 ('Validation error'). This is really an auth/not-found case, so errorType=3 would be more accurate."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH block",
+      "detail": "No error handling. Duplicate scanData insert is guarded by the COUNT check but not by a transaction."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}

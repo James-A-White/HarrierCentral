@@ -1,0 +1,41 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_copyEventRsvps",
+  "version": "1.0.0",
+  "description": "Copies RSVP records from one event to another. Only copies RSVPs for users who are not already in the target event (LEFT OUTER JOIN prevents duplicates). Returns a count of copied RSVPs as an adHoc row, then delegates to hcapp_syncEventAdminData.",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Device.id", "description": "Device UUID." },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": null, "description": "Short-lived auth token." },
+    { "name": "fromEvent", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "HasherEventMap.EventId", "description": "Source event to copy RSVPs from." },
+    { "name": "toEvent", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "HasherEventMap.EventId", "description": "Destination event to copy RSVPs into." },
+    { "name": "hasherEventMapUpdatedAfter", "type": "NVARCHAR(50)", "nullable": false, "mapsToColumn": null, "description": "Sync cursor passed to hcapp_syncEventAdminData." }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "StandardErrors",
+      "description": "Standard error format for null userId, null fromEvent, null toEvent (errorType=2), and auth failure (errorType=3). See other SP contracts for column details."
+    },
+    {
+      "index": 0,
+      "name": "AdHocCopyResult",
+      "description": "Single row confirming the copy operation.",
+      "columns": [
+        { "name": "adHocDataId", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "serverMessage", "type": "NVARCHAR", "nullable": false, "description": "'Copied N RSVPs' where N is @@ROWCOUNT from the INSERT." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.HasherEventMap — copies RsvpState, IsHare, VirginVisitorType, KennelId from source event for each user not already at target event",
+    "EXEC hcapp_syncEventAdminData — returns multiple result sets for @toEvent"
+  ],
+  "codeSmells": [
+    { "severity": "low", "issue": "No TRY/CATCH block", "detail": "No error handling." }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}

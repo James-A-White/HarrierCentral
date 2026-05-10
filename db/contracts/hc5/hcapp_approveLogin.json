@@ -1,0 +1,271 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_approveLogin",
+  "version": "1.0.0",
+  "description": "Main app launch / login SP called on every app startup after initial device authorization. Validates the device auth token, records the login event, updates device metadata, checks for server notifications and unseen splash screens, and returns session configuration from HC.ServerStatus.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "NVARCHAR(100)",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "Device UUID as a string. Compared against Device.id.",
+      "typeMismatch": "Should be UNIQUEIDENTIFIER to match Device.id — using NVARCHAR(100) bypasses type safety and forces implicit conversion."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token. Validated via HC.CHECK_ACCESS_TOKEN_V2 using the Device.DeviceSecret (uppercased) and Device.TimeWindow."
+    },
+    {
+      "name": "deviceType",
+      "type": "NVARCHAR(100)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Device model string (e.g. 'iPhone 6s / iOS 11.4'). Stored in HC.LaunchAndLogin only."
+    },
+    {
+      "name": "deviceName",
+      "type": "NVARCHAR(100)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "User-assigned device name. Stored in HC.LaunchAndLogin only."
+    },
+    {
+      "name": "systemName",
+      "type": "NVARCHAR(100)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "OS name (e.g. 'iOS', 'Android'). Stored in HC.LaunchAndLogin and Device via DeviceData."
+    },
+    {
+      "name": "systemVersion",
+      "type": "NVARCHAR(100)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "OS version string. Stored in HC.LaunchAndLogin only."
+    },
+    {
+      "name": "manufacturer",
+      "type": "NVARCHAR(100)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Device manufacturer (e.g. 'Apple', 'Samsung'). Stored in HC.LaunchAndLogin only."
+    },
+    {
+      "name": "latitude",
+      "type": "DECIMAL(18,15)",
+      "nullable": false,
+      "mapsToColumn": "Device.Latitude",
+      "description": "Device GPS latitude. Stored on Device and LaunchAndLogin."
+    },
+    {
+      "name": "longitude",
+      "type": "DECIMAL(19,15)",
+      "nullable": false,
+      "mapsToColumn": "Device.Longitude",
+      "description": "Device GPS longitude. Stored on Device and LaunchAndLogin."
+    },
+    {
+      "name": "hcVersion",
+      "type": "NVARCHAR(200)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.HcVersion",
+      "description": "App version string. Default 'pre 0.6.4'. Stored on Hasher.HcVersion and Device.Version.",
+      "typeMismatch": "NVARCHAR(200) vs Hasher.HcVersion NVARCHAR(50) and Device.Version NVARCHAR(25). Silent truncation possible."
+    },
+    {
+      "name": "buildNumber",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": "Device.BuildNumber",
+      "description": "App build number. Default '?'.",
+      "typeMismatch": "NVARCHAR(50) vs Device.BuildNumber NVARCHAR(25). Silent truncation possible."
+    },
+    {
+      "name": "fbToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Facebook access token. Accepted but the update logic that used it is fully commented out. Dead parameter in current code."
+    },
+    {
+      "name": "usesLocSvcs",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Whether the user permits location services. Default -1. Stored in HC.LaunchAndLogin only."
+    },
+    {
+      "name": "screenWidth",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Device screen width in pixels. Default 0. Accepted but never used — dead input."
+    },
+    {
+      "name": "screenHeight",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Device screen height in pixels. Default 0. Accepted but never used — dead input."
+    },
+    {
+      "name": "ipInfo",
+      "type": "NVARCHAR(4000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "IP address / geolocation string. Stored in HC.LaunchAndLogin only."
+    },
+    {
+      "name": "splashSequenceViewed",
+      "type": "DATETIMEOFFSET",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Timestamp when the user viewed a splash screen. If not null, a SplashSequenceViews record is inserted. Default null."
+    },
+    {
+      "name": "splashSequenceRootName",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Root name of the splash sequence the user just viewed. Used with @splashSequenceViewed to mark it as seen. Default null."
+    },
+    {
+      "name": "locale",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": "Device.Locale",
+      "description": "Device locale string. Default ''. Stored on Device.Locale."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "RemovedUserError",
+      "description": "Returned when the resolved user's Removed flag = 1. Checked BEFORE the access token, so a removed user sees this error regardless of token validity. Uses near-standard error format.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog entry GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 5. Should be 3 per HC standards." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'This user has been removed'." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User-facing removal message with next steps." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Always 'This is a standard error that is anticipated and does not require debugging'." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "Returned when CHECK_ACCESS_TOKEN_V2 fails. SP does NOT return immediately — it still executes the LaunchAndLogin INSERT (marking it as an invalid-token event) before returning. Uses near-standard error format.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog entry GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 1. Non-standard code." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'Invalid access token'." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User-facing message directing user to support." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "'This could be an indication that there is an error in the code...'." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "LoginResult",
+      "description": "Returned on successful authentication. Pulled from HC.ServerStatus (TOP 1 by CreatedDate desc) with additional computed fields. Integration-related columns (integrationCount, lastIntegrationExecuted, integrationStopped) are hardcoded to stub values — the CTE that calculated them is computed but then overridden.",
+      "columns": [
+        { "name": "apiVersion", "type": "NVARCHAR", "nullable": false, "description": "ServerStatus.ApiVersion." },
+        { "name": "approvalCode", "type": "INT", "nullable": false, "description": "0 if serverStatusCode != 1 (server down), else 1 (approved). Hardcoded logic." },
+        { "name": "loginMessageTitle", "type": "NVARCHAR(120)", "nullable": false, "description": "LoginNotifications.LoginMessageTitle or 'Harrier Central Message' if none active." },
+        { "name": "loginMessage", "type": "NVARCHAR(500)", "nullable": false, "description": "LoginNotifications.LoginMessage or 'Server running' if none active." },
+        { "name": "serverStatusCode", "type": "SMALLINT", "nullable": false, "description": "LoginNotifications.ServerStatusCode or 1 (up) if none active." },
+        { "name": "messageEndDate", "type": "DATETIMEOFFSET", "nullable": false, "description": "LoginNotifications.MessageWindowCloses or '1/1/2100' if none active." },
+        { "name": "messageDisplayType", "type": "SMALLINT", "nullable": false, "description": "LoginNotifications.MessageDisplayType or 0 (none) if none active." },
+        { "name": "messageImageUrl", "type": "NVARCHAR(500)", "nullable": false, "description": "LoginNotifications.MessageImageUrl or '' if none active." },
+        { "name": "iosDownloadLink", "type": "NVARCHAR", "nullable": true, "description": "ServerStatus.IosDownloadLink." },
+        { "name": "androidDownloadLink", "type": "NVARCHAR", "nullable": true, "description": "ServerStatus.AndroidDownloadLink." },
+        { "name": "imageRootUrl", "type": "NVARCHAR", "nullable": true, "description": "ServerStatus.ImageRootUrl — base URL for user-uploaded images." },
+        { "name": "isBetaTester", "type": "SMALLINT", "nullable": true, "description": "Hasher.IsBetaTester." },
+        { "name": "email", "type": "NVARCHAR(250)", "nullable": true, "description": "Hasher.Email." },
+        { "name": "homeKennelId", "type": "NVARCHAR(100)", "nullable": true, "description": "Hasher.HomeKennelId — returned as nvarchar because @homeKennelId is declared as nvarchar(100) not uniqueidentifier." },
+        { "name": "thirdPartyForceTokenRefresh", "type": "DATETIMEOFFSET(7)", "nullable": true, "description": "Hasher.ThirdPartyForceTokenRefresh — signals app to refresh OAuth token." },
+        { "name": "integrationCount", "type": "INT", "nullable": false, "description": "Hardcoded to 0. The CTE that calculated active integration failures is computed but its result is ignored." },
+        { "name": "lastIntegrationExecuted", "type": "DATETIME", "nullable": false, "description": "Hardcoded to 1/1/2100. CTE result ignored." },
+        { "name": "integrationStopped", "type": "INT", "nullable": false, "description": "Hardcoded to 0. CTE result ignored." },
+        { "name": "splashSequenceRootName", "type": "NVARCHAR(100)", "nullable": true, "description": "Root name of the next unseen splash sequence for this user, or null if none pending." },
+        { "name": "splashSequenceType", "type": "SMALLINT", "nullable": true, "description": "SplashSequence.SequenceType of the pending splash, or null." },
+        { "name": "betaFeaturesEnabled", "type": "NVARCHAR(1000)", "nullable": false, "description": "Hasher.BetaFeaturesEnabled." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.LaunchAndLogin — always, even on auth failure (with errorInfo = 'Invalid Access Token')",
+    "INSERT HC.ErrorLog — on removed user and auth failure paths",
+    "INSERT HC.SplashSequenceViews — if @splashSequenceViewed is not null",
+    "UPDATE HC.Hasher SET LastLoginDateTime, HcVersion WHERE id = @userId — on success only",
+    "UPDATE HC.Device SET LastLogin, Latitude, Longitude, updatedAt, BuildNumber, Version, Locale WHERE id = @deviceId — on success only"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "@deviceId is NVARCHAR(100) instead of UNIQUEIDENTIFIER",
+      "detail": "All other app SPs use UNIQUEIDENTIFIER for @deviceId to match Device.id. Using NVARCHAR(100) forces an implicit string comparison, bypasses type safety, and could silently misroute lookups if case or format differs."
+    },
+    {
+      "severity": "high",
+      "issue": "Removed-user check precedes auth check — information disclosure",
+      "detail": "The removed-user check runs before CHECK_ACCESS_TOKEN_V2. A caller with an invalid token but a removed user's deviceId gets a 'user removed' error rather than 'invalid token'. This discloses account status to unauthenticated callers."
+    },
+    {
+      "severity": "high",
+      "issue": "Dead CTE — integration data calculated then hardcoded over",
+      "detail": "A CTE computes integrationCount/lastIntegrationExecuted/integrationStopped from HC.Kennel join, but the SELECT that outputs these values hardcodes them to 0/2100/0. The CTE runs on every login for nothing."
+    },
+    {
+      "severity": "high",
+      "issue": "DeviceSecret uppercased before token validation",
+      "detail": "@deviceSecret = upper(d.DeviceSecret) — the raw DeviceSecret stored in HC.Device is uppercase-forced before passing to CHECK_ACCESS_TOKEN_V2. If the secret contains lowercase letters (possible given the base64 generation in hcapp_authorizeDevice), this changes the value and could cause validation mismatches. Must verify CHECK_ACCESS_TOKEN_V2 is tolerant of this."
+    },
+    {
+      "severity": "medium",
+      "issue": "Dead parameters — @screenWidth and @screenHeight",
+      "detail": "@screenWidth (SMALLINT) and @screenHeight (SMALLINT) are accepted but never read or used anywhere in the SP body."
+    },
+    {
+      "severity": "medium",
+      "issue": "Dead parameter — @fbToken",
+      "detail": "@fbToken is accepted, possibly overwritten from Hasher.FacebookAccessToken in the SELECT, but all code that would use it to update Hasher or Kennel is commented out. The value is inserted into HC.LaunchAndLogin? No — LaunchAndLogin INSERT has no fbToken column. Entirely dead."
+    },
+    {
+      "severity": "medium",
+      "issue": "@hcVersion / @buildNumber type mismatches",
+      "detail": "@hcVersion NVARCHAR(200) vs Hasher.HcVersion NVARCHAR(50) and Device.Version NVARCHAR(25). @buildNumber NVARCHAR(50) vs Device.BuildNumber NVARCHAR(25). Silent truncation on long values."
+    },
+    {
+      "severity": "medium",
+      "issue": "@homeKennelId declared as NVARCHAR(100) not UNIQUEIDENTIFIER",
+      "detail": "Hasher.HomeKennelId is UNIQUEIDENTIFIER but is read into a local @homeKennelId nvarchar(100) variable and returned as such. Format will match but type is wrong throughout — should be UNIQUEIDENTIFIER."
+    },
+    {
+      "severity": "medium",
+      "issue": "Wrong errorType for removed user — 5 instead of 3",
+      "detail": "errorType=5 ('Unhandled database error') used for anticipated removed-user business case. Should be 3."
+    },
+    {
+      "severity": "medium",
+      "issue": "errorType=1 for auth failure — non-standard",
+      "detail": "Auth failure returns errorType=1, which is not in the HC standard errorType table. Should be 3."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH block",
+      "detail": "No error handling. Unhandled exceptions surface as raw SQL errors to the caller."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change errorType integer codes without updating all callers",
+    "Never change the serverStatusCode values without updating all callers"
+  ]
+}

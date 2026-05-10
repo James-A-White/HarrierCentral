@@ -1,0 +1,87 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_setEventAttendence",
+  "version": "1.0.0",
+  "description": "Sets attendance state for a single hasher at an event. Can resolve the hasher by @hasherId or by @qrScanText (QR code). Supports direct HEM lookup via @hemId. Blocks removal from run if a payment exists. Updates Event.Hares string when @isHare changes. Returns one of two adHoc rowset shapes depending on whether the call was a QR scan. Delegates to syncEventAdminData or syncUserData.",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Device.id", "description": "Device UUID." },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": null, "description": "Short-lived auth token." },
+    { "name": "eventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "HasherEventMap.EventId", "description": "Event to update. When @qrScanText is provided, may be resolved from PublicEventId." },
+    { "name": "hasherId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "HasherEventMap.UserId", "description": "Hasher to update. Defaults to calling user if null and @qrScanText is null. Overwritten from QR scan if @qrScanText provided." },
+    { "name": "attendenceState", "type": "SMALLINT", "nullable": false, "mapsToColumn": "HasherEventMap.AttendenceState", "description": "New state. Must be 0-40. 0-19=not at run, 20-29=on trail, 30+=On Inn." },
+    { "name": "isHare", "type": "SMALLINT", "nullable": true, "mapsToColumn": "HasherEventMap.IsHare", "description": "Sentinel: -1 normalised to NULL (don't update)." },
+    { "name": "hasherEventMapUpdatedAfter", "type": "NVARCHAR(50)", "nullable": false, "mapsToColumn": null, "description": "Sync cursor." },
+    { "name": "hasherKennelMapUpdatedAfter", "type": "NVARCHAR(50)", "nullable": false, "mapsToColumn": null, "description": "Sync cursor." },
+    { "name": "returnUserRecords", "type": "SMALLINT", "nullable": true, "mapsToColumn": null, "description": "Default 0. When 1, delegates to syncUserData instead of syncEventAdminData." },
+    { "name": "qrScanText", "type": "NVARCHAR(50)", "nullable": false, "mapsToColumn": null, "description": "QR code string (UQR: prefix). When provided, resolves @hasherId and returns extended adHoc rowset." },
+    { "name": "hemId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "HasherEventMap.id", "description": "Direct HEM lookup. If provided, @hasherId is resolved from it. Must match @eventId — mismatch returns error." }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "StandardErrors",
+      "description": "Standard error format. errorType=2 for null userId, null eventId, invalid attendenceState, unknown hasherId, mismatched hemId/eventId, existing payment blocking removal. errorType=3 for auth failure."
+    },
+    {
+      "index": 0,
+      "name": "AdHocNonScanResult",
+      "description": "Returned when @qrScanText is NULL.",
+      "columns": [
+        { "name": "adHocDataId", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "serverMessage", "type": "NVARCHAR", "nullable": false, "description": "Human-readable attendance confirmation message." },
+        { "name": "hasherEventMapId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The HEM record ID." },
+        { "name": "hasherId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The hasher's ID." },
+        { "name": "attendenceState", "type": "SMALLINT", "nullable": true, "description": "Current attendance state after update." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "AdHocScanResult",
+      "description": "Returned when @qrScanText is provided. Richer than the non-scan version.",
+      "columns": [
+        { "name": "adHocDataId", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "userMessage", "type": "NVARCHAR", "nullable": false, "description": "Human-readable attendance message. Note column is 'userMessage' here vs 'serverMessage' in non-scan." },
+        { "name": "isPaid", "type": "INT", "nullable": false, "description": "Count of non-cancelled payments (0=not paid, >0=paid)." },
+        { "name": "isMember", "type": "SMALLINT", "nullable": true, "description": "1 if MembershipExpirationDate > today, else 0." },
+        { "name": "hasherEventMapId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The HEM record ID." },
+        { "name": "hasherId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The hasher's ID." },
+        { "name": "notificationPreference", "type": "INT", "nullable": true, "description": "Effective notification preference." },
+        { "name": "emailAlertPreference", "type": "INT", "nullable": true, "description": "Effective email alert preference." },
+        { "name": "currentHaringCount", "type": "INT", "nullable": false, "description": "HasherKennelMap.CurrentHaringCount. -1 if no HKM." },
+        { "name": "currentPackRunCount", "type": "INT", "nullable": false, "description": "HasherKennelMap.CurrentPackRunCount. -1 if no HKM." },
+        { "name": "rsvpState", "type": "INT", "nullable": false, "description": "HasherEventMap.RsvpState. -1 if no HEM." },
+        { "name": "willHareState", "type": "INT", "nullable": false, "description": "HasherEventMap.IsHare. 0 if no HEM." },
+        { "name": "hares", "type": "NVARCHAR", "nullable": false, "description": "Event.Hares — comma-separated string of hare display names." },
+        { "name": "discountAmount", "type": "SMALLMONEY", "nullable": false, "description": "HasherKennelMap.DiscountAmount. 0 if no HKM." },
+        { "name": "discountPercent", "type": "SMALLINT", "nullable": false, "description": "HasherKennelMap.DiscountPercent. 0 if no HKM." },
+        { "name": "discountDescription", "type": "NVARCHAR", "nullable": false, "description": "HasherKennelMap.DiscountDescription. '' if no HKM." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.HasherEventMap SET AttendenceState, (optionally RsvpState, IsHare)",
+    "INSERT HC.HasherEventMap — if no existing HEM record",
+    "UPDATE HC.Event SET hares — when @isHare changes (STRING_AGG of hare names)",
+    "EXEC HC.nonApi_updateRunCountsByUser",
+    "EXEC hcapp_syncEventAdminData or hcapp_syncUserData (based on @returnUserRecords)"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "Two incompatible adHoc rowset shapes — different column names for 'serverMessage'",
+      "detail": "Non-scan path: column is 'serverMessage'. QR-scan path: column is 'userMessage'. Callers must branch on whether they sent a QR scan to know which column name to expect."
+    },
+    {
+      "severity": "medium",
+      "issue": "@attendenceState validated as 0-40 here vs 20-40 in setBulkEventAttendence",
+      "detail": "The single-attendence SP allows 0-40 (can un-check users). The bulk SP only allows 20-40. Inconsistent — intentional difference or oversight?"
+    },
+    { "severity": "low", "issue": "No TRY/CATCH block", "detail": "No error handling." }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never rename 'serverMessage' vs 'userMessage' without updating callers for both paths"
+  ]
+}

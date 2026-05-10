@@ -1,0 +1,63 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_rptKennelRunStats",
+  "version": "1.0.0",
+  "description": "Authenticated passthrough to HC.nonApi_rptKennelRunStats. Validates the device token then delegates entirely to the internal nonApi SP. The rowset(s) returned are whatever nonApi_rptKennelRunStats produces — this contract documents the wrapper only.",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Device.id", "description": "Device UUID." },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": null, "description": "Short-lived auth token." },
+    { "name": "kennelId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": null, "description": "Kennel to report on. Passed directly to nonApi_rptKennelRunStats." }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "NullUserError",
+      "description": "Standard error format. errorType=2.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 2." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "Standard error format. errorType=3.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 3." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'Invalid access token'." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "KennelRunStatsResult",
+      "description": "Whatever HC.nonApi_rptKennelRunStats returns. This contract does not define the columns — see the nonApi SP for the actual schema.",
+      "columns": []
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "@timeWindows variable name typo",
+      "detail": "Local variable declared as @timeWindows instead of @timeWindow."
+    },
+    {
+      "severity": "low",
+      "issue": "Rowset contract incomplete — depends on undocumented nonApi SP",
+      "detail": "HC.nonApi_rptKennelRunStats is an internal SP whose contract is not captured here. HC6 should inline or document its rowset."
+    },
+    { "severity": "low", "issue": "No TRY/CATCH block", "detail": "No error handling." }
+  ],
+  "breakingChangeRules": [
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}

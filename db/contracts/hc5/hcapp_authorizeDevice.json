@@ -1,0 +1,361 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_authorizeDevice",
+  "version": "1.0.0",
+  "description": "Device authorization flow. Resolves a user by invite code (URC: prefix via @scanText) or directly by @userId, registers the device in HC.Device, and returns the hasher profile plus a device secret used for all subsequent auth token generation. Returns one of three distinct rowset shapes depending on the outcome — caller must inspect column presence to distinguish error paths from success.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "The device UUID. Used as the PK for the new Device record. Expected to be generated once per app install."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Shared access token. Validated via HC.CHECK_ACCESS_TOKEN_V2 with the null user UUID (00000000-...) — this is a public/pre-auth endpoint."
+    },
+    {
+      "name": "hcVersion",
+      "type": "NVARCHAR(250)",
+      "nullable": false,
+      "mapsToColumn": "Hasher.HcVersion",
+      "description": "App version string. Stored on Hasher.HcVersion.",
+      "typeMismatch": "Parameter is NVARCHAR(250) but Hasher.HcVersion is NVARCHAR(50). Silent truncation if version string exceeds 50 chars."
+    },
+    {
+      "name": "scanText",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.ResetCode",
+      "description": "User invite code in 'URC:XXXXXX' format. Used to look up the hasher when @userId is not provided. Mutually exclusive with @userId."
+    },
+    {
+      "name": "userId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Hasher.id",
+      "description": "Direct user lookup by ID. When provided, @scanText is ignored for lookup (the user's actual ResetCode is read back into @scanText internally for the error log only)."
+    },
+    {
+      "name": "deviceData",
+      "type": "NVARCHAR(MAX)",
+      "nullable": false,
+      "mapsToColumn": "Device.DeviceData",
+      "description": "JSON blob of device metadata (OS, browser name, etc.). Stored as-is in Device.DeviceData."
+    },
+    {
+      "name": "apnsToken",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "Device.ApnsToken",
+      "description": "Apple Push Notification Service token. NULL for Android devices."
+    },
+    {
+      "name": "fcmToken",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "Device.FcmToken",
+      "description": "Firebase Cloud Messaging token."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "AuthTokenError",
+      "description": "Returned only when CHECK_ACCESS_TOKEN_V2 fails. Non-standard error format — different column names and a non-standard error code (1) from the business error rowsets. No errorId or errorProc column present.",
+      "columns": [
+        {
+          "name": "ErrorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1. Not in the standard HC errorType table. Pascal-cased unlike the standard rowset."
+        },
+        {
+          "name": "ErrorTitle",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Always 'Unauthorized Access Token'. Pascal-cased unlike the standard rowset."
+        },
+        {
+          "name": "ErrorDescription",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "User-facing error message. Named 'ErrorDescription' here, not 'errorUserMessage' as in the standard error rowset — non-standard column name."
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "BusinessError",
+      "description": "Returned when the user is found but Removed=1, or when no matching user or invite code exists. Uses near-standard error columns but with the wrong errorType code. Caller must distinguish from AuthTokenError by detecting presence/absence of the errorId column.",
+      "columns": [
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "GUID of the HC.ErrorLog entry created for this error."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 5 ('Unhandled database error') for both business error cases. Should be 3 (auth failure/not found) per HC standards — this is a misuse of the code."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "'This user has been removed' or 'Invite code not found'."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Full user-facing error message explaining next steps."
+        },
+        {
+          "name": "debugMessage",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Always 'This is a standard error that is anticipated and does not require debugging'."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "SP name via OBJECT_NAME(@@PROCID)."
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "HasherProfile",
+      "description": "Returned on success. Full hasher profile plus device credentials. DeviceSecret and TimeWindow are returned under obfuscated column aliases (iconDataBase64 and colorPaletteIndex) — acknowledged in SP comments as intentional but bad security-through-obscurity.",
+      "columns": [
+        {
+          "name": "hasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Hasher.id — internal user UUID."
+        },
+        {
+          "name": "publicHasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Hasher.PublicHasherId — public-facing user UUID."
+        },
+        {
+          "name": "photo",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Hasher.Photo — profile photo URL."
+        },
+        {
+          "name": "displayName",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Hasher.DisplayName — persisted computed column (hash name or full name per NameDisplayPreference)."
+        },
+        {
+          "name": "email",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Hasher.Email."
+        },
+        {
+          "name": "facebookId",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Hasher.FacebookId — legacy Facebook auth ID."
+        },
+        {
+          "name": "firstName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Hasher.FirstName."
+        },
+        {
+          "name": "hashName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Hasher.HashName."
+        },
+        {
+          "name": "lastName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Hasher.LastName."
+        },
+        {
+          "name": "qrCode",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "Hasher.QR_code — UQR: prefixed code."
+        },
+        {
+          "name": "supportCode",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "Hasher.SupportCode — USC: prefixed support code."
+        },
+        {
+          "name": "qrSecretCode",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Hasher.QR_secret_code — secret UUID used for QR verification."
+        },
+        {
+          "name": "resetCode",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "Hasher.ResetCode — URC: prefixed invite/reset code."
+        },
+        {
+          "name": "includeInGlobalHashDirectory",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Hasher.IncludeInGlobalHashDirectory."
+        },
+        {
+          "name": "preferences",
+          "type": "INT",
+          "nullable": false,
+          "description": "Hasher.Preferences — bitfield of user preferences."
+        },
+        {
+          "name": "isBetaTester",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Hasher.IsBetaTester."
+        },
+        {
+          "name": "homeKennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "Hasher.HomeKennelId."
+        },
+        {
+          "name": "thirdPartyAccessToken",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Hasher.ThirdPartyAccessToken — OAuth access token (Facebook/Apple/Google)."
+        },
+        {
+          "name": "thirdPartyAuthorizationCode",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Hasher.ThirdPartyAuthorizationCode."
+        },
+        {
+          "name": "thirdPartyEmail",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Hasher.ThirdPartyEmail."
+        },
+        {
+          "name": "thirdPartyForceTokenRefresh",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Hasher.ThirdPartyForceTokenRefresh — signals the app to refresh its OAuth token."
+        },
+        {
+          "name": "thirdPartyLoginType",
+          "type": "NVARCHAR(120)",
+          "nullable": true,
+          "description": "Hasher.ThirdPartyLoginType — e.g. 'facebook', 'apple', 'google'."
+        },
+        {
+          "name": "thirdPartyUserId",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Hasher.ThirdPartyUserId."
+        },
+        {
+          "name": "thirdPartyTokenLastUpdated",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Hasher.ThirdPartyTokenLastUpdated."
+        },
+        {
+          "name": "thirdPartyAccessTokenExpires",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Hasher.ThirdPartyAccessTokenExpires."
+        },
+        {
+          "name": "iconDataBase64",
+          "type": "NVARCHAR(150)",
+          "nullable": false,
+          "description": "Device.DeviceSecret — deliberately obfuscated alias. This is the cryptographically random 75-char secret used for all subsequent CHECK_ACCESS_TOKEN_V2 calls. Named 'iconDataBase64' as security-through-obscurity; SP comments acknowledge this as bad practice."
+        },
+        {
+          "name": "colorPaletteIndex",
+          "type": "INT",
+          "nullable": true,
+          "description": "Device.TimeWindow — deliberately obfuscated alias. The TOTP-style time window in seconds (30–45, randomly chosen at device registration). Used by the app to generate short-lived auth tokens. Named 'colorPaletteIndex' as security-through-obscurity."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Hasher SET LastLoginDateTime = getdate(), HcVersion = @hcVersion, updatedAt = getdate() WHERE id = @userId",
+    "INSERT HC.LaunchAndLogin (HcVersion, UserId, UserName)",
+    "DELETE FROM HC.Device WHERE ApnsToken = @apnsToken AND FcmToken = @fcmToken — prior device record cleanup; silently a no-op for Android (see NULL semantics smell)",
+    "INSERT INTO HC.Device (id, DeviceSecret, TimeWindow, DeviceData, UserId, ApnsToken, FcmToken)",
+    "INSERT HC.ErrorLog on user-removed and user-not-found error paths"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "Inconsistent error rowset format — three incompatible shapes with no discriminator",
+      "detail": "The auth token failure returns (ErrorType, ErrorTitle, ErrorDescription) with errorType=1 and no errorId/errorProc. Business errors return (errorId, errorType, errorTitle, errorUserMessage, debugMessage, errorProc) with errorType=5. Success returns the HasherProfile rowset. Caller must infer which path fired by detecting column presence — there is no status flag or consistent envelope."
+    },
+    {
+      "severity": "high",
+      "issue": "Wrong errorType for business errors — should be 3, not 5",
+      "detail": "Both 'user removed' and 'invite code not found' return errorType=5 ('Unhandled database error'). These are fully anticipated business scenarios and should return errorType=3 (auth failure/entity not found). Using errorType=5 misrepresents the failure mode to callers and monitoring."
+    },
+    {
+      "severity": "high",
+      "issue": "Device cleanup DELETE silently fails for Android and single-token devices",
+      "detail": "DELETE FROM HC.Device WHERE ApnsToken = @apnsToken AND FcmToken = @fcmToken uses AND. When either token is NULL (always true for Android, where @apnsToken=NULL), SQL Server NULL-equality semantics mean no rows are matched. Android re-authorizations never clean up prior device records. This is a real data accumulation bug. Should use OR with IS NULL guards, or delete by @deviceId instead."
+    },
+    {
+      "severity": "high",
+      "issue": "No transaction — multi-step writes without BEGIN TRANSACTION",
+      "detail": "UPDATE HC.Hasher, INSERT HC.LaunchAndLogin, DELETE HC.Device, and INSERT HC.Device are all outside a transaction. A failure mid-sequence (e.g. PK violation on Device INSERT if @deviceId already exists) leaves partial state: Hasher updated and login logged, but no Device record created. The app would believe authorization succeeded."
+    },
+    {
+      "severity": "medium",
+      "issue": "Security-through-obscurity column aliases",
+      "detail": "DeviceSecret is aliased as 'iconDataBase64' and TimeWindow as 'colorPaletteIndex'. The SP comment says 'yes I know it's bad'. The values are transmitted as cleartext JSON regardless of alias. HC6 should document these as DeviceSecret and TimeWindow and rely on transport-layer security instead."
+    },
+    {
+      "severity": "medium",
+      "issue": "@hcVersion type mismatch — NVARCHAR(250) vs Hasher.HcVersion NVARCHAR(50)",
+      "detail": "The SP parameter is 5× wider than the column. A version string longer than 50 chars would silently truncate on the Hasher UPDATE. Should be aligned to NVARCHAR(50) in HC6."
+    },
+    {
+      "severity": "medium",
+      "issue": "No TRY/CATCH block",
+      "detail": "Any unhandled exception (PK violation on Device INSERT, constraint failure, etc.) surfaces as a raw SQL error to the caller. HC6 must wrap in TRY/CATCH with ROLLBACK."
+    },
+    {
+      "severity": "low",
+      "issue": "Device.BuildNumber and Device.Version not populated from parameters",
+      "detail": "HC.Device has BuildNumber NVARCHAR(25) and Version NVARCHAR(25) columns, both defaulting to '<unknown>'. This SP does not populate them — actual version data is encoded in the @deviceData JSON blob instead. Intentional but undocumented."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers",
+    "Never rename the obfuscated aliases (iconDataBase64, colorPaletteIndex) without updating the Flutter app's device auth parsing code"
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_logAppError",
+  "version": "1.0.0",
+  "description": "Logs a client-side app error to HC.AppError. No authentication check — any caller can write to this table without a valid token.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "AppError.DeviceId",
+      "description": "Device UUID. Stored in AppError but NOT used to look up or validate the caller."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Auth token. Accepted but never validated — dead parameter."
+    },
+    {
+      "name": "httpBody",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "AppError.HttpBody",
+      "description": "HTTP request body at the time of the error. Optional."
+    },
+    {
+      "name": "errorText",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": "AppError.ErrorText",
+      "description": "The error message or stack trace from the client."
+    },
+    {
+      "name": "extraData",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "AppError.ExtraData",
+      "description": "Additional context JSON or text. Optional."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "LogResult",
+      "description": "Always returned. Single hardcoded row.",
+      "columns": [
+        { "name": "result", "type": "NVARCHAR", "nullable": false, "description": "Always 'Error recorded'." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT INTO HC.AppError (DeviceId, HttpBody, ErrorText, ExtraData)"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "No authentication — @accessToken accepted but never validated",
+      "detail": "Any unauthenticated caller can write arbitrary data to HC.AppError. This is a write endpoint with no auth guard whatsoever, enabling log injection or table bloat attacks."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH block",
+      "detail": "No error handling."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_joinKennel",
+  "version": "1.0.0",
+  "description": "Creates or updates a HasherKennelMap record for a target user at a kennel. Handles membership renewal, home kennel designation, following/unfollowing, notification preferences, mismanagement roles, and access flags. Returns an adHoc rowset with updated following/notification state, then delegates to hcapp_syncUserData or hcapp_syncKennelAdminData depending on whether the target is the calling user.",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Device.id", "description": "Device UUID for auth lookup." },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": null, "description": "Short-lived auth token." },
+    { "name": "kennelId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "HasherKennelMap.KennelId", "description": "Kennel to join/update." },
+    { "name": "targetUserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "HasherKennelMap.UserId", "description": "User to update. May be the calling user or another user (admin editing another member)." },
+    { "name": "isFollowing", "type": "SMALLINT", "nullable": true, "mapsToColumn": "HasherKennelMap.Following", "description": "Sentinel: -1 normalised to NULL (don't update)." },
+    { "name": "isHomeKennel", "type": "SMALLINT", "nullable": true, "mapsToColumn": "Hasher.HomeKennelId", "description": "When 1, sets Hasher.HomeKennelId and HKM.IsHomeKennel. When 0, clears home kennel designation. Sentinel: -1 normalised to NULL." },
+    { "name": "notificationState", "type": "SMALLINT", "nullable": true, "mapsToColumn": "HasherKennelMap.KennelNotificationPreference", "description": "Sentinel: -1 normalised to NULL." },
+    { "name": "emailAlertState", "type": "SMALLINT", "nullable": true, "mapsToColumn": "HasherKennelMap.KennelEmailAlertPreference", "description": "Sentinel: -1 normalised to NULL." },
+    { "name": "monthsToAddToMembership", "type": "SMALLINT", "nullable": true, "mapsToColumn": "HasherKennelMap.MembershipExpirationDate", "description": "Months to add from today or current expiry. Sentinel: 0 normalised to NULL (no change). Magic: 9999 sets expiry to 1/1/2100 (never). Magic: -9999 clears membership (IsMember=0, ExpirationDate=NULL)." },
+    { "name": "appAccessFlags", "type": "INT", "nullable": true, "mapsToColumn": "HasherKennelMap.AppAccessFlags", "description": "App permission bitfield. Sentinel: -1 normalised to NULL. Also writes to HcWebPermissionFlags (same value)." },
+    { "name": "mismanagementRoles", "type": "INT", "nullable": true, "mapsToColumn": "HasherKennelMap.MismanagementRoles", "description": "Sentinel: -1 normalised to NULL. When set, also updates HC.Kennel.KennelMismanagementTeam from HC3.vwMmByKennel." },
+    { "name": "paymentAmount", "type": "DECIMAL(12,6)", "nullable": true, "mapsToColumn": null, "description": "Accepted but never used — dead parameter." },
+    { "name": "kennelsUpdatedAfter", "type": "NVARCHAR(50)", "nullable": false, "mapsToColumn": null, "description": "Sync cursor passed to child sync SP." },
+    { "name": "hasherKennelMapUpdatedAfter", "type": "NVARCHAR(50)", "nullable": false, "mapsToColumn": null, "description": "Sync cursor passed to child sync SP." },
+    { "name": "hashersUpdatedAfter", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": null, "description": "Sync cursor. Default 'ignore'." }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "NullUserError",
+      "description": "Standard error format. errorType=2.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 2." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "NullKennelError",
+      "description": "Standard error format. errorType=2.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 2." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'Null or empty kennelId'." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "Standard error format. errorType=3.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 3." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'Invalid access token'." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "AdHocUpdate",
+      "description": "Returned on success. Current state of the HKM record after the write.",
+      "columns": [
+        { "name": "adHocDataId", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "following", "type": "SMALLINT", "nullable": true, "description": "HasherKennelMap.Following." },
+        { "name": "kennelNotificationPreference", "type": "SMALLINT", "nullable": true, "description": "HasherKennelMap.KennelNotificationPreference." },
+        { "name": "kennelEmailAlertPreference", "type": "SMALLINT", "nullable": true, "description": "HasherKennelMap.KennelEmailAlertPreference." },
+        { "name": "isHomeKennel", "type": "INT", "nullable": false, "description": "1 if this kennel == Hasher.HomeKennelId, else 0." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.HasherKennelMap — when no existing HKM record",
+    "UPDATE HC.HasherKennelMap — when HKM record exists",
+    "UPDATE HC.Hasher SET HomeKennelId — when @isHomeKennel=1 or clearing home kennel",
+    "UPDATE HC.HasherKennelMap SET IsHomeKennel=0 for all other kennels — when @isHomeKennel=1",
+    "UPDATE HC.Kennel SET KennelMismanagementTeam — when @mismanagementRoles is set (reads from HC3.vwMmByKennel)",
+    "EXEC hcapp_syncUserData or hcapp_syncKennelAdminData — depending on targetUserId vs userId"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "References HC3 schema — HC3.vwMmByKennel",
+      "detail": "When @mismanagementRoles is set, the SP reads from HC3.vwMmByKennel (line ~1426). This is a cross-schema dependency on a view in the old HC3 schema. In HC6, this must be resolved to a view or query in the HC6 schema."
+    },
+    {
+      "severity": "high",
+      "issue": "Dead parameter — @paymentAmount",
+      "detail": "@paymentAmount DECIMAL(12,6) is accepted but never read or used anywhere in the SP body."
+    },
+    {
+      "severity": "high",
+      "issue": "Magic values 9999 and -9999 for membership",
+      "detail": "9999 = set expiry to '1/1/2100' (never expires). -9999 = cancel membership (IsMember=0, ExpirationDate=NULL). These are non-obvious sentinel values not documented in parameter definitions."
+    },
+    {
+      "severity": "medium",
+      "issue": "@appAccessFlags written to both AppAccessFlags and HcWebPermissionFlags",
+      "detail": "HcWebPermissionFlags is silently updated with the same value as AppAccessFlags on both INSERT and UPDATE. Callers may not realize the web permission flags are being changed when they intend to only update app flags."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH block",
+      "detail": "No error handling."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change sentinel values (9999, -9999) without updating all callers"
+  ]
+}

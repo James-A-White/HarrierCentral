@@ -1,0 +1,95 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_getEventBadgeCount",
+  "version": "1.0.0",
+  "description": "Returns unread event message badge counts. Three modes: (1) reset all badge counts for the user, (2) reset + read badge count for a specific event, (3) read badge count for a specific event. Uses MERGE for upsert on EventMessageBadgeCounts.",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Device.id", "description": "Device UUID for auth lookup." },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": null, "description": "Short-lived auth token." },
+    { "name": "publicEventId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": null, "description": "Public event ID to get badge count for. Null = get counts for all events." },
+    { "name": "resetBadgeCount", "type": "INT", "nullable": true, "mapsToColumn": null, "description": "When non-zero, marks the specific event's messages as read via MERGE. Default 0." },
+    { "name": "resetAllBadgeCounts", "type": "INT", "nullable": true, "mapsToColumn": null, "description": "When non-zero, marks all event messages as read for this user. Overrides publicEventId mode. Default 0." }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "NullUserError",
+      "description": "Standard error format. errorType=2.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 2." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "Standard error format. errorType=3.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 3." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'Invalid access token'." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "ResetAllResult",
+      "description": "Returned when @resetAllBadgeCounts != 0. Single hardcoded row.",
+      "columns": [
+        { "name": "BadgeCount", "type": "INT", "nullable": false, "description": "Always 0." },
+        { "name": "PublicEventId", "type": "NVARCHAR", "nullable": false, "description": "Always '00000000-0000-0000-0000-000000000000'." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "SingleEventBadgeCount",
+      "description": "Returned when @publicEventId is provided and @resetAllBadgeCounts=0.",
+      "columns": [
+        { "name": "BadgeCount", "type": "INT", "nullable": true, "description": "Unread message count for this event. NULL if no badge record exists." },
+        { "name": "PublicEventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The requested @publicEventId." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "AllEventBadgeCounts",
+      "description": "Returned when @publicEventId is null and @resetAllBadgeCounts=0. One row per event with unread messages.",
+      "columns": [
+        { "name": "BadgeCount", "type": "INT", "nullable": true, "description": "Unread message count for this event." },
+        { "name": "PublicEventId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "The event's public ID." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "MERGE HC.EventMessageBadgeCounts — when @resetBadgeCount != 0 (marks event as read)",
+    "UPDATE HC.EventMessageBadgeCounts SET LastSequenceCount — when @resetAllBadgeCounts != 0",
+    "INSERT HC.ErrorLog on null-user and auth-failure paths"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "@timeWindows variable name typo",
+      "detail": "Local variable declared as @timeWindows instead of @timeWindow. Consistent with other SPs but still a typo."
+    },
+    {
+      "severity": "medium",
+      "issue": "Commented-out eventId validation — no guard on null @publicEventId in single-event mode",
+      "detail": "The eventId null check is commented out. When @publicEventId is null and @resetAllBadgeCounts=0, the query runs against a null event ID, returning an empty result set rather than an error."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH block",
+      "detail": "No error handling."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}

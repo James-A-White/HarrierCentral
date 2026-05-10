@@ -1,0 +1,50 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_getEventMessages2",
+  "version": "1.0.0",
+  "description": "Returns all messages for a specific event with a flat author representation (authorId column), replacing the nested JSON author object in hcapp_getEventMessages. Token validated against DeviceSecret + eventId. UUIDs returned as uppercase — inconsistent with HC6 convention of lowercase UUIDs.",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "Device.id", "description": "Device UUID." },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": true, "mapsToColumn": null, "description": "Token validated against DeviceSecret + eventId." },
+    { "name": "eventId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "EventMessage.EventId", "description": "Internal event ID." }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorRowsets",
+      "description": "Same error pattern as hcapp_getEventMessages — multiple error rowsets possible without RETURN. See that contract for column details."
+    },
+    {
+      "index": 0,
+      "name": "Messages",
+      "description": "All messages for the event, ordered by createdAt DESC.",
+      "columns": [
+        { "name": "id", "type": "NVARCHAR", "nullable": false, "description": "UPPER(EventMessage.id) — uppercase UUID string." },
+        { "name": "type", "type": "NVARCHAR", "nullable": false, "description": "Always 'text'." },
+        { "name": "text", "type": "NVARCHAR", "nullable": true, "description": "EventMessage.MessageContent." },
+        { "name": "roomId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "EventMessage.PublicEventId." },
+        { "name": "createdAt", "type": "BIGINT", "nullable": false, "description": "Unix timestamp in milliseconds." },
+        { "name": "authorId", "type": "NVARCHAR", "nullable": false, "description": "UPPER(Hasher.PublicHasherId) — uppercase UUID string. Different from hcapp_getEventMessages which embeds a JSON author object." }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "UUIDs returned as UPPER() — violates HC UUID convention",
+      "detail": "Both id and authorId are wrapped in UPPER(). HC6 normalises all UUIDs to lowercase. The Flutter app's @UuidConverter will lowercase on parse, but this is an unnecessary friction point."
+    },
+    {
+      "severity": "high",
+      "issue": "Multiple error paths emit rowsets without RETURN — same issue as getEventMessages",
+      "detail": "deviceId and eventId null checks emit SELECT without RETURN."
+    },
+    { "severity": "low", "issue": "No TRY/CATCH block", "detail": "No error handling." }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}

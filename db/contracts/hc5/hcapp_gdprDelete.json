@@ -1,0 +1,66 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_gdprDelete",
+  "version": "1.0.0",
+  "description": "Anonymises the calling user's Hasher record in response to a GDPR deletion request. Does NOT delete the record — instead overwrites PII fields with dummy values and sets Removed=1. Only operates if the user is not already removed. Returns 'success' or 'failed' string. Uses non-standard error format.",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Device.id", "description": "Device UUID for auth lookup." },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": null, "description": "Short-lived auth token." }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "NullUserError",
+      "description": "Non-standard error format (Pascal-cased, no errorId).",
+      "columns": [
+        { "name": "ErrorType", "type": "INT", "nullable": false, "description": "Always 2." },
+        { "name": "ErrorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'No user ID provided'." },
+        { "name": "ErrorDescription", "type": "NVARCHAR", "nullable": false, "description": "Error message." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "Non-standard error format. errorType=1.",
+      "columns": [
+        { "name": "ErrorType", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "ErrorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'Unauthorized Access Token'." },
+        { "name": "ErrorDescription", "type": "NVARCHAR", "nullable": false, "description": "Error message." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "DeletionResult",
+      "description": "Always returned on successful auth. Single row.",
+      "columns": [
+        { "name": "result", "type": "NVARCHAR(100)", "nullable": false, "description": "'success' if the UPDATE affected 1 row (user was not already removed), 'failed' if @@ROWCOUNT = 0 (already removed or not found)." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Hasher SET HomeKennelId=NULL, MotherKennelId=NULL, SupportCode='*'+old, ResetCode='*'+old, QR_code='*'+old, HashName='Deleted User', FirstName='Deleted', LastName='User', Email=ResetCode+'@harriercentral.com', Photo='bundle://avatar-0', FacebookId=NULL, ThirdPartyUserId=NULL, ThirdPartyAccessToken=NULL, ThirdPartyEmail=NULL, ThirdPartyLoginType='none', Description=NULL, HomeLatitude=NULL, HomeLongitude=NULL, HomeGeolocation=NULL, Removed=1, updatedAt=getdate(), SingleSignOnId=NULL, SingleSignOnType=NULL, IsBetaTester=0 WHERE Removed=0"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "Non-standard error format",
+      "detail": "Error rowsets use Pascal-cased (ErrorType, ErrorTitle, ErrorDescription) with no errorId or errorProc."
+    },
+    {
+      "severity": "high",
+      "issue": "Success/failure encoded as string value",
+      "detail": "'success'/'failed' in the result column. Caller must parse string."
+    },
+    {
+      "severity": "medium",
+      "issue": "Email set to ResetCode + '@harriercentral.com' — uses an already-prefixed code",
+      "detail": "At time of deletion, SupportCode and ResetCode are prefixed with '*'. The email is set from the raw ResetCode (without the '*') read at UPDATE time. This is slightly inconsistent with the SupportCode/ResetCode being prefixed."
+    },
+    { "severity": "low", "issue": "No TRY/CATCH block", "detail": "No error handling." }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change the anonymization pattern without legal review"
+  ]
+}

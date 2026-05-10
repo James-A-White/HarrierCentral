@@ -1,0 +1,318 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_addEditUser",
+  "version": "1.0.0",
+  "description": "Creates or updates a Hasher record. Dual-mode: when @deviceId is blank/null it operates as a new-user creation flow (first app launch, no device record exists); when @deviceId is provided it performs an edit against an existing device-authenticated user. The access token is validated against DeviceSecret + targetUserId (not just DeviceSecret). Returns no direct confirmation — delegates to syncUserData, syncEventAdminData, or syncKennelAdminData depending on context.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "Device UUID as a string. When blank or null, triggers new-user creation mode. Otherwise resolves the calling user from HC.Device.",
+      "typeMismatch": "NVARCHAR(100) instead of UNIQUEIDENTIFIER — same issue as hcapp_approveLogin."
+    },
+    {
+      "name": "userId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Caller's userId. Default null-UUID. In normal flow this is overwritten from HC.Device lookup; in new-user mode (@deviceId blank) stays as null-UUID and the local variable remains '00000000...' to signal new-user path."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Auth token. Validated against DeviceSecret + UPPER(@targetUserId) — token is bound to the specific target user being edited."
+    },
+    {
+      "name": "hcVersion",
+      "type": "NVARCHAR(250)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "App version. Used only in ErrorLog inserts, not stored on Hasher."
+    },
+    {
+      "name": "hashersUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Sync cursor passed to child sync SP."
+    },
+    {
+      "name": "hasherEventMapUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Sync cursor passed to child sync SP."
+    },
+    {
+      "name": "hasherKennelMapUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Sync cursor passed to child sync SP."
+    },
+    {
+      "name": "targetUserId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Hasher.id",
+      "description": "User to create or edit. Default null-UUID triggers insert mode. On insert, a new UUID is generated and this parameter is replaced."
+    },
+    {
+      "name": "email",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.Email",
+      "description": "Email address. Empty string normalised to NULL. Duplicate email check performed — returns errorType=10005 if duplicate."
+    },
+    {
+      "name": "firstName",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.FirstName",
+      "description": "Empty string normalised to NULL.",
+      "typeMismatch": "NVARCHAR(100) vs Hasher.FirstName NVARCHAR(250)."
+    },
+    {
+      "name": "lastName",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.LastName",
+      "description": "Empty string normalised to NULL.",
+      "typeMismatch": "NVARCHAR(100) vs Hasher.LastName NVARCHAR(250)."
+    },
+    {
+      "name": "hashName",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.HashName",
+      "description": "Empty string normalised to NULL.",
+      "typeMismatch": "NVARCHAR(100) vs Hasher.HashName NVARCHAR(250)."
+    },
+    {
+      "name": "photo",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.Photo",
+      "description": "Empty string normalised to NULL.",
+      "typeMismatch": "NVARCHAR(500) vs Hasher.Photo NVARCHAR(1000)."
+    },
+    {
+      "name": "includeInGlobalHashDirectory",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "Hasher.IncludeInGlobalHashDirectory",
+      "description": "Sentinel: -1 normalised to NULL.",
+      "typeMismatch": "INT vs Hasher.IncludeInGlobalHashDirectory SMALLINT."
+    },
+    {
+      "name": "preferences",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "Hasher.Preferences",
+      "description": "Bitfield. Sentinel: -1 normalised to NULL."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "If provided, new user is added to this event's HasherEventMap. Also controls which sync SP is called on completion."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "If provided, new user may be added to this kennel (controlled by @followKennelOnAddNewUser). Also controls which sync SP is called."
+    },
+    {
+      "name": "historicalTotalRunCount",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.HistoricalTotalRunCount",
+      "description": "Sentinel: -1 normalised to NULL."
+    },
+    {
+      "name": "historicalPackRunCount",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Deprecated Nov 2021. Accepted but never used. Dead parameter."
+    },
+    {
+      "name": "historicalHaringCount",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.HistoricalHaringCount",
+      "description": "Sentinel: -1 normalised to NULL."
+    },
+    {
+      "name": "historicalCountIsEstimate",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.HistoricalCountIsEstimate",
+      "description": "Flag whether historical counts are estimates."
+    },
+    {
+      "name": "followKennelOnAddNewUser",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "When non-zero, a new HasherKennelMap record is created for the new user at @kennelId."
+    },
+    {
+      "name": "latitude",
+      "type": "DECIMAL(18,15)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.HomeLatitude",
+      "description": "Used to detect if user is in the US for miles/km preference default."
+    },
+    {
+      "name": "longitude",
+      "type": "DECIMAL(19,15)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.HomeLongitude",
+      "description": "Used to detect if user is in the US for miles/km preference default."
+    },
+    {
+      "name": "nameDisplayPreference",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "Hasher.NameDisplayPreference",
+      "description": "Sentinel: <= 0 normalised to NULL.",
+      "typeMismatch": "INT vs Hasher.NameDisplayPreference SMALLINT."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "NullUserError",
+      "description": "When userId resolved to NULL (device lookup returned nothing). errorType=2.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 2." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "Token validation failure. errorType=1 (non-standard — should be 3).",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 1 — non-standard for auth failure." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "TargetUserNotFoundError",
+      "description": "targetUserId provided but not in HC.Hasher. errorType=5.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 5 — should be 3." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "'User not found'." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "DuplicateEmailError",
+      "description": "Email already in use by another Hasher. errorType=10005 — non-standard, well outside the defined range.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 10005 — non-standard." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "'Email address already exists'." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "NewUserProfile",
+      "description": "Only returned when @userId = null-UUID (new-user creation mode, no device record). Returns the newly created hasher record directly rather than delegating to a sync SP.",
+      "columns": [
+        { "name": "hasherId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The new user's id." },
+        { "name": "firstName", "type": "NVARCHAR", "nullable": false, "description": "Coalesced to empty string." },
+        { "name": "lastName", "type": "NVARCHAR", "nullable": false, "description": "Coalesced to empty string." },
+        { "name": "dispName", "type": "NVARCHAR", "nullable": false, "description": "DisplayName computed column." },
+        { "name": "hashName", "type": "NVARCHAR", "nullable": false, "description": "Coalesced to empty string." },
+        { "name": "photo", "type": "NVARCHAR", "nullable": false, "description": "Coalesced to empty string." },
+        { "name": "dispPref", "type": "SMALLINT", "nullable": false, "description": "NameDisplayPreference." },
+        { "name": "supportCode", "type": "NVARCHAR", "nullable": false, "description": "SupportCode." },
+        { "name": "resetCode", "type": "NVARCHAR", "nullable": false, "description": "ResetCode." },
+        { "name": "facebookId", "type": "NVARCHAR", "nullable": false, "description": "Coalesced to empty string." },
+        { "name": "qrCode", "type": "NVARCHAR", "nullable": false, "description": "QR_code." },
+        { "name": "qrSecretCode", "type": "NVARCHAR", "nullable": false, "description": "QR_secret_code — returned as nvarchar not UNIQUEIDENTIFIER." },
+        { "name": "preferences", "type": "NVARCHAR(20)", "nullable": false, "description": "Cast to nvarchar — string representation of the INT bitfield." },
+        { "name": "updatedAt", "type": "DATETIMEOFFSET", "nullable": false, "description": "Coalesced to getdate()." },
+        { "name": "removed", "type": "SMALLINT", "nullable": false, "description": "Coalesced to 0." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.Hasher — on new user creation",
+    "INSERT HC.LaunchAndLogin — on new user creation",
+    "INSERT HC.HasherEventMap — if @eventId provided and new user",
+    "INSERT HC.HasherKennelMap — if @kennelId provided, new user, and @followKennelOnAddNewUser != 0",
+    "UPDATE HC.Hasher — on edit",
+    "UPDATE HC.HasherKennelMap — if @kennelId provided and historical counts specified on edit",
+    "EXEC hcapp_syncUserData / hcapp_syncEventAdminData / hcapp_syncKennelAdminData — depending on context"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "@deviceId is NVARCHAR(100) instead of UNIQUEIDENTIFIER",
+      "detail": "Same issue as hcapp_approveLogin. Forces implicit conversion against Device.id."
+    },
+    {
+      "severity": "high",
+      "issue": "errorType=1 for auth failure — non-standard",
+      "detail": "Should be errorType=3."
+    },
+    {
+      "severity": "high",
+      "issue": "errorType=10005 for duplicate email — far outside defined range",
+      "detail": "errorType values 1-5 are defined. 10005 is an ad-hoc application-level code with no HC standard definition."
+    },
+    {
+      "severity": "high",
+      "issue": "Dead parameter — @historicalPackRunCount",
+      "detail": "Marked as 'Deprecated: Nov 2021' in the parameter comment. Accepted but never read or used."
+    },
+    {
+      "severity": "medium",
+      "issue": "Multiple parameter type mismatches vs Hasher columns",
+      "detail": "@firstName, @lastName, @hashName NVARCHAR(100) vs Hasher NVARCHAR(250). @photo NVARCHAR(500) vs Hasher NVARCHAR(1000). Silent truncation possible."
+    },
+    {
+      "severity": "medium",
+      "issue": "No authorization check when editing another user's record",
+      "detail": "When @targetUserId != @userId, no check is made whether the caller has admin rights to edit the target. Any authenticated user can edit any other user's profile."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH block",
+      "detail": "No error handling."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change errorType codes without updating all callers"
+  ]
+}

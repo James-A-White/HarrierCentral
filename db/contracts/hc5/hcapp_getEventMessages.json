@@ -1,0 +1,98 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_getEventMessages",
+  "version": "1.0.0",
+  "description": "Returns all messages for a specific event. Token validated against DeviceSecret + eventId (event-bound token). Author data is embedded as a nested JSON object using FOR JSON PATH. Use hcapp_getEventMessages2 for a flat author representation.",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "Device.id", "description": "Device UUID for auth lookup. DATALENGTH check (always 16 for non-null UNIQUEIDENTIFIER) provides no real validation." },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": true, "mapsToColumn": null, "description": "Token validated against DeviceSecret + eventId — event-bound." },
+    { "name": "eventId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "EventMessage.EventId", "description": "Internal event ID (not PublicEventId). DATALENGTH check validates 16 bytes = valid UNIQUEIDENTIFIER." }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "NullDeviceIdError",
+      "description": "emitted but SP does NOT RETURN. errorType=2.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 2." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "NullEventIdError",
+      "description": "Emitted but SP does NOT RETURN. errorType=2.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 2." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'Null or invalid eventId'." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "NullHasherError",
+      "description": "Returned when Device lookup yields no userId (only if prior errors were not triggered). errorType=2.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 2." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "Returned on token failure. SP RETURNS after this. errorType=3.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 3." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'Invalid access token'." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "Messages",
+      "description": "All messages for the event, ordered by createdAt DESC.",
+      "columns": [
+        { "name": "id", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "EventMessage.id." },
+        { "name": "type", "type": "NVARCHAR", "nullable": false, "description": "Always 'text'." },
+        { "name": "text", "type": "NVARCHAR", "nullable": true, "description": "EventMessage.MessageContent." },
+        { "name": "roomId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "EventMessage.PublicEventId." },
+        { "name": "createdAt", "type": "BIGINT", "nullable": false, "description": "Unix timestamp in milliseconds (DATEDIFF_BIG from epoch)." },
+        { "name": "author", "type": "NVARCHAR", "nullable": true, "description": "JSON object: {id: PublicHasherId, firstName: DisplayName, imageUrl: Photo}. Embedded via FOR JSON PATH, WITHOUT_ARRAY_WRAPPER." }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "Multiple error paths emit rowsets without RETURN — caller may receive multiple error rowsets",
+      "detail": "deviceId null check and eventId null check both emit SELECT without RETURN. Only auth failure and the final @isError check cause RETURN."
+    },
+    {
+      "severity": "medium",
+      "issue": "Author nested as JSON string via FOR JSON PATH — not a typed column",
+      "detail": "The 'author' column returns a JSON string, not a structured column. Callers must parse this JSON themselves. This is an unusual pattern — hcapp_getEventMessages2 returns a flat authorId instead."
+    },
+    { "severity": "low", "issue": "No TRY/CATCH block", "detail": "No error handling." }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change the JSON structure of the author field without updating all callers"
+  ]
+}

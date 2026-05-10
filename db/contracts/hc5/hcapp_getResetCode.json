@@ -1,0 +1,94 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_getResetCode",
+  "version": "1.0.0",
+  "description": "Looks up a user's invite/reset code (URC: prefix) from their support code (USC: prefix). Intended for support staff to retrieve a user's invite code using the code on their profile. Returns the reset code or a 'Support code not found' string — both in the same column.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "Device UUID. Used to look up caller's userId and device credentials."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token."
+    },
+    {
+      "name": "supportCode",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": "Hasher.SupportCode",
+      "description": "The USC:-prefixed support code to look up.",
+      "typeMismatch": "NVARCHAR(1000) vs Hasher.SupportCode NVARCHAR(50) — parameter is 20× wider than column."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "NullUserError",
+      "description": "Returned when the device lookup yields no userId. Non-standard error format.",
+      "columns": [
+        { "name": "ErrorType", "type": "INT", "nullable": false, "description": "Always 2. Pascal-cased." },
+        { "name": "ErrorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'No user ID provided'." },
+        { "name": "ErrorDescription", "type": "NVARCHAR", "nullable": false, "description": "Error message. Non-standard column name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "Returned when CHECK_ACCESS_TOKEN_V2 fails. Non-standard error format.",
+      "columns": [
+        { "name": "ErrorType", "type": "INT", "nullable": false, "description": "Always 1. Pascal-cased." },
+        { "name": "ErrorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'Unauthorized Access Token'." },
+        { "name": "ErrorDescription", "type": "NVARCHAR", "nullable": false, "description": "Error message. Non-standard column name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "LookupResult",
+      "description": "Always returned on success. Contains either the reset code or the literal string 'Support code not found' — caller must check the value to distinguish.",
+      "columns": [
+        { "name": "result", "type": "NVARCHAR(100)", "nullable": false, "description": "The URC: reset code if found and user not removed, otherwise 'Support code not found'." }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "Non-standard error format",
+      "detail": "Error rowsets use Pascal-cased column names (ErrorType, ErrorTitle, ErrorDescription) with no errorId or errorProc. Inconsistent with standard SP contract."
+    },
+    {
+      "severity": "high",
+      "issue": "Success/failure encoded as string value in result column",
+      "detail": "Caller cannot distinguish 'found' from 'not found' by rowset structure — must parse the string value. 'Support code not found' should be an error rowset."
+    },
+    {
+      "severity": "medium",
+      "issue": "@supportCode NVARCHAR(1000) vs Hasher.SupportCode NVARCHAR(50)",
+      "detail": "Parameter is 20× wider than the column. Should be aligned to NVARCHAR(50)."
+    },
+    {
+      "severity": "medium",
+      "issue": "EXISTS check and SELECT have inconsistent filters",
+      "detail": "The EXISTS check finds the support code regardless of Removed status, then the SELECT filters on removed=0. A removed user's support code 'exists' but returns no rows, so @result stays 'Support code not found'. Technically safe but confusing."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH block",
+      "detail": "No error handling."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change the 'Support code not found' sentinel string without updating all callers"
+  ]
+}

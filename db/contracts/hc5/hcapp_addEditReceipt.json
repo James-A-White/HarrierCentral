@@ -1,0 +1,176 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_addEditReceipt",
+  "version": "1.0.0",
+  "description": "Creates or updates an HC.Receipt record for an event expense. If @receiptId exists in the database, performs an update; otherwise inserts a new receipt. FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF is the sentinel UUID for clearing reimbursement data. After the write, delegates to hcapp_syncEventAdminData to return refreshed data.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "Device UUID for auth lookup."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token. Validated with errorType=3 on failure."
+    },
+    {
+      "name": "receiptId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Receipt.id",
+      "description": "Receipt to update, or a new UUID for insert. If not found in DB, SP falls through to insert mode with a new UUID."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Receipt.EventId",
+      "description": "Required. Null-UUID triggers a validation error."
+    },
+    {
+      "name": "receiptShortDesc",
+      "type": "NVARCHAR(500)",
+      "nullable": false,
+      "mapsToColumn": "Receipt.ReceiptShortDesc",
+      "description": "Empty string normalised to NULL."
+    },
+    {
+      "name": "receiptAmount",
+      "type": "DECIMAL(12,4)",
+      "nullable": false,
+      "mapsToColumn": "Receipt.ReceiptAmount",
+      "description": "Negative values normalised to NULL."
+    },
+    {
+      "name": "notes",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": "Receipt.Notes",
+      "description": "Empty string normalised to NULL."
+    },
+    {
+      "name": "reimbursedBy",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Receipt.ReimbursedBy",
+      "description": "User who reimbursed the expense. Null-UUID normalised to NULL. FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF clears all reimbursement fields."
+    },
+    {
+      "name": "reimbursedOn",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "mapsToColumn": "Receipt.ReimbursedOn",
+      "description": "Reimbursement date as a string. CAST to DATETIMEOFFSET(7) internally — no error handling if cast fails. Values before 1/1/2000 normalised to NULL.",
+      "typeMismatch": "String passed for date — brittle, no format validation."
+    },
+    {
+      "name": "reimbursedAmount",
+      "type": "DECIMAL(12,4)",
+      "nullable": false,
+      "mapsToColumn": "Receipt.ReimbursedAmount",
+      "description": "Negative values normalised to NULL. If @reimbursedBy is non-null and non-FFFFFFFF, overwritten from Receipt.ReceiptAmount."
+    },
+    {
+      "name": "reimbursedNotes",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": "Receipt.ReimbursedNotes",
+      "description": "Empty string normalised to NULL."
+    },
+    {
+      "name": "imageUrl",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": "Receipt.ImageUrl",
+      "description": "DATALENGTH < 20 normalised to NULL."
+    },
+    {
+      "name": "receiptsUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Sync cursor passed through to hcapp_syncEventAdminData."
+    },
+    {
+      "name": "removed",
+      "type": "SMALLINT",
+      "nullable": false,
+      "mapsToColumn": "Receipt.removed",
+      "description": "Sentinel: -1 normalised to NULL (don't update)."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "NullUserError",
+      "description": "Standard error format. errorType=2.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 2." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "NullEventIdError",
+      "description": "Standard error format. errorType=2.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 2." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'Null or empty eventId'." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "Standard error format. errorType=3.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 3." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'Invalid access token'." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Receipt — when @receiptId exists",
+    "INSERT HC.Receipt — when @receiptId does not exist",
+    "EXEC hcapp_syncEventAdminData — returns multiple result sets (see syncEventAdminData contract)"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "@reimbursedOn is NVARCHAR(50) cast to DATETIMEOFFSET — no error handling",
+      "detail": "CAST(@reimbursedOn AS datetimeoffset(7)) will throw if the string is not a valid date. No TRY_CAST or TRY/CATCH. Any malformed date crashes the SP."
+    },
+    {
+      "severity": "medium",
+      "issue": "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF as clear-reimbursement sentinel",
+      "detail": "The all-F UUID is used as a magic value to clear reimbursement data. This is an unusual sentinel that callers must know about; it is undocumented in the parameter description."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH block",
+      "detail": "No error handling, including for the risky date CAST."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change the FFFFFFFF... sentinel UUID without updating all callers"
+  ]
+}

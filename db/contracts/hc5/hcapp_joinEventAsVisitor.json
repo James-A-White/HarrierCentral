@@ -1,0 +1,63 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_joinEventAsVisitor",
+  "version": "1.0.0",
+  "description": "Adds a virgin (type=1) or visitor (type=2) to an event. Uses a 'placeholder user' pattern: a synthetic Hasher record is created for the kennel (using KennelId as the Hasher.id PK) if none exists, and the visitor's HasherEventMap.UserId is set to the KennelId. Idempotent: if a HEM record with the same DisplayName already exists for this event, returns the existing record without creating a duplicate.",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Device.id", "description": "Device UUID." },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": null, "description": "Short-lived auth token." },
+    { "name": "eventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "HasherEventMap.EventId", "description": "Event to add the visitor to." },
+    { "name": "displayName", "type": "NVARCHAR(250)", "nullable": false, "mapsToColumn": "HasherEventMap.DisplayName", "description": "Visitor's name. Used for deduplication check." },
+    { "name": "virginVisitorType", "type": "SMALLINT", "nullable": false, "mapsToColumn": "HasherEventMap.VirginVisitorType", "description": "1 = Virgin, 2 = Visitor. SP only operates for these values — silently does nothing for other values." },
+    { "name": "attendenceState", "type": "SMALLINT", "nullable": false, "mapsToColumn": "HasherEventMap.AttendenceState", "description": "Initial attendance state (e.g. 20=on trail)." },
+    { "name": "email", "type": "NVARCHAR(250)", "nullable": false, "mapsToColumn": "HasherEventMap.Email", "description": "Visitor's email." },
+    { "name": "phoneNumber", "type": "NVARCHAR(250)", "nullable": false, "mapsToColumn": "HasherEventMap.PhoneNumber", "description": "Visitor's phone number." },
+    { "name": "hasherEventMapUpdatedAfter", "type": "NVARCHAR(50)", "nullable": false, "mapsToColumn": null, "description": "Sync cursor passed to hcapp_syncEventAdminData." },
+    { "name": "paymentsUpdatedAfter", "type": "NVARCHAR(50)", "nullable": false, "mapsToColumn": null, "description": "Sync cursor passed to hcapp_syncEventAdminData." }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "StandardErrors",
+      "description": "Standard error format. errorType=2 for null userId/eventId. errorType=3 for auth failure."
+    },
+    {
+      "index": 0,
+      "name": "AdHocResult",
+      "description": "Returned when @virginVisitorType is 1 or 2. Single row.",
+      "columns": [
+        { "name": "adHocDataId", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "hasherEventMapId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The new or existing HEM record's ID." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.Hasher — placeholder user (id = KennelId) if not already present",
+    "INSERT HC.HasherEventMap — if no existing record with matching DisplayName",
+    "EXEC hcapp_syncEventAdminData — returns multiple result sets"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "Placeholder Hasher uses KennelId as primary key",
+      "detail": "The synthetic Hasher record's id is set to the kennel's UUID (h.id = k.id). This is a deliberate but unusual design — the Kennel record IS the placeholder Hasher. Any query joining Hasher to Kennel by id will find this record. This pattern must be documented and preserved in HC6."
+    },
+    {
+      "severity": "high",
+      "issue": "Silent no-op for @virginVisitorType not in (1, 2)",
+      "detail": "The entire SP body is wrapped in an IF (@VirginVisitorType = 1 OR @VirginVisitorType = 2). For any other value, the SP returns no rowset and makes no changes — the caller gets an empty response with no error."
+    },
+    {
+      "severity": "medium",
+      "issue": "HasherEventMap.UserId set to KennelId — not the visitor's ID",
+      "detail": "Visitors have no Hasher record, so UserId is set to the KennelId as a flag. Any code that joins HEM.UserId to Hasher will find the placeholder Hasher, not a real person. Callers must check VirginVisitorType != 0 before treating UserId as a real user."
+    },
+    { "severity": "low", "issue": "No TRY/CATCH block", "detail": "No error handling." }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change the KennelId-as-UserId placeholder pattern without a migration plan"
+  ]
+}

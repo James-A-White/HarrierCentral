@@ -1,0 +1,88 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_getInviteCode",
+  "version": "1.0.0",
+  "description": "Returns a target user's invite code (URC: prefix) for sharing, subject to authorization rules: the target user must not have logged in yet, must not be removed, and the requesting user must have manage-members access flags on the target's home kennel. Returns 'No valid user' if any condition fails.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "Device UUID of the requesting user."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token."
+    },
+    {
+      "name": "targetUserId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Hasher.id",
+      "description": "The user whose invite code is being requested."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "NullUserError",
+      "description": "Returned when the device lookup yields no userId. Non-standard error format.",
+      "columns": [
+        { "name": "ErrorType", "type": "INT", "nullable": false, "description": "Always 2. Pascal-cased." },
+        { "name": "ErrorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'No user ID provided'." },
+        { "name": "ErrorDescription", "type": "NVARCHAR", "nullable": false, "description": "Non-standard column name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "Returned when CHECK_ACCESS_TOKEN_V2 fails. Non-standard error format.",
+      "columns": [
+        { "name": "ErrorType", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "ErrorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'Unauthorized Access Token'." },
+        { "name": "ErrorDescription", "type": "NVARCHAR", "nullable": false, "description": "Non-standard column name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "InviteCodeResult",
+      "description": "Always returned on successful auth. The result column contains either the invite code or 'No valid user' — both cases use the same column.",
+      "columns": [
+        { "name": "result", "type": "NVARCHAR(100)", "nullable": false, "description": "The URC: reset code if all conditions met, otherwise 'No valid user'." }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "Non-standard error format",
+      "detail": "Error rowsets use Pascal-cased column names (ErrorType, ErrorTitle, ErrorDescription) without errorId or errorProc."
+    },
+    {
+      "severity": "high",
+      "issue": "Authorization failure encoded as string value — no error rowset",
+      "detail": "'No valid user' returned in same column as a valid code. Caller cannot distinguish auth failure from not-found from user-already-logged-in without parsing the string."
+    },
+    {
+      "severity": "medium",
+      "issue": "Magic number 1073741840 (0x40000010) for AppAccessFlags",
+      "detail": "The bitflag check for admin authorization embeds an undocumented constant directly in the query. Should be a named constant or SP parameter."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH block",
+      "detail": "No error handling."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change the 'No valid user' sentinel string without updating all callers"
+  ]
+}

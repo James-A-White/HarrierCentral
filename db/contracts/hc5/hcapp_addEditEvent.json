@@ -1,0 +1,402 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_addEditEvent",
+  "version": "1.0.0",
+  "description": "Creates or updates an HC.Event record. If @eventId exists, performs an update; if not, inserts a new event. The deletion path (@deleted=1) is completely stubbed out — the entire delete block is commented out. After the write, delegates to hcapp_syncUserData to return refreshed data. Returns no direct confirmation rowset — all results come from the sync call.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "Device UUID for auth lookup."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token."
+    },
+    {
+      "name": "narrowEventsUpdatedAfter",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Sync cursor passed through to hcapp_syncUserData. Required — no default."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.id",
+      "description": "Event to update. If null or null-UUID, triggers insert mode. Null-UUID (00000000...) is normalised to NULL internally."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.KennelId",
+      "description": "Required for insert mode. Null-UUID normalised to NULL."
+    },
+    {
+      "name": "startDatetime",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": true,
+      "mapsToColumn": "Event.EventStartDatetime",
+      "description": "Required for insert mode. Sentinel: values <= 1/1/1901 are normalised to NULL."
+    },
+    {
+      "name": "endDatetime",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": true,
+      "mapsToColumn": "Event.EventEndDatetime",
+      "description": "Sentinel: values <= 1/1/1901 normalised to NULL."
+    },
+    {
+      "name": "isCountedRun",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.IsCountedRun",
+      "description": "Sentinel: -1 normalised to NULL (don't update)."
+    },
+    {
+      "name": "isVisible",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.IsVisible",
+      "description": "Sentinel: -1 normalised to NULL."
+    },
+    {
+      "name": "usersCanEditRunAttendence",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.CanEditRunAttendence",
+      "description": "Sentinel: -1 = set to NULL. Maps to Event.CanEditRunAttendence."
+    },
+    {
+      "name": "isPromotedEvent",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.IsPromotedEvent",
+      "description": "Sentinel: -1 normalised to NULL."
+    },
+    {
+      "name": "eventGeographicScope",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.EventGeographicScope",
+      "description": "Sentinel: -1 normalised to NULL."
+    },
+    {
+      "name": "ThemeRunType",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.ThemeRunType",
+      "description": "Sentinel: -1 normalised to NULL."
+    },
+    {
+      "name": "eventName",
+      "type": "NVARCHAR(120)",
+      "nullable": true,
+      "mapsToColumn": "Event.EventName",
+      "description": "Sentinel: DATALENGTH < 2 normalised to NULL. Uses DATALENGTH not LEN (code smell)."
+    },
+    {
+      "name": "eventDescription",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Event.EventDescription",
+      "description": "Sentinel: DATALENGTH < 2 normalised to NULL. '<remove>' clears the field. Unicode paragraph separators (U+2028, U+2029) stripped."
+    },
+    {
+      "name": "locationCity",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Event.LocationCity",
+      "description": "Sentinel: DATALENGTH < 2 normalised to NULL. '<remove>' clears."
+    },
+    {
+      "name": "locationStreet",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Event.LocationStreet",
+      "description": "Sentinel: DATALENGTH < 2 normalised to NULL. '<remove>' clears."
+    },
+    {
+      "name": "locationPostCode",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": "Event.LocationPostCode",
+      "description": "Sentinel: DATALENGTH < 2 normalised to NULL. '<remove>' clears."
+    },
+    {
+      "name": "locationCountry",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Event.LocationCountry",
+      "description": "Sentinel: DATALENGTH < 2 normalised to NULL. '<remove>' clears."
+    },
+    {
+      "name": "locationRegion",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Event.LocationRegion",
+      "description": "Sentinel: DATALENGTH < 2 normalised to NULL. '<remove>' clears."
+    },
+    {
+      "name": "locationSubRegion",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Event.LocationSubRegion",
+      "description": "Sentinel: DATALENGTH < 2 normalised to NULL. '<remove>' clears."
+    },
+    {
+      "name": "locationOneLineDesc",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Event.LocationOneLineDesc",
+      "description": "Sentinel: DATALENGTH < 2 normalised to NULL. '<remove>' clears. Also accidentally used for Event.Hares in the INSERT (bug — INSERT uses @locationOneLineDesc instead of @hares for the Hares column)."
+    },
+    {
+      "name": "eventFacebookId",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Event.EventFacebookId",
+      "description": "DATALENGTH < 5 normalised to NULL. If value contains 'break', cleared to empty string."
+    },
+    {
+      "name": "coverPhotoUrl",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "Event.EventImage",
+      "description": "DATALENGTH < 5 normalised to NULL."
+    },
+    {
+      "name": "coverPhotoOffsetX",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "Event.EventImageOffsetX",
+      "description": "Sentinel: -1 normalised to NULL."
+    },
+    {
+      "name": "coverPhotoOffsetY",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "Event.EventImageOffsetY",
+      "description": "Sentinel: -1 normalised to NULL."
+    },
+    {
+      "name": "latitude",
+      "type": "DECIMAL(18,15)",
+      "nullable": true,
+      "mapsToColumn": "Event.Latitude",
+      "description": "Sentinel: -1 normalised to NULL (don't update). -2.0 clears to NULL."
+    },
+    {
+      "name": "longitude",
+      "type": "DECIMAL(19,15)",
+      "nullable": true,
+      "mapsToColumn": "Event.Longitude",
+      "description": "Sentinel: -1 normalised to NULL. -2.0 clears to NULL."
+    },
+    {
+      "name": "fbLatitude",
+      "type": "DECIMAL(18,15)",
+      "nullable": true,
+      "mapsToColumn": "Event.FbLatitude",
+      "description": "Facebook-sourced latitude. Sentinel: -1 normalised to NULL."
+    },
+    {
+      "name": "fbLongitude",
+      "type": "DECIMAL(19,15)",
+      "nullable": true,
+      "mapsToColumn": "Event.FbLongitude",
+      "description": "Facebook-sourced longitude. Sentinel: -1 normalised to NULL."
+    },
+    {
+      "name": "eventPriceForMembers",
+      "type": "FLOAT",
+      "nullable": true,
+      "mapsToColumn": "Event.EventPriceForMembers",
+      "description": "Member event price. Sentinel: -1 = don't update, -2 = clear to NULL.",
+      "typeMismatch": "FLOAT parameter — should be DECIMAL(10,4) to match monetary column type."
+    },
+    {
+      "name": "eventPriceForNonMembers",
+      "type": "FLOAT",
+      "nullable": true,
+      "mapsToColumn": "Event.EventPriceForNonMembers",
+      "description": "Non-member event price. Sentinel: -1 = don't update, -2 = clear.",
+      "typeMismatch": "FLOAT — should be DECIMAL(10,4)."
+    },
+    {
+      "name": "eventPriceForExtras",
+      "type": "FLOAT",
+      "nullable": true,
+      "mapsToColumn": "Event.EventPriceForExtras",
+      "description": "Extras price. Sentinel: -1 = don't update, -2 = clear.",
+      "typeMismatch": "FLOAT — should be DECIMAL(10,4)."
+    },
+    {
+      "name": "extrasDescription",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Event.ExtrasDescription",
+      "description": "Sentinel: DATALENGTH < 2 normalised to NULL. '<none>' clears."
+    },
+    {
+      "name": "absoluteEventNumber",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.AbsoluteEventNumber",
+      "description": "Sentinel: -1 = don't update, 0 = clear to NULL."
+    },
+    {
+      "name": "eventCurrencyType",
+      "type": "NVARCHAR(10)",
+      "nullable": true,
+      "mapsToColumn": "Event.EventCurrencyType",
+      "description": "Sentinel: DATALENGTH < 4 normalised to NULL."
+    },
+    {
+      "name": "useFbLatLon",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.UseFbLatLon",
+      "description": "Sentinel: -1 normalised to NULL."
+    },
+    {
+      "name": "useFbRunDetails",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.UseFbRunDetails",
+      "description": "Sentinel: -1 normalised to NULL."
+    },
+    {
+      "name": "useFbLocation",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.UseFbLocation",
+      "description": "Sentinel: -1 normalised to NULL."
+    },
+    {
+      "name": "useFbImage",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.UseFbImage",
+      "description": "Sentinel: -1 normalised to NULL."
+    },
+    {
+      "name": "deleted",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.deleted",
+      "description": "Sentinel: -1 normalised to NULL. When 1, the delete path is hit but is completely stubbed — no DELETE or soft-delete actually executes.",
+      "typeMismatch": "SMALLINT parameter — Event.deleted may be BIT. Check Event table definition."
+    },
+    {
+      "name": "hasherEventMapUpdatedAfter",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Sync cursor passed through to hcapp_syncUserData."
+    },
+    {
+      "name": "hasherKennelMapUpdatedAfter",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Sync cursor passed through to hcapp_syncUserData."
+    },
+    {
+      "name": "hares",
+      "type": "NVARCHAR(2500)",
+      "nullable": true,
+      "mapsToColumn": "Event.Hares",
+      "description": "Comma-separated string of hasher IDs for hares. Sentinel: DATALENGTH < 4 normalised to NULL. '<remove>' clears. Unicode paragraph separators stripped. NOTE: The INSERT path has a bug — it inserts @locationOneLineDesc into the Hares column instead of @hares."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "NullUserError",
+      "description": "Standard error format. errorType=2.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 2." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'Null or empty userId'." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "Standard error format. errorType=3.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 3." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'Invalid access token'." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Event — when @eventId exists",
+    "INSERT HC.Event — when @eventId is null or not found",
+    "EXEC HC.nonApi_updateRunNumbers @eventId — called outside transaction",
+    "EXEC HC5.hcapp_syncUserData — returns multiple result sets (see syncUserData contract)"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "INSERT bug: @locationOneLineDesc used instead of @hares for Event.Hares column",
+      "detail": "In the INSERT branch (lines 421-428), the Hares column is populated with 'case when @locationOneLineDesc = '<remove>' then null else @locationOneLineDesc end' instead of @hares. The actual @hares value is ignored on insert."
+    },
+    {
+      "severity": "high",
+      "issue": "Deletion path is completely stubbed out",
+      "detail": "When @deleted=1, the entire deletion block is commented out. The SP falls through to nonApi_updateRunNumbers and syncUserData without making any change. Callers that set @deleted=1 silently get no effect."
+    },
+    {
+      "severity": "high",
+      "issue": "FLOAT used for monetary parameters",
+      "detail": "@eventPriceForMembers, @eventPriceForNonMembers, and @eventPriceForExtras are all FLOAT. Should be DECIMAL(10,4)."
+    },
+    {
+      "severity": "high",
+      "issue": "HC.nonApi_updateRunNumbers called outside transaction",
+      "detail": "The nonApi call runs after the UPDATE/INSERT, with no wrapping transaction. If it fails, the event write has already committed."
+    },
+    {
+      "severity": "high",
+      "issue": "Inconsistent sentinel values for prices vs. coordinates",
+      "detail": "Prices use -1 (don't update) and -2 (clear). Coordinates use -1 (don't update) and -2.0 (clear). absoluteEventNumber uses 0 (clear) and -1 (don't update). At least three different sentinel patterns in one SP."
+    },
+    {
+      "severity": "high",
+      "issue": "DATALENGTH used instead of LEN for string checks",
+      "detail": "All string empty-checks use DATALENGTH. For NVARCHAR, DATALENGTH returns 2× the character count. This means a single-character string has DATALENGTH=2 and passes the '< 2' check only if the string is truly empty. Misleading and inconsistent."
+    },
+    {
+      "severity": "medium",
+      "issue": "No transaction wrapping the write operations",
+      "detail": "The INSERT or UPDATE, followed by nonApi_updateRunNumbers, and then the sync SP all run outside a transaction."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH block",
+      "detail": "No error handling."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change sentinel values (-1, -2, -2.0, 0, '<remove>', '<none>') without updating all callers"
+  ]
+}

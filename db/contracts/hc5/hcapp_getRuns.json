@@ -1,0 +1,115 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_getRuns",
+  "version": "1.0.0",
+  "description": "Returns a user's run attendance history for a specific kennel — all past events where the user's HasherEventMap AttendenceState >= 20, IsCountedRun=1, IsVisible=1, ordered by start date descending.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "Device UUID for auth lookup."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token. Default 'none'."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Kennel to filter runs by. Default null-UUID."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "NullUserError",
+      "description": "Standard error format. errorType=2.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 2." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "Standard error format. errorType=3.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 3." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "RunHistory",
+      "description": "User's attended run history for the specified kennel. Empty when no qualifying runs found.",
+      "columns": [
+        { "name": "eventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Event.id." },
+        { "name": "eventStartDatetime", "type": "DATETIME2", "nullable": false, "description": "Start time — UseFbRunDetails chooses between FbEventStartDatetime and EventStartDatetime. Forced to DATETIME2 (local time hack — no UTC offset sent)." },
+        { "name": "eventEndDatetime", "type": "DATETIMEOFFSET", "nullable": true, "description": "Event.EventEndDatetime." },
+        { "name": "eventName", "type": "NVARCHAR", "nullable": true, "description": "UseFbRunDetails chooses between FbEventName and EventName." },
+        { "name": "eventNumber", "type": "INT", "nullable": true, "description": "Event.EventNumber." },
+        { "name": "locationOneLineDesc", "type": "NVARCHAR", "nullable": false, "description": "Location with FB/non-FB fallback, defaulting to '<unknown location>'." },
+        { "name": "userEventCounterIncrement", "type": "INT", "nullable": true, "description": "Event.userEventCounterIncrement." },
+        { "name": "eventFacebookId", "type": "NVARCHAR(250)", "nullable": true, "description": "Event.EventFacebookId." },
+        { "name": "isVisible", "type": "SMALLINT", "nullable": true, "description": "Event.IsVisible." },
+        { "name": "isCountedRun", "type": "SMALLINT", "nullable": true, "description": "Event.IsCountedRun." },
+        { "name": "absoluteEventNumber", "type": "SMALLINT", "nullable": true, "description": "Event.AbsoluteEventNumber." },
+        { "name": "isHare", "type": "SMALLINT", "nullable": true, "description": "HasherEventMap.isHare." },
+        { "name": "totalRunsThisKennel", "type": "INT", "nullable": true, "description": "HasherEventMap.TotalRunsThisKennel — running total at time of this run." },
+        { "name": "totalRunsAllKennels", "type": "INT", "nullable": true, "description": "HasherEventMap.TotalRuns — all-kennel running total." },
+        { "name": "totalHaringThisKennel", "type": "INT", "nullable": false, "description": "HasherEventMap.totalHaringThisKennel. Coalesced to 0." },
+        { "name": "userStartEvent", "type": "DATETIMEOFFSET", "nullable": true, "description": "HasherEventMap.userStartEvent — when user checked in." },
+        { "name": "rsvpState", "type": "INT", "nullable": false, "description": "HasherEventMap.RsvpState. Coalesced to 0." },
+        { "name": "attendenceState", "type": "INT", "nullable": false, "description": "HasherEventMap.AttendenceState. Coalesced to 0." }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "Duplicate null-kennelId check — second check is dead code",
+      "detail": "The SP checks @kennelId IS NULL twice. The second check (after auth validation) can never be reached because the first check triggers RETURN. The second block also uses a different errorType (3 vs 2) — inconsistency that will never matter because it's unreachable."
+    },
+    {
+      "severity": "medium",
+      "issue": "@timeWindows variable name typo",
+      "detail": "Local variable declared as @timeWindows (plural) instead of @timeWindow. Consistent with other SPs but still a typo that creates confusion."
+    },
+    {
+      "severity": "medium",
+      "issue": "SET NOCOUNT ON placed after initial error checks",
+      "detail": "SET NOCOUNT ON appears after the first IF blocks — this means the initial error rowsets could be affected by row count messages. Should be the first statement in BEGIN."
+    },
+    {
+      "severity": "medium",
+      "issue": "eventStartDatetime forced to DATETIME2 losing timezone",
+      "detail": "CONVERT(datetime2, e.EventStartDatetime) strips the timezone offset, sending local-time data as if it were UTC. Comment in SP acknowledges this as a TODO."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH block",
+      "detail": "No error handling."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}

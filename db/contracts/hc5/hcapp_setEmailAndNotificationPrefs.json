@@ -1,0 +1,59 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_setEmailAndNotificationPrefs",
+  "version": "1.0.0",
+  "description": "Updates notification and email alert preferences for a user at either a kennel level (HasherKennelMap) or event level (HasherEventMap). Requires either @kennelId or @eventId — both null is an error. Creates HKM/HEM records if they don't exist. Returns adHoc data with current pref values after the write, then delegates to hcapp_syncUserData. Note: no authorization check on @hasherId — any authenticated user can change any other user's preferences.",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Device.id", "description": "Device UUID." },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": null, "description": "Short-lived auth token." },
+    { "name": "hasherId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": null, "description": "User whose preferences to update. Defaults to calling user if NULL." },
+    { "name": "emailPreference", "type": "INT", "nullable": true, "mapsToColumn": "HasherKennelMap.KennelEmailAlertPreference", "description": "Sentinel: -1 normalised to NULL (don't update). 0 clears the HEM event preference to NULL." },
+    { "name": "notificationPreference", "type": "INT", "nullable": true, "mapsToColumn": "HasherKennelMap.KennelNotificationPreference", "description": "Sentinel: -1 normalised to NULL. 0 clears the HEM event preference to NULL." },
+    { "name": "kennelId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": null, "description": "Target kennel. Resolved from @eventId when @eventId is provided." },
+    { "name": "eventId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": null, "description": "Target event. When provided, updates HC.HasherEventMap instead of HC.HasherKennelMap." },
+    { "name": "hasherEventMapUpdatedAfter", "type": "NVARCHAR(50)", "nullable": false, "mapsToColumn": null, "description": "Sync cursor passed to hcapp_syncUserData." },
+    { "name": "hasherKennelMapUpdatedAfter", "type": "NVARCHAR(50)", "nullable": false, "mapsToColumn": null, "description": "Sync cursor passed to hcapp_syncUserData." }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "StandardErrors",
+      "description": "Standard error format. errorType=2 for null userId or both @kennelId and @eventId null. errorType=3 for auth failure."
+    },
+    {
+      "index": 0,
+      "name": "AdHocPrefsResult",
+      "description": "Returns current (post-write) pref values.",
+      "columns": [
+        { "name": "adHocDataId", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "notificationPreference", "type": "INT", "nullable": true, "description": "Current notification preference after the write." },
+        { "name": "emailAlertPreference", "type": "INT", "nullable": true, "description": "Current email alert preference after the write." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.HasherKennelMap — when @eventId is null and no existing HKM record",
+    "UPDATE HC.HasherKennelMap — when @eventId is null and HKM record exists",
+    "INSERT HC.HasherEventMap — when @eventId is provided and no existing HEM record",
+    "UPDATE HC.HasherEventMap — when @eventId is provided and HEM record exists",
+    "EXEC hcapp_syncUserData"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "No authorization check — any user can change any other user's prefs",
+      "detail": "@hasherId can be set to any hasher's UUID. There is no check that the calling user is an admin or that @hasherId == @userId. Any authenticated user can change notification settings for any other user."
+    },
+    {
+      "severity": "medium",
+      "issue": "Asymmetric NULL-clearing behaviour between HKM and HEM",
+      "detail": "For HKM: emailPreference=0 is stored as-is. For HEM: emailPreference=0 clears the column to NULL (with CASE WHEN ... = 0 THEN NULL). The semantics of 0 differ between the two paths."
+    },
+    { "severity": "low", "issue": "No TRY/CATCH block", "detail": "No error handling." }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}

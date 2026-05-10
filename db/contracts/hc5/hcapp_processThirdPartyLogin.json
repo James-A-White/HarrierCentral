@@ -1,0 +1,127 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_processThirdPartyLogin",
+  "version": "1.0.0",
+  "description": "Handles OAuth login (Facebook, Apple, Google). Resolves an existing Hasher by thirdPartyUserId, email, or thirdPartyEmail — updating OAuth tokens if found. Creates a new Hasher if none match. For new users, creates a HasherKennelMap record for a hardcoded 'FILTH Leiden' kennel (development artifact). Returns the hasher profile on success. Non-standard auth error format. Token validated against DeviceSecret + UPPER(userId).",
+  "parameters": [
+    { "name": "deviceId", "type": "NVARCHAR(50)", "nullable": false, "mapsToColumn": "Device.id", "description": "Device UUID as string.", "typeMismatch": "NVARCHAR(50) instead of UNIQUEIDENTIFIER." },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": null, "description": "Token validated against DeviceSecret + UPPER(userId)." },
+    { "name": "hashersUpdatedAfter", "type": "NVARCHAR(50)", "nullable": false, "mapsToColumn": null, "description": "Accepted but not used in this SP (no sync delegate call)." },
+    { "name": "firstName", "type": "NVARCHAR(120)", "nullable": false, "mapsToColumn": "Hasher.FirstName", "description": "From OAuth provider.", "typeMismatch": "NVARCHAR(120) vs Hasher.FirstName NVARCHAR(250)." },
+    { "name": "lastName", "type": "NVARCHAR(120)", "nullable": false, "mapsToColumn": "Hasher.LastName", "description": "From OAuth provider.", "typeMismatch": "NVARCHAR(120) vs Hasher.LastName NVARCHAR(250)." },
+    { "name": "hashName", "type": "NVARCHAR(120)", "nullable": false, "mapsToColumn": "Hasher.HashName", "description": "Empty string normalised to NULL.", "typeMismatch": "NVARCHAR(120) vs Hasher.HashName NVARCHAR(250)." },
+    { "name": "email", "type": "NVARCHAR(120)", "nullable": false, "mapsToColumn": "Hasher.Email", "description": "Primary email from OAuth provider.", "typeMismatch": "NVARCHAR(120) vs Hasher.Email NVARCHAR(250)." },
+    { "name": "photo", "type": "NVARCHAR(2000)", "nullable": false, "mapsToColumn": "Hasher.Photo", "description": "Empty string normalised to NULL.", "typeMismatch": "NVARCHAR(2000) vs Hasher.Photo NVARCHAR(1000) — could truncate." },
+    { "name": "thirdPartyLoginType", "type": "NVARCHAR(120)", "nullable": false, "mapsToColumn": "Hasher.ThirdPartyLoginType", "description": "'facebook', 'apple', 'google', etc." },
+    { "name": "thirdPartyUserId", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": "Hasher.ThirdPartyUserId", "description": "OAuth provider's user identifier." },
+    { "name": "thirdPartyAccessToken", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": "Hasher.ThirdPartyAccessToken", "description": "OAuth access token." },
+    { "name": "thirdPartyAuthorizationCode", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": "Hasher.ThirdPartyAuthorizationCode", "description": "OAuth authorization code." },
+    { "name": "thirdPartyAccessTokenExpires", "type": "NVARCHAR(150)", "nullable": true, "mapsToColumn": "Hasher.ThirdPartyAccessTokenExpires", "description": "Token expiry as string. Default '1/1/2100'. Cast to DATETIMEOFFSET — brittle.", "typeMismatch": "NVARCHAR(150) cast to DATETIMEOFFSET — no error handling on invalid formats." },
+    { "name": "includeInGlobalHashDirectory", "type": "INT", "nullable": true, "mapsToColumn": "Hasher.IncludeInGlobalHashDirectory", "description": "Sentinel: -1 normalised to NULL (don't update). Forced to 0 on update path." },
+    { "name": "hcVersion", "type": "NVARCHAR(100)", "nullable": false, "mapsToColumn": null, "description": "App version. Used in ErrorLog inserts." },
+    { "name": "latitude", "type": "DECIMAL(18,15)", "nullable": true, "mapsToColumn": "Hasher.HomeLatitude", "description": "Used for USA miles detection. Default 0." },
+    { "name": "longitude", "type": "DECIMAL(19,15)", "nullable": true, "mapsToColumn": "Hasher.HomeLongitude", "description": "Default 0." },
+    { "name": "thirdPartyEmail", "type": "NVARCHAR(120)", "nullable": false, "mapsToColumn": "Hasher.ThirdPartyEmail", "description": "Email as reported by the OAuth provider (may differ from @email).", "typeMismatch": "NVARCHAR(120) vs Hasher.ThirdPartyEmail NVARCHAR(250)." }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "Non-standard format (Pascal-cased, no errorId). errorType=1.",
+      "columns": [
+        { "name": "ErrorType", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "ErrorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'Unauthorized Access Token'." },
+        { "name": "ErrorDescription", "type": "NVARCHAR", "nullable": false, "description": "Error message." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "UserNotCreatedError",
+      "description": "Returned when a final SELECT by thirdPartyUserId/email finds no matching hasher after all insert/update operations. Standard error format. errorTitle is wrong ('Reset code not found').",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 5 — wrong code for this scenario." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'Reset code not found' — wrong error title for a user-creation failure." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message about reset code not found — also wrong." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "HasherProfile",
+      "description": "Returned on success. Subset of hasher fields — notably missing some fields returned by hcapp_authorizeDevice (e.g. no deviceSecret, no homeKennelId).",
+      "columns": [
+        { "name": "hasherId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Hasher.id." },
+        { "name": "photo", "type": "NVARCHAR(1000)", "nullable": true, "description": "Hasher.Photo." },
+        { "name": "displayName", "type": "NVARCHAR", "nullable": true, "description": "Hasher.DisplayName." },
+        { "name": "email", "type": "NVARCHAR(250)", "nullable": false, "description": "Hasher.Email." },
+        { "name": "thirdPartyUserId", "type": "NVARCHAR(1000)", "nullable": true, "description": "Hasher.ThirdPartyUserId." },
+        { "name": "thirdPartyLoginType", "type": "NVARCHAR(120)", "nullable": true, "description": "Hasher.ThirdPartyLoginType." },
+        { "name": "thirdPartyAccessToken", "type": "NVARCHAR(1000)", "nullable": true, "description": "Hasher.ThirdPartyAccessToken." },
+        { "name": "thirdPartyAuthorizationCode", "type": "NVARCHAR(1000)", "nullable": true, "description": "Hasher.ThirdPartyAuthorizationCode." },
+        { "name": "thirdPartyTokenLastUpdated", "type": "DATETIMEOFFSET(7)", "nullable": true, "description": "Hasher.ThirdPartyTokenLastUpdated." },
+        { "name": "thirdPartyAccessTokenExpires", "type": "DATETIMEOFFSET(7)", "nullable": true, "description": "Hasher.ThirdPartyAccessTokenExpires." },
+        { "name": "thirdPartyEmail", "type": "NVARCHAR(250)", "nullable": true, "description": "Hasher.ThirdPartyEmail." },
+        { "name": "firstName", "type": "NVARCHAR(250)", "nullable": true, "description": "Hasher.FirstName." },
+        { "name": "hashName", "type": "NVARCHAR(250)", "nullable": true, "description": "Hasher.HashName." },
+        { "name": "lastName", "type": "NVARCHAR(250)", "nullable": true, "description": "Hasher.LastName." },
+        { "name": "dispPref", "type": "SMALLINT", "nullable": false, "description": "Hasher.NameDisplayPreference coalesced to 0." },
+        { "name": "dispName", "type": "NVARCHAR", "nullable": false, "description": "Hasher.DisplayName coalesced to empty string." },
+        { "name": "qrCode", "type": "NVARCHAR(50)", "nullable": false, "description": "Hasher.QR_code." },
+        { "name": "supportCode", "type": "NVARCHAR(50)", "nullable": false, "description": "Hasher.SupportCode." },
+        { "name": "qrSecretCode", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Hasher.QR_secret_code." },
+        { "name": "resetCode", "type": "NVARCHAR(50)", "nullable": false, "description": "Hasher.ResetCode." },
+        { "name": "includeInGlobalHashDirectory", "type": "SMALLINT", "nullable": false, "description": "Hasher.IncludeInGlobalHashDirectory." },
+        { "name": "preferences", "type": "INT", "nullable": false, "description": "Hasher.Preferences." },
+        { "name": "updatedAt", "type": "NVARCHAR(50)", "nullable": false, "description": "Hasher.updatedAt cast via CONVERT(nvarchar(50), cast(updatedAt as datetime2)) — local time, no timezone." },
+        { "name": "removed", "type": "SMALLINT", "nullable": true, "description": "Hasher.removed." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Hasher — sets OAuth fields when existing user found by thirdPartyUserId/email/thirdPartyEmail",
+    "UPDATE HC.Hasher — second update pass for photo, removed=0, etc.",
+    "INSERT HC.Hasher — when no existing user found",
+    "INSERT HC.HasherKennelMap — for 'FILTH Leiden' kennel if it exists (new users only)",
+    "UPDATE HC.Kennel SET KennelFacebookToken — when thirdPartyLoginType='facebook'"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "@deviceId is NVARCHAR(50) not UNIQUEIDENTIFIER",
+      "detail": "Should be UNIQUEIDENTIFIER to match Device.id."
+    },
+    {
+      "severity": "high",
+      "issue": "Hardcoded 'FILTH Leiden' kennel as default follow for new users",
+      "detail": "New users are automatically followed to a kennel matching 'KennelName LIKE %FILTH% AND CityName LIKE %Leiden%'. This is a development artifact from the project's origin that should not exist in production code."
+    },
+    {
+      "severity": "high",
+      "issue": "Wrong errorTitle and errorType for user-creation failure",
+      "detail": "The error rowset returned when the post-create SELECT finds no user says errorType=5 and errorTitle='Reset code not found'. Both are wrong — this is a user-creation failure that should be errorType=5 (unhandled) with a meaningful title."
+    },
+    {
+      "severity": "high",
+      "issue": "Multiple UPDATE passes for the same user record",
+      "detail": "The SP performs two separate UPDATE HC.Hasher passes (first updating OAuth fields, then checking again and updating a second set). Both run outside a transaction."
+    },
+    {
+      "severity": "medium",
+      "issue": "Multiple parameter type mismatches",
+      "detail": "@firstName/@lastName/@hashName/@email NVARCHAR(120) vs Hasher NVARCHAR(250). @photo NVARCHAR(2000) vs Hasher.Photo NVARCHAR(1000) — photo could be silently truncated. @thirdPartyEmail NVARCHAR(120) vs NVARCHAR(250)."
+    },
+    {
+      "severity": "medium",
+      "issue": "@thirdPartyAccessTokenExpires NVARCHAR cast to DATETIMEOFFSET — brittle",
+      "detail": "No TRY_CAST or error handling. Invalid date strings will crash the SP."
+    },
+    { "severity": "low", "issue": "No TRY/CATCH block", "detail": "No error handling." }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}

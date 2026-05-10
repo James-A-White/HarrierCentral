@@ -1,0 +1,94 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_setFcmTokens",
+  "version": "1.0.0",
+  "description": "Updates the push notification tokens (APNS and/or FCM) for a registered device. Called when the OS issues a new push token to the app.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "Device UUID. Used to look up the caller and to target the UPDATE."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token."
+    },
+    {
+      "name": "apnsToken",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "Device.ApnsToken",
+      "description": "Apple Push Notification Service token. NULL for Android."
+    },
+    {
+      "name": "fcmToken",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "Device.FcmToken",
+      "description": "Firebase Cloud Messaging token."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "NullUserError",
+      "description": "Returned when userId from Device lookup is null or the null UUID. Standard error format.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog entry GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 2." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'Null or empty userId'." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User-facing message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "Returned when CHECK_ACCESS_TOKEN_V2 fails. Standard error format. Notably uses errorType=3 (correct).",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog entry GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 3 — correctly signals auth failure." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'Invalid access token'." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User-facing message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "UpdateResult",
+      "description": "Returned on successful auth. Single row with the update outcome.",
+      "columns": [
+        { "name": "result", "type": "NVARCHAR(500)", "nullable": false, "description": "'Success' if @@ROWCOUNT = 1, 'Failed' otherwise." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Device SET ApnsToken, FcmToken WHERE id = @deviceId",
+    "INSERT HC.ErrorLog on null-user and auth-failure paths"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Success/failure encoded as string value",
+      "detail": "'Success' or 'Failed' in the result column. Caller must parse the string to detect failure — should be a standard success/error rowset."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH block",
+      "detail": "No error handling."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change the 'Success'/'Failed' string values without updating all callers"
+  ]
+}

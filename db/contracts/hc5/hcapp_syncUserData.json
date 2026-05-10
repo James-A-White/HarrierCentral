@@ -1,0 +1,273 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_syncUserData",
+  "version": "1.0.0",
+  "description": "The primary incremental pull-sync SP for the app. Returns up to 11 optional result sets based on 'updatedAfter' cursor parameters. All data is scoped to the calling user where applicable. The event result set (narrowEventsUpdatedAfter) filters to events that are either recent (10 days), at followed kennels, or attended by the user. @forceReplicateAllRunsForKennel is an alternative to narrowEventsUpdatedAfter that dumps all events for a specific kennel. This SP was refactored for performance (removed LOWER() calls, added EXISTS filters, OPTION RECOMPILE hints).",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Device.id", "description": "Device UUID." },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": null, "description": "Token validated against coalesce(@param, @deviceSecret)." },
+    { "name": "hashersUpdatedAfter", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": null, "description": "Watermark for Hashers (all, not user-scoped). 'ignore' = skip. Default 'ignore'." },
+    { "name": "citiesUpdatedAfter", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": null, "description": "Watermark for Cities (only cities with kennels). 'ignore' = skip." },
+    { "name": "regionsUpdatedAfter", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": null, "description": "Watermark for Regions (only regions with kennels). 'ignore' = skip." },
+    { "name": "countriesUpdatedAfter", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": null, "description": "Watermark for Countries. 'ignore' = skip." },
+    { "name": "kennelsUpdatedAfter", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": null, "description": "Watermark for Kennels (all). 'ignore' = skip." },
+    { "name": "hasherKennelMapUpdatedAfter", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": null, "description": "Watermark for HasherKennelMap (user-scoped). 'ignore' = skip." },
+    { "name": "hasherEventMapUpdatedAfter", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": null, "description": "Watermark for HasherEventMap (user-scoped). 'ignore' = skip." },
+    { "name": "narrowEventsUpdatedAfter", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": null, "description": "Watermark for Events (recent, followed, or attended). 'ignore' = skip. Mutually exclusive with @forceReplicateAllRunsForKennel." },
+    { "name": "paymentsUpdatedAfter", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": null, "description": "Watermark for Payments (user-scoped). 'ignore' = skip." },
+    { "name": "songsUpdatedAfter", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": null, "description": "Watermark for Songs (all songs globally). 'ignore' = skip." },
+    { "name": "forceReplicateAllRunsForKennel", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": null, "description": "UUID as string. When not 'ignore', disables narrowEventsUpdatedAfter and returns all events for the specified kennel (within the same recent/followed/attended filter). Default 'ignore'." },
+    { "name": "usePaging", "type": "INT", "nullable": true, "mapsToColumn": null, "description": "Default 0 (unlimited). Non-zero applies page limits: 1000 for hashers, 250 for others, 50 for events." },
+    { "name": "initialLoad", "type": "INT", "nullable": true, "mapsToColumn": null, "description": "Accepted but not currently used in the SP logic. Intended for future initial-load optimisation." },
+    { "name": "procName", "type": "NVARCHAR(100)", "nullable": true, "mapsToColumn": null, "description": "Override SP name for token validation." },
+    { "name": "param", "type": "NVARCHAR(500)", "nullable": true, "mapsToColumn": null, "description": "Override device secret for token validation." }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "NullUserError",
+      "description": "Standard error format. errorType=2."
+    },
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "Standard error format. errorType=3."
+    },
+    {
+      "index": "conditional",
+      "name": "Hashers",
+      "description": "All Hashers updated after watermark. Not user-scoped — returns everyone. Page size: 1000. Note: homeKennelId added (not in syncEventAdminData Hashers).",
+      "columns": [
+        { "name": "hasherId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Hasher.id." },
+        { "name": "homeKennelId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "Hasher.HomeKennelId. Present in this SP only, not in syncEventAdminData." },
+        { "name": "firstName", "type": "NVARCHAR", "nullable": false, "description": "Coalesced to ''." },
+        { "name": "lastName", "type": "NVARCHAR", "nullable": false, "description": "Coalesced to ''." },
+        { "name": "dispName", "type": "NVARCHAR", "nullable": false, "description": "DisplayName coalesced to ''." },
+        { "name": "hashName", "type": "NVARCHAR", "nullable": false, "description": "Coalesced to ''." },
+        { "name": "photo", "type": "NVARCHAR", "nullable": false, "description": "Coalesced to ''." },
+        { "name": "dispPref", "type": "SMALLINT", "nullable": false, "description": "NameDisplayPreference." },
+        { "name": "includeInGlobalHashDirectory", "type": "SMALLINT", "nullable": false, "description": "Coalesced to 0." },
+        { "name": "updatedAt", "type": "NVARCHAR(50)", "nullable": false, "description": "Local datetime2 string." },
+        { "name": "removed", "type": "SMALLINT", "nullable": false, "description": "Coalesced to 0." }
+      ]
+    },
+    {
+      "index": "conditional",
+      "name": "Cities",
+      "description": "Cities updated after watermark — only cities that have at least one Kennel (EXISTS filter). Includes ianaTimeZone from DomainValues.Timezone join. Page size: 250.",
+      "columns": [
+        { "name": "cityId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "City.id." },
+        { "name": "cityName", "type": "NVARCHAR", "nullable": true, "description": "City.CityName." },
+        { "name": "citySearchTags", "type": "NVARCHAR", "nullable": true, "description": "City.CitySearchTags." },
+        { "name": "regionId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "City.RegionId." },
+        { "name": "latitude", "type": "DECIMAL", "nullable": true, "description": "City.Latitude." },
+        { "name": "longitude", "type": "DECIMAL", "nullable": true, "description": "City.Longitude." },
+        { "name": "cityAscii", "type": "NVARCHAR", "nullable": true, "description": "City.City_ASCII." },
+        { "name": "flagFile", "type": "NVARCHAR", "nullable": true, "description": "City.FlagFile." },
+        { "name": "removed", "type": "SMALLINT", "nullable": true, "description": "City.Removed." },
+        { "name": "ianaTimeZone", "type": "NVARCHAR", "nullable": false, "description": "DomainValues.Timezone.IanaTimeZone. Defaults to 'Europe/London' if NULL." },
+        { "name": "updatedAt", "type": "NVARCHAR(50)", "nullable": false, "description": "Local datetime2 string." }
+      ]
+    },
+    {
+      "index": "conditional",
+      "name": "Regions",
+      "description": "Regions updated after watermark — only those with at least one Kennel. Page size: 250.",
+      "columns": [
+        { "name": "regionId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Region.id." },
+        { "name": "regionName", "type": "NVARCHAR", "nullable": true, "description": "Region.RegionName." },
+        { "name": "regionAbbreviation", "type": "NVARCHAR", "nullable": true, "description": "Region.RegionAbbreviation." },
+        { "name": "countryId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "Region.CountryId." },
+        { "name": "flagFile", "type": "NVARCHAR", "nullable": true, "description": "Region.FlagFile." },
+        { "name": "regionSearchTags", "type": "NVARCHAR", "nullable": true, "description": "Region.RegionSearchTags." },
+        { "name": "removed", "type": "SMALLINT", "nullable": true, "description": "Region.Removed." },
+        { "name": "updatedAt", "type": "NVARCHAR(50)", "nullable": false, "description": "Local datetime2 string." }
+      ]
+    },
+    {
+      "index": "conditional",
+      "name": "Countries",
+      "description": "Countries updated after watermark. Page size: 250.",
+      "columns": [
+        { "name": "countryId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Country.id." },
+        { "name": "countryCode", "type": "NVARCHAR", "nullable": true, "description": "Country.CountryCode." },
+        { "name": "latitude", "type": "DECIMAL", "nullable": true, "description": "Country.Latitude." },
+        { "name": "longitude", "type": "DECIMAL", "nullable": true, "description": "Country.Longitude." },
+        { "name": "countryName", "type": "NVARCHAR", "nullable": true, "description": "Country.CountryName." },
+        { "name": "continentCode", "type": "NVARCHAR", "nullable": true, "description": "Country.ContinentCode." },
+        { "name": "flagFile", "type": "NVARCHAR", "nullable": true, "description": "Country.FlagFile." },
+        { "name": "currencyCode", "type": "NVARCHAR", "nullable": true, "description": "Country.CurrencyCode." },
+        { "name": "primaryCultureCode", "type": "NVARCHAR", "nullable": true, "description": "Country.PrimaryCultureCode." },
+        { "name": "showRegion", "type": "SMALLINT", "nullable": true, "description": "Country.ShowRegion." },
+        { "name": "currencySymbol", "type": "NVARCHAR", "nullable": true, "description": "Country.CurrencySymbol." },
+        { "name": "digitsAfterDecimal", "type": "INT", "nullable": true, "description": "Country.DigitsAfterDecimal." },
+        { "name": "distancePreference", "type": "SMALLINT", "nullable": true, "description": "Country.DistancePreference." },
+        { "name": "countrySearchTags", "type": "NVARCHAR", "nullable": true, "description": "Country.CountrySearchTags." },
+        { "name": "removed", "type": "SMALLINT", "nullable": true, "description": "Country.Removed." },
+        { "name": "updatedAt", "type": "NVARCHAR(50)", "nullable": false, "description": "Local datetime2 string." }
+      ]
+    },
+    {
+      "index": "conditional",
+      "name": "Songs",
+      "description": "Songs updated after watermark. All songs globally (no user scope). Page size: 250.",
+      "columns": [
+        { "name": "songId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Song.id." },
+        { "name": "songName", "type": "NVARCHAR", "nullable": true, "description": "Song.SongName." },
+        { "name": "tuneOf", "type": "NVARCHAR", "nullable": true, "description": "Song.TuneOf." },
+        { "name": "bawdyRating", "type": "INT", "nullable": true, "description": "Song.BawdyRating." },
+        { "name": "notes", "type": "NVARCHAR", "nullable": true, "description": "Song.Notes." },
+        { "name": "actions", "type": "NVARCHAR", "nullable": true, "description": "Song.Actions." },
+        { "name": "variants", "type": "NVARCHAR", "nullable": true, "description": "Song.Variants." },
+        { "name": "imageUrl", "type": "NVARCHAR", "nullable": true, "description": "Song.ImageUrl." },
+        { "name": "audioUrl", "type": "NVARCHAR", "nullable": true, "description": "Song.AudioUrl." },
+        { "name": "autoAddToKennel", "type": "SMALLINT", "nullable": true, "description": "Song.AutoAddToKennel." },
+        { "name": "rank", "type": "INT", "nullable": true, "description": "Song.Rank." },
+        { "name": "addedByKennelId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "Song.AddedBy_KennelId." },
+        { "name": "addedByUserId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "Song.AddedBy_UserId." },
+        { "name": "lyrics", "type": "NVARCHAR", "nullable": true, "description": "Song.Lyrics." },
+        { "name": "tags", "type": "NVARCHAR", "nullable": true, "description": "Song.Tags." },
+        { "name": "removed", "type": "SMALLINT", "nullable": false, "description": "Song.Removed." },
+        { "name": "updatedAt", "type": "NVARCHAR(50)", "nullable": false, "description": "Local datetime2 string." }
+      ]
+    },
+    {
+      "index": "conditional",
+      "name": "Kennels",
+      "description": "All Kennels updated after watermark. Full kennel profile including banking info and three payment schemes. DefaultRunStartTime converted via CONVERT(DATETIME, '1900-01-01') + CONVERT(DATETIME, time) hack. OPTION (RECOMPILE) hint. Page size: 250.",
+      "columns": [
+        { "name": "(same structure as syncKennelAdminData Kennels)", "type": "various", "nullable": true, "description": "Includes all kennel fields. See syncKennelAdminData.Kennels for full column list." },
+        { "name": "disseminateAllowWebLinks", "type": "SMALLINT", "nullable": true, "description": "Kennel.DisseminateAllowWebLinks. Present in syncUserData Kennels, not in syncKennelAdminData." }
+      ]
+    },
+    {
+      "index": "conditional",
+      "name": "HasherKennelMap",
+      "description": "User-scoped HKM records updated after watermark. Uses stored IsMember column. Page size: 250.",
+      "columns": [
+        { "name": "(same as syncKennelAdminData HasherKennelMap)", "type": "various", "nullable": true, "description": "See syncKennelAdminData.HasherKennelMap for column details." }
+      ]
+    },
+    {
+      "index": "conditional",
+      "name": "HasherEventMap",
+      "description": "User-scoped HEM records updated after watermark. Includes hemCountryId (not in syncEventAdminData). Page size: 250.",
+      "columns": [
+        { "name": "(similar to syncEventAdminData HasherEventMap + hemCountryId)", "type": "various", "nullable": true, "description": "See syncEventAdminData.HasherEventMap. Additional column: hemCountryId (Event.CountryId)." }
+      ]
+    },
+    {
+      "index": "conditional",
+      "name": "NarrowEvents",
+      "description": "Emitted when @narrowEventsUpdatedAfter != 'ignore' AND @forceReplicateKennelId is null. Events updated after watermark that are: (a) within 10 days of start, OR (b) at a kennel the user follows, OR (c) an event the user attended (attendenceState >= 3). OPTION (RECOMPILE) hint. Page size: 50.",
+      "columns": [
+        { "name": "eventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Event.id." },
+        { "name": "publicEventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Event.PublicEventId." },
+        { "name": "kennelId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Event.KennelId." },
+        { "name": "isVisible", "type": "SMALLINT", "nullable": true, "description": "Event.IsVisible." },
+        { "name": "isCountedRun", "type": "SMALLINT", "nullable": true, "description": "Event.IsCountedRun." },
+        { "name": "eventGeographicScope", "type": "SMALLINT", "nullable": true, "description": "Event.EventGeographicScope." },
+        { "name": "eventInboundIntegrationId", "type": "INT", "nullable": true, "description": "Event.InboundIntegrationId." },
+        { "name": "isPromotedEvent", "type": "SMALLINT", "nullable": true, "description": "Event.IsPromotedEvent." },
+        { "name": "eventNumber", "type": "INT", "nullable": true, "description": "Event.EventNumber." },
+        { "name": "eventPriceForMembers", "type": "DECIMAL", "nullable": true, "description": "Event.EventPriceForMembers." },
+        { "name": "eventPriceForNonMembers", "type": "DECIMAL", "nullable": true, "description": "Event.EventPriceForNonMembers." },
+        { "name": "eventPriceForExtras", "type": "DECIMAL", "nullable": true, "description": "Event.EventPriceForExtras." },
+        { "name": "extrasDescription", "type": "NVARCHAR", "nullable": true, "description": "Event.ExtrasDescription." },
+        { "name": "doTrackHashCash", "type": "SMALLINT", "nullable": true, "description": "Event.DoTrackHashCash." },
+        { "name": "eventFacebookId", "type": "NVARCHAR", "nullable": true, "description": "Event.EventFacebookId." },
+        { "name": "absoluteEventNumber", "type": "SMALLINT", "nullable": true, "description": "Event.AbsoluteEventNumber." },
+        { "name": "canEditRunAttendence", "type": "SMALLINT", "nullable": true, "description": "Event.CanEditRunAttendence." },
+        { "name": "hares", "type": "NVARCHAR", "nullable": true, "description": "Event.Hares." },
+        { "name": "eventPaymentScheme", "type": "NVARCHAR", "nullable": true, "description": "Event.EventPaymentScheme." },
+        { "name": "eventPaymentUrl", "type": "NVARCHAR", "nullable": true, "description": "Event.EventPaymentUrl." },
+        { "name": "eventPaymentUrlExpires", "type": "DATETIMEOFFSET", "nullable": true, "description": "Event.EventPaymentUrlExpires." },
+        { "name": "unconfirmedBankXferCount", "type": "INT", "nullable": true, "description": "Event.UnconfirmedBankXferCount." },
+        { "name": "evtDisseminateAllowWebLinks", "type": "SMALLINT", "nullable": true, "description": "Event.EvtDisseminateAllowWebLinks." },
+        { "name": "tags1", "type": "NVARCHAR", "nullable": true, "description": "Event.Tags1." },
+        { "name": "tags2", "type": "NVARCHAR", "nullable": true, "description": "Event.Tags2." },
+        { "name": "tags3", "type": "NVARCHAR", "nullable": true, "description": "Event.Tags3." },
+        { "name": "eventImage", "type": "NVARCHAR", "nullable": true, "description": "FB/non-FB image." },
+        { "name": "eventName", "type": "NVARCHAR", "nullable": true, "description": "FB/non-FB name." },
+        { "name": "eventStartDatetime", "type": "DATETIME2", "nullable": true, "description": "Local time (timezone stripped)." },
+        { "name": "eventStartDatetimeGmt", "type": "DATETIMEOFFSET", "nullable": true, "description": "UTC from EventStartDatetimeGmt." },
+        { "name": "eventDescription", "type": "NVARCHAR", "nullable": true, "description": "Event.SyncDescription (not EventDescription)." },
+        { "name": "locationOneLineDesc", "type": "NVARCHAR", "nullable": true, "description": "FB/non-FB location." },
+        { "name": "eventUrl", "type": "NVARCHAR", "nullable": true, "description": "Event.EventUrl." },
+        { "name": "locationPostCode", "type": "NVARCHAR", "nullable": true, "description": "FB/non-FB postcode." },
+        { "name": "locationCity", "type": "NVARCHAR", "nullable": true, "description": "FB/non-FB city." },
+        { "name": "locationStreet", "type": "NVARCHAR", "nullable": true, "description": "FB/non-FB street." },
+        { "name": "locationCountry", "type": "NVARCHAR", "nullable": true, "description": "FB/non-FB country." },
+        { "name": "locationRegion", "type": "NVARCHAR", "nullable": true, "description": "FB/non-FB region." },
+        { "name": "locationSubRegion", "type": "NVARCHAR", "nullable": true, "description": "FB/non-FB sub-region." },
+        { "name": "removed", "type": "SMALLINT", "nullable": false, "description": "Event.removed." },
+        { "name": "updatedAt", "type": "NVARCHAR(50)", "nullable": false, "description": "Local datetime2 string." },
+        { "name": "useFbLocation", "type": "SMALLINT", "nullable": true, "description": "Event.UseFbLocation." },
+        { "name": "useFbLatLon", "type": "SMALLINT", "nullable": true, "description": "Event.UseFbLatLon." },
+        { "name": "useFbRunDetails", "type": "SMALLINT", "nullable": true, "description": "Event.UseFbRunDetails." },
+        { "name": "useFbImage", "type": "SMALLINT", "nullable": true, "description": "Event.UseFbImage." },
+        { "name": "hcLatitude", "type": "DECIMAL", "nullable": true, "description": "Event.Latitude." },
+        { "name": "hcLongitude", "type": "DECIMAL", "nullable": true, "description": "Event.Longitude." },
+        { "name": "countryId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "Event.CountryId." },
+        { "name": "fbLatitude", "type": "DECIMAL", "nullable": true, "description": "coalesce(w3wLatitude, FbLatitude)." },
+        { "name": "fbLongitude", "type": "DECIMAL", "nullable": true, "description": "coalesce(w3wLongitude, FbLongitude)." }
+      ]
+    },
+    {
+      "index": "conditional",
+      "name": "Payments",
+      "description": "User-scoped Payments updated after watermark. Page size: 250. Same structure as syncEventAdminData Payments.",
+      "columns": [
+        { "name": "(same as syncEventAdminData Payments)", "type": "various", "nullable": true, "description": "See syncEventAdminData.Payments for column details." }
+      ]
+    },
+    {
+      "index": "conditional",
+      "name": "ForceReplicateKennelEvents",
+      "description": "Emitted only when @forceReplicateAllRunsForKennel != 'ignore'. Returns all events for that kennel (subject to same recent/followed/attended filter as NarrowEvents). Same columns as NarrowEvents. OPTION (RECOMPILE). Page size: 250.",
+      "columns": [
+        { "name": "(same as NarrowEvents)", "type": "various", "nullable": true, "description": "Identical structure to NarrowEvents. Note: eventStartDatetimeGmt uses FbEventStartDatetime when UseFbRunDetails=1 (different from NarrowEvents which uses EventStartDatetimeGmt)." }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "updatedAt serialised as local datetime2 string — no timezone",
+      "detail": "CONVERT(nvarchar(50), cast(updatedAt as datetime2)) strips timezone info. Sync cursors from different timezones will drift. Should use datetimeoffset formatted string."
+    },
+    {
+      "severity": "high",
+      "issue": "eventDescription uses Event.SyncDescription not Event.EventDescription",
+      "detail": "The NarrowEvents result set returns evt.SyncDescription as 'eventDescription'. This differs from syncEventAdminData which derives it from FB/non-FB EventDescription. The two sync SPs return different descriptions for the same event."
+    },
+    {
+      "severity": "medium",
+      "issue": "Kennel.DefaultRunStartTime converted via DATETIME + DATETIME hack",
+      "detail": "CONVERT(DATETIME, '1900-01-01') + CONVERT(DATETIME, DefaultRunStartTime) is used to combine a sentinel date with the time value. Unconventional and potentially fragile on certain time values."
+    },
+    {
+      "severity": "medium",
+      "issue": "syncUserData Hashers includes homeKennelId but syncEventAdminData does not",
+      "detail": "The two Hasher rowsets are almost identical but differ in this one column. Callers that use both sync SPs receive different Hasher schemas — potential for model divergence."
+    },
+    {
+      "severity": "medium",
+      "issue": "Watermark cursors are strings cast to datetimeoffset — no TRY_CAST",
+      "detail": "Invalid cursor strings will throw unhandled exceptions."
+    },
+    {
+      "severity": "low",
+      "issue": "@initialLoad parameter accepted but never used",
+      "detail": "Likely intended for a future initial-load optimisation."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change the 'ignore' sentinel without updating all callers",
+    "Never add/remove result sets without coordinating with the Flutter app sync engine"
+  ]
+}

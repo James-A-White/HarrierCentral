@@ -1,0 +1,58 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_setEventMessagesRead",
+  "version": "1.0.0",
+  "description": "NOTE: The filename has '_obsolete' suffix but the SP name in the DB is hcapp_setEventMessagesRead (no suffix). This SP was the predecessor to hcapp_getEventBadgeCount. It has a stricter eventId null check (validates when @resetAllBadgeCounts=0). The key difference from hcapp_getEventBadgeCount: the resetAll path filters EventMessage by UserId, whereas getEventBadgeCount updates LastSequenceCount from max across all messages. In the resetBadgeCount path, it uses UserId (not PublicHasherId) to look up the message.",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Device.id", "description": "Device UUID." },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": null, "description": "Short-lived auth token." },
+    { "name": "publicEventId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": null, "description": "Public event ID. Required when @resetAllBadgeCounts=0." },
+    { "name": "resetBadgeCount", "type": "INT", "nullable": true, "mapsToColumn": null, "description": "When non-zero, MERGE to mark event as read. Default 0." },
+    { "name": "resetAllBadgeCounts", "type": "INT", "nullable": true, "mapsToColumn": null, "description": "When non-zero, resets all badge counts. Default 0." }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "StandardErrors",
+      "description": "Standard error format. errorType=2 for null userId or null publicEventId (when not resetting all). errorType=3 for auth failure."
+    },
+    {
+      "index": 0,
+      "name": "ResetAllResult",
+      "description": "Returned when @resetAllBadgeCounts != 0.",
+      "columns": [
+        { "name": "badgeCount", "type": "INT", "nullable": false, "description": "Always 0." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "SingleEventBadgeCount",
+      "description": "Returned when @publicEventId provided and @resetAllBadgeCounts=0.",
+      "columns": [
+        { "name": "badgeCount", "type": "INT", "nullable": true, "description": "@messageSequenceCount - embc.LastSequenceCount. NULL if no badge record." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.EventMessageBadgeCounts SET LastSequenceCount — when @resetAllBadgeCounts != 0 (filters by UserId, not PublicHasherId)",
+    "MERGE HC.EventMessageBadgeCounts — when @resetBadgeCount != 0"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "File marked _obsolete but SP name in DB has no such suffix",
+      "detail": "The filename is hcapp_setEventMessagesRead_obsolete.sql but the CREATE PROCEDURE name is hcapp_setEventMessagesRead. If deployed, this creates a live SP named hcapp_setEventMessagesRead, not _obsolete. HC6 decision needed: keep or remove?"
+    },
+    {
+      "severity": "medium",
+      "issue": "resetAll path filters by UserId not PublicHasherId",
+      "detail": "hcapp_getEventBadgeCount uses LastSequenceCount from max across all EventMessages. This SP filters EventMessage by UserId=@userId in the UPDATE. The two SPs have subtly different reset semantics."
+    },
+    { "severity": "low", "issue": "No TRY/CATCH block", "detail": "No error handling." }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Confirm whether this SP is still in production use before HC6 migration"
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_checkConnection",
+  "version": "1.0.0",
+  "description": "Connectivity ping endpoint. Returns a hardcoded 'Connected' string. Both parameters are accepted but never read, validated, or used.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Device identifier. Accepted but never used — dead input."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Auth token. Accepted but never validated — no auth guard on this SP whatsoever."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ConnectionResult",
+      "description": "Single hardcoded row returned on all calls.",
+      "columns": [
+        {
+          "name": "result",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Always the string literal 'Connected'."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "Dead parameters — @deviceId and @accessToken",
+      "detail": "@deviceId and @accessToken are accepted but never read or validated. Any caller can invoke this SP without a valid token. Unlike every other app SP, there is no CHECK_ACCESS_TOKEN_V2 guard. Whether this is intentional (unauthenticated ping) or an oversight is undocumented."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH or XACT_ABORT",
+      "detail": "Acceptable for a trivial read-only SP that cannot fail, but inconsistent with HC6 standards."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}

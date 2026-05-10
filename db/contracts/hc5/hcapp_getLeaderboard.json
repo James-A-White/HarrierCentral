@@ -1,0 +1,76 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_getLeaderboard",
+  "version": "1.0.0",
+  "description": "Returns leaderboard data for a specific kennel or all kennels. Only includes hashers who have run at least once in the past year (rolling CTE filter). Column names are single-letter aliases (a–j) — intentional obfuscation. errorType=1 for auth failure (non-standard).",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Device.id", "description": "Device UUID for auth lookup." },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": null, "description": "Short-lived auth token." },
+    { "name": "kennelId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": null, "description": "When provided, filters to a specific kennel. When NULL, returns across all kennels." }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "NullUserError",
+      "description": "Standard error format. errorType=2.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 2." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "errorType=1 — non-standard for auth failure (should be 3).",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'Invalid access token'." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "LeaderboardRows",
+      "description": "One row per hasher with run activity in the past year. Column names are single-letter aliases.",
+      "columns": [
+        { "name": "a", "type": "NVARCHAR", "nullable": true, "description": "Hasher.DisplayName." },
+        { "name": "b", "type": "INT", "nullable": false, "description": "HcTotalRunCount + HistoricalTotalRunCount." },
+        { "name": "c", "type": "INT", "nullable": false, "description": "HcHaringCount + HistoricalHaringCount." },
+        { "name": "d", "type": "INT", "nullable": false, "description": "YtdTotalRunCount." },
+        { "name": "e", "type": "INT", "nullable": false, "description": "YtdHaringCount." },
+        { "name": "f", "type": "INT", "nullable": false, "description": "RollingYearTotalRunCount." },
+        { "name": "g", "type": "INT", "nullable": false, "description": "RollingYearHaringCount." },
+        { "name": "h", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Kennel.id." },
+        { "name": "i", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "Hasher.HomeKennelId." },
+        { "name": "j", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HasherKennelMap.UserId (hasherId)." }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "Single-letter column aliases — obfuscated rowset",
+      "detail": "All 10 columns use single-letter aliases (a–j) as security-through-obscurity. HC6 should rename to meaningful column names — but this is a BREAKING CHANGE for any callers using positional column access."
+    },
+    {
+      "severity": "high",
+      "issue": "errorType=1 for auth failure — non-standard",
+      "detail": "Should be errorType=3."
+    },
+    { "severity": "low", "issue": "No TRY/CATCH block", "detail": "No error handling." }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename the single-letter column aliases without updating all callers",
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}

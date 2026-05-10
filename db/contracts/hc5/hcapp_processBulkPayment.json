@@ -1,0 +1,72 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_processBulkPayment",
+  "version": "1.0.0",
+  "description": "Processes payments for multiple hashers at once. Accepts a comma-separated list of user UUIDs, parses them via STRING_SPLIT+TRY_CAST, upserts HasherEventMap records, cancels prior payments for those users, and inserts new payment records using a CURSOR loop. Token validated against just @deviceSecret (not compound like processPayment). After completion, calls nonApi_updateRunCountsForAllUsers and returns adHoc + syncEventAdminData.",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Device.id", "description": "Device UUID." },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": null, "description": "Token validated against @deviceSecret only." },
+    { "name": "userIdsWhoPaid", "type": "VARCHAR(8000)", "nullable": true, "mapsToColumn": null, "description": "Comma-separated list of hasher UUIDs. VARCHAR (not NVARCHAR).", "typeMismatch": "VARCHAR(8000) — should be NVARCHAR." },
+    { "name": "eventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Payment.EventId", "description": "Event to process payments for." },
+    { "name": "paymentType", "type": "SMALLINT", "nullable": false, "mapsToColumn": "Payment.PaymentType", "description": "1=not paid, 2=free, 3=cash, 4=bank transfer, 5=cash other, 6=hash credit, 7=bank transfer other." },
+    { "name": "productType", "type": "SMALLINT", "nullable": true, "mapsToColumn": "Payment.ProductType", "description": "Default 1=event." },
+    { "name": "hasherEventMapUpdatedAfter", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": null, "description": "Sync cursor. Default 'ignore'." },
+    { "name": "hasherKennelMapUpdatedAfter", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": null, "description": "Sync cursor. Default 'ignore'." },
+    { "name": "paymentsUpdatedAfter", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": null, "description": "Sync cursor. Default 'ignore'." },
+    { "name": "transactionTimestamp", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": "Payment.PaidDate", "description": "Payment timestamp as string. Cast to DATETIME inside cursor loop.", "typeMismatch": "NVARCHAR cast to DATETIME — brittle." }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "StandardErrors",
+      "description": "Standard error format. errorType=2 for null userId/eventId. errorType=3 for auth failure."
+    },
+    {
+      "index": 0,
+      "name": "AdHocBulkResult",
+      "description": "Single row confirming the bulk operation.",
+      "columns": [
+        { "name": "adHocDataId", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "serverMessage", "type": "NVARCHAR", "nullable": false, "description": "'N records updated, M records inserted, ' — note trailing comma." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.HasherEventMap SET AttendenceState=20, RsvpState=3 — for parsed hashers already at event",
+    "INSERT HC.HasherEventMap — for parsed hashers not yet at event",
+    "UPDATE HC.Event SET DoTrackHashCash=1 — twice (copy-paste bug, harmless but wasteful)",
+    "UPDATE HC.Payment SET CancelledDate — cancels prior payments for all parsed hashers",
+    "INSERT HC.Payment — for each hasher (via CURSOR)",
+    "EXEC HC.nonApi_updateKennelCreditByUser — per hasher (inside cursor)",
+    "EXEC HC.nonApi_updateRunCountsForAllUsers @updatedSince = @queryStart",
+    "EXEC hcapp_syncEventAdminData"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "@userIdsWhoPaid is VARCHAR(8000) not NVARCHAR",
+      "detail": "All other string parameters in app SPs use NVARCHAR. VARCHAR cannot store Unicode characters, though UUIDs are ASCII-safe."
+    },
+    {
+      "severity": "high",
+      "issue": "CURSOR for per-user processing — poor scalability",
+      "detail": "Each hasher is processed individually in a CURSOR loop with per-iteration SP calls (nonApi_updateKennelCreditByUser). For large bulk operations this will be slow."
+    },
+    {
+      "severity": "high",
+      "issue": "No transaction wrapping the bulk operation",
+      "detail": "HEM upserts, payment cancellations, and payment inserts all run outside a transaction. A failure midway leaves partial state."
+    },
+    {
+      "severity": "medium",
+      "issue": "UPDATE HC.Event SET DoTrackHashCash=1 executed twice",
+      "detail": "Copy-paste error — the same UPDATE appears at lines ~199 and ~213. Harmless but wasteful."
+    },
+    { "severity": "low", "issue": "No TRY/CATCH block", "detail": "No error handling." }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change payment type codes without updating all callers"
+  ]
+}

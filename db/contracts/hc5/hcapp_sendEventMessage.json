@@ -1,0 +1,91 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_sendEventMessage",
+  "version": "1.0.0",
+  "description": "Sends an event chat message. Inserts the message into HC.EventMessage, updates the sender's EventMessageBadgeCounts (MERGE), then returns three result sets: the inserted message, the list of users who qualify for a full push notification, and the list of users who get an in-app-only notification. Token validated against DeviceSecret + eventId.",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "Device.id", "description": "Device UUID." },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": true, "mapsToColumn": null, "description": "Token validated against DeviceSecret + eventId." },
+    { "name": "eventId", "type": "NVARCHAR(250)", "nullable": true, "mapsToColumn": "EventMessage.EventId", "description": "Internal event ID as a STRING (not UNIQUEIDENTIFIER). DATALENGTH check: 72 bytes = 36-char UUID in NVARCHAR. This allows the type to be passed as a string for concatenation in token validation.", "typeMismatch": "NVARCHAR(250) — should be UNIQUEIDENTIFIER." },
+    { "name": "messageId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "EventMessage.id", "description": "Client-generated message UUID." },
+    { "name": "messageTitle", "type": "NVARCHAR(250)", "nullable": true, "mapsToColumn": "EventMessage.MessageTitle", "description": "Message title. If null, overwritten from Event.EventName via COALESCE." },
+    { "name": "messageContent", "type": "NVARCHAR(500)", "nullable": true, "mapsToColumn": "EventMessage.MessageContent", "description": "The message body. Required — empty string triggers validation error." },
+    { "name": "messageReleasabilityFlags", "type": "INT", "nullable": true, "mapsToColumn": "EventMessage.MessageReleasabilityFlags", "description": "Bitfield: 0x0001=Mismanagement, 0x0002=Members, 0x0004=Followers, 0x0008=RSVPs, 0x0010=Hares, 0x0020=Everyone. At least one bit in 0x003F must be set." }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ValidationErrors",
+      "description": "Multiple error rowsets possible without RETURN (see getEventMessages pattern). Auth failure and content validation DO return. Standard error format."
+    },
+    {
+      "index": 0,
+      "name": "InsertedMessage",
+      "description": "The just-inserted message. Single row.",
+      "columns": [
+        { "name": "MessageId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "EventMessage.id." },
+        { "name": "EventId", "type": "NVARCHAR", "nullable": false, "description": "EventMessage.EventId — as string (matches @eventId NVARCHAR parameter)." },
+        { "name": "PublicEventId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "EventMessage.PublicEventId." },
+        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Hasher.PublicHasherId of the sender." },
+        { "name": "UserDisplayName", "type": "NVARCHAR", "nullable": true, "description": "Hasher.DisplayName." },
+        { "name": "UserPhoto", "type": "NVARCHAR", "nullable": true, "description": "Hasher.Photo." },
+        { "name": "MessageTitle", "type": "NVARCHAR", "nullable": true, "description": "DisplayName + ' - ' + MessageTitle." },
+        { "name": "MessageContent", "type": "NVARCHAR(500)", "nullable": true, "description": "EventMessage.MessageContent." },
+        { "name": "MessageRelesabilityFlags", "type": "INT", "nullable": false, "description": "NOTE: Column name has a typo — 'Relesability' not 'Releasability'. This is the column name callers must use." },
+        { "name": "EventChatMessageCount", "type": "INT", "nullable": false, "description": "Always 0 — hardcoded. SP comment notes this is obsolete as of 2.1.3." },
+        { "name": "MessageType", "type": "NVARCHAR", "nullable": true, "description": "EventMessage.MessageType." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "FullPushNotificationRecipients",
+      "description": "Users who qualify for a full push notification (based on notification preferences, membership, releasability flags, and whether event is within 6-hour notification window).",
+      "columns": [
+        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HasherKennelMap.UserId." },
+        { "name": "FcmToken", "type": "NVARCHAR(500)", "nullable": false, "description": "Device.FcmToken — only non-null tokens included." }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "InAppOnlyNotificationRecipients",
+      "description": "Kennel members who did not qualify for a full push notification — get an in-app realtime update instead.",
+      "columns": [
+        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HasherKennelMap.UserId." },
+        { "name": "FcmToken", "type": "NVARCHAR(500)", "nullable": false, "description": "Device.FcmToken." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.EventMessage",
+    "MERGE HC.EventMessageBadgeCounts (upsert — marks message as read for the sender)"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "@eventId is NVARCHAR(250) not UNIQUEIDENTIFIER",
+      "detail": "Passed as string so it can be concatenated into the token derivation. Forces callers to pass UUID as string. Should be UNIQUEIDENTIFIER with explicit CAST for token concatenation."
+    },
+    {
+      "severity": "high",
+      "issue": "Multiple error paths emit rowsets without RETURN",
+      "detail": "deviceId, messageId, and hasherId null checks emit SELECT without RETURN. If multiple checks fire, the caller receives multiple error rowsets."
+    },
+    {
+      "severity": "high",
+      "issue": "Typo in column name: 'MessageRelesabilityFlags'",
+      "detail": "'Relesability' missing a letter — this is a breaking change to fix because callers depend on the exact column name."
+    },
+    {
+      "severity": "medium",
+      "issue": "@timeLimitForNotificationsInHours hardcoded to 6",
+      "detail": "The notification window is hardcoded as 6 hours. Should be a kennel-level configuration."
+    },
+    { "severity": "low", "issue": "No TRY/CATCH block", "detail": "No error handling." }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never rename the MessageRelesabilityFlags column without updating all callers",
+    "Never change the releasability bitflag values without updating all callers"
+  ]
+}

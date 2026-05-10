@@ -1,0 +1,84 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_getEventMessageCounts",
+  "version": "1.0.0",
+  "description": "Returns unread event message counts for all events where the calling user has badge count records. Uses PublicHasherId for filtering (not internal hasherId). Validates deviceId by DATALENGTH — meaningless for UNIQUEIDENTIFIER type.",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "Device.id", "description": "Device UUID for auth lookup. Validated by DATALENGTH() = 16 — always true for a valid UNIQUEIDENTIFIER." },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": true, "mapsToColumn": null, "description": "Short-lived auth token." }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "NullDeviceIdError",
+      "description": "Returned when deviceId is NULL or DATALENGTH != 16. Standard error format. Note: the guard emits the SELECT but does NOT RETURN, so subsequent checks may also emit errors. errorType=2.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 2." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'Null or invalid hasherId'." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "NullHasherError",
+      "description": "Returned when Device lookup yields no userId. Standard error format. errorType=2.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 2." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "Standard error format. errorType=3.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 3." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Always 'Invalid access token'." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User message." },
+        { "name": "debugMessage", "type": "NVARCHAR", "nullable": false, "description": "Debug message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "MessageCounts",
+      "description": "One row per event where the user has unread messages (based on EventMessageBadgeCounts records). Empty if no events.",
+      "columns": [
+        { "name": "id", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "EventMessage.EventId — internal event ID." },
+        { "name": "PublicEventId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "EventMessage.PublicEventId." },
+        { "name": "EventChatMessageCount", "type": "INT", "nullable": true, "description": "MAX(MessageSequenceCount) - LastSequenceCount = unread count." }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "Error checks do not RETURN — multiple error rowsets possible",
+      "detail": "The null deviceId and null hasherId checks emit the error SELECT but don't call RETURN. Only the auth check has RETURN. If deviceId is null AND hasherId resolves to null, two error rowsets are emitted."
+    },
+    {
+      "severity": "medium",
+      "issue": "DATALENGTH check on UNIQUEIDENTIFIER is meaningless",
+      "detail": "DATALENGTH(@deviceId) = 16 for any non-null UNIQUEIDENTIFIER. This check only catches NULL, not malformed values."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH block",
+      "description": "No error handling."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}

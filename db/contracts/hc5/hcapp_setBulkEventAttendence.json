@@ -1,0 +1,60 @@
+{
+  "schema": "HC5",
+  "name": "hcapp_setBulkEventAttendence",
+  "version": "1.0.0",
+  "description": "Sets attendance state for multiple hashers at once. Accepts a comma-separated list of user UUIDs, parses via STRING_SPLIT+TRY_CAST, updates existing HasherEventMap records (UPDATE) and creates missing ones (INSERT). After updating, calls nonApi_updateRunCountsForAllUsers and delegates to hcapp_syncEventAdminData.",
+  "parameters": [
+    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Device.id", "description": "Device UUID." },
+    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": null, "description": "Short-lived auth token." },
+    { "name": "eventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "HasherEventMap.EventId", "description": "Event to update attendance for." },
+    { "name": "hasherIds", "type": "VARCHAR(8000)", "nullable": false, "mapsToColumn": null, "description": "Comma-separated list of hasher UUIDs. VARCHAR not NVARCHAR.", "typeMismatch": "VARCHAR(8000) — should be NVARCHAR." },
+    { "name": "attendenceState", "type": "SMALLINT", "nullable": false, "mapsToColumn": "HasherEventMap.AttendenceState", "description": "Must be between 20-40 inclusive. Validated before auth check." },
+    { "name": "hasherEventMapUpdatedAfter", "type": "NVARCHAR(50)", "nullable": false, "mapsToColumn": null, "description": "Sync cursor passed to hcapp_syncEventAdminData." },
+    { "name": "hasherKennelMapUpdatedAfter", "type": "NVARCHAR(50)", "nullable": false, "mapsToColumn": null, "description": "Sync cursor passed to hcapp_syncEventAdminData." }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "StandardErrors",
+      "description": "Standard error format. errorType=2 for null userId/eventId/invalid attendenceState/null hasherIds. errorType=3 for auth failure."
+    },
+    {
+      "index": 0,
+      "name": "AdHocBulkResult",
+      "description": "Single row.",
+      "columns": [
+        { "name": "adHocDataId", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "serverMessage", "type": "NVARCHAR", "nullable": false, "description": "'N records updated, M records inserted, ' — note trailing comma." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.HasherEventMap SET AttendenceState, RsvpState=3 — for matching hashers",
+    "INSERT HC.HasherEventMap — for hashers not yet at event",
+    "EXEC HC.nonApi_updateRunCountsForAllUsers @updatedSince",
+    "EXEC hcapp_syncEventAdminData"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "@hasherIds is VARCHAR(8000) not NVARCHAR",
+      "detail": "Should be NVARCHAR. UUID strings are ASCII-safe but the type is inconsistent with the rest of the codebase."
+    },
+    {
+      "severity": "high",
+      "issue": "No transaction wrapping the UPDATE+INSERT",
+      "detail": "UPDATE and INSERT run outside a transaction. Partial failure leaves some users updated and others not."
+    },
+    {
+      "severity": "medium",
+      "issue": "STRING_SPLIT CTE declared twice — redundant",
+      "detail": "The ParsedGuids CTE is declared separately for the UPDATE and INSERT blocks. SQL Server doesn't allow sharing a CTE between statements, but the duplication adds noise."
+    },
+    { "severity": "low", "issue": "No TRY/CATCH block", "detail": "No error handling." }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}
