@@ -1,6 +1,7 @@
 "use client";
 
 import { ICON_MAP } from "@/components/puck/icons";
+import { RichText } from "@/components/ui/RichText";
 import type { PaddingValue } from "@/components/puck/PaddingCrossField";
 
 type Props = {
@@ -94,12 +95,9 @@ export function ContentBlock({ imageUrl, imageAlt, heading, headingColor, headin
         </h2>
       )}
       {body && (
-        <p
-          className="text-lg leading-relaxed whitespace-pre-wrap"
-          style={{ color: resolvedBodyColor, textAlign: bodyAlign || "left", marginTop: `${textGap ?? 16}px` }}
-        >
-          {body}
-        </p>
+        <div style={{ marginTop: `${textGap ?? 16}px` }}>
+          <RichText content={body} color={resolvedBodyColor} align={bodyAlign as "left" | "center" | "right" | undefined} />
+        </div>
       )}
     </div>
   );

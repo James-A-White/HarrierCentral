@@ -35,7 +35,7 @@ async function resolveCustomDomain(hostname: string): Promise<string | null> {
   }
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const hostname = (request.headers.get("host") ?? "").split(":")[0];
 
   if (!hostname || isSystemHost(hostname)) return NextResponse.next();

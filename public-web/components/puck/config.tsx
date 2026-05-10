@@ -7,6 +7,7 @@ import { SongsListBlock } from "@/components/blocks/SongsListBlock";
 import { StatsListBlock } from "@/components/blocks/StatsListBlock";
 import { AboutBlock } from "@/components/blocks/AboutBlock";
 import { ContentBlock } from "@/components/blocks/ContentBlock";
+import { RichTextBlock } from "@/components/blocks/RichTextBlock";
 import { ButtonBlock } from "@/components/blocks/ButtonBlock";
 import { RowBlock } from "@/components/blocks/RowBlock";
 import { RowLayoutField } from "@/components/puck/RowLayoutField";
@@ -20,8 +21,52 @@ import type { PaddingValue } from "@/components/puck/PaddingCrossField";
 
 type BlockProps = {
   AboutBlock: { padding: PaddingValue; blockBg: string };
-  NextRunBlock: { padding: PaddingValue; blockBg: string };
-  RunListBlock: { isFuture: boolean; count: number; padding: PaddingValue; blockBg: string };
+  RichTextBlock: {
+    content: string;
+    textColor: string;
+    align: "left" | "center" | "right";
+    maxWidth: boolean;
+    padding: PaddingValue;
+    blockBg: string;
+  };
+  NextRunBlock: {
+    offset: number;
+    hideWhenNoRun: boolean;
+    noRunText: string;
+    showRunNumber: boolean;
+    showRunName: boolean;
+    showDate: boolean;
+    showTime: boolean;
+    showLocation: boolean;
+    showHares: boolean;
+    showDescription: boolean;
+    showTags: boolean;
+    showMap: boolean;
+    showImage: boolean;
+    padding: PaddingValue;
+    blockBg: string;
+  };
+  RunListBlock: {
+    viewType: string;
+    isFuture: boolean;
+    skipNextRun: boolean;
+    showEmptyDays: boolean;
+    count: number;
+    days: number;
+    otherKennelSlugs: string;
+    showRunNumber: boolean;
+    showRunName: boolean;
+    showDate: boolean;
+    showTime: boolean;
+    showLocation: boolean;
+    showHares: boolean;
+    showImage: boolean;
+    kennelLogoDisplay: string;
+    kennelLogoSize: string;
+    kennelNameDisplay: string;
+    padding: PaddingValue;
+    blockBg: string;
+  };
   RunsPageBlock: { padding: PaddingValue; blockBg: string };
   EventsListBlock: { padding: PaddingValue; blockBg: string };
   SongsListBlock: { padding: PaddingValue; blockBg: string };
@@ -66,9 +111,12 @@ type BlockProps = {
     blockBg: string;
   };
   RowBlock: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    "column-0": any; "column-1": any; "column-2": any; "column-3": any;
     layout: RowLayout;
     gap: number;
     verticalAlign: "flex-start" | "center" | "stretch";
+    collapseBelow: string;
     padding: PaddingValue;
     blockBg: string;
   };
@@ -111,6 +159,55 @@ function blockStyle(padding: PaddingValue | undefined, blockBg: string | undefin
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+function markdownField(label: string): any {
+  return {
+    type: "custom",
+    label,
+    render: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
+      <textarea
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value)}
+        rows={10}
+        placeholder={"Supports markdown:\n# Heading 1\n## Heading 2\n**bold**, *italic*\n[link text](https://example.com)\n- bullet item"}
+        style={{
+          width: "100%",
+          padding: "8px 10px",
+          fontSize: "12px",
+          fontFamily: "ui-monospace, monospace",
+          lineHeight: 1.6,
+          border: "1px solid #d1d5db",
+          borderRadius: "6px",
+          resize: "vertical",
+          background: "#fff",
+          color: "#111827",
+          outline: "none",
+          boxSizing: "border-box",
+        }}
+      />
+    ),
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function checkboxField(label: string): any {
+  return {
+    type: "custom",
+    label: "",
+    render: ({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) => (
+      <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", padding: "2px 0", userSelect: "none" }}>
+        <input
+          type="checkbox"
+          checked={!!value}
+          onChange={(e) => onChange(e.target.checked)}
+          style={{ width: "14px", height: "14px", cursor: "pointer", accentColor: "#818cf8", flexShrink: 0 }}
+        />
+        <span style={{ fontSize: "12px", color: "#18181b" }}>{label}</span>
+      </label>
+    ),
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function paddingField(): any {
   return {
     type: "custom",
@@ -148,17 +245,130 @@ export function createPuckConfig(slug: string, navPages: NavPage[] = []): Config
         ),
       },
 
+      // ── RichTextBlock ─────────────────────────────────────────────────────
+      RichTextBlock: {
+        label: "Rich Text",
+        fields: {
+          content: markdownField("Content (markdown)"),
+          textColor: {
+            type: "select",
+            label: "Text colour",
+            options: [
+              { label: "Default (body)",  value: ""                         },
+              { label: "Title colour",    value: "var(--kennel-text-title)" },
+              { label: "Muted",           value: "var(--kennel-text-muted)" },
+              { label: "Primary",         value: "var(--kennel-primary)"    },
+              { label: "On primary",      value: "var(--kennel-primary-fg)" },
+              { label: "White",           value: "#ffffff"                  },
+              { label: "Black",           value: "#000000"                  },
+            ],
+          },
+          align: {
+            type: "radio",
+            label: "Alignment",
+            options: [
+              { label: "Left",   value: "left"   },
+              { label: "Center", value: "center" },
+              { label: "Right",  value: "right"  },
+            ],
+          },
+          maxWidth: checkboxField("Constrain to readable width (~640px)"),
+          blockBg:  { type: "select", label: "Background", options: BG_OPTIONS },
+          padding:  paddingField(),
+        },
+        defaultProps: {
+          content:   "",
+          textColor: "",
+          align:     "left",
+          maxWidth:  false,
+          blockBg:   "",
+          padding:   DEFAULT_PADDING,
+        },
+        render: ({ content, textColor, align, maxWidth, blockBg, padding }) => (
+          <div style={blockStyle(padding, blockBg)}>
+            <RichTextBlock
+              content={content}
+              textColor={textColor}
+              align={align}
+              maxWidth={maxWidth}
+              padding={{ top: 0, right: 0, bottom: 0, left: 0 }}
+              blockBg=""
+            />
+          </div>
+        ),
+      },
+
       // ── NextRunBlock ──────────────────────────────────────────────────────
       NextRunBlock: {
         label: "Next Run",
         fields: {
+          // ── Which run ────────────────────────────────────────────────────
+          offset: {
+            type: "number",
+            label: "Run offset (0 = next run, 1 = run after, -1 = most recent past, etc.)",
+            min: -5,
+            max: 10,
+          },
+          // ── When no run exists ───────────────────────────────────────────
+          hideWhenNoRun: checkboxField("Hide block when no run exists"),
+          noRunText: {
+            type: "text",
+            label: "Text to show when no run (if not hiding)",
+          },
+          // ── Display options ──────────────────────────────────────────────
+          showRunNumber:   checkboxField("Run number"),
+          showRunName:     checkboxField("Run name"),
+          showDate:        checkboxField("Date"),
+          showTime:        checkboxField("Time"),
+          showLocation:    checkboxField("Location"),
+          showHares:       checkboxField("Hares"),
+          showDescription: checkboxField("Description"),
+          showTags:        checkboxField("Tags"),
+          showMap:         checkboxField("Map"),
+          showImage:       checkboxField("Run image"),
+          // ── Layout ───────────────────────────────────────────────────────
           blockBg: { type: "select", label: "Background", options: BG_OPTIONS },
           padding: paddingField(),
         },
-        defaultProps: { blockBg: "", padding: DEFAULT_PADDING },
-        render: ({ blockBg, padding }) => (
+        defaultProps: {
+          offset:          0,
+          hideWhenNoRun:   true,
+          noRunText:       "",
+          showRunNumber:   true,
+          showRunName:     true,
+          showDate:        true,
+          showTime:        true,
+          showLocation:    true,
+          showHares:       true,
+          showDescription: true,
+          showTags:        false,
+          showMap:         false,
+          showImage:       true,
+          blockBg:         "",
+          padding:         DEFAULT_PADDING,
+        },
+        render: ({
+          offset, hideWhenNoRun, noRunText,
+          showRunNumber, showRunName, showDate, showTime,
+          showLocation, showHares, showDescription, showTags, showMap, showImage,
+          blockBg, padding,
+        }) => (
           <div style={blockStyle(padding, blockBg)}>
-            <NextRunBlock />
+            <NextRunBlock
+              offset={offset}
+              hideWhenNoRun={hideWhenNoRun}
+              noRunText={noRunText}
+              showRunNumber={showRunNumber}
+              showRunName={showRunName}
+              showDate={showDate}
+              showTime={showTime}
+              showLocation={showLocation}
+              showHares={showHares}
+              showDescription={showDescription}
+              showTags={showTags}
+              showMap={showMap}
+              showImage={showImage}
+            />
           </div>
         ),
       },
@@ -167,6 +377,15 @@ export function createPuckConfig(slug: string, navPages: NavPage[] = []): Config
       RunListBlock: {
         label: "Run List",
         fields: {
+          // ── View & data ──────────────────────────────────────────────────
+          viewType: {
+            type: "select",
+            label: "View type",
+            options: [
+              { label: "Card",     value: "card"     },
+              { label: "Calendar", value: "calendar" },
+            ],
+          },
           isFuture: {
             type: "radio",
             label: "Which runs",
@@ -175,19 +394,112 @@ export function createPuckConfig(slug: string, navPages: NavPage[] = []): Config
               { label: "Past",     value: false },
             ],
           },
+          skipNextRun: checkboxField("Skip next run (avoids duplicate with Next Run block)"),
+          // ── Filters ──────────────────────────────────────────────────────
           count: {
             type: "number",
-            label: "How many to show",
-            min: 1,
-            max: 20,
+            label: "Max runs to show (0 = all)",
+            min: 0,
           },
-          blockBg: { type: "select", label: "Background", options: BG_OPTIONS },
-          padding: paddingField(),
+          days: {
+            type: "number",
+            label: "Max days to show (0 = all)",
+            min: 0,
+          },
+          otherKennelSlugs: {
+            type: "text",
+            label: "Other kennel slugs (comma-separated, e.g. lh3,sh3)",
+          },
+          // ── Display — what each run shows ────────────────────────────────
+          showRunNumber: checkboxField("Run number"),
+          showRunName:   checkboxField("Run name"),
+          showDate:      checkboxField("Date"),
+          showTime:      checkboxField("Time"),
+          showLocation:  checkboxField("Location"),
+          showHares:     checkboxField("Hares"),
+          showImage:     checkboxField("Run image"),
+          kennelLogoDisplay: {
+            type: "radio",
+            label: "Kennel logo",
+            options: [
+              { label: "Multi-kennel only", value: "multi"  },
+              { label: "Always",            value: "always" },
+              { label: "Never",             value: "never"  },
+            ],
+          },
+          kennelLogoSize: {
+            type: "select",
+            label: "Logo size",
+            options: [
+              { label: "Small",       value: "sm" },
+              { label: "Medium",      value: "md" },
+              { label: "Large",       value: "lg" },
+              { label: "Extra large", value: "xl" },
+            ],
+          },
+          kennelNameDisplay: {
+            type: "radio",
+            label: "Kennel name",
+            options: [
+              { label: "Multi-kennel only", value: "multi"  },
+              { label: "Always",            value: "always" },
+              { label: "Never",             value: "never"  },
+            ],
+          },
+          // ── Calendar-specific ────────────────────────────────────────────
+          showEmptyDays: checkboxField("Show empty days (calendar view only)"),
+          // ── Layout ───────────────────────────────────────────────────────
+          blockBg:  { type: "select", label: "Background", options: BG_OPTIONS },
+          padding:  paddingField(),
         },
-        defaultProps: { isFuture: true, count: 9, blockBg: "", padding: DEFAULT_PADDING },
-        render: ({ isFuture, count, blockBg, padding }) => (
+        defaultProps: {
+          viewType:          "card",
+          isFuture:          true,
+          skipNextRun:       true,
+          showEmptyDays:     false,
+          count:             0,
+          days:              0,
+          otherKennelSlugs:  "",
+          showRunNumber:     true,
+          showRunName:       true,
+          showDate:          true,
+          showTime:          true,
+          showLocation:      true,
+          showHares:         true,
+          showImage:         false,
+          kennelLogoDisplay: "multi",
+          kennelLogoSize:    "md",
+          kennelNameDisplay: "multi",
+          blockBg:           "",
+          padding:           DEFAULT_PADDING,
+        },
+        render: ({
+          viewType, isFuture, skipNextRun, showEmptyDays,
+          count, days, otherKennelSlugs,
+          showRunNumber, showRunName, showDate, showTime, showLocation, showHares, showImage,
+          kennelLogoDisplay, kennelLogoSize, kennelNameDisplay,
+          blockBg, padding,
+        }) => (
           <div style={blockStyle(padding, blockBg)}>
-            <RunListBlock isFuture={isFuture} count={count} />
+            <RunListBlock
+              viewType={viewType}
+              isFuture={isFuture}
+              skipNextRun={skipNextRun}
+              showEmptyDays={showEmptyDays}
+              count={count}
+              days={days}
+              otherKennelSlugs={otherKennelSlugs}
+              showRunNumber={showRunNumber}
+              showRunName={showRunName}
+              showDate={showDate}
+              showTime={showTime}
+              showLocation={showLocation}
+              showHares={showHares}
+              showImage={showImage}
+              kennelLogoDisplay={kennelLogoDisplay}
+              kennelLogoSize={kennelLogoSize}
+              kennelNameDisplay={kennelNameDisplay}
+            />
           </div>
         ),
       },
@@ -350,7 +662,7 @@ export function createPuckConfig(slug: string, navPages: NavPage[] = []): Config
               />
             ),
           },
-          body: { type: "textarea", label: "Body text" },
+          body: markdownField("Body text (markdown)"),
           bodyColor: {
             type: "select",
             label: "Body text colour",
@@ -662,6 +974,11 @@ export function createPuckConfig(slug: string, navPages: NavPage[] = []): Config
       RowBlock: {
         label: "Row",
         fields: {
+          // Slot fields — one per possible column (unused slots are hidden)
+          "column-0": { type: "slot" },
+          "column-1": { type: "slot" },
+          "column-2": { type: "slot" },
+          "column-3": { type: "slot" },
           layout: {
             type: "custom",
             label: "Layout",
@@ -689,21 +1006,47 @@ export function createPuckConfig(slug: string, navPages: NavPage[] = []): Config
               { label: "Stretch", value: "stretch"    },
             ],
           },
+          collapseBelow: {
+            type: "select",
+            label: "Collapse to single column below",
+            options: [
+              { label: "Small — 640px  (phones)",  value: "sm"    },
+              { label: "Medium — 768px (tablets)", value: "md"    },
+              { label: "Large — 1024px",           value: "lg"    },
+              { label: "Never collapse",           value: "never" },
+            ],
+          },
           blockBg: { type: "select", label: "Background", options: BG_OPTIONS },
           padding: paddingField(),
         },
         defaultProps: {
+          "column-0": [], "column-1": [], "column-2": [], "column-3": [],
           layout: { columns: 2 as const, flex: [1, 1, 1, 1] as [number, number, number, number] },
           gap: 16,
           verticalAlign: "flex-start" as const,
+          collapseBelow: "sm",
           blockBg: "",
           padding: DEFAULT_PADDING,
         },
-        render: ({ layout, gap, verticalAlign, blockBg, padding }) => (
-          <div style={blockStyle(padding, blockBg)}>
-            <RowBlock layout={layout as RowLayout} gap={gap} verticalAlign={verticalAlign} />
-          </div>
-        ),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        render: ({ "column-0": Col0, "column-1": Col1, "column-2": Col2, "column-3": Col3, layout, gap, verticalAlign, collapseBelow, blockBg, padding }: any) => {
+          const { columns, flex } = layout as RowLayout;
+          const slots = [Col0, Col1, Col2, Col3] as React.ComponentType<{ disallow?: string[] }>[];
+          return (
+            <div style={blockStyle(padding, blockBg)}>
+              <RowBlock layout={layout as RowLayout} gap={gap} verticalAlign={verticalAlign} collapseBelow={collapseBelow}>
+                {Array.from({ length: columns }).map((_, i) => {
+                  const Slot = slots[i];
+                  return (
+                    <div key={i} style={{ flex: flex?.[i] ?? 1, minWidth: 0 }}>
+                      <Slot disallow={["RowBlock"]} />
+                    </div>
+                  );
+                })}
+              </RowBlock>
+            </div>
+          );
+        },
       },
 
     },

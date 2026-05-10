@@ -1,6 +1,6 @@
 "use client";
 
-import { Puck } from "@measured/puck";
+import { Puck, migrate } from "@measured/puck";
 import "@measured/puck/puck.css";
 import type { Data } from "@measured/puck";
 import { useState, useRef, useCallback, useMemo } from "react";
@@ -179,8 +179,10 @@ export function PuckEditor({ slug, initialConfig, pageData }: PuckEditorProps) {
 
   const currentPageLayout = useMemo(() => {
     const page = siteConfig.pages.find(p => p.id === currentPageId);
-    return page?.layout ?? getDefaultLayout(currentPageId);
-  }, [siteConfig, currentPageId]);
+    const raw = page?.layout ?? getDefaultLayout(currentPageId);
+    // Migrate legacy DropZone zone data to slot format transparently
+    return migrate(raw, puckConfig) as Data;
+  }, [siteConfig, currentPageId, puckConfig]);
 
   // ── render ────────────────────────────────────────────────────────────────
 

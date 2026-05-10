@@ -590,6 +590,69 @@ export async function getEvents(
   return { totalMatchingEvents, events };
 }
 
+// ─── getMultiKennelRuns ───────────────────────────────────────────────────────
+
+/** A RunEvent extended with kennel context columns from publicWeb_getMultiKennelRuns. */
+export interface MultiKennelRunEvent extends RunEvent {
+  KennelSlug: string;
+  KennelName: string;
+  KennelShortName: string;
+  KennelLogo: string | null;
+  KennelPrimaryColor: string | null;
+  KennelAccentColor: string | null;
+}
+
+export interface GetMultiKennelRunsOptions {
+  isFuture: boolean;
+  maxEvents?: number;
+  daysOffset?: number;
+}
+
+export interface GetMultiKennelRunsResult {
+  totalMatchingEvents: number;
+  events: MultiKennelRunEvent[];
+}
+
+type RawMultiKennelRunEvent = Omit<MultiKennelRunEvent, "tags"> & {
+  Tags1: number;
+  Tags2: number;
+  Tags3: number;
+};
+
+/**
+ * Fetches upcoming or past events for a comma-separated list of kennel slugs.
+ * Each event row includes kennel name, logo, and theme colours for rendering
+ * kennel badges in mixed-kennel lists.
+ */
+export async function getMultiKennelRuns(
+  slugList: string,
+  options: GetMultiKennelRunsOptions
+): Promise<GetMultiKennelRunsResult | null> {
+  const params: Record<string, string> = {
+    slugList,
+    isFuture: options.isFuture ? "1" : "0",
+  };
+  if (options.maxEvents  !== undefined) params.maxEvents  = String(options.maxEvents);
+  if (options.daysOffset !== undefined) params.daysOffset = String(options.daysOffset);
+
+  const data = await callPublicWebApiAllRowsets("getMultiKennelRuns", params);
+  if (!data) return null;
+
+  const [headerRows, eventRows] = data as [
+    Array<{ TotalMatchingEvents: number }>,
+    RawMultiKennelRunEvent[],
+  ];
+
+  const totalMatchingEvents = headerRows?.[0]?.TotalMatchingEvents ?? 0;
+
+  const events: MultiKennelRunEvent[] = (eventRows ?? []).map((row) => {
+    const { Tags1, Tags2, Tags3, ...rest } = row;
+    return { ...rest, tags: decodeTags(Tags1, Tags2, Tags3) };
+  });
+
+  return { totalMatchingEvents, events };
+}
+
 // ─── getPageLayout ────────────────────────────────────────────────────────────
 
 /**

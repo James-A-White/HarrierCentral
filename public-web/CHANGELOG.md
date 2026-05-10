@@ -1,5 +1,48 @@
 # public-web Changelog
 
+## 0.21.0 — 2026-05-10
+
+### RunListBlock overhaul
+
+- Card view and calendar view types selectable via dropdown
+- Display toggles for run number, name, date, time, location, hares, and run image
+- Kennel logo and kennel name tri-state (always / multi-kennel only / never) with logo size selector (S/M/L/XL)
+- Multi-kennel support: comma-separated slug list fetches runs from other kennels via new `publicWeb_getMultiKennelRuns` SP; runs merged and sorted; kennel badges shown automatically
+- Max runs and max days filters (0 = no limit); skip-next-run toggle
+- Calendar view: grouped by date with day headers; optional empty-day rows; kennel logo column at far left when multi-kennel
+
+### NextRunBlock
+
+- Run offset (−5 to +10): positive = future runs, negative = past runs
+- Hide-when-no-run checkbox and optional placeholder text when no run exists at the selected offset
+- Full display toggles: run number, name, date, time, location, hares, description, tags, embedded map, image
+
+### Rich Text Block (new)
+
+- New block for long-form prose: markdown with inline links, headings (H1–H4), bullet/numbered lists, bold, italic, blockquote, horizontal rule
+- Constrain-to-readable-width option (max-w-2xl)
+
+### ContentBlock
+
+- Body field upgraded to markdown — inline links, headings, and bullet lists now supported
+
+### FeaturedRunCard
+
+- Embedded Leaflet map showing run start location (dynamically imported)
+- Tag pills rendered from decoded run tag bitflags
+- All fields individually toggleable via display options
+
+### RowBlock
+
+- Migrated from deprecated Puck DropZone API to slot fields; `migrate()` called in renderer and editor for backward compatibility with existing layouts
+- Responsive collapse-below breakpoint selector (Small / Medium / Large / Never)
+
+### Infrastructure
+
+- `middleware.ts` renamed to `proxy.ts` (Next.js 16 deprecation fix)
+- `publicWeb_getMultiKennelRuns` SP deployed — cross-kennel run query with kennel name, logo, and colours per row
+- LH3 About page assembled from Rich Text and Content blocks
+
 ## 0.20.0 — 2026-05-09
 
 ### Row block

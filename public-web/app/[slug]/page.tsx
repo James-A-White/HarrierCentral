@@ -89,10 +89,13 @@ export default async function KennelPage({ params }: PageProps) {
 
   const kennel = toKennelContext(kennelData);
 
-  // Fetch runs + saved layout in parallel — blocks slice to their own count
+  // Fetch runs + saved layout in parallel.
+  // Future runs: full data (no summaryOnly) so NextRunBlock can show description, w3w, etc.
+  // Past runs: summaryOnly to save bandwidth — descriptions rarely needed in list views.
+  // Overfetch generously — RunListBlock filters to its own count/days at render time.
   const [eventsResult, pastResult, layoutJson] = await Promise.all([
-    getEvents(kennelData.PublicKennelId, { isFuture: true,  maxEvents: 20 }),
-    getEvents(kennelData.PublicKennelId, { isFuture: false, daysOffset: 365, maxEvents: 20 }),
+    getEvents(kennelData.PublicKennelId, { isFuture: true,  daysOffset: 365, maxEvents: 100 }),
+    getEvents(kennelData.PublicKennelId, { isFuture: false, daysOffset: 730, maxEvents: 100, summaryOnly: true }),
     getPageLayout(slug),
   ]);
   const futureRuns = eventsResult?.events ?? [];

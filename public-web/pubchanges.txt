@@ -1,3 +1,14 @@
+0.21.0
+    • RunListBlock: card/calendar view types; display toggles (number, name, date, time, location, hares, image); kennel logo/name tri-state with size control; multi-kennel slug list with merged sorted results; max runs/days filters; calendar empty-day rows; kennel logo column in calendar
+    • NextRunBlock: run offset (−5 to +10), hide-when-no-run / placeholder text, display toggles including description, tags, map
+    • Rich Text Block: new block for markdown prose — inline links, headings, lists, bold, italic, blockquote
+    • ContentBlock: body upgraded to markdown
+    • FeaturedRunCard: embedded map, tag pills, per-field display options
+    • RowBlock: migrated from DropZone to Puck slot fields; responsive collapse-below breakpoint
+    • middleware.ts → proxy.ts (Next.js 16 deprecation fix)
+    • publicWeb_getMultiKennelRuns SP: cross-kennel run query with kennel branding per row
+    • LH3 About page assembled from Rich Text and Content blocks
+
 0.20.0
     • Row block: 2–4 columns with per-column flex widths (1–10), gap, and vertical alignment controls; blocks can be dropped into each column
     • All blocks: background colour and padding controls added universally
