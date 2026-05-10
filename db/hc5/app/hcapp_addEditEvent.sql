@@ -207,7 +207,7 @@ SET NOCOUNT ON
 	ELSE
 	BEGIN
 	-- does a record exist? If so, we are in "edit" mode
-	if ((@eventId is not null) AND ((SELECT count(*) from HC.Event e where e.id = @eventId) > 0))
+	if ((@eventId is not null) AND ((SELECT count(*) from HC.Event e where e.id = @eventId AND e.KennelId = @kennelId) > 0))
 		BEGIN
 			declare @runCountsNeedToBeUpdated int = 0
 
@@ -277,7 +277,7 @@ SET NOCOUNT ON
 			UseFbImage = coalesce(@useFbImage,UseFbImage),
 			Hares = case when @hares = '<remove>' then null else coalesce(@hares,Hares) end,
 			updatedAt = getdate()
-			FROM HC.Event e where e.id = @eventId
+			FROM HC.Event e where e.id = @eventId AND e.KennelId = @kennelId
 
 			--IF (@runCountsNeedToBeUpdated != 0)
 			--BEGIN

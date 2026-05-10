@@ -97,6 +97,9 @@ AS
 --   Success envelope added.
 --   HC.nonApi_updateRunNumbers moved inside transaction.
 --   Delegation target updated to HC6.hcapp_syncUserData.
+--   Cross-kennel guard added: @eventId must belong to @kennelId on UPDATE;
+--     an @eventId from a different kennel returns error 1320 rather than
+--     silently falling through to INSERT (HC5 bug).
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -199,13 +202,33 @@ IF (@hares             LIKE '%' + NCHAR(8232) + '%') SET @hares             = RE
 -- Malformed Facebook event IDs containing 'break' are silently cleared
 IF (@eventFacebookId LIKE '%break%') SET @eventFacebookId = '';
 
+-- Guard against cross-kennel writes: if @eventId is non-null and the event
+-- exists in the DB but belongs to a different kennel, reject explicitly.
+-- Without this, the UPDATE mode detection would fall through to INSERT,
+-- which would fail with a PK violation (same @eventId already taken).
+IF (@eventId IS NOT NULL
+    AND EXISTS     (SELECT 1 FROM HC.Event WHERE id = @eventId)
+    AND NOT EXISTS (SELECT 1 FROM HC.Event WHERE id = @eventId AND KennelId = @kennelId))
+BEGIN
+    SET @errorCode = 1320; SET @errorType = 3; SET @errorId = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, '<unknown>', 'Event not found in kennel',
+            'eventId exists but belongs to a different kennel', @procName, @userId);
+    SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+           'Event not found' AS errorTitle,
+           'The event could not be found for this club.' AS errorUserMessage,
+           @procName AS errorProc;
+    RETURN;
+END
+
 BEGIN TRY
     BEGIN TRANSACTION;
 
         -- ---------------------------------------------------------------
-        -- Determine mode: UPDATE if @eventId exists, INSERT otherwise
+        -- Determine mode: UPDATE if @eventId exists for this kennel, INSERT otherwise
         -- ---------------------------------------------------------------
-        IF (@eventId IS NOT NULL AND EXISTS (SELECT 1 FROM HC.Event e WHERE e.id = @eventId))
+        IF (@eventId IS NOT NULL AND EXISTS (SELECT 1 FROM HC.Event e WHERE e.id = @eventId AND e.KennelId = @kennelId))
         BEGIN
 
             UPDATE HC.Event SET
@@ -261,7 +284,7 @@ BEGIN TRY
                 UseFbImage             = COALESCE(@useFbImage,      UseFbImage),
                 Hares                  = CASE WHEN @hares = '<remove>' THEN NULL ELSE COALESCE(@hares, Hares) END,
                 updatedAt              = GETDATE()
-            WHERE id = @eventId;
+            WHERE id = @eventId AND KennelId = @kennelId;
 
         END
         ELSE
