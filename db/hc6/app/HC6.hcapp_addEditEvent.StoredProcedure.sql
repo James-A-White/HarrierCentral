@@ -4,7 +4,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_addEditEvent]
     @accessToken               NVARCHAR(1000),
     @narrowEventsUpdatedAfter  NVARCHAR(50),
     @eventId                   UNIQUEIDENTIFIER    = NULL,
-    @kennelId                  UNIQUEIDENTIFIER    = NULL,
+    @kennelId                  UNIQUEIDENTIFIER,
     @startDatetime             DATETIMEOFFSET(7)   = NULL,
     @endDatetime               DATETIMEOFFSET(7)   = NULL,
     @isCountedRun              SMALLINT            = NULL,
@@ -100,6 +100,7 @@ AS
 --   Cross-kennel guard added: @eventId must belong to @kennelId on UPDATE;
 --     an @eventId from a different kennel returns error 1320 rather than
 --     silently falling through to INSERT (HC5 bug).
+--   @kennelId is now required (no default); missing/zero UUID returns error 1220.
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -139,10 +140,26 @@ BEGIN
 END
 
 -- ---------------------------------------------------------------
+-- Validate required parameters
+-- ---------------------------------------------------------------
+IF (@kennelId IS NULL OR @kennelId = '00000000-0000-0000-0000-000000000000')
+BEGIN
+    SET @errorCode = 1220; SET @errorType = 2; SET @errorId = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, '<unknown>', 'Missing kennelId',
+            '@kennelId is required for hcapp_addEditEvent', @procName, @userId);
+    SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+           'Missing parameter' AS errorTitle,
+           'A required parameter was missing. Please try again.' AS errorUserMessage,
+           @procName AS errorProc;
+    RETURN;
+END
+
+-- ---------------------------------------------------------------
 -- Normalise null UUIDs and sentinel values
 -- ---------------------------------------------------------------
 IF (@eventId  = '00000000-0000-0000-0000-000000000000') SET @eventId  = NULL;
-IF (@kennelId = '00000000-0000-0000-0000-000000000000') SET @kennelId = NULL;
 
 IF (@startDatetime IS NOT NULL AND @startDatetime <= '1901-01-01') SET @startDatetime = NULL;
 IF (@endDatetime   IS NOT NULL AND @endDatetime   <= '1901-01-01') SET @endDatetime   = NULL;
