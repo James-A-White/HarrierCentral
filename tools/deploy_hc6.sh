@@ -12,6 +12,8 @@
 #   2. HC6.ValidatePortalAuth helper SP  ← must be first; called by all portal SPs
 #   3. All HC6.hcportal_* portal SPs
 #   4. All publicWeb_* public-web SPs
+#   5. HC6.ValidateAppAuth helper SP     ← must precede all app SPs
+#   6. All HC6.hcapp_* app SPs
 #
 # What this does NOT deploy:
 #   - Table DDL (HC.* tables are shared with HC5 and already exist)
@@ -25,6 +27,7 @@ set -uo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SP_DIR="$REPO_ROOT/db/hc6/portal"
 PW_DIR="$REPO_ROOT/db/hc6/public-web"
+APP_DIR="$REPO_ROOT/db/hc6/app"
 
 # ── Load .env ─────────────────────────────────────────────────────────────────
 if [[ -f "$REPO_ROOT/.env" ]]; then
@@ -124,6 +127,18 @@ echo ""
 echo "── Step 4: Public-web SPs ───────────────────────────────────"
 for file in "$PW_DIR"/publicWeb_*.sql; do
     name="$(basename "$file" .sql)"
+    run_file "$name" "$file"
+done
+
+echo ""
+echo "── Step 5: App helper SP (must precede all app SPs) ─────────"
+run_file "HC6.ValidateAppAuth" \
+    "$APP_DIR/HC6.ValidateAppAuth.StoredProcedure.sql"
+
+echo ""
+echo "── Step 6: App SPs ──────────────────────────────────────────"
+for file in "$APP_DIR"/HC6.hcapp_*.StoredProcedure.sql; do
+    name="$(basename "$file" .StoredProcedure.sql)"
     run_file "$name" "$file"
 done
 
