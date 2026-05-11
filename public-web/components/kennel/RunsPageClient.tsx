@@ -295,6 +295,7 @@ export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageC
               onClick={() => switchTab(t)}
               className="flex-1 py-3 text-xl font-semibold transition-colors"
               style={{ color: tab === t ? "var(--kennel-text-body)" : "var(--kennel-text-muted)" }}
+              suppressHydrationWarning
             >
               <span>{t === "future" ? "Future" : "Past"}</span>
               <span
@@ -303,6 +304,7 @@ export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageC
                     ? "dark:bg-white/15 bg-zinc-200"
                     : "dark:bg-white/[0.06] bg-zinc-100"
                 }`}
+                suppressHydrationWarning
               >
                 {(t === "future" ? futureRuns : pastRuns).length}
               </span>
@@ -310,6 +312,7 @@ export function RunsPageClient({ futureRuns, pastRuns, kennel, slug }: RunsPageC
                 <div
                   className="mt-1 mx-auto h-0.5 w-8 rounded-full"
                   style={{ backgroundColor: "var(--kennel-primary)" }}
+                  suppressHydrationWarning
                 />
               )}
             </button>
