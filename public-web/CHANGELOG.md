@@ -1,5 +1,17 @@
 # public-web Changelog
 
+## 0.21.1 — 2026-05-11
+
+- Fix: RichText colour parameter now applies to headings and bold text, not just body paragraphs
+- Fix: Events page was passing empty run arrays to the renderer — promoted events now display correctly
+- Fix: `IsPromotedEvent` and `EventGeographicScope` added to `publicWeb_getEvents` and `publicWeb_getMultiKennelRuns` SPs
+- RunListBlock: new "Flat" view type — same layout as Card without background, shadow, or border
+- RunListBlock: "Show divider" option with configurable colour and width between run entries
+- RunListBlock: run name colour and detail text colour properties
+- RunListBlock: "Events only" checkbox now correctly filters on `IsPromotedEvent`
+- RunCardView: each field on its own line with consistent text sizing; date moved into the detail stack
+- RunCalendarView: time and location split onto separate lines
+
 ## 0.21.0 — 2026-05-10
 
 ### RunListBlock overhaul

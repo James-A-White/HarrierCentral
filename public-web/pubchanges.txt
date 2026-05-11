@@ -1,3 +1,14 @@
+0.21.1
+    • Fix: RichText colour parameter now applies to headings and bold text, not just body paragraphs
+    • Fix: Events page was passing empty run arrays to the renderer — promoted events now display correctly
+    • Fix: IsPromotedEvent and EventGeographicScope added to publicWeb_getEvents and publicWeb_getMultiKennelRuns SPs
+    • RunListBlock: new "Flat" view type — same layout as Card without background, shadow, or border
+    • RunListBlock: "Show divider" option with configurable colour and width between run entries
+    • RunListBlock: run name colour and detail text colour properties
+    • RunListBlock: "Events only" checkbox now correctly filters on IsPromotedEvent
+    • RunCardView: each field on its own line with consistent text sizing; date moved into the detail stack
+    • RunCalendarView: time and location split onto separate lines
+
 0.21.0
     • RunListBlock: card/calendar view types; display toggles (number, name, date, time, location, hares, image); kennel logo/name tri-state with size control; multi-kennel slug list with merged sorted results; max runs/days filters; calendar empty-day rows; kennel logo column in calendar
     • NextRunBlock: run offset (−5 to +10), hide-when-no-run / placeholder text, display toggles including description, tags, map
