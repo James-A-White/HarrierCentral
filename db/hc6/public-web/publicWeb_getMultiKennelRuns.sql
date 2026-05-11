@@ -150,6 +150,7 @@ BEGIN TRY
         vk.AccentColor   AS KennelAccentColor,
 
         -- Identity
+        e.id            AS EventId,
         e.PublicEventId,
         e.EventNumber,
         e.EventName,

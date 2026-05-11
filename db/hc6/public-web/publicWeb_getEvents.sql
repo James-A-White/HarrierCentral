@@ -195,6 +195,7 @@ BEGIN TRY
     SELECT TOP (@TopN)
 
         -- Identity
+        e.id            AS EventId,
         e.PublicEventId,
         e.EventNumber,
         e.EventName,

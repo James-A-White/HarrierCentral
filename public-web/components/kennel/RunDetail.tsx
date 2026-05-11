@@ -7,6 +7,7 @@ import { Navigation, ExternalLink, Copy, Check } from "lucide-react";
 const PackTrackMap = dynamic(() => import("./PackTrackMap"), { ssr: false });
 
 export interface RunDetailRun {
+  EventId: string;
   PublicEventId: string;
   EventStartDatetime: string;
   EventStartDatetimeGmt: string | null;
@@ -269,7 +270,7 @@ export function RunDetail({ run, kennel, canonicalPath, extraButtons, mapHeight 
               <PackTrackMap
                 lat={run.Latitude}
                 lon={run.Longitude}
-                eventId={run.PublicEventId}
+                eventId={run.EventId}
                 height={mapHeight}
               />
             )}

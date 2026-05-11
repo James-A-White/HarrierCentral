@@ -368,6 +368,7 @@ export async function getKennelLandingData(
 
 /** Shape of a single event row from publicWeb_getEvents (Rowset 1). */
 export interface RunEvent {
+  EventId: string;
   PublicEventId: string;
   EventNumber: number;
   EventName: string;
