@@ -39,19 +39,19 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_handleTabSelection);
     userId = widget.hasherId ?? getStringPref(StringPrefsEnum.userId)!;
-    _refreshRunHistoryFromTable(true);
+    unawaited(_refreshRunHistoryFromTable(true));
   }
 
-  void _handleTabSelection() {
+  Future<void> _handleTabSelection() async {
     if (_tabController.indexIsChanging) {
       // This means the user tapped a new tab, but the animation hasn't finished yet.
       //print('Tab is changing to index: ${_tabController.index}');
-      _refreshRunHistoryFromTable(true);
+      await _refreshRunHistoryFromTable(true);
       //setState(() {});
     } else if (_tabController.index != _tabController.previousIndex) {
       // This is triggered after the tab has finished changing.
       //print('Tab changed to index: ${_tabController.index}');
-      _refreshRunHistoryFromTable(true);
+      await _refreshRunHistoryFromTable(true);
       //setState(() {});
     }
   }
@@ -99,9 +99,9 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
           pay.${tableModel.paymentsTableHelper.colCreditAvailable} as creditAvailable,
           pay.${tableModel.paymentsTableHelper.colPaymentType} as paymentType,
           pay.${tableModel.paymentsTableHelper.colDoPayForExtras} as doPayForExtras
-          FROM narrowEvents e
+          FROM ${EnumDataTables.events.commonTableName} e
           INNER JOIN kennels k on e.${tableModel.eventsTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId}
-          INNER JOIN ${tableModel.countriesTableHelper.getTableName(widget.appDomain)} n on e.${tableModel.eventsTableHelper.colCountryId} = n.${tableModel.countriesTableHelper.colCountryId}
+          INNER JOIN ${EnumDataTables.countries.commonTableName} n on e.${tableModel.eventsTableHelper.colCountryId} = n.${tableModel.countriesTableHelper.colCountryId}
           LEFT OUTER JOIN ${tableModel.hasherEventMapTableHelper.getTableName(widget.appDomain)} hem on hem.${tableModel.hasherEventMapTableHelper.colEventId} = e.${tableModel.eventsTableHelper.colEventId} 
           AND hem.${tableModel.hasherEventMapTableHelper.colUserId}  = "$userId"
           LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(widget.appDomain)} pay on pay.${tableModel.paymentsTableHelper.colHemId} = hem.${tableModel.hasherEventMapTableHelper.colHemId} AND pay.${tableModel.paymentsTableHelper.colCancelledBy} IS NULL
@@ -141,11 +141,11 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
           pay.${tableModel.paymentsTableHelper.colCreditAvailable} as creditAvailable,
           pay.${tableModel.paymentsTableHelper.colDoPayForExtras} as doPayForExtras
           FROM ${tableModel.hasherEventMapTableHelper.getTableName(widget.appDomain)} hem
-          INNER JOIN ${tableModel.kennelsTableHelper.getTableName(widget.appDomain)} k on k.${tableModel.kennelsTableHelper.colKennelId} = ${tableModel.hasherEventMapTableHelper.colEventKennelId}
-          INNER JOIN ${tableModel.countriesTableHelper.getTableName(widget.appDomain)} n on n.${tableModel.countriesTableHelper.colCountryId} = ${tableModel.hasherEventMapTableHelper.colCountryId}
+          INNER JOIN ${EnumDataTables.kennels.commonTableName} k on k.${tableModel.kennelsTableHelper.colKennelId} = ${tableModel.hasherEventMapTableHelper.colEventKennelId}
+          INNER JOIN ${EnumDataTables.countries.commonTableName} n on n.${tableModel.countriesTableHelper.colCountryId} = ${tableModel.hasherEventMapTableHelper.colCountryId}
           LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(widget.appDomain)} pay on pay.${tableModel.paymentsTableHelper.colHemId} = hem.${tableModel.hasherEventMapTableHelper.colHemId} AND pay.${tableModel.paymentsTableHelper.colCancelledBy} IS NULL
           WHERE 
-          hem.${tableModel.hasherEventMapTableHelper.colEventId} NOT IN (SELECT eventId FROM NarrowEvents)
+          hem.${tableModel.hasherEventMapTableHelper.colEventId} NOT IN (SELECT eventId FROM ${EnumDataTables.events.commonTableName})
           AND hem.${tableModel.hasherEventMapTableHelper.colUserId} = "$userId"
           AND hem.${tableModel.hasherEventMapTableHelper.colEventIsCountedAndVisible} = 1 
           AND hem.${tableModel.hasherEventMapTableHelper.colRemoved} = 0 
@@ -269,13 +269,13 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
                   backgroundColor: hc_blue,
                   label: 'Email run counts\r\n(all kennels)',
                   labelStyle: const TextStyle(fontSize: 18.0),
-                  onTap: () {
-                    tableModel.hasherEventMapService
+                  onTap: () async {
+                    await tableModel.hasherEventMapService
                         .sendRunCountReportByEmail(
                           kennelId: GUID_EMPTY,
                           kennelName: 'All of your Hash Kennels',
                         )
-                        .then((Map<String, String> result) {
+                        .then((Map<String, String> result) async {
                           ScaffoldMessenger.of(
                             navigatorKey.currentContext!,
                           ).hideCurrentSnackBar();
@@ -283,18 +283,20 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
                               (result['result']!.toLowerCase().startsWith(
                                 'success',
                               ))) {
-                            Utilities.showAlert(
+                            await Utilities.showAlert(
                               'E-mail successfully sent',
                               'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
                               'OK',
                             );
                           }
                         });
-                    IveCoreUtilities.showInSnackBar(
-                      context,
-                      'Run count report being processed...',
-                      durationInSeconds: 10,
-                    );
+                    if (navigatorKey.currentContext != null) {
+                      IveCoreUtilities.showInSnackBar(
+                        navigatorKey.currentContext!,
+                        'Run count report being processed...',
+                        durationInSeconds: 10,
+                      );
+                    }
                   },
                 ),
               ],
@@ -328,11 +330,11 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
 
     //final bool result = await tableModel
     await tableModel.syncUserDataService.updateFromBackend(
-      SyncUserDataService.flagHasherEventMapTable |
-          SyncUserDataService.flagNarrowEventsTable |
-          SyncUserDataService.flagKennelsTable |
-          SyncUserDataService.flagPaymentsTable |
-          SyncUserDataService.flagHasherKennelMapTable,
+      EnumDataTables.hasherEventMap.flag |
+          EnumDataTables.events.flag |
+          EnumDataTables.kennels.flag |
+          EnumDataTables.payments.flag |
+          EnumDataTables.hasherKennelMap.flag,
       true,
       debugText: 'user_run_history_list_page: HEM, Events, Kennels',
     );

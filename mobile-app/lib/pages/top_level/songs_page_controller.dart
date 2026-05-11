@@ -1,0 +1,177 @@
+import 'package:harrier_central/imports.dart';
+
+class SongsPageController extends GetxController
+    with GetSingleTickerProviderStateMixin {
+  final TextEditingController searchController = TextEditingController();
+  final FocusNode searchFocusNode = FocusNode();
+  final ScrollController listScrollController = ScrollController();
+  final ScrollController lyricsScrollController = ScrollController();
+
+  final RxList<SongsModel> allSongs = <SongsModel>[].obs;
+  final RxList<SongsModel> filteredSongs = <SongsModel>[].obs;
+  final Rxn<SongsModel> selectedSong = Rxn<SongsModel>();
+  final RxBool isLoading = true.obs;
+  final RxBool isLyricsExpanded = false.obs;
+
+  // Bawdy rating filter toggles (all on by default)
+  final RxSet<int> activeBawdyFilters = <int>{0, 1, 2, 3}.obs;
+
+  // Ephemeral "sung today" tracking — resets when app closes
+  final RxSet<String> sungSongIds = <String>{}.obs;
+
+  void toggleSung(String songId) {
+    if (sungSongIds.contains(songId)) {
+      sungSongIds.remove(songId);
+    } else {
+      sungSongIds.add(songId);
+    }
+  }
+
+  // Animation for lyrics panel expansion
+  late AnimationController animController;
+  late Animation<double> lyricsExpansion;
+
+  // Audio player for song audio
+  AudioPlayer? audioPlayer;
+
+  /// Fraction of screen height occupied by the lyrics panel when collapsed.
+  static const double collapsedLyricsFraction = 0.33;
+
+  static const Map<int, String> bawdyIcons = <int, String>{
+    0: '😇',
+    1: '🍺🍺',
+    2: '🌶️🌶️🌶️',
+    3: '🔥🔥🔥🔥',
+  };
+
+  @override
+  void onInit() {
+    super.onInit();
+    animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
+    lyricsExpansion = CurvedAnimation(
+      parent: animController,
+      curve: Curves.easeInOut,
+    );
+
+    unawaited(loadSongs());
+  }
+
+  @override
+  void onClose() {
+    searchController.dispose();
+    searchFocusNode.dispose();
+    listScrollController.dispose();
+    lyricsScrollController.dispose();
+    animController.dispose();
+    unawaited(audioPlayer?.dispose());
+    super.onClose();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Data
+  // ---------------------------------------------------------------------------
+
+  Future<void> loadSongs() async {
+    try {
+      final String tableName = EnumDataTables.songs.commonTableName;
+      final List<Map<String, dynamic>> results = await database.rawQuery(
+        'SELECT * FROM $tableName WHERE removed = 0 ORDER BY songName ASC',
+      );
+
+      allSongs.value = results
+          .map(
+            (Map<String, dynamic> m) => tableModel.songsTableHelper.fromMap(m),
+          )
+          .toList()
+          .cast<SongsModel>();
+
+      filterResults();
+    } catch (e) {
+      if (kDebugMode) {
+        print('SongsPageController.loadSongs error: $e');
+      }
+    }
+
+    isLoading.value = false;
+  }
+
+  void filterResults() {
+    final String query = searchController.text.trim().toLowerCase();
+
+    filteredSongs.value = allSongs.where((SongsModel s) {
+      // Bawdy rating filter
+      if (!activeBawdyFilters.contains(s.bawdyRating.clamp(0, 3))) {
+        return false;
+      }
+      // Text search
+      if (query.isEmpty) return true;
+      return s.songName.toLowerCase().contains(query) ||
+          (s.tuneOf?.toLowerCase().contains(query) ?? false) ||
+          (s.tags?.toLowerCase().contains(query) ?? false) ||
+          s.lyrics.toLowerCase().contains(query);
+    }).toList();
+  }
+
+  void selectSong(SongsModel song) {
+    unawaited(audioPlayer?.stop());
+    unawaited(audioPlayer?.dispose());
+    audioPlayer = null;
+
+    selectedSong.value = song;
+    // Collapse if expanded when switching songs
+    if (isLyricsExpanded.value) {
+      isLyricsExpanded.value = false;
+      unawaited(animController.reverse());
+    }
+    // Reset lyrics scroll position
+    if (lyricsScrollController.hasClients) {
+      lyricsScrollController.jumpTo(0);
+    }
+  }
+
+  void toggleLyricsExpanded() {
+    isLyricsExpanded.value = !isLyricsExpanded.value;
+    if (isLyricsExpanded.value) {
+      unawaited(animController.forward());
+      // Initialize audio player if song has audio
+      final SongsModel? song = selectedSong.value;
+      if (song?.audioUrl != null && song!.audioUrl!.isNotEmpty) {
+        unawaited(audioPlayer?.dispose());
+        audioPlayer = AudioPlayer();
+        unawaited(audioPlayer!.setUrl(song.audioUrl!).catchError((_) => null));
+      }
+    } else {
+      unawaited(audioPlayer?.stop());
+      unawaited(audioPlayer?.dispose());
+      audioPlayer = null;
+      unawaited(animController.reverse());
+    }
+  }
+
+  void toggleBawdyFilter(int rating) {
+    if (activeBawdyFilters.contains(rating)) {
+      activeBawdyFilters.remove(rating);
+    } else {
+      activeBawdyFilters.add(rating);
+    }
+    filterResults();
+  }
+
+  void clearSearch() {
+    searchController.text = '';
+    filterResults();
+  }
+
+  void onSearchChanged(String text) {
+    filterResults();
+  }
+
+  String formatDuration(Duration d) {
+    final int minutes = d.inMinutes;
+    final int seconds = d.inSeconds % 60;
+    return '$minutes:${seconds.toString().padLeft(2, '0')}';
+  }
+}

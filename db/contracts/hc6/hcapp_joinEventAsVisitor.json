@@ -1,0 +1,224 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_joinEventAsVisitor",
+  "version": "1.0.0",
+  "description": "Records a non-member attendee (virgin = 1, visitor = 2) against an event. Uses a per-kennel placeholder Hasher whose id equals the KennelId; this row is created on demand if it does not already exist. The HasherEventMap row is idempotent by DisplayName: if a row already exists for that display name and event it is reused and the caller receives the existing hasherEventMapId without updating any fields. On success delegates to HC6.hcapp_syncEventAdminData to return fresh event admin sync data.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived cryptographic token validated by HC6.ValidateAppAuth."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "HasherEventMap.EventId",
+      "description": "Event UUID to add the visitor to. Must not be null or the zero UUID."
+    },
+    {
+      "name": "displayName",
+      "type": "NVARCHAR(250)",
+      "nullable": false,
+      "mapsToColumn": "HasherEventMap.DisplayName",
+      "description": "Visitor's display name. Used for deduplication — if a HEM row with this DisplayName already exists for the event, the existing row is returned unchanged.",
+      "typeMismatch": "Parameter is NVARCHAR(250); HasherEventMap.DisplayName is NVARCHAR(120). Values longer than 120 characters will cause a string truncation error at insert time."
+    },
+    {
+      "name": "virginVisitorType",
+      "type": "SMALLINT",
+      "nullable": false,
+      "mapsToColumn": "HasherEventMap.VirginVisitorType",
+      "description": "1 = Virgin, 2 = Visitor. Any other value returns an explicit errorType=12 param error (breaking change vs HC5 which silently did nothing)."
+    },
+    {
+      "name": "attendenceState",
+      "type": "SMALLINT",
+      "nullable": false,
+      "mapsToColumn": "HasherEventMap.AttendenceState",
+      "description": "Initial attendance state to set on the new HEM row (e.g. 20 = on trail). Not applied when the idempotent path reuses an existing row."
+    },
+    {
+      "name": "email",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "HasherEventMap.Email",
+      "description": "Visitor's email address. Optional. Not applied when the idempotent path reuses an existing row.",
+      "typeMismatch": "Parameter is NVARCHAR(250); HasherEventMap.Email is NVARCHAR(120). Values longer than 120 characters will cause a string truncation error at insert time."
+    },
+    {
+      "name": "phoneNumber",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "HasherEventMap.PhoneNumber",
+      "description": "Visitor's phone number. Optional. Not applied when the idempotent path reuses an existing row.",
+      "typeMismatch": "Parameter is NVARCHAR(250); HasherEventMap.PhoneNumber is NVARCHAR(120). Values longer than 120 characters will cause a string truncation error at insert time."
+    },
+    {
+      "name": "hasherEventMapUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Sync watermark forwarded to HC6.hcapp_syncEventAdminData. NULLed values are coerced to 'ignore' before the call."
+    },
+    {
+      "name": "paymentsUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Sync watermark forwarded to HC6.hcapp_syncEventAdminData. NULLed values are coerced to 'ignore' before the call."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "Write SP success envelope. Always present as the first rowset.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "BIT",
+          "nullable": false,
+          "description": "1 on success, 0 on any error."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success. Error code on failure."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success. Error classification on failure. 11=auth, 12=param, 19=db."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ErrorDetail",
+      "description": "Returned only on error (when envelope success=0). Contains one row with error detail.",
+      "columns": [
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "UUID of the HC.ErrorLog entry written for this error."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification code."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Specific error code."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Short error title for display."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "User-facing error message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "Name of the SP that raised the error, from OBJECT_NAME(@@PROCID)."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "AdHocResult",
+      "description": "Returned only on success (when envelope success=1). Single row identifying the new or existing HEM record.",
+      "columns": [
+        {
+          "name": "adHocDataId",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1. Literal sentinel — see codeSmells."
+        },
+        {
+          "name": "hasherEventMapId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "The newly created or pre-existing HasherEventMap.id for this visitor."
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "SyncEventAdminData",
+      "description": "On success, all subsequent rowsets come from HC6.hcapp_syncEventAdminData executed outside the transaction after the commit. The shape of these rowsets is defined by that SP's contract."
+    }
+  ],
+  "sideEffects": [
+    "EXEC HC6.ValidateAppAuth — validates device/token, resolves @userId",
+    "INSERT HC.Hasher — placeholder Hasher row (id = KennelId) created on demand if none exists for the event's kennel; triggers on HC.Hasher (QR code generation, geolocation, etc.) will fire",
+    "INSERT HC.HasherEventMap — new visitor row created if no existing row with the same DisplayName for this event; skipped on the idempotent path",
+    "EXEC HC6.hcapp_syncEventAdminData — called after the transaction commits to return fresh sync data; auth is re-validated inside the delegated SP"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "Parameter type wider than column for DisplayName, Email, PhoneNumber",
+      "detail": "@displayName, @email, and @phoneNumber are all declared NVARCHAR(250), but the corresponding columns HasherEventMap.DisplayName, Email, and PhoneNumber are each NVARCHAR(120). Any value longer than 120 characters will silently truncate or raise an error at INSERT time depending on ANSI_WARNINGS settings. Should be narrowed to NVARCHAR(120) to match the table."
+    },
+    {
+      "severity": "medium",
+      "issue": "Idempotent path does not update existing row",
+      "detail": "When a HasherEventMap row already exists for the given DisplayName and EventId, the SP returns the existing hasherEventMapId without applying @attendenceState, @email, or @phoneNumber. If the caller is correcting a previously recorded state (e.g. changing attendance state from RSVP to on-trail), the update is silently dropped. This is a data staleness risk — callers have no way to know whether the returned row reflects current or prior values."
+    },
+    {
+      "severity": "medium",
+      "issue": "Placeholder Hasher INSERT may fail due to missing required columns",
+      "detail": "The INSERT into HC.Hasher only specifies id, FirstName, LastName, HashName, NameDisplayPreference, Description, HomeLatitude, HomeLongitude, and Email. Several NOT NULL columns (PublicHasherId, SupportCode, ResetCode, QR_code, QR_secret_code, Preferences, IncludeInGlobalHashDirectory, IsBetaTester, isAnonymous, BetaFeaturesEnabled, createdAt, updatedAt, updatedAtBias) rely on table DEFAULT constraints to be populated. If any constraint is missing or the table definition changes, the INSERT will fail. Additionally, the QR code generation trigger (trgGenerateQrCode) will fire and attempt to update the placeholder row, which may raise unexpected side effects."
+    },
+    {
+      "severity": "medium",
+      "issue": "Validation errors logged to HC.ErrorLog before transaction",
+      "detail": "The null eventId and invalid virginVisitorType checks run before the BEGIN TRANSACTION (lines 89-114). The INSERT into HC.ErrorLog for these validation cases is not wrapped in any transaction, meaning the error log entry is written and committed immediately even if the SP returns early. This is a minor atomicity inconsistency but is acceptable for error logging."
+    },
+    {
+      "severity": "low",
+      "issue": "adHocDataId is a literal sentinel with no meaning",
+      "detail": "The success rowset always returns adHocDataId = 1 as a hard-coded literal. This column carries no information — the caller only needs hasherEventMapId. The column exists for historical HC5 compatibility and should be considered for removal in a future cleanup."
+    },
+    {
+      "severity": "low",
+      "issue": "Duplicate errorCode 1223 used for two distinct param errors",
+      "detail": "errorCode 1223 is used for both the null/zero @eventId check (line 91) and the invalid @virginVisitorType check (line 104). Callers cannot distinguish these two failure modes by errorCode alone — they must inspect errorTitle or errorUserMessage."
+    },
+    {
+      "severity": "low",
+      "issue": "HcVersion hardcoded to '<unknown>'",
+      "detail": "All HC.ErrorLog inserts in this SP use HcVersion = '<unknown>'. A proper HC6 version string should be passed or a system variable used."
+    }
+  ],
+  "breakingChanges": [
+    "Invalid @virginVisitorType now returns an explicit errorType=12 error rowset. HC5 silently returned no rowsets and made no changes for values other than 1 or 2.",
+    "TRY/CATCH and transaction added. HC5 had neither — an unhandled runtime error in HC5 would propagate to the caller without any error envelope.",
+    "Success envelope rowset (rowset 0) added. HC5 returned only the AdHocResult rowset on success with no envelope.",
+    "Delegation target changed from HC5.hcapp_syncEventAdminData to HC6.hcapp_syncEventAdminData."
+  ]
+}

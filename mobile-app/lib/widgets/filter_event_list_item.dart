@@ -21,8 +21,8 @@ class FilterEventListItem extends StatelessWidget {
         await Navigator.push<void>(
           context,
           MaterialPageRoute<void>(
-            builder:
-                (BuildContext context) => RunAdminPage(eventId: event.eventId),
+            builder: (BuildContext context) =>
+                RunAdminPage(eventId: event.eventId),
           ),
         );
         await updateEvent(eventFilterType_refreshOnly);
@@ -37,46 +37,45 @@ class FilterEventListItem extends StatelessWidget {
             event.canEditRunAttendance == -2 || event.canEditRunAttendance == -3
                 ? Icon(delayIcon, size: iconSize, color: hc_blue)
                 : Container(
-                  foregroundDecoration:
-                      event.isVisible == 1
-                          ? const BoxDecoration()
-                          : const BoxDecoration(
+                    foregroundDecoration: event.isVisible == 1
+                        ? const BoxDecoration()
+                        : const BoxDecoration(
                             color: Colors.grey,
                             backgroundBlendMode: BlendMode.saturation,
                           ),
-                  child: Opacity(
-                    opacity: event.isVisible == 1 ? 1.0 : 0.5,
-                    child: Stack(
-                      children: <Widget>[
-                        Image.asset(
-                          (event.eventInboundIntegrationId ?? 0) <= 2
-                              ? 'images/icons/integration_icon_${event.eventInboundIntegrationId}.png'
-                              : 'images/icons/integration_icon_x.png',
-                          height: iconSize,
-                          width: iconSize,
-                        ),
-                        if ((event.eventInboundIntegrationId ?? 0) >
-                            2) ...<Widget>[
-                          Positioned(
-                            left: 0,
-                            right: 0,
-                            top: 2.5,
-                            child: Text(
-                              event.eventInboundIntegrationId == 5
-                                  ? 'Berlin Website'
-                                  : event.eventInboundIntegrationId == 3
-                                  ? 'San\r\nDiego'
-                                  : 'External Source',
-                              textAlign: TextAlign.center,
-                              maxLines: 2,
-                              style: ts_tinyBlackBold,
-                            ),
+                    child: Opacity(
+                      opacity: event.isVisible == 1 ? 1.0 : 0.5,
+                      child: Stack(
+                        children: <Widget>[
+                          Image.asset(
+                            (event.eventInboundIntegrationId ?? 0) <= 2
+                                ? 'images/icons/integration_icon_${event.eventInboundIntegrationId}.png'
+                                : 'images/icons/integration_icon_x.png',
+                            height: iconSize,
+                            width: iconSize,
                           ),
+                          if ((event.eventInboundIntegrationId ?? 0) >
+                              2) ...<Widget>[
+                            Positioned(
+                              left: 0,
+                              right: 0,
+                              top: 2.5,
+                              child: Text(
+                                event.eventInboundIntegrationId == 5
+                                    ? 'Berlin Website'
+                                    : event.eventInboundIntegrationId == 3
+                                    ? 'San\r\nDiego'
+                                    : 'External Source',
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                style: ts_tinyBlackBold,
+                              ),
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
                   ),
-                ),
 
             Expanded(
               child: Padding(
@@ -90,8 +89,9 @@ class FilterEventListItem extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color:
-                            event.isVisible == 1 ? Colors.black87 : Colors.grey,
+                        color: event.isVisible == 1
+                            ? Colors.black87
+                            : Colors.grey,
                         fontFamily: 'AvenirNextCondensedDemiBold',
                         fontStyle: FontStyle.normal,
                         fontSize: 14.0 * deviceInfo.deviceWidthScaleFactor,
@@ -102,16 +102,17 @@ class FilterEventListItem extends StatelessWidget {
                     Text(
                       event.eventStartDatetime.year != DateTime.now().year
                           ? DateFormat(
-                            "E, MMM d, yyyy 'at' h:mm a",
-                          ).format(event.eventStartDatetime)
+                              "E, MMM d, yyyy 'at' h:mm a",
+                            ).format(event.eventStartDatetime)
                           : DateFormat(
-                            "E, MMM d 'at' h:mm a",
-                          ).format(event.eventStartDatetime),
+                              "E, MMM d 'at' h:mm a",
+                            ).format(event.eventStartDatetime),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color:
-                            event.isVisible == 1 ? Colors.black87 : Colors.grey,
+                        color: event.isVisible == 1
+                            ? Colors.black87
+                            : Colors.grey,
                         fontFamily: 'AvenirNextCondensedDemiBold',
                         fontStyle: FontStyle.normal,
                         fontSize: 14.0 * deviceInfo.deviceWidthScaleFactor,
@@ -121,33 +122,33 @@ class FilterEventListItem extends StatelessWidget {
                     ),
                     ((event.isVisible == 1) && (event.isCountedRun == 1))
                         ? Text.rich(
-                          TextSpan(
-                            text: 'Run ',
-                            children: <TextSpan>[
-                              TextSpan(
-                                text: '#${event.eventNumber.toString()}',
-                                style: TextStyle(
-                                  fontFamily: 'AvenirNextCondensedBold',
-                                  decoration:
-                                      ((event.absoluteEventNumber ?? 0) >= 1)
-                                          ? TextDecoration.underline
-                                          : TextDecoration.none,
+                            TextSpan(
+                              text: 'Run ',
+                              children: <TextSpan>[
+                                TextSpan(
+                                  text: '#${event.eventNumber.toString()}',
+                                  style: TextStyle(
+                                    fontFamily: 'AvenirNextCondensedBold',
+                                    decoration:
+                                        ((event.absoluteEventNumber ?? 0) >= 1)
+                                        ? TextDecoration.underline
+                                        : TextDecoration.none,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          style: TextStyle(
-                            color:
-                                event.isVisible == 1
-                                    ? Colors.black87
-                                    : Colors.grey,
-                            fontFamily: 'AvenirNextCondensedDemiBold',
-                            fontStyle: FontStyle.normal,
-                            fontSize: 14.0 * deviceInfo.deviceWidthScaleFactor,
-                            height: 1.0,
-                          ),
-                          textAlign: TextAlign.left,
-                        )
+                              ],
+                            ),
+                            style: TextStyle(
+                              color: event.isVisible == 1
+                                  ? Colors.black87
+                                  : Colors.grey,
+                              fontFamily: 'AvenirNextCondensedDemiBold',
+                              fontStyle: FontStyle.normal,
+                              fontSize:
+                                  14.0 * deviceInfo.deviceWidthScaleFactor,
+                              height: 1.0,
+                            ),
+                            textAlign: TextAlign.left,
+                          )
                         : Container(),
                   ],
                 ),
@@ -160,16 +161,15 @@ class FilterEventListItem extends StatelessWidget {
                 iconSize: Theme.of(context).iconTheme.size,
                 color: Colors.black54,
                 splashColor: Theme.of(context).highlightColor,
-                onPressed: () {
+                onPressed: () async {
                   //
 
                   final List<Map<String, dynamic>> buttons =
                       <Map<String, dynamic>>[
                         <String, dynamic>{
-                          'title':
-                              event.isVisible == 0
-                                  ? 'Show Event'
-                                  : 'Hide Event',
+                          'title': event.isVisible == 0
+                              ? 'Show Event'
+                              : 'Hide Event',
                           'icon': <Widget>[
                             SizedBox(
                               height: 30,
@@ -182,16 +182,14 @@ class FilterEventListItem extends StatelessWidget {
                               ),
                             ),
                           ],
-                          'returnValue':
-                              event.isVisible == 0
-                                  ? eventFilterType_showEvent
-                                  : eventFilterType_hideEvent,
+                          'returnValue': event.isVisible == 0
+                              ? eventFilterType_showEvent
+                              : eventFilterType_hideEvent,
                         },
                         <String, dynamic>{
-                          'title':
-                              event.isCountedRun == 0
-                                  ? 'Count Run'
-                                  : 'Don\'t Count Run',
+                          'title': event.isCountedRun == 0
+                              ? 'Count Run'
+                              : 'Don\'t Count Run',
                           'icon': <Widget>[
                             SizedBox(
                               height: 30,
@@ -204,10 +202,9 @@ class FilterEventListItem extends StatelessWidget {
                               ),
                             ),
                           ],
-                          'returnValue':
-                              event.isCountedRun == 0
-                                  ? eventFilterType_countEvent
-                                  : eventFilterType_doNotCountEvent,
+                          'returnValue': event.isCountedRun == 0
+                              ? eventFilterType_countEvent
+                              : eventFilterType_doNotCountEvent,
                         },
                         <String, dynamic>{
                           'title': 'Set run number',
@@ -233,15 +230,15 @@ class FilterEventListItem extends StatelessWidget {
                     cancelButtonReturnValue: followTypeCancel,
                   );
 
-                  showDialog<dynamic>(
+                  final retVal = await showDialog<dynamic>(
                     context: context,
                     barrierDismissible: false, // user must tap button!
                     builder: (BuildContext context) {
                       return popup;
                     },
-                  ).then((dynamic retVal) {
-                    updateEvent(retVal);
-                  });
+                  );
+
+                  updateEvent(retVal);
                 },
               ),
             ),

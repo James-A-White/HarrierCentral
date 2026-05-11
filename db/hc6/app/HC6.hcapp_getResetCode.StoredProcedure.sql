@@ -76,7 +76,7 @@ WHERE h.SupportCode = @supportCode
 
 IF (@resetCode IS NULL)
 BEGIN
-    SET @errorCode = 1313; SET @errorType = 3; SET @errorId = NEWID();
+    SET @errorCode = 1313; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, string_1)
     VALUES (@errorId, '<unknown>', 'Support code not found',
             'No active user found for support code: ' + COALESCE(@supportCode, ''),

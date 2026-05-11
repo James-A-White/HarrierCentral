@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
-import { getKennelLandingData, getPageLayout } from "@/lib/api";
+import { getKennelLandingData, getPageLayout, getEvents } from "@/lib/api";
 import { toKennelContext } from "@/lib/kennel-utils";
 import { StickyNav } from "@/components/StickyNav";
 import { KennelBackground } from "@/components/kennel/KennelBackground";
 import { PuckRenderer } from "@/components/puck/PuckRenderer";
 import { parseSiteConfig, getDefaultLayout, deriveNavItems } from "@/lib/page-layout";
+import { getIsCustomDomain } from "@/lib/server-utils";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -32,7 +33,14 @@ export default async function EventsPage({ params }: PageProps) {
   const kennelData = await getKennelLandingData(slug);
   if (!kennelData) notFound();
 
-  const layoutJson = await getPageLayout(slug);
+  const [eventsResult, pastResult, layoutJson] = await Promise.all([
+    getEvents(kennelData.PublicKennelId, { isFuture: true,  daysOffset: 365, maxEvents: 100 }),
+    getEvents(kennelData.PublicKennelId, { isFuture: false, daysOffset: 730, maxEvents: 100, summaryOnly: true }),
+    getPageLayout(slug),
+  ]);
+  const futureRuns = eventsResult?.events ?? [];
+  const pastRuns   = pastResult?.events   ?? [];
+  const isCustomDomain = await getIsCustomDomain();
   const kennel = toKennelContext(kennelData);
 
   const siteConfig = parseSiteConfig(layoutJson);
@@ -55,7 +63,7 @@ export default async function EventsPage({ params }: PageProps) {
         <div className="pt-20">
           <PuckRenderer
             data={pageLayout}
-            pageData={{ kennelData, slug, futureRuns: [], pastRuns: [] }}
+            pageData={{ kennelData, slug, futureRuns, pastRuns, isCustomDomain }}
           />
         </div>
       </body>

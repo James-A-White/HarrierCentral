@@ -9,7 +9,8 @@ class RunDetailsPage extends StatefulWidget {
   });
 
   final RunDetailsAggregate futureRun;
-  final Function? refreshPage;
+  final FutureOr<RunDetailsAggregate?> Function()? refreshPage;
+
   final RunTab openToTab;
 
   @override
@@ -21,10 +22,9 @@ class RunDetailsPageState extends State<RunDetailsPage> {
 
   @override
   void initState() {
+    super.initState();
     _futureRun = widget.futureRun;
     // if (widget.openToChatTab) {}
-
-    super.initState();
   }
 
   @override
@@ -42,28 +42,19 @@ class RunDetailsPageState extends State<RunDetailsPage> {
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
-          onPressed: () {
+          onPressed: () async {
+            final navigator = Navigator.of(context);
             if (_activeTab == 4) {
               if (Get.isRegistered<NotificationService>()) {
                 final controller = Get.find<NotificationService>();
-                controller.markEventMessagesAsViewed(
+                await controller.markEventMessagesAsViewed(
                   _futureRun.event.publicEventId,
                 );
-                // if (Get.isRegistered<FutureRunListPageController>()) {
-                //   final controller = Get.find<FutureRunListPageController>();
-                //   controller
-                //           .thisEventUnseenChats[widget
-                //               .futureRun
-                //               .event
-                //               .publicEventId]
-                //           ?.value =
-                //       0;
-                //   controller.update(['runList', 'main_nav_page']);
-                // }
               }
             }
             //print('Run details popped');
-            Navigator.of(context).pop(); // or Get.back();
+            if (!mounted) return;
+            navigator.pop(); // or Get.back();
           },
         ),
         actions: <Widget>[
@@ -71,33 +62,32 @@ class RunDetailsPageState extends State<RunDetailsPage> {
               ? Container()
               : IconButton(
                   icon: const Icon(FontAwesome.gear, color: Colors.white),
-                  onPressed: () {
-                    Navigator.push<dynamic>(
+                  onPressed: () async {
+                    await Navigator.push<dynamic>(
                       context,
                       MaterialPageRoute<dynamic>(
                         builder: (BuildContext context) =>
                             RunAdminPage(eventId: _futureRun.event.eventId),
                       ),
-                    ).then((void _) {
-                      if (widget.refreshPage != null) {
-                        setState(() {
-                          _isUpdating = true;
-                        });
+                    );
 
-                        final result = widget.refreshPage!();
+                    final refresh = widget.refreshPage;
+                    if (refresh == null || !mounted) return;
 
-                        if (result is Future<dynamic>) {
-                          result.then((dynamic rda) {
-                            setState(() {
-                              if (rda != null) {
-                                _futureRun = rda;
-                              }
-                              _isUpdating = false;
-                            });
-                          });
-                        }
-                      }
-                    }); //_select(choices[0]);
+                    setState(() => _isUpdating = true);
+
+                    dynamic rda;
+                    try {
+                      rda = await Future<dynamic>.sync(refresh);
+                    } catch (_) {
+                      rda = null;
+                    }
+
+                    if (!mounted) return;
+                    setState(() {
+                      if (rda != null) _futureRun = rda;
+                      _isUpdating = false;
+                    });
                   },
                 ),
         ],

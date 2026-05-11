@@ -58,7 +58,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
   final GlobalKey<FormState> _addressFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _otherDetailsFormKey = GlobalKey<FormState>();
 
-  final GlobalKey<MyFlutterMapState> _mapKey = GlobalKey<MyFlutterMapState>();
+  final GlobalKey<EditorMapState> _mapKey = GlobalKey<EditorMapState>();
 
   final FocusNode _focusNodeAbsoluteEventNumber = FocusNode();
   final FocusNode _focusNodeEventPriceForMembers = FocusNode();
@@ -354,7 +354,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
               ),
             ),
             Positioned(
-              top: 86,
+              top: 46,
               bottom: 0,
               child: SizedBox(
                 //key: _tabKey,
@@ -1184,10 +1184,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                           'Copy data from ${_eventAggregate.event.eventInboundIntegrationId >= integrationPlatformNames.length ? 'external source' : integrationPlatformNames[_eventAggregate.event.eventInboundIntegrationId]}',
                           style: ts_button,
                         ),
-                        onPressed: () {
-                          setState(() {
-                            _useExternalSourceDetails();
-                          });
+                        onPressed: () async {
+                          await _useExternalSourceDetails();
+                          setState(() {});
                         },
                       ),
                     ],
@@ -1232,7 +1231,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                   onPressed: () async {
                     if ((_eventAggregate.event.eventId.isNotEmpty) &&
                         (_eventAggregate.event.eventId != GUID_EMPTY)) {
-                      final String fileName = _upload(
+                      final String fileName = await _upload(
                         snapshot.data!,
                         _eventAggregate.event.eventId,
                       );
@@ -1291,8 +1290,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                     ), // double.infinity is the width and 30 is the height
                   ),
                   child: Text('Select again from gallery', style: ts_button),
-                  onPressed: () {
-                    _getImageFromGallery(ImageSource.gallery);
+                  onPressed: () async {
+                    await _getImageFromGallery(ImageSource.gallery);
                   },
                 ),
               ),
@@ -1409,8 +1408,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                         'Select from gallery',
                                         style: ts_button,
                                       ),
-                                      onPressed: () {
-                                        _getImageFromGallery(
+                                      onPressed: () async {
+                                        await _getImageFromGallery(
                                           ImageSource.gallery,
                                         );
                                       },
@@ -1503,8 +1502,8 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                             ), // double.infinity is the width and 30 is the height
                           ),
                           child: Text('Select from gallery', style: ts_button),
-                          onPressed: () {
-                            _getImageFromGallery(ImageSource.gallery);
+                          onPressed: () async {
+                            await _getImageFromGallery(ImageSource.gallery);
                           },
                         ),
                       ),
@@ -1527,7 +1526,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
     );
   }
 
-  String _upload(File imageFile, String eventId) {
+  Future<String> _upload(File imageFile, String eventId) async {
     final String datetime = DateFormat('yyyyMMddkkmmss').format(DateTime.now());
     final String fileName = 'eventImage_${eventId}_$datetime.jpg';
     final Uri uri = Uri.parse(
@@ -1544,9 +1543,10 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
     request.headers.addAll(headers);
 
     request.bodyBytes = imageFile.readAsBytesSync();
-    request.send().then((StreamedResponse response) {
-      //print('Avatar thumbnail upload response = ${response.statusCode}');
-    });
+    // StreamedResponse response = await request.send();
+    // //print('Avatar thumbnail upload response = ${response.statusCode}');
+
+    await request.send();
 
     return fileName;
   }
@@ -1603,7 +1603,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
               //   //decoration: Backgrounds.defaultHcBackground(),
               //   height: MediaQuery.of(context).size.height - 300,
               //   child:
-              MyFlutterMap(
+              EditorMap(
                 _eventAggregate.extensions.latitude == null
                     ? null
                     : latlng.LatLng(
@@ -1825,7 +1825,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                   _isUpdating = true;
                                 });
                                 final EventsService nSvc = EventsService();
-                                // check to see if "no location" is set. If so, don't overwrite it
+                                //check to see if "no location" is set. If so, don't overwrite it
                                 if ((_mapCenter.latitude != CLEAR_LATLONG) &&
                                     (_mapCenter.longitude != CLEAR_LATLONG) &&
                                     (_mapKey.currentState?.mapController !=

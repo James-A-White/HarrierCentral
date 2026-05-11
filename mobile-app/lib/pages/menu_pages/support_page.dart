@@ -150,8 +150,8 @@ class SupportPageState extends State<SupportPage> {
                                 'Learn more about this feature',
                                 style: ts_button,
                               ),
-                              onPressed: () {
-                                _displayInstructions(context);
+                              onPressed: () async {
+                                await _displayInstructions(context);
                               },
                             ),
                             const FancyDivider(

@@ -157,7 +157,7 @@ export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false, navIte
             {/* Left — logo + kennel name */}
             <div className="flex items-center gap-3">
               <div
-                className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/15 shadow-lg overflow-hidden"
+                className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/15 shadow-lg"
                 style={{ backgroundColor: kennel.logoUrl ? undefined : "var(--kennel-primary)" }}
               >
                 {kennel.logoUrl ? (

@@ -25,7 +25,7 @@ class AppLifecycleController extends SuperController<void> {
     Get.put(LocationService()); // re-subscribe
     if (Get.isRegistered<ChatPageController>()) {
       final chatPageController = Get.find<ChatPageController>();
-      chatPageController.onAppResumed(); // Call your method safely
+      unawaited(chatPageController.onAppResumed()); // Call your method safely
     }
   }
 
@@ -43,7 +43,7 @@ Future<void> main() async {
 
   // ✅ Keep top status bar visible
   // 🚫 Hide the bottom navigation bar (Android only)
-  SystemChrome.setEnabledSystemUIMode(
+  await SystemChrome.setEnabledSystemUIMode(
     SystemUiMode.manual,
     overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom],
   );

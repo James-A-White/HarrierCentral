@@ -368,8 +368,8 @@ class QrTabState extends State<QrTab>
           TextButton(
             style: text_button_style,
             child: Text('Learn more about this feature', style: ts_button),
-            onPressed: () {
-              _displayInstructions(context);
+            onPressed: () async {
+              await _displayInstructions(context);
             },
           ),
         ],

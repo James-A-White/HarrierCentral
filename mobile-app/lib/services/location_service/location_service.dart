@@ -1,17 +1,21 @@
+// ignore_for_file: constant_identifier_names
+
 import 'package:geolocator/geolocator.dart';
 import 'run_point_buffer.dart';
 import 'package:harrier_central/imports.dart'; // Assume this is imported in your main project
 
 // Constants (replace with your actual constants)
-// ignore: constant_identifier_names
-//const LocationAccuracy BASE_APP_LOCATION_ACCURACY = LocationAccuracy.best;
 
 String pad19(int epochMs) => epochMs.toString().padLeft(19, '0');
+
+const int DISTANCE_BETWEEN_APP_WAKEUPS = 5; // distanceFilter in meters
+const LocationAccuracy LOCATION_ACCURACY = LocationAccuracy.bestForNavigation;
 
 class LocationService extends GetxService {
   // Rx variable to hold the latest position, making it reactive
   final Rx<Position?> lastKnownPosition = Rx<Position?>(null);
   final Rx<DateTime> lastKnownPositionRead = Rx<DateTime>(DateTime(2000));
+  final RxInt locationUpdateCount = 0.obs;
 
   final RxBool joinRunTracking = false.obs;
   String? eventId;
@@ -42,13 +46,79 @@ class LocationService extends GetxService {
   void onInit() {
     super.onInit();
     // Call the subscription logic on initialization
-    subscribeToGeoLocationStream();
+    unawaited(onInitAsync());
+
+    ever<bool>(joinRunTracking, (value) async {
+      // react to state change here
+      if (value) {
+        // start tracking
+        var locationSettings = getLocSettings(
+          DISTANCE_BETWEEN_APP_WAKEUPS, // distanceFilter in meters
+          LOCATION_ACCURACY,
+          true, // allowBackgroundLocationUpdates
+          false, // pauseLocationUpdatesAutomatically
+        );
+
+        await _geoLocationStreamSubscription?.cancel();
+        _geoLocationStreamSubscription =
+            Geolocator.getPositionStream(
+              locationSettings: locationSettings,
+            ).listen(
+              updateDeviceLocation,
+              onError: (error) {
+                if (kDebugMode) {
+                  print('LocationStream Error: $error');
+                  // Handle specific errors like service being disabled
+                }
+              },
+            );
+
+        if (kDebugMode) {
+          print('LocationService: Started run tracking.');
+        }
+      } else {
+        // stop tracking
+        var locationSettings = getLocSettings(
+          100, // distanceFilter in meters
+          LocationAccuracy.lowest,
+          false, // allowBackgroundLocationUpdates
+          true, // pauseLocationUpdatesAutomatically
+        );
+
+        await _geoLocationStreamSubscription?.cancel();
+
+        await _runBuffer?.flush();
+        _lastFlushTime = DateTime.now();
+
+        _geoLocationStreamSubscription =
+            Geolocator.getPositionStream(
+              locationSettings: locationSettings,
+            ).listen(
+              updateDeviceLocation,
+              onError: (error) {
+                if (kDebugMode) {
+                  print('LocationStream Error: $error');
+                }
+                // Handle specific errors like service being disabled
+              },
+            );
+
+        if (kDebugMode) {
+          print('LocationService: Stopped run tracking.');
+        }
+      }
+    });
+  }
+
+  Future<void> onInitAsync() async {
+    // Any async initialization logic can go here
+    await subscribeToGeoLocationStream();
   }
 
   @override
   void onClose() {
     // Cancel the stream subscription when the service is closed
-    _geoLocationStreamSubscription?.cancel();
+    unawaited(_geoLocationStreamSubscription?.cancel());
     super.onClose();
   }
 
@@ -68,65 +138,108 @@ class LocationService extends GetxService {
     // 3. Check permissions
     final permission = await Geolocator.checkPermission();
 
-    if (permission == LocationPermission.always ||
-        permission == LocationPermission.whileInUse) {
-      // 4. Start streaming location updates (equivalent to your .listen)
-      final LocationSettings locationSettings;
-      if (defaultTargetPlatform == TargetPlatform.android) {
-        locationSettings = AndroidSettings(
-          accuracy: LocationAccuracy.high,
-          distanceFilter: 15,
-          intervalDuration: Duration(seconds: 15),
-          forceLocationManager: false,
-          foregroundNotificationConfig: ForegroundNotificationConfig(
-            notificationTitle: 'Harrier Central',
-            notificationText: 'Tracking run in progress',
-            enableWakeLock: true,
-          ),
-        );
-      } else if (defaultTargetPlatform == TargetPlatform.iOS) {
-        locationSettings = AppleSettings(
-          accuracy: LocationAccuracy.high,
-          distanceFilter: 15,
-          activityType: ActivityType.fitness,
-          allowBackgroundLocationUpdates: true,
-          pauseLocationUpdatesAutomatically: false,
-        );
-      } else {
-        locationSettings = const LocationSettings(
-          accuracy: BASE_APP_LOCATION_ACCURACY,
-          distanceFilter: 15,
-        );
+    if (permission == LocationPermission.denied) {
+      final requestedPermission = await Geolocator.requestPermission();
+      if ((requestedPermission == LocationPermission.denied) ||
+          (requestedPermission == LocationPermission.deniedForever)) {
+        if (kDebugMode) {
+          print('Location permission denied by user.');
+        }
+        return;
       }
+    }
 
-      _geoLocationStreamSubscription =
-          Geolocator.getPositionStream(
-            locationSettings: locationSettings,
-          ).listen(
-            _updateDeviceLocation,
+    // 4. Start streaming location updates (equivalent to your .listen)
 
-            onError: (error) {
+    var locationSettings = getLocSettings(
+      250, // distanceFilter in meters
+      LocationAccuracy.lowest,
+      false, // allowBackgroundLocationUpdates
+      true, // pauseLocationUpdatesAutomatically
+    );
+
+    _geoLocationStreamSubscription =
+        Geolocator.getPositionStream(locationSettings: locationSettings).listen(
+          updateDeviceLocation,
+
+          onError: (error) {
+            if (kDebugMode) {
               print('LocationStream Error: $error');
-              // Handle specific errors like service being disabled
-            },
-          );
+            }
+            // Handle specific errors like service being disabled
+          },
+        );
 
-      // 5. One-time location fetch (low accuracy, non-blocking initial read)
+    // 5. One-time location fetch (low accuracy, non-blocking initial read)
+    unawaited(
       Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.lowest,
         ),
-      ).then(_updateDeviceLocation).catchError((e) {
-        print('Initial Location Fetch Error: $e');
-      });
+      ).then(updateDeviceLocation).catchError((e) {
+        if (kDebugMode) {
+          print('Initial Location Fetch Error: $e');
+        }
+      }),
+    );
+  }
+
+  LocationSettings getLocSettings(
+    int distanceFilter,
+    LocationAccuracy accuracy,
+    bool allowBackgroundLocationUpdates,
+    bool pauseLocationUpdatesAutomatically,
+  ) {
+    final LocationSettings locationSettings;
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      locationSettings = AndroidSettings(
+        accuracy: accuracy,
+        distanceFilter: distanceFilter,
+        intervalDuration: Duration(minutes: 15),
+        forceLocationManager: false,
+        foregroundNotificationConfig: ForegroundNotificationConfig(
+          notificationTitle: 'Harrier Central',
+          notificationText: 'Tracking run in progress',
+          enableWakeLock: true,
+        ),
+      );
+    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+      locationSettings = AppleSettings(
+        accuracy: accuracy,
+        distanceFilter: distanceFilter,
+        activityType: ActivityType.fitness,
+        allowBackgroundLocationUpdates: allowBackgroundLocationUpdates,
+        pauseLocationUpdatesAutomatically: pauseLocationUpdatesAutomatically,
+      );
     } else {
-      print('Location permission not granted: $permission');
-      // Optionally request permission here or notify user
+      locationSettings = LocationSettings(
+        accuracy: accuracy,
+        distanceFilter: distanceFilter,
+      );
     }
+
+    return locationSettings;
+  }
+
+  Future<void> markPoint(HashRunPointTypes pointType, {String? label}) async {
+    final position = await Geolocator.getCurrentPosition(
+      locationSettings: const LocationSettings(accuracy: LocationAccuracy.best),
+    );
+    await updateDeviceLocation(
+      position,
+      forceFlush: true,
+      pointType: pointType,
+      label: label,
+    );
   }
 
   // Private method to handle location updates from the stream/one-time fetch
-  void _updateDeviceLocation(Position position) {
+  Future<void> updateDeviceLocation(
+    Position position, {
+    bool forceFlush = false,
+    HashRunPointTypes? pointType,
+    String? label,
+  }) async {
     final lat = position.latitude.toDouble();
     final lon = position.longitude.toDouble();
     final accuracy = position.accuracy.toDouble();
@@ -137,10 +250,10 @@ class LocationService extends GetxService {
     lastKnownPositionRead.value = DateTime.now();
 
     // 2. Update the persistent storage
-    setNumPref(NumPrefsEnum.currentDeviceLat, lat);
-    setNumPref(NumPrefsEnum.currentDeviceLon, lon);
-    setNumPref(NumPrefsEnum.currentDeviceAltitude, altitude);
-    setDatePref(DatePrefsEnum.lastLocationUpdate, DateTime.now());
+    await setNumPref(NumPrefsEnum.currentDeviceLat, lat);
+    await setNumPref(NumPrefsEnum.currentDeviceLon, lon);
+    await setNumPref(NumPrefsEnum.currentDeviceAltitude, altitude);
+    await setDatePref(DatePrefsEnum.lastLocationUpdate, DateTime.now());
 
     // 3. Update the shared state in DeviceInfoService
     deviceInfo.deviceLat = lat;
@@ -151,12 +264,14 @@ class LocationService extends GetxService {
     if (joinRunTracking.value) {
       if ((_runBuffer != null) && (_runBuffer!.eventId != eventId)) {
         // Reset buffer if eventId/userId changed
-        _runBuffer?.flush().then((_) {
+        await _runBuffer?.flush();
+
+        if (kDebugMode) {
           print('LocationService: Flushed old run buffer.');
-          _runBuffer = null;
-          // wait for next location update to re-initialize
-          return;
-        });
+        }
+        _runBuffer = null;
+        // wait for next location update to re-initialize
+        return;
       }
 
       _runBuffer ??= RunPointBuffer(
@@ -165,25 +280,44 @@ class LocationService extends GetxService {
         userId: userId!,
       );
 
+      String? pointStr;
+
+      if (pointType != null) {
+        pointStr = pointType.key;
+        if (label != null) {
+          pointStr += '::$label';
+        }
+      }
+
+      if (pointStr != null) {
+        if (kDebugMode) {
+          print(pointStr);
+        }
+      }
+
       final tsMs = DateTime.now().millisecondsSinceEpoch;
       final point = UserEventLocation(
         ts: pad19(tsMs),
-        lat: lat,
-        lng: lon,
-        acc: accuracy,
-        alt: altitude,
+        lat: double.parse(lat.toStringAsFixed(5)),
+        lng: double.parse(lon.toStringAsFixed(5)),
+        acc: double.parse(accuracy.toStringAsFixed(2)),
+        alt: double.parse(altitude.toStringAsFixed(2)),
+        type: pointStr,
       );
       _runBuffer?.enqueue(point);
+      locationUpdateCount.value++;
     }
 
-    print('LocationService: Updated to Lat: $lat, Lon: $lon');
+    if (kDebugMode) {
+      print('LocationService: Updated to Lat: $lat, Lon: $lon');
+    }
 
-    if (_lastFlushTime.isBefore(
-      DateTime.now().subtract(const Duration(minutes: 1)),
-    )) {
-      _runBuffer?.flush();
+    if ((forceFlush) ||
+        (_lastFlushTime.isBefore(
+          DateTime.now().subtract(const Duration(minutes: 1)),
+        ))) {
+      await _runBuffer?.flush();
       _lastFlushTime = DateTime.now();
-      print('LocationService: Flushed run buffer.');
     }
 
     return;

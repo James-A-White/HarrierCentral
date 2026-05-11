@@ -97,8 +97,8 @@ class RunDetails extends StatelessWidget {
               ? Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: GestureDetector(
-                    onTap: () {
-                      Navigator.push<void>(
+                    onTap: () async {
+                      await Navigator.push<void>(
                         context,
                         MaterialPageRoute<void>(
                           builder: (BuildContext context) => ZoomableImagePage2(
@@ -878,73 +878,13 @@ class RunDetails extends StatelessWidget {
           ),
           Obx(() {
             return runDetailsController.showQrCodes.value
-                ? Column(
-                    children: [
-                      // Text(
-                      //   'QR Codes for Sharing Runs',
-                      //   style: ts_headingLarge,
-                      //   //textScaleFactor: deviceInfo.textClamp50,
-                      // ),
-                      const SizedBox(height: 20),
-                      OverflowBar(
-                        spacing: 80,
-                        overflowSpacing: 40,
-                        alignment: MainAxisAlignment.center,
-                        overflowAlignment: OverflowBarAlignment.center,
-                        children: <Widget>[
-                          QrGroup(
-                            context: context,
-                            title:
-                                'Run #${runDetailsController.event.eventNumber}',
-                            description: 'this run',
-                            url: runDetailsController.thisRunUrlForQr,
-                            helpTitle:
-                                'URL for Hash #${runDetailsController.event.eventNumber}',
-                            helpText:
-                                "Here’s a permanent link to Hash #${runDetailsController.event.eventNumber} (${runDetailsController.event.eventName}).\r\n\r\nShare it with others to spread the word about this hash!",
-                          ),
-                          QrGroup(
-                            context: context,
-                            title: 'Next ${kennel.kennelShortName} Run',
-                            description: 'next ${kennel.kennelShortName} run',
-                            url: runDetailsController.nextRunUrlForQr,
-                            helpTitle: 'URL for Next Hash',
-                            helpText:
-                                "Want to know what’s next for ${runDetailsController.kennel.kennelShortName}?\r\n\r\nThis link always points to the next ${kennel.kennelShortName} Hash run — perfect for bookmarking or sharing with friends!",
-                          ),
-
-                          if (runDetailsController
-                              .kennelUrlForQr
-                              .isNotEmpty) ...<Widget>[
-                            QrGroup(
-                              context: context,
-                              title: '${kennel.kennelShortName} upcoming Runs',
-                              description: '${kennel.kennelName} upcoming runs',
-                              url: runDetailsController.kennelUrlForQr,
-                              helpTitle:
-                                  'URL for upcoming ${runDetailsController.kennel.kennelShortName} runs',
-                              helpText:
-                                  "This link opens a page with all upcoming ${kennel.kennelShortName} runs.\r\n\r\nNavigate to this page and scroll down to see everything that’s planned!",
-                            ),
-                          ],
-                          if (((kennel.kennelWebsiteUrl ?? '').isNotEmpty) &&
-                              (kennel.kennelWebsiteUrl!
-                                  .toLowerCase()
-                                  .startsWith('http'))) ...<Widget>[
-                            QrGroup(
-                              context: context,
-                              title: '${kennel.kennelShortName} Website',
-                              description: '${kennel.kennelName} Website',
-                              url: kennel.kennelWebsiteUrl!,
-                              helpTitle: '${kennel.kennelShortName} Website',
-                              helpText:
-                                  "This link takes you to the ${kennel.kennelName} website — your go-to place for everything about Hashing with ${kennel.kennelShortName}!",
-                            ),
-                          ],
-                        ],
-                      ),
-                      const SizedBox(height: 40),
-                    ],
+                ? RunQrShareSection(
+                    event: runDetailsController.event,
+                    kennel: runDetailsController.kennel,
+                    thisRunUrlForQr: runDetailsController.thisRunUrlForQr,
+                    nextRunUrlForQr: runDetailsController.nextRunUrlForQr,
+                    kennelUrlForQr: runDetailsController.kennelUrlForQr,
+                    kennelWebsiteUrl: kennel.kennelWebsiteUrl,
                   )
                 : const SizedBox.shrink();
           }),
@@ -1064,7 +1004,7 @@ class RunDetails extends StatelessWidget {
       ContextMenuButtonItem(
         label: 'Copy Full Address',
         type: ContextMenuButtonType.custom,
-        onPressed: () {
+        onPressed: () async {
           String s = '';
 
           if ((event.locationStreet ?? '').isNotEmpty) {
@@ -1106,7 +1046,7 @@ class RunDetails extends StatelessWidget {
             s += event.locationPostCode!;
           }
 
-          Clipboard.setData(ClipboardData(text: s));
+          await Clipboard.setData(ClipboardData(text: s));
           ContextMenuController.removeAny();
         },
       ),
@@ -1125,10 +1065,10 @@ class RunDetails extends StatelessWidget {
         ContextMenuButtonItem(
           label: 'Copy Lat/Lon',
           type: ContextMenuButtonType.custom,
-          onPressed: () {
+          onPressed: () async {
             String s = '';
             s = '$lat, $lon';
-            Clipboard.setData(ClipboardData(text: s));
+            await Clipboard.setData(ClipboardData(text: s));
             ContextMenuController.removeAny();
           },
         ),

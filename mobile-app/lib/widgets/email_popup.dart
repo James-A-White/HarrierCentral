@@ -15,8 +15,8 @@ class EmailPopupState extends State<EmailPopup> {
 
   @override
   void initState() {
-    emailTextController.text = widget.initialEmailAddress ?? '';
     super.initState();
+    emailTextController.text = widget.initialEmailAddress ?? '';
   }
 
   @override

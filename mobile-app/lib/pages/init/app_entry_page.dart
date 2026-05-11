@@ -1,5 +1,6 @@
 import 'package:get/get_navigation/src/extension_navigation.dart' as nav;
 import 'package:harrier_central/imports.dart';
+import 'package:geolocator/geolocator.dart';
 
 class AppEntryPage extends StatefulWidget {
   const AppEntryPage({super.key});
@@ -211,6 +212,20 @@ class AppEntryPageState extends State<AppEntryPage>
 
     appModel.hasLocationPermissions = await Permission.location.isGranted;
 
+    if (appModel.hasLocationPermissions) {
+      Get.put(LocationService());
+
+      // Position p = await Geolocator.getCurrentPosition(
+      //   locationSettings: const LocationSettings(
+      //     accuracy: LocationAccuracy.lowest,
+      //   ),
+      // );
+      Position? p = await Geolocator.getLastKnownPosition();
+
+      deviceInfo.deviceLat = p?.latitude.toDouble();
+      deviceInfo.deviceLon = p?.longitude.toDouble();
+    }
+
     deviceInfo.deviceWidthScaleFactor =
         MediaQuery.of(navigatorKey.currentContext!).size.width /
         BASE_DEVICE_WIDTH;
@@ -236,8 +251,6 @@ class AppEntryPageState extends State<AppEntryPage>
     ApproveLoginModel? loginResult;
 
     final ApproveLoginService svc = ApproveLoginService();
-
-    Get.put(LocationService());
 
     //await Utilities.subscribeToGeoLocationStream();
 
@@ -291,10 +304,10 @@ class AppEntryPageState extends State<AppEntryPage>
         StringPrefsEnum.betaFeaturesEnabled,
         loginResult.betaFeaturesEnabled,
       );
-      await setIntPref(
-        IntPrefsEnum.isBetaTester,
-        loginResult.isBetaTester ?? 0,
-      );
+      // await setIntPref(
+      //   IntPrefsEnum.isBetaTester,
+      //   loginResult.isBetaTester ?? 0,
+      // );
       await setStringPref(StringPrefsEnum.email, loginResult.email);
       await setStringPref(
         StringPrefsEnum.homeKennelId,
@@ -317,7 +330,7 @@ class AppEntryPageState extends State<AppEntryPage>
       // open app in offline mode
       //appModel.connectionStatus = EnumConnectionStatus2.notConnected;
 
-      Get.off(() => MainNavigationPage(), routeName: '/main');
+      await Get.off(() => MainNavigationPage(), routeName: '/main');
 
       // await Navigator.pushReplacement<dynamic, dynamic>(
       //   navigatorKey.currentContext!,
@@ -524,14 +537,16 @@ class AppEntryPageState extends State<AppEntryPage>
 
   @override
   void initState() {
+    super.initState();
+
     // precache the background image so it does not give a white flash
     // on the first load
 
     _launchCount = getIntPref(IntPrefsEnum.launchCount) ?? 0;
-    setIntPref(IntPrefsEnum.launchCount, _launchCount + 1);
+    unawaited(setIntPref(IntPrefsEnum.launchCount, _launchCount + 1));
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      precacheImage(
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await precacheImage(
         const AssetAvifImage('images/backgrounds/hash_foot_background.avif'),
         navigatorKey.currentState!.context,
       );
@@ -548,9 +563,7 @@ class AppEntryPageState extends State<AppEntryPage>
     // _iconAnimation.addListener(() => setState(() {}));
     // _iconAnimationController.forward();
 
-    _startTimeout();
-
-    super.initState();
+    unawaited(_startTimeout());
   }
 
   @override

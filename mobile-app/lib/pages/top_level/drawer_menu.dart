@@ -82,9 +82,9 @@ class DrawerMenuState extends State<DrawerMenu> {
                   ListTile(
                     leading: const Icon(FontAwesome.trophy, color: textColor),
                     title: Text('Global Leaders', style: _style),
-                    onTap: () {
+                    onTap: () async {
                       Navigator.pop(context);
-                      Navigator.push<void>(
+                      await Navigator.push<void>(
                         context,
                         MaterialPageRoute<void>(
                           builder: (BuildContext context) => const GenericWidgetPage(
@@ -109,9 +109,9 @@ class DrawerMenuState extends State<DrawerMenu> {
                   ListTile(
                     leading: const Icon(MaterialIcons.house, color: textColor),
                     title: Text('Add a Kennel', style: _style),
-                    onTap: () {
+                    onTap: () async {
                       Navigator.pop(context);
-                      Navigator.push<dynamic>(
+                      await Navigator.push<dynamic>(
                         context,
                         MaterialPageRoute<dynamic>(
                           settings: const RouteSettings(),
@@ -189,9 +189,9 @@ class DrawerMenuState extends State<DrawerMenu> {
                       color: textColor,
                     ),
                     title: Text('FAQs', style: _style),
-                    onTap: () {
+                    onTap: () async {
                       Navigator.pop(context);
-                      Navigator.push<dynamic>(
+                      await Navigator.push<dynamic>(
                         context,
                         MaterialPageRoute<dynamic>(
                           settings: const RouteSettings(),
@@ -221,9 +221,9 @@ class DrawerMenuState extends State<DrawerMenu> {
                   ListTile(
                     leading: const Icon(Icons.speaker_notes, color: textColor),
                     title: Text('Imprint', style: _style),
-                    onTap: () {
+                    onTap: () async {
                       Navigator.pop(context);
-                      Navigator.push<dynamic>(
+                      await Navigator.push<dynamic>(
                         context,
                         MaterialPageRoute<dynamic>(
                           settings: const RouteSettings(),
@@ -244,9 +244,9 @@ class DrawerMenuState extends State<DrawerMenu> {
                   ListTile(
                     leading: const Icon(FontAwesome.legal, color: textColor),
                     title: Text('Legal', style: _style),
-                    onTap: () {
+                    onTap: () async {
                       Navigator.pop(context);
-                      Navigator.push<dynamic>(
+                      await Navigator.push<dynamic>(
                         context,
                         MaterialPageRoute<dynamic>(
                           settings: const RouteSettings(),
@@ -264,9 +264,9 @@ class DrawerMenuState extends State<DrawerMenu> {
                       color: textColor,
                     ),
                     title: Text('Privacy Policy', style: _style),
-                    onTap: () {
+                    onTap: () async {
                       Navigator.pop(context);
-                      Navigator.push<dynamic>(
+                      await Navigator.push<dynamic>(
                         context,
                         MaterialPageRoute<dynamic>(
                           settings: const RouteSettings(),
@@ -318,7 +318,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                     onTap: () async {
                       //onTabTapped(EnumAppPages.settings);
                       Navigator.pop(context);
-                      Navigator.push<dynamic>(
+                      await Navigator.push<dynamic>(
                         context,
                         MaterialPageRoute<dynamic>(
                           settings: const RouteSettings(),

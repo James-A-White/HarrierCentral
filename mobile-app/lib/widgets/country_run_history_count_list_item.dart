@@ -24,26 +24,22 @@ class CountryRunHistoryCountListItem extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         InkWell(
-          onTap: () {
-            Navigator.of(context)
-                .push<dynamic>(
-                  MaterialPageRoute<dynamic>(
-                    builder: (BuildContext context) {
-                      return UserCountryHistoryListPage(
-                        appDomain: AppDomainType.user,
-                        countryId: countryId,
-                        countryName: countryName,
-                      );
+          onTap: () async {
+            await Navigator.of(context).push<dynamic>(
+              MaterialPageRoute<dynamic>(
+                builder: (BuildContext context) {
+                  return UserCountryHistoryListPage(
+                    appDomain: AppDomainType.user,
+                    countryId: countryId,
+                    countryName: countryName,
+                  );
 
-                      // refreshKennelInfo: () {
-                      //  // return refreshCounters(kennelInfo.kennelId);
-                      // });
-                    },
-                  ),
-                )
-                .then((void _) {
-                  // refreshCounters(kennelInfo.kennelId);
-                });
+                  // refreshKennelInfo: () {
+                  //  // return refreshCounters(kennelInfo.kennelId);
+                  // });
+                },
+              ),
+            );
           },
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -92,17 +88,17 @@ class CountryRunHistoryCountListItem extends StatelessWidget {
                     hareCount <= 0
                         ? const SizedBox(height: 20)
                         : SizedBox(
-                          height: 20.0,
-                          child: Text(
-                            '($hareCount times hared)',
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                            style: ts_titleMediumCondensedBlack.copyWith(
-                              fontSize: 18.0,
+                            height: 20.0,
+                            child: Text(
+                              '($hareCount times hared)',
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: ts_titleMediumCondensedBlack.copyWith(
+                                fontSize: 18.0,
+                              ),
+                              textAlign: TextAlign.left,
                             ),
-                            textAlign: TextAlign.left,
                           ),
-                        ),
                   ],
                 ),
               ),

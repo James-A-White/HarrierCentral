@@ -8,6 +8,7 @@ import { KennelBackground } from "@/components/kennel/KennelBackground";
 import { RunDetail } from "@/components/kennel/RunDetail";
 import { PuckRenderer } from "@/components/puck/PuckRenderer";
 import { parseSiteConfig, deriveNavItems, getDefaultLayout } from "@/lib/page-layout";
+import { getIsCustomDomain } from "@/lib/server-utils";
 
 interface PageProps {
   params: Promise<{ slug: string; runNumber: string }>;
@@ -128,7 +129,7 @@ export default async function RunDetailPage({ params, searchParams }: PageProps)
           <main style={{ paddingTop: "80px", position: "relative", zIndex: 10 }}>
             <PuckRenderer
               data={layout}
-              pageData={{ kennelData: kennelData!, slug, futureRuns: [], pastRuns: [], statsRows: [], hasherCount: 0 }}
+              pageData={{ kennelData: kennelData!, slug, futureRuns: [], pastRuns: [], statsRows: [], hasherCount: 0, isCustomDomain: await getIsCustomDomain() }}
             />
           </main>
         </body>

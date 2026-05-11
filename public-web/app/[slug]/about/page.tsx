@@ -6,6 +6,7 @@ import { KennelBackground } from "@/components/kennel/KennelBackground";
 import { PuckRenderer } from "@/components/puck/PuckRenderer";
 import { parseSiteConfig, getDefaultLayout, deriveNavItems } from "@/lib/page-layout";
 import { kennelBaseUrl } from "@/lib/seo";
+import { getIsCustomDomain } from "@/lib/server-utils";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -47,7 +48,7 @@ export default async function AboutPage({ params }: PageProps) {
   const kennelData = await getKennelLandingData(slug);
   if (!kennelData) notFound();
 
-  const layoutJson = await getPageLayout(slug);
+  const [layoutJson, isCustomDomain] = await Promise.all([getPageLayout(slug), getIsCustomDomain()]);
   const kennel = toKennelContext(kennelData);
 
   const siteConfig = parseSiteConfig(layoutJson);
@@ -76,7 +77,7 @@ export default async function AboutPage({ params }: PageProps) {
         <div className="pt-20">
           <PuckRenderer
             data={pageLayout}
-            pageData={{ kennelData, slug, futureRuns: [], pastRuns: [] }}
+            pageData={{ kennelData, slug, futureRuns: [], pastRuns: [], isCustomDomain }}
           />
         </div>
       </body>

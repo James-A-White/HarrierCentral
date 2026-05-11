@@ -35,7 +35,7 @@ class SnoozePromotionService {
             ).format(DateTime.now().add(const Duration(days: 4))),
     });
 
-    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
+    final String responseBody = await ServiceCommon.sendHttpPost(body);
 
     SingleResultModel? result;
 

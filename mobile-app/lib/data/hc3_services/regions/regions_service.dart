@@ -2,27 +2,26 @@ import 'package:harrier_central/imports.dart';
 
 // TODO(James): Eventually add the flag file to the Regions and Cities JSON or remove it completely from the app
 
-class RegionsTableHelper extends BaseTableHelper with BaseFields {
+class RegionsTableHelper extends BaseTableHelper<AppDomainType>
+    with BaseFields {
   RegionsTableHelper() {
     remoteDbId = 'regionId';
     humanReadableTableName = 'Regions';
     pageSize = SyncUserDataService.pageSize_regionsTable;
-    tableFlag = SyncUserDataService.flagRegionsTable;
+    tableFlag = EnumDataTables.regions.flag;
   }
 
   @override
-  String getTableName(dynamic appDomainType) {
+  String getTableName(AppDomainType appDomainType) {
     String tableName;
     switch (appDomainType) {
-      // case AppDomainType.event:
-      //   break;
-      // case AppDomainType.kennel:
-      //   break;
-      // case AppDomainType.user:
-      //   tableName = 'regions';
-      //   break;
+      case AppDomainType.user:
+        tableName = EnumDataTables.regions.commonTableName;
+        break;
       default:
-        tableName = 'regions';
+        throw Exception(
+          'EnumDataTables.${EnumDataTables.regions.name} does not have a table associated with it.',
+        );
     }
     return tableName;
   }
@@ -35,7 +34,11 @@ class RegionsTableHelper extends BaseTableHelper with BaseFields {
   final String colFlagFile = 'flagFile';
 
   @override
-  Future<dynamic> createTable(Database db, int version, dynamic appDomainType) async {
+  Future<dynamic> createTable(
+    Database db,
+    int version,
+    dynamic appDomainType,
+  ) async {
     final String tableName = getTableName(appDomainType);
     await db.execute('''
           CREATE TABLE $tableName (
@@ -55,9 +58,17 @@ class RegionsTableHelper extends BaseTableHelper with BaseFields {
   }
 
   @override
-  Future<void> createIndexes(Database db, int version, dynamic appDomainType) async {
-    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);');
-    await db.execute('CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);');
+  Future<void> createIndexes(
+    Database db,
+    int version,
+    dynamic appDomainType,
+  ) async {
+    await db.execute(
+      'CREATE INDEX idx_${getTableName(appDomainType)}_id ON ${getTableName(appDomainType)}($remoteDbId);',
+    );
+    await db.execute(
+      'CREATE INDEX idx_${getTableName(appDomainType)}_update_at_value ON ${getTableName(appDomainType)}($colUpdatedAtValue);',
+    );
   }
 
   @override

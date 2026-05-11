@@ -2,8 +2,6 @@
 // This is a library that looks up messages for specific locales by
 // delegating to the appropriate library.
 
-import 'dart:async';
-
 import 'package:intl/intl.dart';
 import 'package:intl/message_lookup_by_library.dart';
 // ignore: implementation_imports
@@ -18,15 +16,15 @@ import 'messages_pt.dart' as messages_pt;
 typedef LibraryLoader = Future<dynamic> Function();
 
 Map<String, LibraryLoader> _deferredLibraries = <String, LibraryLoader>{
-// ignore: unnecessary_new
+  // ignore: unnecessary_new
   'de': () => Future<dynamic>.value(null),
-// ignore: unnecessary_new
+  // ignore: unnecessary_new
   'en': () => Future<dynamic>.value(null),
-// ignore: unnecessary_new
+  // ignore: unnecessary_new
   'es': () => Future<dynamic>.value(null),
-// ignore: unnecessary_new
+  // ignore: unnecessary_new
   'messages': () => Future<dynamic>.value(null),
-// ignore: unnecessary_new
+  // ignore: unnecessary_new
   'pt': () => Future<dynamic>.value(null),
 };
 
@@ -55,7 +53,8 @@ Future<bool> initializeMessages(String localeName) async {
     onFailure: (dynamic _) => null,
   );
 
-  final LibraryLoader lib = _deferredLibraries[availableLocale] ??
+  final LibraryLoader lib =
+      _deferredLibraries[availableLocale] ??
       () {
         return Future<bool>.value(false);
       };
@@ -77,7 +76,11 @@ bool _messagesExistFor(String locale) {
 }
 
 MessageLookupByLibrary? _findGeneratedMessagesFor(String locale) {
-  final String? actualLocale = Intl.verifiedLocale(locale, _messagesExistFor, onFailure: (dynamic _) => null);
+  final String? actualLocale = Intl.verifiedLocale(
+    locale,
+    _messagesExistFor,
+    onFailure: (dynamic _) => null,
+  );
   if (actualLocale == null) {
     return null;
   }

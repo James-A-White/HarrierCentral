@@ -1,4 +1,5 @@
 // restart_widget.dart
+import 'dart:async';
 import 'package:flutter/material.dart';
 
 final GlobalKey<RestartWidgetState> restartKey =
@@ -28,16 +29,18 @@ class RestartWidgetState extends State<RestartWidget> {
     // 2. Schedule the re-creation of the RootApp.
     // We use a small delay combined with a microtask to ensure the unmounting
     // and disposal (including the rogue GetMaterialController) is complete.
-    Future.microtask(() {
-      Future.delayed(const Duration(milliseconds: 50), () {
-        if (mounted) {
-          setState(() {
-            key = UniqueKey(); // Generate a new key for the new RootApp
-            showApp = true; // Show the RootApp again
-          });
-        }
-      });
-    });
+    unawaited(
+      Future.microtask(() {
+        Future.delayed(const Duration(milliseconds: 50), () {
+          if (mounted) {
+            setState(() {
+              key = UniqueKey(); // Generate a new key for the new RootApp
+              showApp = true; // Show the RootApp again
+            });
+          }
+        });
+      }),
+    );
   }
 
   @override

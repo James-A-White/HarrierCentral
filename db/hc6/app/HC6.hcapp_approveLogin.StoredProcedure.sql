@@ -120,7 +120,7 @@ DECLARE @invalidAccessToken SMALLINT = 0;
 
 IF HC.CHECK_ACCESS_TOKEN_V2(@userId, @procName, @accessToken, @deviceSecret, @timeWindow) = 0
 BEGIN
-    SET @errorCode = 1103; SET @errorType = 1; SET @errorId = NEWID();
+    SET @errorCode = 1103; SET @errorType = 11; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, string_1)
     VALUES (@errorId, @hcVersion, 'Invalid access token', 'Access token failed validation',
             @procName, @userId, CAST(@deviceId AS NVARCHAR(40)));
@@ -147,7 +147,7 @@ END
 -- ---------------------------------------------------------------
 IF (@removed = 1)
 BEGIN
-    SET @errorCode = 1403; SET @errorType = 4; SET @errorId = NEWID();
+    SET @errorCode = 1403; SET @errorType = 14; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, deviceId)
     VALUES (@errorId, @hcVersion,
             'Attempt to login as removed user (' + @userName + ')',
@@ -278,7 +278,7 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
 
-    SET @errorCode = 1903; SET @errorType = 9; SET @errorId = NEWID();
+    SET @errorCode = 1903; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, deviceId)
     VALUES (@errorId, @hcVersion, 'Unhandled error', ERROR_MESSAGE(), @procName, @userId, @deviceId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;

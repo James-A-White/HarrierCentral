@@ -1,0 +1,133 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_setFcmTokens",
+  "version": "1.0.0",
+  "description": "Updates the Apple Push Notification (APNS) and Firebase Cloud Messaging (FCM) tokens for the calling device. Called after the OS grants or refreshes notification permissions. @apnsToken is NULL for Android devices.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "Registered device UUID. Used as the auth lookup key and the UPDATE target."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived cryptographic token validated by HC6.ValidateAppAuth against the device secret."
+    },
+    {
+      "name": "apnsToken",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "Device.ApnsToken",
+      "description": "Apple Push Notification Service token. NULL for Android devices. Matches Device.ApnsToken NVARCHAR(500) NULL."
+    },
+    {
+      "name": "fcmToken",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "Device.FcmToken",
+      "description": "Firebase Cloud Messaging token. NULL if not yet available. Matches Device.FcmToken NVARCHAR(500) NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "Always returned as the first rowset. success=1 on success; success=0 with errorCode and errorType populated on any error (auth failure, or unhandled DB error).",
+      "columns": [
+        {
+          "name": "success",
+          "type": "BIT",
+          "nullable": false,
+          "description": "1 if the operation succeeded; 0 on any error path."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success. Populated error code on failure (auth or DB error)."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success. HC6 error type code on failure: 11=auth, 19=db."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ErrorDetail",
+      "description": "Returned as the second rowset only when success=0. Contains structured error detail for the caller.",
+      "columns": [
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "GUID of the HC.ErrorLog entry created for this error."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "HC6 error type code. 11=auth, 19=db."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error code forwarded from ValidateAppAuth, or 1915 from the CATCH block."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Short error title. 'Unexpected error' from the CATCH block path."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "User-facing error message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "SP name via OBJECT_NAME(@@PROCID)."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Device SET ApnsToken = @apnsToken, FcmToken = @fcmToken WHERE id = @deviceId",
+    "INSERT HC.ErrorLog on auth failure (via ValidateAppAuth) and on unhandled CATCH block error"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Magic errorCode 1915 in CATCH block",
+      "detail": "Line 84: SET @errorCode = 1915 is an undocumented magic value with no explanation. If this is a composed code (19=errorType, 15=spNumber), that convention is not consistent with other SPs and should be documented or replaced with a standard sentinel."
+    },
+    {
+      "severity": "low",
+      "issue": "HcVersion hardcoded as '<unknown>' in ErrorLog INSERT",
+      "detail": "Line 86: INSERT HC.ErrorLog uses HcVersion = '<unknown>'. If the schema has a mechanism to pass the app version, this should be populated. If not, document why it is always unknown on this path."
+    },
+    {
+      "severity": "low",
+      "issue": "No @@ROWCOUNT check after UPDATE",
+      "detail": "The UPDATE at line 71 does not verify @@ROWCOUNT = 1 after completing. If the deviceId does not match any row, the SP silently succeeds with success=1. HC5 at least returned 'Failed' when @@ROWCOUNT != 1. Consider asserting @@ROWCOUNT = 1 and returning a not-found error if the device no longer exists."
+    }
+  ],
+  "breakingChanges": [
+    "Success rowset shape changed: HC5 returned a single 'result' column (NVARCHAR 'Success'/'Failed'); HC6 returns a structured envelope with success (BIT), errorCode (INT), errorType (INT). All callers must be updated.",
+    "Error rowsets restructured: HC5 returned HC5-style standard error columns (errorId, errorType, errorTitle, errorUserMessage, debugMessage, errorProc); HC6 returns the two-rowset pattern (envelope + ErrorDetail). The 'debugMessage' column is no longer present in HC6 error detail.",
+    "TRY/CATCH added: HC5 had no error handling; unhandled SQL errors now return success=0 with errorCode/errorType rather than propagating an unhandled exception to the caller.",
+    "Auth delegated to HC6.ValidateAppAuth: HC5 used CHECK_ACCESS_TOKEN_V2 directly; HC6 delegates to the shared ValidateAppAuth helper, which may have different token validation semantics."
+  ]
+}

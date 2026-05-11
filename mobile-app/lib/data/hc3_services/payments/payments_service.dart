@@ -1,6 +1,7 @@
 import 'package:harrier_central/imports.dart';
 
-class PaymentsTableHelper extends BaseTableHelper with BaseFields {
+class PaymentsTableHelper extends BaseTableHelper<AppDomainType>
+    with BaseFields {
   PaymentsTableHelper() {
     remoteDbId = 'paymentId';
     humanReadableTableName = 'Payments';
@@ -20,20 +21,18 @@ class PaymentsTableHelper extends BaseTableHelper with BaseFields {
   // }
 
   @override
-  String getTableName(dynamic appDomainType) {
+  String getTableName(AppDomainType appDomainType) {
     String tableName = '';
     switch (appDomainType) {
       case AppDomainType.event:
-        tableName = 'Payments';
+        tableName = EnumDataTables.payments.eventTableName;
         break;
       case AppDomainType.kennel:
-        tableName = 'KennelPayments';
+        tableName = EnumDataTables.payments.kennelTableName;
         break;
       case AppDomainType.user:
-        tableName = 'userPayments';
+        tableName = EnumDataTables.payments.commonTableName;
         break;
-      default:
-        assert(false);
     }
     return tableName;
   }
@@ -161,9 +160,7 @@ class PaymentsService {
         .getLastUpdatedTime(
           database,
           tableModel.hasherEventMapTableHelper,
-          tableModel.hasherEventMapTableHelper.getTableName(
-            AppDomainType.event,
-          ),
+          EnumDataTables.hasherEventMap.eventTableName,
           tableModel.hasherEventMapTableHelper.colUpdatedAtValue,
         );
     final DateTime hasherEventMapUpdatedAfter =
@@ -173,9 +170,7 @@ class PaymentsService {
         .getLastUpdatedTime(
           database,
           tableModel.hasherKennelMapTableHelper,
-          tableModel.hasherKennelMapTableHelper.getTableName(
-            AppDomainType.event,
-          ),
+          EnumDataTables.hasherKennelMap.eventTableName,
           tableModel.hasherKennelMapTableHelper.colUpdatedAtValue,
         );
     final DateTime hasherKennelMapUpdatedAfter =
@@ -185,7 +180,7 @@ class PaymentsService {
         .getLastUpdatedTime(
           database,
           tableModel.paymentsTableHelper,
-          tableModel.paymentsTableHelper.getTableName(AppDomainType.event),
+          EnumDataTables.payments.eventTableName,
           tableModel.paymentsTableHelper.colUpdatedAtValue,
         );
     final DateTime paymentsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
@@ -208,7 +203,7 @@ class PaymentsService {
 
     final String body = jsonEncode(bodyMap);
 
-    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
+    final String responseBody = await ServiceCommon.sendHttpPost(body);
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       results = await tableModel.syncEventAdminService
@@ -310,7 +305,7 @@ class PaymentsService {
       'hasherEventMapUpdatedAfter': hasherEventMapUpdatedAfter.toString(),
       'hasherKennelMapUpdatedAfter': hasherKennelMapUpdatedAfter.toString(),
       'paymentsUpdatedAfter': paymentsUpdatedAfter.toString(),
-      'kennelCreditsUpdatedAfter': 'ignore',
+      //'kennelCreditsUpdatedAfter': 'ignore',
       'doPayForExtras': doPayForExtras.value.toString(),
       'surcharge': surcharge?.toString(),
       'paymentProvider': paymentProvider ?? '',
@@ -330,7 +325,7 @@ class PaymentsService {
 
     final String body = jsonEncode(bodyMap);
 
-    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
+    final String responseBody = await ServiceCommon.sendHttpPost(body);
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       if (appDomainType == AppDomainType.event) {

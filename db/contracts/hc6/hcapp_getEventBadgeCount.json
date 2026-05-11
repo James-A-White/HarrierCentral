@@ -1,0 +1,125 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getEventBadgeCount",
+  "version": "1.0.0",
+  "description": "Returns unread event message badge counts for the authenticated user. Three modes controlled by parameters: (1) reset all badge counts across all events and return a zero sentinel row; (2) query (and optionally reset) the badge count for a specific event; (3) return badge counts for all events where the user has a badge count row. Read SP — no success envelope; always returns a data or error rowset.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to ValidateAppAuth to resolve the calling user."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived cryptographic token validated against the device's DeviceSecret by ValidateAppAuth."
+    },
+    {
+      "name": "publicEventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.PublicEventId",
+      "description": "Public event UUID to query or reset. NULL triggers Mode 3 (all events). The zero UUID ('00000000-...') is normalised to NULL before mode dispatch."
+    },
+    {
+      "name": "resetBadgeCount",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "When non-zero, upserts HC.EventMessageBadgeCounts.LastSequenceCount to the current MAX for the specified event (marks event as read). Only applies in Mode 2 (@publicEventId provided). Default 0."
+    },
+    {
+      "name": "resetAllBadgeCounts",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "When non-zero, updates LastSequenceCount to the current MAX for all of the user's badge count rows (marks all events as read), then returns a zero-sentinel row. Takes precedence over @publicEventId. Default 0."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "Returned on auth failure (invalid token, unrecognised device, etc). errorType=11.",
+      "columns": [
+        { "name": "errorId",          "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID for this error." },
+        { "name": "errorType",        "type": "INT",              "nullable": false, "description": "Error classification code. 11=auth." },
+        { "name": "errorCode",        "type": "INT",              "nullable": false, "description": "Numeric error code from ValidateAppAuth." },
+        { "name": "errorTitle",       "type": "NVARCHAR(500)",    "nullable": false, "description": "Short error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)",    "nullable": false, "description": "User-facing error message." },
+        { "name": "errorProc",        "type": "NVARCHAR(128)",    "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "ResetAllResult",
+      "description": "Returned when @resetAllBadgeCounts != 0. Single hardcoded sentinel row confirming the reset.",
+      "columns": [
+        { "name": "BadgeCount",    "type": "INT",      "nullable": false, "description": "Always 0." },
+        { "name": "PublicEventId", "type": "NVARCHAR", "nullable": false, "description": "Always '00000000-0000-0000-0000-000000000000' — sentinel string literal, not a typed UNIQUEIDENTIFIER." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "SingleEventBadgeCount",
+      "description": "Returned when @publicEventId is provided and @resetAllBadgeCounts=0. Zero or one rows — zero rows if the user has no badge count record for the event.",
+      "columns": [
+        { "name": "BadgeCount",    "type": "INT",              "nullable": true,  "description": "Computed as MAX(MessageSequenceCount) - LastSequenceCount. NULL if @messageSequenceCount is NULL (no messages for this event)." },
+        { "name": "PublicEventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The requested @publicEventId value." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "AllEventBadgeCounts",
+      "description": "Returned when @publicEventId is NULL and @resetAllBadgeCounts=0. One row per event where the user has a badge count row (INNER JOIN — events with no badge count record are excluded).",
+      "columns": [
+        { "name": "BadgeCount",    "type": "INT",              "nullable": false, "description": "Computed as MAX(MessageSequenceCount) - LastSequenceCount. Non-null because INNER JOIN guarantees both sides exist." },
+        { "name": "PublicEventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The event's public UUID." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.EventMessageBadgeCounts SET LastSequenceCount — when @resetAllBadgeCounts != 0 (all user rows, outside a transaction)",
+    "MERGE HC.EventMessageBadgeCounts (upsert LastSequenceCount) — when @publicEventId is provided and @resetBadgeCount != 0 (outside a transaction)",
+    "INSERT HC.ErrorLog (via ValidateAppAuth) — on auth failure"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "No TRY/CATCH block",
+      "detail": "The HC6 SP has no TRY/CATCH around the main body. An unexpected runtime error (e.g. deadlock on MERGE, constraint violation) will bubble up as an unhandled SQL exception with no ErrorLog entry and no structured error rowset."
+    },
+    {
+      "severity": "high",
+      "issue": "MERGE and UPDATE run outside a transaction",
+      "detail": "Both the Mode 1 UPDATE and Mode 2 MERGE write to HC.EventMessageBadgeCounts without an explicit BEGIN TRANSACTION / COMMIT. If a concurrent modification occurs mid-write, there is no rollback protection."
+    },
+    {
+      "severity": "medium",
+      "issue": "Zero-UUID sentinel in ResetAllResult",
+      "detail": "Mode 1 returns BadgeCount=0 and PublicEventId='00000000-0000-0000-0000-000000000000' as a hardcoded string literal. Callers must special-case this sentinel to detect the reset-all response rather than a real event row. The PublicEventId is NVARCHAR in this rowset but UNIQUEIDENTIFIER in the other two rowsets, causing a type inconsistency across modes."
+    },
+    {
+      "severity": "medium",
+      "issue": "Mode 2 returns empty rowset when no badge record exists",
+      "detail": "In Mode 2 (specific event), if the user has no row in HC.EventMessageBadgeCounts for the event, the SELECT finds nothing (WHERE embc.EventId = @eventId AND embc.UserId = @userId matches zero rows) and returns an empty result set. Callers cannot distinguish 'no record yet' from an error without checking row count."
+    },
+    {
+      "severity": "low",
+      "issue": "@resetBadgeCount and @resetAllBadgeCounts typed as INT used as boolean flags",
+      "detail": "Both parameters are INT but are only tested for non-zero (!= 0). BIT would be a more accurate type. Not a breaking change risk but documents an HC5 pattern carried forward."
+    },
+    {
+      "severity": "low",
+      "issue": "Mode 2: @messageSequenceCount can be NULL when event has no messages",
+      "detail": "If @publicEventId resolves to an event with no HC.EventMessage rows, MAX(em.MessageSequenceCount) returns NULL. The BadgeCount computation (COALESCE(@messageSequenceCount, 0) - embc.LastSequenceCount) handles this with COALESCE, but the result is still dependent on there being an embc row to join against."
+    }
+  ],
+  "breakingChanges": [
+    "Auth token validated via DeviceSecret only. HC5 had commented-out dead code for an event-bound compound token; HC6 removes that path entirely. Any client that relied on the compound token (unlikely given it was dead code) would fail auth."
+  ]
+}

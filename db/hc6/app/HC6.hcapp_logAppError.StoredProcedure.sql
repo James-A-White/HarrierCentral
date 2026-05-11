@@ -46,7 +46,7 @@ SELECT @userId = d.UserId FROM HC.Device d WHERE d.id = @deviceId;
 
 IF (@userId IS NULL OR @userId = '00000000-0000-0000-0000-000000000000')
 BEGIN
-    SET @errorCode = 1392; SET @errorType = 3; SET @errorId = NEWID();
+    SET @errorCode = 1392; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Device not registered',
             'Device not found for logAppError', @procName, NULL);
@@ -72,7 +72,7 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
 
-    SET @errorCode = 1992; SET @errorType = 9; SET @errorId = NEWID();
+    SET @errorCode = 1992; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;

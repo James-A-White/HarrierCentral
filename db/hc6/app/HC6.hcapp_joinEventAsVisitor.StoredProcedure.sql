@@ -88,7 +88,7 @@ END
 -- ---------------------------------------------------------------
 IF (@eventId IS NULL OR @eventId = '00000000-0000-0000-0000-000000000000')
 BEGIN
-    SET @errorCode = 1223; SET @errorType = 2; SET @errorId = NEWID();
+    SET @errorCode = 1223; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Null or empty eventId',
             'A null or empty eventId was passed to ' + @procName, @procName, @userId);
@@ -101,7 +101,7 @@ END
 
 IF (@virginVisitorType NOT IN (1, 2))
 BEGIN
-    SET @errorCode = 1223; SET @errorType = 2; SET @errorId = NEWID();
+    SET @errorCode = 1223; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Invalid virginVisitorType',
             'virginVisitorType must be 1 (virgin) or 2 (visitor)', @procName, @userId);
@@ -196,7 +196,7 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
 
-    SET @errorCode = 1923; SET @errorType = 9; SET @errorId = NEWID();
+    SET @errorCode = 1923; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;

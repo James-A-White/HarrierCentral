@@ -61,12 +61,19 @@ class HistoryListPageState extends State<HistoryListPage>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_handleTabSelection);
-    refreshRunHistoryFromTable(true);
-    refreshStatsFromTable(true);
+
+    unawaited(setupInitialValues());
   }
 
-  Future<void> refreshStatsFromTable(bool forceRefresh) async {
+  Future<void> setupInitialValues() async {
+    await queryKennelStats(true);
+    await queryCountryStats(true);
+  }
+
+  Future<void> queryCountryStats(bool forceRefresh) async {
     final offsetFromGmtToLocal = Utilities.getSqfliteTimeOffset();
+
+    //final String userId = getStringPref(StringPrefsEnum.userId)!;
 
     final String hcRunsQuery =
         '''
@@ -76,10 +83,10 @@ class HistoryListPageState extends State<HistoryListPage>
           countries.${tableModel.countriesTableHelper.colCountryName},
           countries.${tableModel.countriesTableHelper.colCountryId},
           countries.${tableModel.countriesTableHelper.colFlagFile}
-          FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.user)} hem
-          INNER JOIN ${tableModel.countriesTableHelper.getTableName(AppDomainType.user)} countries on hem.${tableModel.hasherEventMapTableHelper.colCountryId} = countries.${tableModel.countriesTableHelper.colCountryId}
-          INNER JOIN ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} evt on hem.${tableModel.hasherEventMapTableHelper.colEventId} = evt.${tableModel.eventsTableHelper.colEventId}
-          WHERE evt.${tableModel.eventsTableHelper.colRemoved} = 0 
+          FROM ${EnumDataTables.hasherEventMap.commonTableName} hem
+          INNER JOIN ${EnumDataTables.countries.commonTableName} countries on hem.${tableModel.hasherEventMapTableHelper.colCountryId} = countries.${tableModel.countriesTableHelper.colCountryId}
+          INNER JOIN ${EnumDataTables.events.commonTableName} evt on hem.${tableModel.hasherEventMapTableHelper.colEventId} = evt.${tableModel.eventsTableHelper.colEventId}
+          WHERE evt.${tableModel.eventsTableHelper.colRemoved} = 0
           AND evt.${tableModel.eventsTableHelper.colIsCountedRun} != 0
           AND evt.${tableModel.eventsTableHelper.colIsVisible} != 0
           AND julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetime}) <= julianday('now','$offsetFromGmtToLocal') 
@@ -95,9 +102,9 @@ class HistoryListPageState extends State<HistoryListPage>
           countries.${tableModel.countriesTableHelper.colCountryName},
           countries.${tableModel.countriesTableHelper.colCountryId},
           countries.${tableModel.countriesTableHelper.colFlagFile}
-          FROM ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm
-          INNER JOIN ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} ken on hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = ken.${tableModel.kennelsTableHelper.colKennelId}
-          INNER JOIN ${tableModel.countriesTableHelper.getTableName(AppDomainType.user)} countries on ken.${tableModel.kennelsTableHelper.colCountryId} = countries.${tableModel.countriesTableHelper.colCountryId}
+          FROM ${EnumDataTables.hasherKennelMap.commonTableName} hkm
+          INNER JOIN ${EnumDataTables.kennels.commonTableName} ken on hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = ken.${tableModel.kennelsTableHelper.colKennelId}
+          INNER JOIN ${EnumDataTables.countries.commonTableName} countries on ken.${tableModel.kennelsTableHelper.colCountryId} = countries.${tableModel.countriesTableHelper.colCountryId}
           GROUP BY countries.${tableModel.countriesTableHelper.colCountryName}, countries.${tableModel.countriesTableHelper.colFlagFile}
           ORDER BY runCount desc
           ''';
@@ -108,7 +115,7 @@ class HistoryListPageState extends State<HistoryListPage>
     //       5 as hareCount,
     //       countries.${tableModel.countriesTableHelper.colCountryName},
     //       countries.${tableModel.countriesTableHelper.colFlagFile}
-    //       FROM ${tableModel.countriesTableHelper.getTableName(AppDomainType.user)}
+    //       FROM ${EnumDataTables.countries.commonTableName}
     //       -- GROUP BY countries.${tableModel.countriesTableHelper.colCountryName}, countries.${tableModel.countriesTableHelper.colFlagFile}
     //       ORDER BY runCount desc
     //       ''';
@@ -163,7 +170,7 @@ class HistoryListPageState extends State<HistoryListPage>
     }
   }
 
-  Future<void> refreshRunHistoryFromTable(bool forceRefresh) async {
+  Future<void> queryKennelStats(bool forceRefresh) async {
     final String userId = getStringPref(StringPrefsEnum.userId)!;
 
     final String query =
@@ -186,9 +193,9 @@ class HistoryListPageState extends State<HistoryListPage>
           coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colKennelCredit},0) as kennelCredit,
           coalesce(k.${tableModel.kennelsTableHelper.colDigitsAfterDecimal},c.${tableModel.countriesTableHelper.colDigitsAfterDecimal}) as digitsAfterDecimal,
           coalesce(k.${tableModel.kennelsTableHelper.colCurrencySymbol},c.${tableModel.countriesTableHelper.colCurrencySymbol}) as currencySymbol
-          FROM ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} k
-          INNER JOIN ${tableModel.countriesTableHelper.getTableName(AppDomainType.user)} c on c.${tableModel.countriesTableHelper.colCountryId} = k.${tableModel.kennelsTableHelper.colCountryId}
-          LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = "$userId"  and hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId}
+          FROM ${EnumDataTables.kennels.commonTableName} k
+          INNER JOIN ${EnumDataTables.countries.commonTableName} c on c.${tableModel.countriesTableHelper.colCountryId} = k.${tableModel.kennelsTableHelper.colCountryId}
+          LEFT OUTER JOIN ${EnumDataTables.hasherKennelMap.commonTableName} hkm on hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = "$userId"  and hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId}
           ORDER BY totalRunsThisKennel desc
           ''';
 
@@ -287,7 +294,7 @@ class HistoryListPageState extends State<HistoryListPage>
           return KennelRunHistoryCountListItem(
             kennelInfo: _runCountsListByKennel[index],
             refreshCounters: (String kennelId) async {
-              await refreshRunHistoryFromTable(true);
+              await queryKennelStats(true);
               if (kennelId.isNotEmpty) {
                 for (int i = 0; i < _runCountsListByKennel.length; i++) {
                   if (_runCountsListByKennel[i].kennelId == kennelId) {
@@ -309,17 +316,17 @@ class HistoryListPageState extends State<HistoryListPage>
     });
 
     await tableModel.syncUserDataService.updateFromBackend(
-      SyncUserDataService.flagHasherEventMapTable |
-          SyncUserDataService.flagHasherKennelMapTable |
-          SyncUserDataService.flagNarrowEventsTable |
-          SyncUserDataService.flagKennelsTable,
+      EnumDataTables.hasherEventMap.flag |
+          EnumDataTables.hasherKennelMap.flag |
+          EnumDataTables.events.flag |
+          EnumDataTables.kennels.flag,
       true,
       debugText: 'history_list_page: HEM,HKM,Events,Kennels',
     );
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('Hasher data synchronized $resultStr');
-    await refreshRunHistoryFromTable(true);
-    await refreshStatsFromTable(true);
+    await queryKennelStats(true);
+    await queryCountryStats(true);
     setState(() {
       _isLoading = false;
     });

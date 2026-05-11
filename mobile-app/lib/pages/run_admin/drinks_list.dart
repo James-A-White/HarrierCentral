@@ -81,10 +81,10 @@ class DrinksListState extends State<DrinksList>
       }
 
       await tableModel.syncEventAdminService.updateFromBackend(
-        SyncEventAdminService.flagHashersTable |
-            SyncEventAdminService.flagPaymentsTable |
-            SyncEventAdminService.flagHasherEventMapTable |
-            SyncEventAdminService.flagHasherKennelMapTable,
+        EnumDataTables.hashers.flag |
+            EnumDataTables.payments.flag |
+            EnumDataTables.hasherEventMap.flag |
+            EnumDataTables.hasherKennelMap.flag,
         true,
         widget.eventAggregate.event.eventId,
       );
@@ -101,6 +101,7 @@ class DrinksListState extends State<DrinksList>
 
   @override
   void initState() {
+    super.initState();
     appBar = AppBar(
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
@@ -108,9 +109,12 @@ class DrinksListState extends State<DrinksList>
       title: Text('Drink chug-a-lug', style: ts_appBarTitle),
     );
 
-    _refreshSqlTablesFromBackend(true);
+    unawaited(initStateAsync());
+  }
 
-    super.initState();
+  Future<void> initStateAsync() async {
+    await _refreshSqlTablesFromBackend(true);
+    await _refreshDrinksFromTable(false);
   }
 
   Future<void> _refreshDrinksFromTable(bool forceRefresh) async {
@@ -132,9 +136,9 @@ class DrinksListState extends State<DrinksList>
           + coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount},0)
           as totalRunsThisKennel,
           hem.${tableModel.hasherEventMapTableHelper.colIsHare}
-          FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem 
-          INNER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h on hem.${tableModel.hasherEventMapTableHelper.colUserId} = h.${tableModel.hashersTableHelper.colHasherId}  
-          LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm on hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = h.${tableModel.hashersTableHelper.colHasherId} AND hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = hem.${tableModel.hasherEventMapTableHelper.colEventKennelId}
+          FROM ${EnumDataTables.hasherEventMap.eventTableName} hem 
+          INNER JOIN ${EnumDataTables.hashers.commonTableName} h on hem.${tableModel.hasherEventMapTableHelper.colUserId} = h.${tableModel.hashersTableHelper.colHasherId}  
+          LEFT OUTER JOIN ${EnumDataTables.hasherKennelMap.eventTableName} hkm on hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = h.${tableModel.hashersTableHelper.colHasherId} AND hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = hem.${tableModel.hasherEventMapTableHelper.colEventKennelId}
           WHERE hem.${tableModel.hasherEventMapTableHelper.colEventId} = '${widget.eventAggregate.event.eventId}' 
           AND hem.${tableModel.hasherEventMapTableHelper.colAttendenceState} >= 20
           AND h.${tableModel.hashersTableHelper.colRemoved} = 0 

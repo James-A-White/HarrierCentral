@@ -64,7 +64,7 @@ BEGIN TRY
     IF HC.CHECK_ACCESS_TOKEN_V2(@nullUserId, @procName,
                                 COALESCE(@accessToken, 'error'), NULL, 30) = 0
     BEGIN
-        SET @errorCode = 1102; SET @errorType = 1; SET @errorId = NEWID();
+        SET @errorCode = 1102; SET @errorType = 11; SET @errorId = NEWID();
         INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
         VALUES (@errorId, @hcVersion, 'Invalid access token',
                 'Global access token failed validation', @procName, @nullUserId);
@@ -107,7 +107,7 @@ BEGIN TRY
     -- ---------------------------------------------------------------
     IF (@userId IS NULL)
     BEGIN
-        SET @errorCode = 1302; SET @errorType = 3; SET @errorId = NEWID();
+        SET @errorCode = 1302; SET @errorType = 13; SET @errorId = NEWID();
         INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, deviceId, string_1)
         VALUES (@errorId, @hcVersion, 'Invite code not found',
                 'Invite code "' + COALESCE(@scanText, '') + '" not found',
@@ -125,7 +125,7 @@ BEGIN TRY
     -- ---------------------------------------------------------------
     IF (@removed = 1)
     BEGIN
-        SET @errorCode = 1402; SET @errorType = 4; SET @errorId = NEWID();
+        SET @errorCode = 1402; SET @errorType = 14; SET @errorId = NEWID();
         INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, deviceId, string_1)
         VALUES (@errorId, @hcVersion,
                 'Attempt to load removed user (' + @hasherName + ')',
@@ -220,7 +220,7 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
 
-    SET @errorCode = 1902; SET @errorType = 9; SET @errorId = NEWID();
+    SET @errorCode = 1902; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, deviceId)
     VALUES (@errorId, @hcVersion, 'Unhandled error', ERROR_MESSAGE(), @procName, @userId, @deviceId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;

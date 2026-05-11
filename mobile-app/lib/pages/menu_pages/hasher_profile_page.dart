@@ -94,7 +94,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         '''
         SELECT 
           h.*
-          FROM hashers h
+          FROM ${EnumDataTables.hashers.commonTableName} h
           WHERE h.hasherId = "${widget.hasherId}"
 
           ''';
@@ -106,9 +106,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       switch (widget.dataContext) {
         case EnumDataContext.event:
           await tableModel.syncEventAdminService.updateFromBackend(
-            SyncEventAdminService.flagHashersTable |
-                SyncEventAdminService.flagHasherKennelMapTable |
-                SyncEventAdminService.flagHasherEventMapTable,
+            EnumDataTables.hashers.flag |
+                EnumDataTables.hasherKennelMap.flag |
+                EnumDataTables.hasherEventMap.flag,
             true,
             widget.eventId,
           );
@@ -117,7 +117,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           break;
         case EnumDataContext.user:
           await tableModel.syncUserDataService.updateFromBackend(
-            SyncUserDataService.flagHashersTable,
+            EnumDataTables.hashers.flag,
             true,
             debugText: 'hasher_profile_page: Hashers',
           );
@@ -126,8 +126,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           break;
         case EnumDataContext.kennel:
           await tableModel.syncKennelAdminService.updateFromBackend(
-            SyncKennelAdminService.flagHashersTable |
-                SyncKennelAdminService.flagHasherKennelMapTable,
+            EnumDataTables.hashers.flag | EnumDataTables.hasherKennelMap.flag,
             true,
             widget.kennelId,
           );
@@ -142,8 +141,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
             hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount},
             hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount},
             hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalCountIsEstimate}
-            FROM ${tableModel.hashersTableHelper.getTableName(AppDomainType.kennel)} h
-            LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} hkm ON hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = "${widget.kennelId}" AND hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = "${widget.hasherId}"
+            FROM ${EnumDataTables.hashers.commonTableName} h
+            LEFT OUTER JOIN ${EnumDataTables.hasherKennelMap.kennelTableName} hkm ON hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = "${widget.kennelId}" AND hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = "${widget.hasherId}"
             WHERE h.${tableModel.hashersTableHelper.colHasherId} = "${widget.hasherId}"
           ''';
 
@@ -215,28 +214,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
   @override
   void initState() {
-    Permission.location.isGranted.then((bool isGranted) {
-      setState(() {
-        appModel.hasLocationPermissions = isGranted;
-      });
-    });
+    super.initState();
 
-    if (widget.hashNameFromSearch.isNotEmpty) {
-      _hashNameController.text = widget.hashNameFromSearch;
-    }
-    // //print('initState called from hasher_profile_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-    if (widget.pageType != EnumMyProfilePageType.newHasherProfile) {
-      _refreshUserDataFromTable(true);
-      _photoPrefix = widget.hasherId;
-    } else {
-      if ((widget.kennelId.isNotEmpty) && (widget.kennelId != GUID_EMPTY)) {
-        _addAsKennelFollower = true;
-      }
-      _hasher = HashersModel.empty();
-      _photoPrefix = 'newHcUser_${DateTime.now().microsecondsSinceEpoch}';
-
-      _isLoading = false;
-    }
+    unawaited(initializeValues());
 
     appBar = AppBar(
       centerTitle: true,
@@ -272,8 +252,30 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     _newPhoto = 'bundle://avatar-${Random.secure().nextInt(49) + 1}';
 
     _externalMapProvider = getStringPref(StringPrefsEnum.mapPreference);
+  }
 
-    super.initState();
+  Future<void> initializeValues() async {
+    final isGranted = await Permission.location.isGranted;
+    appModel.hasLocationPermissions = isGranted;
+
+    if (widget.hashNameFromSearch.isNotEmpty) {
+      _hashNameController.text = widget.hashNameFromSearch;
+    }
+    // //print('initState called from hasher_profile_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+    if (widget.pageType != EnumMyProfilePageType.newHasherProfile) {
+      await _refreshUserDataFromTable(true);
+      _photoPrefix = widget.hasherId;
+    } else {
+      if ((widget.kennelId.isNotEmpty) && (widget.kennelId != GUID_EMPTY)) {
+        _addAsKennelFollower = true;
+      }
+      _hasher = HashersModel.empty();
+      _photoPrefix = 'newHcUser_${DateTime.now().microsecondsSinceEpoch}';
+
+      _isLoading = false;
+    }
+
+    setState(() {});
   }
 
   String getDistancePreferenceAsString(int distPref) {
@@ -830,38 +832,41 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         right: 20,
                                                       ),
                                                 ),
-                                                onPressed: () {
-                                                  if (Utilities.isConnected(
+                                                onPressed: () async {
+                                                  if (!Utilities.isConnected(
                                                     showDialog: true,
                                                   )) {
-                                                    Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute<String>(
-                                                        builder:
-                                                            (
-                                                              BuildContext
-                                                              context,
-                                                            ) => ChooseProfileImage(
-                                                              isForThisDevice:
-                                                                  widget
-                                                                      .pageType ==
-                                                                  EnumMyProfilePageType
-                                                                      .myProfile,
-                                                              fileNamePrefix:
-                                                                  _photoPrefix,
-                                                              currentProfileImage:
-                                                                  _hasher
-                                                                      .photo ??
-                                                                  _newPhoto,
-                                                            ),
-                                                      ),
-                                                    ).then<void>((result) {
-                                                      if ((result != null) &&
-                                                          (result.isNotEmpty)) {
-                                                        _newPhoto = result;
-                                                        _checkDirty();
-                                                      }
-                                                    });
+                                                    return;
+                                                  }
+
+                                                  final String?
+                                                  result = await Navigator.push<String>(
+                                                    context,
+                                                    MaterialPageRoute<String>(
+                                                      builder:
+                                                          (
+                                                            BuildContext
+                                                            context,
+                                                          ) => ChooseProfileImage(
+                                                            isForThisDevice:
+                                                                widget
+                                                                    .pageType ==
+                                                                EnumMyProfilePageType
+                                                                    .myProfile,
+                                                            fileNamePrefix:
+                                                                _photoPrefix,
+                                                            currentProfileImage:
+                                                                _hasher.photo ??
+                                                                _newPhoto,
+                                                          ),
+                                                    ),
+                                                  );
+
+                                                  if (!mounted) return;
+                                                  if (result != null &&
+                                                      result.isNotEmpty) {
+                                                    _newPhoto = result;
+                                                    _checkDirty();
                                                   }
                                                 },
                                                 child: Text(
@@ -1477,10 +1482,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                     .clearEventData();
 
                                                                 await tableModel.syncKennelAdminService.updateFromBackend(
-                                                                  SyncKennelAdminService
-                                                                          .flagHasherEventMapTable |
-                                                                      SyncKennelAdminService
-                                                                          .flagPaymentsTable,
+                                                                  EnumDataTables
+                                                                          .hasherEventMap
+                                                                          .flag |
+                                                                      EnumDataTables
+                                                                          .payments
+                                                                          .flag,
                                                                   false,
                                                                   widget
                                                                       .kennelId,
@@ -1496,36 +1503,29 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
                                                                 if (context
                                                                     .mounted) {
-                                                                  Navigator.of(
-                                                                        context,
-                                                                      )
-                                                                      .push<
-                                                                        dynamic
-                                                                      >(
-                                                                        MaterialPageRoute<
-                                                                          dynamic
-                                                                        >(
-                                                                          builder:
-                                                                              (
-                                                                                BuildContext
-                                                                                context,
-                                                                              ) {
-                                                                                return UserRunHistoryListPage(
-                                                                                  appDomain: AppDomainType.kennel,
-                                                                                  hashName: widget.hashNameFromSearch,
-                                                                                  hasherId: widget.hasherId,
-                                                                                  kennelInfo: runHistory[0],
-                                                                                  refreshKennelInfo: () {},
-                                                                                );
-                                                                              },
-                                                                        ),
-                                                                      )
-                                                                      .then(
-                                                                        (
-                                                                          void
-                                                                          _,
-                                                                        ) {},
-                                                                      );
+                                                                  await Navigator.of(
+                                                                    context,
+                                                                  ).push<
+                                                                    dynamic
+                                                                  >(
+                                                                    MaterialPageRoute<
+                                                                      dynamic
+                                                                    >(
+                                                                      builder:
+                                                                          (
+                                                                            BuildContext
+                                                                            context,
+                                                                          ) {
+                                                                            return UserRunHistoryListPage(
+                                                                              appDomain: AppDomainType.kennel,
+                                                                              hashName: widget.hashNameFromSearch,
+                                                                              hasherId: widget.hasherId,
+                                                                              kennelInfo: runHistory[0],
+                                                                              refreshKennelInfo: () {},
+                                                                            );
+                                                                          },
+                                                                    ),
+                                                                  );
                                                                 }
                                                                 //                                              Navigator.of(context).push<dynamic>(
                                                                 //   MaterialPageRoute<dynamic>(
@@ -1803,7 +1803,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                           //       true,
                                                           // );
                                                           await initServices();
-                                                          Get.offAll(
+                                                          await Get.offAll(
                                                             () =>
                                                                 AppEntryPage(),
                                                             binding:
@@ -2026,7 +2026,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                           //       true,
                                                           // );
 
-                                                          Get.offAll(
+                                                          await Get.offAll(
                                                             () =>
                                                                 AppEntryPage(),
                                                           );
@@ -2074,9 +2074,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _isDirty ? hc_red : Colors.grey,
                 ),
-                onPressed: () {
+                onPressed: () async {
                   if (Utilities.isConnected(showDialog: true) && _isDirty) {
-                    _updateProfile();
+                    await _updateProfile();
                   }
                 },
                 child: Text(
@@ -2108,7 +2108,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   Future<void> _reloadData() async {
     await setStringPref(StringPrefsEnum.bootType, BOOT_TYPE_RELOAD_DATA);
     _isReloading = true;
-    Get.offAll(() => AppEntryPage());
+    await Get.offAll(() => AppEntryPage());
   }
 
   Future<void> _enableLocationServices() async {

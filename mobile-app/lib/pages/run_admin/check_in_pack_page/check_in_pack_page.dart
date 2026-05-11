@@ -69,8 +69,8 @@ class CheckInPackPage extends StatelessWidget {
                 labelStyle: TextStyle(
                   fontSize: 18.0 * (1.0 / deviceInfo.deviceTextScaleFactor),
                 ),
-                onTap: () {
-                  AppScaffoldController.filterOptionsPopup(context);
+                onTap: () async {
+                  await AppScaffoldController.filterOptionsPopup(context);
                 },
               ),
               // SpeedDialChild(
@@ -329,12 +329,14 @@ class CheckInPackPage extends StatelessWidget {
                                         ),
                                         confirmDismiss: () async {
                                           if (packMember.isPaid != 1) {
-                                            AppScaffoldController.payForEvent(
-                                              context,
+                                            unawaited(
+                                              AppScaffoldController.payForEvent(
+                                                context,
 
-                                              paymentBankTransfer.value,
-                                              index,
-                                              -1,
+                                                paymentBankTransfer.value,
+                                                index,
+                                                -1,
+                                              ),
                                             );
                                           }
                                           return false;
@@ -380,7 +382,7 @@ class CheckInPackPage extends StatelessWidget {
                                                           'Already\r\npaid',
                                                           textAlign:
                                                               TextAlign.center,
-                                                          style: ts_title,
+                                                          style: ts_snackbar,
                                                         ),
                                                       ),
                                                     ],
@@ -437,19 +439,23 @@ class CheckInPackPage extends StatelessWidget {
                                         ),
                                         confirmDismiss: () async {
                                           if (packMember.isPaid != 1) {
-                                            AppScaffoldController.payForEvent(
-                                              context,
+                                            unawaited(
+                                              AppScaffoldController.payForEvent(
+                                                context,
 
-                                              paymentCash.value,
-                                              index,
-                                              -1,
+                                                paymentCash.value,
+                                                index,
+                                                -1,
+                                              ),
                                             );
                                           } else {
-                                            AppScaffoldController.updateAttendenceState(
-                                              packMember,
-                                              -1,
-                                              attendenceOnIn.value,
-                                              -1,
+                                            unawaited(
+                                              AppScaffoldController.updateAttendenceState(
+                                                packMember,
+                                                -1,
+                                                attendenceOnIn.value,
+                                                -1,
+                                              ),
                                             );
                                           }
                                           return false;
@@ -507,7 +513,8 @@ class CheckInPackPage extends StatelessWidget {
                                                                 textAlign:
                                                                     TextAlign
                                                                         .center,
-                                                                style: ts_title,
+                                                                style:
+                                                                    ts_snackbar,
                                                               ),
                                                             ),
                                                           ],
@@ -546,7 +553,8 @@ class CheckInPackPage extends StatelessWidget {
                                                                 textAlign:
                                                                     TextAlign
                                                                         .center,
-                                                                style: ts_title,
+                                                                style:
+                                                                    ts_snackbar,
                                                               ),
                                                             ),
                                                           ],
@@ -584,7 +592,7 @@ class CheckInPackPage extends StatelessWidget {
                                                           '${(eventAggregate.event.eventPriceForExtras ?? 0) != 0 ? '' : '$amountOwedStr\r\n'}Cash',
                                                           textAlign:
                                                               TextAlign.center,
-                                                          style: ts_title,
+                                                          style: ts_snackbar,
                                                         ),
                                                       ),
                                                     ],
@@ -979,8 +987,8 @@ class CheckInPackPage extends StatelessWidget {
               counter: controller.memberCount.value,
               label: 'Member',
               index: 5,
-              onTap: () {
-                controller.refreshPackListFromTables(true);
+              onTap: () async {
+                await controller.refreshPackListFromTables(true);
               },
               filterValues: controller.filterValues,
             ),
@@ -990,8 +998,8 @@ class CheckInPackPage extends StatelessWidget {
               label: 'Coming',
               index: 1,
               useTriState: false,
-              onTap: () {
-                controller.refreshPackListFromTables(true);
+              onTap: () async {
+                await controller.refreshPackListFromTables(true);
               },
               filterValues: controller.filterValues,
             ),
@@ -1000,8 +1008,8 @@ class CheckInPackPage extends StatelessWidget {
               counter: controller.countAtHash.value,
               index: 2,
               label: 'At Hash',
-              onTap: () {
-                controller.refreshPackListFromTables(true);
+              onTap: () async {
+                await controller.refreshPackListFromTables(true);
               },
               filterValues: controller.filterValues,
             ),
@@ -1009,8 +1017,8 @@ class CheckInPackPage extends StatelessWidget {
               counter: controller.countPaid.value,
               index: 3,
               label: 'Paid',
-              onTap: () {
-                controller.refreshPackListFromTables(true);
+              onTap: () async {
+                await controller.refreshPackListFromTables(true);
               },
               filterValues: controller.filterValues,
             ),
@@ -1018,8 +1026,8 @@ class CheckInPackPage extends StatelessWidget {
               counter: controller.countOnIn.value,
               index: 4,
               label: 'On In',
-              onTap: () {
-                controller.refreshPackListFromTables(true);
+              onTap: () async {
+                await controller.refreshPackListFromTables(true);
               },
               filterValues: controller.filterValues,
             ),
@@ -1028,8 +1036,8 @@ class CheckInPackPage extends StatelessWidget {
               index: 6,
               useTriState: false,
               label: 'Drink!',
-              onTap: () {
-                controller.refreshPackListFromTables(true);
+              onTap: () async {
+                await controller.refreshPackListFromTables(true);
               },
               filterValues: controller.filterValues,
             ),
@@ -1044,8 +1052,8 @@ class CheckInPackPage extends StatelessWidget {
     BuildContext context,
   ) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push<HashersModel>(
+      onTap: () async {
+        HashersModel? result = await Navigator.push<HashersModel>(
           context,
           MaterialPageRoute<HashersModel>(
             builder: (BuildContext context) => HasherProfilePage(
@@ -1059,23 +1067,23 @@ class CheckInPackPage extends StatelessWidget {
               ),
             ),
           ),
-        ).then((HashersModel? result) {
-          controller.forceShowAllHashers.value = false;
-          if (result != null) {
-            controller.refreshPackListFromTables(true);
-            // NULLSAFETEST
-            // if (result.dispName == '') {
-            //   result = result.copyWith(dispName: null);
-            // }
-            // if (result.hashName == '') {
-            //   result = result.copyWith(hashName: null);
-            // }
+        );
 
-            //controller.searchText = result.dispName;
-            controller.searchController.text = result.dispName;
-            controller.filterPackListResults();
-          }
-        });
+        controller.forceShowAllHashers.value = false;
+        if (result != null) {
+          await controller.refreshPackListFromTables(true);
+          // NULLSAFETEST
+          // if (result.dispName == '') {
+          //   result = result.copyWith(dispName: null);
+          // }
+          // if (result.hashName == '') {
+          //   result = result.copyWith(hashName: null);
+          // }
+
+          //controller.searchText = result.dispName;
+          controller.searchController.text = result.dispName;
+          await controller.filterPackListResults();
+        }
       },
       child: Container(
         height: 80,
@@ -1113,10 +1121,10 @@ class CheckInPackPage extends StatelessWidget {
     BuildContext context,
   ) {
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
         controller.forceShowAllHashers.value =
             !controller.forceShowAllHashers.value;
-        controller.filterPackListResults();
+        await controller.filterPackListResults();
       },
       child: Container(
         height: 80,

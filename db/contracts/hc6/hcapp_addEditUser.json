@@ -1,0 +1,283 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_addEditUser",
+  "version": "1.0.0",
+  "description": "Creates or updates a Hasher record. Dual-mode: when @deviceId is NULL it operates as a new-user creation flow (first app launch, no device record exists yet) — no token validation is performed. When @deviceId is provided it validates the access token (bound to DeviceSecret + UPPER(@targetUserId)) and performs an edit against an existing user. On success, delegates to hcapp_syncEventAdminData, hcapp_syncKennelAdminData, or hcapp_syncUserData depending on context, or returns the new HasherProfile directly in new-user mode.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "Device UUID. NULL triggers new-user creation mode — no token validation. When provided, resolves the caller's userId and DeviceSecret from HC.Device."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Auth token. Validated against DeviceSecret + UPPER(@targetUserId). Only checked when @deviceId is not NULL."
+    },
+    {
+      "name": "hcVersion",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "App version string. Used only in ErrorLog and LaunchAndLogin inserts — not stored on Hasher."
+    },
+    {
+      "name": "hashersUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Sync cursor passed through to the child sync SP."
+    },
+    {
+      "name": "hasherEventMapUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Sync cursor passed through to the child sync SP."
+    },
+    {
+      "name": "hasherKennelMapUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Sync cursor passed through to the child sync SP."
+    },
+    {
+      "name": "targetUserId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Hasher.id",
+      "description": "User to create or edit. Default null-UUID ('00000000-...') triggers insert mode — a new UUID is generated internally. On edit, must be an existing Hasher.id."
+    },
+    {
+      "name": "email",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.Email",
+      "description": "Email address. Empty string normalised to NULL. Duplicate email check performed across all other Hasher records."
+    },
+    {
+      "name": "firstName",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.FirstName",
+      "description": "Empty string normalised to NULL. Widened from HC5 NVARCHAR(100) to match Hasher.FirstName NVARCHAR(250)."
+    },
+    {
+      "name": "lastName",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.LastName",
+      "description": "Empty string normalised to NULL. Widened from HC5 NVARCHAR(100) to match Hasher.LastName NVARCHAR(250)."
+    },
+    {
+      "name": "hashName",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.HashName",
+      "description": "Empty string normalised to NULL. Widened from HC5 NVARCHAR(100) to match Hasher.HashName NVARCHAR(250)."
+    },
+    {
+      "name": "photo",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.Photo",
+      "description": "Empty string normalised to NULL. Widened from HC5 NVARCHAR(500) to match Hasher.Photo NVARCHAR(1000)."
+    },
+    {
+      "name": "includeInGlobalHashDirectory",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "Hasher.IncludeInGlobalHashDirectory",
+      "description": "Sentinel: -1 normalised to NULL (no update). Table column is SMALLINT — INT parameter is wider than the column.",
+      "typeMismatch": "INT vs Hasher.IncludeInGlobalHashDirectory SMALLINT — no truncation risk in practice, but types don't match."
+    },
+    {
+      "name": "preferences",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "Hasher.Preferences",
+      "description": "Bitfield. Sentinel: -1 normalised to NULL (no update). On new user insert, defaults to 14 + @useUsaMiles if not provided."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "When provided and non-null-UUID: new user is added to this event's HasherEventMap; on success, calls hcapp_syncEventAdminData instead of hcapp_syncUserData."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "When provided and non-null-UUID: may add new user to this kennel (controlled by @followKennelOnAddNewUser); also sets Hasher.HomeKennelId on insert; on success (no @eventId), calls hcapp_syncKennelAdminData instead of hcapp_syncUserData."
+    },
+    {
+      "name": "historicalTotalRunCount",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.HistoricalTotalRunCount",
+      "description": "Sentinel: -1 normalised to NULL (no update). Applied on insert to HasherKennelMap, or on edit if @kennelId is provided."
+    },
+    {
+      "name": "historicalHaringCount",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.HistoricalHaringCount",
+      "description": "Sentinel: -1 normalised to NULL (no update). Applied on insert to HasherKennelMap, or on edit if @kennelId is provided."
+    },
+    {
+      "name": "historicalCountIsEstimate",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.HistoricalCountIsEstimate",
+      "description": "Flag: whether the historical counts are estimates. Applied alongside historicalTotalRunCount / historicalHaringCount."
+    },
+    {
+      "name": "followKennelOnAddNewUser",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "When non-zero and @kennelId is provided, a HasherKennelMap record is created for the new user. Only meaningful in insert mode."
+    },
+    {
+      "name": "latitude",
+      "type": "DECIMAL(18,15)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.HomeLatitude",
+      "description": "Used to detect if user is in the US for miles/km preference default on new user insert. Also stored as Hasher.HomeLatitude.",
+      "typeMismatch": "DECIMAL(18,15) vs Hasher.HomeLatitude DECIMAL(12,9) — parameter is wider in both precision and scale. No overflow risk for valid lat/lng values, but types are mismatched."
+    },
+    {
+      "name": "longitude",
+      "type": "DECIMAL(19,15)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.HomeLongitude",
+      "description": "Used to detect if user is in the US for miles/km preference default on new user insert. Also stored as Hasher.HomeLongitude.",
+      "typeMismatch": "DECIMAL(19,15) vs Hasher.HomeLongitude DECIMAL(13,9) — parameter is wider in both precision and scale. No overflow risk for valid lat/lng values, but types are mismatched."
+    },
+    {
+      "name": "nameDisplayPreference",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "Hasher.NameDisplayPreference",
+      "description": "1=hash name first, 2=real name first. Sentinel: <= 0 normalised to NULL (no update). Table column is SMALLINT.",
+      "typeMismatch": "INT vs Hasher.NameDisplayPreference SMALLINT — no truncation risk for valid values 1/2."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "Always returned as the first rowset. success=1 on success, success=0 on any error path.",
+      "columns": [
+        { "name": "success", "type": "BIT", "nullable": false, "description": "1 on success, 0 on error." },
+        { "name": "errorCode", "type": "INT", "nullable": true, "description": "NULL on success. Error code on failure: 1110=invalid token, 1310=device/user not found, 1510=duplicate email, 1910=unhandled DB error." },
+        { "name": "errorType", "type": "INT", "nullable": true, "description": "NULL on success. 11=auth failure (token invalid), 13=device or target user not found, 15=business rule violation (duplicate email), 19=unhandled CATCH error." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ErrorDetail",
+      "description": "Only returned when success=0. Provides human-readable and debug context for the error.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID for this error instance." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Matches errorType in the SuccessEnvelope rowset." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Matches errorCode in the SuccessEnvelope rowset." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Short error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User-facing error message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name from OBJECT_NAME(@@PROCID)." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "NewUserProfile",
+      "description": "Only returned when success=1 AND new-user mode (@deviceId IS NULL, or @userId resolved to null-UUID). Returns the newly created Hasher record directly instead of delegating to a sync SP.",
+      "columns": [
+        { "name": "hasherId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The new user's Hasher.id." },
+        { "name": "firstName", "type": "NVARCHAR(250)", "nullable": false, "description": "Coalesced to empty string." },
+        { "name": "lastName", "type": "NVARCHAR(250)", "nullable": false, "description": "Coalesced to empty string." },
+        { "name": "dispName", "type": "NVARCHAR", "nullable": false, "description": "Hasher.DisplayName computed column, coalesced to empty string." },
+        { "name": "hashName", "type": "NVARCHAR(250)", "nullable": false, "description": "Coalesced to empty string." },
+        { "name": "photo", "type": "NVARCHAR(1000)", "nullable": false, "description": "Coalesced to empty string." },
+        { "name": "dispPref", "type": "INT", "nullable": false, "description": "Hasher.NameDisplayPreference, coalesced to 0." },
+        { "name": "supportCode", "type": "NVARCHAR(50)", "nullable": true, "description": "Hasher.SupportCode." },
+        { "name": "resetCode", "type": "NVARCHAR(50)", "nullable": true, "description": "Hasher.ResetCode." },
+        { "name": "qrCode", "type": "NVARCHAR(50)", "nullable": false, "description": "Hasher.QR_code, coalesced to empty string." },
+        { "name": "preferences", "type": "NVARCHAR(20)", "nullable": false, "description": "Hasher.Preferences cast to NVARCHAR — string representation of the INT bitfield." },
+        { "name": "updatedAt", "type": "DATETIMEOFFSET", "nullable": false, "description": "Hasher.updatedAt." },
+        { "name": "removed", "type": "SMALLINT", "nullable": false, "description": "Hasher.Removed, coalesced to 0." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "SyncDelegateResult",
+      "description": "Only returned when success=1 AND edit mode (device authenticated). The result sets from the delegated sync SP are passed through directly: hcapp_syncEventAdminData (if @eventId provided), hcapp_syncKennelAdminData (if @kennelId provided, no @eventId), or hcapp_syncUserData (fallback). Number and shape of rowsets depend on the delegated SP.",
+      "columns": []
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.Hasher — on new user creation",
+    "INSERT HC.LaunchAndLogin — on new user creation",
+    "INSERT HC.HasherEventMap — if @eventId provided and new user",
+    "INSERT HC.HasherKennelMap — if @kennelId provided, new user, and @followKennelOnAddNewUser != 0",
+    "UPDATE HC.Hasher — on edit",
+    "UPDATE HC.HasherKennelMap — if @kennelId provided and historical counts specified on edit",
+    "INSERT HC.ErrorLog — on any error path",
+    "EXEC HC6.hcapp_syncEventAdminData — if @eventId provided and edit mode",
+    "EXEC HC6.hcapp_syncKennelAdminData — if @kennelId provided (and no @eventId) and edit mode",
+    "EXEC HC6.hcapp_syncUserData — fallback in edit mode when neither @eventId nor @kennelId provided"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "Auth checks and device lookup occur outside TRY/CATCH",
+      "detail": "The device lookup, null-userId guard, and token validation (lines 116–154) execute before BEGIN TRY. Any unexpected error in HC.CHECK_ACCESS_TOKEN_V2 or the Device SELECT would be uncaught and surface as a raw SQL error rather than the standard HC6 error envelope. The pattern is intentional (early-exit before the transaction) but violates the standard error contract."
+    },
+    {
+      "severity": "medium",
+      "issue": "Parameter type mismatch — @latitude / @longitude wider than table columns",
+      "detail": "@latitude DECIMAL(18,15) vs Hasher.HomeLatitude DECIMAL(12,9). @longitude DECIMAL(19,15) vs Hasher.HomeLongitude DECIMAL(13,9). Parameters accept higher precision than the table can store. Values will be silently rounded on INSERT. No data loss for normal lat/lng values but the mismatch is a documentation gap."
+    },
+    {
+      "severity": "medium",
+      "issue": "Parameter type mismatch — @nameDisplayPreference INT vs Hasher.NameDisplayPreference SMALLINT",
+      "detail": "INT parameter vs SMALLINT column. Safe for the valid values 1 and 2, but the parameter could accept values outside the SMALLINT range without error at the SP boundary."
+    },
+    {
+      "severity": "medium",
+      "issue": "Parameter type mismatch — @includeInGlobalHashDirectory INT vs Hasher.IncludeInGlobalHashDirectory SMALLINT",
+      "detail": "Same issue as @nameDisplayPreference — INT accepted, SMALLINT stored. Safe for values 0/1 but types don't align."
+    },
+    {
+      "severity": "medium",
+      "issue": "No authorization check when editing another user's record",
+      "detail": "When @targetUserId differs from the caller's @userId (admin editing another user), no check is made whether the caller has mismanagement or admin rights for that user's kennel. Any authenticated device can edit any other user's profile by providing a valid token bound to the target UUID."
+    },
+    {
+      "severity": "medium",
+      "issue": "Redundant @procName10 local variable",
+      "detail": "Line 316 declares '@procName10 NVARCHAR(128) = @procName' solely to pass to hcapp_syncEventAdminData because @procName is already used as the outer variable. @procName could be passed directly — the intermediate alias adds confusion without purpose."
+    },
+    {
+      "severity": "low",
+      "issue": "New user profile rowset condition uses @userId sentinel comparison",
+      "detail": "Line 295: 'IF (@isNewUserMode = 1 OR @userId = ''00000000-...'')'. The OR branch is redundant — @userId is only ever '00000000-...' when @isNewUserMode = 1. The second condition is dead code."
+    }
+  ],
+  "breakingChanges": [
+    "@deviceId type changed from NVARCHAR(100) to UNIQUEIDENTIFIER — callers passing a string UUID will break unless the client converts to the native type.",
+    "@firstName, @lastName, @hashName widened from NVARCHAR(100) to NVARCHAR(250) — no breaking change for callers; wider is backwards compatible.",
+    "@photo widened from NVARCHAR(500) to NVARCHAR(1000) — no breaking change for callers; wider is backwards compatible.",
+    "@historicalPackRunCount removed entirely — callers that pass this parameter must stop doing so (extra parameter will cause an error).",
+    "errorType for duplicate email changed from 10005 to 5, errorCode changed to 1510 — callers checking for errorType=10005 will not detect the duplicate email condition.",
+    "New success envelope rowset added as rowset 0 — callers expecting the first rowset to be the profile or sync data must shift their rowset index expectations by 1.",
+    "NewUserProfile rowset no longer includes facebookId or qrSecretCode columns — callers reading those fields from the new-user response will receive null or missing data.",
+    "TRY/CATCH added — unhandled DB errors now return errorType=19/errorCode=1910 instead of surfacing as raw SQL errors."
+  ]
+}

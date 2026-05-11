@@ -45,10 +45,10 @@ class QrGroup extends StatelessWidget {
                 SizedBox(
                   width: 50,
                   child: GestureDetector(
-                    onTap: () {
-                      Clipboard.setData(ClipboardData(text: url));
+                    onTap: () async {
+                      await Clipboard.setData(ClipboardData(text: url));
 
-                      Utilities.showAlert(
+                      await Utilities.showAlert(
                         'Link copied',
                         'A link to $description has been copied to your clipboard',
                         'OK',
@@ -80,6 +80,8 @@ class QrGroup extends StatelessWidget {
                       appBarBackgroundColor: themeAppBarBackground,
                       background: Backgrounds.defaultHcBackground(),
                       margin: 20.0,
+                      infoTitle: helpTitle,
+                      infoText: helpText,
                     ),
                   ),
                 );
@@ -103,8 +105,8 @@ class QrGroup extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   GestureDetector(
-                    onTap: () {
-                      SharePlus.instance.share(ShareParams(text: url));
+                    onTap: () async {
+                      await SharePlus.instance.share(ShareParams(text: url));
                     },
                     child: Padding(
                       padding: const EdgeInsets.only(left: 0.0),
@@ -123,9 +125,9 @@ class QrGroup extends StatelessWidget {
                   ),
                   const SizedBox(height: 30),
                   GestureDetector(
-                    onTap: () {
+                    onTap: () async {
                       if (Utilities.isConnected(showDialog: true)) {
-                        launchUrl(
+                        await launchUrl(
                           Uri.parse(url),
                           mode: LaunchMode.externalApplication,
                         );

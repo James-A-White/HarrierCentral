@@ -1,26 +1,25 @@
 import 'package:harrier_central/imports.dart';
 
-class KennelsTableHelper extends BaseTableHelper with BaseFields {
+class KennelsTableHelper extends BaseTableHelper<AppDomainType>
+    with BaseFields {
   KennelsTableHelper() {
     remoteDbId = 'kennelId';
     humanReadableTableName = 'Kennels';
     pageSize = SyncUserDataService.pageSize_kennelsTable;
-    tableFlag = SyncUserDataService.flagKennelsTable;
+    tableFlag = EnumDataTables.kennels.flag;
   }
 
   @override
-  String getTableName(dynamic appDomainType) {
+  String getTableName(AppDomainType appDomainType) {
     String tableName;
     switch (appDomainType) {
-      // case AppDomainType.event:
-      //   break;
-      // case AppDomainType.kennel:
-      //   break;
-      // case AppDomainType.user:
-      //   tableName = 'hashers';
-      //   break;
+      case AppDomainType.user:
+        tableName = EnumDataTables.kennels.commonTableName;
+        break;
       default:
-        tableName = 'kennels';
+        throw Exception(
+          'EnumDataTables.${EnumDataTables.kennels.name} does not have a table associated with it.',
+        );
     }
     return tableName;
   }

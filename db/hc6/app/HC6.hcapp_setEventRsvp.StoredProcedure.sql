@@ -98,7 +98,7 @@ BEGIN
 
     IF (@eventId != @hemEventId)
     BEGIN
-        SET @errorCode = 1226; SET @errorType = 2; SET @errorId = NEWID();
+        SET @errorCode = 1226; SET @errorType = 12; SET @errorId = NEWID();
         INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
         VALUES (@errorId, '<unknown>', 'Mismatched eventIds',
                 'HEM eventId and @eventId do not match', @procName, @userId);
@@ -268,7 +268,7 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
 
-    SET @errorCode = 1926; SET @errorType = 9; SET @errorId = NEWID();
+    SET @errorCode = 1926; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;

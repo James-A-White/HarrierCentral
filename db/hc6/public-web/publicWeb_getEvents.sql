@@ -255,7 +255,9 @@ BEGIN TRY
         e.Tags3,
 
         -- Metadata
-        e.IsCountedRun
+        e.IsCountedRun,
+        e.IsPromotedEvent,
+        e.EventGeographicScope
 
     FROM  HC.Event e
     LEFT JOIN DomainValues.EventThemeType ett ON ett.EventEnumId = e.ThemeRunType

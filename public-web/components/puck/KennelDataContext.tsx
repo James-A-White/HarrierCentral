@@ -11,6 +11,7 @@ export interface KennelPageData {
   songs?: Song[];
   statsRows?: KennelStatRow[];
   hasherCount?: number;
+  isCustomDomain?: boolean;
 }
 
 const KennelDataContext = createContext<KennelPageData | null>(null);

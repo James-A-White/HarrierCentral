@@ -109,7 +109,7 @@ function KennelLogo({ run, size = "sm" }: { run: GlobalRunRow; size?: "sm" | "md
       <img
         src={run.KennelLogo!}
         alt={run.KennelName}
-        className={`${dim} object-contain rounded-lg shrink-0`}
+        className={`${dim} object-contain shrink-0`}
       />
     );
   }

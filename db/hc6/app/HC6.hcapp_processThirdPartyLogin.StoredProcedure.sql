@@ -97,7 +97,7 @@ FROM HC.Device d WHERE d.id = @deviceId;
 
 IF (@userId IS NULL OR @userId = '00000000-0000-0000-0000-000000000000')
 BEGIN
-    SET @errorCode = 1305; SET @errorType = 3; SET @errorId = NEWID();
+    SET @errorCode = 1305; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, @hcVersion, 'Device not registered', 'Device not found', @procName, NULL);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
@@ -113,7 +113,7 @@ DECLARE @paramString NVARCHAR(500) = @deviceSecret + UPPER(CAST(@userId AS NVARC
 
 IF HC.CHECK_ACCESS_TOKEN_V2(@userId, @procName, COALESCE(@accessToken, 'error'), @paramString, @timeWindow) = 0
 BEGIN
-    SET @errorCode = 1105; SET @errorType = 1; SET @errorId = NEWID();
+    SET @errorCode = 1105; SET @errorType = 11; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, @hcVersion, 'Invalid access token', 'Access token failed validation', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
@@ -221,7 +221,7 @@ BEGIN TRY
 
     IF (@verifiedUserId IS NULL)
     BEGIN
-        SET @errorCode = 1905; SET @errorType = 9; SET @errorId = NEWID();
+        SET @errorCode = 1905; SET @errorType = 19; SET @errorId = NEWID();
         INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, deviceId, string_1)
         VALUES (@errorId, @hcVersion, 'User account not created',
                 'Failed to create or locate a user account via third party login.',
@@ -271,7 +271,7 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
 
-    SET @errorCode = 1905; SET @errorType = 9; SET @errorId = NEWID();
+    SET @errorCode = 1905; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, @hcVersion, 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;

@@ -58,8 +58,8 @@ class GetResetCodePopupState extends State<GetResetCodePopup> {
             backgroundColor: hc_blue,
           ),
           child: const Text('Reset'),
-          onPressed: () {
-            clearPrefs();
+          onPressed: () async {
+            await clearPrefs();
           },
         ),
 
@@ -84,17 +84,16 @@ class GetResetCodePopupState extends State<GetResetCodePopup> {
             backgroundColor: hc_blue,
           ),
           child: Text('Get code', style: ts_button),
-          onPressed: () {
+          onPressed: () async {
             final GetResetCodeService svc = GetResetCodeService();
-            svc
-                .getResetCode(
-                  QR_PREFIX_USER_SECRET_CODE + getResetCodeTextController.text,
-                )
-                .then((SingleResultModel? result) {
-                  setState(() {
-                    getResetCodeTextController.text = result!.result ?? '';
-                  });
-                });
+            final SingleResultModel? result = await svc.getResetCode(
+              QR_PREFIX_USER_SECRET_CODE + getResetCodeTextController.text,
+            );
+
+            if (!mounted) return;
+            setState(() {
+              getResetCodeTextController.text = result?.result ?? '';
+            });
 
             // Navigator.of(context).pop(<String, String>{
             //   'type': paymentBankTransferOther.value.toString(),
@@ -109,42 +108,43 @@ class GetResetCodePopupState extends State<GetResetCodePopup> {
                 (getResetCodeTextController.text.length != 9))
             ? Container()
             : TextButton(
-              style: TextButton.styleFrom(
-                shape: button_shape,
-                backgroundColor: hc_blue,
-              ),
-              child: Text('Reset device', style: ts_button),
-              onPressed: () async {
-                if (getResetCodeTextController.text.toUpperCase() ==
-                    '${QR_PREFIX_USER_RESET_CODE}CLEAR') {
-                  await clearPrefs();
-                  await DBProvider.deleteDb(DB_NAME);
-
-                  await Utilities.showAlert(
-                    'App Cleared Successful',
-                    'Your app has been successfully cleared. Please close and restart the app to start the installation process again.',
-                    'OK',
-                  );
-                } else {
-                  final AuthorizeDeviceService srv = AuthorizeDeviceService();
-                  final Future<Map<String, String>> apiCall = srv
-                      .authorizeDevice(
-                        scanText: getResetCodeTextController.text.toUpperCase(),
-                      );
-                  final Map<String, String> result = await apiCall;
-                  if (result.isNotEmpty) {
-                    getResetCodeTextController.text =
-                        getStringPref(StringPrefsEnum.displayName) ?? '';
+                style: TextButton.styleFrom(
+                  shape: button_shape,
+                  backgroundColor: hc_blue,
+                ),
+                child: Text('Reset device', style: ts_button),
+                onPressed: () async {
+                  if (getResetCodeTextController.text.toUpperCase() ==
+                      '${QR_PREFIX_USER_RESET_CODE}CLEAR') {
+                    await clearPrefs();
+                    await DBProvider.deleteDb(DB_NAME);
 
                     await Utilities.showAlert(
-                      'App Reset Successful',
-                      'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.',
+                      'App Cleared Successful',
+                      'Your app has been successfully cleared. Please close and restart the app to start the installation process again.',
                       'OK',
                     );
+                  } else {
+                    final AuthorizeDeviceService srv = AuthorizeDeviceService();
+                    final Future<Map<String, String>> apiCall = srv
+                        .authorizeDevice(
+                          scanText: getResetCodeTextController.text
+                              .toUpperCase(),
+                        );
+                    final Map<String, String> result = await apiCall;
+                    if (result.isNotEmpty) {
+                      getResetCodeTextController.text =
+                          getStringPref(StringPrefsEnum.displayName) ?? '';
+
+                      await Utilities.showAlert(
+                        'App Reset Successful',
+                        'Your app has been successfully reset. Please close and restart the app to ensure all data is properly reloaded.',
+                        'OK',
+                      );
+                    }
                   }
-                }
-              },
-            ),
+                },
+              ),
 
         // ),
       ],

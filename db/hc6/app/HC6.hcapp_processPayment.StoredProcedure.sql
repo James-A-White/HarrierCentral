@@ -120,7 +120,7 @@ END
 -- ---------------------------------------------------------------
 IF (@eventId IS NULL AND @productType = 1)
 BEGIN
-    SET @errorCode = 1240; SET @errorType = 2; SET @errorId = NEWID();
+    SET @errorCode = 1240; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Null or empty eventId',
             'eventId required for productType = 1', @procName, @userId);
@@ -133,7 +133,7 @@ END
 
 IF ((@paymentAmount IS NULL OR @paymentAmount < 0) AND @paymentType < 100)
 BEGIN
-    SET @errorCode = 1240; SET @errorType = 2; SET @errorId = NEWID();
+    SET @errorCode = 1240; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Invalid payment amount',
             'paymentAmount must be >= 0 for paymentType < 100', @procName, @userId);
@@ -384,7 +384,7 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
 
-    SET @errorCode = 1940; SET @errorType = 9; SET @errorId = NEWID();
+    SET @errorCode = 1940; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;

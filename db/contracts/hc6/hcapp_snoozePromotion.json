@@ -1,0 +1,127 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_snoozePromotion",
+  "version": "1.0.0",
+  "description": "Records that the calling user has snoozed a promotion until the given date, suppressing the promotion from appearing in the app until that date has passed. Auth is now fully enforced via HC6.ValidateAppAuth (HC5 had the auth check commented out). Returns a write SP success envelope on all paths.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to ValidateAppAuth to resolve the calling user."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived cryptographic token validated against the device secret by ValidateAppAuth."
+    },
+    {
+      "name": "promotionId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "HasherPromotionMap.PromotionId",
+      "description": "UUID of the promotion to snooze."
+    },
+    {
+      "name": "snoozeUntilDate",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": false,
+      "mapsToColumn": "HasherPromotionMap.SnoozeUntilDate",
+      "description": "Date and time until which the promotion is suppressed. Changed from DATETIME in HC5 to DATETIMEOFFSET(7) to match the column type and project standard."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "Always returned (auth failure, db error, or success). success=1 means the snooze was recorded; success=0 means an error occurred.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "BIT",
+          "nullable": false,
+          "description": "1 on success, 0 on any failure."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "Numeric error code. NULL on success."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "Error classification. NULL on success. 11=auth, 12=param, 13=not found, 14=removed, 15=business, 19=db."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ErrorDetail",
+      "description": "Returned only when success=0. Contains structured error information for the caller.",
+      "columns": [
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "UUID of the HC.ErrorLog entry for this error."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification code. Matches errorType in the success envelope rowset."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Numeric error code. Matches errorCode in the success envelope rowset."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Short error title for display."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "User-facing error message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "SP name from OBJECT_NAME(@@PROCID)."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT INTO HC.HasherPromotionMap (UserId, PromotionId, SnoozeUntilDate) on success — id, removed, and updatedAt are supplied by table defaults"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "No duplicate guard — multiple snooze rows possible for same user+promotion",
+      "detail": "There is no INSERT...WHERE NOT EXISTS or MERGE to prevent duplicate rows in HC.HasherPromotionMap for the same (UserId, PromotionId) combination. Repeated calls from the app accumulate redundant records. Inherited from HC5."
+    },
+    {
+      "severity": "low",
+      "issue": "HcVersion hardcoded as '<unknown>' in ErrorLog INSERT",
+      "detail": "The CATCH block inserts HcVersion = '<unknown>' into HC.ErrorLog. Other SPs pass the actual version string. This makes it harder to correlate errors to a specific deployment."
+    }
+  ],
+  "breakingChanges": [
+    "@accessToken is now fully validated — HC5 had the auth check commented out, so any caller with a known deviceId could snooze any promotion without a valid token",
+    "@snoozeUntilDate type changed from DATETIME to DATETIMEOFFSET(7) to match the column type and project standard",
+    "A write SP success envelope rowset is now always returned — HC5 returned no rowset at all",
+    "TRY/CATCH with transaction wrapping added — HC5 had neither; a failed INSERT in HC5 was silent"
+  ]
+}

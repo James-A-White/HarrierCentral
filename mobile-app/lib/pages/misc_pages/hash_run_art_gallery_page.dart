@@ -64,8 +64,8 @@ class HashRunArtGalleryPage extends StatelessWidget {
                           );
                         }
                       },
-                      onLongPress: () {
-                        Navigator.push<void>(
+                      onLongPress: () async {
+                        await Navigator.push<void>(
                           context,
                           MaterialPageRoute<void>(
                             builder: (BuildContext context) =>

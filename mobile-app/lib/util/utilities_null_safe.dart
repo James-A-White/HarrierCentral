@@ -586,8 +586,8 @@ class Utilities {
     String pageTitle,
   ) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push<void>(
+      onTap: () async {
+        await Navigator.push<void>(
           context,
           MaterialPageRoute<void>(
             builder: (BuildContext context) => ZoomableImagePage2(
@@ -796,7 +796,7 @@ class Utilities {
 
       final String body = jsonEncode(bodyMap);
 
-      final String responseBody = await ServiceCommon.sendHttpPostV2(
+      final String responseBody = await ServiceCommon.sendHttpPost(
         body,
         bypassConnectionCheck: true,
       ).timeout(hcServerTimeout, onTimeout: () => '${ERROR_PREFIX}Timeout');
@@ -945,11 +945,13 @@ class Utilities {
     final network = Get.find<NetworkService>();
     bool isConnected = network.isOnline();
     if (!isConnected && showDialog) {
-      Utilities.showAlert(
-        title ?? 'Offline Mode',
-        message ??
-            'This feature is not available in offline mode. Please connect to the internet to use this feature',
-        'OK',
+      unawaited(
+        Utilities.showAlert(
+          title ?? 'Offline Mode',
+          message ??
+              'This feature is not available in offline mode. Please connect to the internet to use this feature',
+          'OK',
+        ),
       );
     }
     return isConnected;
@@ -1137,7 +1139,7 @@ class Utilities {
     return offsetFromGmtToLocal;
   }
 
-  static Future<void> checkAreWeAtRunStart({String? eventId}) async {
+  static Future<void> isAtRunStart({String? eventId}) async {
     //final Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.lowest);
 
     var lastRunStartCheck = getDatePref(DatePrefsEnum.lastRunStartCheck);
@@ -1153,8 +1155,9 @@ class Utilities {
 
     await setDatePref(DatePrefsEnum.lastRunStartCheck, DateTime.now());
 
-    final List<AreWeAtRunModel> resultList =
-        await CommonQueries.areWeAtRunStart(eventId: eventId);
+    final List<AreWeAtRunModel> resultList = await CommonQueries.isAtRunStart(
+      eventId: eventId,
+    );
     final String userId = getStringPref(StringPrefsEnum.userId)!;
 
     if (resultList.length == 1) {
@@ -1186,7 +1189,7 @@ class Utilities {
 
         if (retVal == enumCheckInOption_Cancel) {
           // user decided not to check in automatically. Let's take note of this so we don't show the popup again.
-          setStringPref(
+          await setStringPref(
             StringPrefsEnum.blockAutoCheckinForThisEventId,
             result.eventId,
           );

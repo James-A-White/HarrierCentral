@@ -1,15 +1,17 @@
 import 'package:harrier_central/imports.dart';
 
 class SyncEventAdminService {
-  static const int flagHasherEventMapTable = 0x00000001;
-  static const int flagHasherKennelMapTable = 0x00000002;
-  static const int flagNarrowEventsTable = 0x00000004;
-  static const int flagPaymentsTable = 0x00000008;
-  static const int flagReceiptsTable = 0x00000010;
-  static const int flagHashersTable = 0x00000020;
-  static const int flagKennelCreditTable = 0x00000040;
+  // static const int EnumDataTables.hasherEventMap.flag = 0x00000001;
+  // static const int EnumDataTables.hasherKennelMap.flag = 0x00000002;
+  // static const int EnumDataTables.narrowEvents.flag = 0x00000004;
+  // static const int EnumDataTables.payments.flag = 0x00000008;
 
-  static const int flagsAllData = 0x0000007f;
+  //static const int EnumDataTables.hashers.flag = 0x00000020;
+
+  // static const int flagReceiptsTable = 0x00000010;
+  // static const int flagKennelCreditTable = 0x00000040;
+
+  // static const int flagsAllData = 0x0000007f;
 
   // ignore: constant_identifier_names
   static const int FORCE = FORCE_ALL_REPLICATION_TIMESTAMP - 1;
@@ -31,45 +33,43 @@ class SyncEventAdminService {
   }
 
   Future<void> _getLastUpdatedTimes(int flags) async {
-    _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0
+    _hasherEventMapLastUpdated =
+        (flags & EnumDataTables.hasherEventMap.flag) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
         : await _getLastUpdatedTime(
             tableModel.hasherEventMapTableHelper.colUpdatedAtValue,
-            tableModel.hasherEventMapTableHelper.getTableName(
-              AppDomainType.event,
-            ),
+            EnumDataTables.hasherEventMap.eventTableName,
           );
-    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0
+    _hasherKennelMapLastUpdated =
+        (flags & EnumDataTables.hasherKennelMap.flag) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
         : await _getLastUpdatedTime(
             tableModel.hasherKennelMapTableHelper.colUpdatedAtValue,
-            tableModel.hasherKennelMapTableHelper.getTableName(
-              AppDomainType.event,
-            ),
+            EnumDataTables.hasherKennelMap.eventTableName,
           );
-    _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0
+    _narrowEventsLastUpdated = (flags & EnumDataTables.events.flag) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
         : await _getLastUpdatedTime(
             tableModel.eventsTableHelper.colUpdatedAtValue,
-            tableModel.eventsTableHelper.getTableName(AppDomainType.user),
+            EnumDataTables.events.commonTableName,
           );
-    _paymentsLastUpdated = (flags & flagPaymentsTable) == 0
+    _paymentsLastUpdated = (flags & EnumDataTables.payments.flag) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
         : await _getLastUpdatedTime(
             tableModel.paymentsTableHelper.colUpdatedAtValue,
-            tableModel.paymentsTableHelper.getTableName(AppDomainType.event),
+            EnumDataTables.payments.eventTableName,
           );
-    _receiptsLastUpdated = (flags & flagReceiptsTable) == 0
+    _receiptsLastUpdated = (flags & EnumDataTables.receipts.flag) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
         : await _getLastUpdatedTime(
             tableModel.receiptsTableHelper.colUpdatedAtValue,
-            tableModel.receiptsTableHelper.getTableName(AppDomainType.event),
+            EnumDataTables.receipts.eventTableName,
           );
-    _hashersLastUpdated = (flags & flagHashersTable) == 0
+    _hashersLastUpdated = (flags & EnumDataTables.hashers.flag) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
         : await _getLastUpdatedTime(
             tableModel.hashersTableHelper.colUpdatedAtValue,
-            tableModel.hashersTableHelper.getTableName(AppDomainType.user),
+            EnumDataTables.hashers.commonTableName,
           );
   }
 
@@ -89,29 +89,14 @@ class SyncEventAdminService {
       // narrowEvents is not included here because all events are loaded all the time for all hashers.
       // TODO(James): create separate events table for event management
 
-      await tableModel.baseService.clearTable(
-        database,
-        tableModel.paymentsTableHelper,
-        tableModel.paymentsTableHelper.getTableName(AppDomainType.event),
-      );
-      await tableModel.baseService.clearTable(
-        database,
-        tableModel.hasherEventMapTableHelper,
-        tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event),
-      );
-      await tableModel.baseService.clearTable(
-        database,
-        tableModel.hasherKennelMapTableHelper,
-        tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event),
-      );
-      await tableModel.baseService.clearTable(
-        database,
-        tableModel.receiptsTableHelper,
-        tableModel.receiptsTableHelper.getTableName(AppDomainType.event),
-      );
-      // await tableModel.baseService.clearTable(database, tableModel.kennelCreditsTableHelper, tableModel.kennelCreditsTableHelper.getTableName(AppDomainType.event));
-      // we don't want to clear the Hashers table since it is meant to be persistent and not tied to a single event
-
+      for (final table in EnumDataTables.values.where((t) => t.hasEventTable)) {
+        final helper = table.helperFrom(tableModel);
+        await tableModel.baseService.clearTable(
+          database,
+          helper,
+          table.eventTableName,
+        );
+      }
       await setStringPref(StringPrefsEnum.adminEventId, eventId);
     }
 
@@ -185,28 +170,30 @@ class SyncEventAdminService {
         'deviceId': deviceId,
         'accessToken': accessToken,
         'eventId': eventId,
-        'hashersUpdatedAfter': (flags & flagHashersTable) == 0
+        'hashersUpdatedAfter': (flags & EnumDataTables.hashers.flag) == 0
             ? 'ignore'
             : ('${hashersUpdatedAfter}000000').substring(0, 26),
-        'hasherEventMapUpdatedAfter': (flags & flagHasherEventMapTable) == 0
+        'hasherEventMapUpdatedAfter':
+            (flags & EnumDataTables.hasherEventMap.flag) == 0
             ? 'ignore'
             : ('${hasherEventMapUpdatedAfter}000000').substring(0, 26),
-        'hasherKennelMapUpdatedAfter': (flags & flagHasherKennelMapTable) == 0
+        'hasherKennelMapUpdatedAfter':
+            (flags & EnumDataTables.hasherKennelMap.flag) == 0
             ? 'ignore'
             : ('${hasherKennelMapUpdatedAfter}000000').substring(0, 26),
-        'narrowEventsUpdatedAfter': (flags & flagNarrowEventsTable) == 0
+        'narrowEventsUpdatedAfter': (flags & EnumDataTables.events.flag) == 0
             ? 'ignore'
             : ('${narrowEventsUpdatedAfter}000000').substring(0, 26),
-        'paymentsUpdatedAfter': (flags & flagPaymentsTable) == 0
+        'paymentsUpdatedAfter': (flags & EnumDataTables.payments.flag) == 0
             ? 'ignore'
             : ('${paymentsUpdatedAfter}000000').substring(0, 26),
-        'receiptsUpdatedAfter': (flags & flagReceiptsTable) == 0
+        'receiptsUpdatedAfter': (flags & EnumDataTables.receipts.flag) == 0
             ? 'ignore'
             : ('${receiptsUpdatedAfter}000000').substring(0, 26),
         'usePaging': usePaging ? '1' : '0',
       });
 
-      final String responseBody = await ServiceCommon.sendHttpPostV2(body);
+      final String responseBody = await ServiceCommon.sendHttpPost(body);
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {
         await updateSqlTablesWithResultsFromBackendApiCall(
@@ -222,23 +209,36 @@ class SyncEventAdminService {
 
   final List<BaseTableHelper> _eventTables = <BaseTableHelper>[
     tableModel.paymentsTableHelper,
-    tableModel.hashersTableHelper,
     tableModel.receiptsTableHelper,
-    tableModel.eventsTableHelper,
     tableModel.hasherEventMapTableHelper,
     tableModel.hasherKennelMapTableHelper,
-    //tableModel.kennelCreditsTableHelper,
+  ];
+
+  final List<BaseTableHelper> _commonTables = <BaseTableHelper>[
+    tableModel.hashersTableHelper,
+    tableModel.eventsTableHelper,
   ];
 
   Future<List<dynamic>> updateSqlTablesWithResultsFromBackendApiCall(
     String jsonResults, {
     Function? informUser,
   }) async {
-    return tableModel.baseService.updateSqlTablesFromJsonWithAdHocData(
-      jsonResults,
-      _eventTables,
-      database,
-      AppDomainType.event,
+    List<dynamic> results = await tableModel.baseService
+        .updateSqlTablesFromJsonWithAdHocData(
+          jsonResults,
+          _commonTables,
+          database,
+          AppDomainType.user,
+        );
+
+    results.addAll(
+      await tableModel.baseService.updateSqlTablesFromJsonWithAdHocData(
+        jsonResults,
+        _eventTables,
+        database,
+        AppDomainType.event,
+      ),
     );
+    return results;
   }
 }

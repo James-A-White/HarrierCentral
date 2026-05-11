@@ -320,13 +320,22 @@ TextStyle ts_buttonLabelMedium = const TextStyle(
 /// Titles
 /// font: AvenirNextDemiBold
 /// color: White
+///
+/// // 1 file
+TextStyle ts_snackbar = const TextStyle(
+  fontFamily: 'AvenirNextDemiBold',
+  fontStyle: FontStyle.normal,
+  color: Colors.white,
+  fontSize: 20.0,
+  height: 1.0,
+);
 
 // 6 files
 TextStyle ts_title = const TextStyle(
   fontFamily: 'AvenirNextDemiBold',
   fontStyle: FontStyle.normal,
   color: Colors.white,
-  fontSize: 20.0,
+  fontSize: 24.0,
   height: 1.0,
 );
 

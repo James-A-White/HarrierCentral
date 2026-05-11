@@ -52,7 +52,7 @@ class CommonQueries {
           SELECT e.eventId,
           e.eventName,
           (julianday(eventStartDatetime) - julianday('now','$offsetFromGmtToLocal')) * 24 as deltaHours
-          FROM ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} e
+          FROM ${EnumDataTables.events.commonTableName} e
           WHERE e.kennelId = "$kennelId"
           ORDER BY abs(julianday('now','$offsetFromGmtToLocal') - julianday(eventStartDatetime)) ASC
           
@@ -84,9 +84,7 @@ class CommonQueries {
     return result;
   }
 
-  static Future<List<AreWeAtRunModel>> areWeAtRunStart({
-    String? eventId,
-  }) async {
+  static Future<List<AreWeAtRunModel>> isAtRunStart({String? eventId}) async {
     final List<AreWeAtRunModel> resultList = <AreWeAtRunModel>[];
 
     try {
@@ -119,11 +117,11 @@ class CommonQueries {
           coalesce(e.${tableModel.eventsTableHelper.colEventPriceForNonMembers},k.${tableModel.kennelsTableHelper.colDefaultPriceForNonMembers},0) as nonMemberPrice,
           (julianday(${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) - julianday('now')) * 24 as deltaHours,
           coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) as attendenceState
-          FROM ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} e
-          INNER JOIN ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} k on e.${tableModel.eventsTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId}
-          LEFT OUTER JOIN ${tableModel.countriesTableHelper.getTableName(AppDomainType.user)} c on c.${tableModel.countriesTableHelper.colCountryId} = k.${tableModel.kennelsTableHelper.colCountryId}
-          LEFT OUTER JOIN ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.user)} hem on hem.${tableModel.hasherEventMapTableHelper.colUserId} = "$userId" AND hem.${tableModel.hasherEventMapTableHelper.colEventId} = e.${tableModel.eventsTableHelper.colEventId}
-          LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = "$userId" AND hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = e.${tableModel.eventsTableHelper.colKennelId}
+          FROM ${EnumDataTables.events.commonTableName} e
+          INNER JOIN ${EnumDataTables.kennels.commonTableName} k on e.${tableModel.eventsTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId}
+          LEFT OUTER JOIN ${EnumDataTables.countries.commonTableName} c on c.${tableModel.countriesTableHelper.colCountryId} = k.${tableModel.kennelsTableHelper.colCountryId}
+          LEFT OUTER JOIN ${EnumDataTables.hasherEventMap.commonTableName} hem on hem.${tableModel.hasherEventMapTableHelper.colUserId} = "$userId" AND hem.${tableModel.hasherEventMapTableHelper.colEventId} = e.${tableModel.eventsTableHelper.colEventId}
+          LEFT OUTER JOIN ${EnumDataTables.hasherKennelMap.commonTableName} hkm on hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = "$userId" AND hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = e.${tableModel.eventsTableHelper.colKennelId}
           WHERE 
           ((julianday(${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) - julianday('now')) * 24) <= $ALLOW_AUTO_CHECKIN_HOURS_BEFORE_EVENT
           AND ((julianday(${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) - julianday('now')) * 24) >= ${-ALLOW_AUTO_CHECKIN_HOURS_AFTER_EVENT}
@@ -274,7 +272,7 @@ class CommonQueries {
           '''
 
           SELECT h.hasherId
-          FROM ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h
+          FROM ${EnumDataTables.hashers.commonTableName} h
           WHERE upper(h.qrCode) = "$uqr"
           
           ''';
@@ -312,11 +310,11 @@ class CommonQueries {
           coalesce(k.${tableModel.kennelsTableHelper.colDefaultPriceForNonMembers},0) as nonMemberPrice,
           coalesce(k.${tableModel.kennelsTableHelper.colKennelLatitude},city.${tableModel.citiesTableHelper.colLatitude}) as kenlLat,
           coalesce(k.${tableModel.kennelsTableHelper.colKennelLongitude},city.${tableModel.citiesTableHelper.colLongitude}) as kenlLon
-          FROM ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} k
-          INNER JOIN ${tableModel.citiesTableHelper.getTableName(AppDomainType.user)} city on city.${tableModel.citiesTableHelper.colCityId} = k.${tableModel.kennelsTableHelper.colCityId}
-          LEFT OUTER JOIN ${tableModel.countriesTableHelper.getTableName(AppDomainType.user)} c on c.countryId = k.countryId
-          LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on "$kennelId" = hkm.kennelId,
-          hashers h  
+          FROM ${EnumDataTables.kennels.commonTableName} k
+          INNER JOIN ${EnumDataTables.cities.commonTableName} city on city.${tableModel.citiesTableHelper.colCityId} = k.${tableModel.kennelsTableHelper.colCityId}
+          LEFT OUTER JOIN ${EnumDataTables.countries.commonTableName} c on c.countryId = k.countryId
+          LEFT OUTER JOIN ${EnumDataTables.hasherKennelMap.commonTableName} hkm on "$kennelId" = hkm.kennelId,
+          ${EnumDataTables.hashers.commonTableName} h  
           WHERE k.${tableModel.kennelsTableHelper.colKennelId} = "$kennelId"
           AND hkm.userId = "$userId"
           AND h.hasherId = "$userId"
@@ -416,12 +414,12 @@ class CommonQueries {
           coalesce(e.${tableModel.eventsTableHelper.colEventPriceForNonMembers},k.${tableModel.kennelsTableHelper.colDefaultPriceForNonMembers},0) as nonMemberPrice,
           coalesce(k.${tableModel.kennelsTableHelper.colKennelLatitude},city.${tableModel.citiesTableHelper.colLatitude}) as kenlLat,
           coalesce(k.${tableModel.kennelsTableHelper.colKennelLongitude},city.${tableModel.citiesTableHelper.colLongitude}) as kenlLon
-          FROM ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} e
-          INNER JOIN ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} k on k.kennelId = e.kennelId
-          INNER JOIN ${tableModel.citiesTableHelper.getTableName(AppDomainType.user)} city on city.${tableModel.citiesTableHelper.colCityId} = k.${tableModel.kennelsTableHelper.colCityId}
-          LEFT OUTER JOIN ${tableModel.countriesTableHelper.getTableName(AppDomainType.user)} c on c.countryId = k.countryId
-          LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on e.kennelId = hkm.kennelId AND hkm.userId = "$userId",
-          hashers h  
+          FROM ${EnumDataTables.events.commonTableName} e
+          INNER JOIN ${EnumDataTables.kennels.commonTableName} k on k.kennelId = e.kennelId
+          INNER JOIN ${EnumDataTables.cities.commonTableName} city on city.${tableModel.citiesTableHelper.colCityId} = k.${tableModel.kennelsTableHelper.colCityId}
+          LEFT OUTER JOIN ${EnumDataTables.countries.commonTableName} c on c.countryId = k.countryId
+          LEFT OUTER JOIN ${EnumDataTables.hasherKennelMap.commonTableName} hkm on e.kennelId = hkm.kennelId AND hkm.userId = "$userId",
+          ${EnumDataTables.hashers.commonTableName} h  
           WHERE e.eventId = "$eventId"
           AND h.hasherId = "$userId" 
           ''';

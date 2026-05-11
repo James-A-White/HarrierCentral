@@ -1,0 +1,210 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_joinKennel",
+  "version": "1.0.0",
+  "description": "Creates or updates a HasherKennelMap row for a target user at a kennel. Manages kennel follow state, home kennel assignment, membership duration, notification preferences, app access flags, and mismanagement roles. Supports two modes: the calling user managing their own membership (delegates to hcapp_syncUserData on success), or an admin managing another user's membership (delegates to hcapp_syncKennelAdminData on success). Sentinel values on most parameters allow callers to selectively update only the fields they care about.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "Registered device UUID. Used to resolve the calling userId and DeviceSecret for token validation."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token validated against DeviceSecret via HC6.ValidateAppAuth."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "HasherKennelMap.KennelId",
+      "description": "Kennel to join or update. Required — a NULL or zero-UUID produces a validation error (errorCode=1250, errorType=12)."
+    },
+    {
+      "name": "targetUserId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "HasherKennelMap.UserId",
+      "description": "User whose HKM record is being created or updated. When equal to the calling userId, the user is managing their own membership. When different, the caller is acting as an admin on another user's record, and the sync delegate switches to hcapp_syncKennelAdminData."
+    },
+    {
+      "name": "isFollowing",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.Following",
+      "description": "Follow state. 1=follow, 0=unfollow, 2=unfollow (also clears home kennel). Sentinel: -1 normalised to NULL (no change). When @isHomeKennel=1, this is forced to 1 regardless of the passed value."
+    },
+    {
+      "name": "isHomeKennel",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Hasher.HomeKennelId",
+      "description": "Home kennel assignment. 1=set as home kennel (also implies @isFollowing=1, clears any other home kennel from HC.HasherKennelMap and sets HC.Hasher.HomeKennelId). 0=remove home kennel designation. Sentinel: -1 normalised to NULL (no change)."
+    },
+    {
+      "name": "notificationState",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.KennelNotificationPreference",
+      "description": "Notification preference for this kennel. Sentinel: -1 normalised to NULL (no change)."
+    },
+    {
+      "name": "emailAlertState",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.KennelEmailAlertPreference",
+      "description": "Email alert preference for this kennel. Sentinel: -1 normalised to NULL (no change)."
+    },
+    {
+      "name": "monthsToAddToMembership",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.MembershipExpirationDate",
+      "description": "Controls membership duration. Sentinel: 0 normalised to NULL (no change). Magic value 9999: sets MembershipExpirationDate to '2100-01-01' (never expires), IsMember=1. Magic value -9999: revokes membership — sets IsMember=0, MembershipExpirationDate=NULL, MemberSince=NULL. Positive value n: adds n months to current expiry (or from today if expired or new). Also drives IsMember flag in all paths."
+    },
+    {
+      "name": "appAccessFlags",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.AppAccessFlags",
+      "description": "App permission bitmask. Written to both HasherKennelMap.AppAccessFlags and HasherKennelMap.HcWebPermissionFlags. Sentinel: -1 normalised to NULL (no change)."
+    },
+    {
+      "name": "mismanagementRoles",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.MismanagementRoles",
+      "description": "Role bitmask for mismanagement team. When set, also triggers a read of HC3.vwMmByKennel to rebuild HC.Kennel.KennelMismanagementTeam. Sentinel: -1 normalised to NULL (no change)."
+    },
+    {
+      "name": "paymentAmount",
+      "type": "DECIMAL(12,6)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Accepted but never read or used anywhere in the SP body. Dead parameter — retained for HC5 API compatibility."
+    },
+    {
+      "name": "kennelsUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Sync watermark for the Kennels table. Passed through to hcapp_syncUserData or hcapp_syncKennelAdminData. NULL is coerced to 'ignore' before the delegate call."
+    },
+    {
+      "name": "hasherKennelMapUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Sync watermark for the HasherKennelMap table. Passed through to hcapp_syncUserData or hcapp_syncKennelAdminData. NULL is coerced to 'ignore' before the delegate call."
+    },
+    {
+      "name": "hashersUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Sync watermark for the Hashers table. Passed through to the sync delegate. NULL and omitted both coerce to 'ignore'."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "Always returned as the first rowset. success=0 on any auth, validation, or runtime error. success=1 on a successful write. On error, errorCode and errorType are non-NULL; on success, both are NULL.",
+      "columns": [
+        { "name": "success", "type": "BIT", "nullable": false, "description": "1 on success, 0 on any error." },
+        { "name": "errorCode", "type": "INT", "nullable": true, "description": "NULL on success. 1250=missing kennelId (validation), auth failure or unhandled CATCH codes set by ValidateAppAuth or CATCH block." },
+        { "name": "errorType", "type": "INT", "nullable": true, "description": "NULL on success. 12=validation error (kennelId null/empty). Auth and CATCH error types are set by ValidateAppAuth and the CATCH block respectively (see ErrorDetail rowset)." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ErrorDetail",
+      "description": "Returned as rowset 1 only on error (success=0). Contains the HC6 standard error detail. On auth failure, errorType comes from ValidateAppAuth. On kennelId validation failure, errorType=12. On unhandled CATCH, errorType=19.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID for this error occurrence." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification. 12=validation (missing/empty kennelId). 19=unhandled CATCH. Auth error types delegated from ValidateAppAuth." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Numeric error code. 1250=missing kennelId. 1950=unhandled CATCH. Auth codes set by ValidateAppAuth." },
+        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Short error title for display." },
+        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User-facing error message." },
+        { "name": "errorProc", "type": "NVARCHAR", "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "HkmState",
+      "description": "Returned as rowset 1 on success only. Current state of the HasherKennelMap record immediately after the write.",
+      "columns": [
+        { "name": "adHocDataId", "type": "INT", "nullable": false, "description": "Always 1. Placeholder discriminator used by the mobile app to identify this rowset type." },
+        { "name": "following", "type": "SMALLINT", "nullable": true, "description": "HasherKennelMap.Following after the upsert." },
+        { "name": "kennelNotificationPreference", "type": "SMALLINT", "nullable": true, "description": "HasherKennelMap.KennelNotificationPreference after the upsert." },
+        { "name": "kennelEmailAlertPreference", "type": "SMALLINT", "nullable": true, "description": "HasherKennelMap.KennelEmailAlertPreference after the upsert." },
+        { "name": "isHomeKennel", "type": "INT", "nullable": false, "description": "1 if this kennel matches Hasher.HomeKennelId, else 0. Derived via CASE WHEN on the joined Hasher row — not read directly from HasherKennelMap.IsHomeKennel." }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "SyncData",
+      "description": "Rowsets 2 and beyond are the passthrough output from hcapp_syncUserData (self-edit mode) or hcapp_syncKennelAdminData (admin-edit mode). These are executed outside the TRY/CATCH block, after COMMIT. The shape of these rowsets is defined by the respective sync SP contracts.",
+      "columns": []
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.HasherKennelMap — when no existing HKM record exists for (targetUserId, kennelId)",
+    "UPDATE HC.HasherKennelMap — upserts Following, IsMember, IsHomeKennel, AppAccessFlags, HcWebPermissionFlags, MismanagementRoles, KennelNotificationPreference, KennelEmailAlertPreference, MembershipExpirationDate, MemberSince, updatedAt",
+    "UPDATE HC.Hasher SET HomeKennelId — when @isHomeKennel=1 (sets to @kennelId) or when unfollowing/clearing home kennel (sets to NULL)",
+    "UPDATE HC.HasherKennelMap SET IsHomeKennel=0 for all other kennels of targetUserId — when @isHomeKennel=1",
+    "UPDATE HC.Kennel SET KennelMismanagementTeam — when @mismanagementRoles is set; reads new team string from HC3.vwMmByKennel",
+    "INSERT HC.ErrorLog — on kennelId validation failure or unhandled CATCH",
+    "EXEC HC6.hcapp_syncUserData — on success when targetUserId IS NULL or equals the calling userId",
+    "EXEC HC6.hcapp_syncKennelAdminData — on success when targetUserId differs from the calling userId"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "Cross-schema dependency — HC3.vwMmByKennel",
+      "detail": "When @mismanagementRoles is set (line ~237), the SP reads HC3.vwMmByKennel to rebuild the kennel mismanagement team string. This is a hard dependency on a legacy HC3 schema view. The view should be migrated to HC schema or the query should be inlined in HC6."
+    },
+    {
+      "severity": "high",
+      "issue": "Dead parameter — @paymentAmount",
+      "detail": "@paymentAmount DECIMAL(12,6) is declared and accepted but never referenced anywhere in the SP body. It exists solely for backwards API compatibility with HC5 callers."
+    },
+    {
+      "severity": "medium",
+      "issue": "@appAccessFlags silently writes both AppAccessFlags and HcWebPermissionFlags",
+      "detail": "On both INSERT and UPDATE paths, @appAccessFlags is used as the value for both HasherKennelMap.AppAccessFlags and HasherKennelMap.HcWebPermissionFlags (lines ~193-194, ~209-210). Callers that intend only to update app access flags will also overwrite web permission flags. This side effect is not visible from the parameter name or description."
+    },
+    {
+      "severity": "medium",
+      "issue": "Magic values 9999 and -9999 for membership",
+      "detail": "@monthsToAddToMembership uses non-obvious magic values: 9999 = permanent membership (expiry '2100-01-01'), -9999 = revoke membership (IsMember=0, ExpirationDate=NULL, MemberSince=NULL). These must never change without updating all callers."
+    },
+    {
+      "severity": "medium",
+      "issue": "Sync delegate executes outside the transaction and outside TRY/CATCH",
+      "detail": "The EXEC calls to hcapp_syncUserData and hcapp_syncKennelAdminData (lines ~281-305) run after COMMIT TRANSACTION and outside the TRY/CATCH block. If the sync delegate throws, the write is already committed and cannot be rolled back, and the error is not caught or surfaced via the standard error envelope."
+    },
+    {
+      "severity": "low",
+      "issue": "IsMember logic on UPDATE does not handle monthsToAddToMembership = 9999",
+      "detail": "In the UPDATE path, the IsMember CASE expression (lines ~203-207) handles -9999 (revoke) and positive values, but does not have an explicit branch for 9999 (permanent). IsMember is set based on whether DATEADD(MONTH, 9999, ...) > GETDATE(), which will be true and correctly sets IsMember=1, but the intent is implicit rather than explicit and could be confusing to future maintainers."
+    },
+    {
+      "severity": "low",
+      "issue": "isHomeKennel output derived from Hasher.HomeKennelId rather than HasherKennelMap.IsHomeKennel",
+      "detail": "The success rowset (HkmState) computes isHomeKennel as CASE WHEN hkm.KennelId = h.HomeKennelId THEN 1 ELSE 0 END by joining HC.Hasher. This can differ from HasherKennelMap.IsHomeKennel if the two columns become inconsistent (e.g. due to a partial update from another path). The SP itself updates both, but callers should be aware the returned value is from the join, not the column."
+    }
+  ],
+  "breakingChanges": [
+    "TRY/CATCH block and XACT_ABORT added — HC5 had no error handling. Unhandled errors now produce the standard error envelope instead of propagating exceptions to the caller.",
+    "Success envelope (rowset 0: success/errorCode/errorType) added — HC5 had no such rowset. All rowset indices for existing data are now shifted by 1.",
+    "Auth now delegated to HC6.ValidateAppAuth — HC5 performed inline auth. Error codes and types for auth failures may differ.",
+    "Delegation targets updated to HC6 SPs: hcapp_syncUserData and hcapp_syncKennelAdminData — HC5 called HC5 equivalents.",
+    "HC3.vwMmByKennel dependency retained from HC5 — noted as a smell, not yet resolved."
+  ]
+}

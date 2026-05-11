@@ -153,8 +153,8 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
     );
   }
 
-  void _onDonePress() {
-    Navigator.of(
+  Future<void> _onDonePress() async {
+    await Navigator.of(
       context,
     ).pushReplacementNamed(RouteNames.NEW_ACCOUNT.toString());
   }
@@ -263,9 +263,9 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
     return Text('Skip', style: navStyle);
   }
 
-  void _onSkipPress() {
+  Future<void> _onSkipPress() async {
     if (activeTab == 0) {
-      Utilities.showAlert(
+      await Utilities.showAlert(
         'Location Preference',
         'if you do not allow Harrier Central to detect your location the app will not be able to find the closest Hash runs along with other important features.',
         'Allow',
@@ -285,7 +285,7 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
     }
 
     if (activeTab == 1) {
-      Utilities.showAlert(
+      await Utilities.showAlert(
         'Camera Preference',
         'if you do not allow Harrier Central to access your camera you will not be able to scan QR codes to check in to runs or take a profile photo.',
         'Allow',
@@ -305,7 +305,7 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
     }
 
     if (activeTab == 2) {
-      Utilities.showAlert(
+      await Utilities.showAlert(
         'Notification Preference',
         'if you do not allow Harrier Central to send notification you will not be alerted when details of upcomign runs change',
         'Allow',

@@ -135,31 +135,32 @@ class LeaderboardState extends State<Leaderboard>
       _showKennels = true;
     }
 
-    QueryKennels.queryKennelDetails().then((
-      List<Map<String, dynamic>> kennels,
-    ) {
-      _kennels = {};
-
-      for (Map<String, dynamic> kennel in kennels) {
-        _kennels![kennel["kennelId"]] = kennel;
-      }
-
-      if (_filteredLeaderboardList.isEmpty) {
-        _getLeaderboard().then((value) {
-          setState(() {
-            _leaderboardSortColumnIndex = 0;
-            _sortOrderAsc = false;
-            _sortLeaderboard(_leaderboardSortColumnIndex, false);
-          });
-        });
-      }
-    });
+    unawaited(initStateAsync());
   }
 
   @override
   void dispose() {
     _leaderScrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> initStateAsync() async {
+    List<Map<String, dynamic>> kennels =
+        await QueryKennels.queryKennelDetails();
+
+    _kennels = <String, Map<String, dynamic>>{};
+
+    for (Map<String, dynamic> kennel in kennels) {
+      _kennels?[kennel["kennelId"]] = kennel;
+    }
+
+    if (_filteredLeaderboardList.isEmpty) {
+      await _getLeaderboard();
+      _leaderboardSortColumnIndex = 0;
+      _sortOrderAsc = false;
+      _sortLeaderboard(_leaderboardSortColumnIndex, false);
+      setState(() {});
+    }
   }
 
   Future<void> _getLeaderboard() async {
@@ -192,7 +193,7 @@ class LeaderboardState extends State<Leaderboard>
         'kennelId': widget.kennelId,
       });
 
-      responseBody = await ServiceCommon.sendHttpPostV2(body);
+      responseBody = await ServiceCommon.sendHttpPost(body);
       updateLocalLeaderboardCache = true;
     } else {
       responseBody = getStringPref(StringPrefsEnum.leaderboardJson) ?? '';
@@ -230,22 +231,22 @@ class LeaderboardState extends State<Leaderboard>
           if (leaderAggregateMap.containsKey(lm.hasherId)) {
             leaderAggregateMap[lm.hasherId]!.rollingYearHaringCount =
                 (leaderAggregateMap[lm.hasherId]!.rollingYearHaringCount +
-                    lm.rollingYearHaringCount);
+                lm.rollingYearHaringCount);
             leaderAggregateMap[lm.hasherId]!.rollingYearTotalRunCount =
                 (leaderAggregateMap[lm.hasherId]!.rollingYearTotalRunCount +
-                    lm.rollingYearTotalRunCount);
+                lm.rollingYearTotalRunCount);
             leaderAggregateMap[lm.hasherId]!.totalHaringCount =
                 (leaderAggregateMap[lm.hasherId]!.totalHaringCount +
-                    lm.totalHaringCount);
+                lm.totalHaringCount);
             leaderAggregateMap[lm.hasherId]!.totalRunCount =
                 (leaderAggregateMap[lm.hasherId]!.totalRunCount +
-                    lm.totalRunCount);
+                lm.totalRunCount);
             leaderAggregateMap[lm.hasherId]!.ytdHaringCount =
                 (leaderAggregateMap[lm.hasherId]!.ytdHaringCount +
-                    lm.ytdHaringCount);
+                lm.ytdHaringCount);
             leaderAggregateMap[lm.hasherId]!.ytdTotalRunCount =
                 (leaderAggregateMap[lm.hasherId]!.ytdTotalRunCount +
-                    lm.ytdTotalRunCount);
+                lm.ytdTotalRunCount);
             leaderAggregateMap[lm.hasherId]!.searchText +=
                 ' ${_kennels![lm.kennelId]!['searchText']}, ';
 
@@ -293,10 +294,9 @@ class LeaderboardState extends State<Leaderboard>
 
       _filteredLeaderboardAggregateList = _leaderboardAggregateList!.toList();
       if (_leaderboardList != null) {
-        _filteredLeaderboardList =
-            _leaderboardList!
-                .map((item) => LeaderboardModel.clone(item))
-                .toList();
+        _filteredLeaderboardList = _leaderboardList!
+            .map((item) => LeaderboardModel.clone(item))
+            .toList();
       }
     }
 
@@ -309,555 +309,532 @@ class LeaderboardState extends State<Leaderboard>
       child: Column(
         children: <Widget>[
           Expanded(
-            child:
-                _filteredLeaderboardList.isEmpty
-                    ? const SizedBox(
-                      width: 70.0,
-                      height: 70.0,
-                      child: Padding(
-                        padding: EdgeInsets.all(5.0),
-                        child: Center(
-                          child: HcAppCircularProgressIndicator(
-                            key: Key('22030392'),
-                          ),
+            child: _filteredLeaderboardList.isEmpty
+                ? const SizedBox(
+                    width: 70.0,
+                    height: 70.0,
+                    child: Padding(
+                      padding: EdgeInsets.all(5.0),
+                      child: Center(
+                        child: HcAppCircularProgressIndicator(
+                          key: Key('22030392'),
                         ),
                       ),
-                    )
-                    : Column(
-                      children: <Widget>[
-                        Expanded(
-                          child: SizedBox(
-                            width: MediaQuery.of(context).size.width,
-                            child: CustomScrollView(
-                              controller: _leaderScrollController,
-                              slivers: <Widget>[
-                                SliverAppBar(
-                                  toolbarHeight:
-                                      widget.kennelId == null ? 150.0 : 101.0,
-                                  floating: true,
-                                  backgroundColor: Colors.grey.shade400,
-                                  shadowColor: Colors.transparent,
-                                  automaticallyImplyLeading: false,
-                                  flexibleSpace: Column(
-                                    children: <Widget>[
-                                      _searchBar(),
-                                      Container(
-                                        // decoration: BoxDecoration(
-                                        //   color: Colors.grey[300],
-                                        //   borderRadius: BorderRadius.circular(
-                                        //     999,
-                                        //   ),
-                                        // ),
-                                        height: 50.0,
-                                        padding: const EdgeInsets.all(5.0),
-                                        // reviewed for 2.0+
-                                        child: TabBar(
-                                          onTap: (void _) {
-                                            _sortLeaderboard(
-                                              _leaderboardSortColumnIndex,
-                                              false,
-                                            );
-                                            setState(() {});
-                                          },
-                                          physics:
-                                              const NeverScrollableScrollPhysics(),
-                                          labelStyle: ts_tabSelected,
-                                          unselectedLabelStyle:
-                                              ts_tabUnselected,
-                                          isScrollable: false,
-                                          unselectedLabelColor: Colors.black,
-                                          labelColor: Colors.white,
-                                          labelPadding: const EdgeInsets.only(
-                                            top: 5,
-                                            left: 0,
-                                            right: 0,
-                                          ),
-                                          indicatorPadding:
-                                              EdgeInsetsGeometry.only(
-                                                top: 3,
-                                                bottom: 3,
-                                              ),
-                                          indicatorSize:
-                                              TabBarIndicatorSize.tab,
-                                          indicator: BoxDecoration(
-                                            color: hc_red,
-                                            borderRadius: BorderRadius.circular(
-                                              999,
-                                            ),
-                                          ),
-                                          tabs: <Tab>[
-                                            const Tab(text: '365 days'),
-                                            Tab(
-                                              text: 'In ${DateTime.now().year}',
-                                            ),
-                                            const Tab(text: 'Total'),
-                                          ],
-                                          controller: _timespanTabController,
+                    ),
+                  )
+                : Column(
+                    children: <Widget>[
+                      Expanded(
+                        child: SizedBox(
+                          width: MediaQuery.of(context).size.width,
+                          child: CustomScrollView(
+                            controller: _leaderScrollController,
+                            slivers: <Widget>[
+                              SliverAppBar(
+                                toolbarHeight: widget.kennelId == null
+                                    ? 150.0
+                                    : 101.0,
+                                floating: true,
+                                backgroundColor: Colors.grey.shade400,
+                                shadowColor: Colors.transparent,
+                                automaticallyImplyLeading: false,
+                                flexibleSpace: Column(
+                                  children: <Widget>[
+                                    _searchBar(),
+                                    Container(
+                                      // decoration: BoxDecoration(
+                                      //   color: Colors.grey[300],
+                                      //   borderRadius: BorderRadius.circular(
+                                      //     999,
+                                      //   ),
+                                      // ),
+                                      height: 50.0,
+                                      padding: const EdgeInsets.all(5.0),
+                                      // reviewed for 2.0+
+                                      child: TabBar(
+                                        onTap: (void _) {
+                                          _sortLeaderboard(
+                                            _leaderboardSortColumnIndex,
+                                            false,
+                                          );
+                                          setState(() {});
+                                        },
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        labelStyle: ts_tabSelected,
+                                        unselectedLabelStyle: ts_tabUnselected,
+                                        isScrollable: false,
+                                        unselectedLabelColor: Colors.black,
+                                        labelColor: Colors.white,
+                                        labelPadding: const EdgeInsets.only(
+                                          top: 5,
+                                          left: 0,
+                                          right: 0,
                                         ),
+                                        indicatorPadding:
+                                            EdgeInsetsGeometry.only(
+                                              top: 3,
+                                              bottom: 3,
+                                            ),
+                                        indicatorSize: TabBarIndicatorSize.tab,
+                                        indicator: BoxDecoration(
+                                          color: hc_red,
+                                          borderRadius: BorderRadius.circular(
+                                            999,
+                                          ),
+                                        ),
+                                        tabs: <Tab>[
+                                          const Tab(text: '365 days'),
+                                          Tab(
+                                            text: 'In ${DateTime.now().year}',
+                                          ),
+                                          const Tab(text: 'Total'),
+                                        ],
+                                        controller: _timespanTabController,
+                                      ),
+                                    ),
+                                    const Divider(
+                                      color: Colors.black45,
+                                      thickness: 1.0,
+                                      height: 1.0,
+                                    ),
+                                    if (widget.kennelId == null) ...<Widget>[
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Checkbox(
+                                            value: _showKennels,
+                                            checkColor: Colors.white,
+                                            activeColor: hc_red,
+                                            onChanged: (value) {
+                                              setState(() {
+                                                _showKennels = !_showKennels;
+                                              });
+                                            },
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              top: 3.0,
+                                            ),
+                                            child: Text(
+                                              'Show Kennels',
+                                              style: _showKennels
+                                                  ? const TextStyle(
+                                                      fontFamily:
+                                                          'AvenirNextCondensedBold',
+                                                      fontStyle:
+                                                          FontStyle.normal,
+                                                      fontSize: 18.0,
+                                                      height: 1.0,
+                                                    )
+                                                  : const TextStyle(
+                                                      fontFamily:
+                                                          'AvenirNextCondensedMedium',
+                                                      fontStyle:
+                                                          FontStyle.normal,
+                                                      fontSize: 18.0,
+                                                      height: 1.0,
+                                                    ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Checkbox(
+                                            value: _showHomeKennel,
+                                            checkColor: Colors.white,
+                                            activeColor: hc_red,
+                                            onChanged: (value) {
+                                              setState(() {
+                                                _showHomeKennel =
+                                                    !_showHomeKennel;
+                                              });
+                                            },
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              top: 3.0,
+                                            ),
+                                            child: Text(
+                                              'Home Kennel',
+                                              style: _showHomeKennel
+                                                  ? const TextStyle(
+                                                      fontFamily:
+                                                          'AvenirNextCondensedBold',
+                                                      fontStyle:
+                                                          FontStyle.normal,
+                                                      fontSize: 20.0,
+                                                      height: 1.0,
+                                                    )
+                                                  : const TextStyle(
+                                                      fontFamily:
+                                                          'AvenirNextCondensedMedium',
+                                                      fontStyle:
+                                                          FontStyle.normal,
+                                                      fontSize: 20.0,
+                                                      height: 1.0,
+                                                    ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 15),
+                                        ],
                                       ),
                                       const Divider(
                                         color: Colors.black45,
                                         thickness: 1.0,
                                         height: 1.0,
                                       ),
-                                      if (widget.kennelId == null) ...<Widget>[
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Checkbox(
-                                              value: _showKennels,
-                                              checkColor: Colors.white,
-                                              activeColor: hc_red,
-                                              onChanged: (value) {
-                                                setState(() {
-                                                  _showKennels = !_showKennels;
-                                                });
-                                              },
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                top: 3.0,
-                                              ),
-                                              child: Text(
-                                                'Show Kennels',
-                                                style:
-                                                    _showKennels
-                                                        ? const TextStyle(
-                                                          fontFamily:
-                                                              'AvenirNextCondensedBold',
-                                                          fontStyle:
-                                                              FontStyle.normal,
-                                                          fontSize: 18.0,
-                                                          height: 1.0,
-                                                        )
-                                                        : const TextStyle(
-                                                          fontFamily:
-                                                              'AvenirNextCondensedMedium',
-                                                          fontStyle:
-                                                              FontStyle.normal,
-                                                          fontSize: 18.0,
-                                                          height: 1.0,
-                                                        ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 10),
-                                            Checkbox(
-                                              value: _showHomeKennel,
-                                              checkColor: Colors.white,
-                                              activeColor: hc_red,
-                                              onChanged: (value) {
-                                                setState(() {
-                                                  _showHomeKennel =
-                                                      !_showHomeKennel;
-                                                });
-                                              },
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                top: 3.0,
-                                              ),
-                                              child: Text(
-                                                'Home Kennel',
-                                                style:
-                                                    _showHomeKennel
-                                                        ? const TextStyle(
-                                                          fontFamily:
-                                                              'AvenirNextCondensedBold',
-                                                          fontStyle:
-                                                              FontStyle.normal,
-                                                          fontSize: 20.0,
-                                                          height: 1.0,
-                                                        )
-                                                        : const TextStyle(
-                                                          fontFamily:
-                                                              'AvenirNextCondensedMedium',
-                                                          fontStyle:
-                                                              FontStyle.normal,
-                                                          fontSize: 20.0,
-                                                          height: 1.0,
-                                                        ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                              SliverAppBar(
+                                pinned: true,
+                                toolbarHeight: 60.0,
+                                backgroundColor: const Color.fromARGB(
+                                  255,
+                                  26,
+                                  0,
+                                  65,
+                                ),
+                                automaticallyImplyLeading: false,
+                                flexibleSpace: Column(
+                                  children: [
+                                    const SizedBox(height: 10.0),
+                                    Row(
+                                      children: <Widget>[
+                                        const SizedBox(width: 4.0),
+                                        GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              _sortLeaderboard(0, true);
+                                            });
+                                          },
+                                          child: SizedBox(
+                                            width: 50.0,
+                                            child: Text(
+                                              'Runs',
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                fontFamily:
+                                                    _leaderboardSortColumnIndex ==
+                                                        0
+                                                    ? 'AvenirNextCondensedBold'
+                                                    : 'AvenirNextCondensedMedium',
+                                                fontStyle: FontStyle.normal,
+                                                fontSize: LEADER_FONT_SIZE,
+                                                height: 1.0,
+                                                color: Colors.yellow,
                                               ),
                                             ),
-                                            const SizedBox(width: 15),
-                                          ],
+                                          ),
                                         ),
-                                        const Divider(
-                                          color: Colors.black45,
-                                          thickness: 1.0,
-                                          height: 1.0,
+                                        GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              _sortLeaderboard(1, true);
+                                            });
+                                          },
+                                          child: SizedBox(
+                                            width: 70.0,
+                                            child: Text(
+                                              'Hared',
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                fontFamily:
+                                                    _leaderboardSortColumnIndex ==
+                                                        1
+                                                    ? 'AvenirNextCondensedBold'
+                                                    : 'AvenirNextCondensedMedium',
+                                                fontStyle: FontStyle.normal,
+                                                fontSize: LEADER_FONT_SIZE,
+                                                height: 1.0,
+                                                color: Colors.yellow,
+                                              ),
+                                            ),
+                                          ),
                                         ),
+                                        Expanded(
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              setState(() {
+                                                _sortLeaderboard(2, true);
+                                              });
+                                            },
+                                            child: Text(
+                                              'Hasher',
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                fontFamily:
+                                                    _leaderboardSortColumnIndex ==
+                                                        2
+                                                    ? 'AvenirNextCondensedBold'
+                                                    : 'AvenirNextCondensedMedium',
+                                                fontStyle: FontStyle.normal,
+                                                fontSize: LEADER_FONT_SIZE,
+                                                height: 1.0,
+                                                color: Colors.yellow,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 50.0),
                                       ],
-                                    ],
-                                  ),
-                                ),
-                                SliverAppBar(
-                                  pinned: true,
-                                  toolbarHeight: 60.0,
-                                  backgroundColor: const Color.fromARGB(
-                                    255,
-                                    26,
-                                    0,
-                                    65,
-                                  ),
-                                  automaticallyImplyLeading: false,
-                                  flexibleSpace: Column(
-                                    children: [
-                                      const SizedBox(height: 10.0),
-                                      Row(
-                                        children: <Widget>[
-                                          const SizedBox(width: 4.0),
-                                          GestureDetector(
-                                            onTap: () {
-                                              setState(() {
-                                                _sortLeaderboard(0, true);
-                                              });
-                                            },
-                                            child: SizedBox(
-                                              width: 50.0,
-                                              child: Text(
-                                                'Runs',
-                                                textAlign: TextAlign.center,
-                                                style: TextStyle(
-                                                  fontFamily:
-                                                      _leaderboardSortColumnIndex ==
-                                                              0
-                                                          ? 'AvenirNextCondensedBold'
-                                                          : 'AvenirNextCondensedMedium',
-                                                  fontStyle: FontStyle.normal,
-                                                  fontSize: LEADER_FONT_SIZE,
-                                                  height: 1.0,
-                                                  color: Colors.yellow,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          GestureDetector(
-                                            onTap: () {
-                                              setState(() {
-                                                _sortLeaderboard(1, true);
-                                              });
-                                            },
-                                            child: SizedBox(
-                                              width: 70.0,
-                                              child: Text(
-                                                'Hared',
-                                                textAlign: TextAlign.center,
-                                                style: TextStyle(
-                                                  fontFamily:
-                                                      _leaderboardSortColumnIndex ==
-                                                              1
-                                                          ? 'AvenirNextCondensedBold'
-                                                          : 'AvenirNextCondensedMedium',
-                                                  fontStyle: FontStyle.normal,
-                                                  fontSize: LEADER_FONT_SIZE,
-                                                  height: 1.0,
-                                                  color: Colors.yellow,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: GestureDetector(
-                                              onTap: () {
-                                                setState(() {
-                                                  _sortLeaderboard(2, true);
-                                                });
-                                              },
-                                              child: Text(
-                                                'Hasher',
-                                                textAlign: TextAlign.center,
-                                                style: TextStyle(
-                                                  fontFamily:
-                                                      _leaderboardSortColumnIndex ==
-                                                              2
-                                                          ? 'AvenirNextCondensedBold'
-                                                          : 'AvenirNextCondensedMedium',
-                                                  fontStyle: FontStyle.normal,
-                                                  fontSize: LEADER_FONT_SIZE,
-                                                  height: 1.0,
-                                                  color: Colors.yellow,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 50.0),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: <Widget>[
-                                          GestureDetector(
-                                            onTap: () {
-                                              setState(() {
-                                                _sortLeaderboard(0, true);
-                                              });
-                                            },
-                                            child: SizedBox(
-                                              width: 50.0,
-                                              child:
-                                                  _leaderboardSortColumnIndex !=
-                                                          0
-                                                      ? null
-                                                      : Icon(
-                                                        _sortOrderAsc
-                                                            ? AntDesign.caretup
-                                                            : AntDesign
-                                                                .caretdown,
-                                                        size: 20.0,
-                                                        color: Colors.yellow,
-                                                      ),
-                                            ),
-                                          ),
-                                          GestureDetector(
-                                            onTap: () {
-                                              setState(() {
-                                                _sortLeaderboard(1, true);
-                                              });
-                                            },
-                                            child: SizedBox(
-                                              width: 70.0,
-                                              child:
-                                                  _leaderboardSortColumnIndex !=
-                                                          1
-                                                      ? null
-                                                      : Icon(
-                                                        _sortOrderAsc
-                                                            ? AntDesign.caretup
-                                                            : AntDesign
-                                                                .caretdown,
-                                                        size: 20.0,
-                                                        color: Colors.yellow,
-                                                      ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: GestureDetector(
-                                              onTap: () {
-                                                setState(() {
-                                                  _sortLeaderboard(2, true);
-                                                });
-                                              },
-                                              child: SizedBox(
-                                                child:
-                                                    _leaderboardSortColumnIndex !=
-                                                            2
-                                                        ? null
-                                                        : Icon(
-                                                          _sortOrderAsc
-                                                              ? AntDesign
-                                                                  .caretup
-                                                              : AntDesign
-                                                                  .caretdown,
-                                                          size: 20.0,
-                                                          color: Colors.yellow,
-                                                        ),
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 50.0),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SliverToBoxAdapter(
-                                  child: SizedBox(
-                                    child:
-                                        _filteredLeaderboardList.isEmpty
-                                            ? Container(
-                                              height: 400.0,
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 20.0,
+                                    ),
+                                    Row(
+                                      children: <Widget>[
+                                        GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              _sortLeaderboard(0, true);
+                                            });
+                                          },
+                                          child: SizedBox(
+                                            width: 50.0,
+                                            child:
+                                                _leaderboardSortColumnIndex != 0
+                                                ? null
+                                                : Icon(
+                                                    _sortOrderAsc
+                                                        ? AntDesign.caretup
+                                                        : AntDesign.caretdown,
+                                                    size: 20.0,
+                                                    color: Colors.yellow,
                                                   ),
-                                              child: Center(
-                                                child: Text(
-                                                  'No leaderboard records found',
-                                                  style: ts_titleLarge,
-                                                  textAlign: TextAlign.center,
-                                                ),
-                                              ),
-                                            )
-                                            : const SizedBox(height: 15),
-                                  ),
+                                          ),
+                                        ),
+                                        GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              _sortLeaderboard(1, true);
+                                            });
+                                          },
+                                          child: SizedBox(
+                                            width: 70.0,
+                                            child:
+                                                _leaderboardSortColumnIndex != 1
+                                                ? null
+                                                : Icon(
+                                                    _sortOrderAsc
+                                                        ? AntDesign.caretup
+                                                        : AntDesign.caretdown,
+                                                    size: 20.0,
+                                                    color: Colors.yellow,
+                                                  ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              setState(() {
+                                                _sortLeaderboard(2, true);
+                                              });
+                                            },
+                                            child: SizedBox(
+                                              child:
+                                                  _leaderboardSortColumnIndex !=
+                                                      2
+                                                  ? null
+                                                  : Icon(
+                                                      _sortOrderAsc
+                                                          ? AntDesign.caretup
+                                                          : AntDesign.caretdown,
+                                                      size: 20.0,
+                                                      color: Colors.yellow,
+                                                    ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 50.0),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                                SliverList(
-                                  delegate: SliverChildBuilderDelegate(
-                                    (context, index) {
-                                      if (index ==
-                                          (_showKennels
-                                              ? _filteredLeaderboardList.length
-                                              : _filteredLeaderboardAggregateList
+                              ),
+                              SliverToBoxAdapter(
+                                child: SizedBox(
+                                  child: _filteredLeaderboardList.isEmpty
+                                      ? Container(
+                                          height: 400.0,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 20.0,
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              'No leaderboard records found',
+                                              style: ts_titleLarge,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                        )
+                                      : const SizedBox(height: 15),
+                                ),
+                              ),
+                              SliverList(
+                                delegate: SliverChildBuilderDelegate(
+                                  (context, index) {
+                                    if (index ==
+                                        (_showKennels
+                                            ? _filteredLeaderboardList.length
+                                            : _filteredLeaderboardAggregateList
                                                   .length)) {
-                                        return const SizedBox(height: 50);
-                                      }
+                                      return const SizedBox(height: 50);
+                                    }
 
-                                      LeaderboardModel e =
-                                          !_showKennels
-                                              ? _filteredLeaderboardAggregateList[index]
-                                              : _filteredLeaderboardList[index];
-                                      return Column(
-                                        children: [
-                                          const SizedBox(height: 3.0),
-                                          Row(
-                                            children: <Widget>[
-                                              SizedBox(
-                                                width: 50.0,
-                                                child: Text(
-                                                  (_timespanTabController
-                                                                  .index ==
-                                                              TABINDEX_TOTAL
-                                                          ? e.totalRunCount
-                                                          : _timespanTabController
+                                    LeaderboardModel e = !_showKennels
+                                        ? _filteredLeaderboardAggregateList[index]
+                                        : _filteredLeaderboardList[index];
+                                    return Column(
+                                      children: [
+                                        const SizedBox(height: 3.0),
+                                        Row(
+                                          children: <Widget>[
+                                            SizedBox(
+                                              width: 50.0,
+                                              child: Text(
+                                                (_timespanTabController.index ==
+                                                            TABINDEX_TOTAL
+                                                        ? e.totalRunCount
+                                                        : _timespanTabController
                                                                   .index ==
                                                               TABINDEX_365_DAYS
-                                                          ? e.rollingYearTotalRunCount
-                                                          : e.ytdTotalRunCount)
-                                                      .toString(),
-                                                  textAlign: TextAlign.center,
-                                                  style: const TextStyle(
-                                                    fontFamily:
-                                                        'AvenirNextCondensedMedium',
-                                                    fontStyle: FontStyle.normal,
-                                                    fontSize: LEADER_FONT_SIZE,
-                                                    height: 1.0,
-                                                    color: Colors.white,
-                                                  ),
+                                                        ? e.rollingYearTotalRunCount
+                                                        : e.ytdTotalRunCount)
+                                                    .toString(),
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                  fontFamily:
+                                                      'AvenirNextCondensedMedium',
+                                                  fontStyle: FontStyle.normal,
+                                                  fontSize: LEADER_FONT_SIZE,
+                                                  height: 1.0,
+                                                  color: Colors.white,
                                                 ),
                                               ),
-                                              SizedBox(
-                                                width: 70.0,
-                                                child: Text(
-                                                  (_timespanTabController
-                                                                  .index ==
-                                                              TABINDEX_TOTAL
-                                                          ? e.totalHaringCount
-                                                          : _timespanTabController
+                                            ),
+                                            SizedBox(
+                                              width: 70.0,
+                                              child: Text(
+                                                (_timespanTabController.index ==
+                                                            TABINDEX_TOTAL
+                                                        ? e.totalHaringCount
+                                                        : _timespanTabController
                                                                   .index ==
                                                               TABINDEX_365_DAYS
-                                                          ? e.rollingYearHaringCount
-                                                          : e.ytdHaringCount)
-                                                      .toString(),
-                                                  textAlign: TextAlign.center,
-                                                  style: const TextStyle(
-                                                    fontFamily:
-                                                        'AvenirNextCondensedMedium',
-                                                    fontStyle: FontStyle.normal,
-                                                    fontSize: LEADER_FONT_SIZE,
-                                                    height: 1.0,
-                                                    color: Colors.white,
-                                                  ),
+                                                        ? e.rollingYearHaringCount
+                                                        : e.ytdHaringCount)
+                                                    .toString(),
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                  fontFamily:
+                                                      'AvenirNextCondensedMedium',
+                                                  fontStyle: FontStyle.normal,
+                                                  fontSize: LEADER_FONT_SIZE,
+                                                  height: 1.0,
+                                                  color: Colors.white,
                                                 ),
                                               ),
-                                              Expanded(
-                                                child: SingleChildScrollView(
-                                                  scrollDirection:
-                                                      Axis.horizontal,
-                                                  child: Row(
-                                                    children: [
+                                            ),
+                                            Expanded(
+                                              child: SingleChildScrollView(
+                                                scrollDirection:
+                                                    Axis.horizontal,
+                                                child: Row(
+                                                  children: [
+                                                    Text(
+                                                      e.displayName,
+                                                      style: const TextStyle(
+                                                        fontFamily:
+                                                            'AvenirNextCondensedMedium',
+                                                        fontStyle:
+                                                            FontStyle.normal,
+                                                        fontSize:
+                                                            LEADER_FONT_SIZE,
+                                                        height: 1.0,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                    if ((widget.kennelId ==
+                                                            null) &&
+                                                        _showHomeKennel &&
+                                                        (e.homeKennelId !=
+                                                            null))
                                                       Text(
-                                                        e.displayName,
-                                                        style: const TextStyle(
+                                                        '  -  ${_kennels![e.homeKennelId]!["kennelShortName"]}',
+                                                        style: TextStyle(
                                                           fontFamily:
                                                               'AvenirNextCondensedMedium',
                                                           fontStyle:
-                                                              FontStyle.normal,
+                                                              FontStyle.italic,
                                                           fontSize:
                                                               LEADER_FONT_SIZE,
                                                           height: 1.0,
-                                                          color: Colors.white,
+                                                          color: Colors
+                                                              .blue
+                                                              .shade100,
                                                         ),
                                                       ),
-                                                      if ((widget.kennelId ==
-                                                              null) &&
-                                                          _showHomeKennel &&
-                                                          (e.homeKennelId !=
-                                                              null))
-                                                        Text(
-                                                          '  -  ${_kennels![e.homeKennelId]!["kennelShortName"]}',
-                                                          style: TextStyle(
-                                                            fontFamily:
-                                                                'AvenirNextCondensedMedium',
-                                                            fontStyle:
-                                                                FontStyle
-                                                                    .italic,
-                                                            fontSize:
-                                                                LEADER_FONT_SIZE,
-                                                            height: 1.0,
-                                                            color:
-                                                                Colors
-                                                                    .blue
-                                                                    .shade100,
-                                                          ),
+                                                    if ((widget.kennelId ==
+                                                            null) &&
+                                                        _showKennels)
+                                                      Text(
+                                                        '  -  ${_kennels![e.kennelId]!["kennelName"]}',
+                                                        style: TextStyle(
+                                                          fontFamily:
+                                                              'AvenirNextCondensedMedium',
+                                                          fontStyle:
+                                                              FontStyle.italic,
+                                                          fontSize:
+                                                              LEADER_FONT_SIZE,
+                                                          height: 1.0,
+                                                          color: Colors
+                                                              .pink
+                                                              .shade100,
                                                         ),
-                                                      if ((widget.kennelId ==
-                                                              null) &&
-                                                          _showKennels)
-                                                        Text(
-                                                          '  -  ${_kennels![e.kennelId]!["kennelName"]}',
-                                                          style: TextStyle(
-                                                            fontFamily:
-                                                                'AvenirNextCondensedMedium',
-                                                            fontStyle:
-                                                                FontStyle
-                                                                    .italic,
-                                                            fontSize:
-                                                                LEADER_FONT_SIZE,
-                                                            height: 1.0,
-                                                            color:
-                                                                Colors
-                                                                    .pink
-                                                                    .shade100,
-                                                          ),
+                                                      ),
+                                                    if ((widget.kennelId ==
+                                                            null) &&
+                                                        !_showKennels)
+                                                      Text(
+                                                        '  -  ${_timespanTabController.index == TABINDEX_TOTAL
+                                                            ? e.kennelCountTotal
+                                                            : _timespanTabController.index == TABINDEX_365_DAYS
+                                                            ? e.kennelCountRollingYear
+                                                            : e.kennelCountYtd} Kennels',
+                                                        style: TextStyle(
+                                                          fontFamily:
+                                                              'AvenirNextCondensedMedium',
+                                                          fontStyle:
+                                                              FontStyle.italic,
+                                                          fontSize:
+                                                              LEADER_FONT_SIZE,
+                                                          height: 1.0,
+                                                          color: Colors
+                                                              .pink
+                                                              .shade100,
                                                         ),
-                                                      if ((widget.kennelId ==
-                                                              null) &&
-                                                          !_showKennels)
-                                                        Text(
-                                                          '  -  ${_timespanTabController.index == TABINDEX_TOTAL
-                                                              ? e.kennelCountTotal
-                                                              : _timespanTabController.index == TABINDEX_365_DAYS
-                                                              ? e.kennelCountRollingYear
-                                                              : e.kennelCountYtd} Kennels',
-                                                          style: TextStyle(
-                                                            fontFamily:
-                                                                'AvenirNextCondensedMedium',
-                                                            fontStyle:
-                                                                FontStyle
-                                                                    .italic,
-                                                            fontSize:
-                                                                LEADER_FONT_SIZE,
-                                                            height: 1.0,
-                                                            color:
-                                                                Colors
-                                                                    .pink
-                                                                    .shade100,
-                                                          ),
-                                                        ),
-                                                    ],
-                                                  ),
+                                                      ),
+                                                  ],
                                                 ),
                                               ),
-                                            ],
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                    childCount:
-                                        _showKennels
-                                            ? _filteredLeaderboardList.length +
-                                                1
-                                            : _filteredLeaderboardAggregateList
-                                                    .length +
-                                                1,
-                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                  childCount: _showKennels
+                                      ? _filteredLeaderboardList.length + 1
+                                      : _filteredLeaderboardAggregateList
+                                                .length +
+                                            1,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
+                  ),
           ),
         ],
       ),
@@ -1104,11 +1081,15 @@ class LeaderboardState extends State<Leaderboard>
       int firstToken = min(firstPositive, firstNegative);
       firstTokenString = filter.substring(0, firstToken).trim().toLowerCase();
     } else if (firstPositive > 0) {
-      firstTokenString =
-          filter.substring(0, firstPositive).trim().toLowerCase();
+      firstTokenString = filter
+          .substring(0, firstPositive)
+          .trim()
+          .toLowerCase();
     } else if (firstNegative > 0) {
-      firstTokenString =
-          filter.substring(0, firstNegative).trim().toLowerCase();
+      firstTokenString = filter
+          .substring(0, firstNegative)
+          .trim()
+          .toLowerCase();
     } else {
       firstTokenString = filter.trim().toLowerCase();
     }
@@ -1121,39 +1102,39 @@ class LeaderboardState extends State<Leaderboard>
     _filteredLeaderboardAggregateList.clear();
 
     if (filter.isNotEmpty) {
-      _filteredLeaderboardList =
-          _leaderboardList!.where((LeaderboardModel a) {
-            for (String param in subParams) {
-              if (a.searchText.toLowerCase().contains(param)) {
-                return false;
-              }
-            }
-
-            for (String param in addParams) {
-              if (a.searchText.toLowerCase().contains(param)) {
-                return true;
-              }
-            }
-
+      _filteredLeaderboardList = _leaderboardList!.where((LeaderboardModel a) {
+        for (String param in subParams) {
+          if (a.searchText.toLowerCase().contains(param)) {
             return false;
-          }).toList();
+          }
+        }
 
-      _filteredLeaderboardAggregateList =
-          _leaderboardAggregateList!.where((LeaderboardModel a) {
-            for (String param in subParams) {
-              if (a.searchText.toLowerCase().contains(param)) {
-                return false;
-              }
-            }
+        for (String param in addParams) {
+          if (a.searchText.toLowerCase().contains(param)) {
+            return true;
+          }
+        }
 
-            for (String param in addParams) {
-              if (a.searchText.toLowerCase().contains(param)) {
-                return true;
-              }
-            }
+        return false;
+      }).toList();
 
+      _filteredLeaderboardAggregateList = _leaderboardAggregateList!.where((
+        LeaderboardModel a,
+      ) {
+        for (String param in subParams) {
+          if (a.searchText.toLowerCase().contains(param)) {
             return false;
-          }).toList();
+          }
+        }
+
+        for (String param in addParams) {
+          if (a.searchText.toLowerCase().contains(param)) {
+            return true;
+          }
+        }
+
+        return false;
+      }).toList();
     } else {
       _filteredLeaderboardList.addAll(_leaderboardList!);
       _filteredLeaderboardAggregateList.addAll(_leaderboardAggregateList!);

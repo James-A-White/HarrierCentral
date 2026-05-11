@@ -1,0 +1,154 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_setEmailAndNotificationPrefs",
+  "version": "1.0.0",
+  "description": "Sets email alert and/or push notification preferences for a Hasher at either kennel scope (HasherKennelMap) or event scope (HasherEventMap). Requires exactly one of @kennelId or @eventId; both null is a validation error. A preference value of -1 means 'do not change' and is normalised to NULL before any write. For event-scoped rows, a value of 0 means 'inherit from kennel' and is stored as NULL in HasherEventMap. Upserts the relevant map row then delegates to HC6.hcapp_syncUserData. Note: no authorisation check on @hasherId — any authenticated user can change any other user's preferences.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth for authentication."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived cryptographic token validated against the device secret."
+    },
+    {
+      "name": "hasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Target Hasher whose preferences are updated. Defaults to the calling user (@userId) when NULL or the zero UUID."
+    },
+    {
+      "name": "emailPreference",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.KennelEmailAlertPreference",
+      "description": "New email alert preference. -1 = do not change (normalised to NULL). 0 in event-scoped path = inherit from kennel (stored as NULL in HasherEventMap).",
+      "typeMismatch": "Parameter is INT; table column is SMALLINT in both HasherKennelMap and HasherEventMap. No overflow guard in the SP."
+    },
+    {
+      "name": "notificationPreference",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.KennelNotificationPreference",
+      "description": "New push notification preference. -1 = do not change (normalised to NULL). 0 in event-scoped path = inherit from kennel (stored as NULL in HasherEventMap).",
+      "typeMismatch": "Parameter is INT; table column is SMALLINT in both HasherKennelMap and HasherEventMap. No overflow guard in the SP."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Kennel scope. Resolved automatically from HC.Event when @eventId is provided and @kennelId is NULL."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Event scope. When provided, the preference upsert targets HasherEventMap instead of HasherKennelMap."
+    },
+    {
+      "name": "hasherEventMapUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Sync watermark passed through to HC6.hcapp_syncUserData. Defaults to 'ignore' when NULL."
+    },
+    {
+      "name": "hasherKennelMapUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Sync watermark passed through to HC6.hcapp_syncUserData. Defaults to 'ignore' when NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "WriteEnvelope",
+      "description": "Standard HC6 write SP success envelope. Always present as the first rowset.",
+      "columns": [
+        { "name": "success", "type": "BIT", "nullable": false, "description": "1 on success, 0 on any failure." },
+        { "name": "errorCode", "type": "INT", "nullable": true, "description": "NULL on success. Error code on failure (e.g. 1214 for missing scope, 1914 for unhandled DB error)." },
+        { "name": "errorType", "type": "INT", "nullable": true, "description": "NULL on success. Error classification: 11=auth, 12=param/validation, 19=db (CATCH block)." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ErrorDetail",
+      "description": "Present only on failure (success=0). Returns structured error detail for the client.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "UUID of the HC.ErrorLog entry written for this failure." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Same errorType code as in the WriteEnvelope rowset." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Same errorCode as in the WriteEnvelope rowset." },
+        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short human-readable error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
+        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "Name of the SP that raised the error, via OBJECT_NAME(@@PROCID)." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "PrefsResult",
+      "description": "Present only on success. Returns the effective (post-write) preference values for immediate UI update.",
+      "columns": [
+        { "name": "adHocDataId", "type": "INT", "nullable": false, "description": "Always 1. Identifies this rowset as adHoc data to the client." },
+        { "name": "notificationPreference", "type": "INT", "nullable": true, "description": "Effective notification preference after the write. For event scope, resolves COALESCE(event pref, kennel pref)." },
+        { "name": "emailAlertPreference", "type": "INT", "nullable": true, "description": "Effective email alert preference after the write. For event scope, resolves COALESCE(event pref, kennel pref)." }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "SyncUserDataRowsets",
+      "description": "Present only on success. Zero or more rowsets returned by HC6.hcapp_syncUserData — HasherEventMap and HasherKennelMap delta sync results. Structure is defined by that SP."
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.HasherKennelMap — when @eventId is null/zero and no existing HKM row for (@hasherId, @kennelId)",
+    "UPDATE HC.HasherKennelMap — when @eventId is null/zero and an HKM row already exists",
+    "INSERT HC.HasherEventMap — when @eventId is provided and no existing HEM row for (@hasherId, @eventId)",
+    "UPDATE HC.HasherEventMap — when @eventId is provided and an HEM row already exists",
+    "INSERT HC.ErrorLog — on any validation or unhandled error",
+    "EXEC HC6.hcapp_syncUserData — always on success, outside the main transaction"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "No authorisation check on @hasherId",
+      "detail": "@hasherId can be any Hasher UUID. The SP does not verify that the calling user (@userId) is the same as @hasherId or is an admin. Any authenticated user can silently change notification preferences for any other user."
+    },
+    {
+      "severity": "medium",
+      "issue": "INT parameters assigned to SMALLINT columns without overflow guard",
+      "detail": "@emailPreference and @notificationPreference are declared INT, but HasherKennelMap.KennelEmailAlertPreference, HasherKennelMap.KennelNotificationPreference, HasherEventMap.EventEmailAlertPreference, and HasherEventMap.EventNotificationPreference are all SMALLINT. SQL Server will silently truncate or raise an arithmetic overflow if an out-of-range value is supplied."
+    },
+    {
+      "severity": "medium",
+      "issue": "Asymmetric zero-semantics between kennel-scoped and event-scoped paths",
+      "detail": "For HKM: @emailPreference=0 is stored as 0 in the column. For HEM: @emailPreference=0 means 'inherit from kennel' and is stored as NULL. The same input value has different meanings depending on scope, which is undocumented in the parameter itself and a likely source of client-side bugs."
+    },
+    {
+      "severity": "low",
+      "issue": "syncUserData runs outside the main TRY/CATCH",
+      "detail": "HC6.hcapp_syncUserData is called after COMMIT and after the END CATCH block. Any failure in that EXEC will propagate as an unhandled exception. Callers may receive a partial result (WriteEnvelope + PrefsResult) followed by a fatal error from the sync SP with no clean error envelope."
+    },
+    {
+      "severity": "low",
+      "issue": "Zero-UUID sentinel for @hasherId handled inconsistently with @kennelId/@eventId",
+      "detail": "@hasherId is normalised from the zero UUID to NULL (then to @userId) at the top of the SP. @kennelId and @eventId are normalised to NULL only after the missing-scope validation guard, meaning a zero UUID for either is also caught by the guard — but only incidentally. The logic is correct but fragile."
+    }
+  ],
+  "breakingChanges": [
+    "Transaction added around the upsert operations — HC5 had no TRY/CATCH and no transaction, so the write was non-atomic.",
+    "Auth failure now returns errorType=11 via HC6.ValidateAppAuth. HC5 returned errorType=3 (a bug — 3 is the HC5 portal 'not found' code, not an auth code).",
+    "syncUserData delegation target changed from HC5.hcapp_syncUserData to HC6.hcapp_syncUserData.",
+    "Zero UUID is now treated as NULL for @hasherId, @kennelId, and @eventId. HC5 may have passed zero UUIDs through to queries."
+  ]
+}

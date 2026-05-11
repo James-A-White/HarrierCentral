@@ -332,7 +332,7 @@ class FutureRunsListPage extends StatelessWidget {
         ];
       },
       body: RefreshIndicator(
-        onRefresh: () => controller.refreshFromBackend(clearLocalTables: false),
+        onRefresh: () => controller.refreshFromBackend(clearLocalTables: true),
         displacement: 40.0,
         child: Column(
           children: [
@@ -560,7 +560,7 @@ class FutureRunsListPage extends StatelessWidget {
                                                           'OK',
                                                         );
                                                         if (context.mounted) {
-                                                          _showConfigureDistancePopup(
+                                                          await _showConfigureDistancePopup(
                                                             context,
                                                           );
                                                         }
@@ -585,7 +585,7 @@ class FutureRunsListPage extends StatelessWidget {
                                                 }
                                               } else {
                                                 if (context.mounted) {
-                                                  _showConfigureDistancePopup(
+                                                  await _showConfigureDistancePopup(
                                                     context,
                                                   );
                                                 }
@@ -627,8 +627,8 @@ class FutureRunsListPage extends StatelessWidget {
                               return RunListItem(
                                 futureRun: listController.filteredRuns[index],
 
-                                onItemTapped: () {
-                                  listController.openRun(
+                                onItemTapped: () async {
+                                  await listController.openRun(
                                     listController.filteredRuns[index],
                                     openToTab: RunTab.details,
                                   );
@@ -708,7 +708,7 @@ class FutureRunsListPage extends StatelessWidget {
       onPressed: () async {
         if (Get.isRegistered<NotificationService>()) {
           final notificationController = Get.find<NotificationService>();
-          notificationController.resetAllEventChatCounts();
+          await notificationController.resetAllEventChatCounts();
         }
       },
       child: Padding(
@@ -900,7 +900,7 @@ class FutureRunsListPage extends StatelessWidget {
   //   );
   // }
 
-  void _showConfigureDistancePopup(BuildContext context) {
+  Future<void> _showConfigureDistancePopup(BuildContext context) async {
     if (Utilities.isConnected(showDialog: true)) {
       final String units =
           (getIntPref(IntPrefsEnum.hasherPreferences) ?? 2) &
@@ -1085,13 +1085,15 @@ class FutureRunsListPage extends StatelessWidget {
         cancelButtonReturnValue: followTypeCancel,
       );
 
-      showDialog<dynamic>(
+      final retVal = await showDialog<dynamic>(
         context: context,
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
           return popup;
         },
-      ).then((dynamic retVal) async {
+      );
+
+      if (retVal != null) {
         if (retVal == 9999) {
           if (Utilities.isConnected()) {
             final HashersService srv = HashersService();
@@ -1142,7 +1144,7 @@ class FutureRunsListPage extends StatelessWidget {
             await controller.refreshFromTable(true);
           }
         }
-      });
+      }
     }
   }
 
@@ -1294,11 +1296,11 @@ class EventChatSummary {
   factory EventChatSummary.fromJson(Map<String, dynamic> json) {
     return EventChatSummary(
       publicEventId: json['PublicEventId'] as String,
-      badgeCount: json['BadgeCount'] as int,
+      badgeCount: json[BADGE_COUNT_JSON_KEY] as int,
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'PublicEventId': publicEventId, 'BadgeCount': badgeCount};
+    return {'PublicEventId': publicEventId, BADGE_COUNT_JSON_KEY: badgeCount};
   }
 }

@@ -31,24 +31,27 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
 
   @override
   void initState() {
+    super.initState();
     if (widget.receiptItem != null) {
       _imageFromCamera = null;
 
-      if ((widget.receiptItem!['imageUrl'] ?? '') != '') {
-        _receiptImageFromWeb = CachedNetworkImage(
-          imageUrl: widget.receiptItem!['imageUrl'],
-          fadeInDuration: const Duration(milliseconds: 0),
-        );
-        DefaultCacheManager()
-            .getSingleFile(widget.receiptItem!['imageUrl'])
-            .then((File file) {
-              _imageFromCache = file;
-            });
-      }
       _shortDescription = widget.receiptItem!['receiptShortDesc'];
       _receiptAmount = widget.receiptItem!['receiptAmount'].toString();
     }
-    super.initState();
+    unawaited(initStateAsync());
+  }
+
+  Future<void> initStateAsync() async {
+    if ((widget.receiptItem != null) &&
+        ((widget.receiptItem!['imageUrl'] ?? ''))) {
+      _receiptImageFromWeb = CachedNetworkImage(
+        imageUrl: widget.receiptItem!['imageUrl'],
+        fadeInDuration: const Duration(milliseconds: 0),
+      );
+      _imageFromCache = await DefaultCacheManager().getSingleFile(
+        widget.receiptItem!['imageUrl'],
+      );
+    }
   }
 
   Widget _buildCircularProgressIndicator() {
@@ -68,7 +71,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
     );
   }
 
-  String _upload(File imageFile, String fileName) {
+  Future<String> _upload(File imageFile, String fileName) async {
     final Uri uri = Uri.parse(
       '$BASE_RECEIPTS_URL$fileName?st=2019-04-30T18%3A08%3A40Z&se=2050-05-01T18%3A08%3A00Z&sp=rw&sv=2018-03-28&sr=c&sig=8f8DFDrH7Eq2Jv1JLQ9%2Bh4igcvEZEqE1zcFvUAxsXwY%3D',
     );
@@ -82,20 +85,18 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
 
     request.headers.addAll(headers);
 
-    FlutterImageCompress.compressWithFile(
+    List<int>? compressed = await FlutterImageCompress.compressWithFile(
       imageFile.absolute.path,
       // minWidth: 2300,
       // minHeight: 1500,
       quality: 1,
       rotate: 0,
-    ).then((List<int>? compressed) {
-      if (compressed != null) {
-        request.bodyBytes = compressed;
-        request.send().then((StreamedResponse response) {
-          //print('Receipt upload response = ${response.statusCode}');
-        });
-      }
-    });
+    );
+
+    if (compressed != null) {
+      request.bodyBytes = compressed;
+      await request.send();
+    }
 
     return '$BASE_RECEIPTS_URL$fileName';
   }
@@ -109,7 +110,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
         String receiptImageUrl = '';
 
         if (_imageFromCamera != null) {
-          receiptImageUrl = _upload(
+          receiptImageUrl = await _upload(
             _imageFromCamera!,
             '${widget.eventId.toUpperCase()}_${DateTime.now().millisecondsSinceEpoch}.jpg',
           );
@@ -143,7 +144,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
         if (!responseBody.startsWith(ERROR_PREFIX)) {
           await tableModel.baseService.bulkUpdateDatabase(
             tableModel.receiptsTableHelper,
-            tableModel.receiptsTableHelper.getTableName(AppDomainType.event),
+            EnumDataTables.receipts.eventTableName,
             responseBody,
             database,
           );
@@ -317,15 +318,11 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                             ),
                                             const SizedBox(height: 20),
                                             ElevatedButton(
-                                              onPressed: () {
-                                                onImageButtonPressed().then((
-                                                  File? imageFile,
-                                                ) {
-                                                  setState(() {
-                                                    _imageFromCamera =
-                                                        imageFile;
-                                                  });
-                                                });
+                                              onPressed: () async {
+                                                _imageFromCamera =
+                                                    await onImageButtonPressed();
+
+                                                setState(() {});
                                               },
                                               child: Text(
                                                 'Scan Receipt',
@@ -343,8 +340,8 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                     //   ),
                                     // ),
                                     GestureDetector(
-                                      onTap: () {
-                                        Navigator.push<void>(
+                                      onTap: () async {
+                                        await Navigator.push<void>(
                                           context,
                                           MaterialPageRoute<void>(
                                             builder: (BuildContext context) =>

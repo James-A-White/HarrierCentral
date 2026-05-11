@@ -1,5 +1,5 @@
 import 'package:harrier_central/imports.dart';
-import 'package:fancy_bottom_navigation_2/fancy_bottom_navigation.dart';
+import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
 
 enum MainPageContent { initial, loading, splashSequence, appContent, help }
 
@@ -13,6 +13,7 @@ class MainNavigationController extends GetxController
     'Kennels',
     'Hash Run Map',
     'Run Counts',
+    'Songs',
   ];
 
   final List<List<String>> tutorials = <List<String>>[
@@ -20,7 +21,11 @@ class MainNavigationController extends GetxController
     _tutorialKennelsView,
     _tutorialRunLocations,
     _tutorialRunCounts,
+    _tutorialSongs,
   ];
+
+  // ignore: prefer_final_fields
+  static List<String> _tutorialSongs = <String>[];
 
   // ignore: prefer_final_fields
   static List<String> _tutorialRunLocations = <String>[
@@ -69,7 +74,7 @@ class MainNavigationController extends GetxController
   final steps = 10.obs;
   final timeRemaining = RxnInt();
   final currentPage = 0.obs;
-  final GlobalKey<FancyBottomNavigationState> bottomNavigationKey = GlobalKey();
+  final GlobalKey<CurvedNavigationBarState> bottomNavigationKey = GlobalKey();
 
   final GlobalKey<ScaffoldState> ScaffoldKey = GlobalKey();
 
@@ -86,6 +91,7 @@ class MainNavigationController extends GetxController
   Widget kennelsListPage = Container();
   Widget historyListPage = Container();
   Widget runAndKennelMapPage = Container();
+  Widget songsPage = Container();
 
   // Screen unlock listener
   Screen? _screen;
@@ -94,8 +100,7 @@ class MainNavigationController extends GetxController
   @override
   void onInit() {
     super.onInit();
-
-    initialize();
+    unawaited(onInitAsync());
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -109,7 +114,7 @@ class MainNavigationController extends GetxController
 
   var reportSplashSequenceViewed = false;
 
-  Future<void> initialize() async {
+  Future<void> onInitAsync() async {
     final stopwatch = Stopwatch()..start();
 
     if (Utilities.isConnected()) {
@@ -133,7 +138,7 @@ class MainNavigationController extends GetxController
       if (hcCurrentVersion != hcPreviousVersion) {
         if (await _preloadImages('version_$hcCurrentVersion') == 0) {
           // don't show any splah images if none have been loaded
-          mainScreenContent.value = MainPageContent.appContent;
+          mainScreenContent.value = MainPageContent.loading;
         } else {
           mainScreenContent.value = MainPageContent.splashSequence;
         }
@@ -193,18 +198,21 @@ class MainNavigationController extends GetxController
     // Create pages
     futureRunsListPage = FutureRunsListPage();
 
-    update(['AppScaffold']);
-
     mainScreenReady.value = true;
+
+    update(['AppScaffold']);
 
     kennelsListPage = KennelsListPage(key: kennelLocationsPageKey);
     historyListPage = HistoryListPage();
     runAndKennelMapPage = RunAndKennelMapPage(key: runAndKennelMapPageKey);
+    songsPage = SongsPage();
 
     isLoadingData = false;
 
     final hasLoc = await _checkLocationPermissions();
-    if (hasLoc) _checkAreWeAtRunStart();
+    if (hasLoc) {
+      await _checkAreWeAtRunStart();
+    }
     _startScreenListening();
 
     // Calculate remaining time to reach 1500ms
@@ -309,14 +317,14 @@ class MainNavigationController extends GetxController
     isFlipped.value = !isFlipped.value;
   }
 
-  void onTabChanged(int index) {
+  Future<void> onTabChanged(int index) async {
     currentPage.value = index;
     appBarText.value = tabTitles[index];
     // Refresh runs on first tab
     if (index == 0) {
       if (Get.isRegistered<FutureRunListPageController>()) {
         final ctrl = Get.find<FutureRunListPageController>();
-        ctrl.refreshFromTable(true);
+        await ctrl.refreshFromTable(true);
       }
     }
     // Delay setState for map FAB
@@ -357,8 +365,8 @@ class MainNavigationController extends GetxController
     return appModel.hasLocationPermissions;
   }
 
-  void resetNewVersionPromoScreen() {
-    setStringPref(
+  Future<void> resetNewVersionPromoScreen() async {
+    await setStringPref(
       StringPrefsEnum.harrierCentralPreviousVersion,
       getStringPref(StringPrefsEnum.harrierCentralVersion) ?? '',
     );
@@ -380,7 +388,7 @@ class MainNavigationController extends GetxController
     update(['AppScaffold']);
 
     // it's OK to not await this async call
-    requestNotificationPermission();
+    await requestNotificationPermission();
   }
 
   Future<void> requestNotificationPermission() async {
@@ -404,21 +412,21 @@ class MainNavigationController extends GetxController
   void _startScreenListening() {
     _screen = Screen();
     try {
-      _screenWatcherSub = _screen?.screenStateStream.listen((event) {
+      _screenWatcherSub = _screen?.screenStateStream.listen((event) async {
         if (event == ScreenStateEvent.SCREEN_UNLOCKED) {
-          if (appModel.hasLocationPermissions) _checkAreWeAtRunStart();
+          if (appModel.hasLocationPermissions) await _checkAreWeAtRunStart();
         }
       });
     } catch (_) {}
   }
 
   Future<void> _checkAreWeAtRunStart() async {
-    Utilities.checkAreWeAtRunStart();
+    await Utilities.isAtRunStart();
   }
 
   @override
   void dispose() {
-    _screenWatcherSub?.cancel();
+    unawaited(_screenWatcherSub?.cancel());
     super.dispose();
   }
 }

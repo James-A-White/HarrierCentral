@@ -26,15 +26,14 @@ class KennelLogo extends StatelessWidget {
 
   String? get _assetImagePath {
     if (!_isBundleImage) return null;
-    final basePath =
-        kennelLogoUrl!.toLowerCase().contains('avatar')
-            ? 'images/avatars/'
-            : 'images/generic_logos/';
+    final basePath = kennelLogoUrl!.toLowerCase().contains('avatar')
+        ? 'images/avatars/'
+        : 'images/generic_logos/';
     return '$basePath${kennelLogoUrl!.replaceAll('bundle://', '')}.png';
   }
 
-  void _showZoomPage(BuildContext context) {
-    Navigator.push<void>(
+  Future<void> _showZoomPage(BuildContext context) async {
+    await Navigator.push<void>(
       context,
       MaterialPageRoute<void>(
         builder: (BuildContext context) {
@@ -61,14 +60,12 @@ class KennelLogo extends StatelessWidget {
     }
 
     return GestureDetector(
-      onTap:
-          zoomGesture == KennelLogoZoomGesture.tap
-              ? () => _showZoomPage(context)
-              : null,
-      onLongPress:
-          zoomGesture == KennelLogoZoomGesture.longPress
-              ? () => _showZoomPage(context)
-              : null,
+      onTap: zoomGesture == KennelLogoZoomGesture.tap
+          ? () => _showZoomPage(context)
+          : null,
+      onLongPress: zoomGesture == KennelLogoZoomGesture.longPress
+          ? () => _showZoomPage(context)
+          : null,
       child: Container(
         width: logoHeight,
         height: logoHeight,
@@ -77,46 +74,43 @@ class KennelLogo extends StatelessWidget {
           right: rightPadding ?? 0,
         ),
         alignment: Alignment.centerRight,
-        child:
-            _isBundleImage
-                ? Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Image.asset(_assetImagePath!),
-                    if (!(kennelShortName ?? '').toLowerCase().contains(
-                      'my runs',
-                    ))
-                      Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: logoHeight / 6,
+        child: _isBundleImage
+            ? Stack(
+                alignment: Alignment.center,
+                children: [
+                  Image.asset(_assetImagePath!),
+                  if (!(kennelShortName ?? '').toLowerCase().contains(
+                    'my runs',
+                  ))
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: logoHeight / 6),
+                      child: AutoSizeText(
+                        kennelShortName ?? '',
+                        style: const TextStyle(
+                          fontFamily: 'AvenirNextCondensedBold',
+                          fontSize: 400.0,
+                          color: Colors.black,
                         ),
-                        child: AutoSizeText(
-                          kennelShortName ?? '',
-                          style: const TextStyle(
-                            fontFamily: 'AvenirNextCondensedBold',
-                            fontSize: 400.0,
-                            color: Colors.black,
-                          ),
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          minFontSize: 1.0,
-                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        minFontSize: 1.0,
                       ),
-                  ],
-                )
-                : kennelLogoUrl!.toLowerCase().endsWith('.avif')
-                ? CachedNetworkAvifImage(
-                  kennelLogoUrl!,
+                    ),
+                ],
+              )
+            : kennelLogoUrl!.toLowerCase().endsWith('.avif')
+            ? CachedNetworkAvifImage(
+                kennelLogoUrl!,
 
-                  fit: BoxFit.fitHeight,
-                  height: logoHeight,
-                )
-                : CachedNetworkImage(
-                  imageUrl: kennelLogoUrl!,
-                  fadeInDuration: const Duration(milliseconds: 0),
-                  fit: BoxFit.fitHeight,
-                  height: logoHeight,
-                ),
+                fit: BoxFit.fitHeight,
+                height: logoHeight,
+              )
+            : CachedNetworkImage(
+                imageUrl: kennelLogoUrl!,
+                fadeInDuration: const Duration(milliseconds: 0),
+                fit: BoxFit.fitHeight,
+                height: logoHeight,
+              ),
       ),
     );
   }

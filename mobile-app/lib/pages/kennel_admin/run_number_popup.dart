@@ -1,10 +1,7 @@
 import 'package:harrier_central/imports.dart';
 
 class RunNumberPopup extends StatefulWidget {
-  const RunNumberPopup({
-    super.key,
-    this.runNumber,
-  });
+  const RunNumberPopup({super.key, this.runNumber});
 
   final int? runNumber;
 
@@ -18,18 +15,16 @@ class RunNumberPopupState extends State<RunNumberPopup> {
 
   @override
   void initState() {
-    _runNumberAmountTextController = TextEditingController(text: widget.runNumber?.toString() ?? '');
-
     super.initState();
+    _runNumberAmountTextController = TextEditingController(
+      text: widget.runNumber?.toString() ?? '',
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        'Set run number',
-        style: ts_alertDialogTitle,
-      ),
+      title: Text('Set run number', style: ts_alertDialogTitle),
       content: TextField(
         autofocus: true,
         focusNode: myFocusNodeFirstName,
@@ -38,10 +33,7 @@ class RunNumberPopupState extends State<RunNumberPopup> {
         style: ts_alertDialogBody,
         decoration: InputDecoration(
           border: InputBorder.none,
-          icon: const Icon(
-            FontAwesome.money,
-            color: Colors.white,
-          ),
+          icon: const Icon(FontAwesome.money, color: Colors.white),
           hintText: 'Enter run number',
           hintStyle: ts_hint,
         ),
@@ -52,43 +44,49 @@ class RunNumberPopupState extends State<RunNumberPopup> {
         //   child: Container(
         //     width: 60.0,
         //     child:
-
         TextButton(
-          style: TextButton.styleFrom(shape: button_shape, backgroundColor: hc_red),
-          child: Text(
-            'Cancel',
-            style: ts_button,
+          style: TextButton.styleFrom(
+            shape: button_shape,
+            backgroundColor: hc_red,
           ),
+          child: Text('Cancel', style: ts_button),
           onPressed: () {
             Navigator.of(context).pop(<String, String>{'runNumber': 'cancel'});
           },
         ),
+
         //   ),
         // ),
         // Container(
         //   width: 60.0,
         //child:
-
         TextButton(
-            style: TextButton.styleFrom(shape: button_shape, backgroundColor: hc_blue),
-            child: Text('Auto number', style: ts_button),
-            onPressed: () {
-              Navigator.of(context).pop(<String, String>{'runNumber': 'auto'});
-            }),
+          style: TextButton.styleFrom(
+            shape: button_shape,
+            backgroundColor: hc_blue,
+          ),
+          child: Text('Auto number', style: ts_button),
+          onPressed: () {
+            Navigator.of(context).pop(<String, String>{'runNumber': 'auto'});
+          },
+        ),
+
         // ),
         // Container(
         //   width: 60.0,
         //child:
-
         TextButton(
-            style: TextButton.styleFrom(shape: button_shape, backgroundColor: hc_red),
-            child: Text(
-              'OK',
-              style: ts_regular,
-            ),
-            onPressed: () {
-              Navigator.of(context).pop(<String, String>{'runNumber': _runNumberAmountTextController.text});
-            }),
+          style: TextButton.styleFrom(
+            shape: button_shape,
+            backgroundColor: hc_red,
+          ),
+          child: Text('OK', style: ts_regular),
+          onPressed: () {
+            Navigator.of(context).pop(<String, String>{
+              'runNumber': _runNumberAmountTextController.text,
+            });
+          },
+        ),
         // ),
       ],
     );

@@ -14,8 +14,8 @@ class MismanagementRolesPageState extends State<MismanagementRolesPage> {
 
   @override
   void initState() {
-    mmRoles = Mismanagement(widget.mismanagementRoles);
     super.initState();
+    mmRoles = Mismanagement(widget.mismanagementRoles);
   }
 
   @override

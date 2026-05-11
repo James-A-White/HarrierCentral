@@ -1,14 +1,14 @@
 import 'package:harrier_central/imports.dart';
 
 class SyncKennelAdminService {
-  static const int flagKennelTable = 0x00000001;
-  static const int flagHasherKennelMapTable = 0x00000002;
-  static const int flagHashersTable = 0x00000004;
-  static const int flagHasherEventMapTable = 0x00000008;
-  static const int flagPaymentsTable = 0x00000008;
+  //static const int EnumDataTables.kennels.flag = 0x00000001;
+  // static const int EnumDataTables.hasherKennelMap.flag = 0x00000002;
+  // static const int EnumDataTables.hashers.flag = 0x00000004;
+  // static const int EnumDataTables.hasherEventMap.flag = 0x00000008;
+  // static const int EnumDataTables.payments.flag = 0x00000008;
 
   // exclude HasherEventMap and Payment from allData flags
-  static const int flagsAllData = 0x00000007;
+  //static const int flagsAllData = 0x00000007;
 
   // ignore: constant_identifier_names
   static const int FORCE = FORCE_ALL_REPLICATION_TIMESTAMP - 1;
@@ -29,39 +29,37 @@ class SyncKennelAdminService {
   }
 
   Future<void> getLastUpdatedTimes(int flags) async {
-    _kennelLastUpdated = (flags & flagKennelTable) == 0
+    _kennelLastUpdated = (flags & EnumDataTables.kennels.flag) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
         : await _getLastUpdatedTime(
             tableModel.kennelsTableHelper.colUpdatedAtValue,
-            tableModel.kennelsTableHelper.getTableName(AppDomainType.kennel),
+            EnumDataTables.kennels.commonTableName,
           );
-    _hashersLastUpdated = (flags & flagHashersTable) == 0
+    _hashersLastUpdated = (flags & EnumDataTables.hashers.flag) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
         : await _getLastUpdatedTime(
             tableModel.hashersTableHelper.colUpdatedAtValue,
-            tableModel.hashersTableHelper.getTableName(AppDomainType.user),
+            EnumDataTables.hashers.commonTableName,
           );
-    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0
+    _hasherKennelMapLastUpdated =
+        (flags & EnumDataTables.hasherKennelMap.flag) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
         : await _getLastUpdatedTime(
             tableModel.hasherKennelMapTableHelper.colUpdatedAtValue,
-            tableModel.hasherKennelMapTableHelper.getTableName(
-              AppDomainType.kennel,
-            ),
+            EnumDataTables.hasherKennelMap.kennelTableName,
           );
-    _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0
+    _hasherEventMapLastUpdated =
+        (flags & EnumDataTables.hasherEventMap.flag) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
         : await _getLastUpdatedTime(
             tableModel.hasherEventMapTableHelper.colUpdatedAtValue,
-            tableModel.hasherEventMapTableHelper.getTableName(
-              AppDomainType.kennel,
-            ),
+            EnumDataTables.hasherEventMap.kennelTableName,
           );
-    _paymentsLastUpdated = (flags & flagPaymentsTable) == 0
+    _paymentsLastUpdated = (flags & EnumDataTables.payments.flag) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
         : await _getLastUpdatedTime(
             tableModel.paymentsTableHelper.colUpdatedAtValue,
-            tableModel.paymentsTableHelper.getTableName(AppDomainType.kennel),
+            EnumDataTables.payments.kennelTableName,
           );
   }
 
@@ -69,12 +67,12 @@ class SyncKennelAdminService {
     await tableModel.baseService.clearTable(
       database,
       tableModel.hasherEventMapTableHelper,
-      tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.kennel),
+      EnumDataTables.hasherEventMap.kennelTableName,
     );
     await tableModel.baseService.clearTable(
       database,
       tableModel.paymentsTableHelper,
-      tableModel.paymentsTableHelper.getTableName(AppDomainType.kennel),
+      EnumDataTables.payments.kennelTableName,
     );
   }
 
@@ -92,20 +90,23 @@ class SyncKennelAdminService {
 
     if (getStringPref(StringPrefsEnum.adminKennelId) != kennelId) {
       // NOTE: kennels and hashers are not cleared here because all kennels and all hashers are loaded all the time for all users
-      await tableModel.baseService.clearTable(
-        database,
-        tableModel.hasherKennelMapTableHelper,
-        tableModel.hasherKennelMapTableHelper.getTableName(
-          AppDomainType.kennel,
-        ),
-      );
+      for (final table in EnumDataTables.values.where(
+        (t) => t.hasKennelTable,
+      )) {
+        final helper = table.helperFrom(tableModel);
+        await tableModel.baseService.clearTable(
+          database,
+          helper,
+          helper.getTableName(AppDomainType.kennel),
+        );
+      }
 
       await setStringPref(StringPrefsEnum.adminKennelId, kennelId);
     }
 
-    // final int kennelsLastUpdate = (flags & flagKennelTable) == 0 ? null : getIntPref(KennelsTableHelper.lastUpdatedKey) ?? 0;
-    // final int hashersLastUpdate = (flags & flagHashersTable) == 0 ? null : getIntPref(HashersTableHelper.lastUpdatedKey) ?? 0;
-    // final int hasherKennelMapLastUpdate = (flags & flagHasherKennelMapTable) == 0 ? null : getIntPref(HasherKennelMapTableHelper.getLastUpdatedKey(TableType.kennelAdmin)) ?? 0;
+    // final int kennelsLastUpdate = (flags & EnumDataTables.kennels.flag) == 0 ? null : getIntPref(KennelsTableHelper.lastUpdatedKey) ?? 0;
+    // final int hashersLastUpdate = (flags & EnumDataTables.hashers.flag) == 0 ? null : getIntPref(HashersTableHelper.lastUpdatedKey) ?? 0;
+    // final int hasherKennelMapLastUpdate = (flags & EnumDataTables.hasherKennelMap.flag) == 0 ? null : getIntPref(HasherKennelMapTableHelper.getLastUpdatedKey(TableType.kennelAdmin)) ?? 0;
 
     if (forceRefresh || true)
     // ((kennelsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - kennelsLastUpdate) > KennelsTableHelper.forceRequeryInterval) ||
@@ -171,19 +172,21 @@ class SyncKennelAdminService {
         'deviceId': deviceId,
         'accessToken': accessToken,
         'kennelId': kennelId,
-        'hashersUpdatedAfter': (flags & flagHashersTable) == 0
+        'hashersUpdatedAfter': (flags & EnumDataTables.hashers.flag) == 0
             ? 'ignore'
             : ('${hashersUpdatedAfter}000000').substring(0, 26),
-        'kennelsUpdatedAfter': (flags & flagKennelTable) == 0
+        'kennelsUpdatedAfter': (flags & EnumDataTables.kennels.flag) == 0
             ? 'ignore'
             : ('${kennelsUpdatedAfter}000000').substring(0, 26),
-        'hasherKennelMapUpdatedAfter': (flags & flagHasherKennelMapTable) == 0
+        'hasherKennelMapUpdatedAfter':
+            (flags & EnumDataTables.hasherKennelMap.flag) == 0
             ? 'ignore'
             : ('${hasherKennelMapUpdatedAfter}000000').substring(0, 26),
-        'hasherEventMapUpdatedAfter': (flags & flagHasherEventMapTable) == 0
+        'hasherEventMapUpdatedAfter':
+            (flags & EnumDataTables.hasherEventMap.flag) == 0
             ? 'ignore'
             : ('${hasherEventMapUpdatedAfter}000000').substring(0, 26),
-        'paymentsUpdatedAfter': (flags & flagPaymentsTable) == 0
+        'paymentsUpdatedAfter': (flags & EnumDataTables.payments.flag) == 0
             ? 'ignore'
             : ('${paymentsUpdatedAfter}000000').substring(0, 26),
         'usePaging': usePaging ? '1' : '0',
@@ -195,7 +198,7 @@ class SyncKennelAdminService {
 
       final String body = jsonEncode(params);
 
-      final String responseBody = await ServiceCommon.sendHttpPostV2(body);
+      final String responseBody = await ServiceCommon.sendHttpPost(body);
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {
         await updateSqlTablesWithResultsFromBackendApiCall(
@@ -210,7 +213,7 @@ class SyncKennelAdminService {
 
   List<BaseTableHelper> kennelTables = <BaseTableHelper>[
     tableModel.kennelsTableHelper,
-    tableModel.hashersTableHelper,
+    //tableModel.hashersTableHelper,
     tableModel.hasherKennelMapTableHelper,
     tableModel.hasherEventMapTableHelper,
     tableModel.paymentsTableHelper,

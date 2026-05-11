@@ -101,7 +101,8 @@ class QueryKennels {
   // note: the tilde characters at the beginning and end of the search field ensure
   // that the kennelName is searchable and whatever is at the end of the search field
   // is also searchable
-  static String searchKennelsField = '''
+  static String searchKennelsField =
+      '''
                lower(
                "~ " || k.${tableModel.kennelsTableHelper.colKennelName} 
             || " " || k.${tableModel.kennelsTableHelper.colKennelShortName} 
@@ -155,25 +156,24 @@ class QueryKennels {
         }
         final List<String> orItems = st.split('+');
 
-        filteredKennels =
-            filteredKennels.where((KennelListAggregate a) {
-              for (String orItem in orItems) {
-                if (orItem.trim().isEmpty) {
-                  continue;
-                }
-                orItem = ' ${orItem.trim().toLowerCase()}';
+        filteredKennels = filteredKennels.where((KennelListAggregate a) {
+          for (String orItem in orItems) {
+            if (orItem.trim().isEmpty) {
+              continue;
+            }
+            orItem = ' ${orItem.trim().toLowerCase()}';
 
-                if (((a.extensions.searchKennelsText ?? '')
-                        .toLowerCase()
-                        .contains(orItem)) ||
-                    ((removeDiacritics(
-                      (a.extensions.searchKennelsText ?? '').toLowerCase(),
-                    )).contains(orItem))) {
-                  return !negate;
-                }
-              }
-              return negate;
-            }).toList();
+            if (((a.extensions.searchKennelsText ?? '').toLowerCase().contains(
+                  orItem,
+                )) ||
+                ((removeDiacritics(
+                  (a.extensions.searchKennelsText ?? '').toLowerCase(),
+                )).contains(orItem))) {
+              return !negate;
+            }
+          }
+          return negate;
+        }).toList();
       }
     }
     //}
@@ -240,20 +240,17 @@ class QueryKennels {
 
     switch (queryContext) {
       case EnumKennelQueryContext.user:
-        hkmTable = tableModel.hasherKennelMapTableHelper.getTableName(
-          AppDomainType.user,
-        );
+        hkmTable = EnumDataTables.hasherKennelMap.commonTableName;
         break;
       case EnumKennelQueryContext.kennelAdmin:
-        hkmTable = tableModel.hasherKennelMapTableHelper.getTableName(
-          AppDomainType.kennel,
-        );
+        hkmTable = EnumDataTables.hasherKennelMap.kennelTableName;
         break;
     }
 
     final offsetFromGmtToLocal = Utilities.getSqfliteTimeOffset();
 
-    final String queryBase = '''
+    final String queryBase =
+        '''
       
         SELECT  
           k.*,           
@@ -295,27 +292,26 @@ class QueryKennels {
           r.${tableModel.regionsTableHelper.colRegionName} as regionName,
           r.${tableModel.regionsTableHelper.colRegionAbbreviation} as regionAbbreviation,
           n.${tableModel.countriesTableHelper.colCountryName} as countryName,
-          (SELECT min(${tableModel.eventsTableHelper.colEventStartDatetime}) from narrowEvents e where e.${tableModel.eventsTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId} and julianday(e.${tableModel.eventsTableHelper.colEventStartDatetime}) >= julianday('now','$offsetFromGmtToLocal') and e.${tableModel.eventsTableHelper.colIsVisible} != 0 ) as nextRunDate,
-          (SELECT max(${tableModel.eventsTableHelper.colEventStartDatetime}) from narrowEvents e where e.${tableModel.eventsTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId} and julianday(e.${tableModel.eventsTableHelper.colEventStartDatetime}) <= julianday('now','$offsetFromGmtToLocal') and e.${tableModel.eventsTableHelper.colIsVisible} != 0 ) as lastRunDate,
+          (SELECT min(${tableModel.eventsTableHelper.colEventStartDatetime}) FROM ${EnumDataTables.events.commonTableName} e where e.${tableModel.eventsTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId} and julianday(e.${tableModel.eventsTableHelper.colEventStartDatetime}) >= julianday('now','$offsetFromGmtToLocal') and e.${tableModel.eventsTableHelper.colIsVisible} != 0 ) as nextRunDate,
+          (SELECT max(${tableModel.eventsTableHelper.colEventStartDatetime}) FROM ${EnumDataTables.events.commonTableName} e where e.${tableModel.eventsTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId} and julianday(e.${tableModel.eventsTableHelper.colEventStartDatetime}) <= julianday('now','$offsetFromGmtToLocal') and e.${tableModel.eventsTableHelper.colIsVisible} != 0 ) as lastRunDate,
           COALESCE(k.${tableModel.kennelsTableHelper.colDigitsAfterDecimal},n.${tableModel.countriesTableHelper.colDigitsAfterDecimal}) as ${tableModel.countriesTableHelper.colDigitsAfterDecimal},
           COALESCE(k.${tableModel.kennelsTableHelper.colCurrencySymbol},n.${tableModel.countriesTableHelper.colCurrencySymbol}) as ${tableModel.countriesTableHelper.colCurrencySymbol},
           COALESCE(k.${tableModel.kennelsTableHelper.colDistancePreference},n.${tableModel.countriesTableHelper.colDistancePreference},0) as distanceUnitsPref,
           COALESCE(k.${tableModel.kennelsTableHelper.colKennelLatitude},c.${tableModel.citiesTableHelper.colLatitude},$DEFAULT_LATITUDE) as cityLat,
           COALESCE(k.${tableModel.kennelsTableHelper.colKennelLongitude},c.${tableModel.citiesTableHelper.colLongitude},$DEFAULT_LONGITUDE) as cityLon,
           $searchKennelsField
-          FROM ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} k
-          INNER JOIN ${tableModel.citiesTableHelper.getTableName(AppDomainType.user)} c on c.${tableModel.citiesTableHelper.colCityId} = k.${tableModel.kennelsTableHelper.colCityId}
-          INNER JOIN ${tableModel.regionsTableHelper.getTableName(AppDomainType.user)} r on r.${tableModel.regionsTableHelper.colRegionId} = k.${tableModel.kennelsTableHelper.colRegionId}
-          INNER JOIN ${tableModel.countriesTableHelper.getTableName(AppDomainType.user)} n on n.${tableModel.countriesTableHelper.colCountryId} = k.${tableModel.kennelsTableHelper.colCountryId}
-          INNER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h on h.hasherId = "$hasherId"
+          FROM ${EnumDataTables.kennels.commonTableName} k
+          INNER JOIN ${EnumDataTables.cities.commonTableName} c on c.${tableModel.citiesTableHelper.colCityId} = k.${tableModel.kennelsTableHelper.colCityId}
+          INNER JOIN ${EnumDataTables.regions.commonTableName} r on r.${tableModel.regionsTableHelper.colRegionId} = k.${tableModel.kennelsTableHelper.colRegionId}
+          INNER JOIN ${EnumDataTables.countries.commonTableName} n on n.${tableModel.countriesTableHelper.colCountryId} = k.${tableModel.kennelsTableHelper.colCountryId}
+          INNER JOIN ${EnumDataTables.hashers.commonTableName} h on h.hasherId = "$hasherId"
           LEFT OUTER JOIN $hkmTable hkm on hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId} and hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = "$hasherId"
           WHERE k.${tableModel.kennelsTableHelper.colRemoved} = 0
           ''';
 
-    final String whereClauseForSingleKenenel =
-        kennelId == null
-            ? ''
-            : '''
+    final String whereClauseForSingleKenenel = kennelId == null
+        ? ''
+        : '''
             AND k.${tableModel.kennelsTableHelper.colKennelId} = "$kennelId" 
             
           ''';
@@ -335,7 +331,8 @@ class QueryKennels {
   static Future<List<Map<String, dynamic>>> queryKennelGallery(
     String kennelId,
   ) async {
-    final String query = '''
+    final String query =
+        '''
       
         SELECT  
           k.${tableModel.kennelsTableHelper.colKennelId},
@@ -344,8 +341,8 @@ class QueryKennels {
           evt.${tableModel.eventsTableHelper.colEventName},          
           evt.${tableModel.eventsTableHelper.colEventId},
           evt.${tableModel.eventsTableHelper.colEventStartDatetime}
-          FROM ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} k
-          INNER JOIN ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} evt
+          FROM ${EnumDataTables.kennels.commonTableName} k
+          INNER JOIN ${EnumDataTables.events.commonTableName} evt
           ON evt.${tableModel.eventsTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId}
           WHERE k.${tableModel.kennelsTableHelper.colKennelId} = "$kennelId"
           AND k.${tableModel.kennelsTableHelper.colRemoved} = 0 
@@ -356,7 +353,8 @@ class QueryKennels {
   }
 
   static Future<List<Map<String, dynamic>>> queryKennelDetails() async {
-    String searchKennelsField = '''
+    String searchKennelsField =
+        '''
                "~ "  || coalesce(k.${tableModel.kennelsTableHelper.colKennelShortName},"") 
             || " " || coalesce(k.${tableModel.kennelsTableHelper.colKennelName},"")   
             
@@ -383,19 +381,20 @@ class QueryKennels {
           as searchText
           ''';
 
-    final String query = '''
+    final String query =
+        '''
       
         SELECT  
           k.${tableModel.kennelsTableHelper.colKennelId},
           k.${tableModel.kennelsTableHelper.colKennelName},
           k.${tableModel.kennelsTableHelper.colKennelShortName},
           $searchKennelsField
-          FROM ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} k
-          INNER JOIN ${tableModel.citiesTableHelper.getTableName(AppDomainType.user)} c
+          FROM ${EnumDataTables.kennels.commonTableName} k
+          INNER JOIN ${EnumDataTables.cities.commonTableName} c
           ON k.${tableModel.kennelsTableHelper.colCityId} = c.${tableModel.citiesTableHelper.colCityId}
-          INNER JOIN ${tableModel.regionsTableHelper.getTableName(AppDomainType.user)} r
+          INNER JOIN ${EnumDataTables.regions.commonTableName} r
           ON c.${tableModel.citiesTableHelper.colRegionId} = r.${tableModel.regionsTableHelper.colRegionId}
-          INNER JOIN ${tableModel.countriesTableHelper.getTableName(AppDomainType.user)} n
+          INNER JOIN ${EnumDataTables.countries.commonTableName} n
           ON r.${tableModel.regionsTableHelper.colCountryId} = n.${tableModel.countriesTableHelper.colCountryId}
           WHERE k.${tableModel.kennelsTableHelper.colRemoved} = 0
           ''';

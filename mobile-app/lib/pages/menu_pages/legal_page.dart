@@ -61,18 +61,21 @@ class LegalPageContent extends StatefulWidget {
 class LegalPageContentState extends State<LegalPageContent> {
   int tapCounter = 0;
   void backdoorTap() {
-    Future<dynamic>.delayed(const Duration(milliseconds: 2500)).then((void _) {
-      //print('Tapcounter reset = $tapCounter');
-      tapCounter = 0;
-    });
+    unawaited(
+      Future<dynamic>.delayed(const Duration(milliseconds: 2500)).then((
+        void _,
+      ) {
+        tapCounter = 0;
+      }),
+    );
 
     tapCounter++;
     if (tapCounter == 6) {
-      _getResetCode();
+      unawaited(_getResetCode());
     }
   }
 
-  void _getResetCode() {
+  Future<void> _getResetCode() async {
     const GetResetCodePopup getResetCode = GetResetCodePopup();
 
     final Future<void> dlg = showDialog<void>(
@@ -83,7 +86,7 @@ class LegalPageContentState extends State<LegalPageContent> {
       },
     );
 
-    dlg.then((void _) {});
+    await dlg;
   }
 
   @override

@@ -86,7 +86,7 @@ WHERE h.id = @targetUserId
 
 IF (@inviteCode IS NULL)
 BEGIN
-    SET @errorCode = 1312; SET @errorType = 3; SET @errorId = NEWID();
+    SET @errorCode = 1312; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Invite code not available',
             'Target user not found, already logged in, or caller lacks permission',

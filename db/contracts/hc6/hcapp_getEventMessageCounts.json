@@ -1,0 +1,71 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getEventMessageCounts",
+  "version": "1.0.0",
+  "description": "Returns the number of unread messages per event for the calling user. Calculated as MAX(EventMessage.MessageSequenceCount) minus EventMessageBadgeCounts.LastSequenceCount, grouped by event. Only returns rows for events where the current user has sent at least one message — the join path via HC.EventMessage filters to events where the user is the author, not all events with unread messages for the user. This is a known HC5 limitation carried forward intentionally.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth for auth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived cryptographic token. Passed to HC6.ValidateAppAuth for auth."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "Returned when HC6.ValidateAppAuth rejects the device/token pair. Follows the HC6 app error envelope. errorType=11 (auth). SP returns immediately after emitting this rowset.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 11 (auth failure)." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Specific error code from ValidateAppAuth." },
+        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
+        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "MessageCounts",
+      "description": "One row per event where the calling user has a matching EventMessageBadgeCounts record and has sent at least one message. Returns empty result set if no matching rows. Emitted on success in place of an error rowset.",
+      "columns": [
+        { "name": "id", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "EventMessage.EventId — internal event ID." },
+        { "name": "PublicEventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "EventMessage.PublicEventId — public-facing event UUID. NOT NULL per table definition." },
+        { "name": "EventChatMessageCount", "type": "INT", "nullable": true, "description": "Computed unread count: MAX(MessageSequenceCount) - LastSequenceCount. Nullable because the subtraction result can be NULL if either input is NULL in edge cases." }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Scope limited to events where user authored messages, not all events with unread messages",
+      "detail": "The join through HC.EventMessage on UserId = h.id means only events where the calling user sent at least one message are considered. A user who has unread messages in an event they never wrote to will not get a badge count row for that event. This was present in HC5 and is explicitly carried forward — the SP header documents it as a known limitation. It should be revisited if notification coverage needs to be broadened."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH block",
+      "detail": "The main query body runs outside a TRY/CATCH. SET XACT_ABORT ON means an unhandled runtime error will abort the batch, but no structured error rowset is returned to the caller in that case. For a read-only SP this is low risk, but it is inconsistent with the HC6 SP standard."
+    },
+    {
+      "severity": "low",
+      "issue": "PublicHasherId lookup issues on missing Hasher row",
+      "detail": "If @userId resolves to a valid device but HC.Hasher has no matching row, @publicHasherId will be NULL and the main SELECT will return an empty result set silently rather than an error. This is unlikely in practice but is not guarded against."
+    }
+  ],
+  "breakingChanges": [
+    "HC5 emitted multiple separate error rowsets for null deviceId and null hasherId without short-circuiting. HC6 consolidates all auth failures into a single error rowset via HC6.ValidateAppAuth with an immediate RETURN, eliminating the possibility of multiple error rowsets in one call.",
+    "HC5 used DATALENGTH checks on @deviceId (meaningless for UNIQUEIDENTIFIER). HC6 replaces these with NULL checks inside ValidateAppAuth.",
+    "HC5 errorType codes (2=validation, 3=auth) are replaced by HC6 codes (11=auth) — callers that switch on errorType must be updated.",
+    "HC5 error rowset included a debugMessage column. HC6 error rowset does not include debugMessage."
+  ]
+}

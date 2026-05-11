@@ -45,7 +45,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
 
       await _setupInitialMessage();
       _setupFirebaseListeners();
-      _ensureFcmListener();
+      await _ensureFcmListener();
     }
 
     await getEventChatMessageCounts();
@@ -74,7 +74,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       'accessToken': accessToken,
     };
 
-    String responseBody = await ServiceCommon.sendHttpPostV2(jsonEncode(body));
+    String responseBody = await ServiceCommon.sendHttpPost(jsonEncode(body));
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       final decoded = json.decode(responseBody) as List;
@@ -108,8 +108,8 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
 
   // --- FCM Listener Management ---
 
-  void _ensureFcmListener() {
-    _fcmSubscription
+  Future<void> _ensureFcmListener() async {
+    await _fcmSubscription
         ?.cancel(); // Cancel any existing listener to prevent duplicates
 
     _fcmSubscription = FirebaseMessaging.onMessage.listen(
@@ -117,17 +117,17 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     );
   }
 
-  void refreshFcmListenerOnResume() {
+  Future<void> refreshFcmListenerOnResume() async {
     if (kDebugMode) {
       print("App resumed – refreshing FCM listener");
     }
-    _ensureFcmListener();
+    await _ensureFcmListener();
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
+  Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
     if (state == AppLifecycleState.resumed) {
-      refreshFcmListenerOnResume();
+      await refreshFcmListenerOnResume();
     }
   }
 
@@ -190,7 +190,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
           final String body = jsonEncode(params);
 
           try {
-            await ServiceCommon.sendHttpPostV2(body);
+            await ServiceCommon.sendHttpPost(body);
             await setBoolPref(BoolPrefsEnum.fcmTokenSavedToServer, true);
           } catch (e) {
             if (kDebugMode) {
@@ -199,7 +199,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
           }
         }
 
-        setBoolPref(BoolPrefsEnum.notificationPreferencesRequested, true);
+        await setBoolPref(BoolPrefsEnum.notificationPreferencesRequested, true);
 
         if (kDebugMode) {
           print(
@@ -207,7 +207,10 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
           );
         }
       } else {
-        setBoolPref(BoolPrefsEnum.notificationPreferencesRequested, false);
+        await setBoolPref(
+          BoolPrefsEnum.notificationPreferencesRequested,
+          false,
+        );
         if (kDebugMode) {
           print(
             'Firebase not initialized, cannot request notification permission.',
@@ -223,7 +226,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     if (_messaging != null) {
       RemoteMessage? initialMessage = await _messaging!.getInitialMessage();
       if (initialMessage != null) {
-        _handleNotificationClick(initialMessage);
+        await _handleNotificationClick(initialMessage);
         if (kDebugMode) {
           print('Initial message received: ${initialMessage.data}');
         }
@@ -232,8 +235,8 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   }
 
   void _setupFirebaseListeners() {
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      _handleNotificationClick(message);
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
+      await _handleNotificationClick(message);
       if (kDebugMode) {
         print('Message opened app received: ${message.data}');
       }
@@ -262,7 +265,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     _dispatchMessageToControllers(message);
   }
 
-  void _handleNotificationClick(RemoteMessage message) {
+  Future<void> _handleNotificationClick(RemoteMessage message) async {
     // 2. Badge Clear Logic: Reset badge counts when user interacts with notification
     final publicEventId = message.data['PublicEventId'] as String?;
 
@@ -281,9 +284,8 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     Get.until((route) => route.settings.name == '/main');
 
     if (Get.isRegistered<FutureRunListPageController>()) {
-      Get.find<FutureRunListPageController>().processNotificationClickOnResume(
-        message,
-      );
+      await Get.find<FutureRunListPageController>()
+          .processNotificationClickOnResume(message);
     } else {
       if (kDebugMode) {
         print(
@@ -434,7 +436,9 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     );
     _updateChatCountBadges(publicEventId, badgeCount);
 
-    print('Badge count after marking as viewed: $badgeCount');
+    if (kDebugMode) {
+      print('Badge count after marking as viewed: $badgeCount');
+    }
   }
 
   Future<int> _getAndResetBadgeCount({
@@ -477,7 +481,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       body.addAll({'resetAllBadgeCounts': resetAllBadgeCounts ? 1 : 0});
     }
 
-    final responseBody = await ServiceCommon.sendHttpPostV2(jsonEncode(body));
+    final responseBody = await ServiceCommon.sendHttpPost(jsonEncode(body));
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       // Decode the JSON string into a Dart object (likely a List of Lists or a List of Maps)
@@ -487,7 +491,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       if (decodedBody is List && decodedBody.isNotEmpty) {
         // Access the element (assuming the structure is List<List<Map<String, dynamic>>>)
         // The previous code was decoding the responseBody multiple times, which is inefficient and wrong.
-        badgeCount = decodedBody[0][0]['badgeCount'];
+        badgeCount = decodedBody[0][0][BADGE_COUNT_JSON_KEY];
 
         // NOTE: The previous code using .forEach() was also incorrect if you
         // only wanted the first item's badgeCount. The line above is a direct
@@ -495,7 +499,9 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       } else {
         // Handle the case where the array is empty or the structure is unexpected
         badgeCount = 0; // Or whatever default value is appropriate
-        print('Warning: Decoded body is empty or not a List.');
+        if (kDebugMode) {
+          print('Warning: Decoded body is empty or not a List.');
+        }
       }
     }
 
@@ -503,8 +509,8 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   }
 
   /// To be called when a user views a chat page and marks all messages as read.
-  void resetAllEventChatCounts() {
-    _getAndResetBadgeCount(resetAllBadgeCounts: true);
+  Future<void> resetAllEventChatCounts() async {
+    await _getAndResetBadgeCount(resetAllBadgeCounts: true);
 
     unreadEventCounts.value = {
       for (final key in unreadEventCounts.keys) key: 0.obs,
@@ -546,7 +552,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
 
   @override
   void onClose() {
-    _fcmSubscription?.cancel();
+    unawaited(_fcmSubscription?.cancel());
     WidgetsBinding.instance.removeObserver(this);
     super.onClose();
   }

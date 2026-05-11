@@ -114,12 +114,10 @@ export function RunCalendarView({
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.4, delay: Math.min(dayIdx * 0.04, 0.4), ease: [0.19, 1, 0.22, 1] }}
+            style={dayIdx > 0 ? { borderTop: "1px solid color-mix(in srgb, var(--kennel-text-muted) 30%, transparent)", marginTop: "4px" } : undefined}
           >
             {/* Day header */}
-            <div
-              className="flex items-center gap-3 px-1 py-2 mt-1"
-              style={{ borderBottom: "1px solid color-mix(in srgb, var(--kennel-text-muted) 30%, transparent)" }}
-            >
+            <div className="flex items-center gap-3 px-1 py-2">
               <span
                 className="text-sm font-semibold uppercase tracking-[0.1em]"
                 style={{ color: isEmpty ? "var(--kennel-text-muted)" : "var(--kennel-text-title)" }}
@@ -132,15 +130,29 @@ export function RunCalendarView({
             </div>
 
             {/* Runs for this day — stacked as rows */}
-            {dayRuns.map((entry) => {
+            {dayRuns.map((entry, entryIdx) => {
               const run = entry.event;
-              const href = showKennelCol
-                ? `/${entry.kennel.slug}/${run.EventNumber}`
+              const isGuestRun = entry.kennel.slug !== slug;
+              const href = isGuestRun
+                ? display.isCustomDomain
+                  ? `/guest/${entry.kennel.slug}/${run.EventNumber}`
+                  : `/${slug}/guest/${entry.kennel.slug}/${run.EventNumber}`
                 : `/${slug}/${run.EventNumber}`;
               const kennelColor = entry.kennel.primaryColor ?? "var(--kennel-accent, var(--kennel-primary))";
 
               return (
-                <Link key={run.PublicEventId} className="block min-w-0" href={href}>
+                <div key={run.PublicEventId}>
+                {entryIdx > 0 && display.showDivider && (
+                  <hr
+                    className="border-0 my-0"
+                    style={{
+                      borderTopWidth: `${display.dividerWidth}px`,
+                      borderTopStyle: "solid",
+                      borderTopColor: display.dividerColor,
+                    }}
+                  />
+                )}
+                <Link className="block min-w-0" href={href}>
                   <div className="flex min-w-0 items-center gap-3 rounded-xl px-1 py-2 transition-colors hover:bg-white/5">
 
                     {/* Far-left kennel indicator column */}
@@ -208,7 +220,7 @@ export function RunCalendarView({
                           {display.showRunName && (
                             <span
                               className="block truncate text-base font-semibold"
-                              style={{ color: "var(--kennel-text-title)" }}
+                              style={{ color: display.nameColor }}
                             >
                               {run.EventName}
                             </span>
@@ -216,43 +228,42 @@ export function RunCalendarView({
                         </div>
                       )}
 
-                      {(display.showTime || display.showLocation) && (
+                      {display.showTime && (
                         <div
-                          className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0 text-sm"
-                          style={{ color: "var(--kennel-text-body)" }}
+                          className="flex items-center gap-1 text-sm"
+                          style={{ color: display.detailColor }}
+                          suppressHydrationWarning
                         >
-                          {display.showTime && (
-                            <span className="flex items-center gap-1" suppressHydrationWarning>
-                              <Clock className="h-3 w-3" />
-                              {formatTime(entry)}
-                            </span>
-                          )}
-                          {display.showLocation && (run.LocationOneLineDesc ?? run.LocationCity) && (
-                            <span className="flex min-w-0 items-center gap-1">
-                              <MapPin className="h-3 w-3 shrink-0" />
-                              <span className="min-w-0 truncate">
-                                {run.LocationOneLineDesc ?? run.LocationCity}
-                              </span>
-                            </span>
-                          )}
+                          <Clock className="h-3 w-3 shrink-0" />
+                          {formatTime(entry)}
+                        </div>
+                      )}
+                      {display.showLocation && (run.LocationOneLineDesc ?? run.LocationCity) && (
+                        <div
+                          className="flex min-w-0 items-center gap-1 text-sm"
+                          style={{ color: display.detailColor }}
+                        >
+                          <MapPin className="h-3 w-3 shrink-0" />
+                          <span className="min-w-0 truncate">
+                            {run.LocationOneLineDesc ?? run.LocationCity}
+                          </span>
                         </div>
                       )}
 
                       {display.showHares && run.Hares && (
                         <div
                           className="flex min-w-0 items-center gap-1 text-sm"
-                          style={{ color: "var(--kennel-text-muted)" }}
+                          style={{ color: display.detailColor }}
                         >
                           <span className="shrink-0 text-xs uppercase tracking-[0.1em]">Hares:</span>
-                          <span className="min-w-0 truncate" style={{ color: "var(--kennel-text-body)" }}>
-                            {run.Hares}
-                          </span>
+                          <span className="min-w-0 truncate">{run.Hares}</span>
                         </div>
                       )}
                     </div>
 
                   </div>
                 </Link>
+                </div>
               );
             })}
           </motion.div>

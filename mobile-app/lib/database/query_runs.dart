@@ -562,35 +562,18 @@ class QueryRuns {
 
     switch (queryContext) {
       case EnumRunQueryContext.user:
-        hkmTable = tableModel.hasherKennelMapTableHelper.getTableName(
-          AppDomainType.user,
-        );
-        hemTable = tableModel.hasherEventMapTableHelper.getTableName(
-          AppDomainType.user,
-        );
-        paymentsTable = tableModel.paymentsTableHelper.getTableName(
-          AppDomainType.user,
-        );
+        hkmTable = EnumDataTables.hasherKennelMap.commonTableName;
+        hemTable = EnumDataTables.hasherEventMap.commonTableName;
+        paymentsTable = EnumDataTables.payments.commonTableName;
         break;
       case EnumRunQueryContext.kennelAdmin:
-        hkmTable = tableModel.hasherKennelMapTableHelper.getTableName(
-          AppDomainType.kennel,
-        );
-        hemTable = tableModel.hasherEventMapTableHelper.getTableName(
-          AppDomainType.user,
-        );
-        //paymentsTable = tableModel.paymentsTableHelper.getTableName(AppDomainType.kennel);
+        hkmTable = EnumDataTables.hasherKennelMap.kennelTableName;
+        hemTable = EnumDataTables.hasherEventMap.kennelTableName;
         break;
       case EnumRunQueryContext.eventAdmin:
-        hkmTable = tableModel.hasherKennelMapTableHelper.getTableName(
-          AppDomainType.event,
-        );
-        hemTable = tableModel.hasherEventMapTableHelper.getTableName(
-          AppDomainType.event,
-        );
-        paymentsTable = tableModel.paymentsTableHelper.getTableName(
-          AppDomainType.event,
-        );
+        hkmTable = EnumDataTables.hasherKennelMap.eventTableName;
+        hemTable = EnumDataTables.hasherEventMap.eventTableName;
+        paymentsTable = EnumDataTables.payments.eventTableName;
         break;
     }
 
@@ -633,11 +616,11 @@ class QueryRuns {
           julianday('now') as nowJulian,
           julianday('now','$offsetFromGmtToLocal') as nowJulianLocal,
           $searchRunsField
-          FROM narrowEvents evt
-          INNER JOIN kennels k on k.kennelId = evt.kennelId
-          INNER JOIN ${tableModel.citiesTableHelper.getTableName(AppDomainType.user)} c on c.${tableModel.citiesTableHelper.colCityId} = k.${tableModel.kennelsTableHelper.colCityId}
-          INNER JOIN ${tableModel.regionsTableHelper.getTableName(AppDomainType.user)} r on r.${tableModel.regionsTableHelper.colRegionId} = k.${tableModel.kennelsTableHelper.colRegionId}
-          INNER JOIN ${tableModel.countriesTableHelper.getTableName(AppDomainType.user)} n on n.${tableModel.countriesTableHelper.colCountryId} = k.${tableModel.kennelsTableHelper.colCountryId}
+          FROM ${EnumDataTables.events.commonTableName} evt
+          INNER JOIN ${EnumDataTables.kennels.commonTableName} k on k.kennelId = evt.kennelId
+          INNER JOIN ${EnumDataTables.cities.commonTableName} c on c.${tableModel.citiesTableHelper.colCityId} = k.${tableModel.kennelsTableHelper.colCityId}
+          INNER JOIN ${EnumDataTables.regions.commonTableName} r on r.${tableModel.regionsTableHelper.colRegionId} = k.${tableModel.kennelsTableHelper.colRegionId}
+          INNER JOIN ${EnumDataTables.countries.commonTableName} n on n.${tableModel.countriesTableHelper.colCountryId} = k.${tableModel.kennelsTableHelper.colCountryId}
           LEFT OUTER JOIN $hkmTable hkm on hkm.kennelId = evt.kennelId and hkm.userId = "$userId"
           LEFT OUTER JOIN $hemTable hem on hem.eventId = evt.eventId and hem.userId = "$userId"
           ''';
@@ -673,11 +656,11 @@ class QueryRuns {
           case when julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-4 hours') then 1 else 0 end as showAsFutureEvent,
           case when julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) <= julianday('now','+4 hours') then 1 else 0 end as showAsPastEvent,
           $searchRunsField
-          FROM narrowEvents evt
-          INNER JOIN kennels k on k.kennelId = evt.kennelId
-          INNER JOIN ${tableModel.citiesTableHelper.getTableName(AppDomainType.user)} c on c.${tableModel.citiesTableHelper.colCityId} = k.${tableModel.kennelsTableHelper.colCityId}
-          INNER JOIN ${tableModel.regionsTableHelper.getTableName(AppDomainType.user)} r on r.${tableModel.regionsTableHelper.colRegionId} = k.${tableModel.kennelsTableHelper.colRegionId}
-          INNER JOIN ${tableModel.countriesTableHelper.getTableName(AppDomainType.user)} n on n.${tableModel.countriesTableHelper.colCountryId} = k.${tableModel.kennelsTableHelper.colCountryId}
+          FROM ${EnumDataTables.events.commonTableName} evt
+          INNER JOIN ${EnumDataTables.kennels.commonTableName} k on k.kennelId = evt.kennelId
+          INNER JOIN ${EnumDataTables.cities.commonTableName} c on c.${tableModel.citiesTableHelper.colCityId} = k.${tableModel.kennelsTableHelper.colCityId}
+          INNER JOIN ${EnumDataTables.regions.commonTableName} r on r.${tableModel.regionsTableHelper.colRegionId} = k.${tableModel.kennelsTableHelper.colRegionId}
+          INNER JOIN ${EnumDataTables.countries.commonTableName} n on n.${tableModel.countriesTableHelper.colCountryId} = k.${tableModel.kennelsTableHelper.colCountryId}
           LEFT OUTER JOIN $hkmTable hkm on hkm.kennelId = evt.kennelId and hkm.userId = "$userId"
           LEFT OUTER JOIN $hemTable hem on hem.eventId = evt.eventId and hem.userId = "$userId"
           LEFT OUTER JOIN $paymentsTable pay on pay.${tableModel.paymentsTableHelper.colHemId} = hem.${tableModel.hasherEventMapTableHelper.colHemId} AND pay.${tableModel.paymentsTableHelper.colCancelledBy} IS NULL
@@ -756,7 +739,7 @@ class QueryRuns {
         SELECT  
           evt.${tableModel.eventsTableHelper.colEventName} as eventName,
           evt.${tableModel.eventsTableHelper.colEventId} as eventId
-          FROM narrowEvents evt
+          FROM ${EnumDataTables.events.commonTableName} evt
           WHERE evt.${tableModel.eventsTableHelper.colKennelId} = "$kennelId"
           AND julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetime}) < julianday('$eventStartDateTime') 
           AND evt.${tableModel.eventsTableHelper.colIsVisible} = 1

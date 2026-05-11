@@ -92,7 +92,7 @@ IF (@notificationPreference   = -1) SET @notificationPreference   = NULL;
 IF ((@eventId  IS NULL OR @eventId  = '00000000-0000-0000-0000-000000000000')
 AND (@kennelId IS NULL OR @kennelId = '00000000-0000-0000-0000-000000000000'))
 BEGIN
-    SET @errorCode = 1214; SET @errorType = 2; SET @errorId = NEWID();
+    SET @errorCode = 1214; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Missing scope parameter',
             'Both @kennelId and @eventId are null or empty', @procName, @userId);
@@ -210,7 +210,7 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
 
-    SET @errorCode = 1914; SET @errorType = 9; SET @errorId = NEWID();
+    SET @errorCode = 1914; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;

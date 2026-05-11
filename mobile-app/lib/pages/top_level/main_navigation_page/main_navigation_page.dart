@@ -1,5 +1,6 @@
 import 'package:badges/badges.dart' as badges;
-import 'package:fancy_bottom_navigation_2/fancy_bottom_navigation.dart';
+import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
+import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
 
@@ -12,6 +13,10 @@ class MainNavigationPage extends StatelessWidget {
     final controller = Get.isRegistered<MainNavigationController>()
         ? Get.find<MainNavigationController>()
         : Get.put(MainNavigationController(), permanent: true);
+
+    final locService = Get.isRegistered<LocationService>()
+        ? Get.find<LocationService>()
+        : null;
 
     return GetBuilder<MainNavigationController>(
       id: 'AppScaffold',
@@ -34,7 +39,9 @@ class MainNavigationPage extends StatelessWidget {
                 backgroundColor: themeAppBarBackground,
                 iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
                 automaticallyImplyLeading: false,
-                leadingWidth: 110,
+                leadingWidth: locService?.joinRunTracking.value ?? false
+                    ? 140
+                    : 80,
                 leading: Row(
                   mainAxisSize: MainAxisSize.max,
                   children: [
@@ -48,7 +55,7 @@ class MainNavigationPage extends StatelessWidget {
                             id: 'main_nav_page',
                             builder: (badgeController) {
                               return GestureDetector(
-                                onTap: () {
+                                onTap: () async {
                                   bool forceChatPage = getPage() != 0;
                                   if (forceChatPage ||
                                       (badgeController.runsToDisplay.value !=
@@ -64,7 +71,7 @@ class MainNavigationPage extends StatelessWidget {
                                         RunsTimeScope.future;
                                   }
 
-                                  setPage(0);
+                                  await setPage(0);
 
                                   // return badgeController
                                   //     .showOnlyEventsWithMessages
@@ -125,34 +132,170 @@ class MainNavigationPage extends StatelessWidget {
                                       .joinRunTracking
                                       .value)
                               ? SizedBox()
-                              : Obx(() {
-                                  final locationService =
-                                      Get.find<LocationService>();
+                              : GestureDetector(
+                                  onTap: () async {
+                                    var buttons = HashRunPointTypes.values.map((
+                                      type,
+                                    ) {
+                                      return <String, dynamic>{
+                                        'title': type.label,
+                                        'icon': <Widget>[
+                                          Container(
+                                            height: 30,
+                                            width: 45,
+                                            decoration: BoxDecoration(
+                                              color: Colors.green.shade800,
+                                              shape: BoxShape.rectangle,
+                                            ),
+                                          ),
+                                          Icon(type.iconData),
+                                        ],
+                                        'returnValue': type.index,
+                                      };
+                                    }).toList();
 
-                                  // 2. Use the reactive getter to determine the state
-                                  final isFresh =
-                                      locationService.isLocationFresh;
+                                    final MultipleChoicePopupHc popup =
+                                        MultipleChoicePopupHc(
+                                          key: const Key('5030202'),
+                                          title: 'Trail mark',
+                                          buttons: buttons,
+                                          cancelButtonTitle: 'Cancel',
+                                          cancelButtonReturnValue:
+                                              followTypeCancel,
+                                        );
 
-                                  return Padding(
-                                    padding: const EdgeInsets.only(
-                                      left: 10.0,
-                                      bottom: 2.0,
-                                    ),
-                                    child: Container(
-                                      height: 15,
-                                      width: 15,
-                                      // Use the decoration property
-                                      decoration: BoxDecoration(
-                                        // Set the shape to circle
-                                        shape: BoxShape.circle,
-                                        // Move the color property inside the decoration
-                                        color: isFresh
-                                            ? Colors.green
-                                            : Colors.red,
+                                    var result = await showDialog<dynamic>(
+                                      context: context,
+                                      barrierDismissible:
+                                          false, // user must tap button!
+                                      builder: (BuildContext context) {
+                                        return popup;
+                                      },
+                                    );
+
+                                    // Bail if canceled or invalid
+                                    if (result == null ||
+                                        result == followTypeCancel) {
+                                      return;
+                                    }
+                                    if (result is! int ||
+                                        result < 0 ||
+                                        result >=
+                                            HashRunPointTypes.values.length) {
+                                      return;
+                                    }
+
+                                    HashRunPointTypes type =
+                                        HashRunPointTypes.values[result];
+
+                                    final locationService =
+                                        Get.find<LocationService>();
+                                    if (type == HashRunPointTypes.customLabel) {
+                                      GetPointLabelPopup popup =
+                                          GetPointLabelPopup();
+
+                                      if (context.mounted) {
+                                        var labelResult =
+                                            await showDialog<
+                                              Map<String, String>
+                                            >(
+                                              context: context,
+                                              barrierDismissible:
+                                                  false, // user must tap button!
+                                              builder: (BuildContext context) {
+                                                return popup;
+                                              },
+                                            );
+                                        if (labelResult != null) {
+                                          if ((labelResult['label'] ?? '')
+                                              .isNotEmpty) {
+                                            await locationService.markPoint(
+                                              type,
+                                              label: labelResult['label']!,
+                                            );
+                                          }
+                                        }
+                                      }
+                                    } else {
+                                      await locationService.markPoint(type);
+                                    }
+
+                                    // // Delay to ensure overlay is ready
+                                    // await Future.delayed(
+                                    //   const Duration(milliseconds: 100),
+                                    // );
+
+                                    Get.closeAllSnackbars();
+
+                                    if (context.mounted) {
+                                      // Use ScaffoldMessenger to avoid missing Overlay issues
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            "You've marked a ${type.label}.",
+                                            style: ts_snackbar,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          duration: const Duration(seconds: 5),
+                                          backgroundColor: Colors.blue,
+                                          behavior: SnackBarBehavior.fixed,
+                                          padding: const EdgeInsets.fromLTRB(
+                                            16.0,
+                                            12.0,
+                                            16.0,
+                                            kBottomNavigationBarHeight - 15.0,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  child: Obx(() {
+                                    final locationService =
+                                        Get.find<LocationService>();
+
+                                    // 2. Use the reactive getter to determine the state
+                                    final isFresh =
+                                        locationService.isLocationFresh;
+
+                                    return Padding(
+                                      padding: const EdgeInsets.only(
+                                        left: 10.0,
+                                        bottom: 2.0,
                                       ),
-                                    ),
-                                  );
-                                })
+                                      child: Container(
+                                        height: 25,
+                                        width: 40,
+                                        // Use the decoration property
+                                        decoration: BoxDecoration(
+                                          // Set the shape to circle
+                                          borderRadius: BorderRadius.circular(
+                                            7,
+                                          ), // Rounded corners
+                                          // Move the color property inside the decoration
+                                          color: isFresh
+                                              ? Colors.green
+                                              : Colors.red,
+                                        ),
+                                        child: Center(
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                              top: 4,
+                                            ),
+                                            child: Text(
+                                              locationService
+                                                  .locationUpdateCount
+                                                  .value
+                                                  .toString(),
+                                              style: ts_titleCondensed,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                )
                         : SizedBox.shrink(),
                   ],
                 ),
@@ -279,7 +422,8 @@ class MainNavigationPage extends StatelessWidget {
                                       () => NotificationService().init(),
                                     ); // Initialize and wait for the notification service
 
-                                    controller.resetNewVersionPromoScreen();
+                                    await controller
+                                        .resetNewVersionPromoScreen();
                                   },
                                 );
                         });
@@ -297,6 +441,7 @@ class MainNavigationPage extends StatelessWidget {
                                       controller.kennelsListPage,
                                       controller.runAndKennelMapPage,
                                       controller.historyListPage,
+                                      controller.songsPage,
                                     ],
                                   )
                                 : SizedBox(),
@@ -410,7 +555,7 @@ class MainNavigationPage extends StatelessWidget {
               OfflineModeRibbon(
                 lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSync),
                 ribbonImage: 'images/icons/offline_mode.png',
-                refreshFunction: () => controller.initialize(),
+                refreshFunction: () => controller.onInitAsync(),
               ),
             ],
           ),
@@ -419,26 +564,36 @@ class MainNavigationPage extends StatelessWidget {
             child: Obx(() {
               return (controller.mainScreenContent.value ==
                       MainPageContent.appContent)
-                  ? FancyBottomNavigation(
+                  ? CurvedNavigationBar(
                       key: controller.bottomNavigationKey,
-                      circleColor: themeButtonColors,
-                      inactiveIconColor: themeBackgroundColor,
-                      barBackgroundColor: themeNavBarBackground,
-                      tabs: [
-                        TabData(
-                          iconData: MaterialCommunityIcons.run_fast,
-                          title: 'Runs',
+                      backgroundColor: Colors.transparent,
+                      color: const Color(0xFFF5E6EA),
+                      buttonBackgroundColor: themeButtonColors,
+                      animationDuration: const Duration(milliseconds: 300),
+                      items: [
+                        CurvedNavigationBarItem(
+                          child: Padding(padding: const EdgeInsets.only(top: 5), child: Icon(MaterialCommunityIcons.run_fast, color: controller.currentPage.value == 0 ? Colors.white : themeBackgroundColor)),
+                          label: 'Runs',
                         ),
-                        TabData(iconData: FontAwesome.home, title: 'Kennels'),
-                        TabData(iconData: FontAwesome.map, title: 'Explore'),
-                        TabData(
-                          iconData: FontAwesome.list_ul,
-                          title: 'History',
+                        CurvedNavigationBarItem(
+                          child: Padding(padding: const EdgeInsets.only(top: 5), child: Icon(FontAwesome.home, color: controller.currentPage.value == 1 ? Colors.white : themeBackgroundColor)),
+                          label: 'Kennels',
+                        ),
+                        CurvedNavigationBarItem(
+                          child: Padding(padding: const EdgeInsets.only(top: 5), child: Icon(FontAwesome.map, color: controller.currentPage.value == 2 ? Colors.white : themeBackgroundColor)),
+                          label: 'Explore',
+                        ),
+                        CurvedNavigationBarItem(
+                          child: Padding(padding: const EdgeInsets.only(top: 5), child: Icon(FontAwesome.list_ul, color: controller.currentPage.value == 3 ? Colors.white : themeBackgroundColor)),
+                          label: 'History',
+                        ),
+                        CurvedNavigationBarItem(
+                          child: Padding(padding: const EdgeInsets.only(top: 5), child: Icon(Icons.music_note, color: controller.currentPage.value == 4 ? Colors.white : themeBackgroundColor)),
+                          label: 'Songs',
                         ),
                       ],
-                      initialSelection: 0,
-                      //key: controller.bottomNavigationKey,
-                      onTabChangedListener: controller.onTabChanged,
+                      index: controller.currentPage.value,
+                      onTap: (index) => controller.onTabChanged(index),
                     )
                   : SizedBox();
             }),
@@ -452,17 +607,17 @@ class MainNavigationPage extends StatelessWidget {
 
   int getPage() {
     final controller = Get.find<MainNavigationController>();
-    return controller.bottomNavigationKey.currentState?.currentSelected ?? -1;
+    return controller.currentPage.value;
   }
 
-  void setPage(int page) {
+  Future<void> setPage(int page) async {
     final controller = Get.find<MainNavigationController>();
 
     controller.bottomNavigationKey.currentState?.setPage(0);
 
     final listController = Get.find<FutureRunListPageController>();
 
-    listController.scrollController.animateTo(
+    await listController.scrollController.animateTo(
       0.0,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeOut,

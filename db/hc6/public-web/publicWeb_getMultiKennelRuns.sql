@@ -191,7 +191,9 @@ BEGIN TRY
         e.Tags3,
 
         -- Metadata
-        e.IsCountedRun
+        e.IsCountedRun,
+        e.IsPromotedEvent,
+        e.EventGeographicScope
 
     FROM  HC.Event e
     JOIN  #ValidKennels vk ON vk.KennelId = e.KennelId

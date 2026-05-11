@@ -2,27 +2,26 @@
 import 'package:harrier_central/imports.dart';
 
 class SyncUserDataService {
-  static const int flagHashersTable = 0x00000001;
-  static const int flagCitiesTable = 0x00000002;
-  static const int flagRegionsTable = 0x00000004;
-  static const int flagCountriesTable = 0x00000008;
-  static const int flagKennelsTable = 0x00000010;
-  static const int flagNarrowEventsTable = 0x00000020;
-  static const int flagPaymentsTable = 0x00000040;
+  // static const int EnumDataTables.hashers.flag = 0x00000001;
+  // static const int EnumDataTables.cities.flag = 0x00000002;
+  // static const int EnumDataTables.regions.flag = 0x00000004;
+  // static const int EnumDataTables.countries.flag = 0x00000008;
+  // static const int EnumDataTables.kennels.flag = 0x00000010;
+  // static const int EnumDataTables.narrowEvents.flag = 0x00000020;
+  // static const int EnumDataTables.payments.flag = 0x00000040;
+  // static const int EnumDataTables.hasherKennelMap.flag = 0x00010000;
+  // static const int EnumDataTables.hasherEventMap.flag = 0x00020000;
 
-  static const int flagAllMasterDataWithoutHashers = 0x0000003E;
-  static const int flagAllMasterData = 0x0000003F;
-
-  static const int flagHasherKennelMapTable = 0x00010000;
-  static const int flagHasherEventMapTable = 0x00020000;
-
-  static const int flagsAllData = 0x0003003f;
-  static const int flagAllDataWithoutHashersOrEvents = 0x0003001e;
+  // static const int flagAllMasterDataWithoutHashers = 0x0000003E;
+  // static const int flagAllMasterData = 0x0000003F;
+  // static const int flagsAllData = 0x0003007f;
+  // static const int flagAllDataWithoutHashersOrEvents = 0x0003001e;
 
   static const int pageSize_hashersTable = 1000;
   static const int pageSize_citiesTable = 250;
   static const int pageSize_regionsTable = 250;
   static const int pageSize_countriesTable = 250;
+  static const int pageSize_songsTable = 250;
   static const int pageSize_kennelsTable = 250;
   static const int pageSize_eventsTable = 50;
   static const int pageSize_hkmTable = 250;
@@ -34,6 +33,7 @@ class SyncUserDataService {
   int _citiesLastUpdated = FORCE;
   int _regionsLastUpdated = FORCE;
   int _countriesLastUpdated = FORCE;
+  int _songsLastUpdated = FORCE;
   int _kennelsLastUpdated = FORCE;
   int _paymentsLastUpdated = FORCE;
   int _hasherKennelMapLastUpdated = FORCE;
@@ -50,63 +50,67 @@ class SyncUserDataService {
   }
 
   Future<void> getLastUpdatedTimes(int flags) async {
-    _hashersLastUpdated = (flags & flagHashersTable) == 0
+    _hashersLastUpdated = (flags & EnumDataTables.hashers.flag) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
         : await _getLastUpdatedTime(
             tableModel.hashersTableHelper.colUpdatedAtValue,
-            tableModel.hashersTableHelper.getTableName(AppDomainType.user),
+            EnumDataTables.hashers.commonTableName,
           );
-    _citiesLastUpdated = (flags & flagCitiesTable) == 0
+    _citiesLastUpdated = (flags & EnumDataTables.cities.flag) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
         : await _getLastUpdatedTime(
             tableModel.citiesTableHelper.colUpdatedAtValue,
-            tableModel.citiesTableHelper.getTableName(AppDomainType.user),
+            EnumDataTables.cities.commonTableName,
           );
-    _regionsLastUpdated = (flags & flagRegionsTable) == 0
+    _regionsLastUpdated = (flags & EnumDataTables.regions.flag) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
         : await _getLastUpdatedTime(
             tableModel.regionsTableHelper.colUpdatedAtValue,
-            tableModel.regionsTableHelper.getTableName(AppDomainType.user),
+            EnumDataTables.regions.commonTableName,
           );
-    _countriesLastUpdated = (flags & flagCountriesTable) == 0
+    _countriesLastUpdated = (flags & EnumDataTables.countries.flag) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
         : await _getLastUpdatedTime(
             tableModel.countriesTableHelper.colUpdatedAtValue,
-            tableModel.countriesTableHelper.getTableName(AppDomainType.user),
+            EnumDataTables.countries.commonTableName,
           );
-    _kennelsLastUpdated = (flags & flagKennelsTable) == 0
+    _songsLastUpdated = (flags & EnumDataTables.songs.flag) == 0
+        ? IGNORE_REPLICATION_TIMESTAMP
+        : await _getLastUpdatedTime(
+            tableModel.songsTableHelper.colUpdatedAtValue,
+            EnumDataTables.songs.commonTableName,
+          );
+    _kennelsLastUpdated = (flags & EnumDataTables.kennels.flag) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
         : await _getLastUpdatedTime(
             tableModel.kennelsTableHelper.colUpdatedAtValue,
-            tableModel.kennelsTableHelper.getTableName(AppDomainType.user),
+            EnumDataTables.kennels.commonTableName,
           );
-    _paymentsLastUpdated = (flags & flagPaymentsTable) == 0
+    _paymentsLastUpdated = (flags & EnumDataTables.payments.flag) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
         : await _getLastUpdatedTime(
             tableModel.paymentsTableHelper.colUpdatedAtValue,
-            tableModel.paymentsTableHelper.getTableName(AppDomainType.user),
+            EnumDataTables.payments.commonTableName,
           );
-    _hasherKennelMapLastUpdated = (flags & flagHasherKennelMapTable) == 0
+    _hasherKennelMapLastUpdated =
+        (flags & EnumDataTables.hasherKennelMap.flag) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
         : await _getLastUpdatedTime(
             tableModel.hasherKennelMapTableHelper.colUpdatedAtValue,
-            tableModel.hasherKennelMapTableHelper.getTableName(
-              AppDomainType.user,
-            ),
+            EnumDataTables.hasherKennelMap.commonTableName,
           );
-    _hasherEventMapLastUpdated = (flags & flagHasherEventMapTable) == 0
+    _hasherEventMapLastUpdated =
+        (flags & EnumDataTables.hasherEventMap.flag) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
         : await _getLastUpdatedTime(
             tableModel.hasherEventMapTableHelper.colUpdatedAtValue,
-            tableModel.hasherEventMapTableHelper.getTableName(
-              AppDomainType.user,
-            ),
+            EnumDataTables.hasherEventMap.commonTableName,
           );
-    _narrowEventsLastUpdated = (flags & flagNarrowEventsTable) == 0
+    _narrowEventsLastUpdated = (flags & EnumDataTables.events.flag) == 0
         ? IGNORE_REPLICATION_TIMESTAMP
         : await _getLastUpdatedTime(
             tableModel.eventsTableHelper.colUpdatedAtValue,
-            tableModel.eventsTableHelper.getTableName(AppDomainType.user),
+            EnumDataTables.events.commonTableName,
           );
   }
 
@@ -115,7 +119,7 @@ class SyncUserDataService {
     bool forceRefresh, {
     String? clientAppIdentifer,
     String? singleRecordId,
-    Function? informUser,
+    void Function(String)? informUser,
     String? forceReplicateAllRunsForKennel,
     String batchText = '',
     required String debugText,
@@ -157,6 +161,9 @@ class SyncUserDataService {
             DateTime.fromMicrosecondsSinceEpoch(_regionsLastUpdated + 1);
         final DateTime countriesUpdatedAfter =
             DateTime.fromMicrosecondsSinceEpoch(_countriesLastUpdated + 1);
+        final DateTime songsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
+          _songsLastUpdated + 1,
+        );
         final DateTime kennelsUpdatedAfter =
             DateTime.fromMicrosecondsSinceEpoch(_kennelsLastUpdated + 1);
         final DateTime paymentsUpdatedAfter =
@@ -184,38 +191,46 @@ class SyncUserDataService {
           paramString: deviceSecret,
         );
 
-        final Map<String, String> params = <String, String>{
+        final Map<String, dynamic> params = <String, dynamic>{
           'queryType': 'syncUserData',
           'deviceId': deviceId,
           'accessToken': accessToken,
-          'citiesUpdatedAfter': (tablesToSync & flagCitiesTable) == 0
+          'citiesUpdatedAfter': (tablesToSync & EnumDataTables.cities.flag) == 0
               ? 'ignore'
               : ('${citiesUpdatedAfter}000000').substring(0, 26),
-          'regionsUpdatedAfter': (tablesToSync & flagRegionsTable) == 0
+          'regionsUpdatedAfter':
+              (tablesToSync & EnumDataTables.regions.flag) == 0
               ? 'ignore'
               : ('${regionsUpdatedAfter}000000').substring(0, 26),
-          'countriesUpdatedAfter': (tablesToSync & flagCountriesTable) == 0
+          'countriesUpdatedAfter':
+              (tablesToSync & EnumDataTables.countries.flag) == 0
               ? 'ignore'
               : ('${countriesUpdatedAfter}000000').substring(0, 26),
+          'songsUpdatedAfter': (tablesToSync & EnumDataTables.songs.flag) == 0
+              ? 'ignore'
+              : ('${songsUpdatedAfter}000000').substring(0, 26),
           'hasherKennelMapUpdatedAfter':
-              (tablesToSync & flagHasherKennelMapTable) == 0
+              (tablesToSync & EnumDataTables.hasherKennelMap.flag) == 0
               ? 'ignore'
               : ('${hasherKennelMapUpdatedAfter}000000').substring(0, 26),
           'hasherEventMapUpdatedAfter':
-              (tablesToSync & flagHasherEventMapTable) == 0
+              (tablesToSync & EnumDataTables.hasherEventMap.flag) == 0
               ? 'ignore'
               : ('${hasherEventMapUpdatedAfter}000000').substring(0, 26),
-          'hashersUpdatedAfter': (tablesToSync & flagHashersTable) == 0
+          'hashersUpdatedAfter':
+              (tablesToSync & EnumDataTables.hashers.flag) == 0
               ? 'ignore'
               : ('${hashersUpdatedAfter}000000').substring(0, 26),
-          'kennelsUpdatedAfter': (tablesToSync & flagKennelsTable) == 0
+          'kennelsUpdatedAfter':
+              (tablesToSync & EnumDataTables.kennels.flag) == 0
               ? 'ignore'
               : ('${kennelsUpdatedAfter}000000').substring(0, 26),
           'narrowEventsUpdatedAfter':
-              (tablesToSync & flagNarrowEventsTable) == 0
+              (tablesToSync & EnumDataTables.events.flag) == 0
               ? 'ignore'
               : ('${narrowEventsUpdatedAfter}000000').substring(0, 26),
-          'paymentsUpdatedAfter': (tablesToSync & flagPaymentsTable) == 0
+          'paymentsUpdatedAfter':
+              (tablesToSync & EnumDataTables.payments.flag) == 0
               ? 'ignore'
               : ('${paymentsUpdatedAfter}000000').substring(0, 26),
           'forceReplicateAllRunsForKennel':
@@ -223,22 +238,20 @@ class SyncUserDataService {
           'usePaging': usePaging ? '1' : '0',
         };
 
-        final List<BaseTableHelper> tables = <BaseTableHelper>[];
-        if ((tablesToSync & flagCitiesTable) != 0) {
-          tables.add(tableModel.citiesTableHelper);
+        if (kDebugMode) {
+          params['includeNulls'] = true;
         }
-        if ((tablesToSync & flagRegionsTable) != 0) {
-          tables.add(tableModel.regionsTableHelper);
-        }
-        if ((tablesToSync & flagCountriesTable) != 0) {
-          tables.add(tableModel.countriesTableHelper);
-        }
+
+        final List<BaseTableHelper> tables = [
+          for (final t in EnumDataTables.values)
+            if (t.isSet(tablesToSync)) t.helperFrom(tableModel),
+        ];
 
         final String body = jsonEncode(params);
 
         //print('http request issued: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
 
-        final String responseBody = await ServiceCommon.sendHttpPostV2(
+        final String responseBody = await ServiceCommon.sendHttpPost(
           body,
           client: client,
         );
@@ -289,6 +302,7 @@ class SyncUserDataService {
     tableModel.citiesTableHelper,
     tableModel.regionsTableHelper,
     tableModel.countriesTableHelper,
+    tableModel.songsTableHelper,
     tableModel.kennelsTableHelper,
     tableModel.eventsTableHelper,
     tableModel.hasherKennelMapTableHelper,
@@ -297,7 +311,7 @@ class SyncUserDataService {
 
   Future<List<dynamic>> updateSqlTablesWithResultsFromApiWithAdHocData(
     String jsonResults, {
-    Function? informUser,
+    void Function(String)? informUser,
     bool suppressDeletes = false,
     String? batchText,
     List<BaseTableHelper>? tables,
@@ -315,7 +329,7 @@ class SyncUserDataService {
 
   Future<int> updateSqlTablesWithResultsFromApiWithPaging(
     String jsonResults, {
-    Function? informUser,
+    void Function(String)? informUser,
     bool suppressDeletes = false,
     String? batchText,
     List<BaseTableHelper>? tables,

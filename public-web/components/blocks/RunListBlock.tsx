@@ -36,6 +36,12 @@ export interface DisplayOptions {
   showKennelLogo: boolean;
   kennelLogoSize: string;
   showKennelName: boolean;
+  nameColor: string;
+  detailColor: string;
+  showDivider: boolean;
+  dividerColor: string;
+  dividerWidth: number;
+  isCustomDomain: boolean;
 }
 
 // ── Block props ───────────────────────────────────────────────────────────────
@@ -44,6 +50,7 @@ interface RunListBlockProps {
   viewType?: string;
   isFuture?: boolean;
   skipNextRun?: boolean;
+  eventsOnly?: boolean;
   showEmptyDays?: boolean;
   count?: number;
   days?: number;
@@ -60,6 +67,12 @@ interface RunListBlockProps {
   kennelLogoDisplay?: string;
   kennelLogoSize?: string;
   kennelNameDisplay?: string;
+  nameColor?: string;
+  detailColor?: string;
+  showDivider?: boolean;
+  dividerColor?: string;
+  dividerWidth?: number;
+  scrollContainer?: boolean;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -99,6 +112,7 @@ export function RunListBlock({
   viewType          = "card",
   isFuture          = true,
   skipNextRun       = true,
+  eventsOnly        = false,
   showEmptyDays     = false,
   count             = 0,
   days              = 0,
@@ -113,8 +127,14 @@ export function RunListBlock({
   kennelLogoDisplay = "multi",
   kennelLogoSize    = "md",
   kennelNameDisplay = "multi",
+  nameColor         = "",
+  detailColor       = "",
+  showDivider       = false,
+  dividerColor      = "",
+  dividerWidth      = 1,
+  scrollContainer   = false,
 }: RunListBlockProps) {
-  const { futureRuns, pastRuns, kennelData, slug } = useKennelData();
+  const { futureRuns, pastRuns, kennelData, slug, isCustomDomain = false } = useKennelData();
   const kennel = toKennelContext(kennelData);
 
   const [otherRuns, setOtherRuns] = useState<MultiKennelRunEvent[]>([]);
@@ -187,7 +207,8 @@ export function RunListBlock({
     return isFuture ? aMs - bMs : bMs - aMs;
   });
 
-  const runs = count > 0 ? merged.slice(0, count) : merged;
+  const sliced = count > 0 ? merged.slice(0, count) : merged;
+  const runs = eventsOnly ? sliced.filter((r) => r.event.IsPromotedEvent === 1) : sliced;
 
   // ── Resolve display options ───────────────────────────────────────────────
 
@@ -204,6 +225,12 @@ export function RunListBlock({
     showKennelLogo: resolveTriState(kennelLogoDisplay, isMultiKennel),
     kennelLogoSize,
     showKennelName: resolveTriState(kennelNameDisplay, isMultiKennel),
+    nameColor:    nameColor    || "var(--kennel-text-title)",
+    detailColor:  detailColor  || "var(--kennel-text-body)",
+    showDivider,
+    dividerColor: dividerColor || "color-mix(in srgb, var(--kennel-text-muted) 30%, transparent)",
+    dividerWidth,
+    isCustomDomain,
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -216,8 +243,8 @@ export function RunListBlock({
     );
   }
 
-  if (viewType === "calendar") {
-    return (
+  const view = viewType === "calendar"
+    ? (
       <RunCalendarView
         runs={runs}
         slug={slug}
@@ -226,8 +253,15 @@ export function RunListBlock({
         days={days}
         display={display}
       />
+    ) : (
+      <RunCardView flat={viewType === "flat"} runs={runs} slug={slug} display={display} />
     );
-  }
 
-  return <RunCardView runs={runs} slug={slug} display={display} />;
+  if (!scrollContainer) return view;
+
+  return (
+    <div className="md:overflow-y-auto md:max-h-[calc(100svh-200px)] md:pr-1">
+      {view}
+    </div>
+  );
 }

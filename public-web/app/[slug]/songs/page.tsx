@@ -5,6 +5,7 @@ import { StickyNav } from "@/components/StickyNav";
 import { KennelBackground } from "@/components/kennel/KennelBackground";
 import { PuckRenderer } from "@/components/puck/PuckRenderer";
 import { parseSiteConfig, getDefaultLayout, deriveNavItems } from "@/lib/page-layout";
+import { getIsCustomDomain } from "@/lib/server-utils";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -37,6 +38,7 @@ export default async function SongsPage({ params }: PageProps) {
     getPageLayout(slug),
   ]);
 
+  const isCustomDomain = await getIsCustomDomain();
   const kennel = toKennelContext(kennelData);
 
   const siteConfig = parseSiteConfig(layoutJson);
@@ -65,7 +67,7 @@ export default async function SongsPage({ params }: PageProps) {
         <div className="pt-20 pb-24">
           <PuckRenderer
             data={pageLayout}
-            pageData={{ kennelData, slug, futureRuns: [], pastRuns: [], songs }}
+            pageData={{ kennelData, slug, futureRuns: [], pastRuns: [], songs, isCustomDomain }}
           />
         </div>
       </body>

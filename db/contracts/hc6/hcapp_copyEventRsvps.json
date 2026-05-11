@@ -1,0 +1,171 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_copyEventRsvps",
+  "version": "1.0.0",
+  "description": "Copies RSVP rows from one event to another. Only RsvpState, IsHare, and VirginVisitorType are transferred — AttendenceState is not copied. Hashers who already have an HEM row for the target event are skipped (LEFT OUTER JOIN guard). On success returns a count row then delegates to HC6.hcapp_syncEventAdminData to return updated sync rowsets for the target event.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "Registered device UUID. Passed to ValidateAppAuth for authentication."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived cryptographic token validated against DeviceSecret by ValidateAppAuth."
+    },
+    {
+      "name": "fromEvent",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "HasherEventMap.EventId",
+      "description": "Source event UUID. RSVPs are copied from this event. Validated as non-null and non-zero-UUID before the transaction."
+    },
+    {
+      "name": "toEvent",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "HasherEventMap.EventId",
+      "description": "Target event UUID. RSVPs are copied into this event. Validated as non-null and non-zero-UUID before the transaction."
+    },
+    {
+      "name": "hasherEventMapUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Sync watermark passed to hcapp_syncEventAdminData for the HasherEventMap rowset. NULLed values are coerced to 'ignore' before delegation."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "WriteEnvelope",
+      "description": "Success/failure envelope returned on all paths. On any auth or validation error this is followed immediately by rowset 1 containing error detail.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "BIT",
+          "nullable": false,
+          "description": "1 on success, 0 on any auth, validation, or database error."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "Numeric error code. NULL on success. 1221 for fromEvent/toEvent validation failures; 1921 for unhandled database errors."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "Error class. NULL on success. 11=auth, 12=param, 13=not found, 19=unhandled database error."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "AdHocCopyResult",
+      "description": "Returned on success only. Single row confirming how many RSVPs were copied.",
+      "columns": [
+        {
+          "name": "adHocDataId",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1. Identifies this as an ad-hoc result row for the caller."
+        },
+        {
+          "name": "serverMessage",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "'Copied N RSVPs' where N is @@ROWCOUNT from the INSERT INTO HasherEventMap."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ErrorDetail",
+      "description": "Returned on auth or validation error (instead of AdHocCopyResult). Contains HC6-standard error detail fields.",
+      "columns": [
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "UUID of the HC.ErrorLog row written for this error."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error class code. Matches errorType in the WriteEnvelope rowset."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Numeric error code. Matches errorCode in the WriteEnvelope rowset."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Short human-readable error title."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "User-facing error message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "Name of the SP that raised the error. Set via OBJECT_NAME(@@PROCID)."
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "SyncEventAdminData (rowsets 2+)",
+      "description": "On success, after rowset 1, HC6.hcapp_syncEventAdminData is called for @toEvent. That SP emits multiple result sets (HasherEventMap rows, Hasher rows, etc.). All other sync watermarks are passed as 'ignore'; only hasherEventMapUpdatedAfter is forwarded from the caller."
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.HasherEventMap — for each hasher in the source event (removed=0) who does not already have an HEM row for the target event, inserts a new row copying RsvpState, IsHare, VirginVisitorType, KennelId, UserId, EventId=@toEvent, updatedAt=GETDATE(). updatedAtBias and id are generated by table default/NEWID().",
+    "INSERT HC.ErrorLog — on auth failure, fromEvent validation failure, toEvent validation failure, or unhandled CATCH error.",
+    "EXEC HC6.hcapp_syncEventAdminData — on success, outside the transaction, returns sync rowsets for @toEvent."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Same errorCode for two distinct validation errors",
+      "detail": "Lines 78 and 91: both the null-fromEvent and null-toEvent paths use errorCode = 1221. These are distinct failure modes and should have distinct codes so callers can differentiate them programmatically."
+    },
+    {
+      "severity": "low",
+      "issue": "Sync delegation outside transaction is undocumented in error paths",
+      "detail": "The call to hcapp_syncEventAdminData at lines 154-166 runs after COMMIT and is intentionally outside the transaction (correct behaviour). However, if the sync SP itself fails there is no error handling around it — the write envelope has already been emitted as success. This could leave the caller with partial rowsets."
+    },
+    {
+      "severity": "low",
+      "issue": "updatedAtBias not set in INSERT",
+      "detail": "Lines 105-122: the INSERT into HasherEventMap does not supply updatedAtBias. The column has a DEFAULT constraint that generates a random value, so this is functionally correct, but it is inconsistent with other SPs that set updatedAtBias explicitly. Low risk; note for consistency."
+    },
+    {
+      "severity": "low",
+      "issue": "HcVersion hardcoded as '<unknown>' in ErrorLog inserts",
+      "detail": "Lines 80, 93, 139: ErrorLog rows are inserted with HcVersion = '<unknown>'. Other HC6 SPs pass the actual version. This makes log correlation harder."
+    }
+  ],
+  "breakingChanges": [
+    "TRY/CATCH and transaction added — HC5 had neither. The INSERT was previously unprotected; it is now atomic.",
+    "Success envelope rowset (WriteEnvelope) added as rowset 0 on all code paths — HC5 had no envelope.",
+    "Auth now uses HC6.ValidateAppAuth — HC5 used a different authentication mechanism.",
+    "Delegation target updated from HC5.hcapp_syncEventAdminData to HC6.hcapp_syncEventAdminData.",
+    "Error detail rowset structure changed — HC5 used the portal StandardErrorResult shape; HC6 uses the app error detail shape with the same columns but different errorType codes (HC6 app codes: 11=auth, 12=param, 19=db)."
+  ]
+}

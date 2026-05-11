@@ -76,7 +76,7 @@ enum BoolPrefsEnum {
 enum IntPrefsEnum {
   databaseVersion,
   hasherPreferences,
-  isBetaTester,
+  //isBetaTester,
   isResettingCache,
   launchCount,
   mapCenterOption,
@@ -105,6 +105,205 @@ enum DatePrefsEnum {
 //enum MapPrefsEnum { serverChatCounts, clientChatCounts }
 
 enum TriStateFilter { neutral, include, exclude }
+
+enum EnumDataTables {
+  hashers(
+    name: 'Hashers',
+    internalTableName: 'hashers',
+    flag: 0x00000001,
+    hasCommonTable: true,
+    hasKennelTable: false,
+    hasEventTable: false,
+  ),
+  cities(
+    name: 'Cities',
+    internalTableName: 'cities',
+    flag: 0x00000002,
+    hasCommonTable: true,
+    hasKennelTable: false,
+    hasEventTable: false,
+  ),
+  regions(
+    name: 'Regions',
+    internalTableName: 'regions',
+    flag: 0x00000004,
+    hasCommonTable: true,
+    hasKennelTable: false,
+    hasEventTable: false,
+  ),
+  countries(
+    name: 'Countries',
+    internalTableName: 'countries',
+    flag: 0x00000008,
+    hasCommonTable: true,
+    hasKennelTable: false,
+    hasEventTable: false,
+  ),
+  kennels(
+    name: 'Kennels',
+    internalTableName: 'kennels',
+    flag: 0x00000010,
+    hasCommonTable: true,
+    hasKennelTable: false,
+    hasEventTable: false,
+  ),
+  events(
+    name: 'Events',
+    internalTableName: 'events',
+    flag: 0x00000020,
+    hasCommonTable: true,
+    hasKennelTable: false,
+    hasEventTable: false,
+  ),
+  payments(
+    name: 'Payments',
+    internalTableName: 'payments',
+    flag: 0x00000040,
+    hasCommonTable: true,
+    hasKennelTable: true,
+    hasEventTable: true,
+  ),
+  receipts(
+    name: 'Receipts',
+    internalTableName: 'receipts',
+    flag: 0x00000080,
+    hasCommonTable: false,
+    hasKennelTable: false,
+    hasEventTable: true,
+  ),
+  songs(
+    name: 'Songs',
+    internalTableName: 'songs',
+    flag: 0x00000100,
+    hasCommonTable: true,
+    hasKennelTable: false,
+    hasEventTable: false,
+  ),
+  hasherKennelMap(
+    name: 'Hasher ↔ Kennel Map',
+    internalTableName: 'hasherKennelMap',
+    flag: 0x00010000,
+    hasCommonTable: true,
+    hasKennelTable: true,
+    hasEventTable: true,
+  ),
+  hasherEventMap(
+    name: 'Hasher ↔ Event Map',
+    internalTableName: 'hasherEventMap',
+    flag: 0x00020000,
+    hasCommonTable: true,
+    hasKennelTable: true,
+    hasEventTable: true,
+  );
+
+  final String name;
+  final String _internalTableName;
+  final int flag;
+  final bool hasCommonTable;
+  final bool hasKennelTable;
+  final bool hasEventTable;
+
+  const EnumDataTables({
+    required this.name,
+    required String internalTableName,
+    required this.flag,
+    required this.hasCommonTable,
+    required this.hasKennelTable,
+    required this.hasEventTable,
+  }) : _internalTableName = internalTableName;
+
+  /// Derived common table name with the `common_` prefix.
+  /// Only valid if hasCommonTable is true.
+  /// Throws if hasCommonTable is false.
+  String get commonTableName {
+    if (!hasCommonTable) {
+      throw Exception(
+        'EnumDataTables.$name does not have a common table associated with it.',
+      );
+    }
+    return 'common_$_internalTableName';
+  }
+
+  /// Derived kennel table name with the `kennel_` prefix.
+  /// Only valid if hasKennelTable is true.
+  /// Throws if hasKennelTable is false.
+  String get kennelTableName {
+    if (!hasKennelTable) {
+      throw Exception(
+        'EnumDataTables.$name does not have a kennel table associated with it.',
+      );
+    }
+    return 'kennel_$_internalTableName';
+  }
+
+  /// Derived event table name with the `event_` prefix.
+  /// Only valid if hasEventTable is true.
+  /// Throws if hasEventTable is false.
+  String get eventTableName {
+    if (!hasEventTable) {
+      throw Exception(
+        'EnumDataTables.$name does not have a event table associated with it.',
+      );
+    }
+    return 'event_$_internalTableName';
+  }
+
+  /// Convenience: check if this flag is set in a combined bitmask
+  bool isSet(int combinedFlags) => (combinedFlags & flag) != 0;
+
+  /// All flags OR-ed together
+  static int get allFlags =>
+      EnumDataTables.values.fold<int>(0, (acc, e) => acc | e.flag);
+
+  /// Flags for tables that include kennel data OR-ed together
+  static int get kennelTableFlags => EnumDataTables.values
+      .where((e) => e.hasKennelTable)
+      .fold<int>(0, (acc, e) => acc | e.flag);
+
+  /// Flags for tables that include kennel data OR-ed together
+  static int get eventTableFlags => EnumDataTables.values
+      .where((e) => e.hasEventTable)
+      .fold<int>(0, (acc, e) => acc | e.flag);
+
+  /// Flags for tables that include kennel data OR-ed together
+  static int get userTableFlags => EnumDataTables.values
+      .where((e) => e.hasCommonTable)
+      .fold<int>(0, (acc, e) => acc | e.flag);
+
+  /// Flags for base tables: user tables with no kennel/event data
+  static int get baseTableFlags => EnumDataTables.values
+      .where((e) => e.hasCommonTable && !e.hasKennelTable && !e.hasEventTable)
+      .fold<int>(0, (acc, e) => acc | e.flag);
+}
+
+extension EnumDataTablesMapper on EnumDataTables {
+  BaseTableHelper helperFrom(TableModel tableModel) {
+    switch (this) {
+      case EnumDataTables.hashers:
+        return tableModel.hashersTableHelper;
+      case EnumDataTables.cities:
+        return tableModel.citiesTableHelper;
+      case EnumDataTables.regions:
+        return tableModel.regionsTableHelper;
+      case EnumDataTables.countries:
+        return tableModel.countriesTableHelper;
+      case EnumDataTables.kennels:
+        return tableModel.kennelsTableHelper;
+      case EnumDataTables.events:
+        return tableModel.eventsTableHelper;
+      case EnumDataTables.payments:
+        return tableModel.paymentsTableHelper;
+      case EnumDataTables.receipts:
+        return tableModel.receiptsTableHelper;
+      case EnumDataTables.hasherKennelMap:
+        return tableModel.hasherKennelMapTableHelper;
+      case EnumDataTables.hasherEventMap:
+        return tableModel.hasherEventMapTableHelper;
+      case EnumDataTables.songs:
+        return tableModel.songsTableHelper;
+    }
+  }
+}
 
 /// Chat tabs with their corresponding integer IDs.
 enum RunsToDisplay {
@@ -397,6 +596,167 @@ enum BetaFeatures {
   static BetaFeatures? fromInt(int value) => _valueMap[value];
 }
 
+const Color customRed = Color.fromARGB(255, 152, 10, 0);
+
+enum HashRunPointTypes {
+  check(
+    'CHK',
+    0,
+    '⭕️ Check ⭕️',
+    FontAwesome.circle_o,
+    customRed,
+    'Check',
+    '⭕️',
+    'check.png',
+  ),
+  drinkStop(
+    'DRK',
+    1,
+    '🍺 Drink Stop 🍺',
+    FontAwesome.beer,
+    customRed,
+    'Drink Stop',
+    '🍺',
+    'drinkstop.png',
+  ),
+  fishhook(
+    'FHK',
+    2,
+    '↩️ Fish Hook ↩️',
+    Fontisto.question,
+    customRed,
+    'Fish Hook',
+    '↩️',
+    'fishhook.png',
+  ),
+  shortCut(
+    'SC',
+    3,
+    '↘️ Shortcut ↘️',
+    MaterialCommunityIcons.alpha_s_circle,
+    customRed,
+    'Shortcut',
+    '↘️',
+    'shortcut.png',
+  ),
+  checkback(
+    'CB',
+    4,
+    '↩️ Checkback ↩️',
+    Ionicons.arrow_undo_sharp,
+    customRed,
+    'Checkback',
+    '↩️',
+    'checkback.png',
+  ),
+  hashView(
+    'HV',
+    5,
+    '👀 Hash View 👀',
+    MaterialCommunityIcons.binoculars,
+    customRed,
+    'Hash View',
+    '👀',
+    'hashview.png',
+  ),
+  regroup(
+    'RG',
+    6,
+    '🧑‍🤝‍🧑 Regroup 🧑‍🤝‍🧑',
+    MaterialCommunityIcons.account_group,
+    customRed,
+    'Regroup',
+    '🧑‍🤝‍🧑',
+    'regroup.png',
+  ),
+  whichyWay(
+    'WW',
+    7,
+    '🔱 Whichy Way 🔱',
+    FontAwesome.map_signs,
+    customRed,
+    'Whichy Way',
+    '🔱',
+    'whichyway.png',
+  ),
+  falseTrail(
+    'FT',
+    8,
+    '⛔ False Trail ⛔',
+    MaterialCommunityIcons.alpha_f_circle,
+    customRed,
+    'False Trail',
+    '⛔',
+    'falsetrail.png',
+  ),
+  customLabel(
+    'LAB',
+    9,
+    '🏷️ Custom Label 🏷️',
+    Entypo.price_tag,
+    customRed,
+    'Custom Label',
+    '🏷️',
+    'label.png',
+  ),
+  onInn(
+    'OIN',
+    10,
+    '🏁 On Inn 🏁',
+    MaterialCommunityIcons.home_variant,
+    customRed,
+    'On Inn',
+    '🏁',
+    'oninn.png',
+  ),
+  caution(
+    'CAU',
+    11,
+    '⚠️ Caution ⚠️',
+    MaterialCommunityIcons.alert,
+    customRed,
+    'Caution',
+    '⚠️',
+    'caution.png',
+  );
+
+  final String key;
+  final int value;
+  final String label;
+  final IconData iconData;
+  final Color color;
+  final String gpxSymbol;
+  final String emoji;
+  final String pngIcon;
+
+  const HashRunPointTypes(
+    this.key,
+    this.value,
+    this.label,
+    this.iconData,
+    this.color,
+    this.gpxSymbol,
+    this.emoji,
+    this.pngIcon,
+  );
+
+  static final Map<int, HashRunPointTypes> _valueMap = {
+    for (var state in HashRunPointTypes.values) state.value: state,
+  };
+
+  static HashRunPointTypes? fromInt(int value) => _valueMap[value];
+
+  static HashRunPointTypes? fromKey(String key) {
+    if (key.length > 3) {
+      key = key.substring(0, 3);
+    }
+    return HashRunPointTypes.values.firstWhere(
+      (tab) => tab.key == key.trimLeft(),
+      orElse: () => throw ArgumentError('No HashRunPointTypes with key $key'),
+    );
+  }
+}
+
 //////////////////////////
 ///
 class EnumEmailAlertState extends HcEnum<int> {
@@ -628,3 +988,5 @@ class EnumMapCenterOption extends HcEnum<int> {
 
 const EnumMapCenterOption centerOnCurrentLocation = EnumMapCenterOption(0);
 const EnumMapCenterOption centerOnHomeKennel = EnumMapCenterOption(1);
+
+const String BADGE_COUNT_JSON_KEY = 'BadgeCount';

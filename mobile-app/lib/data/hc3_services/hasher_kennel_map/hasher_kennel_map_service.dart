@@ -1,11 +1,12 @@
 import 'package:harrier_central/imports.dart';
 
-class HasherKennelMapTableHelper extends BaseTableHelper with BaseFields {
+class HasherKennelMapTableHelper extends BaseTableHelper<AppDomainType>
+    with BaseFields {
   HasherKennelMapTableHelper() {
     remoteDbId = 'hkmId';
     humanReadableTableName = 'Kennel';
     pageSize = SyncUserDataService.pageSize_hkmTable;
-    tableFlag = SyncUserDataService.flagHasherKennelMapTable;
+    tableFlag = EnumDataTables.hasherKennelMap.flag;
   }
 
   // @override
@@ -20,20 +21,18 @@ class HasherKennelMapTableHelper extends BaseTableHelper with BaseFields {
   // }
 
   @override
-  String getTableName(dynamic appDomainType) {
+  String getTableName(AppDomainType appDomainType) {
     String tableName = '';
     switch (appDomainType) {
       case AppDomainType.event:
-        tableName = 'hasherKennelMapForRunAdmin';
+        tableName = EnumDataTables.hasherKennelMap.eventTableName;
         break;
       case AppDomainType.kennel:
-        tableName = 'hasherKennelMapForKennelAdmin';
+        tableName = EnumDataTables.hasherKennelMap.kennelTableName;
         break;
       case AppDomainType.user:
-        tableName = 'hasherKennelMap';
+        tableName = EnumDataTables.hasherKennelMap.commonTableName;
         break;
-      default:
-        assert(false);
     }
     return tableName;
   }
@@ -206,7 +205,7 @@ class HasherKennelMapService {
 
     final String body = jsonEncode(bodyMap);
 
-    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
+    final String responseBody = await ServiceCommon.sendHttpPost(body);
 
     List<dynamic> adHocData = <dynamic>[];
 
@@ -271,14 +270,14 @@ class HasherKennelMapService {
         .getLastUpdatedTime(
           database,
           tableModel.kennelsTableHelper,
-          tableModel.kennelsTableHelper.getTableName(appDomainType),
+          EnumDataTables.kennels.commonTableName,
           tableModel.kennelsTableHelper.colUpdatedAtValue,
         );
     final int hashersLastUpdated = await tableModel.hashersService
         .getLastUpdatedTime(
           database,
           tableModel.hashersTableHelper,
-          tableModel.hashersTableHelper.getTableName(AppDomainType.user),
+          EnumDataTables.hashers.commonTableName,
           tableModel.hashersTableHelper.colUpdatedAtValue,
         );
 
@@ -312,7 +311,7 @@ class HasherKennelMapService {
       'hashersUpdatedAfter': ('${hashersUpdatedAfter}000000').substring(0, 26),
     });
 
-    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
+    final String responseBody = await ServiceCommon.sendHttpPost(body);
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       if (responseBody.isNotEmpty) {

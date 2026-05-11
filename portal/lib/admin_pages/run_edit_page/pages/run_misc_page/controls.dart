@@ -119,6 +119,8 @@ extension MiscControlsExtension on RunEditPageController {
 
   void _registerGeographicScopeControl(String tabKey, int tabIndex) {
     final fieldKey = '${tabKey}_${RunMiscField.geographicScope.name}';
+    final initialValue = editedData.value.eventGeographicScope;
+    geographicScope.value = initialValue;
 
     uiControls[fieldKey] = UiControlDefinition(
       controlType: UiControlType.dropdown,
@@ -129,19 +131,23 @@ extension MiscControlsExtension on RunEditPageController {
         FontAwesome5Solid.globe,
         'Select the geographic scope of this run.\n\n'
             'This helps categorize the event and may affect how it is '
-            'displayed in listings.',
+            'promoted and displayed in listings.',
       ),
-      editedFieldValue: editedData.value.eventGeographicScope.toString(),
+      dropdownItems: EVENT_GEOGRAPHIC_SCOPE,
+      editedFieldValue: initialValue.toString(),
       originalFieldValue: originalData.eventGeographicScope.toString(),
       globalKey: GlobalKey<FormFieldState>(),
       label: 'Geographic scope',
       tabIndex: tabIndex,
+      onUndo: () {
+        geographicScope.value = originalData.eventGeographicScope;
+      },
       updateEditedValue: (dynamic value) {
-        if (value is int) {
-          editedData.value =
-              editedData.value.copyWith(eventGeographicScope: value);
-          uiControls[fieldKey]?.editedFieldValue = value.toString();
-        }
+        final intVal = int.tryParse(value.toString()) ?? 1;
+        geographicScope.value = intVal;
+        editedData.value =
+            editedData.value.copyWith(eventGeographicScope: intVal);
+        uiControls[fieldKey]?.editedFieldValue = intVal.toString();
       },
     );
   }

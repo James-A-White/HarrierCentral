@@ -1,6 +1,7 @@
 import 'package:harrier_central/imports.dart';
 
-class ReceiptsTableHelper extends BaseTableHelper with BaseFields {
+class ReceiptsTableHelper extends BaseTableHelper<AppDomainType>
+    with BaseFields {
   ReceiptsTableHelper() {
     remoteDbId = 'receiptId';
     humanReadableTableName = 'Receipts';
@@ -11,19 +12,16 @@ class ReceiptsTableHelper extends BaseTableHelper with BaseFields {
   // String tableName = 'receipts';
 
   @override
-  String getTableName(dynamic appDomainType) {
+  String getTableName(AppDomainType appDomainType) {
     String tableName;
     switch (appDomainType) {
-      // case AppDomainType.event:
-      //   tableName = 'Payments';
-      //   break;
-      // // case AppDomainType.kennel:
-      // //   break;
-      // case AppDomainType.user:
-      //   tableName = 'userPayments';
-      //   break;
+      case AppDomainType.event:
+        tableName = EnumDataTables.receipts.eventTableName;
+        break;
       default:
-        tableName = 'receipts';
+        throw Exception(
+          'EnumDataTables.${EnumDataTables.receipts.name} does not have a table associated with it.',
+        );
     }
     return tableName;
   }
@@ -141,7 +139,7 @@ class ReceiptsService {
         .getLastUpdatedTime(
           database,
           tableModel.receiptsTableHelper,
-          tableModel.receiptsTableHelper.getTableName(AppDomainType.event),
+          EnumDataTables.receipts.eventTableName,
           tableModel.receiptsTableHelper.colUpdatedAtValue,
         );
     final DateTime receiptsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
@@ -155,7 +153,7 @@ class ReceiptsService {
       receiptsUpdatedAfter.toString(),
     );
 
-    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
+    final String responseBody = await ServiceCommon.sendHttpPost(body);
 
     // callers are properly handling Error conditions
     return responseBody;

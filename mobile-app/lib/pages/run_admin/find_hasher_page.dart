@@ -21,7 +21,7 @@ class FindHasherPageState extends State<FindHasherPage> {
 
   bool _isLoading = true;
 
-  void findHasher() {
+  Future<void> findHasher() async {
     //    if (showLoadingIndicator) {
     setState(() {
       _isLoading = true;
@@ -29,29 +29,27 @@ class FindHasherPageState extends State<FindHasherPage> {
     //}
 
     final HashersService svc = HashersService();
-    svc
-        .selectAllFromLocalDb(
-          database,
-          tableModel.hashersTableHelper,
-          tableModel.hashersTableHelper.getTableName(AppDomainType.user),
-        )
-        .then((List<BaseModel> list) {
-          _hasherList = list.cast<HashersModel>();
-          setState(() {
-            if (_hasherList.isNotEmpty) {
-              _hasherList.sort(
-                (dynamic a, dynamic b) => (a.dispName ?? '')
-                    .toLowerCase()
-                    .compareTo((b.dispName ?? '').toLowerCase()),
-              );
-              _filteredList = _hasherList;
-            } else {
-              _filteredList = <HashersModel>[];
-            }
+    List<BaseModel> list = await svc.selectAllFromLocalDb(
+      database,
+      tableModel.hashersTableHelper,
+      AppDomainType.user,
+    );
 
-            _isLoading = false;
-          });
-        });
+    _hasherList = list.cast<HashersModel>();
+    setState(() {
+      if (_hasherList.isNotEmpty) {
+        _hasherList.sort(
+          (dynamic a, dynamic b) => (a.dispName ?? '').toLowerCase().compareTo(
+            (b.dispName ?? '').toLowerCase(),
+          ),
+        );
+        _filteredList = _hasherList;
+      } else {
+        _filteredList = <HashersModel>[];
+      }
+
+      _isLoading = false;
+    });
   }
 
   void filterHasherList(String filterText) {
@@ -80,7 +78,7 @@ class FindHasherPageState extends State<FindHasherPage> {
   @override
   void initState() {
     super.initState();
-    findHasher();
+    unawaited(findHasher());
   }
 
   final FocusNode searchFocusNode = FocusNode();

@@ -120,7 +120,7 @@ BEGIN
 
     IF (@userId IS NULL OR @userId = '00000000-0000-0000-0000-000000000000')
     BEGIN
-        SET @errorCode = 1310; SET @errorType = 3; SET @errorId = NEWID();
+        SET @errorCode = 1310; SET @errorType = 13; SET @errorId = NEWID();
         INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
         VALUES (@errorId, @hcVersion, 'Device not registered', 'Device not found', @procName, NULL);
         SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
@@ -136,7 +136,7 @@ BEGIN
 
     IF HC.CHECK_ACCESS_TOKEN_V2(@userId, @procName, @accessToken, @paramString, @timeWindow) = 0
     BEGIN
-        SET @errorCode = 1110; SET @errorType = 1; SET @errorId = NEWID();
+        SET @errorCode = 1110; SET @errorType = 11; SET @errorId = NEWID();
         INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, string_1)
         VALUES (@errorId, @hcVersion, 'Invalid access token', 'Token failed validation',
                 @procName, @userId, CAST(@targetUserId AS NVARCHAR(40)));
@@ -162,7 +162,7 @@ BEGIN TRY
             IF NOT EXISTS (SELECT 1 FROM HC.Hasher WHERE id = @targetUserId)
             BEGIN
                 ROLLBACK TRANSACTION;
-                SET @errorCode = 1310; SET @errorType = 3; SET @errorId = NEWID();
+                SET @errorCode = 1310; SET @errorType = 13; SET @errorId = NEWID();
                 INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, string_1)
                 VALUES (@errorId, @hcVersion, 'User not found',
                         'Target userId not found in HC.Hasher.', @procName, @userId,
@@ -186,7 +186,7 @@ BEGIN TRY
             )
             BEGIN
                 ROLLBACK TRANSACTION;
-                SET @errorCode = 1510; SET @errorType = 5; SET @errorId = NEWID();
+                SET @errorCode = 1510; SET @errorType = 15; SET @errorId = NEWID();
                 INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, string_1)
                 VALUES (@errorId, @hcVersion, 'Duplicate email',
                         'A user already exists with this email address.', @procName, @userId, @email);
@@ -346,7 +346,7 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
 
-    SET @errorCode = 1910; SET @errorType = 9; SET @errorId = NEWID();
+    SET @errorCode = 1910; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, @hcVersion, 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;

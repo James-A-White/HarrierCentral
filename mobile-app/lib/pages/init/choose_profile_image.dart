@@ -1,3 +1,5 @@
+
+
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
@@ -57,6 +59,8 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
 
   @override
   void initState() {
+    super.initState();
+
     if ((_facebookProfileImage == null) &&
         widget.isForThisDevice &&
         ((_facebookProfileUrl ?? '').isNotEmpty)) {
@@ -88,11 +92,9 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
       _imageTypeSelection = SelectedImageTypeEnum.fromNetwork;
     }
 
-    SystemChrome.setPreferredOrientations(<DeviceOrientation>[
+    unawaited(SystemChrome.setPreferredOrientations(<DeviceOrientation>[
       DeviceOrientation.portraitUp,
-    ]);
-
-    super.initState();
+    ]));
 
     setState(() {
       _showCircularProgressIndicator = false;
@@ -153,9 +155,9 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
             ),
           ],
         ),
-        onTap: () {
+        onTap: () async {
           if (!disabled) {
-            _handleRadioValueChange(selectedImageType, forceOpen: true);
+            await _handleRadioValueChange(selectedImageType, forceOpen: true);
           }
         },
       ),
@@ -206,9 +208,9 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
                         width: 260,
                         child: RadioGroup(
                           groupValue: _selectedRadioValue,
-                          onChanged: (int? value) {
+                          onChanged: (int? value) async {
                             if (value != null) {
-                              _handleRadioValueChange(
+                              await _handleRadioValueChange(
                                 SelectedImageTypeEnum.values[value],
                                 forceOpen: false,
                               );
@@ -317,10 +319,10 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
                         ),
                         //color: imageTypeSelection == _SelectedImageTypeEnum.none ? Colors.grey : Theme.of(context).accentColor,
                         child: Text('Next', style: ts_button),
-                        onPressed: () {
+                        onPressed: () async {
                           if (_imageTypeSelection !=
                               SelectedImageTypeEnum.none) {
-                            _processAndContinue();
+                            await _processAndContinue();
                           }
                         },
                       ),
@@ -365,7 +367,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
     );
   }
 
-  void _processAndContinue() {
+  Future<void> _processAndContinue() async {
     // in order to keep our UI fluid, pay close attention to
     // how the async stuff is handled here...
     setState(() {
@@ -373,7 +375,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
     });
 
     final int startTime = DateTime.now().millisecondsSinceEpoch;
-    _prepareAndUploadImageThenContinue(startTime);
+    await _prepareAndUploadImageThenContinue(startTime);
   }
 
   Future<void> _prepareAndUploadImageThenContinue(int startTime) async {
@@ -412,13 +414,13 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
     if (_imageTypeSelection != SelectedImageTypeEnum.fromNetwork) {
       if (_imageTypeSelection == SelectedImageTypeEnum.fromCamera) {
         final File? file = await _imageFromCamera;
-        _upload(file, fileName);
+        await _upload(file, fileName);
       } else if (_imageTypeSelection == SelectedImageTypeEnum.fromGallery) {
         final File? file = await _imageFromGallery;
-        _upload(file, fileName);
+        await _upload(file, fileName);
       } else if (_imageTypeSelection == SelectedImageTypeEnum.fromFacebook) {
         final File? file = await _imageFromFacebook;
-        _upload(file, fileName);
+        await _upload(file, fileName);
       }
 
       final int deltaTime = DateTime.now().millisecondsSinceEpoch - startTime;
@@ -450,7 +452,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
         );
       }
 
-      Get.off(() => MainNavigationPage(), routeName: '/main');
+      await Get.off(() => MainNavigationPage(), routeName: '/main');
 
       // if (!mounted) return;
       // await Navigator.pushReplacement<dynamic, dynamic>(
@@ -462,7 +464,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
     }
   }
 
-  String _upload(File? imageFile, String fileName) {
+  Future<String> _upload(File? imageFile, String fileName) async {
     if (imageFile != null) {
       final Uri uri = Uri.parse(
         'http://harriercentral.blob.core.windows.net/profile-photos/$fileName?st=2018-11-22T07%3A36%3A49Z&se=2028-11-23T07%3A36%3A00Z&sp=rwl&sv=2018-03-28&sr=c&sig=GdHEgSU7Qbp6nEMbOeuxnTjKVVIXw1AImXUff8GPq2U%3D',
@@ -478,7 +480,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
       request.headers.addAll(headers);
 
       request.bodyBytes = imageFile.readAsBytesSync();
-      request.send().then((StreamedResponse response) {
+      await request.send().then((StreamedResponse response) {
         //print('Avatar thumbnail upload response = ${response.statusCode}');
       });
 
@@ -547,10 +549,10 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
           );
   }
 
-  void _handleRadioValueChange(
+  Future<void> _handleRadioValueChange(
     SelectedImageTypeEnum value, {
     bool forceOpen = false,
-  }) {
+  }) async {
     setState(() {
       _previouslySelectedRadioValue = _selectedRadioValue;
       _selectedRadioValue = value.index;
@@ -561,7 +563,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
     switch (_imageTypeSelection) {
       case SelectedImageTypeEnum.avatar:
         if (forceOpen) {
-          Navigator.push<dynamic>(
+          await Navigator.push<dynamic>(
             context,
             MaterialPageRoute<dynamic>(
               builder: (BuildContext context) =>
@@ -583,16 +585,16 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
         break;
       case SelectedImageTypeEnum.fromCamera:
         if (forceOpen || (_imageFromCamera == null)) {
-          _getImageFromCameraOrGallery(ImageSource.camera);
+          await _getImageFromCameraOrGallery(ImageSource.camera);
         }
         break;
       case SelectedImageTypeEnum.fromGallery:
         if (forceOpen || (_imageFromGallery == null)) {
-          _getImageFromCameraOrGallery(ImageSource.gallery);
+          await _getImageFromCameraOrGallery(ImageSource.gallery);
         }
         break;
       default:
-        _getImageFromCameraOrGallery(ImageSource.gallery);
+        await _getImageFromCameraOrGallery(ImageSource.gallery);
         break;
     }
     setState(() {});

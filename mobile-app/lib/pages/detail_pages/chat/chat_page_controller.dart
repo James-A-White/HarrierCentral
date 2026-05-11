@@ -39,7 +39,7 @@ class ChatPageController extends GetxController {
     );
 
     // it's safe to call this async method synchronously here
-    onAppResumed();
+    unawaited(onAppResumed());
   }
 
   void notificationReceived(RemoteMessage message) {
@@ -118,7 +118,7 @@ class ChatPageController extends GetxController {
       'eventId': eventId,
     };
 
-    final jsonResult = await ServiceCommon.sendHttpPostV2(jsonEncode(body));
+    final jsonResult = await ServiceCommon.sendHttpPost(jsonEncode(body));
 
     return jsonResult;
   }
@@ -151,47 +151,49 @@ class ChatPageController extends GetxController {
   }
 
   void handleAttachmentPressed() {
-    Get.bottomSheet<void>(
-      SafeArea(
-        child: SizedBox(
-          height: 144,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              TextButton(
-                onPressed: () {
-                  Get.back<void>(); // Close the bottom sheet
-                  handleImageSelection();
-                },
-                child: const Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: Text('Photo'),
+    unawaited(
+      Get.bottomSheet<void>(
+        SafeArea(
+          child: SizedBox(
+            height: 144,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                TextButton(
+                  onPressed: () async {
+                    Get.back<void>(); // Close the bottom sheet
+                    await handleImageSelection();
+                  },
+                  child: const Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: Text('Photo'),
+                  ),
                 ),
-              ),
-              // TextButton(
-              //   onPressed: () {
-              //     Get.back<void>(); // Close the bottom sheet
-              //     handleFileSelection();
-              //   },
-              //   child: const Align(
-              //     alignment: AlignmentDirectional.centerStart,
-              //     child: Text('File'),
-              //   ),
-              // ),
-              TextButton(
-                onPressed: () => Get.back<void>(), // Close the bottom sheet
-                child: const Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: Text('Cancel'),
+                // TextButton(
+                //   onPressed: () {
+                //     Get.back<void>(); // Close the bottom sheet
+                //     handleFileSelection();
+                //   },
+                //   child: const Align(
+                //     alignment: AlignmentDirectional.centerStart,
+                //     child: Text('File'),
+                //   ),
+                // ),
+                TextButton(
+                  onPressed: () => Get.back<void>(), // Close the bottom sheet
+                  child: const Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: Text('Cancel'),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
+        barrierColor: Colors.black54, // Optional: Background dimming
+        // isDismissible: true,          // Optional: Allows dismissing by tapping outside
+        // enableDrag: true,             // Optional: Allows dragging to close
       ),
-      barrierColor: Colors.black54, // Optional: Background dimming
-      // isDismissible: true,          // Optional: Allows dismissing by tapping outside
-      // enableDrag: true,             // Optional: Allows dragging to close
     );
   }
 
@@ -317,7 +319,7 @@ class ChatPageController extends GetxController {
       'messageReleasabilityFlags': 63,
     };
 
-    await ServiceCommon.sendHttpPostV2(jsonEncode(body));
+    await ServiceCommon.sendHttpPost(jsonEncode(body));
 
     // print(result);
     // await sendNotification(

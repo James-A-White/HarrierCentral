@@ -5,6 +5,7 @@
 import 'package:badges/badges.dart' as badges;
 import 'package:eventide/eventide.dart';
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/services/export/gpx_export_service.dart';
 import 'package:harrier_central/widgets/beta_ribbon.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart' as latlng;
@@ -73,6 +74,10 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   static const String LABEL_STATS = 'Stats';
   static const String LABEL_CHAT = 'Chat';
 
+  final LiveRunService _liveRunService = LiveRunService.ensure();
+  LiveRunButtonStatus _liveRunStatus = LiveRunButtonStatus.hidden;
+  bool _liveRunLoading = false;
+
   final List<Tab> _tabs = <Tab>[
     const Tab(text: LABEL_DETAILS),
     const Tab(text: LABEL_RSVP),
@@ -95,6 +100,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   );
 
   bool _trueNorthLock = true;
+  bool _isExportingTrack = false;
 
   Future<List<PackListAggregate>?> _thePackList =
       Future<List<PackListAggregate>?>.value(null);
@@ -109,7 +115,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     }
 
     await tableModel.syncEventAdminService.updateFromBackend(
-      SyncEventAdminService.flagHasherEventMapTable,
+      EnumDataTables.hasherEventMap.flag,
       true,
       widget.futureRun.event.eventId,
     );
@@ -131,9 +137,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           hem.*,
           h.*,
           ken.${tableModel.kennelsTableHelper.colKennelName} as kennelName
-          FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem
-          LEFT OUTER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h on h.${tableModel.hashersTableHelper.colHasherId} = hem.${tableModel.hasherEventMapTableHelper.colUserId}
-          LEFT OUTER JOIN ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} ken on h.${tableModel.hashersTableHelper.colHomeKennelId} = ken.${tableModel.kennelsTableHelper.colKennelId}
+          FROM ${EnumDataTables.hasherEventMap.eventTableName} hem
+          LEFT OUTER JOIN ${EnumDataTables.hashers.commonTableName} h on h.${tableModel.hashersTableHelper.colHasherId} = hem.${tableModel.hasherEventMapTableHelper.colUserId}
+          LEFT OUTER JOIN ${EnumDataTables.kennels.commonTableName} ken on h.${tableModel.hashersTableHelper.colHomeKennelId} = ken.${tableModel.kennelsTableHelper.colKennelId}
           WHERE hem.${tableModel.hasherEventMapTableHelper.colEventId} = "${widget.futureRun.event.eventId}"
           AND hem.${tableModel.hasherEventMapTableHelper.colRsvpState} >= 1 AND hem.${tableModel.hasherEventMapTableHelper.colRsvpState} <= 3
           ''';
@@ -195,7 +201,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           count(case when hem.rsvpState = 2 then 1 else null end) as rsvpMaybeCount,
           count(case when hem.rsvpState = 1 then 1 else null end) as rsvpNoCount,
           count(case when hem.isHare = 1 then 1 else null end) as isHareCount
-          FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem
+          FROM ${EnumDataTables.hasherEventMap.eventTableName} hem
           WHERE hem.eventId = "${widget.futureRun.event.eventId}"
           AND hem.${tableModel.hasherEventMapTableHelper.colRsvpState} >= 1 AND hem.${tableModel.hasherEventMapTableHelper.colRsvpState} <= 3
           ''';
@@ -232,6 +238,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
+    //print('Current time in GMT: ${DateTime.now().toUtc().toString()}');
+    unawaited(_refreshLiveRunButton());
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() {
         _tabController = TabController(vsync: this, length: _tabs.length);
@@ -260,52 +268,41 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           }
 
           if (_tabs[_tabController.index].text == LABEL_RSVP) {
-            setState(() {
-              _showTopWidget = true;
-              _slideTopWidget = false;
-            });
+            await _refreshHemTableFromBackend(false);
 
-            Future.delayed(
+            _showTopWidget = true;
+            _slideTopWidget = false;
+            setState(() {});
+
+            await Future.delayed(
               Duration(seconds: DISPLAY_LOGO_IN_RSVP_DURATION),
-            ).then((value) {
-              setState(() {
-                _showTopWidget = false;
-              });
-            });
+            );
+            _showTopWidget = false;
+
+            setState(() {});
             //print('refreshing RSVP data from backend @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-            _refreshHemTableFromBackend(false).then((value) {
-              setState(() {});
-            });
           }
           if (_tabs[_tabController.index].text == LABEL_CHAT) {
-            setState(() {
-              _showTopWidget = true;
-              _slideTopWidget = false;
-            });
-            Future.delayed(
-              Duration(seconds: DISPLAY_LOGO_IN_RSVP_DURATION),
-            ).then((value) {
-              setState(() {
+            _showTopWidget = true;
+            _slideTopWidget = false;
+            setState(() {});
+            unawaited(
+              Future.delayed(
+                Duration(seconds: DISPLAY_LOGO_IN_RSVP_DURATION),
+              ).then((_) {
                 _showTopWidget = false;
-              });
-            });
+                setState(() {});
+              }),
+            );
           }
 
           if ((_tabController.previousIndex == 4) ||
               (_tabController.index == 4)) {
             if (Get.isRegistered<NotificationService>()) {
               final controller = Get.find<NotificationService>();
-              controller.markEventMessagesAsViewed(
+              await controller.markEventMessagesAsViewed(
                 widget.futureRun.event.publicEventId,
               );
-              // controller
-              //         .thisEventUnseenChats[widget
-              //             .futureRun
-              //             .event
-              //             .publicEventId]
-              //         ?.value =
-              //     0;
-              // controller.update(['runList', 'chatTab', 'main_nav_page']);
             }
           }
 
@@ -340,7 +337,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         DEFAULT_LONGITUDE;
 
     _mapCenter = latlng.LatLng(xLat, xLon);
-
     _saveUserMapPreference.addListener(() {
       setState(() {});
     });
@@ -360,12 +356,10 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
     //('run tabs disposedd');
 
-    Get.delete<ChatPageController>();
+    unawaited(Get.delete<ChatPageController>());
 
     super.dispose();
   }
-
-  final GlobalKey<MyFlutterMapState> _mapKey = GlobalKey<MyFlutterMapState>();
 
   int flexLeft = 27;
   int flexRight = 73;
@@ -932,13 +926,16 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
                                       Get.closeAllSnackbars();
 
-                                      Get.showSnackbar(
-                                        GetSnackBar(
-                                          title: 'Calendar',
-                                          message:
-                                              '${widget.futureRun.event.eventName}$oneLineLocForTitle has been added to your calendar',
-                                          duration: const Duration(seconds: 5),
+                                      if (!context.mounted) return;
+
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
                                           backgroundColor: Colors.blue,
+                                          content: Text(
+                                            '${widget.futureRun.event.eventName}$oneLineLocForTitle has been added to your calendar',
+                                          ),
                                         ),
                                       );
 
@@ -1130,10 +1127,10 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                                     snapshot.data![index];
 
                                                 return GestureDetector(
-                                                  onTap: () {
+                                                  onTap: () async {
                                                     if (e.hasher.photo !=
                                                         null) {
-                                                      _getHasherZoomablePhoto(
+                                                      await _getHasherZoomablePhoto(
                                                         e.hasher.photo!,
                                                         e.displayName,
                                                       );
@@ -1229,12 +1226,12 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                                             ? 2
                                                             : 1,
                                                         child: GestureDetector(
-                                                          onTap: () {
+                                                          onTap: () async {
                                                             if (e
                                                                     .hasher
                                                                     .photo !=
                                                                 null) {
-                                                              _getHasherZoomablePhoto(
+                                                              await _getHasherZoomablePhoto(
                                                                 e.hasher.photo!,
                                                                 e.displayName,
                                                               );
@@ -1546,6 +1543,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       widget.futureRun.event.eventName,
     ]);
 
+    final locService = Get.find<LocationService>();
+
     return ConnectedWidget(
       refreshFunction: () {
         setState(() {});
@@ -1561,131 +1560,295 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           ),
         ),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Center(
-          // Map
-          child: Stack(
-            alignment: AlignmentDirectional.center,
-            children: <Widget>[
-              MyFlutterMap(
-                // (widget.futureRun.extensions.latitude ?? coords[0]) == null
-                //     ? null
-                //     : latlng.LatLng(
-                //         (widget.futureRun.extensions.latitude ?? coords[0]!),
-                //         (widget.futureRun.extensions.longitude ?? coords[1])!),
-                (widget.futureRun.extensions.evtLat ?? coords[0]) == null
-                    ? null
-                    : latlng.LatLng(
-                        (widget.futureRun.extensions.evtLat ?? coords[0]!),
-                        (widget.futureRun.extensions.evtLon ?? coords[1])!,
-                      ),
-                _mapCenter,
-                latlng.LatLng(
-                  widget.futureRun.kennel.kennelLatitude!,
-                  widget.futureRun.kennel.kennelLongitude!,
-                ),
-                1.0,
-                18.0,
-                14.0,
-                _trueNorthLock,
-                _mapKey,
-                mapMoved: (latlng.LatLng newPosition) {
-                  _mapCenter = newPosition;
-                },
-                markerClicked: () {
-                  _launchMaps(widget.futureRun);
-                },
-              ),
-              Positioned(
-                left: 10.0,
-                top: 10.0,
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _trueNorthLock = !_trueNorthLock;
-                    });
-                  },
-                  child: SizedBox(
-                    height: 50.0,
-                    width: 50.0,
-                    child: Image.asset(
-                      _trueNorthLock
-                          ? 'images/other/set_map_to_true_north_lock.png'
-                          : 'images/other/set_map_rotation_enabled.png',
-                    ),
-                  ),
-                ),
-              ),
-              if (widget.futureRun.extensions.isMapAndDistanceValid ==
-                  0) ...<Widget>[
-                Positioned(
-                  right: 10.0,
-                  top: 10.0,
-                  child: GestureDetector(
-                    onTap: () {
-                      _mapCenter = latlng.LatLng(
-                        widget.futureRun.extensions.evtLat ??
-                            widget.futureRun.kennel.kennelLatitude ??
-                            DEFAULT_LATITUDE,
-                        widget.futureRun.extensions.evtLon ??
-                            widget.futureRun.kennel.kennelLongitude ??
-                            DEFAULT_LONGITUDE,
-                      );
+      child: Column(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Center(
+                // Map
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20.0),
+                  child: Stack(
+                    alignment: AlignmentDirectional.center,
+                    children: <Widget>[
+                      RunTrackerMap(
+                        widget.futureRun.event,
 
-                      setState(() {});
-                    },
-                    child: SizedBox(
-                      height: 50.0,
-                      width: 50.0,
-                      child: Image.asset(
-                        'images/other/set_map_to_event_location.png',
+                        (widget.futureRun.extensions.evtLat ?? coords[0]) ==
+                                null
+                            ? null
+                            : latlng.LatLng(
+                                (widget.futureRun.extensions.evtLat ??
+                                    coords[0]!),
+                                (widget.futureRun.extensions.evtLon ??
+                                    coords[1])!,
+                              ),
+                        _mapCenter,
+                        latlng.LatLng(
+                          widget.futureRun.kennel.kennelLatitude!,
+                          widget.futureRun.kennel.kennelLongitude!,
+                        ),
+                        1.0,
+                        22.0,
+                        14.0,
+                        _trueNorthLock,
+                        mapMoved: (latlng.LatLng newPosition) {
+                          _mapCenter = newPosition;
+                        },
+                        markerClicked: () async {
+                          await _launchMaps(widget.futureRun);
+                        },
                       ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  right: 70.0,
-                  top: 10.0,
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        if ((deviceInfo.deviceLat != null) &&
-                            (deviceInfo.deviceLon != null)) {
-                          _mapCenter = latlng.LatLng(
-                            deviceInfo.deviceLat!,
-                            deviceInfo.deviceLon!,
-                          );
-                        }
-                      });
-                    },
-                    child: SizedBox(
-                      height: 50.0,
-                      width: 50.0,
-                      child: Image.asset(
-                        'images/other/set_map_to_current_location.png',
+                      Positioned(
+                        left: 10.0,
+                        top: 10.0,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _trueNorthLock = !_trueNorthLock;
+                            });
+                          },
+                          child: SizedBox(
+                            height: 50.0,
+                            width: 50.0,
+                            child: Image.asset(
+                              _trueNorthLock
+                                  ? 'images/other/set_map_to_true_north_lock.png'
+                                  : 'images/other/set_map_rotation_enabled.png',
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                      if (widget.futureRun.extensions.isMapAndDistanceValid ==
+                          0) ...<Widget>[
+                        Positioned(
+                          right: 10.0,
+                          top: 10.0,
+                          child: GestureDetector(
+                            onTap: () {
+                              _mapCenter = latlng.LatLng(
+                                widget.futureRun.extensions.evtLat ??
+                                    widget.futureRun.kennel.kennelLatitude ??
+                                    DEFAULT_LATITUDE,
+                                widget.futureRun.extensions.evtLon ??
+                                    widget.futureRun.kennel.kennelLongitude ??
+                                    DEFAULT_LONGITUDE,
+                              );
+
+                              setState(() {});
+                            },
+                            child: SizedBox(
+                              height: 50.0,
+                              width: 50.0,
+                              child: Image.asset(
+                                'images/other/set_map_to_event_location.png',
+                              ),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          right: 70.0,
+                          top: 10.0,
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                if ((deviceInfo.deviceLat != null) &&
+                                    (deviceInfo.deviceLon != null)) {
+                                  _mapCenter = latlng.LatLng(
+                                    deviceInfo.deviceLat!,
+                                    deviceInfo.deviceLon!,
+                                  );
+                                }
+                              });
+                            },
+                            child: SizedBox(
+                              height: 50.0,
+                              width: 50.0,
+                              child: Image.asset(
+                                'images/other/set_map_to_current_location.png',
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                      if (widget.futureRun.extensions.isMapAndDistanceValid !=
+                          1) ...<Widget>[
+                        Container(color: Colors.black54),
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 60.0),
+                          child: Text(
+                            'No location provided',
+                            textAlign: TextAlign.center,
+                            style: ts_headingVeryLarge,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
-              ],
-              if (widget.futureRun.extensions.isMapAndDistanceValid !=
-                  1) ...<Widget>[
-                Container(color: Colors.black54),
-                Container(
-                  margin: const EdgeInsets.only(bottom: 60.0),
-                  child: Text(
-                    'No location provided',
-                    textAlign: TextAlign.center,
-                    style: ts_headingVeryLarge,
-                  ),
-                ),
-              ],
-            ],
+              ),
+            ),
           ),
-        ),
+
+          BetaRibbon(
+            feature: BetaFeatures.runTracking,
+            showRibbon: false,
+            ribbonTopMargin: 15,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 15, bottom: 15),
+              child: Obx(() {
+                final bool isTracking = locService.joinRunTracking.value;
+                final controller =
+                    Get.isRegistered<RunTrackerMapController>(
+                      tag: widget.futureRun.event.eventId,
+                    )
+                    ? Get.find<RunTrackerMapController>(
+                        tag: widget.futureRun.event.eventId,
+                      )
+                    : null;
+                final hasTrack = controller != null
+                    ? _hasCurrentUserTrack(controller)
+                    : false;
+                final showExport = !isTracking && hasTrack;
+
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    (DateTime.now().toUtc().isBefore(
+                              widget.futureRun.event.eventStartDatetimeGmt
+                                  .subtract(const Duration(hours: 15)),
+                            ) ||
+                            DateTime.now().toUtc().isAfter(
+                              widget.futureRun.event.eventStartDatetimeGmt.add(
+                                const Duration(hours: 6),
+                              ),
+                            ))
+                        ? SizedBox()
+                        : ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.only(
+                                top: 2.0,
+                                left: 0.0,
+                                bottom: 0.0,
+                              ),
+                              backgroundColor: isTracking
+                                  ? Colors.green.shade900
+                                  : null,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                left: 20,
+                                right: 20,
+                                bottom: 3,
+                              ),
+                              child: Text(
+                                !isTracking ? 'Track my run' : 'Stop tracking',
+                                style: ts_button,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                locService.joinRunTracking.value =
+                                    !locService.joinRunTracking.value;
+                                locService.eventId =
+                                    widget.futureRun.event.eventId;
+                                locService.userId = getStringPref(
+                                  StringPrefsEnum.userId,
+                                );
+                              });
+                            },
+                          ),
+                    if (showExport) ...[
+                      const SizedBox(width: 10),
+                      _buildExportButton(controller),
+                    ],
+                  ],
+                );
+              }),
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  bool _hasCurrentUserTrack(RunTrackerMapController controller) {
+    final userId = getStringPref(StringPrefsEnum.userId);
+    if (userId == null || userId.isEmpty) return false;
+    for (final track in controller.userPositions) {
+      if (track.id == userId && track.positions.isNotEmpty) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  UserTrack? _currentUserTrack(RunTrackerMapController controller) {
+    final userId = getStringPref(StringPrefsEnum.userId);
+    if (userId == null || userId.isEmpty) return null;
+    for (final track in controller.userPositions) {
+      if (track.id == userId && track.positions.isNotEmpty) {
+        return track;
+      }
+    }
+    return null;
+  }
+
+  Widget _buildExportButton(RunTrackerMapController controller) {
+    return ElevatedButton.icon(
+      icon: const Icon(Icons.ios_share),
+      label: Padding(
+        padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 3.0),
+        child: Text('Export GPX', style: ts_button),
+      ),
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
+        backgroundColor: _isExportingTrack ? Colors.grey.shade700 : null,
+      ),
+      onPressed: _isExportingTrack
+          ? null
+          : () => _exportCurrentUserTrack(controller),
+    );
+  }
+
+  Future<void> _exportCurrentUserTrack(
+    RunTrackerMapController controller,
+  ) async {
+    final track = _currentUserTrack(controller);
+    if (track == null) {
+      _showExportMessage('No track data available yet.');
+      return;
+    }
+
+    setState(() {
+      _isExportingTrack = true;
+    });
+
+    try {
+      final exporter = GpxExportService();
+      final trackName = widget.futureRun.event.eventName;
+      await exporter.exportTrack(
+        context: context,
+        track: track,
+        trackName: trackName,
+      );
+    } catch (error) {
+      _showExportMessage('Export failed: $error');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isExportingTrack = false;
+        });
+      }
+    }
+  }
+
+  void _showExportMessage(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   bool _fabIsVisible = false;
@@ -1749,7 +1912,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         _getRsvpButton(
           FontAwesome.check_circle,
           Colors.orange,
-          'I might come!',
+          'I might come',
           rsvpMaybe,
         ),
         _getRsvpButton(
@@ -1986,6 +2149,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                     ),
                   ),
                 ),
+                _buildLiveRunButton(context),
                 Expanded(
                   child: TabBarView(
                     controller: _tabController,
@@ -2357,7 +2521,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
             .first;
 
         // BUG in plugin - doesn't work when sending a title with Google maps
-        activeMap.showMarker(
+        await activeMap.showMarker(
           coords: maps.Coords(lat, lon),
           title: activeMap.mapName.contains('Google') ? '' : address,
           description: address,
@@ -2369,6 +2533,118 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         'There is no location information available for this run and so we cannot display a map',
         'OK',
       );
+    }
+  }
+
+  Widget _buildLiveRunButton(BuildContext context) {
+    final state = _liveRunStatus;
+    final loading = _liveRunLoading;
+    final bool isActiveRun = state == LiveRunButtonStatus.active;
+
+    if (state == LiveRunButtonStatus.hidden) return const SizedBox.shrink();
+
+    final String label = isActiveRun
+        ? 'Return to Live Run Mode'
+        : 'Start Live Run Mode';
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          icon: loading
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : Icon(isActiveRun ? Icons.directions_run : Icons.play_arrow),
+          label: Text(label, style: ts_button),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: isActiveRun ? hc_blue : hc_red,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 12.0),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+          ),
+          onPressed: loading
+              ? null
+              : () async {
+                  if (!isActiveRun) {
+                    _liveRunService.startRun(
+                      eventId: widget.futureRun.event.eventId,
+                      eventName: widget.futureRun.event.eventName,
+                    );
+                    setState(() {
+                      _liveRunStatus = LiveRunButtonStatus.active;
+                    });
+                  }
+                  await Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => LiveRunShell(run: widget.futureRun),
+                    ),
+                  );
+                  await _refreshLiveRunButton();
+                },
+        ),
+      ),
+    );
+  }
+
+  Future<void> _refreshLiveRunButton() async {
+    setState(() => _liveRunLoading = true);
+    try {
+      final now = DateTime.now();
+      final eventStart = widget.futureRun.event.eventStartDatetime;
+      final windowStart = eventStart.subtract(const Duration(minutes: 30));
+      final windowEnd = eventStart.add(const Duration(hours: 6));
+
+      final String eventId = widget.futureRun.event.eventId;
+      final String? activeId = _liveRunService.activeRunEventId.value;
+
+      if (activeId != null) {
+        _liveRunStatus = activeId == eventId
+            ? LiveRunButtonStatus.active
+            : LiveRunButtonStatus.hidden;
+        return;
+      }
+
+      if (now.isBefore(windowStart) || now.isAfter(windowEnd)) {
+        _liveRunStatus = LiveRunButtonStatus.hidden;
+        return;
+      }
+
+      final bool isCheckedIn =
+          widget.futureRun.extensions.attendenceState >= attendenceAtHash.value;
+      final bool hasRsvpYes =
+          widget.futureRun.extensions.rsvpState == rsvpYes.value;
+
+      if (isCheckedIn) {
+        _liveRunStatus = LiveRunButtonStatus.eligible;
+        return;
+      }
+
+      if (!hasRsvpYes) {
+        _liveRunStatus = LiveRunButtonStatus.hidden;
+        return;
+      }
+
+      final results = await CommonQueries.isAtRunStart(eventId: eventId);
+      final bool atStart = results.any((item) => item.eventId == eventId);
+      _liveRunStatus = atStart
+          ? LiveRunButtonStatus.eligible
+          : LiveRunButtonStatus.hidden;
+    } catch (e) {
+      debugPrint('Live run button check failed: $e');
+      _liveRunStatus = LiveRunButtonStatus.hidden;
+    } finally {
+      if (mounted) {
+        setState(() => _liveRunLoading = false);
+      }
     }
   }
 }

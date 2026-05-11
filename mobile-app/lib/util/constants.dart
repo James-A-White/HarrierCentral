@@ -81,6 +81,7 @@ const String EMAIL_RUN_REPORT_API_URL =
     'https://$BASE_AF_URL/api/SendRunCountsReport';
 
 const String STORE_POSITIONS_URL = 'https://$BASE_AF_URL/api/StorePositions';
+const String GET_POSITIONS_URL = 'https://$BASE_AF_URL/api/GetPositions';
 
 // old APIs below
 
@@ -137,7 +138,7 @@ const String GUID_9 = '99999999-9999-9999-9999-999999999999';
 const String GUID_MAX = 'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF';
 
 const String DB_NAME = 'HcDb.db';
-const int DB_VERSION = 491;
+const int DB_VERSION = 511;
 
 const double CLEAR_LATLONG = -2.0;
 

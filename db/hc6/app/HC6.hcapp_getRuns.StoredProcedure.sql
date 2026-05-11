@@ -66,7 +66,7 @@ END
 
 IF (@kennelId IS NULL OR @kennelId = '00000000-0000-0000-0000-000000000000')
 BEGIN
-    SET @errorCode = 1222; SET @errorType = 2; SET @errorId = NEWID();
+    SET @errorCode = 1222; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Null or empty kennelId',
             'A null or empty kennelId was passed to ' + @procName, @procName, @userId);

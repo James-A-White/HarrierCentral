@@ -110,10 +110,9 @@ class PaymentPopupState extends State<PaymentPopup> {
                             Text(
                               '${IveCoreUtilities.getFormattedMoney((widget.creditRemaining).abs(), widget.decimalDigits, widget.currencySymbol)} ${(widget.creditRemaining >= 0) ? 'remaining' : 'owed'}',
                               style: ts_alertDialogBodyMedium.copyWith(
-                                color:
-                                    (widget.creditRemaining >= 0)
-                                        ? Colors.green[800]
-                                        : hc_red,
+                                color: (widget.creditRemaining >= 0)
+                                    ? Colors.green[800]
+                                    : hc_red,
                               ),
                             ),
                           ],
@@ -219,9 +218,9 @@ class PaymentPopupState extends State<PaymentPopup> {
 
   Widget _otherAmountRow() {
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
         if (_selectedValue == PaymentPopup.otherAmountRowId) {
-          _handleRadioValueChange1(PaymentPopup.otherAmountRowId);
+          await _handleRadioValueChange1(PaymentPopup.otherAmountRowId);
         }
       },
       child: Row(
@@ -236,14 +235,13 @@ class PaymentPopupState extends State<PaymentPopup> {
               _otherPaymentResult == null
                   ? const SizedBox(height: 1, width: 1)
                   : Text(
-                    '${IveCoreUtilities.getFormattedMoney(_otherPaymentResult!.totalAmount.abs(), widget.decimalDigits, widget.currencySymbol)} ${(_otherPaymentResult!.transType == 5) ? ' cash' : ' bank transfer'}',
-                    style: ts_alertDialogBodyMedium.copyWith(
-                      color:
-                          (widget.creditRemaining >= 0)
-                              ? Colors.green[800]
-                              : hc_red,
+                      '${IveCoreUtilities.getFormattedMoney(_otherPaymentResult!.totalAmount.abs(), widget.decimalDigits, widget.currencySymbol)} ${(_otherPaymentResult!.transType == 5) ? ' cash' : ' bank transfer'}',
+                      style: ts_alertDialogBodyMedium.copyWith(
+                        color: (widget.creditRemaining >= 0)
+                            ? Colors.green[800]
+                            : hc_red,
+                      ),
                     ),
-                  ),
             ],
           ),
         ],

@@ -1,0 +1,96 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getInviteCode",
+  "version": "1.0.0",
+  "description": "Returns the invite code (ResetCode) for a target user. The caller must be authenticated, the target user must not have logged in yet, must not be removed, and the calling user must hold manage-members permission (AppAccessFlags & 0x40000010) on the target's home kennel. This is a read SP — no success envelope is returned; errors use the HC6 standard error rowset and success returns a single inviteCode column.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth for authentication."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived cryptographic token validated against DeviceSecret by HC6.ValidateAppAuth."
+    },
+    {
+      "name": "targetUserId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Hasher.id",
+      "description": "The Hasher.id of the user whose invite code is being requested."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "Returned when HC6.ValidateAppAuth fails (auth, device not found, etc.). Mutually exclusive with InviteCodeResult and PermissionError.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Unique ID of the HC.ErrorLog entry created by ValidateAppAuth." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "HC6 app error type code (11=auth)." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Specific error code set by ValidateAppAuth." },
+        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
+        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "Name of this stored procedure." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "PermissionError",
+      "description": "Returned when the invite code cannot be retrieved — target not found, already logged in, already removed, or caller lacks manage-members permission. errorCode=1312, errorType=13. Mutually exclusive with AuthError and InviteCodeResult.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Unique ID of the HC.ErrorLog entry created by this SP." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 13 in this SP (not found / permission denied)." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Always 1312." },
+        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Always 'Invite code not available'." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing message explaining the member may have already logged in or caller lacks permission." },
+        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "Name of this stored procedure." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "InviteCodeResult",
+      "description": "Returned on success — a single row with the target user's invite code. Mutually exclusive with AuthError and PermissionError.",
+      "columns": [
+        { "name": "inviteCode", "type": "NVARCHAR(250)", "nullable": false, "description": "The URC: prefixed reset code from HC.Hasher.ResetCode. Note: declared as NVARCHAR(250) in the SP but the table column is NVARCHAR(50). See code smells." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Inserts a row into HC.ErrorLog when the invite code cannot be retrieved (permission/not-found failure path)."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "inviteCode variable wider than table column",
+      "detail": "The SP declares @inviteCode as NVARCHAR(250), but HC.Hasher.ResetCode is NVARCHAR(50). The variable should match the table column to avoid silent implicit widening and misrepresentation in contracts."
+    },
+    {
+      "severity": "medium",
+      "issue": "Magic number 0x40000010 (1073741840) for AppAccessFlags",
+      "detail": "The manage-members permission bitmask is embedded as a raw integer literal (1073741840) in the WHERE clause. There is no named constant, comment, or SP parameter to indicate what right is being checked. Should be documented clearly or extracted to a named constant."
+    },
+    {
+      "severity": "low",
+      "issue": "HC.Hasher.Removed is SMALLINT, not BIT",
+      "detail": "The SP filters h.Removed = 0 and the comparison works, but the table declares Removed as SMALLINT NULL. This is a pre-existing table type that deviates from the HC6 standard of using BIT for boolean columns. Not a bug, but worth noting for future table normalisation."
+    },
+    {
+      "severity": "low",
+      "issue": "Permission failure conflates three distinct conditions into one error",
+      "detail": "The SP returns a single 'Invite code not available' error whether the target user was not found, has already logged in, or the caller lacks permission. Callers cannot distinguish these cases without re-querying. Separate error codes (e.g. 13=not found, 11=auth) would allow better UX."
+    }
+  ],
+  "breakingChanges": [
+    "Auth failure now returns the standard HC6 error rowset (errorId, errorType, errorCode, errorTitle, errorUserMessage, errorProc) instead of HC5's non-standard Pascal-cased rowset (ErrorType, ErrorTitle, ErrorDescription).",
+    "Permission/not-found failure now returns the standard HC6 error rowset with errorCode=1312 instead of HC5's 'No valid user' string in the result column.",
+    "Success rowset column is now named 'inviteCode' instead of HC5's 'result'.",
+    "HC5 returned a single rowset in all cases (success or failure) with the same column name 'result'; HC6 returns structurally different rowsets for success vs error — callers must check for the presence of errorId or inviteCode to distinguish."
+  ]
+}

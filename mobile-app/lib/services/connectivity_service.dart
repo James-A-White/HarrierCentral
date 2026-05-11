@@ -139,8 +139,8 @@ class NetworkService extends GetxService {
   @override
   void onClose() {
     _debounceTimer?.cancel();
-    _connectivitySub?.cancel();
-    _internetStatusSub?.cancel();
+    unawaited(_connectivitySub?.cancel());
+    unawaited(_internetStatusSub?.cancel());
     super.onClose();
   }
 }

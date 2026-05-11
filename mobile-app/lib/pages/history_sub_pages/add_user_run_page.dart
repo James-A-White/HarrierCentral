@@ -1,4 +1,4 @@
-// import 'dart:async';
+//
 
 // import 'package:flutter/cupertino.dart';
 // import 'package:flutter/material.dart';
@@ -197,7 +197,7 @@
 // //             historicalCountIsEstimate: historicalCountIsEstimate,
 // //             followKennelOnAddNewUser: _addAsKennelFollower ? 1 : 0);
 
-// //         apiCall.then((void _) async {
+// //         apiCall.then((void _)  {
 // //           refreshUserDataFromTable(false).then((void _) {
 // //             setState(() {
 // //               if (widget.pageType == EnumMyProfilePageType.myProfile) {

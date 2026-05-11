@@ -92,7 +92,7 @@ END
 -- ---------------------------------------------------------------
 IF (@messageId IS NULL)
 BEGIN
-    SET @errorCode = 1261; SET @errorType = 2; SET @errorId = NEWID();
+    SET @errorCode = 1261; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Null messageId', 'messageId is required', @procName, @userId);
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -102,7 +102,7 @@ END
 
 IF (@eventId IS NULL)
 BEGIN
-    SET @errorCode = 1261; SET @errorType = 2; SET @errorId = NEWID();
+    SET @errorCode = 1261; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Null eventId', 'eventId is required', @procName, @userId);
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
@@ -114,7 +114,7 @@ IF (LEN(COALESCE(@messageContent, '')) = 0
     OR @messageReleasabilityFlags IS NULL
     OR (@messageReleasabilityFlags & 0x0000003F) = 0)
 BEGIN
-    SET @errorCode = 1261; SET @errorType = 2; SET @errorId = NEWID();
+    SET @errorCode = 1261; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Missing required message fields',
             'messageContent or messageReleasabilityFlags missing', @procName, @userId);

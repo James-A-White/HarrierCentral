@@ -56,6 +56,7 @@ class KennelMemberListState extends State<KennelMembersList>
 
   @override
   void initState() {
+    super.initState();
     _appBar = AppBar(
       centerTitle: true,
       backgroundColor: themeAppBarBackground,
@@ -65,12 +66,9 @@ class KennelMemberListState extends State<KennelMembersList>
         style: const TextStyle(color: Colors.white),
       ),
     );
-    _refreshKennelMembersFromTable(true).then((void _) {
-      _refreshCounters(true);
-      setState(() {});
-    });
+    unawaited(_initLoad());
+
     setSortBySpeedDial();
-    super.initState();
 
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 300),
@@ -94,6 +92,14 @@ class KennelMemberListState extends State<KennelMembersList>
           });
   }
 
+  Future<void> _initLoad() async {
+    await _refreshKennelMembersFromTable(true);
+    await _refreshCounters(true);
+
+    if (!mounted) return;
+    setState(() {});
+  }
+
   Future<void> _refreshKennelMembersFromTable(bool forceRefresh) async {
     String orderBy = 'lower(h.${tableModel.hashersTableHelper.colDispName})';
 
@@ -113,9 +119,7 @@ class KennelMemberListState extends State<KennelMembersList>
 
     if (kDebugMode) {
       final String message = (await CommonQueries.countRecords(
-        tableModel.hasherKennelMapTableHelper.getTableName(
-          AppDomainType.kennel,
-        ),
+        EnumDataTables.hasherKennelMap.kennelTableName,
       )).toString();
       print('HKM count = $message');
     }
@@ -150,9 +154,9 @@ class KennelMemberListState extends State<KennelMembersList>
             when hkm.${tableModel.hasherKennelMapTableHelper.colFollowing} = 1 then 4
             else 5
           end as memberFollowingStatus
-          FROM hashers h
-          LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} hkm on hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = h.${tableModel.hashersTableHelper.colHasherId} AND hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = '${widget.kennelListAggregate.kennel.kennelId}'
-          LEFT OUTER JOIN kennels k on k.${tableModel.kennelsTableHelper.colKennelId} = '${widget.kennelListAggregate.kennel.kennelId}'
+          FROM ${EnumDataTables.hashers.commonTableName} h
+          LEFT OUTER JOIN ${EnumDataTables.hasherKennelMap.kennelTableName} hkm on hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = h.${tableModel.hashersTableHelper.colHasherId} AND hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = '${widget.kennelListAggregate.kennel.kennelId}'
+          LEFT OUTER JOIN ${EnumDataTables.kennels.commonTableName} k on k.${tableModel.kennelsTableHelper.colKennelId} = '${widget.kennelListAggregate.kennel.kennelId}'
           WHERE h.${tableModel.hashersTableHelper.colRemoved} = 0 
           AND h.${tableModel.hashersTableHelper.colDispName} not like 'Placeholder user for%'
           ORDER BY memberFollowingStatus,$orderBy
@@ -180,10 +184,9 @@ class KennelMemberListState extends State<KennelMembersList>
         kList.add(hlrItem);
 
         if (forceRefresh && (i == results.length - 1)) {
-          setState(() {
-            _kennelMemberListFuture = Future<List<dynamic>>.value(kList);
-            filterResults();
-          });
+          _kennelMemberListFuture = Future<List<dynamic>>.value(kList);
+          await filterResults();
+          setState(() {});
         }
       }
     } catch (e) {
@@ -226,8 +229,8 @@ class KennelMemberListState extends State<KennelMembersList>
               COUNT(CASE WHEN ${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate} > date('now') THEN 1 ELSE NULL END) as isMember,
           
               COUNT(CASE WHEN ${tableModel.hasherKennelMapTableHelper.colDateOfLastRun} >= date('now','-365 day') THEN 1 ELSE NULL END) as hasRecentRuns
-              FROM ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.kennel)} hkm
-              INNER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h on h.${tableModel.hashersTableHelper.colHasherId} = hkm.${tableModel.hasherKennelMapTableHelper.colUserId}
+              FROM ${EnumDataTables.hasherKennelMap.kennelTableName} hkm
+              INNER JOIN ${EnumDataTables.hashers.commonTableName} h on h.${tableModel.hashersTableHelper.colHasherId} = hkm.${tableModel.hasherKennelMapTableHelper.colUserId}
   
           ''';
 
@@ -277,11 +280,12 @@ class KennelMemberListState extends State<KennelMembersList>
             backgroundColor: Colors.deepOrange,
             label: _sortBySpeedDialLabel,
             labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () {
+            onTap: () async {
               _sortBy = _sortBySpeedDialType;
-              _refreshKennelMembersFromTable(true).then((void _) {
-                _refreshCounters(true);
-              });
+              await _refreshKennelMembersFromTable(true);
+
+              await _refreshCounters(true);
+
               setSortBySpeedDial();
             },
           ),
@@ -290,53 +294,59 @@ class KennelMemberListState extends State<KennelMembersList>
             backgroundColor: hc_blue,
             label: 'Find Hasher and add',
             labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () {
-              Navigator.push<Map<String, dynamic>>(
-                context,
-                MaterialPageRoute<Map<String, dynamic>>(
-                  settings: const RouteSettings(),
-                  builder: (BuildContext context) {
-                    return FindHasherPage(
-                      FindHasherPageType.addMember,
-                      kennelId: widget.kennelListAggregate.kennel.kennelId,
-                    );
-                  },
-                ),
-              ).then<dynamic>(
-                (Map<String, dynamic> result) {
-                      setState(() {
-                        //_isLoading = true;
-                      });
-                      if ((result['hasher']?.hasherId != null)) {
-                        final HasherKennelMapService srv =
-                            HasherKennelMapService();
-                        widget
-                                .kennelListAggregate
-                                .extensions
-                                .followingRequested =
-                            -1;
-                        setState(() {});
-                        srv
-                            .updateHasherKennelStatus(
-                              widget.kennelListAggregate.kennel.kennelId,
-                              AppDomainType.kennel,
-                              monthsToAddToMembership: widget
-                                  .kennelListAggregate
-                                  .kennel
-                                  .membershipDurationInMonths,
-                              targetUserId: result['hasher'].hasherId,
-                            )
-                            .then((void _) {
-                              _refreshKennelMembersFromTable(true).then((
-                                void _,
-                              ) {
-                                _refreshCounters(true);
-                              });
-                            });
-                      }
-                    }
-                    as FutureOr Function(Map<String, dynamic>? value),
-              );
+            onTap: () async {
+              final Map<String, dynamic>? result =
+                  await Navigator.push<Map<String, dynamic>>(
+                    context,
+                    MaterialPageRoute<Map<String, dynamic>>(
+                      settings: const RouteSettings(),
+                      builder: (BuildContext context) => FindHasherPage(
+                        FindHasherPageType.addMember,
+                        kennelId: widget.kennelListAggregate.kennel.kennelId,
+                      ),
+                    ),
+                  );
+
+              if (result == null) return;
+
+              final hasher = result['hasher'];
+              final String? hasherId = hasher?.hasherId as String?;
+              if (hasherId == null) return;
+
+              // Optional: show loading / optimistic UI
+              if (!mounted) return;
+              setState(() {
+                widget.kennelListAggregate.extensions.followingRequested = -1;
+                // _isLoading = true;
+              });
+
+              try {
+                final srv = HasherKennelMapService();
+
+                await srv.updateHasherKennelStatus(
+                  widget.kennelListAggregate.kennel.kennelId,
+                  AppDomainType.kennel,
+                  monthsToAddToMembership: widget
+                      .kennelListAggregate
+                      .kennel
+                      .membershipDurationInMonths,
+                  targetUserId: hasherId,
+                );
+
+                await _refreshKennelMembersFromTable(true);
+                await _refreshCounters(true);
+
+                if (!mounted) return;
+                setState(() {
+                  // _isLoading = false;
+                });
+              } catch (e) {
+                if (!mounted) return;
+                setState(() {
+                  // _isLoading = false;
+                });
+                // optionally log / show snackbar
+              }
             },
           ),
           SpeedDialChild(
@@ -344,8 +354,8 @@ class KennelMemberListState extends State<KennelMembersList>
             backgroundColor: Colors.green,
             label: 'Add new Hasher\r\nto Harrier Central',
             labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () {
-              Navigator.push<HashersModel>(
+            onTap: () async {
+              final result = await Navigator.push<HashersModel>(
                 context,
                 MaterialPageRoute<HashersModel>(
                   builder: (BuildContext context) => HasherProfilePage(
@@ -358,12 +368,12 @@ class KennelMemberListState extends State<KennelMembersList>
                         widget.kennelListAggregate.kennel.kennelShortName,
                   ),
                 ),
-              ).then<HashersModel?>((HashersModel? result) {
-                _refreshKennelMembersFromTable(true).then((void _) {
-                  _refreshCounters(true);
-                });
-                return null;
-              });
+              );
+
+              if (result == null) return;
+
+              await _refreshKennelMembersFromTable(true);
+              await _refreshCounters(true);
             },
           ),
         ],
@@ -459,24 +469,22 @@ class KennelMemberListState extends State<KennelMembersList>
                                 snapshot.data![index];
                             return Dismissible(
                               key: Key(item.hasherId),
-                              confirmDismiss: (DismissDirection direction) {
-                                setState(() {
-                                  // swipe from right to left to indicate that
-                                  // the hasher either attended the run as a pack
-                                  // member or as a hare
-                                  if (direction ==
-                                      DismissDirection.endToStart) {
-                                    _modifyMembership(
-                                      snapshot,
-                                      index,
-                                      item.membershipDurationInMonths,
-                                    );
-                                  } else {
-                                    _modifyMembership(snapshot, index, -9999);
-                                  }
-                                });
+                              confirmDismiss: (DismissDirection direction) async {
+                                // swipe from right to left to indicate that
+                                // the hasher either attended the run as a pack
+                                // member or as a hare
+                                final int monthsToAdd =
+                                    direction == DismissDirection.endToStart
+                                    ? item.membershipDurationInMonths
+                                    : -9999;
 
-                                return Future<bool>.value(false);
+                                await _modifyMembership(
+                                  snapshot,
+                                  index,
+                                  monthsToAdd,
+                                );
+
+                                return false;
                               },
                               background: Container(
                                 color: hc_red,
@@ -548,8 +556,9 @@ class KennelMemberListState extends State<KennelMembersList>
                                       if (refreshThisUserData) {
                                         await tableModel.syncUserDataService
                                             .updateFromBackend(
-                                              SyncUserDataService
-                                                  .flagHasherKennelMapTable,
+                                              EnumDataTables
+                                                  .hasherKennelMap
+                                                  .flag,
                                               true,
                                               debugText: 'kennel_members: HKM',
                                             );
@@ -569,67 +578,94 @@ class KennelMemberListState extends State<KennelMembersList>
                                       await _refreshCounters(true);
                                       setState(() {});
                                     },
-                                modifyMembershipCallback: (EnumMemberPopupActions retVal) {
+                                modifyMembershipCallback: (EnumMemberPopupActions? retVal) async {
+                                  if (retVal == null) return;
+
                                   switch (retVal) {
+                                    case EnumMemberPopupActions.cancelDialog:
+                                      break;
                                     case EnumMemberPopupActions.addOneMonth:
-                                      _modifyMembership(snapshot, index, 1);
+                                      await _modifyMembership(
+                                        snapshot,
+                                        index,
+                                        1,
+                                      );
                                       break;
                                     case EnumMemberPopupActions.addSixMonths:
-                                      _modifyMembership(snapshot, index, 6);
+                                      await _modifyMembership(
+                                        snapshot,
+                                        index,
+                                        6,
+                                      );
                                       break;
                                     case EnumMemberPopupActions.addOneYear:
-                                      _modifyMembership(snapshot, index, 12);
+                                      await _modifyMembership(
+                                        snapshot,
+                                        index,
+                                        12,
+                                      );
                                       break;
                                     case EnumMemberPopupActions
                                         .permanentMembership:
-                                      _modifyMembership(snapshot, index, 9999);
+                                      await _modifyMembership(
+                                        snapshot,
+                                        index,
+                                        9999,
+                                      );
                                       break;
                                     case EnumMemberPopupActions
                                         .cancelMembership:
-                                      _modifyMembership(snapshot, index, -9999);
+                                      await _modifyMembership(
+                                        snapshot,
+                                        index,
+                                        -9999,
+                                      );
                                       break;
                                     case EnumMemberPopupActions.editKennelAdmin:
-                                      Navigator.push<int>(
-                                        context,
-                                        MaterialPageRoute<int>(
-                                          builder: (BuildContext context) =>
-                                              AppAccessPage(
-                                                appAccess: snapshot
-                                                    .data![index]
-                                                    .appAccessFlags,
-                                              ),
-                                        ),
-                                      ).then((int? result) {
-                                        if (result != null) {
-                                          _setUserProperties(
-                                            snapshot,
-                                            index,
-                                            appAccessFlags: result,
+                                      final int? appAccessResult =
+                                          await Navigator.push<int>(
+                                            context,
+                                            MaterialPageRoute<int>(
+                                              builder: (BuildContext context) =>
+                                                  AppAccessPage(
+                                                    appAccess: snapshot
+                                                        .data![index]
+                                                        .appAccessFlags,
+                                                  ),
+                                            ),
                                           );
-                                        }
-                                      });
+
+                                      if (appAccessResult != null) {
+                                        await _setUserProperties(
+                                          snapshot,
+                                          index,
+                                          appAccessFlags: appAccessResult,
+                                        );
+                                      }
                                       break;
                                     case EnumMemberPopupActions
                                         .editMismanagementRole:
-                                      Navigator.push<int>(
-                                        context,
-                                        MaterialPageRoute<int>(
-                                          builder: (BuildContext context) =>
-                                              MismanagementRolesPage(
-                                                mismanagementRoles: snapshot
-                                                    .data![index]
-                                                    .mismanagementRoles,
-                                              ),
-                                        ),
-                                      ).then((int? result) {
-                                        if (result != null) {
-                                          _setUserProperties(
-                                            snapshot,
-                                            index,
-                                            mismanagementRoles: result,
+                                      final int? mismanagementResult =
+                                          await Navigator.push<int>(
+                                            context,
+                                            MaterialPageRoute<int>(
+                                              builder: (BuildContext context) =>
+                                                  MismanagementRolesPage(
+                                                    mismanagementRoles: snapshot
+                                                        .data![index]
+                                                        .mismanagementRoles,
+                                                  ),
+                                            ),
                                           );
-                                        }
-                                      });
+
+                                      if (mismanagementResult != null) {
+                                        await _setUserProperties(
+                                          snapshot,
+                                          index,
+                                          mismanagementRoles:
+                                              mismanagementResult,
+                                        );
+                                      }
                                       break;
                                     // case EnumMemberPopupActions.setHomeKennel:
                                     //   setAsHomeKennel(snapshot.data[index], 1);
@@ -639,7 +675,7 @@ class KennelMemberListState extends State<KennelMembersList>
                                     //   break;
                                   }
                                 },
-                                toggleEmailPreferenceCallback: () {
+                                toggleEmailPreferenceCallback: () async {
                                   if (Utilities.isConnected(
                                     showDialog: true,
                                     message:
@@ -659,7 +695,7 @@ class KennelMemberListState extends State<KennelMembersList>
                                             .kennelEmailAlertPreference =
                                         -1;
                                     setState(() {});
-                                    srv
+                                    final List<dynamic> queryResults = await srv
                                         .updateHasherKennelStatus(
                                           widget
                                               .kennelListAggregate
@@ -669,17 +705,17 @@ class KennelMemberListState extends State<KennelMembersList>
                                           emailAlertState: emailAlertStatus,
                                           targetUserId:
                                               snapshot.data![index].hasherId,
-                                        )
-                                        .then((List<dynamic> queryResults) {
-                                          setState(() {
-                                            if (queryResults.isNotEmpty) {
-                                              snapshot
-                                                      .data![index]
-                                                      .kennelEmailAlertPreference =
-                                                  queryResults[0]['kennelEmailAlertPreference'];
-                                            }
-                                          });
-                                        });
+                                        );
+
+                                    if (!mounted) return;
+                                    setState(() {
+                                      if (queryResults.isNotEmpty) {
+                                        snapshot
+                                                .data![index]
+                                                .kennelEmailAlertPreference =
+                                            queryResults[0]['kennelEmailAlertPreference'];
+                                      }
+                                    });
                                   }
                                 },
                               ),
@@ -720,20 +756,20 @@ class KennelMemberListState extends State<KennelMembersList>
                 turns: _buttonAnimation,
                 child: IconButton(
                   padding: const EdgeInsets.all(0),
-                  onPressed: () {
+                  onPressed: () async {
                     _searchFocusNode.unfocus();
                     if (_showFilter) {
-                      _animationController.reverse();
+                      await _animationController.reverse();
                     } else {
-                      _animationController.forward();
+                      await _animationController.forward();
                     }
                     _showFilter = !_showFilter;
                     _searchController.text = '';
                     _searchText = '';
-                    _refreshKennelMembersFromTable(true).then((void _) {
-                      _refreshCounters(true);
-                      setState(() {});
-                    });
+                    await _refreshKennelMembersFromTable(true);
+                    await _refreshCounters(true);
+                    if (!mounted) return;
+                    setState(() {});
                   },
                   icon: Icon(
                     FontAwesome5Solid.arrow_alt_circle_right,
@@ -756,11 +792,10 @@ class KennelMemberListState extends State<KennelMembersList>
                   children: <Widget>[
                     TextField(
                       autocorrect: false,
-                      onChanged: (String text) {
-                        setState(() {
-                          _searchText = text;
-                          filterResults();
-                        });
+                      onChanged: (String text) async {
+                        _searchText = text;
+                        await filterResults();
+                        setState(() {});
                       },
                       focusNode: _searchFocusNode,
                       controller: _searchController,
@@ -900,11 +935,11 @@ class KennelMemberListState extends State<KennelMembersList>
             counter: countIsMember,
             label: 'Member',
             index: 0,
-            onTap: () {
-              _refreshKennelMembersFromTable(true).then((void _) {
-                _refreshCounters(true);
-                setState(() {});
-              });
+            onTap: () async {
+              await _refreshKennelMembersFromTable(true);
+              await _refreshCounters(true);
+              if (!mounted) return;
+              setState(() {});
             },
             filterValues: _filterValues,
           ),
@@ -912,11 +947,11 @@ class KennelMemberListState extends State<KennelMembersList>
             counter: countIsFollowing,
             label: 'Follow',
             index: 1,
-            onTap: () {
-              _refreshKennelMembersFromTable(true).then((void _) {
-                _refreshCounters(true);
-                setState(() {});
-              });
+            onTap: () async {
+              await _refreshKennelMembersFromTable(true);
+              await _refreshCounters(true);
+              if (!mounted) return;
+              setState(() {});
             },
             filterValues: _filterValues,
           ),
@@ -938,11 +973,11 @@ class KennelMemberListState extends State<KennelMembersList>
             label: 'Have runs',
             index: 3,
             useTriState: true,
-            onTap: () {
-              _refreshKennelMembersFromTable(true).then((void _) {
-                _refreshCounters(true);
-                setState(() {});
-              });
+            onTap: () async {
+              await _refreshKennelMembersFromTable(true);
+              await _refreshCounters(true);
+              if (!mounted) return;
+              setState(() {});
             },
             filterValues: _filterValues,
           ),
@@ -983,9 +1018,9 @@ class KennelMemberListState extends State<KennelMembersList>
     });
 
     await tableModel.syncKennelAdminService.updateFromBackend(
-      SyncKennelAdminService.flagKennelTable |
-          SyncKennelAdminService.flagHashersTable |
-          SyncKennelAdminService.flagHasherKennelMapTable,
+      EnumDataTables.kennels.flag |
+          EnumDataTables.hashers.flag |
+          EnumDataTables.hasherKennelMap.flag,
       true,
       widget.kennelListAggregate.kennel.kennelId,
     );
@@ -996,11 +1031,11 @@ class KennelMemberListState extends State<KennelMembersList>
     setState(() {});
   }
 
-  void _modifyMembership(
+  Future<void> _modifyMembership(
     AsyncSnapshot<List<dynamic>> snapshot,
     int index,
     int monthsToAddToMembership,
-  ) {
+  ) async {
     final HasherKennelMapService srv = HasherKennelMapService();
     widget.kennelListAggregate.extensions.followingRequested = -1;
 
@@ -1009,31 +1044,29 @@ class KennelMemberListState extends State<KennelMembersList>
         memberInfoBeingUpdated: true,
       );
     });
-    srv
-        .updateHasherKennelStatus(
-          widget.kennelListAggregate.kennel.kennelId,
-          AppDomainType.kennel,
-          monthsToAddToMembership: monthsToAddToMembership,
-          targetUserId: snapshot.data![index].hasherId,
-        )
-        .then((void _) {
-          _refreshKennelMembersFromTable(true).then((void _) {
-            setState(() {
-              snapshot.data![index] = snapshot.data![index].copyWith(
-                memberInfoBeingUpdated: false,
-              );
-              _refreshCounters(true);
-            });
-          });
-        });
+    await srv.updateHasherKennelStatus(
+      widget.kennelListAggregate.kennel.kennelId,
+      AppDomainType.kennel,
+      monthsToAddToMembership: monthsToAddToMembership,
+      targetUserId: snapshot.data![index].hasherId,
+    );
+
+    await _refreshKennelMembersFromTable(true);
+    if (!mounted) return;
+    setState(() {
+      snapshot.data![index] = snapshot.data![index].copyWith(
+        memberInfoBeingUpdated: false,
+      );
+    });
+    await _refreshCounters(true);
   }
 
-  void _setUserProperties(
+  Future<void> _setUserProperties(
     AsyncSnapshot<List<dynamic>> snapshot,
     int index, {
     int appAccessFlags = -1,
     int mismanagementRoles = -1,
-  }) {
+  }) async {
     final HasherKennelMapService srv = HasherKennelMapService();
     widget.kennelListAggregate.extensions.followingRequested = -1;
     setState(() {
@@ -1042,24 +1075,22 @@ class KennelMemberListState extends State<KennelMembersList>
       );
     });
 
-    srv
-        .updateHasherKennelStatus(
-          widget.kennelListAggregate.kennel.kennelId,
-          AppDomainType.kennel,
-          targetUserId: snapshot.data![index].hasherId,
-          appAccessFlags: appAccessFlags,
-          mismanagementRoles: mismanagementRoles,
-        )
-        .then((void _) {
-          _refreshKennelMembersFromTable(true).then((void _) {
-            setState(() {
-              snapshot.data![index] = snapshot.data![index].copyWith(
-                memberInfoBeingUpdated: false,
-              );
-              _refreshCounters(true);
-            });
-          });
-        });
+    await srv.updateHasherKennelStatus(
+      widget.kennelListAggregate.kennel.kennelId,
+      AppDomainType.kennel,
+      targetUserId: snapshot.data![index].hasherId,
+      appAccessFlags: appAccessFlags,
+      mismanagementRoles: mismanagementRoles,
+    );
+
+    await _refreshKennelMembersFromTable(true);
+    if (!mounted) return;
+    setState(() {
+      snapshot.data![index] = snapshot.data![index].copyWith(
+        memberInfoBeingUpdated: false,
+      );
+    });
+    await _refreshCounters(true);
   }
 
   // void setAsHomeKennel(KennelMemberResultsModel item, int isHomeKennel) {

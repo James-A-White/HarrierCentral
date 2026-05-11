@@ -1,0 +1,230 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_processThirdPartyLogin",
+  "version": "1.0.0",
+  "description": "Handles OAuth login (Facebook, Apple, Google). Resolves an existing Hasher by thirdPartyUserId, email, or thirdPartyEmail — updating OAuth tokens when found. Creates a new Hasher if no match. Syncs Kennel Facebook tokens when loginType = 'facebook'. Returns a write SP success envelope (rowset 0) plus the resolved hasher profile on success (rowset 1), or standard HC6 error detail on failure (rowset 1).",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "Registered device UUID. Used to resolve userId and DeviceSecret for compound token validation."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived token validated against DeviceSecret + UPPER(userId) compound."
+    },
+    {
+      "name": "hcVersion",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "App version string. Recorded in HC.ErrorLog on error."
+    },
+    {
+      "name": "firstName",
+      "type": "NVARCHAR(250)",
+      "nullable": false,
+      "mapsToColumn": "Hasher.FirstName",
+      "description": "First name from OAuth provider. Applied via COALESCE on update (preserves existing value if NULL)."
+    },
+    {
+      "name": "lastName",
+      "type": "NVARCHAR(250)",
+      "nullable": false,
+      "mapsToColumn": "Hasher.LastName",
+      "description": "Last name from OAuth provider. Applied via COALESCE on update."
+    },
+    {
+      "name": "hashName",
+      "type": "NVARCHAR(250)",
+      "nullable": false,
+      "mapsToColumn": "Hasher.HashName",
+      "description": "Hash name. Empty string normalised to NULL before use. Applied via COALESCE on update (preserves existing value if NULL/empty)."
+    },
+    {
+      "name": "email",
+      "type": "NVARCHAR(250)",
+      "nullable": false,
+      "mapsToColumn": "Hasher.Email",
+      "description": "Primary email from OAuth provider. Used in hasher resolution lookup and update."
+    },
+    {
+      "name": "photo",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": "Hasher.Photo",
+      "description": "Profile photo URL. Empty string normalised to NULL. On update: COALESCE(existing, @photo, generated bundle avatar) — photo is NOT overwritten if already set."
+    },
+    {
+      "name": "thirdPartyLoginType",
+      "type": "NVARCHAR(120)",
+      "nullable": false,
+      "mapsToColumn": "Hasher.ThirdPartyLoginType",
+      "description": "OAuth provider identifier. Expected values: 'facebook', 'apple', 'google'. Drives Facebook-specific update paths."
+    },
+    {
+      "name": "thirdPartyUserId",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": "Hasher.ThirdPartyUserId",
+      "description": "OAuth provider's user identifier. Primary key for hasher resolution."
+    },
+    {
+      "name": "thirdPartyAccessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": "Hasher.ThirdPartyAccessToken",
+      "description": "OAuth access token stored against the hasher. Also stored in Hasher.FacebookAccessToken when loginType='facebook'."
+    },
+    {
+      "name": "thirdPartyAuthorizationCode",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": "Hasher.ThirdPartyAuthorizationCode",
+      "description": "OAuth authorization code."
+    },
+    {
+      "name": "thirdPartyAccessTokenExpires",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.ThirdPartyAccessTokenExpires",
+      "description": "Token expiry. Defaults to '2100-01-01' via COALESCE when NULL. HC6 uses native DATETIMEOFFSET(7) — no longer a brittle NVARCHAR cast."
+    },
+    {
+      "name": "includeInGlobalHashDirectory",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "Hasher.IncludeInGlobalHashDirectory",
+      "description": "Sentinel: -1 normalised to NULL at entry (means do not update). On the insert path, NULL defaults to 0. On the update path, this parameter is NOT applied — the existing value is always preserved regardless."
+    },
+    {
+      "name": "latitude",
+      "type": "DECIMAL(18,15)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.HomeLatitude",
+      "description": "Device latitude. Default 0. Used only for USA miles detection on insert. Not stored on update path.",
+      "typeMismatch": "DECIMAL(18,15) vs Hasher.HomeLatitude DECIMAL(12,9). Parameter has higher precision than the column."
+    },
+    {
+      "name": "longitude",
+      "type": "DECIMAL(19,15)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.HomeLongitude",
+      "description": "Device longitude. Default 0. Used only for USA miles detection on insert. Not stored on update path.",
+      "typeMismatch": "DECIMAL(19,15) vs Hasher.HomeLongitude DECIMAL(13,9). Parameter has higher precision than the column."
+    },
+    {
+      "name": "thirdPartyEmail",
+      "type": "NVARCHAR(250)",
+      "nullable": false,
+      "mapsToColumn": "Hasher.ThirdPartyEmail",
+      "description": "Email as reported directly by the OAuth provider (may differ from @email). Used as a secondary resolution key."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "Write SP success envelope. Always present as rowset 0. success=1 on success (NULL errorCode/errorType). success=0 on any error path.",
+      "columns": [
+        { "name": "success", "type": "BIT", "nullable": false, "description": "1 on success, 0 on any error." },
+        { "name": "errorCode", "type": "INT", "nullable": true, "description": "NULL on success. Error-specific code on failure (1305=device not found, 1105=bad token, 1905=user not created or db error)." },
+        { "name": "errorType", "type": "INT", "nullable": true, "description": "NULL on success. 11=auth, 13=hasher not found, 19=user creation failure or unhandled db error." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ErrorDetail",
+      "description": "Returned as rowset 1 on any error path (device not found, invalid token, user not created, CATCH). Standard HC6 error detail shape.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Unique ID of the HC.ErrorLog entry." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification. 11=invalid token, 13=hasher not found, 19=user creation failure or unhandled error." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Numeric error code. 1305=device not registered, 1105=invalid access token, 1905=user not created or db error." },
+        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short error title for display." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
+        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "HasherProfile",
+      "description": "Returned as rowset 1 on success. Full profile of the resolved (or newly created) hasher.",
+      "columns": [
+        { "name": "hasherId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Hasher.id." },
+        { "name": "photo", "type": "NVARCHAR(1000)", "nullable": true, "description": "Hasher.Photo." },
+        { "name": "displayName", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Hasher.DisplayName (persisted computed column from NameDisplayPreference/HashName/FirstName/LastName)." },
+        { "name": "email", "type": "NVARCHAR(250)", "nullable": false, "description": "Hasher.Email." },
+        { "name": "thirdPartyUserId", "type": "NVARCHAR(1000)", "nullable": true, "description": "Hasher.ThirdPartyUserId." },
+        { "name": "thirdPartyLoginType", "type": "NVARCHAR(120)", "nullable": true, "description": "Hasher.ThirdPartyLoginType." },
+        { "name": "thirdPartyAccessToken", "type": "NVARCHAR(1000)", "nullable": true, "description": "Hasher.ThirdPartyAccessToken." },
+        { "name": "thirdPartyAuthorizationCode", "type": "NVARCHAR(1000)", "nullable": true, "description": "Hasher.ThirdPartyAuthorizationCode." },
+        { "name": "thirdPartyTokenLastUpdated", "type": "DATETIMEOFFSET(7)", "nullable": true, "description": "Hasher.ThirdPartyTokenLastUpdated." },
+        { "name": "thirdPartyAccessTokenExpires", "type": "DATETIMEOFFSET(7)", "nullable": true, "description": "Hasher.ThirdPartyAccessTokenExpires." },
+        { "name": "thirdPartyEmail", "type": "NVARCHAR(250)", "nullable": true, "description": "Hasher.ThirdPartyEmail." },
+        { "name": "firstName", "type": "NVARCHAR(250)", "nullable": true, "description": "Hasher.FirstName." },
+        { "name": "hashName", "type": "NVARCHAR(250)", "nullable": true, "description": "Hasher.HashName." },
+        { "name": "lastName", "type": "NVARCHAR(250)", "nullable": true, "description": "Hasher.LastName." },
+        { "name": "dispPref", "type": "SMALLINT", "nullable": false, "description": "Hasher.NameDisplayPreference." },
+        { "name": "dispName", "type": "NVARCHAR(MAX)", "nullable": false, "description": "Hasher.DisplayName COALESCE'd to empty string." },
+        { "name": "qrCode", "type": "NVARCHAR(50)", "nullable": false, "description": "Hasher.QR_code." },
+        { "name": "supportCode", "type": "NVARCHAR(50)", "nullable": false, "description": "Hasher.SupportCode." },
+        { "name": "qrSecretCode", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Hasher.QR_secret_code." },
+        { "name": "resetCode", "type": "NVARCHAR(50)", "nullable": false, "description": "Hasher.ResetCode." },
+        { "name": "includeInGlobalHashDirectory", "type": "SMALLINT", "nullable": false, "description": "Hasher.IncludeInGlobalHashDirectory." },
+        { "name": "preferences", "type": "INT", "nullable": false, "description": "Hasher.Preferences." },
+        { "name": "updatedAt", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "Hasher.updatedAt. HC6 returns native DATETIMEOFFSET(7) — no longer cast to NVARCHAR." },
+        { "name": "removed", "type": "SMALLINT", "nullable": true, "description": "Hasher.Removed." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Hasher — updates OAuth token fields, name, photo, and Removed=0 when an existing hasher is resolved by thirdPartyUserId/email/thirdPartyEmail",
+    "INSERT HC.Hasher — creates a new hasher record when no existing match is found",
+    "UPDATE HC.Kennel SET KennelFacebookToken — when thirdPartyLoginType='facebook', syncs the access token to any kennel whose KennelFacebookTokenUsername matches @email or @thirdPartyEmail",
+    "INSERT HC.ErrorLog — on device not found, invalid token, user not created, or unhandled CATCH error"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Post-commit safety check runs outside the transaction",
+      "detail": "The verification SELECT (lines 214-235) that confirms the hasher was created/found runs after COMMIT TRANSACTION. If the connection drops between COMMIT and the SELECT, the error path fires falsely. The verification query also uses slightly different matching logic than the upsert (drops the thirdPartyEmail=@email cross-check), so a hasher created via that path would not be found by the verification query."
+    },
+    {
+      "severity": "medium",
+      "issue": "@includeInGlobalHashDirectory sentinel -1 has no effect on the update path",
+      "detail": "The SP header documents -1 as 'do not update', and the normalisation at line 77 converts -1 to NULL. However on the update path (line 145-165) IncludeInGlobalHashDirectory is never touched — so the sentinel is irrelevant for existing hashers regardless. On the insert path, NULL correctly defaults to 0 via COALESCE. This is not a bug but the parameter semantics are misleading for callers updating an existing hasher."
+    },
+    {
+      "severity": "medium",
+      "issue": "@latitude/@longitude type mismatch vs table columns",
+      "detail": "@latitude is DECIMAL(18,15) but Hasher.HomeLatitude is DECIMAL(12,9). @longitude is DECIMAL(19,15) but Hasher.HomeLongitude is DECIMAL(13,9). The higher-precision parameters will be silently truncated on insert. Does not affect the USA detection logic (which uses the parameter values directly), but any inserted lat/long values will lose precision."
+    },
+    {
+      "severity": "low",
+      "issue": "Facebook kennel token sync duplicates trigger behaviour",
+      "detail": "The explicit UPDATE HC.Kennel at lines 200-207 (inside the transaction) syncs the Facebook token when loginType='facebook'. The HC.Hasher table also has a trigger (trgUpdateKennelToken) that performs the same sync on UPDATE of ThirdPartyAccessToken or ThirdPartyEmail. Both paths will fire for the update case, resulting in two UPDATE HC.Kennel statements per login on the update path. Harmless but redundant."
+    },
+    {
+      "severity": "low",
+      "issue": "Hasher resolution uses TOP 1 without ORDER BY",
+      "detail": "If multiple hashers match the five-way OR condition (thirdPartyUserId, email, thirdPartyEmail cross-matches), TOP 1 returns an arbitrary row. The five-way OR on lines 136-141 is broad enough that a collision between two hashers sharing only an email would pick an unpredictable one."
+    }
+  ],
+  "breakingChanges": [
+    "@deviceId type changed from NVARCHAR(50) to UNIQUEIDENTIFIER — callers passing string UUIDs must now use typed UNIQUEIDENTIFIER binding",
+    "@firstName/@lastName/@hashName/@email widened from NVARCHAR(120) to NVARCHAR(250) — non-breaking for callers but fixes silent truncation of values between 121-250 chars",
+    "@photo narrowed from NVARCHAR(2000) to NVARCHAR(1000) to match Hasher.Photo — values over 1000 chars will now be rejected by SQL Server parameter binding rather than silently truncated at insert",
+    "@thirdPartyEmail widened from NVARCHAR(120) to NVARCHAR(250) to match Hasher.ThirdPartyEmail — non-breaking for callers",
+    "@thirdPartyAccessTokenExpires type changed from NVARCHAR(150) to DATETIMEOFFSET(7) — callers must pass a typed datetime value, not a date string",
+    "@hashersUpdatedAfter parameter removed — this dead parameter was accepted but never used in HC5; callers must remove it from their call signatures",
+    "HasherProfile rowset column updatedAt type changed from NVARCHAR(50) (local-time string) to DATETIMEOFFSET(7) — callers must parse a typed datetime value instead of a formatted string",
+    "Auth error format changed from non-standard Pascal-cased single rowset (HC5 rowset 0: ErrorType/ErrorTitle/ErrorDescription) to standard HC6 two-rowset format (rowset 0: success envelope + rowset 1: error detail)",
+    "Hardcoded FILTH Leiden HasherKennelMap insert for new users removed — new users are no longer auto-followed to any kennel on registration",
+    "Success envelope (rowset 0: success/errorCode/errorType) added as a new leading rowset — callers expecting HasherProfile as rowset 0 must shift to rowset 1"
+  ]
+}

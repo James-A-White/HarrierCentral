@@ -253,10 +253,7 @@ class ApproveLoginService {
     }
 
     // 3. Get current position (with desired accuracy)
-    return await Geolocator.getLastKnownPosition(
-      // desiredAccuracy: LocationAccuracy.high,
-      // timeLimit: Duration(seconds: 5),
-    );
+    return await Geolocator.getLastKnownPosition();
   }
 
   Future<bool> _onLoginDelayed(BuildContext context, String message) async {

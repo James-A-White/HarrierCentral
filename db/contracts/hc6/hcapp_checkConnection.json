@@ -1,0 +1,34 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_checkConnection",
+  "version": "1.0.0",
+  "description": "Unauthenticated end-to-end connectivity ping. Returns a single hardcoded row to confirm the app can reach the database via the API shim. No parameters, no auth, no side effects.",
+  "parameters": [],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ConnectionResult",
+      "description": "Single hardcoded row returned on all calls.",
+      "columns": [
+        {
+          "name": "result",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Always the string literal 'Connected'."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH or XACT_ABORT",
+      "detail": "Acceptable for a trivial read-only SP that cannot fail, but inconsistent with HC6 standards. Low risk given the SP can never error."
+    }
+  ],
+  "breakingChanges": [
+    "@deviceId (UNIQUEIDENTIFIER) parameter removed — was a dead input in HC5, never read or used.",
+    "@accessToken (NVARCHAR(1000)) parameter removed — was a dead input in HC5, never validated or used."
+  ]
+}

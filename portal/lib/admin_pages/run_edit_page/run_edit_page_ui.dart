@@ -707,6 +707,13 @@ class RunMiscTabContent extends StatelessWidget {
             ],
           ),
 
+          // Geographic Scope Section
+          HelperWidgets().categoryLabelWidget('Event Type'),
+          _buildPublishingDropdown(
+            RunMiscField.geographicScope,
+            controller.geographicScope,
+          ),
+
           // Run Number Section
           HelperWidgets().categoryLabelWidget('Run Number'),
           _buildRunNumberField(),

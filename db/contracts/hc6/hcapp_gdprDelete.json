@@ -1,0 +1,117 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_gdprDelete",
+  "version": "1.0.0",
+  "description": "Irreversibly anonymises the calling user's HC.Hasher record in response to a GDPR deletion request. Overwrites all PII fields with anonymous placeholders, obfuscates SupportCode/ResetCode/QR_code by prepending '*', sets Removed=1. Does not delete the row — referential integrity in HC.HasherEventMap and HC.Payment is preserved. Returns an error if the user is already removed.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "Auth: device UUID used to look up the authenticated user and device secret. Validated via HC6.ValidateAppAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token, validated via HC6.ValidateAppAuth."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Always returned as the first rowset. success=0 on auth failure, already-removed, or unhandled error. success=1 on successful deletion.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "BIT",
+          "nullable": false,
+          "description": "1 on successful deletion; 0 on any error."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success. 1511 if user not found or already removed. 1911 on unhandled CATCH error. Auth error codes set by ValidateAppAuth."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success. See errorType notes below."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ErrorDetail",
+      "description": "Only present when success=0. Provides structured error information for logging and display.",
+      "columns": [
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Unique ID of the HC.ErrorLog entry written for this error."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification code. 15 for already-removed/not-found business rule. 19 for unhandled CATCH error. Auth codes set by ValidateAppAuth."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Numeric error code. 1511 for already-removed/not-found. 1911 for unhandled CATCH error."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Short display title. 'Delete failed' for 1511. 'Unexpected error' for 1911."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "User-facing message. For 1511: 'Your account could not be deleted. It may have already been removed. Please contact connect@harriercentral.com for assistance.' For 1911: 'An unexpected error occurred. Please try again.'"
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "SP name from OBJECT_NAME(@@PROCID). Always 'hcapp_gdprDelete'."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Hasher SET HomeKennelId=NULL, MotherKennelId=NULL, SupportCode='*'+SupportCode, ResetCode='*'+ResetCode, QR_code='*'+QR_code, QR_secret_code=NEWID(), HashName='Deleted User', FirstName='Deleted', LastName='User', Email=<original ResetCode>+'@harriercentral.com', Photo='bundle://avatar-0', FacebookId=NULL, FacebookAccessToken=NULL, FacebookAccessTokenLastUpdated=NULL, ThirdPartyUserId=NULL, ThirdPartyAccessToken=NULL, ThirdPartyAuthorizationCode=NULL, ThirdPartyEmail=NULL, ThirdPartyLoginType='none', ThirdPartyTokenLastUpdated=NULL, ThirdPartyAccessTokenExpires=NULL, Description=NULL, HomeLatitude=NULL, HomeLongitude=NULL, SingleSignOnId=NULL, SingleSignOnType=NULL, IsBetaTester=0, Removed=1, updatedAt=GETDATE() WHERE id=@userId AND Removed=0",
+    "INSERT HC.ErrorLog on already-removed (errorCode 1511) or unhandled error (errorCode 1911)",
+    "HC.Hasher trigger trgCalculateHasherGeolocation fires after UPDATE of HomeLatitude/HomeLongitude — automatically nulls HomeGeolocation (geography column) when both are set to NULL"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "updatedAt set with GETDATE() instead of SYSDATETIMEOFFSET()",
+      "detail": "HC.Hasher.updatedAt is DATETIMEOFFSET(7) NOT NULL. GETDATE() returns DATETIME (no timezone offset). SQL Server will implicitly cast but this loses timezone information and is inconsistent with other HC6 SPs that use SYSDATETIMEOFFSET() or CONVERT(DATETIMEOFFSET(7), SYSDATETIMEUTC(), 0)."
+    },
+    {
+      "severity": "low",
+      "issue": "Email uniqueness risk on re-deletion attempt",
+      "detail": "Email is set to <originalResetCode>+'@harriercentral.com'. ResetCode is immediately prefixed with '*' in the same UPDATE statement, but the Email assignment reads the pre-update ResetCode value — so Email will be e.g. 'URC:XXXXX@harriercentral.com'. If somehow called twice (race condition before Removed=1 is committed), the unique index IX_HasherUniqueEmail could collide. The WHERE Removed=0 guard makes this very unlikely but not impossible under concurrent load."
+    }
+  ],
+  "breakingChanges": [
+    "TRY/CATCH and explicit transaction added — HC5 had neither; failures now roll back atomically instead of leaving partial state.",
+    "Standard success envelope rowset added (success, errorCode, errorType) — HC5 returned a plain 'success'/'failed' string in a single-column DeletionResult rowset.",
+    "Error rowsets now use lowercase camelCase column names (errorId, errorType, errorTitle, errorUserMessage, errorProc) with an errorId — HC5 used Pascal-case (ErrorType, ErrorTitle, ErrorDescription) with no errorId.",
+    "QR_secret_code, ThirdPartyAuthorizationCode, ThirdPartyTokenLastUpdated, and ThirdPartyAccessTokenExpires are now also cleared — HC5 missed these fields.",
+    "HomeGeolocation column is no longer explicitly cleared in the UPDATE — the trgCalculateHasherGeolocation trigger handles it automatically when HomeLatitude and HomeLongitude are nulled.",
+    "If user is already removed or not found, errorCode 1511 is returned — HC5 silently returned the string 'failed' with no error log entry."
+  ]
+}

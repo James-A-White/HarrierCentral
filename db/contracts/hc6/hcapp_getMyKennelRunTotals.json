@@ -1,0 +1,82 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getMyKennelRunTotals",
+  "version": "1.0.0",
+  "description": "Returns the calling user's run and haring totals per kennel, with an optional filter to a single kennel. A synthetic GRAND TOTAL row (KennelId = null UUID) is appended as the first row (rowNum=0), containing the sum of all kennel totals. Totals are computed live from HC.HasherEventMap (not from denormalised count columns). Requires device auth via HC6.ValidateAppAuth.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "Registered device UUID. Used by ValidateAppAuth to resolve the calling user."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived cryptographic token validated by ValidateAppAuth against the device secret."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Optional kennel filter. NULL (or the legacy null-UUID '00000000-...') returns totals across all kennels. A valid kennel UUID filters to a single kennel. The null-UUID sentinel is normalised to NULL at the top of the SP for backward compatibility."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "Returned when ValidateAppAuth rejects the request (bad token, unknown device, etc.). errorType values follow the HC6 app error code scheme.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Unique ID of the HC.ErrorLog entry logged by ValidateAppAuth." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code. 11=auth failure." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Specific error code within the errorType category." },
+        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short error title for display." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
+        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name from OBJECT_NAME(@@PROCID)." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "RunTotals",
+      "description": "Per-kennel run totals for the calling user, ordered by rowNum ascending. The GRAND TOTAL aggregate row is always first (rowNum=0) with KennelId='00000000-0000-0000-0000-000000000000'. Per-kennel rows follow, ordered by totalRunsThisKennel DESC. Rows where totalRunsThisKennel=0 are excluded. Filtered events must have IsCountedRun=1 and IsVisible=1.",
+      "columns": [
+        { "name": "KennelId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The kennel's internal ID (HC.Kennel.id). '00000000-0000-0000-0000-000000000000' for the GRAND TOTAL row." },
+        { "name": "KennelLogo", "type": "NVARCHAR(500)", "nullable": true, "description": "Kennel logo URL (HC.Kennel.KennelLogo). '<no logo>' for the GRAND TOTAL row." },
+        { "name": "KennelName", "type": "NVARCHAR(250)", "nullable": true, "description": "Full kennel name (HC.Kennel.KennelName). 'GRAND TOTAL ALL KENNELS' for the aggregate row." },
+        { "name": "totalRunsThisKennel", "type": "INT", "nullable": false, "description": "Count of HasherEventMap rows where AttendenceState >= 20, IsCountedRun=1, IsVisible=1 for this kennel. Summed across all kennels for the GRAND TOTAL row." },
+        { "name": "totalPackRunsThisKennel", "type": "INT", "nullable": false, "description": "totalRunsThisKennel minus totalHaringThisKennel (i.e. attended runs where the user was not a hare)." },
+        { "name": "totalHaringThisKennel", "type": "INT", "nullable": false, "description": "Count of HasherEventMap rows where IsHare != 0 within the counted runs. Summed across all kennels for the GRAND TOTAL row." },
+        { "name": "following", "type": "SMALLINT", "nullable": false, "description": "HasherKennelMap.Following value for the calling user at this kennel. 0 if no HasherKennelMap row exists (LEFT JOIN with COALESCE). Always 0 for the GRAND TOTAL row." },
+        { "name": "KennelShortName", "type": "NVARCHAR(25)", "nullable": true, "description": "Kennel short name (HC.Kennel.KennelShortName). 'TOTALS' for the GRAND TOTAL row." }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "No TRY/CATCH around main query body",
+      "detail": "ValidateAppAuth errors are caught and returned cleanly, but any SQL error in the CTE, temp table insert, or final SELECT (lines 70-123) will propagate as an unhandled exception with no standard error envelope. A TRY/CATCH wrapping the post-auth block should be added."
+    },
+    {
+      "severity": "low",
+      "issue": "GRAND TOTAL row mixed into result set via null-UUID sentinel",
+      "detail": "Callers must detect KennelId='00000000-...' to identify the aggregate row. An explicit isGrandTotal BIT column would be cleaner and remove the need for callers to know the sentinel value."
+    },
+    {
+      "severity": "low",
+      "issue": "following column type mismatch vs table",
+      "detail": "HasherKennelMap.Following is SMALLINT in the base table. The CTE exposes it as-is via COALESCE(hkm.Following, 0), so the result column is effectively SMALLINT. The HC5 contract documented it as INT — corrected in this HC6 contract."
+    }
+  ],
+  "breakingChanges": [
+    "@kennelId default changed from the null-UUID sentinel ('00000000-0000-0000-0000-000000000000') to NULL. The SP normalises the old sentinel to NULL for backward compatibility, so existing callers passing the null-UUID will continue to work.",
+    "Auth model changed from HC5 shared-secret pattern to HC6 ValidateAppAuth helper SP — callers must pass a token generated by the HC6 auth flow.",
+    "Error rowset column set changed: HC5 error rowsets included 'debugMessage'; HC6 error rowset (from ValidateAppAuth) does not expose debugMessage to callers — it is logged internally only."
+  ]
+}

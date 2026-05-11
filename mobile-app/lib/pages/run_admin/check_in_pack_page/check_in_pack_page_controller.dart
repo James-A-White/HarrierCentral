@@ -82,9 +82,12 @@ class CheckInPackController extends GetxController
 
     searchTypeText.value = searchKennel;
 
-    _getAllHashers().then((_) {
-      refreshSqlTablesFromBackend(true);
-    });
+    unawaited(initStateAsync());
+  }
+
+  Future<void> initStateAsync() async {
+    await _getAllHashers();
+    await refreshSqlTablesFromBackend(true);
   }
 
   Future<void> _getAllHashers() async {
@@ -142,11 +145,11 @@ class CheckInPackController extends GetxController
           COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount}, 0) AS historicalHaringCount,
           COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalCountIsEstimate}, 0) AS historicalCountIsEstimate,
           ken.${tableModel.kennelsTableHelper.colKennelName} as homeKennelName
-      FROM ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h 
-      LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm ON h.hasherId = hkm.userId
-      LEFT OUTER JOIN ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem ON hem.userId = hkm.userId AND hem.eventId = "${eventAggregate.event.eventId}"
-      LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay ON pay.hemId = hem.hemId AND pay.cancelledBy IS NULL
-      LEFT OUTER JOIN ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} ken on h.${tableModel.hashersTableHelper.colHomeKennelId} = ken.${tableModel.kennelsTableHelper.colKennelId}
+      FROM ${EnumDataTables.hashers.commonTableName} h 
+      LEFT OUTER JOIN ${EnumDataTables.hasherKennelMap.eventTableName} hkm ON h.hasherId = hkm.userId
+      LEFT OUTER JOIN ${EnumDataTables.hasherEventMap.eventTableName} hem ON hem.userId = hkm.userId AND hem.eventId = "${eventAggregate.event.eventId}"
+      LEFT OUTER JOIN ${EnumDataTables.payments.eventTableName} pay ON pay.hemId = hem.hemId AND pay.cancelledBy IS NULL
+      LEFT OUTER JOIN ${EnumDataTables.kennels.commonTableName} ken on h.${tableModel.hashersTableHelper.colHomeKennelId} = ken.${tableModel.kennelsTableHelper.colKennelId}
       WHERE h.${tableModel.hashersTableHelper.colDispName} NOT LIKE 'Placeholder user for%'
       ORDER BY nameForDisplay;
       ''';
@@ -171,10 +174,10 @@ class CheckInPackController extends GetxController
     }
 
     await tableModel.syncEventAdminService.updateFromBackend(
-      SyncEventAdminService.flagHashersTable |
-          SyncEventAdminService.flagPaymentsTable |
-          SyncEventAdminService.flagHasherEventMapTable |
-          SyncEventAdminService.flagHasherKennelMapTable,
+      EnumDataTables.hashers.flag |
+          EnumDataTables.payments.flag |
+          EnumDataTables.hasherEventMap.flag |
+          EnumDataTables.hasherKennelMap.flag,
       true,
       eventAggregate.event.eventId,
     );
@@ -192,12 +195,12 @@ class CheckInPackController extends GetxController
         COUNT(CASE WHEN pay.paymentType >= 2 THEN 1 ELSE NULL END) as paid,
         COUNT(CASE WHEN rsvpState >= 2 AND attendenceState < 20 THEN 1 ELSE NULL END) as coming,
         COUNT(CASE WHEN attendenceState >= 30 THEN 1 ELSE NULL END) as onIn,
-        (SELECT COUNT(*) FROM ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm 
+        (SELECT COUNT(*) FROM ${EnumDataTables.hasherKennelMap.eventTableName} hkm 
          WHERE hkm.kennelId = "${eventAggregate.event.kennelId}" AND hkm.isMember = 1) as memberCount
-      FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem
-      INNER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h 
+      FROM ${EnumDataTables.hasherEventMap.eventTableName} hem
+      INNER JOIN ${EnumDataTables.hashers.commonTableName} h 
         ON hem.${tableModel.hasherEventMapTableHelper.colUserId} = h.${tableModel.hashersTableHelper.colHasherId}
-      LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay 
+      LEFT OUTER JOIN ${EnumDataTables.payments.eventTableName} pay 
         ON pay.hemId = hem.hemId AND pay.cancelledBy IS NULL
       WHERE h.${tableModel.hashersTableHelper.colRemoved} = 0
     ''';
@@ -293,11 +296,11 @@ class CheckInPackController extends GetxController
           hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount} AS historicalHaringCount,
           hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalCountIsEstimate} AS historicalCountIsEstimate,
           ken.${tableModel.kennelsTableHelper.colKennelName} as homeKennelName
-      FROM ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm
-      INNER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h ON h.hasherId = hkm.userId
-      LEFT OUTER JOIN ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem ON hem.userId = hkm.userId AND hem.eventId = "${eventAggregate.event.eventId}"
-      LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay ON pay.hemId = hem.hemId AND pay.cancelledBy IS NULL
-      LEFT OUTER JOIN ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} ken on h.${tableModel.hashersTableHelper.colHomeKennelId} = ken.${tableModel.kennelsTableHelper.colKennelId}
+      FROM ${EnumDataTables.hasherKennelMap.eventTableName} hkm
+      INNER JOIN ${EnumDataTables.hashers.commonTableName} h ON h.hasherId = hkm.userId
+      LEFT OUTER JOIN ${EnumDataTables.hasherEventMap.eventTableName} hem ON hem.userId = hkm.userId AND hem.eventId = "${eventAggregate.event.eventId}"
+      LEFT OUTER JOIN ${EnumDataTables.payments.eventTableName} pay ON pay.hemId = hem.hemId AND pay.cancelledBy IS NULL
+      LEFT OUTER JOIN ${EnumDataTables.kennels.commonTableName} ken on h.${tableModel.hashersTableHelper.colHomeKennelId} = ken.${tableModel.kennelsTableHelper.colKennelId}
       WHERE hkm.kennelId = "${eventAggregate.event.kennelId}" 
         AND COALESCE(hem.virginVisitorType, 0) = 0
         AND (
@@ -356,10 +359,10 @@ class CheckInPackController extends GetxController
           NULL AS ${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount},
           NULL AS ${tableModel.hasherKennelMapTableHelper.colHistoricalCountIsEstimate},
           ken2.${tableModel.kennelsTableHelper.colKennelName} as homeKennelName
-      FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem2
-      INNER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h2 ON h2.hasherId = hem2.userId
-      LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay2 ON pay2.hemId = hem2.hemId AND pay2.cancelledBy IS NULL
-      LEFT OUTER JOIN ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} ken2 on h2.${tableModel.hashersTableHelper.colHomeKennelId} = ken2.${tableModel.kennelsTableHelper.colKennelId}
+      FROM ${EnumDataTables.hasherEventMap.eventTableName} hem2
+      INNER JOIN ${EnumDataTables.hashers.commonTableName} h2 ON h2.hasherId = hem2.userId
+      LEFT OUTER JOIN ${EnumDataTables.payments.eventTableName} pay2 ON pay2.hemId = hem2.hemId AND pay2.cancelledBy IS NULL
+      LEFT OUTER JOIN ${EnumDataTables.kennels.commonTableName} ken2 on h2.${tableModel.hashersTableHelper.colHomeKennelId} = ken2.${tableModel.kennelsTableHelper.colKennelId}
       WHERE hem2.eventId = "${eventAggregate.event.eventId}" 
         AND hem2.virginVisitorType != 0
 
@@ -405,12 +408,12 @@ class CheckInPackController extends GetxController
           hkm4.${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount},
           hkm4.${tableModel.hasherKennelMapTableHelper.colHistoricalCountIsEstimate},
           ken3.${tableModel.kennelsTableHelper.colKennelName} as homeKennelName
-      FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem3
-      INNER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h3 ON h3.hasherId = hem3.userId
-      LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay3 ON pay3.hemId = hem3.hemId AND pay3.cancelledBy IS NULL
-      LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm3 ON hkm3.userId = h3.hasherId AND hkm3.kennelId = "${eventAggregate.event.kennelId}" AND julianday(hkm3.membershipExpirationDate) >= julianday('now', '$offsetFromGmtToLocal')
-      LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm4 ON hkm4.userId = h3.hasherId AND hkm4.kennelId = "${eventAggregate.event.kennelId}" 
-      LEFT OUTER JOIN ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} ken3 on h3.${tableModel.hashersTableHelper.colHomeKennelId} = ken3.${tableModel.kennelsTableHelper.colKennelId}
+      FROM ${EnumDataTables.hasherEventMap.eventTableName} hem3
+      INNER JOIN ${EnumDataTables.hashers.commonTableName} h3 ON h3.hasherId = hem3.userId
+      LEFT OUTER JOIN ${EnumDataTables.payments.eventTableName} pay3 ON pay3.hemId = hem3.hemId AND pay3.cancelledBy IS NULL
+      LEFT OUTER JOIN ${EnumDataTables.hasherKennelMap.eventTableName} hkm3 ON hkm3.userId = h3.hasherId AND hkm3.kennelId = "${eventAggregate.event.kennelId}" AND julianday(hkm3.membershipExpirationDate) >= julianday('now', '$offsetFromGmtToLocal')
+      LEFT OUTER JOIN ${EnumDataTables.hasherKennelMap.eventTableName} hkm4 ON hkm4.userId = h3.hasherId AND hkm4.kennelId = "${eventAggregate.event.kennelId}" 
+      LEFT OUTER JOIN ${EnumDataTables.kennels.commonTableName} ken3 on h3.${tableModel.hashersTableHelper.colHomeKennelId} = ken3.${tableModel.kennelsTableHelper.colKennelId}
       WHERE hem3.eventId = "${eventAggregate.event.eventId}" 
         AND hem3.virginVisitorType = 0 
         AND (
@@ -455,7 +458,7 @@ class CheckInPackController extends GetxController
         update(['AppScaffold']);
       }
 
-      filterPackListResults();
+      await filterPackListResults();
 
       if (forceShowAllHashers.value) {
         await _getAllHashers();
@@ -465,7 +468,7 @@ class CheckInPackController extends GetxController
     }
   }
 
-  void filterPackListResults() {
+  Future<void> filterPackListResults() async {
     final String query = searchText.value.toLowerCase();
     final bool hasSearch = query.isNotEmpty;
     final bool applyFilters = showFilter.value;
@@ -528,9 +531,8 @@ class CheckInPackController extends GetxController
       }
 
       highlightSearchType.value = true;
-      Future.delayed(const Duration(milliseconds: 1500)).then((_) {
-        highlightSearchType.value = false;
-      });
+      await Future.delayed(const Duration(milliseconds: 1500));
+      highlightSearchType.value = false;
     } else {
       searchTypeText.value = searchKennel;
       filteredList.assignAll(results);
@@ -539,26 +541,26 @@ class CheckInPackController extends GetxController
     update(['hasherList']);
   }
 
-  void toggleFilterPanel() {
+  Future<void> toggleFilterPanel() async {
     if (showFilter.value) {
-      animationController.reverse();
+      await animationController.reverse();
     } else {
-      animationController.forward();
+      await animationController.forward();
     }
     showFilter.toggle();
-    refreshPackListFromTables(true);
+    await refreshPackListFromTables(true);
   }
 
-  void clearSearch() {
+  Future<void> clearSearch() async {
     searchController.clear();
     searchText.value = '';
     forceShowAllHashers.value = false;
-    refreshPackListFromTables(true);
+    await refreshPackListFromTables(true);
   }
 
-  void onSearchChanged(String value) {
+  Future<void> onSearchChanged(String value) async {
     searchText.value = value;
-    filterPackListResults();
+    await filterPackListResults();
   }
 
   void onHasherTapped(BuildContext context, int index) async {
@@ -1187,7 +1189,7 @@ class CheckInPackController extends GetxController
             );
 
         await refreshPackListFromTables(false);
-        _refreshCounters(forceRefresh: true);
+        await _refreshCounters(forceRefresh: true);
 
         // setState(() {
         //   _isLoading = false;
@@ -1277,7 +1279,7 @@ class CheckInPackController extends GetxController
     }
   }
 
-  void filterOptionsPopup(BuildContext context) {
+  Future<void> filterOptionsPopup(BuildContext context) async {
     final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
       <String, dynamic>{
         'title': 'Hashers not here yet',
@@ -1406,139 +1408,139 @@ class CheckInPackController extends GetxController
       cancelButtonReturnValue: followTypeCancel,
     );
 
-    showDialog<dynamic>(
+    final retVal = await showDialog<dynamic>(
       context: context,
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return popup;
       },
-    ).then((dynamic retVal) {
-      switch (retVal) {
-        case FilterOptions.hashersNotHereYet:
-          filterValues = <RxInt>[
-            0.obs,
-            1.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-          ];
-          searchText.value = '';
-          searchController.text = '';
-          break;
-        case FilterOptions.hashersNotPaid:
-          filterValues = <RxInt>[
-            0.obs,
-            0.obs,
-            1.obs,
-            (-1).obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-          ];
-          searchText.value = '';
-          searchController.text = '';
-          break;
-        case FilterOptions.hashersStillOnTrail:
-          filterValues = <RxInt>[
-            0.obs,
-            0.obs,
-            1.obs,
-            0.obs,
-            (-1).obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-          ];
-          searchText.value = '';
-          searchController.text = '';
-          break;
-        case FilterOptions.clearAllFilters:
-          filterValues = <RxInt>[
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-          ];
-          searchText.value = '';
-          searchController.text = '';
-          break;
-        case FilterOptions.visitors:
-          filterValues = <RxInt>[
-            0.obs,
-            0.obs,
-            1.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-          ];
-          searchText.value = '(visitor)';
-          searchController.text = '(visitor)';
-          break;
-        case FilterOptions.virgins:
-          filterValues = <RxInt>[
-            0.obs,
-            0.obs,
-            1.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-          ];
-          searchText.value = '(virgin)';
-          searchController.text = '(virgin)';
-          break;
-        case FilterOptions.cancel:
-          break;
-        default:
-          filterValues = <RxInt>[
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-            0.obs,
-          ];
-          searchText.value = '';
-          searchController.text = '';
-          break;
-      }
+    );
 
-      if (retVal != FilterOptions.cancel) {
-        if (!showFilter.value) {
-          showFilter.value = true;
+    switch (retVal) {
+      case FilterOptions.hashersNotHereYet:
+        filterValues = <RxInt>[
+          0.obs,
+          1.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+        ];
+        searchText.value = '';
+        searchController.text = '';
+        break;
+      case FilterOptions.hashersNotPaid:
+        filterValues = <RxInt>[
+          0.obs,
+          0.obs,
+          1.obs,
+          (-1).obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+        ];
+        searchText.value = '';
+        searchController.text = '';
+        break;
+      case FilterOptions.hashersStillOnTrail:
+        filterValues = <RxInt>[
+          0.obs,
+          0.obs,
+          1.obs,
+          0.obs,
+          (-1).obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+        ];
+        searchText.value = '';
+        searchController.text = '';
+        break;
+      case FilterOptions.clearAllFilters:
+        filterValues = <RxInt>[
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+        ];
+        searchText.value = '';
+        searchController.text = '';
+        break;
+      case FilterOptions.visitors:
+        filterValues = <RxInt>[
+          0.obs,
+          0.obs,
+          1.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+        ];
+        searchText.value = '(visitor)';
+        searchController.text = '(visitor)';
+        break;
+      case FilterOptions.virgins:
+        filterValues = <RxInt>[
+          0.obs,
+          0.obs,
+          1.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+        ];
+        searchText.value = '(virgin)';
+        searchController.text = '(virgin)';
+        break;
+      case FilterOptions.cancel:
+        break;
+      default:
+        filterValues = <RxInt>[
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+          0.obs,
+        ];
+        searchText.value = '';
+        searchController.text = '';
+        break;
+    }
 
-          animationController.forward();
-        }
-        refreshPackListFromTables(true);
+    if (retVal != FilterOptions.cancel) {
+      if (!showFilter.value) {
+        showFilter.value = true;
+
+        await animationController.forward();
       }
-    });
+      await refreshPackListFromTables(true);
+    }
   }
 
   Future<void> findHasher(BuildContext context) async {

@@ -95,14 +95,31 @@ class FutureRunListPageController extends GetxController {
     searchController.text = '';
     searchRunsText.value = '';
 
+    unawaited(onInitAsync());
+  }
+
+  Future<void> onInitAsync() async {
     // do an immediate refresh from table to quickly display data already cached in the app
-    refreshFromTable(true).then((_) {
-      // then do any updates that require a trip to the server.
-      _onInitAsync().then((_) {
-        // _updateTotalNotificationCounter();
-        update(['runList', 'main_nav_page']);
-      });
-    });
+    await refreshFromTable(true);
+    // then do any updates that require a trip to the server.
+    appModel.hasLocationPermissions = await Permission.location.isGranted;
+
+    //await refreshFromBackend();
+    //await refreshFromTable(true);
+    //chatSummaryMap = await getEventChatMessageCounts();
+
+    if (Firebase.apps.isEmpty) {
+      await Get.putAsync(() => NotificationService().init());
+    }
+
+    if (Firebase.apps.isNotEmpty) {
+      final msg = await FirebaseMessaging.instance.getInitialMessage();
+      if (msg != null) {
+        await _processMessage(msg.data);
+      }
+    }
+    // _updateTotalNotificationCounter();
+    update(['runList', 'main_nav_page']);
   }
 
   void refreshRunListUi() {
@@ -186,25 +203,6 @@ class FutureRunListPageController extends GetxController {
   //   totalNotifications.value = total;
   // }
 
-  Future<void> _onInitAsync() async {
-    appModel.hasLocationPermissions = await Permission.location.isGranted;
-
-    //await refreshFromBackend();
-    //await refreshFromTable(true);
-    //chatSummaryMap = await getEventChatMessageCounts();
-
-    if (Firebase.apps.isEmpty) {
-      await Get.putAsync(() => NotificationService().init());
-    }
-
-    if (Firebase.apps.isNotEmpty) {
-      final msg = await FirebaseMessaging.instance.getInitialMessage();
-      if (msg != null) {
-        await _processMessage(msg.data);
-      }
-    }
-  }
-
   Future<void> processNotificationClickOnResume(RemoteMessage message) async {
     // if there was no initial message, check to see if there was
     // data from a message tap when the app was already opened but
@@ -233,7 +231,7 @@ class FutureRunListPageController extends GetxController {
             openToTab = RunTab.chat;
             break;
           case MessageType.checkinReminder:
-            await Utilities.checkAreWeAtRunStart(eventId: eventId);
+            await Utilities.isAtRunStart(eventId: eventId);
             break;
           case MessageType.rsvpReminder:
             openToTab = RunTab.rsvp;
@@ -241,18 +239,18 @@ class FutureRunListPageController extends GetxController {
         }
 
         if (openToTab != null) {
-          openRun(run, openToTab: openToTab);
+          await openRun(run, openToTab: openToTab);
         }
       }
     }
   }
 
-  void openList() {
+  Future<void> openList() async {
     final controller = Get.find<MainNavigationController>();
     controller.bottomNavigationKey.currentState?.setPage(0);
     runsToDisplay.value = RunsToDisplay.onMap;
     runsTimeScope.value = RunsTimeScope.all;
-    refreshFromTable(true);
+    await refreshFromTable(true);
   }
 
   void openMap() {
@@ -465,43 +463,52 @@ class FutureRunListPageController extends GetxController {
     update(['runList']);
   }
 
+  Future<void> clearTables({
+    required Database database,
+    required TableModel tableModel,
+    required List<EnumDataTables> tablesToClear,
+    required AppDomainType domain,
+  }) async {
+    for (final table in tablesToClear) {
+      final tableName = table.helperFrom(tableModel).getTableName(domain);
+
+      final query = 'DELETE FROM $tableName';
+
+      try {
+        await database.rawQuery(query);
+      } catch (e) {
+        // log / rethrow / swallow depending on your policy
+      }
+    }
+  }
+
   Future<void> refreshFromBackend({bool clearLocalTables = false}) async {
     if (clearLocalTables) {
       allRuns = null;
-      update(['runList']);
 
-      String query =
-          'DELETE FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.user)}';
-      try {
-        await database.rawQuery(query);
-      } catch (e) {
-        //print(e);
-      }
-
-      query =
-          'DELETE FROM ${tableModel.paymentsTableHelper.getTableName(AppDomainType.user)}';
-      try {
-        await database.rawQuery(query);
-      } catch (e) {
-        //print(e);
-      }
-
-      query =
-          'DELETE FROM ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)}';
-      try {
-        await database.rawQuery(query);
-      } catch (e) {
-        //print(e);
-      }
+      await clearTables(
+        database: database,
+        tableModel: tableModel,
+        domain: AppDomainType.user,
+        tablesToClear: [
+          EnumDataTables.hasherEventMap,
+          EnumDataTables.payments,
+          EnumDataTables.events,
+        ],
+      );
     }
 
     await tableModel.syncUserDataService.updateFromBackend(
-      SyncUserDataService.flagsAllData,
+      EnumDataTables.hasherEventMap.flag |
+          EnumDataTables.payments.flag |
+          EnumDataTables.events.flag,
       true,
       debugText: 'future_run_list_page: HEM, Events, Kennels',
     );
 
     await refreshFromTable(true);
+    update(['runList']);
+
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('Events user data synchronized $resultStr');
   }

@@ -167,6 +167,9 @@ class RunEditPageController extends TabUiController
   /// Can edit run attendance (canEditRunAttendence). -2 = Use Kennel Setting.
   final RxInt runAttendance = (-2).obs;
 
+  /// Geographic scope of this event (eventGeographicScope). 1 = Normal run.
+  final RxInt geographicScope = 1.obs;
+
   // ---------------------------------------------------------------------------
   // State - Tags
   // ---------------------------------------------------------------------------
@@ -585,6 +588,7 @@ class RunEditPageController extends TabUiController
     runAudience.value = originalData.evtDisseminationAudience ?? -2;
     allowWebLink.value = originalData.evtDisseminateAllowWebLinks ?? 2;
     runAttendance.value = originalData.canEditRunAttendence ?? -2;
+    geographicScope.value = originalData.eventGeographicScope;
 
     // Reset tags
     tags1.value = originalData.tags1;
@@ -791,6 +795,16 @@ class RunEditPageController extends TabUiController
     // Is counted run
     if (isAddMode || edited.isCountedRun != original.isCountedRun) {
       changes['isCountedRun'] = edited.isCountedRun;
+    }
+
+    // Is promoted event
+    if (isAddMode || edited.isPromotedEvent != original.isPromotedEvent) {
+      changes['isPromotedEvent'] = edited.isPromotedEvent;
+    }
+
+    // Geographic scope
+    if (isAddMode || edited.eventGeographicScope != original.eventGeographicScope) {
+      changes['eventGeographicScope'] = edited.eventGeographicScope;
     }
 
     // Event number

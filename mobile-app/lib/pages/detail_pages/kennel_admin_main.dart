@@ -1,4 +1,5 @@
 //import 'dart:ui' as ui;
+
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
@@ -30,6 +31,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
 
   @override
   void initState() {
+    super.initState();
     _saveUserMapPreference.addListener(() {
       setState(() {});
     });
@@ -52,21 +54,29 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
             );
     }
 
-    tableModel.syncKennelAdminService
-        .updateFromBackend(
-          SyncKennelAdminService.flagsAllData,
-          false,
-          widget.kennelAggregateItem.kennel.kennelId,
-        )
-        .then((bool result) {
-          _refreshFromTable(true).then((void _) {
-            setState(() {
-              //final String resultStr = result ? 'successfully' : 'unsuccessfully';
-              //print('Event admin data synchronized $resultStr');
-              _isLoading = false;
-            });
-          });
-        });
+    unawaited(
+      tableModel.syncKennelAdminService
+          .updateFromBackend(
+            EnumDataTables.kennels.flag |
+                EnumDataTables.hashers.flag |
+                EnumDataTables.hasherKennelMap.flag |
+                EnumDataTables.hasherEventMap.flag |
+                EnumDataTables.payments.flag,
+            false,
+            widget.kennelAggregateItem.kennel.kennelId,
+          )
+          .then((bool result) {
+            unawaited(
+              _refreshFromTable(true).then((void _) {
+                setState(() {
+                  //final String resultStr = result ? 'successfully' : 'unsuccessfully';
+                  //print('Event admin data synchronized $resultStr');
+                  _isLoading = false;
+                });
+              }),
+            );
+          }),
+    );
 
     nextRunUrlForQr = BASE_HASHRUNS_DOT_ORG_URL;
     kennelUrlForQr = BASE_HASHRUNS_DOT_ORG_URL;
@@ -74,8 +84,6 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
     nextRunUrlForQr +=
         '${widget.kennelAggregateItem.kennel.kennelUniqueShortName}/nextrun';
     kennelUrlForQr += widget.kennelAggregateItem.kennel.kennelUniqueShortName;
-
-    super.initState();
   }
 
   final MapController _mapController = MapController();
@@ -186,14 +194,16 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                 style: ts_appBarTitle,
               ),
             ),
-            body: _isLoading
-                ? const Center(
-                    child: HcAppCircularProgressIndicator(key: Key('16637721')),
-                  )
-                : Container(
-                    height: MediaQuery.of(context).size.height,
-                    decoration: Backgrounds.defaultHcBackground(),
-                    child: SingleChildScrollView(
+            body: Container(
+              height: MediaQuery.of(context).size.height,
+              decoration: Backgrounds.defaultHcBackground(),
+              child: _isLoading
+                  ? const Center(
+                      child: HcAppCircularProgressIndicator(
+                        key: Key('16637721'),
+                      ),
+                    )
+                  : SingleChildScrollView(
                       child: Padding(
                         padding: const EdgeInsets.only(
                           left: 20,
@@ -264,8 +274,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                           bottom: 5,
                                         ),
                                         child: GestureDetector(
-                                          onTap: () {
-                                            Navigator.push<void>(
+                                          onTap: () async {
+                                            await Navigator.push<void>(
                                               context,
                                               MaterialPageRoute<void>(
                                                 builder:
@@ -475,11 +485,11 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                     ),
                                                   ],
                                                 ),
-                                                onPressed: () {
+                                                onPressed: () async {
                                                   if (Utilities.isConnected(
                                                     showDialog: true,
                                                   )) {
-                                                    Navigator.push<dynamic>(
+                                                    await Navigator.push<dynamic>(
                                                       context,
                                                       MaterialPageRoute<
                                                         dynamic
@@ -497,11 +507,13 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                             ),
                                                       ),
                                                     ).then((void _) {
-                                                      _refreshFromTable(
-                                                        true,
-                                                      ).then((void _) {
-                                                        setState(() {});
-                                                      });
+                                                      unawaited(
+                                                        _refreshFromTable(
+                                                          true,
+                                                        ).then((void _) {
+                                                          setState(() {});
+                                                        }),
+                                                      );
                                                     });
                                                   }
                                                 },
@@ -558,11 +570,11 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                     ),
                                                   ],
                                                 ),
-                                                onPressed: () {
+                                                onPressed: () async {
                                                   if (Utilities.isConnected(
                                                     showDialog: true,
                                                   )) {
-                                                    Navigator.push<dynamic>(
+                                                    await Navigator.push<dynamic>(
                                                       context,
                                                       MaterialPageRoute<
                                                         dynamic
@@ -580,11 +592,13 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                             ),
                                                       ),
                                                     ).then((void _) {
-                                                      _refreshFromTable(
-                                                        true,
-                                                      ).then((void _) {
-                                                        setState(() {});
-                                                      });
+                                                      unawaited(
+                                                        _refreshFromTable(
+                                                          true,
+                                                        ).then((void _) {
+                                                          setState(() {});
+                                                        }),
+                                                      );
                                                     });
                                                   }
                                                 },
@@ -655,8 +669,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                     ),
                                                   ],
                                                 ),
-                                                onPressed: () {
-                                                  Navigator.push<dynamic>(
+                                                onPressed: () async {
+                                                  await Navigator.push<dynamic>(
                                                     context,
                                                     MaterialPageRoute<dynamic>(
                                                       builder:
@@ -738,8 +752,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                     ),
                                                   ],
                                                 ),
-                                                onPressed: () {
-                                                  Navigator.push<dynamic>(
+                                                onPressed: () async {
+                                                  await Navigator.push<dynamic>(
                                                     context,
                                                     MaterialPageRoute<dynamic>(
                                                       builder:
@@ -994,13 +1008,13 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                   ),
                                                 ],
                                               ),
-                                              onPressed: () {
+                                              onPressed: () async {
                                                 if (Utilities.isConnected(
                                                   showDialog: true,
                                                 )) {
                                                   final EmailReportsService
                                                   svc = EmailReportsService();
-                                                  svc
+                                                  await svc
                                                       .sendKennelRunStatsReportByEmail(
                                                         kennelId: widget
                                                             .kennelAggregateItem
@@ -1026,7 +1040,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                       .then((
                                                         Map<String, String>
                                                         result,
-                                                      ) {
+                                                      ) async {
                                                         ScaffoldMessenger.of(
                                                           navigatorKey
                                                               .currentContext!,
@@ -1038,20 +1052,24 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                             .startsWith(
                                                               'success',
                                                             )) {
-                                                          Utilities.showAlert(
+                                                          await Utilities.showAlert(
                                                             'E-mail successfully sent',
                                                             'Your Kennel run stats report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
                                                             'OK',
                                                           );
                                                         }
                                                       });
+                                                  if (navigatorKey
+                                                          .currentContext !=
+                                                      null) {
+                                                    IveCoreUtilities.showInSnackBar(
+                                                      navigatorKey
+                                                          .currentContext!,
 
-                                                  IveCoreUtilities.showInSnackBar(
-                                                    context,
-
-                                                    'Run stats being processed...',
-                                                    durationInSeconds: 10,
-                                                  );
+                                                      'Run stats being processed...',
+                                                      durationInSeconds: 10,
+                                                    );
+                                                  }
                                                 }
                                               },
                                             ),
@@ -1112,7 +1130,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                     ),
                                                   ],
                                                 ),
-                                                onPressed: () {
+                                                onPressed: () async {
                                                   if (Utilities.isConnected(
                                                     showDialog: true,
                                                   )) {
@@ -1122,7 +1140,10 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                               widget
                                                                   .kennelAggregateItem,
                                                         );
-                                                    Navigator.push<dynamic>(
+
+                                                    await Navigator.push<
+                                                      dynamic
+                                                    >(
                                                       context,
                                                       MaterialPageRoute<
                                                         dynamic
@@ -1135,47 +1156,36 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                                 _kennelMembersList ??
                                                                 Container(),
                                                       ),
-                                                    ).then((void _) async {
-                                                      final KennelListAggregate?
-                                                      kennelAggregate =
-                                                          await QueryKennels.getSingleKennel(
-                                                            widget
-                                                                .kennelAggregateItem
-                                                                .kennel
-                                                                .kennelId,
-                                                          );
+                                                    );
 
-                                                      setState(() {
-                                                        if ((kennelAggregate
-                                                                    ?.kennel
-                                                                    .kennelMismanagementTeam ==
-                                                                null) ||
-                                                            (kennelAggregate!
-                                                                .kennel
-                                                                .kennelMismanagementTeam!
-                                                                .trim()
-                                                                .isEmpty)) {
-                                                          _mismanagement = null;
-                                                        } else {
-                                                          _mismanagement =
-                                                              kennelAggregate
-                                                                  .kennel
-                                                                  .kennelMismanagementTeam!
-                                                                  .contains(
-                                                                    '\r',
-                                                                  )
-                                                              ? kennelAggregate
-                                                                    .kennel
-                                                                    .kennelMismanagementTeam!
-                                                                    .split('\r')
-                                                              : kennelAggregate
-                                                                    .kennel
-                                                                    .kennelMismanagementTeam!
-                                                                    .split(
-                                                                      '\n',
-                                                                    );
-                                                        }
-                                                      });
+                                                    // After returning from the pushed page:
+                                                    final KennelListAggregate?
+                                                    kennelAggregate =
+                                                        await QueryKennels.getSingleKennel(
+                                                          widget
+                                                              .kennelAggregateItem
+                                                              .kennel
+                                                              .kennelId,
+                                                        );
+
+                                                    if (!mounted) return;
+
+                                                    setState(() {
+                                                      final team = kennelAggregate
+                                                          ?.kennel
+                                                          .kennelMismanagementTeam
+                                                          ?.trim();
+
+                                                      if (team == null ||
+                                                          team.isEmpty) {
+                                                        _mismanagement = null;
+                                                        return;
+                                                      }
+
+                                                      _mismanagement =
+                                                          team.contains('\r')
+                                                          ? team.split('\r')
+                                                          : team.split('\n');
                                                     });
                                                   }
                                                 },
@@ -1384,7 +1394,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                                   .first;
 
                                                               // BUG in plugin - doesn't work when sending a title with Google maps
-                                                              activeMap.showMarker(
+                                                              await activeMap.showMarker(
                                                                 coords: maps.Coords(
                                                                   widget
                                                                       .kennelAggregateItem
@@ -1960,11 +1970,11 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                                     ),
                                                   ],
                                                 ),
-                                                onPressed: () {
+                                                onPressed: () async {
                                                   if (Utilities.isConnected(
                                                     showDialog: true,
                                                   )) {
-                                                    launchUrl(
+                                                    await launchUrl(
                                                       Uri.parse(
                                                         widget
                                                             .kennelAggregateItem
@@ -2220,7 +2230,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                         ),
                       ),
                     ),
-                  ),
+            ),
           ),
         ),
         OfflineModeRibbon(
@@ -2317,8 +2327,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
   Widget _runRow(RunDetailsAggregate s) {
     return RunListItem(
       futureRun: s,
-      onItemTapped: () {
-        Navigator.push<dynamic>(
+      onItemTapped: () async {
+        await Navigator.push<dynamic>(
           context,
           MaterialPageRoute<dynamic>(
             builder: (BuildContext context) => RunDetailsPage(futureRun: s),

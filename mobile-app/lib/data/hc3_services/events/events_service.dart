@@ -1,27 +1,25 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
 
-class EventsTableHelper extends BaseTableHelper with BaseFields {
+class EventsTableHelper extends BaseTableHelper<AppDomainType> with BaseFields {
   EventsTableHelper() {
     remoteDbId = 'eventId';
     humanReadableTableName = 'Hash Events';
     pageSize = SyncUserDataService.pageSize_eventsTable;
-    tableFlag = SyncUserDataService.flagNarrowEventsTable;
+    tableFlag = EnumDataTables.events.flag;
   }
 
   @override
-  String getTableName(dynamic appDomainType) {
+  String getTableName(AppDomainType appDomainType) {
     String tableName;
     switch (appDomainType) {
-      // case AppDomainType.event:
-      //   break;
-      // case AppDomainType.kennel:
-      //   break;
-      // case AppDomainType.user:
-      //   tableName = 'narrowEvents';
-      //   break;
+      case AppDomainType.user:
+        tableName = EnumDataTables.events.commonTableName;
+        break;
       default:
-        tableName = 'narrowEvents';
+        throw Exception(
+          'EnumDataTables.${EnumDataTables.events.name} does not have a table associated with it.',
+        );
     }
     return tableName;
   }
@@ -260,7 +258,7 @@ class EventsService extends BaseService {
     final int eventsLastUpdated = await getLastUpdatedTime(
       database,
       tableModel.eventsTableHelper,
-      tableModel.eventsTableHelper.getTableName(AppDomainType.user),
+      EnumDataTables.events.commonTableName,
       tableModel.eventsTableHelper.colUpdatedAtValue,
     );
     // final DateTime eventUpdatedAfter = eventsLastUpdated == null ? DateTime(2000, 1, 1) : DateTime.fromMicrosecondsSinceEpoch(eventsLastUpdated + 1);
@@ -446,7 +444,7 @@ class EventsService extends BaseService {
 
     final String body = jsonEncode(bodyMap);
 
-    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
+    final String responseBody = await ServiceCommon.sendHttpPost(body);
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       await tableModel.syncUserDataService

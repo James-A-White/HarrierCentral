@@ -75,7 +75,7 @@ END
 
 IF (@eventId IS NULL)
 BEGIN
-    SET @errorCode = 1260; SET @errorType = 2; SET @errorId = NEWID();
+    SET @errorCode = 1260; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Null or empty eventId', 'eventId is required', @procName, @userId);
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,

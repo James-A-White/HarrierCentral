@@ -393,6 +393,8 @@ export interface RunEvent {
   EventImage: string | null;
   EventUrl: string | null;
   IsCountedRun: number;
+  IsPromotedEvent: number;
+  EventGeographicScope: number;
   /** Human-readable tag names decoded from the Tags1/Tags2/Tags3 bitflags. */
   tags: string[];
 }

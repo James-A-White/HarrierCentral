@@ -1,11 +1,11 @@
 name: harrier_central
 description: A mobile app to manage your Hash House Harriers life.
-version: 2.1.3+1056 # see CHANGELOG.md for details
+version: 2.2.2+1095 # see CHANGELOG.md for details
 publish_to: none
 
 environment:
   sdk: '>=3.10.0 <4.0.0'
-  flutter: ^3.38.3
+  flutter: ^3.41.0
 
 # curved_labeled_navigation_bar 2.0.6
 
@@ -27,8 +27,8 @@ dependencies:
   dart_ipify: ^1.1.1
   diacritic: ^0.1.6
   device_info_plus: ^12.2.0
-  eventide: ^1.0.2
-  fancy_bottom_navigation_2: ^0.3.5
+  eventide: ^2.0.0
+  curved_labeled_navigation_bar: ^2.0.6
   firebase_core: ^4.0.0 #^3.13.0
   firebase_messaging: ^16.0.0 #^15.2.5
   flutter:
@@ -36,7 +36,7 @@ dependencies:
   flutter_avif: ^3.0.0
   flutter_cache_manager: ^3.3.0
   flutter_chat_types: ^3.6.2
-  flutter_chat_ui: ^1.6.15 
+  flutter_chat_ui: ^1.6.15
   flutter_image_compress: ^2.1.0 
   flutter_linkify: ^6.0.0  
   # flutter_localization: ^0.3.2
@@ -53,7 +53,7 @@ dependencies:
   flutter_vector_icons: ^2.0.0 
   freezed: ^3.0.6
   freezed_annotation: ^3.0.0
-  geolocator: ^14.0.2
+  geolocator: ^14.0.1
   get: ^4.6.5
   # get_it: ^8.0.3 
   get_storage: ^2.1.1
@@ -71,7 +71,7 @@ dependencies:
   ive_flutter_core_mobile: 
     git:
       url: https://github.com/InnoVet-Europe/ive_flutter_core_mobile.git
-      ref: d66d78df0c62d7a93f4aac3d5d7e494a232ef4ec # Version 1.2.11
+      ref: 25ad641f3bac2c0bc0df1a4a351ef7192304778d # Version 1.2.15
   json_annotation: ^4.9.0
   just_audio: ^0.10.4
   keyboard_actions: ^4.2.1
@@ -81,6 +81,7 @@ dependencies:
   # meta: ^1.16.0
   mobile_scanner: ^7.1.3
   package_info_plus: ^9.0.0
+  path: ^1.9.1
   path_provider: ^2.0.11
   pausable_timer: ^3.1.0+3
   # pdfx: 2.8.0
@@ -115,14 +116,14 @@ dependencies:
   
 dependency_overrides:
   # connectivity_plus: ^6.1.3
-  package_info_plus: ^8.0.0
+  # package_info_plus: ^8.0.0
   # intl: 0.19.0
   # device_info_plus: ^10.1.2
   analyzer: ^8.4.1
 
 dev_dependencies: 
-  # flutter_test:
-  #   sdk: flutter
+  flutter_test:
+    sdk: flutter
   build_runner: ^2.10.3
   flutter_launcher_icons: ^0.14.4
   # intl_translation: ^0.17.10+1 
@@ -170,6 +171,8 @@ flutter:
     - images/init/
     - images/init/intro/
     - images/logos/
+    - images/live_run_map_markers/
+    - images/live_run_trail_markers/
     - images/map_pins/baby_blue/
     - images/map_pins/blue/
     - images/map_pins/green/

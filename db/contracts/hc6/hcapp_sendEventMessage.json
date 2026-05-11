@@ -1,0 +1,156 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_sendEventMessage",
+  "version": "1.0.0",
+  "description": "Sends an event chat message. Inserts the message into HC.EventMessage (triggering the trgCreateSeqNum trigger which assigns MessageSequenceCount), upserts HC.EventMessageBadgeCounts so the sender never sees their own message as unread, then returns three rowsets: the inserted message detail, the list of users who qualify for a full push notification, and the list of users who get an in-app-only notification. Auth token is compound: DeviceSecret + eventId (as NVARCHAR). @messageReleasabilityFlags bitmask: 0x0001=mismanagement, 0x0002=members, 0x0004=followers, 0x0008=RSVPs, 0x0010=hares, 0x0020=everyone.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "Registered device UUID."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Compound auth token: DeviceSecret + eventId string. Validated by HC6.ValidateAppAuth with spNumber=61."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.EventId",
+      "description": "Internal event UUID. CAST to NVARCHAR(50) inside the SP for token suffix construction. Changed from NVARCHAR(250) in HC5 — breaking change."
+    },
+    {
+      "name": "messageId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.id",
+      "description": "Client-generated message UUID — used for idempotency. Required; null triggers a param validation error."
+    },
+    {
+      "name": "messageTitle",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.MessageTitle",
+      "description": "Optional message title. If null, overwritten with Event.EventName via COALESCE before insert."
+    },
+    {
+      "name": "messageContent",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.MessageContent",
+      "description": "Message body. Required — empty string or null triggers a param validation error."
+    },
+    {
+      "name": "messageReleasabilityFlags",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.MessageReleasabilityFlags",
+      "description": "Bitmask controlling who receives notifications. At least one bit in 0x003F must be set. 0x0001=mismanagement, 0x0002=members, 0x0004=followers, 0x0008=RSVPs, 0x0010=hares, 0x0020=everyone. Null or zero triggers a param validation error."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorResult",
+      "description": "Returned on auth failure or any parameter validation error (messageId null, eventId null, messageContent empty, or releasabilityFlags missing/zero). Each validation error uses early RETURN so at most one error rowset is emitted.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Unique ID of the HC.ErrorLog entry." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification: 11=auth, 12=param." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Specific error code. Auth failures use codes from ValidateAppAuth; param validation uses 1261." },
+        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": true, "description": "Short error title for display." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "User-facing error message." },
+        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "InsertedMessage",
+      "description": "The just-inserted message. Single row. Returned on success in place of the error rowset.",
+      "columns": [
+        { "name": "MessageId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "EventMessage.id — the client-supplied messageId." },
+        { "name": "EventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "EventMessage.EventId. Now UNIQUEIDENTIFIER (was NVARCHAR in HC5) — breaking change." },
+        { "name": "PublicEventId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "EventMessage.PublicEventId — public-facing event UUID." },
+        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Hasher.PublicHasherId of the sender (not the internal Hasher.id)." },
+        { "name": "UserDisplayName", "type": "NVARCHAR(250)", "nullable": true, "description": "Hasher.DisplayName — computed column (hash name or real name per preference)." },
+        { "name": "UserPhoto", "type": "NVARCHAR(1000)", "nullable": true, "description": "Hasher.Photo — URL of sender's profile photo." },
+        { "name": "MessageTitle", "type": "NVARCHAR(250)", "nullable": true, "description": "Formatted as DisplayName + ' - ' + MessageTitle. Reflects the COALESCE default if the caller passed null." },
+        { "name": "MessageContent", "type": "NVARCHAR(500)", "nullable": false, "description": "EventMessage.MessageContent." },
+        { "name": "MessageReleasabilityFlags", "type": "INT", "nullable": false, "description": "EventMessage.MessageReleasabilityFlags. Column name corrected from HC5 typo 'MessageRelesabilityFlags' — breaking change for any caller reading this column by name." },
+        { "name": "EventChatMessageCount", "type": "INT", "nullable": false, "description": "Always 0 — hardcoded. Obsolete field retained for client compatibility." },
+        { "name": "MessageType", "type": "INT", "nullable": false, "description": "EventMessage.MessageType — integer type code (INT in table, not NVARCHAR as incorrectly documented in HC5 contract)." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "FullPushNotificationRecipients",
+      "description": "Users who qualify for a full push notification based on notification preferences, membership/releasability flags, and the 6-hour event proximity window. Only rows with a non-null FcmToken are included.",
+      "columns": [
+        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HasherKennelMap.UserId — internal Hasher.id (not PublicHasherId)." },
+        { "name": "FcmToken", "type": "NVARCHAR(500)", "nullable": false, "description": "Device.FcmToken — only non-null tokens are returned." }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "InAppOnlyNotificationRecipients",
+      "description": "Kennel followers and members who did not qualify for a full push in rowset 1 — intended to receive an in-app realtime update only. Users in rowset 1 are excluded via a NOT IN subquery.",
+      "columns": [
+        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HasherKennelMap.UserId." },
+        { "name": "FcmToken", "type": "NVARCHAR(500)", "nullable": false, "description": "Device.FcmToken — only non-null tokens are returned." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.ErrorLog — on any parameter validation failure",
+    "INSERT HC.EventMessage — main message insert; triggers trgCreateSeqNum which assigns MessageSequenceCount to all messages for the event",
+    "MERGE HC.EventMessageBadgeCounts — upserts the sender's last-read position to the new MessageSequenceCount, so the sender never sees their own message as unread"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "INSERT and MERGE outside a transaction",
+      "detail": "The INSERT into HC.EventMessage and MERGE into HC.EventMessageBadgeCounts are not wrapped in BEGIN/COMMIT TRANSACTION. XACT_ABORT ON provides rollback on error but there is no explicit transaction boundary. If the MERGE fails after the INSERT succeeds, the message is persisted without the sender's badge count being updated. Should be wrapped in a transaction."
+    },
+    {
+      "severity": "high",
+      "issue": "No TRY/CATCH around write operations",
+      "detail": "The INSERT and MERGE have no TRY/CATCH block. Unhandled runtime errors (e.g. FK violation, trigger failure) will surface as raw SQL Server exceptions rather than the standard error envelope. XACT_ABORT will roll back any open transaction but the caller receives no structured error rowset."
+    },
+    {
+      "severity": "medium",
+      "issue": "NOT IN subquery for rowset 2 exclusion is fragile",
+      "detail": "Rowset 2 excludes rowset 1 recipients using NOT IN with a correlated subquery. If any UserId in the subquery is NULL, NOT IN returns no rows (SQL three-valued logic). HasherKennelMap.UserId is UNIQUEIDENTIFIER NOT NULL so this is safe in practice, but NOT EXISTS would be the more correct pattern."
+    },
+    {
+      "severity": "medium",
+      "issue": "6-hour notification window hardcoded",
+      "detail": "@timeLimitHours is declared as SMALLINT = 6 with no configuration source. Should be driven by a kennel-level or system-level setting rather than a hardcoded literal."
+    },
+    {
+      "severity": "medium",
+      "issue": "EventChatMessageCount always 0",
+      "detail": "The column is hardcoded to 0 in the SELECT. The HC5 contract notes it was obsolete as of 2.1.3. Retained for client compatibility but should be removed when clients no longer read it."
+    },
+    {
+      "severity": "low",
+      "issue": "'<unknown>' used as HcVersion in ErrorLog inserts",
+      "detail": "Param validation errors insert '<unknown>' as HcVersion. Should use the actual build/version string if available, or at minimum a meaningful constant."
+    },
+    {
+      "severity": "low",
+      "issue": "MessageSequenceCount read back after INSERT relies on trigger timing",
+      "detail": "The SP reads MessageSequenceCount immediately after INSERT, relying on the trgCreateSeqNum AFTER INSERT trigger having already updated the row. AFTER triggers fire before control returns to the SP, so this is correct SQL Server behaviour, but it is a subtle dependency worth documenting."
+    }
+  ],
+  "breakingChanges": [
+    "@eventId type changed from NVARCHAR(250) to UNIQUEIDENTIFIER — callers must pass a typed UUID, not a string",
+    "InsertedMessage rowset: EventId column type changed from NVARCHAR to UNIQUEIDENTIFIER",
+    "InsertedMessage rowset: column renamed from 'MessageRelesabilityFlags' (HC5 typo) to 'MessageReleasabilityFlags' — any caller reading this column by name must be updated",
+    "Error path now uses early RETURN after each validation failure — at most one error rowset is emitted (HC5 could emit multiple error rowsets without RETURN)"
+  ]
+}

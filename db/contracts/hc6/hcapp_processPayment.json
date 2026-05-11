@@ -1,0 +1,283 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_processPayment",
+  "version": "1.0.0",
+  "description": "Records, confirms, or cancels a single payment for an event attendance (or membership/haberdashery when productType != 1). Uses a compound access token that binds the transaction to a specific hasherEventMapId, payer, amount, and event — ValidateAppAuth prepends the DeviceSecret to the suffix: hemId + '#' + payerId + '#' + int(amount) + '#' + eventId. paymentType codes: 1=not paid (cancel existing), 2=free, 3=cash, 4=bank transfer, 5=cash (other amount), 6=hash credit, 7=bank transfer (other amount), 8=credit (other amount), 100=confirm bank transfer (WankerBanker confirmation only). Creates HasherEventMap if none exists. Cancels any prior active payment before inserting a new one. On success, delegates to hcapp_syncEventAdminData or hcapp_syncUserData based on @appDomainType.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "Registered device UUID. Passed to ValidateAppAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Compound access token. ValidateAppAuth validates against: DeviceSecret + hemId + '#' + userIdWhoPaid + '#' + CAST(CAST(paymentAmount AS INT) AS NVARCHAR) + '#' + eventId. Zero-UUID placeholders are used for any NULL component. Amount is truncated to integer — payments with fractional cents validate with floor value."
+    },
+    {
+      "name": "userIdWhoPaid",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Payment.UserId",
+      "description": "The hasher being paid for. Resolved from the HasherEventMap row if @hasherEventMapId is provided and this is NULL. Zero-UUID is normalised to NULL before token construction."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Payment.EventId",
+      "description": "The event being paid for. Required when productType = 1; a param-validation error is returned otherwise. Zero-UUID is normalised to NULL before token construction."
+    },
+    {
+      "name": "hasherEventMapId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Payment.HasherEventMapId",
+      "description": "The specific HasherEventMap row. Resolved from userIdWhoPaid + eventId if NULL. If neither resolves an existing row, a new HEM is inserted. Zero-UUID is normalised to NULL before token construction."
+    },
+    {
+      "name": "paymentType",
+      "type": "SMALLINT",
+      "nullable": false,
+      "mapsToColumn": "Payment.PaymentType",
+      "description": "1=not paid (cancel), 2=free, 3=cash, 4=bank transfer, 5=cash (other amount), 6=hash credit, 7=bank transfer (other amount), 8=credit (other amount), 100=confirm bank transfer."
+    },
+    {
+      "name": "productType",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Payment.ProductType",
+      "description": "1=event (default), 2=membership, 3=haberdashery. Defaults to 1 if NULL."
+    },
+    {
+      "name": "paymentAmount",
+      "type": "DECIMAL(12,6)",
+      "nullable": true,
+      "mapsToColumn": "Payment.CreditAmount",
+      "description": "Amount paid or owed. Required when paymentType < 100 (a param-validation error is returned if NULL or < 0). Cast to INT for token derivation — payments with fractional cents lose precision in the token.",
+      "typeMismatch": "DECIMAL(12,6) in SP; Payment.CreditAmount and DebitAmount are SMALLMONEY in the table. Intermediate SP variables are MONEY — project standard is DECIMAL(10,4) for monetary values."
+    },
+    {
+      "name": "minimumAttendenceValue",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "HasherEventMap.AttendenceState",
+      "description": "Minimum attendance state to set on the HEM row when paying. Negative values (sentinel -1) are normalised to NULL before use, which causes the AttendenceState CASE expression to compare against NULL and never raise the state — effectively a no-op minimum."
+    },
+    {
+      "name": "hasherEventMapUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Sync cursor forwarded to the delegated sync SP. Default 'ignore'."
+    },
+    {
+      "name": "hasherKennelMapUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Sync cursor forwarded to the delegated sync SP. Default 'ignore'."
+    },
+    {
+      "name": "paymentsUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Sync cursor forwarded to the delegated sync SP. Default 'ignore'."
+    },
+    {
+      "name": "kennelCreditsUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Sync cursor forwarded to the delegated sync SP. Default 'ignore'."
+    },
+    {
+      "name": "doPayForExtras",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Payment.DoPayForExtras",
+      "description": "0 = run fee only, 1 = include EventPriceForExtras in the debit. Defaults to 0 if NULL."
+    },
+    {
+      "name": "surcharge",
+      "type": "DECIMAL(10,4)",
+      "nullable": true,
+      "mapsToColumn": "Payment.Surcharge",
+      "description": "Optional surcharge. Stored as COALESCE(surcharge, 0). Payment.Surcharge column is SMALLMONEY — implicit narrowing conversion on insert.",
+      "typeMismatch": "DECIMAL(10,4) in SP parameter; Payment.Surcharge is SMALLMONEY in the table."
+    },
+    {
+      "name": "paymentProvider",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": "Payment.PaymentProvider",
+      "description": "External payment provider name (e.g. 'Stripe')."
+    },
+    {
+      "name": "appDomainType",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Controls which sync SP is called after the write. 'AppDomainType.event' (default) → HC6.hcapp_syncEventAdminData; any other value → HC6.hcapp_syncUserData."
+    },
+    {
+      "name": "paymentReference",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": "Payment.PaymentReference",
+      "description": "Payment reference string. Auto-generated as 'HC:' + base-36 random if NULL. Uniqueness is enforced via a retry loop before insert."
+    },
+    {
+      "name": "transactionTimestamp",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": "Payment.PaidDate",
+      "description": "Client-supplied payment timestamp as a string. The SP casts LEFT(@transactionTimestamp, 23) AS DATETIME — truncates to 23 chars, loses any timezone offset, and implicitly widens to DATETIMEOFFSET on insert. An invalid date string will throw an unhandled exception before reaching the TRY block.",
+      "typeMismatch": "NVARCHAR(50) in SP; Payment.PaidDate is DATETIMEOFFSET(7). The intermediate CAST is to DATETIME (not DATETIMEOFFSET), losing timezone."
+    },
+    {
+      "name": "specialRunPrice",
+      "type": "SMALLMONEY",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Override price for this payment. Used as the debit amount instead of the calculated event price when set. If @useSpecialPriceAsDefault is non-zero, the derived discount is also persisted to HasherKennelMap."
+    },
+    {
+      "name": "specialRunPriceReason",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": "Payment.SpecialRunPriceReason",
+      "description": "Free-text reason for the special price. Stored as COALESCE(specialRunPriceReason, ''). Also written to HasherKennelMap.DiscountDescription when @useSpecialPriceAsDefault is non-zero."
+    },
+    {
+      "name": "useSpecialPriceAsDefault",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.DiscountAmount",
+      "description": "When non-zero and @specialRunPrice is set, the derived discount (originalEventPrice - specialRunPrice) is saved as a permanent discount on HasherKennelMap for this hasher at this kennel. Sentinel: NULL is treated as 0 (do not persist)."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "Write SP success envelope. Always returned as rowset 0. On auth failure or param validation failure, this is followed immediately by rowset 1 (ErrorDetail) and the SP returns. On CATCH, this is also followed by ErrorDetail.",
+      "columns": [
+        { "name": "success", "type": "BIT", "nullable": false, "description": "1 on success, 0 on any failure." },
+        { "name": "errorCode", "type": "INT", "nullable": true, "description": "NULL on success. 1240 for param validation failures. 1940 for unhandled DB errors (CATCH)." },
+        { "name": "errorType", "type": "INT", "nullable": true, "description": "NULL on success. 12 for param validation failures. 19 for CATCH failures. errorType from ValidateAppAuth for auth failures." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ErrorDetail",
+      "description": "Present only on failure (after the Envelope rowset with success=0). Contains the HC.ErrorLog entry id and human-readable messages.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "ID of the inserted HC.ErrorLog row." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Same value as in the Envelope rowset." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Same value as in the Envelope rowset." },
+        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short display title for the error." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
+        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "PaymentResult",
+      "description": "Present only on success (after the Envelope rowset with success=1). Single row summarising the processed payment. For paymentType=100 (confirm bank transfer), hasherWhoPaid, attendenceState, debitAmount, creditAmount, and creditAvailable are all NULL.",
+      "columns": [
+        { "name": "adHocDataId", "type": "INT", "nullable": false, "description": "Always 1. Identifies this as an ad-hoc result row to the client." },
+        { "name": "hasherWhoPaid", "type": "NVARCHAR(120)", "nullable": true, "description": "Display name of the payer, formatted per NameDisplayPreference. Falls back to HEM.DisplayName, then '<no name>'. NULL for paymentType=100 path." },
+        { "name": "attendenceState", "type": "SMALLINT", "nullable": true, "description": "Attendance state after payment (after applying minimumAttendenceValue if higher). NULL for paymentType=100 path." },
+        { "name": "rsvpState", "type": "INT", "nullable": false, "description": "Always 3 after any successful payment." },
+        { "name": "paymentType", "type": "SMALLINT", "nullable": false, "description": "The @paymentType value used." },
+        { "name": "productType", "type": "SMALLINT", "nullable": false, "description": "The @productType value used." },
+        { "name": "debitAmount", "type": "MONEY", "nullable": true, "description": "Amount owed after discounts (and special price if applied). NULL for paymentType=100 path." },
+        { "name": "creditAmount", "type": "MONEY", "nullable": true, "description": "Amount credited (0 for hash credit types 6 and 8). NULL for paymentType=100 path." },
+        { "name": "paymentAmount", "type": "DECIMAL(12,6)", "nullable": true, "description": "The raw @paymentAmount parameter value as supplied by the caller." },
+        { "name": "creditAvailable", "type": "SMALLMONEY", "nullable": true, "description": "Kennel credit balance for the payer after the credit update. NULL for paymentType=100 path." },
+        { "name": "paymentReference", "type": "NVARCHAR(50)", "nullable": true, "description": "Generated or supplied payment reference code." },
+        { "name": "discountAmount", "type": "SMALLMONEY", "nullable": false, "description": "Discount amount applied (from HasherKennelMap or special price override). 0 for paymentType=100." },
+        { "name": "discountPercent", "type": "SMALLINT", "nullable": false, "description": "Discount percentage applied (from HasherKennelMap). 0 for paymentType=100." },
+        { "name": "discountDescription", "type": "NVARCHAR(50)", "nullable": false, "description": "Discount reason text (from HasherKennelMap or special price reason). Empty string for paymentType=100." }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "SyncRowsets",
+      "description": "Rowsets 2+ are the output of the delegated sync SP (HC6.hcapp_syncEventAdminData or HC6.hcapp_syncUserData), passed through verbatim. See the contract for the relevant sync SP for column definitions."
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.HasherEventMap — if no existing HEM row exists for @userIdWhoPaid + @eventId when @hasherEventMapId is NULL",
+    "UPDATE HC.Payment SET IsCancelled=1, CancelledDate, CancelledBy_UserId — cancels any existing active payment for the HEM row before inserting a replacement (paymentType 2-8)",
+    "UPDATE HC.Payment SET IsCancelled=1, CancelledDate, CancelledBy_UserId — cancels active payment for paymentType=1 (mark not paid) if one exists",
+    "UPDATE HC.Payment SET ConfirmedDate, ConfirmedBy_UserId — for paymentType=100 (confirm bank transfer)",
+    "UPDATE HC.Event SET DoTrackHashCash=1 — on first payment (paymentType 2-8) if not already set",
+    "INSERT HC.Payment — inserts new payment row for paymentType 2-8",
+    "UPDATE HC.HasherEventMap SET UserStartEvent, RsvpState=3, AttendenceState — updated after payment (paymentType 2-8)",
+    "UPDATE HC.HasherKennelMap SET DiscountAmount, DiscountPercent=0, DiscountDescription — when @useSpecialPriceAsDefault is non-zero and @specialRunPrice is set",
+    "EXEC HC.nonApi_updateKennelCreditByUser — recalculates kennel credit balance for the payer",
+    "EXEC HC.nonApi_updateRunCountsByUser — recalculates run totals for @userIdWhoPaid (skipped if NULL)",
+    "INSERT HC.ErrorLog — on param validation failures and CATCH"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "@paymentAmount cast to INT in token derivation — truncates fractional cents",
+      "detail": "The compound token suffix includes CAST(CAST(COALESCE(@paymentAmount, 0) AS INT) AS NVARCHAR(50)). A payment of $5.75 builds a token against $5. Any client that signs with the full decimal amount will fail authentication. This is inherited from HC5 and persists in HC6."
+    },
+    {
+      "severity": "high",
+      "issue": "@transactionTimestamp CAST to DATETIME outside TRY/CATCH — brittle, loses timezone",
+      "detail": "Line ~362: COALESCE(CAST(LEFT(@transactionTimestamp, 23) AS DATETIME), GETDATE()). The CAST to DATETIME occurs inside BEGIN TRY, so it will roll back the transaction on an invalid date string. However, DATETIME does not carry timezone; Payment.PaidDate is DATETIMEOFFSET(7). The implicit widening from DATETIME to DATETIMEOFFSET on insert assumes UTC+0, silently losing the caller's timezone."
+    },
+    {
+      "severity": "medium",
+      "issue": "Monetary intermediate variables are MONEY, not DECIMAL(10,4)",
+      "detail": "@eventPrice, @creditAmount, @debitAmount, @originalEventPrice, @extrasPrice are declared as MONEY. Project standard for monetary values is DECIMAL(10,4). Payment.CreditAmount and Payment.DebitAmount are SMALLMONEY — narrowing implicit conversion on INSERT. Mixed money types increase the risk of rounding surprises in discount/percentage calculations."
+    },
+    {
+      "severity": "medium",
+      "issue": "@surcharge type mismatch: DECIMAL(10,4) parameter vs SMALLMONEY column",
+      "detail": "@surcharge is declared DECIMAL(10,4) and passed to the INSERT as COALESCE(@surcharge, 0), which writes to Payment.Surcharge (SMALLMONEY). Implicit narrowing conversion from DECIMAL(10,4) to SMALLMONEY. Unlikely to lose data in practice given typical surcharge sizes, but inconsistent with the table definition."
+    },
+    {
+      "severity": "medium",
+      "issue": "minimumAttendenceValue sentinel -1 normalised to NULL causes silent no-op in AttendenceState CASE",
+      "detail": "Line ~82: IF (@minimumAttendenceValue < 0) SET @minimumAttendenceValue = NULL. The subsequent UPDATE at line ~374 uses: CASE WHEN AttendenceState < @minimumAttendenceValue THEN @minimumAttendenceValue ELSE AttendenceState END. When @minimumAttendenceValue is NULL, the comparison is always NULL/unknown, so the ELSE branch always fires and the attendance state is never raised. This is correct behaviour for 'no minimum', but the use of -1 as a sentinel for NULL is an undocumented convention that could confuse callers."
+    },
+    {
+      "severity": "medium",
+      "issue": "HEM INSERT for new attendee sets AttendenceState from @minimumAttendenceValue without applying NULL normalisation first",
+      "detail": "Line ~219: the new HEM row is inserted with AttendenceState = COALESCE(@minimumAttendenceValue, 0) — COALESCE here correctly handles the NULL case. However, @minimumAttendenceValue has already been normalised to NULL if negative (line 82), so negative values passed by the caller always result in AttendenceState=0 for a newly created HEM. Callers expecting AttendenceState to reflect a negative sentinel will be surprised."
+    },
+    {
+      "severity": "low",
+      "issue": "Post-commit side effects run outside any transaction",
+      "detail": "Lines ~399-404: EXEC HC.nonApi_updateKennelCreditByUser and EXEC HC.nonApi_updateRunCountsByUser are called after COMMIT TRANSACTION. A failure in either leaves the kennel credit or run counts stale — the payment itself is committed but the derived aggregates are not updated. This is a pre-existing HC5 pattern carried into HC6."
+    },
+    {
+      "severity": "low",
+      "issue": "Sync SP delegation also runs outside any transaction and re-uses the original accessToken",
+      "detail": "Lines ~429-457: the delegated sync SP (hcapp_syncEventAdminData or hcapp_syncUserData) is called outside the transaction using the same @accessToken that was validated for the write operation. If the sync SP performs its own token validation with a different suffix expectation, auth will fail silently and the client will receive no sync data."
+    },
+    {
+      "severity": "low",
+      "issue": "paymentType=100 path commits inside BEGIN TRY but then falls through to the post-commit side effects via GOTO SyncAndReturn",
+      "detail": "The paymentType=100 branch at line ~163 commits and emits its result rows, then executes GOTO SyncAndReturn (line ~191), which skips the post-commit credit/run-count updates but still calls the sync SP. This is intentional but subtle — the credit balance is not refreshed after a bank transfer confirmation, so the PaymentResult creditAvailable will be NULL (not stale, but callers may expect it to be populated)."
+    }
+  ],
+  "breakingChanges": [
+    "TRY/CATCH and BEGIN TRANSACTION added — HC5 had no error handling or transaction. Error paths now roll back all writes atomically.",
+    "Success envelope rowset added as rowset 0 — HC5 returned PaymentResult directly as the first rowset. Callers must now read rowset 0 (success/errorCode/errorType) before consuming the PaymentResult at rowset 1.",
+    "ErrorDetail rowset introduced — HC5 had no structured error rowset. Failure paths now return two rowsets (Envelope + ErrorDetail).",
+    "Delegation targets updated to HC6 SPs — HC5 called HC5.hcapp_syncEventAdminData and HC5.hcapp_syncUserData; HC6 calls HC6.hcapp_syncEventAdminData and HC6.hcapp_syncUserData.",
+    "HC6 schema — all objects are in the HC6 schema; no HC5 schema objects are referenced."
+  ]
+}

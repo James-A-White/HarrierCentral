@@ -5,9 +5,8 @@ class RunHistoryQueries {
     String userId,
     String? kennelId,
   ) async {
-    final appDomain = AppDomainType.kennel;
-
-    String query = '''
+    String query =
+        '''
           SELECT 
           coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount} + hkm.${tableModel.hasherKennelMapTableHelper.colHcTotalRunCount},0) as totalRunsThisKennel,
           coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount} + ${tableModel.hasherKennelMapTableHelper.colHcHaringCount},0) as totalHaringThisKennel,
@@ -26,9 +25,9 @@ class RunHistoryQueries {
           coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colKennelCredit},0) as kennelCredit,
           coalesce(k.${tableModel.kennelsTableHelper.colDigitsAfterDecimal},c.${tableModel.countriesTableHelper.colDigitsAfterDecimal}) as digitsAfterDecimal,
           coalesce(k.${tableModel.kennelsTableHelper.colCurrencySymbol},c.${tableModel.countriesTableHelper.colCurrencySymbol}) as currencySymbol
-          FROM ${tableModel.kennelsTableHelper.getTableName(appDomain)} k
-          INNER JOIN ${tableModel.countriesTableHelper.getTableName(appDomain)} c on c.${tableModel.countriesTableHelper.colCountryId} = k.${tableModel.kennelsTableHelper.colCountryId}
-          LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(appDomain)} hkm on hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = "$userId"  and hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId}
+          FROM ${EnumDataTables.kennels.commonTableName} k
+          INNER JOIN ${EnumDataTables.countries.commonTableName} c on c.${tableModel.countriesTableHelper.colCountryId} = k.${tableModel.kennelsTableHelper.colCountryId}
+          LEFT OUTER JOIN ${EnumDataTables.hasherKennelMap.kennelTableName} hkm on hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = "$userId"  and hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId}
           
           ''';
 

@@ -24,6 +24,7 @@ class KennelListItemState extends State<KennelListItem> {
 
   @override
   void initState() {
+    super.initState();
     _distancePreference =
         (getIntPref(IntPrefsEnum.hasherPreferences) ?? 0) &
         hasherPref_distanceMeasuredIn;
@@ -32,7 +33,6 @@ class KennelListItemState extends State<KennelListItem> {
       _distancePreference =
           (widget.kennelItem.extensions.distanceUnitsPref ?? 0) + 2;
     }
-    super.initState();
   }
 
   //final int _autoRunPreference = getIntPref(IntPrefsEnum.hasherPreferences) & hasherPref_distanceForAutoDisplay;
@@ -94,8 +94,8 @@ class KennelListItemState extends State<KennelListItem> {
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: GestureDetector(
-                    onTap: () {
-                      _showFollowingPopup();
+                    onTap: () async {
+                      await _showFollowingPopup();
                     },
                     child: Column(
                       children: <Widget>[
@@ -175,8 +175,8 @@ class KennelListItemState extends State<KennelListItem> {
               Container(
                 padding: const EdgeInsets.only(right: 10),
                 child: GestureDetector(
-                  onTap: () {
-                    _showEmailPopup(context);
+                  onTap: () async {
+                    await _showEmailPopup(context);
                   },
                   child: widget.kennelItem.extensions.emailAlertRequested != -1
                       ? Icon(delayIcon, color: hc_blue, size: 24.0)
@@ -202,8 +202,8 @@ class KennelListItemState extends State<KennelListItem> {
               Container(
                 padding: const EdgeInsets.only(right: 10),
                 child: GestureDetector(
-                  onTap: () {
-                    _showNotificationPopup(context);
+                  onTap: () async {
+                    await _showNotificationPopup(context);
                   },
                   child:
                       widget.kennelItem.extensions.notificationsRequested != -1
@@ -675,7 +675,7 @@ class KennelListItemState extends State<KennelListItem> {
     return '$distance $unitsOfMeasure';
   }
 
-  void _showEmailPopup(BuildContext context) {
+  Future<void> _showEmailPopup(BuildContext context) async {
     final List<Map<String, dynamic>> buttons = <Map<String, dynamic>>[
       <String, dynamic>{
         'title': 'Turn email alerts on',
@@ -742,41 +742,41 @@ class KennelListItemState extends State<KennelListItem> {
       cancelButtonReturnValue: followTypeCancel,
     );
 
-    showDialog<dynamic>(
+    final retVal = await showDialog<dynamic>(
       context: context,
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return popup;
       },
-    ).then((dynamic retVal) async {
-      if ((retVal == emailAlertsOn) || (retVal == emailAlertsOff)) {
-        if (Utilities.isConnected(
-          showDialog: true,
-          message:
-              'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.',
-        )) {
-          widget.kennelItem.extensions.emailAlertRequested = retVal.value;
-          setState(() {});
+    );
 
-          final String userId = getStringPref(StringPrefsEnum.userId)!;
-          await tableModel.hasherKennelMapService
-              .setEmailAndNotificationPreferences(
-                widget.kennelItem.kennel.kennelId,
-                userId,
-                AppDomainType.user,
-                NotificationState.unchanged,
-                retVal,
-              )
-              .then((List<dynamic> results) {
-                setState(() {
-                  widget.kennelEmailAndNotificationPrefsUpdated(
-                    null,
-                    results[0]['emailAlertPreference'],
-                  );
-                });
+    if ((retVal == emailAlertsOn) || (retVal == emailAlertsOff)) {
+      if (Utilities.isConnected(
+        showDialog: true,
+        message:
+            'Setting Kennel email alerts is not available in offline mode. Please connect to the Internet to change the notification preferences for a kennel.',
+      )) {
+        widget.kennelItem.extensions.emailAlertRequested = retVal.value;
+        setState(() {});
+
+        final String userId = getStringPref(StringPrefsEnum.userId)!;
+        await tableModel.hasherKennelMapService
+            .setEmailAndNotificationPreferences(
+              widget.kennelItem.kennel.kennelId,
+              userId,
+              AppDomainType.user,
+              NotificationState.unchanged,
+              retVal,
+            )
+            .then((List<dynamic> results) {
+              setState(() {
+                widget.kennelEmailAndNotificationPrefsUpdated(
+                  null,
+                  results[0]['emailAlertPreference'],
+                );
               });
-        }
+            });
       }
-    });
+    }
   }
 }

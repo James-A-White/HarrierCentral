@@ -20,6 +20,7 @@ class UserQrCodePageState extends State<UserQrCodePage>
 
   @override
   void initState() {
+    super.initState();
     _initTabs();
     _tabController = TabController(vsync: this, length: _tabs.length);
 
@@ -30,14 +31,13 @@ class UserQrCodePageState extends State<UserQrCodePage>
       actions: <IconButton>[
         IconButton(
           icon: const Icon(Icons.info_outline),
-          onPressed: () {
-            _displayInstructions(context);
+          onPressed: () async {
+            await _displayInstructions(context);
           },
         ),
       ],
       title: Text('Run check in page', style: ts_appBarTitle),
     );
-    super.initState();
   }
 
   @override
@@ -371,23 +371,24 @@ class QrScannerTabState extends State<QrScannerTab>
 
   @override
   void initState() {
+    super.initState();
     _scannerController = MobileScannerController(
       facing: CameraFacing.back,
       torchEnabled: false,
       detectionSpeed: DetectionSpeed.noDuplicates,
       formats: [BarcodeFormat.qrCode],
     );
-
-    super.initState();
   }
 
   @override
   void dispose() {
     if (_scannerController != null) {
-      Future.microtask(() async {
-        await _scannerController!.stop();
-        _scannerController!.dispose();
-      });
+      unawaited(
+        Future.microtask(() async {
+          await _scannerController!.stop();
+          unawaited(_scannerController!.dispose());
+        }),
+      );
     }
     super.dispose();
   }
@@ -422,33 +423,37 @@ class QrScannerTabState extends State<QrScannerTab>
     assert(() {
       if (Platform.isAndroid) {
         // Use pause()/resume() if available; otherwise swap to stop()/start()
-        c
-            .pause()
-            .then((_) {
-              if (!mounted) return;
-              setState(() {
-                _isScanning = false;
-                _onScreenMessage = 'Scanning paused';
-                _state = EQrScannerState.waitingForScan;
-              });
-            })
-            .catchError((e, st) {
-              // Optional: log pause error
-            });
+        unawaited(
+          c
+              .pause()
+              .then((_) {
+                if (!mounted) return;
+                setState(() {
+                  _isScanning = false;
+                  _onScreenMessage = 'Scanning paused';
+                  _state = EQrScannerState.waitingForScan;
+                });
+              })
+              .catchError((e, st) {
+                // Optional: log pause error
+              }),
+        );
       } else if (Platform.isIOS) {
-        c
-            .start()
-            .then((_) {
-              if (!mounted) return;
-              setState(() {
-                _isScanning = true;
-                _onScreenMessage = 'Looking for QR Code';
-                _state = EQrScannerState.scanning;
-              });
-            })
-            .catchError((e, st) {
-              // Optional: log start error
-            });
+        unawaited(
+          c
+              .start()
+              .then((_) {
+                if (!mounted) return;
+                setState(() {
+                  _isScanning = true;
+                  _onScreenMessage = 'Looking for QR Code';
+                  _state = EQrScannerState.scanning;
+                });
+              })
+              .catchError((e, st) {
+                // Optional: log start error
+              }),
+        );
       }
       return true;
     }());

@@ -104,7 +104,7 @@ BEGIN
 
     IF (@eventId != @hemEventId)
     BEGIN
-        SET @errorCode = 1224; SET @errorType = 2; SET @errorId = NEWID();
+        SET @errorCode = 1224; SET @errorType = 12; SET @errorId = NEWID();
         INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
         VALUES (@errorId, '<unknown>', 'Mismatched eventIds',
                 'HEM eventId and @eventId do not match', @procName, @userId);
@@ -122,7 +122,7 @@ END
 -- ---------------------------------------------------------------
 IF (@attendenceState IS NULL OR @attendenceState < 0 OR @attendenceState > 40)
 BEGIN
-    SET @errorCode = 1224; SET @errorType = 2; SET @errorId = NEWID();
+    SET @errorCode = 1224; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Invalid attendance state',
             'attendenceState must be 0–40', @procName, @userId);
@@ -157,7 +157,7 @@ END
 
 IF (@hasherId IS NULL)
 BEGIN
-    SET @errorCode = 1324; SET @errorType = 3; SET @errorId = NEWID();
+    SET @errorCode = 1324; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Unknown user',
             'Could not resolve hasher from QR or hasherId', @procName, @userId);
@@ -289,7 +289,7 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
 
-    SET @errorCode = 1924; SET @errorType = 9; SET @errorId = NEWID();
+    SET @errorCode = 1924; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;

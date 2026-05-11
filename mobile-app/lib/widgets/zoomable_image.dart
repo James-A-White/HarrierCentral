@@ -17,6 +17,8 @@ class ZoomableImagePage2 extends StatelessWidget {
     this.assetImageText,
     this.margin,
     this.kennelId,
+    this.infoTitle,
+    this.infoText,
   });
 
   final platform.File? file;
@@ -30,6 +32,8 @@ class ZoomableImagePage2 extends StatelessWidget {
   final String? assetImageText;
   final double? margin;
   final String? kennelId;
+  final String? infoTitle;
+  final String? infoText;
 
   @override
   Widget build(BuildContext context) {
@@ -140,6 +144,29 @@ class ZoomableImagePage2 extends StatelessWidget {
                     : const SizedBox.shrink(),
               ),
             ),
+            if (((infoTitle ?? '').isNotEmpty) || ((infoText ?? '').isNotEmpty))
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Column(
+                  children: <Widget>[
+                    if ((infoTitle ?? '').isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10.0),
+                        child: Text(
+                          infoTitle!,
+                          style: ts_headingLarge,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    if ((infoText ?? '').isNotEmpty)
+                      Text(
+                        infoText!,
+                        style: ts_body,
+                        textAlign: TextAlign.center,
+                      ),
+                  ],
+                ),
+              ),
             if (kennelId != null) ...<Widget>[
               Padding(
                 padding: const EdgeInsets.only(bottom: 20.0),

@@ -35,21 +35,20 @@ class KennelsListPageState extends State<KennelsListPage> {
 
   @override
   void initState() {
+    super.initState();
     _searchController.text = '';
     _searchKennelsText = '';
 
+    unawaited(initStateAsync());
+    ////print('initState called from kennel_list_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+  }
+
+  Future<void> initStateAsync() async {
     // NOTE: refreshFromTable will run asynchronously so don't expect the
     // tables to be populated immediately when this call returns.
-    _refreshFromTable(false).then((void _) {
-      setState(() {});
-      // Future<dynamic>.delayed(const Duration(seconds: 1)).then((void _) {
-      //   setState(() {});
-      // });
-    });
 
-    ////print('initState called from kennel_list_page @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-
-    super.initState();
+    await _refreshFromTable(false);
+    setState(() {});
   }
 
   Widget getKennelFab() {
@@ -591,7 +590,7 @@ class KennelsListPageState extends State<KennelsListPage> {
                                             // requerying for those events.
                                             final String sql =
                                                 '''
-                                    DELETE FROM ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)}
+                                    DELETE FROM ${EnumDataTables.events.commonTableName}
                                     WHERE ${tableModel.eventsTableHelper.colKennelId} = '${_filteredList[index].kennel.kennelId}'
                                     ''';
 
@@ -602,8 +601,7 @@ class KennelsListPageState extends State<KennelsListPage> {
                                             // events from the normal time period for unfollowed kennels (currently one year in the past)
                                             await tableModel.syncUserDataService
                                                 .updateFromBackend(
-                                                  SyncUserDataService
-                                                      .flagNarrowEventsTable,
+                                                  EnumDataTables.events.flag,
                                                   true,
                                                   forceReplicateAllRunsForKennel:
                                                       _filteredList[index]
@@ -615,7 +613,7 @@ class KennelsListPageState extends State<KennelsListPage> {
 
                                             setState(() {});
                                           },
-                                      kennelSelected: () {
+                                      kennelSelected: () async {
                                         final KennelListAggregate kennel =
                                             _filteredList[index];
                                         // // this is a bit of a hack where we clear the list before navigating to the
@@ -625,35 +623,33 @@ class KennelsListPageState extends State<KennelsListPage> {
                                         // // By deleting the list, I'm hoping that this bug will be fixed.
                                         tableModel.globalKennelMainPageList!
                                             .clear();
-                                        Navigator.of(context)
-                                            .push<dynamic>(
-                                              MaterialPageRoute<dynamic>(
-                                                builder:
-                                                    (BuildContext context) =>
-                                                        KennelAdminMainPage(
-                                                          kennelAggregateItem:
-                                                              kennel,
-                                                        ),
-                                              ),
-                                            )
-                                            .then((void _) async {
-                                              await tableModel
-                                                  .syncUserDataService
-                                                  .updateFromBackend(
-                                                    SyncUserDataService
-                                                            .flagHasherEventMapTable |
-                                                        SyncUserDataService
-                                                            .flagHasherKennelMapTable |
-                                                        SyncUserDataService
-                                                            .flagKennelsTable,
-                                                    true,
-                                                    debugText:
-                                                        'kennel_list_page: HEM, HKM, Kennels',
-                                                  );
-                                              //final String resultStr = result ? 'successfully' : 'unsuccessfully';
-                                              //print('Pack member data synchronized $resultStr');
-                                              await _refreshFromTable(true);
-                                            });
+                                        await Navigator.of(
+                                          context,
+                                        ).push<dynamic>(
+                                          MaterialPageRoute<dynamic>(
+                                            builder: (BuildContext context) =>
+                                                KennelAdminMainPage(
+                                                  kennelAggregateItem: kennel,
+                                                ),
+                                          ),
+                                        );
+
+                                        await tableModel.syncUserDataService
+                                            .updateFromBackend(
+                                              EnumDataTables
+                                                      .hasherEventMap
+                                                      .flag |
+                                                  EnumDataTables
+                                                      .hasherKennelMap
+                                                      .flag |
+                                                  EnumDataTables.kennels.flag,
+                                              true,
+                                              debugText:
+                                                  'kennel_list_page: HEM, HKM, Kennels',
+                                            );
+                                        //final String resultStr = result ? 'successfully' : 'unsuccessfully';
+                                        //print('Pack member data synchronized $resultStr');
+                                        await _refreshFromTable(true);
                                       },
                                     ),
                                   );
@@ -670,16 +666,14 @@ class KennelsListPageState extends State<KennelsListPage> {
       tableModel.globalKennelMainPageList = null;
     });
 
-    String query =
-        'DELETE FROM ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)}';
+    String query = 'DELETE FROM ${EnumDataTables.kennels.commonTableName}';
     try {
       await database.rawQuery(query);
     } catch (e) {
       //print(e);
     }
 
-    query =
-        'DELETE FROM ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.user)}';
+    query = 'DELETE FROM ${EnumDataTables.hasherKennelMap.commonTableName}';
     try {
       await database.rawQuery(query);
     } catch (e) {
@@ -687,8 +681,7 @@ class KennelsListPageState extends State<KennelsListPage> {
     }
 
     await tableModel.syncUserDataService.updateFromBackend(
-      SyncUserDataService.flagKennelsTable |
-          SyncUserDataService.flagHasherKennelMapTable,
+      EnumDataTables.kennels.flag | EnumDataTables.hasherKennelMap.flag,
       true,
       debugText: 'kennel_list_page: Kennels, HKM',
     );

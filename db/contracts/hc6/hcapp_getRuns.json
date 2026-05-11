@@ -1,0 +1,203 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getRuns",
+  "version": "1.0.0",
+  "description": "Returns a user's run attendance history for a specific kennel — all past events where the user's HasherEventMap AttendenceState >= 20, IsCountedRun=1, IsVisible=1, ordered by effective start date descending. Read-only SP; no success envelope.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth for auth resolution."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token validated against DeviceSecret. Default 'none'."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.KennelId",
+      "description": "Kennel whose run history to return. Null or zero-UUID treated as a validation error (errorCode 1222, errorType 12)."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "Returned when HC6.ValidateAppAuth fails (device not found, token invalid, etc.). errorType set by ValidateAppAuth (typically 11 for auth failures). Mutually exclusive with RunHistory rowset.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code from ValidateAppAuth." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Numeric error code from ValidateAppAuth." },
+        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
+        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "KennelIdValidationError",
+      "description": "Returned when @kennelId is NULL or zero-UUID. errorCode=1222, errorType=12. Mutually exclusive with RunHistory rowset.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 12." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Always 1222." },
+        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Always 'Missing kennel'." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "Always 'A kennel must be specified.'." },
+        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "RunHistory",
+      "description": "User's attended run history for the specified kennel. Empty result set (zero rows) when the user has no qualifying runs. Returned only on successful auth and valid kennelId.",
+      "columns": [
+        {
+          "name": "eventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Event.id — primary key of the event."
+        },
+        {
+          "name": "eventStartDatetime",
+          "type": "DATETIME2",
+          "nullable": false,
+          "description": "Effective start datetime — CONVERT(DATETIME2, EventStartDatetime) or CONVERT(DATETIME2, FbEventStartDatetime) depending on UseFbRunDetails. Timezone offset is stripped by the CONVERT; client receives local time without UTC offset. Table column is DATETIMEOFFSET(7)."
+        },
+        {
+          "name": "eventEndDatetime",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Event.EventEndDatetime — passed through without conversion, preserving timezone offset."
+        },
+        {
+          "name": "eventName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Effective event name — FbEventName or EventName depending on UseFbRunDetails. Table column is NVARCHAR(250)."
+        },
+        {
+          "name": "eventNumber",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Event.EventNumber — kennel-scoped run number. Table column is SMALLINT NOT NULL."
+        },
+        {
+          "name": "locationOneLineDesc",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Effective location with FB/non-FB fallback: COALESCE(preferred source, LocationOneLineDesc, FbLocationOneLineDesc, '<unknown location>'). Never NULL due to COALESCE default. Table column is NVARCHAR(250)."
+        },
+        {
+          "name": "userEventCounterIncrement",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Event.userEventCounterIncrement — how much this event increments the user's run counter. Table column is SMALLINT NOT NULL."
+        },
+        {
+          "name": "eventFacebookId",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Event.EventFacebookId — Facebook event identifier. Table column is NVARCHAR(250) NULL."
+        },
+        {
+          "name": "isVisible",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Event.IsVisible — visibility flag. Table column is SMALLINT NOT NULL. Always 1 in this result set (filter predicate enforces it)."
+        },
+        {
+          "name": "isCountedRun",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Event.IsCountedRun — whether this run counts toward totals. Table column is SMALLINT NOT NULL. Always 1 in this result set (filter predicate enforces it)."
+        },
+        {
+          "name": "absoluteEventNumber",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.AbsoluteEventNumber — cross-kennel run number. Table column is SMALLINT NULL."
+        },
+        {
+          "name": "isHare",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HasherEventMap.IsHare — whether the user was a hare at this run. Table column is SMALLINT NOT NULL."
+        },
+        {
+          "name": "totalRunsThisKennel",
+          "type": "INT",
+          "nullable": true,
+          "description": "HasherEventMap.TotalRunsThisKennel — running total of the user's attended runs at this kennel as of this event. Table column is INT NULL."
+        },
+        {
+          "name": "totalRunsAllKennels",
+          "type": "INT",
+          "nullable": true,
+          "description": "HasherEventMap.TotalRuns — running total of the user's attended runs across all kennels as of this event. Table column is INT NULL."
+        },
+        {
+          "name": "totalHaringThisKennel",
+          "type": "INT",
+          "nullable": false,
+          "description": "HasherEventMap.TotalHaringThisKennel coalesced to 0. Table column is INT NULL; COALESCE makes this non-nullable in the result."
+        },
+        {
+          "name": "userStartEvent",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "HasherEventMap.UserStartEvent — timestamp when the user checked in. Table column is DATETIMEOFFSET(7) NULL."
+        },
+        {
+          "name": "rsvpState",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HasherEventMap.RsvpState coalesced to 0. Table column is SMALLINT NOT NULL; COALESCE is redundant but harmless."
+        },
+        {
+          "name": "attendenceState",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HasherEventMap.AttendenceState coalesced to 0. Table column is SMALLINT NOT NULL; COALESCE is redundant but harmless. Always >= 20 in this result set (filter predicate enforces it)."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Writes to HC.ErrorLog on kennelId validation failure."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "eventStartDatetime loses timezone offset via CONVERT to DATETIME2",
+      "detail": "Both EventStartDatetime and FbEventStartDatetime are stored as DATETIMEOFFSET(7), but the SP strips the offset with CONVERT(DATETIME2, ...). The client receives local time with no UTC offset, creating an implicit dependency on the server's local timezone. The SP comment acknowledges this. The ORDER BY also uses the same CONVERT, so sorting is consistent but still timezone-unaware."
+    },
+    {
+      "severity": "low",
+      "issue": "COALESCE on NOT NULL columns is redundant",
+      "detail": "COALESCE(hem.RsvpState, 0) and COALESCE(hem.AttendenceState, 0) operate on columns declared SMALLINT NOT NULL with DEFAULT 0. The COALESCE can never trigger and adds noise. Harmless but misleading."
+    },
+    {
+      "severity": "low",
+      "issue": "isVisible and isCountedRun are redundant in the result set",
+      "detail": "Both columns are constrained to 1 by the WHERE clause (e.IsVisible = 1 AND e.IsCountedRun = 1), so they carry no information for the client. Including them wastes bandwidth but preserves symmetry with other event SPs."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH block",
+      "detail": "The SP has no error handling for the main SELECT. An unexpected DB error (e.g. deadlock, timeout) will propagate as a raw SQL error rather than a structured error rowset. HC6 SPs should wrap the main query in TRY/CATCH."
+    }
+  ],
+  "breakingChanges": [
+    "HC5 had two sequential @kennelId IS NULL checks with different errorTypes (2 then 3). HC6 collapses these into a single check (errorType 12). The second HC5 check was dead code and could never be reached, so no caller should observe this change.",
+    "HC5 returned errorType 2 for device-not-found (auth failure path). HC6 delegates auth to HC6.ValidateAppAuth which returns errorType 3 for device-not-found. Callers that branch on errorType for auth errors must be updated.",
+    "HC6 error rowset adds errorCode column (was absent in HC5 error rowset). Callers must handle the additional column.",
+    "HC6 error rowset drops debugMessage column (present in HC5 StandardErrorResult). Callers that read debugMessage will receive null or an error."
+  ]
+}

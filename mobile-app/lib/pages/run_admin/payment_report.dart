@@ -43,9 +43,12 @@ class PaymentReportState extends State<PaymentReportPage> {
 
   @override
   void initState() {
-    _refreshSqlTablesFromBackend();
-
     super.initState();
+    unawaited(initStateAsync());
+  }
+
+  Future<void> initStateAsync() async {
+    await _refreshSqlTablesFromBackend();
   }
 
   Future<void> _refreshSqlTablesFromBackend() async {
@@ -54,9 +57,9 @@ class PaymentReportState extends State<PaymentReportPage> {
     });
 
     await tableModel.syncEventAdminService.updateFromBackend(
-      SyncEventAdminService.flagPaymentsTable |
-          SyncEventAdminService.flagHasherEventMapTable |
-          SyncEventAdminService.flagHasherKennelMapTable,
+      EnumDataTables.payments.flag |
+          EnumDataTables.hasherEventMap.flag |
+          EnumDataTables.hasherKennelMap.flag,
       true,
       widget.eventAggregate.event.eventId,
     );
@@ -64,10 +67,9 @@ class PaymentReportState extends State<PaymentReportPage> {
     //print('Payments data synchronized $resultStr');
 
     await _refreshListsFromTable();
-    setState(() {
-      _isLoading = false;
-      refreshTotals();
-    });
+    await refreshTotals();
+    _isLoading = false;
+    setState(() {});
   }
 
   Future<void> _refreshListsFromTable() async {
@@ -108,14 +110,14 @@ SELECT
     COALESCE(confBy.dispName, '') AS confByName,
     COALESCE(e.${tableModel.eventsTableHelper.colExtrasDescription}, '<unknown>') AS extrasDescription,
     COALESCE(e.${tableModel.eventsTableHelper.colEventPriceForExtras}, 0) AS extrasPrice
-    FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem
-    INNER JOIN ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} e ON e.eventId = hem.eventId
-    INNER JOIN ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} k ON k.kennelId = e.kennelId
-    LEFT OUTER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.event)} hkm ON hkm.userId = hem.userId AND hkm.kennelId = "${widget.eventAggregate.event.kennelId}"
-    LEFT OUTER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} h ON h.hasherId = hem.userId
-    LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay ON pay.hemId = hem.hemId AND pay.CancelledBy IS NULL
-    LEFT OUTER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} paidTo ON paidTo.hasherId = pay.paidTo
-    LEFT OUTER JOIN ${tableModel.hashersTableHelper.getTableName(AppDomainType.user)} confBy ON confBy.hasherId = pay.confirmedBy
+    FROM ${EnumDataTables.hasherEventMap.eventTableName} hem
+    INNER JOIN ${EnumDataTables.events.commonTableName} e ON e.eventId = hem.eventId
+    INNER JOIN ${EnumDataTables.kennels.commonTableName} k ON k.kennelId = e.kennelId
+    LEFT OUTER JOIN ${EnumDataTables.hasherKennelMap.eventTableName} hkm ON hkm.userId = hem.userId AND hkm.kennelId = "${widget.eventAggregate.event.kennelId}"
+    LEFT OUTER JOIN ${EnumDataTables.hashers.commonTableName} h ON h.hasherId = hem.userId
+    LEFT OUTER JOIN ${EnumDataTables.payments.eventTableName} pay ON pay.hemId = hem.hemId AND pay.CancelledBy IS NULL
+    LEFT OUTER JOIN ${EnumDataTables.hashers.commonTableName} paidTo ON paidTo.hasherId = pay.paidTo
+    LEFT OUTER JOIN ${EnumDataTables.hashers.commonTableName} confBy ON confBy.hasherId = pay.confirmedBy
     WHERE hem.attendenceState >= 20
     ''';
 
@@ -163,45 +165,45 @@ SELECT
           '''
 
           -- start with the 'not paid' case
-          select 0 as paymentType, 
+          SELECT 0 as paymentType, 
           (
             SELECT COUNT(*) 
-            FROM ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem 
+            FROM ${EnumDataTables.hasherEventMap.eventTableName} hem 
             WHERE  hem.attendenceState >= 20
-            AND hem.hemId not in (SELECT hemId from ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay3 where pay3.cancelledBy IS NULL) 
+            AND hem.hemId not in (SELECT hemId from ${EnumDataTables.payments.eventTableName} pay3 where pay3.cancelledBy IS NULL) 
           ) as count, 
           0.0 as totalCollected,
           0.0 as totalDebited,
           0.0 as extrasPaid
             
           UNION
-          select paymentType, 
+          SELECT paymentType, 
             (
                 SELECT COUNT(*) 
-                FROM ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay 
-                INNER JOIN ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem on hem.hemId = pay.hemId AND hem.attendenceState >= 20
+                FROM ${EnumDataTables.payments.eventTableName} pay 
+                INNER JOIN ${EnumDataTables.hasherEventMap.eventTableName} hem on hem.hemId = pay.hemId AND hem.attendenceState >= 20
                 WHERE pay.paymentType = x.paymentType AND pay.cancelledBy IS NULL
 
             ) as count,
             (
                 SELECT SUM(pay2.creditAmount)
-                FROM ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay2 
-                INNER JOIN ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
+                FROM ${EnumDataTables.payments.eventTableName} pay2 
+                INNER JOIN ${EnumDataTables.hasherEventMap.eventTableName} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
                 WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL
             ) as totalCollected,
             (
                 SELECT SUM(pay2.${tableModel.paymentsTableHelper.colDebitAmount})
-                FROM ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay2 
-                INNER JOIN ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
+                FROM ${EnumDataTables.payments.eventTableName} pay2 
+                INNER JOIN ${EnumDataTables.hasherEventMap.eventTableName} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
                 WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL
             ) as totalDebited,
             (
                 SELECT SUM(pay2.${tableModel.paymentsTableHelper.colDoPayForExtras})
-                FROM ${tableModel.paymentsTableHelper.getTableName(AppDomainType.event)} pay2 
-                INNER JOIN ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.event)} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
+                FROM ${EnumDataTables.payments.eventTableName} pay2 
+                INNER JOIN ${EnumDataTables.hasherEventMap.eventTableName} hem2 on hem2.hemId = pay2.hemId AND hem2.attendenceState >= 20
                 WHERE pay2.paymentType = x.paymentType AND pay2.cancelledBy IS NULL
             ) as extrasPaid
-          FROM (select 1 as paymentType union values (2), (3), (4), (5), (6), (7), (8) ) x
+          FROM (SELECT 1 as paymentType union values (2), (3), (4), (5), (6), (7), (8) ) x
 
 
           ''';
@@ -1600,10 +1602,10 @@ SELECT
                               (widget.eventAggregate.kennel.bankBic == null))
                           ? Container()
                           : ElevatedButton(
-                              onPressed: () {
+                              onPressed: () async {
                                 final String remittanceInfo =
                                     '${item.payment!.paymentReference}-${item.extensions.paidByName}';
-                                BankTransferQr.showBankTransferQrCode(
+                                await BankTransferQr.showBankTransferQrCode(
                                   context,
                                   widget.eventAggregate,
                                   item.extensions.isMember != 0,

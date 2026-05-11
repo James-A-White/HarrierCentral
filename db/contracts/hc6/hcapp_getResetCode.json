@@ -1,0 +1,93 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getResetCode",
+  "version": "1.0.0",
+  "description": "Returns the ResetCode (URC:-prefixed invite/QR code) for the Hasher identified by the given SupportCode. The SupportCode is a short USC:-prefixed code visible on the user's profile, used for admin-assisted device re-authorisation. Any authenticated user may call this endpoint. Removed users are excluded. Returns a standard HC6 error rowset if not found or auth fails.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth to authenticate the caller."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived cryptographic auth token. Validated by HC6.ValidateAppAuth against the device secret."
+    },
+    {
+      "name": "supportCode",
+      "type": "NVARCHAR(250)",
+      "nullable": false,
+      "mapsToColumn": "Hasher.SupportCode",
+      "description": "The USC:-prefixed support code to look up. Matched against HC.Hasher.SupportCode.",
+      "typeMismatch": "NVARCHAR(250) vs Hasher.SupportCode NVARCHAR(50) — parameter is 5× wider than the column. Should be NVARCHAR(50)."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "Returned when HC6.ValidateAppAuth fails (auth, device not found, or token expired). Uses camelCase column names matching the HC6 standard app error format.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Unique ID of the HC.ErrorLog entry recorded by ValidateAppAuth." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code. 11=auth failure." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Specific error code set by ValidateAppAuth." },
+        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short error title for display." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
+        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name from OBJECT_NAME(@@PROCID)." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "NotFoundError",
+      "description": "Returned when no active Hasher matches the supplied supportCode (errorCode=1313, errorType=13). Uses the same camelCase structure as AuthError.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Unique ID of the HC.ErrorLog entry recorded for this not-found event." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 13 (not found)." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Always 1313." },
+        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Always 'Support code not found'." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "Always 'No active account was found for that support code.'." },
+        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name from OBJECT_NAME(@@PROCID)." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "ResetCodeResult",
+      "description": "Returned on success. Single row containing the URC:-prefixed reset code for the matched user.",
+      "columns": [
+        { "name": "resetCode", "type": "NVARCHAR(250)", "nullable": false, "description": "The URC:-prefixed invite/reset code from HC.Hasher.ResetCode. Column declared NVARCHAR(250) in SP but column is NVARCHAR(50) in table." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Writes a row to HC.ErrorLog when no active Hasher is found for the given supportCode."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "@supportCode NVARCHAR(250) vs Hasher.SupportCode NVARCHAR(50)",
+      "detail": "@supportCode is declared NVARCHAR(250) but HC.Hasher.SupportCode is NVARCHAR(50). Narrowed from HC5's NVARCHAR(1000) but still 5× wider than the column. Should be NVARCHAR(50)."
+    },
+    {
+      "severity": "low",
+      "issue": "@resetCode NVARCHAR(250) vs Hasher.ResetCode NVARCHAR(50)",
+      "detail": "Local variable @resetCode is declared NVARCHAR(250) but HC.Hasher.ResetCode is NVARCHAR(50). Functionally harmless but inconsistent — should match the column type."
+    },
+    {
+      "severity": "low",
+      "issue": "HcVersion hardcoded as '<unknown>' in ErrorLog INSERT",
+      "detail": "The ErrorLog INSERT at line 80 passes '<unknown>' as HcVersion. HC6 SPs should pass a meaningful version identifier or a shared constant."
+    },
+  ],
+  "breakingChanges": [
+    "@supportCode narrowed from NVARCHAR(1000) (HC5) to NVARCHAR(250) (HC6). Any caller passing a string longer than 250 characters will receive a truncation error.",
+    "Not-found case now returns a structured HC6 error rowset (errorId, errorType, errorCode, errorTitle, errorUserMessage, errorProc) instead of HC5's single-column 'Support code not found' string result in the LookupResult rowset. Callers must be updated to check for the error rowset rather than parsing the result string.",
+    "Auth failure now returns the standard HC6 ValidateAppAuth error rowset instead of HC5's non-standard Pascal-cased error rowset (ErrorType, ErrorTitle, ErrorDescription).",
+    "Removed users are now excluded from lookup results. HC5 returned a 'Support code not found' result for removed users implicitly via the removed=0 filter; HC6 is explicit and consistent but the observable behaviour is the same.",
+    "errorCode 1313 and errorType 13 are new — HC5 had no structured error codes for this SP."
+  ]
+}

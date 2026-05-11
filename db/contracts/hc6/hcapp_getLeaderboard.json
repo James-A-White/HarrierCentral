@@ -1,0 +1,134 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getLeaderboard",
+  "version": "1.0.0",
+  "description": "Returns run and haring counts per hasher per kennel for leaderboard display. Scoped to a single kennel when @kennelId is provided, or across all kennels when NULL. Limited to hashers who ran at least once in the rolling past 12 months via a CTE on HasherKennelMap.DateOfLastRun. Excludes placeholder users, anonymous hashers, and kennels flagged with ExcludeFromLeaderboard. Read SP — no success envelope; auth failure returns a standard HC6 error rowset.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "Registered device UUID used to look up the device secret for token validation."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived cryptographic token validated against the device secret by HC6.ValidateAppAuth."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Optional kennel filter. When provided, results are scoped to that kennel. When NULL, returns rows across all kennels."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "Returned when HC6.ValidateAppAuth sets @errorCode. Mutually exclusive with LeaderboardRows — one or the other is returned, never both.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID for the auth failure." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "HC6 error type code. 11 = auth failure." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "HC6 error code set by ValidateAppAuth." },
+        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short error title for display." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
+        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "LeaderboardRows",
+      "description": "One row per hasher-kennel combination where the hasher ran at least once in the past 12 months, is not a placeholder or anonymous user, and the kennel is not excluded from the leaderboard. Returned only when auth succeeds.",
+      "columns": [
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Hasher.DisplayName — computed persisted column combining HashName and/or FirstName+LastName based on NameDisplayPreference. Nullable because the computed expression can produce NULL."
+        },
+        {
+          "name": "totalRunCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Sum of HasherKennelMap.HcTotalRunCount + HasherKennelMap.HistoricalTotalRunCount, COALESCE-guarded to 0."
+        },
+        {
+          "name": "totalHaringCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Sum of HasherKennelMap.HcHaringCount + HasherKennelMap.HistoricalHaringCount, COALESCE-guarded to 0."
+        },
+        {
+          "name": "ytdTotalRunCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "HasherKennelMap.YtdTotalRunCount COALESCE-guarded to 0. Year-to-date run count for this kennel."
+        },
+        {
+          "name": "ytdHaringCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "HasherKennelMap.YtdHaringCount COALESCE-guarded to 0. Year-to-date haring count for this kennel."
+        },
+        {
+          "name": "rollingYearTotalRunCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "HasherKennelMap.RollingYearTotalRunCount COALESCE-guarded to 0. Run count in the rolling past 12 months. Column is nullable in the table; COALESCE makes this NOT NULL in the result."
+        },
+        {
+          "name": "rollingYearHaringCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "HasherKennelMap.RollingYearHaringCount COALESCE-guarded to 0. Haring count in the rolling past 12 months. Column is nullable in the table; COALESCE makes this NOT NULL in the result."
+        },
+        {
+          "name": "kennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.Kennel.id — the kennel this row applies to."
+        },
+        {
+          "name": "homeKennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "HC.Hasher.HomeKennelId — the hasher's home kennel. Nullable in the table."
+        },
+        {
+          "name": "hasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.HasherKennelMap.UserId — the hasher's unique identifier."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "No TRY/CATCH block",
+      "detail": "The SP body has no TRY/CATCH wrapper. An unexpected runtime error (e.g. join failure, network issue) will propagate as an unhandled SQL exception rather than returning a structured HC6 error rowset. HC6 standard requires TRY/CATCH on all SPs."
+    },
+    {
+      "severity": "low",
+      "issue": "ExcludeFromLeaderboard is SMALLINT, used as boolean",
+      "detail": "HC.Kennel.ExcludeFromLeaderboard is defined as SMALLINT NOT NULL in the table but the WHERE clause tests = 0 (boolean-style). This works correctly but is a type oddity — ideally this would be a BIT column. Not a bug, but worth flagging for schema cleanup."
+    },
+    {
+      "severity": "low",
+      "issue": "ActiveUsers CTE groups all kennels to find recently-active users",
+      "detail": "The ActiveUsers CTE groups HasherKennelMap by UserId and checks MAX(DateOfLastRun) across ALL kennels, not just the filtered kennel. This means a hasher who ran recently at kennel B will appear in kennel A's leaderboard even if they have not run at kennel A in the past year. This is likely intentional — showing all recent users across any kennel — but may surprise callers filtering by @kennelId who expect kennel-scoped activity filtering."
+    }
+  ],
+  "breakingChanges": [
+    "Column names changed: single-letter aliases (a–j) in HC5 replaced with descriptive names (displayName, totalRunCount, totalHaringCount, ytdTotalRunCount, ytdHaringCount, rollingYearTotalRunCount, rollingYearHaringCount, kennelId, homeKennelId, hasherId). Any HC5 caller using the old aliases by name must be updated.",
+    "Auth error shape changed: HC5 returned errorType=1 or errorType=2 for auth/null-user errors. HC6 delegates auth to ValidateAppAuth which uses HC6 error type codes (errorType=11 for auth failure). Callers that switch on the HC5 errorType values must be updated.",
+    "Auth error columns changed: HC5 error rowset included a debugMessage column; HC6 error rowset does not. Callers reading debugMessage will get a column-not-found error."
+  ]
+}

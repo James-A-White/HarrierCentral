@@ -26,7 +26,7 @@ class GetResetCodeService {
       'supportCode': supportCode,
     });
 
-    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
+    final String responseBody = await ServiceCommon.sendHttpPost(body);
 
     SingleResultModel? result;
 

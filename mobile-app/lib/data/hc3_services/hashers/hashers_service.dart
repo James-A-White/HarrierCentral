@@ -1,26 +1,25 @@
 import 'package:harrier_central/imports.dart';
 
-class HashersTableHelper extends BaseTableHelper with BaseFields {
+class HashersTableHelper extends BaseTableHelper<AppDomainType>
+    with BaseFields {
   HashersTableHelper() {
     remoteDbId = 'hasherId';
     humanReadableTableName = 'Hashers';
     pageSize = SyncUserDataService.pageSize_hashersTable;
-    tableFlag = SyncUserDataService.flagHashersTable;
+    tableFlag = EnumDataTables.hashers.flag;
   }
 
   @override
-  String getTableName(dynamic appDomainType) {
+  String getTableName(AppDomainType appDomainType) {
     String tableName;
     switch (appDomainType) {
-      // case AppDomainType.event:
-      //   break;
-      // case AppDomainType.kennel:
-      //   break;
-      // case AppDomainType.user:
-      //   tableName = 'hashers';
-      //   break;
+      case AppDomainType.user:
+        tableName = EnumDataTables.hashers.commonTableName;
+        break;
       default:
-        tableName = 'hashers';
+        throw Exception(
+          'EnumDataTables.${EnumDataTables.hashers.name} does not have a table associated with it.',
+        );
     }
     return tableName;
   }
@@ -153,7 +152,7 @@ class HashersService extends BaseService {
       final int hashersLastUpdated = await getLastUpdatedTime(
         database,
         tableModel.hashersTableHelper,
-        tableModel.hashersTableHelper.getTableName(AppDomainType.user),
+        EnumDataTables.hashers.commonTableName,
         tableModel.hashersTableHelper.colUpdatedAtValue,
       );
       hashersUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
@@ -165,9 +164,7 @@ class HashersService extends BaseService {
           .getLastUpdatedTime(
             database,
             tableModel.hasherEventMapTableHelper,
-            tableModel.hasherEventMapTableHelper.getTableName(
-              AppDomainType.event,
-            ),
+            EnumDataTables.hasherEventMap.eventTableName,
             tableModel.hasherEventMapTableHelper.colUpdatedAtValue,
           );
       hasherEventMapUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
@@ -238,7 +235,7 @@ class HashersService extends BaseService {
 
     bool dbErrorIsDuplicateEmail = false;
 
-    String responseBody = await ServiceCommon.sendHttpPostV2(
+    String responseBody = await ServiceCommon.sendHttpPost(
       body,
       errorCallback: (DbErrorModel dbError) async {
         bool okButtonPressed = false;
@@ -367,7 +364,7 @@ class HashersService extends BaseService {
       'followKennelOnAddNewUser': null,
     });
 
-    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
+    final String responseBody = await ServiceCommon.sendHttpPost(body);
 
     // I checked and the error condition is being properly handled by the caller
     return !responseBody.startsWith(ERROR_PREFIX);
@@ -407,7 +404,7 @@ class HashersService extends BaseService {
       final int hashersLastUpdated = await getLastUpdatedTime(
         database,
         tableModel.hashersTableHelper,
-        tableModel.hashersTableHelper.getTableName(AppDomainType.user),
+        EnumDataTables.hashers.commonTableName,
         tableModel.hashersTableHelper.colUpdatedAtValue,
       );
       hashersUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
@@ -446,7 +443,7 @@ class HashersService extends BaseService {
       'thirdPartyEmail': loginData.thirdPartyEmail,
     });
 
-    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
+    final String responseBody = await ServiceCommon.sendHttpPost(body);
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       if (!newUserForThisDevice) {

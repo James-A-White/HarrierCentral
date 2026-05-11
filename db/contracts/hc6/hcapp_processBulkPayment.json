@@ -1,0 +1,169 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_processBulkPayment",
+  "version": "1.0.0",
+  "description": "Records payments for multiple hashers at a single event in one operation. Accepts a comma-separated list of hasher UUIDs, upserts HasherEventMap attendance records (AttendenceState=20, RsvpState=3), cancels any existing uncancelled payments for those hashers at the event, and inserts new payment rows using a set-based INSERT with per-hasher pricing (member vs. non-member rate, with discount applied). After committing, updates kennel credits per user via a CURSOR, recalculates run counts for all users, and delegates to HC6.hcapp_syncEventAdminData to return current event admin sync data. Supported paymentTypes: 2=free, 3=cash, 4=bank transfer, 5=cash other, 6=hash credit, 7=bank transfer other, 8=credit other. paymentTypes 1 and 100 are explicitly excluded.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived cryptographic token validated against the device secret by HC6.ValidateAppAuth."
+    },
+    {
+      "name": "userIdsWhoPaid",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Comma-separated list of hasher UUIDs (UNIQUEIDENTIFIER strings). Parsed via STRING_SPLIT + TRY_CAST; invalid entries are silently skipped. Required — NULL triggers a param validation error (errorCode=1241, errorType=12)."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Event.id",
+      "description": "The event to record payments against. Required — NULL or empty GUID triggers a param validation error (errorCode=1241, errorType=12)."
+    },
+    {
+      "name": "paymentType",
+      "type": "SMALLINT",
+      "nullable": false,
+      "mapsToColumn": "Payment.PaymentType",
+      "description": "Payment method code. Values 2–8 trigger payment INSERT; values outside this range skip the INSERT silently. 2=free, 3=cash, 4=bank transfer, 5=cash other, 6=hash credit, 7=bank transfer other, 8=credit other."
+    },
+    {
+      "name": "productType",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Payment.ProductType",
+      "description": "Product category. Default 1=event; 2=membership; 3=haberdashery. NULL is coerced to 1 before use."
+    },
+    {
+      "name": "hasherEventMapUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Sync watermark forwarded to hcapp_syncEventAdminData. Default 'ignore' (meaning return all rows)."
+    },
+    {
+      "name": "hasherKennelMapUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Sync watermark forwarded to hcapp_syncEventAdminData. Default 'ignore'."
+    },
+    {
+      "name": "paymentsUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Sync watermark forwarded to hcapp_syncEventAdminData. Default 'ignore'."
+    },
+    {
+      "name": "transactionTimestamp",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": "Payment.PaidDate",
+      "description": "Optional PaidDate override as an ISO datetime string. Parsed via CAST(LEFT(@transactionTimestamp, 23) AS DATETIME); NULL falls back to GETDATE(). Note type mismatch: Payment.PaidDate is DATETIMEOFFSET(7) but the SP casts to DATETIME before inserting.",
+      "typeMismatch": "NVARCHAR cast to DATETIME inserted into DATETIMEOFFSET(7) column — implicit cast loses timezone offset."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "Write SP success envelope. Always returned as the first rowset. On success: success=1, errorCode=NULL, errorType=NULL. On any failure (auth, param, or unhandled DB error): success=0 with errorCode and errorType set.",
+      "columns": [
+        { "name": "success", "type": "BIT", "nullable": false, "description": "1 on success, 0 on any error." },
+        { "name": "errorCode", "type": "INT", "nullable": true, "description": "NULL on success. 1241 for param/auth validation errors; 1941 for unhandled DB errors." },
+        { "name": "errorType", "type": "INT", "nullable": true, "description": "NULL on success. 12 for param validation; errorType from ValidateAppAuth on auth failure; 19 for unhandled DB errors." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ErrorDetail",
+      "description": "Returned as rowset 1 only on error. Contains structured error detail for display and logging.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "ID of the HC.ErrorLog entry created for this error." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Mirrors errorType from the SuccessEnvelope." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Mirrors errorCode from the SuccessEnvelope." },
+        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short human-readable error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
+        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name from OBJECT_NAME(@@PROCID)." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "AdHocBulkResult",
+      "description": "Returned as rowset 1 on success only. Single row summarising the HEM upsert counts.",
+      "columns": [
+        { "name": "adHocDataId", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "serverMessage", "type": "NVARCHAR", "nullable": false, "description": "Human-readable summary: 'N records updated, M records inserted' where N=HEM rows updated and M=HEM rows inserted." }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "SyncEventAdminData",
+      "description": "Rowsets 2+ are the delegated output of HC6.hcapp_syncEventAdminData — the full event admin sync payload. See that SP's contract for column definitions. Only returned on success."
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.HasherEventMap SET AttendenceState=20, RsvpState=3 for all parsed hasher UUIDs that already have a HEM row for the event",
+    "INSERT HC.HasherEventMap for all parsed hasher UUIDs that do not yet have a HEM row for the event (AttendenceState=20, RsvpState=3, IsHare=0, VirginVisitorType=0)",
+    "UPDATE HC.Event SET DoTrackHashCash=1 for the event if not already set",
+    "UPDATE HC.Payment SET IsCancelled=1, CancelledDate, CancelledBy_UserId for all existing uncancelled payments for the parsed hashers at the event",
+    "INSERT HC.Payment — one row per parsed hasher, per-hasher pricing calculated from member/non-member rates and discount (only for paymentType 2–8)",
+    "INSERT HC.ErrorLog on any validation or unhandled error",
+    "EXEC HC.nonApi_updateKennelCreditByUser — once per parsed hasher (via CURSOR, post-commit)",
+    "EXEC HC.nonApi_updateRunCountsForAllUsers @updatedSince = @queryStart (post-commit)",
+    "EXEC HC6.hcapp_syncEventAdminData — delegated sync call (post-commit)"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "@kennelId unguarded if event does not exist",
+      "detail": "Line 123 selects @kennelId from HC.Event with no existence check. If @eventId does not match any event, @kennelId is NULL. It is then used post-commit in the credit cursor (line 278) and in nonApi_updateKennelCreditByUser — passing NULL @kennelId to that SP. There is no error returned to the caller in this scenario."
+    },
+    {
+      "severity": "high",
+      "issue": "transactionTimestamp cast to DATETIME inserted into DATETIMEOFFSET(7) column",
+      "detail": "Line 233: CAST(LEFT(@transactionTimestamp, 23) AS DATETIME) is inserted into Payment.PaidDate which is DATETIMEOFFSET(7). The implicit cast from DATETIME to DATETIMEOFFSET(7) assumes the server's local timezone offset — silently wrong in UTC-configured Azure SQL. The HC5 SP had the same bug."
+    },
+    {
+      "severity": "medium",
+      "issue": "Post-commit credit update still uses a CURSOR",
+      "detail": "Lines 271–283: Although the payment INSERT was correctly converted to set-based in HC6, the per-user credit update after commit still uses a CURSOR over @userIdsWhoPaid. For bulk operations with many hashers this will be slow. A set-based alternative or batched call to nonApi_updateKennelCreditByUser would be preferable if that SP supports it."
+    },
+    {
+      "severity": "medium",
+      "issue": "Payment pricing uses floating-point arithmetic",
+      "detail": "Lines 204–205: The Pricing CTE computes basePrice using a mixed expression that multiplies by (1.0 - ...) — the 1.0 literal promotes to FLOAT. HC.Payment.CreditAmount and HC.Payment.DebitAmount are SMALLMONEY. Intermediate FLOAT arithmetic can introduce rounding errors before the implicit cast to SMALLMONEY. Pricing should use DECIMAL arithmetic throughout."
+    },
+    {
+      "severity": "medium",
+      "issue": "Silent no-op when paymentType is outside 2–8",
+      "detail": "Lines 186–242: If @paymentType is 1, 100, or any other out-of-range value, the payment INSERT block is skipped entirely with no error or warning. HEM rows are still upserted and existing payments are still cancelled, leaving the event in an inconsistent state. The caller receives a success envelope with no indication that payments were not recorded."
+    },
+    {
+      "severity": "low",
+      "issue": "HcVersion hardcoded as '<unknown>' in ErrorLog inserts",
+      "detail": "Lines 100, 111, 253: All INSERT HC.ErrorLog calls pass '<unknown>' for HcVersion. This matches the pattern in other hcapp_ SPs but reduces the diagnostic value of the error log."
+    }
+  ],
+  "breakingChanges": [
+    "@userIdsWhoPaid widened from VARCHAR(8000) to NVARCHAR(MAX) — callers sending >8000 ASCII characters previously silently truncated; now accepted in full",
+    "CURSOR-based per-row payment INSERT replaced with set-based INSERT — execution order of per-hasher payment rows is no longer deterministic",
+    "TRY/CATCH and transaction added around the main body — partial writes that were previously committed in HC5 on mid-operation failure are now rolled back",
+    "DATALENGTH replaced with LEN for string length checks (no observable behavioural change for NVARCHAR inputs)",
+    "Success envelope rowset (success/errorCode/errorType) added as rowset 0 — HC5 had no such envelope; callers must read rowset index 0 before rowset 1",
+    "Delegation target updated from HC5.hcapp_syncEventAdminData to HC6.hcapp_syncEventAdminData — sync rowset column shapes may differ"
+  ]
+}

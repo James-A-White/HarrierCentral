@@ -83,7 +83,7 @@ function RunListItem({
           <img
             src={kennel.logoUrl}
             alt={kennel.shortName}
-            className="h-14 w-14 rounded-full object-contain shrink-0 self-center"
+            className="h-14 w-14 object-contain shrink-0 self-center"
           />
         )}
         <div className="flex flex-col gap-0.5 min-w-0">

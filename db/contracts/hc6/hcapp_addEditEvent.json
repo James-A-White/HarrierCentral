@@ -1,0 +1,451 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_addEditEvent",
+  "version": "1.0.0",
+  "description": "Creates or updates an HC.Event record for the authenticated device's kennel. Mode is determined by whether @eventId already exists in HC.Event for the given @kennelId: if found, performs a partial UPDATE; if not found (or @eventId is NULL), performs an INSERT. Sentinel values control partial-update behaviour: NULL = keep existing, -1 = keep existing (normalised to NULL before COALESCE), -2 = explicitly clear for numeric/decimal fields, '<remove>' = explicitly clear for string fields, 0 = explicitly clear for absoluteEventNumber. On INSERT, generates a placeholder name if @eventName is empty and falls back to kennel default prices and run start time. After a successful write, delegates to HC6.hcapp_syncUserData to return refreshed sync data. Returns a success envelope rowset plus syncUserData rowsets on success, or a success envelope rowset plus an error detail rowset on failure.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth for auth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived cryptographic auth token. Passed to HC6.ValidateAppAuth."
+    },
+    {
+      "name": "narrowEventsUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Sync watermark for events passed through to HC6.hcapp_syncUserData. Pass 'ignore' to skip event sync. NULL is defaulted to 'ignore' internally."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.id",
+      "description": "Event to update. NULL or null-UUID (00000000-...) triggers INSERT mode. Null-UUID is normalised to NULL internally. On UPDATE, the event must belong to @kennelId — cross-kennel writes are rejected with error 1320."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Event.KennelId",
+      "description": "Required. Missing or null-UUID (00000000-...) returns error 1220. Scopes the write to the correct kennel and guards against cross-kennel data corruption."
+    },
+    {
+      "name": "startDatetime",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": true,
+      "mapsToColumn": "Event.EventStartDatetime",
+      "description": "Event start date/time. Required for INSERT mode. Sentinel: values <= 1901-01-01 are normalised to NULL. On INSERT with a midnight time component, the kennel's DefaultRunStartTime is applied."
+    },
+    {
+      "name": "endDatetime",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": true,
+      "mapsToColumn": "Event.EventEndDatetime",
+      "description": "Event end date/time. Optional. Sentinel: values <= 1901-01-01 normalised to NULL."
+    },
+    {
+      "name": "isCountedRun",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.IsCountedRun",
+      "description": "Whether this event counts toward run totals. Sentinel: -1 normalised to NULL (keep existing). Defaults to 0 on INSERT."
+    },
+    {
+      "name": "isVisible",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.IsVisible",
+      "description": "Whether the event is publicly visible. Sentinel: -1 normalised to NULL (keep existing). Defaults to 1 on INSERT."
+    },
+    {
+      "name": "usersCanEditRunAttendence",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.CanEditRunAttendence",
+      "description": "Whether users can edit their own run attendance. Sentinel: -1 = explicitly set column to NULL (not 'keep'); NULL = keep existing. This is the inverse of all other -1 sentinels in this SP — -1 here means 'clear' not 'keep'."
+    },
+    {
+      "name": "isPromotedEvent",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.IsPromotedEvent",
+      "description": "Whether the event is promoted. Sentinel: -1 normalised to NULL (keep existing). Defaults to 0 on INSERT."
+    },
+    {
+      "name": "eventGeographicScope",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.EventGeographicScope",
+      "description": "Geographic scope of the event (e.g. 1=normal run, 4=Nash Hash). Sentinel: -1 normalised to NULL (keep existing). Defaults to 0 on INSERT."
+    },
+    {
+      "name": "ThemeRunType",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.ThemeRunType",
+      "description": "Theme run type code. Sentinel: -1 normalised to NULL (keep existing). Defaults to 0 on INSERT.",
+      "typeMismatch": "SMALLINT parameter — Event.ThemeRunType is INT. Widening is safe at runtime but the types are inconsistent."
+    },
+    {
+      "name": "eventName",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Event.EventName",
+      "description": "Event name. Sentinel: LEN < 1 normalised to NULL (keep existing). On INSERT with empty/NULL name, a placeholder is generated using the kennel short name. Unicode line/paragraph separators (U+2028, U+2029) are stripped."
+    },
+    {
+      "name": "eventDescription",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Event.EventDescription",
+      "description": "Event description. Sentinel: LEN < 1 normalised to NULL (keep existing). '<remove>' clears to NULL. Unicode line/paragraph separators (U+2028, U+2029) are stripped."
+    },
+    {
+      "name": "locationCity",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Event.LocationCity",
+      "description": "City component of the event location. Sentinel: LEN < 1 normalised to NULL. '<remove>' clears to NULL."
+    },
+    {
+      "name": "locationStreet",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Event.LocationStreet",
+      "description": "Street component of the event location. Sentinel: LEN < 1 normalised to NULL. '<remove>' clears to NULL."
+    },
+    {
+      "name": "locationPostCode",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Event.LocationPostCode",
+      "description": "Post/zip code. Sentinel: LEN < 1 normalised to NULL. '<remove>' clears to NULL."
+    },
+    {
+      "name": "locationCountry",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Event.LocationCountry",
+      "description": "Country component of the event location. Sentinel: LEN < 1 normalised to NULL. '<remove>' clears to NULL."
+    },
+    {
+      "name": "locationRegion",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Event.LocationRegion",
+      "description": "Region component of the event location. Sentinel: LEN < 1 normalised to NULL. '<remove>' clears to NULL."
+    },
+    {
+      "name": "locationSubRegion",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Event.LocationSubRegion",
+      "description": "Sub-region component of the event location. Sentinel: LEN < 1 normalised to NULL. '<remove>' clears to NULL."
+    },
+    {
+      "name": "locationOneLineDesc",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Event.LocationOneLineDesc",
+      "description": "One-line location description fallback. Sentinel: LEN < 1 normalised to NULL. '<remove>' clears to NULL. Unicode line/paragraph separators (U+2028, U+2029) are stripped."
+    },
+    {
+      "name": "eventFacebookId",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Event.EventFacebookId",
+      "description": "Facebook event ID. Sentinel: LEN < 5 normalised to NULL. If value contains the substring 'break', silently cleared to empty string."
+    },
+    {
+      "name": "coverPhotoUrl",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "Event.EventImage",
+      "description": "URL of the event cover photo. Sentinel: LEN < 5 normalised to NULL."
+    },
+    {
+      "name": "coverPhotoOffsetX",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "Event.EventImageOffsetX",
+      "description": "Horizontal offset for cover photo cropping. Sentinel: -1 normalised to NULL. Defaults to 0 on INSERT.",
+      "typeMismatch": "INT parameter — Event.EventImageOffsetX is SMALLINT. Narrowing cast is safe within normal offset value ranges but the types are inconsistent."
+    },
+    {
+      "name": "coverPhotoOffsetY",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "Event.EventImageOffsetY",
+      "description": "Vertical offset for cover photo cropping. Sentinel: -1 normalised to NULL. Defaults to 0 on INSERT.",
+      "typeMismatch": "INT parameter — Event.EventImageOffsetY is SMALLINT. Narrowing cast is safe within normal offset value ranges but the types are inconsistent."
+    },
+    {
+      "name": "latitude",
+      "type": "DECIMAL(18,15)",
+      "nullable": true,
+      "mapsToColumn": "Event.Latitude",
+      "description": "Event latitude. Sentinel: -1 normalised to NULL (keep existing). -2 = explicitly clear to NULL. EventGeolocation is recomputed from the resolved lat/lon."
+    },
+    {
+      "name": "longitude",
+      "type": "DECIMAL(19,15)",
+      "nullable": true,
+      "mapsToColumn": "Event.Longitude",
+      "description": "Event longitude. Sentinel: -1 normalised to NULL (keep existing). -2 = explicitly clear to NULL. EventGeolocation is recomputed from the resolved lat/lon."
+    },
+    {
+      "name": "fbLatitude",
+      "type": "DECIMAL(18,15)",
+      "nullable": true,
+      "mapsToColumn": "Event.FbLatitude",
+      "description": "Facebook-sourced latitude fallback. Sentinel: -1 normalised to NULL."
+    },
+    {
+      "name": "fbLongitude",
+      "type": "DECIMAL(19,15)",
+      "nullable": true,
+      "mapsToColumn": "Event.FbLongitude",
+      "description": "Facebook-sourced longitude fallback. Sentinel: -1 normalised to NULL."
+    },
+    {
+      "name": "eventPriceForMembers",
+      "type": "DECIMAL(10,4)",
+      "nullable": true,
+      "mapsToColumn": "Event.EventPriceForMembers",
+      "description": "Member ticket price. Sentinel: -1 normalised to NULL (keep existing). -2 = explicitly clear to NULL. On INSERT, falls back to HC.Kennel.DefaultEventPriceForMembers."
+    },
+    {
+      "name": "eventPriceForNonMembers",
+      "type": "DECIMAL(10,4)",
+      "nullable": true,
+      "mapsToColumn": "Event.EventPriceForNonMembers",
+      "description": "Non-member ticket price. Sentinel: -1 normalised to NULL (keep existing). -2 = explicitly clear to NULL. On INSERT, falls back to HC.Kennel.DefaultEventPriceForNonMembers."
+    },
+    {
+      "name": "eventPriceForExtras",
+      "type": "DECIMAL(10,4)",
+      "nullable": true,
+      "mapsToColumn": "Event.EventPriceForExtras",
+      "description": "Extras price. Sentinel: -1 normalised to NULL (keep existing). -2 = explicitly clear to NULL."
+    },
+    {
+      "name": "extrasDescription",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Event.ExtrasDescription",
+      "description": "Description of extras. Sentinel: LEN < 1 normalised to NULL. '<none>' clears to NULL. Note: uses '<none>' not '<remove>' — inconsistent with all other string clear sentinels in this SP."
+    },
+    {
+      "name": "absoluteEventNumber",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.AbsoluteEventNumber",
+      "description": "Override run number. Sentinel: -1 normalised to NULL (keep existing). 0 = explicitly clear to NULL. Note: uses 0 to clear rather than -2 — inconsistent with lat/lon and price clear sentinels."
+    },
+    {
+      "name": "eventCurrencyType",
+      "type": "NVARCHAR(10)",
+      "nullable": true,
+      "mapsToColumn": "Event.EventCurrencyType",
+      "description": "ISO currency code. Sentinel: LEN < 4 normalised to NULL (keep existing)."
+    },
+    {
+      "name": "useFbLatLon",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.UseFbLatLon",
+      "description": "Whether to use Facebook lat/lon for EventGeolocation. Sentinel: -1 normalised to NULL (keep existing)."
+    },
+    {
+      "name": "useFbRunDetails",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.UseFbRunDetails",
+      "description": "Whether to use Facebook run details for display. Sentinel: -1 normalised to NULL (keep existing)."
+    },
+    {
+      "name": "useFbLocation",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.UseFbLocation",
+      "description": "Whether to use Facebook location for display. Sentinel: -1 normalised to NULL (keep existing)."
+    },
+    {
+      "name": "useFbImage",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.UseFbImage",
+      "description": "Whether to use Facebook image for display. Sentinel: -1 normalised to NULL (keep existing)."
+    },
+    {
+      "name": "deleted",
+      "type": "BIT",
+      "nullable": true,
+      "mapsToColumn": "Event.deleted",
+      "description": "Soft-delete flag. NULL = keep existing. 1 = mark event as deleted via the standard UPDATE COALESCE path. The HC5 stub deletion block is removed — @deleted=1 now executes the UPDATE."
+    },
+    {
+      "name": "hasherEventMapUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Sync watermark for HasherEventMap, passed through to HC6.hcapp_syncUserData. NULL is defaulted to 'ignore' internally."
+    },
+    {
+      "name": "hasherKennelMapUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Sync watermark for HasherKennelMap, passed through to HC6.hcapp_syncUserData. NULL is defaulted to 'ignore' internally."
+    },
+    {
+      "name": "hares",
+      "type": "NVARCHAR(2500)",
+      "nullable": true,
+      "mapsToColumn": "Event.Hares",
+      "description": "Comma-separated hare names (not IDs). Sentinel: LEN < 4 normalised to NULL (keep existing). '<remove>' clears to NULL. Unicode line/paragraph separators (U+2028, U+2029) are stripped. The HC5 INSERT bug (using @locationOneLineDesc instead of @hares) is fixed in HC6."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "Always returned as the first rowset. success=1 on success (errorCode and errorType are NULL); success=0 on any failure (errorCode and errorType are populated). On auth failure (errorCode=11xx), missing kennelId (1220), cross-kennel conflict (1320), or unhandled DB error (1920), success=0.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "BIT",
+          "nullable": false,
+          "description": "1 = operation succeeded; 0 = operation failed."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "Numeric error code on failure; NULL on success. Known codes: 1220 = missing kennelId, 1320 = cross-kennel event conflict, 1920 = unhandled DB error. Auth error codes come from HC6.ValidateAppAuth."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "Error type classification on failure; NULL on success. 12 = validation/param error (1220), 13 = auth/not-found error (1320 and auth failures), 19 = unhandled DB error (1920)."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ErrorDetail",
+      "description": "Returned as rowset 1 only on failure (when success=0 in rowset 0). Not present on success.",
+      "columns": [
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "GUID of the HC.ErrorLog entry created for this failure."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error type classification. Same value as in the SuccessEnvelope."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Numeric error code. Same value as in the SuccessEnvelope."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Short error title for display (e.g. 'Missing parameter', 'Event not found', 'Unexpected error')."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "User-facing error message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "SP name from OBJECT_NAME(@@PROCID)."
+        }
+      ]
+    },
+    {
+      "index": "1+",
+      "name": "SyncUserDataRowsets",
+      "description": "On success only. Multiple rowsets returned by HC6.hcapp_syncUserData (events, hasher-event map, hasher-kennel map, etc.). See hcapp_syncUserData contract for the full rowset shape. The sync SP re-authenticates with the same @deviceId and @accessToken; hashersUpdatedAfter is hardcoded to 'ignore'."
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Event — when @eventId exists and belongs to @kennelId",
+    "INSERT HC.Event — when @eventId is NULL or not found for @kennelId; only when @eventName (or placeholder) is non-empty AND @startDatetime is non-NULL AND @kennelId is non-NULL",
+    "INSERT HC.ErrorLog — on missing kennelId (1220), cross-kennel conflict (1320), or unhandled CATCH error (1920)",
+    "EXEC HC.nonApi_updateRunNumbers @eventId — called inside transaction, after INSERT or UPDATE",
+    "EXEC HC6.hcapp_syncUserData — called outside TRY/CATCH after COMMIT; returns multiple result sets to the caller"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Inconsistent clear sentinels across parameter groups",
+      "detail": "@extrasDescription uses '<none>' to clear, while all other string fields use '<remove>'. @absoluteEventNumber uses 0 to clear, while numeric/decimal fields use -2. Three different clear sentinel patterns in one SP increases caller complexity and error risk."
+    },
+    {
+      "severity": "medium",
+      "issue": "@usersCanEditRunAttendence sentinel -1 means 'clear' not 'keep'",
+      "detail": "For every other SMALLINT parameter, -1 is normalised to NULL meaning 'keep existing'. For @usersCanEditRunAttendence, -1 is NOT normalised — it is left as -1 and used inline as CASE WHEN @usersCanEditRunAttendence = -1 THEN NULL, meaning 'set column to NULL'. This is the opposite semantic to every other -1 sentinel in the SP and is not documented in parameter comments."
+    },
+    {
+      "severity": "medium",
+      "issue": "ThemeRunType parameter type is SMALLINT but column is INT",
+      "detail": "@ThemeRunType is declared SMALLINT in the SP signature but Event.ThemeRunType is INT. No explicit CAST is present; implicit widening occurs. The mismatch is harmless at current value ranges but should be aligned."
+    },
+    {
+      "severity": "medium",
+      "issue": "coverPhotoOffsetX/Y parameter types are INT but columns are SMALLINT",
+      "detail": "@coverPhotoOffsetX and @coverPhotoOffsetY are declared INT in the SP signature but Event.EventImageOffsetX and EventImageOffsetY are SMALLINT. No explicit CAST. Implicit narrowing — could truncate values outside the SMALLINT range."
+    },
+    {
+      "severity": "low",
+      "issue": "INSERT guard redundantly re-checks @kennelId IS NOT NULL",
+      "detail": "The INSERT guard at line 319 includes AND @kennelId IS NOT NULL. By this point, @kennelId has already been validated (not NULL and not null-UUID) at lines 145-157 and would have returned early. The redundant check is harmless but adds noise."
+    },
+    {
+      "severity": "low",
+      "issue": "HcVersion hardcoded to '<unknown>' in ErrorLog inserts",
+      "detail": "All INSERT HC.ErrorLog statements pass '<unknown>' for HcVersion. Ideally the HC version constant would be stored in a table or configuration and referenced here."
+    }
+  ],
+  "breakingChanges": [
+    "@eventName widened from NVARCHAR(120) to NVARCHAR(250) to match Event.EventName column.",
+    "@locationPostCode widened from NVARCHAR(50) to NVARCHAR(250) to match Event.LocationPostCode column.",
+    "@eventPriceForMembers, @eventPriceForNonMembers, @eventPriceForExtras changed from FLOAT to DECIMAL(10,4) to match Event column types.",
+    "@deleted changed from SMALLINT to BIT. The SMALLINT -1 sentinel (keep existing) is removed; pass NULL to keep the existing value.",
+    "@narrowEventsUpdatedAfter changed from DATETIMEOFFSET(7) to NVARCHAR(50) to match the hcapp_syncUserData watermark pattern.",
+    "@hasherEventMapUpdatedAfter changed from DATETIMEOFFSET(7) to NVARCHAR(50).",
+    "@hasherKennelMapUpdatedAfter changed from DATETIMEOFFSET(7) to NVARCHAR(50).",
+    "@kennelId is now required (no default); NULL or null-UUID returns error 1220 instead of silently falling through.",
+    "HC5 INSERT bug fixed: Event.Hares now receives @hares (HC5 incorrectly used @locationOneLineDesc).",
+    "HC5 deletion stub removed: @deleted=1 now executes a real soft-delete via the UPDATE path.",
+    "HC.nonApi_updateRunNumbers moved inside the transaction (HC5 called it outside any transaction).",
+    "TRY/CATCH and transaction added (HC5 had neither).",
+    "Success envelope rowset added as rowset 0 (HC5 had no envelope — results came from syncUserData only).",
+    "Cross-kennel guard added: @eventId belonging to a different kennel now returns error 1320 instead of silently creating a duplicate INSERT (HC5 bug).",
+    "DATALENGTH replaced with LEN for all string length guards.",
+    "Delegation target updated from HC5.hcapp_syncUserData to HC6.hcapp_syncUserData."
+  ]
+}

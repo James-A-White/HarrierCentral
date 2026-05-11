@@ -1,0 +1,145 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_logAppError",
+  "version": "1.0.0",
+  "description": "Records a client-side error in HC.AppError. The device must be registered in HC.Device (checked via Device.id lookup), but the access token is intentionally NOT validated. This design allows the app to log errors even when it cannot generate a valid token — for example, after a token generation failure. @accessToken is accepted for API compatibility but is completely ignored. On success returns a single StatusEnvelope rowset (success=1). On device-not-found or DB error, returns a StatusEnvelope (success=0) followed by an ErrorDetail rowset.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "AppError.DeviceId",
+      "description": "Registered device UUID. Must exist in HC.Device — the SP looks up Device.UserId by this value as its only auth check. Also stored as AppError.DeviceId on successful insert."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Auth token. Accepted for API compatibility but intentionally never validated. By design: the app must be able to log errors even when token generation itself fails. Dead parameter — no check is performed against it."
+    },
+    {
+      "name": "httpBody",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "AppError.HttpBody",
+      "description": "HTTP request body captured at the time of the error. Optional."
+    },
+    {
+      "name": "errorText",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": "AppError.ErrorText",
+      "description": "The error message or exception text from the client. Type matches AppError.ErrorText NVARCHAR(1000) exactly."
+    },
+    {
+      "name": "extraData",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "AppError.ExtraData",
+      "description": "Additional diagnostic context — JSON, stack trace, or free text. Optional."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "StatusEnvelope",
+      "description": "Always returned as the first rowset. success=1 means the error was recorded and no further rowset follows. success=0 means the operation failed — rowset 1 carries the ErrorDetail row. errorCode 1392=device not registered (errorType 13), 1992=unhandled DB error (errorType 19).",
+      "columns": [
+        {
+          "name": "success",
+          "type": "BIT",
+          "nullable": false,
+          "description": "1 on successful insert into HC.AppError. 0 on device-not-found or DB error."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success. On failure: 1392=device not registered, 1992=unhandled DB error."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success. On failure: 13=not found (device not registered), 19=unhandled DB error."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ErrorDetail",
+      "description": "Returned only when success=0 in rowset 0. Contains a single row with the full error detail for the failure. The errorId references the HC.ErrorLog entry created for this failure.",
+      "columns": [
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "GUID of the HC.ErrorLog entry created for this failure."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Same value as in the StatusEnvelope: 13=device not registered, 19=unhandled DB error."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Same value as in the StatusEnvelope: 1392 or 1992."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Short error title: 'Device not registered' or 'Unexpected error'."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "User-facing error message: 'The device is not registered. Please re-authorise the app.' or 'An unexpected error occurred. Please try again.'"
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "SP name via OBJECT_NAME(@@PROCID) — always 'hcapp_logAppError'."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT INTO HC.AppError (DeviceId, HttpBody, ErrorText, ExtraData) — id and createdAt are populated by DEFAULT constraints on the table",
+    "INSERT INTO HC.ErrorLog on device-not-found and unhandled DB error paths",
+    "The AppError INSERT is wrapped in a transaction; the device validation check and ErrorLog INSERTs are outside the transaction"
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "@accessToken accepted but intentionally never validated",
+      "detail": "Unlike all other app SPs, @accessToken is not passed to CHECK_ACCESS_TOKEN_V2. This is a deliberate design decision (documented in the SP header) to allow the app to log errors even when token generation fails. However, it means any caller who knows a valid deviceId can write arbitrary data to HC.AppError without possessing a valid token. This is an intentional trust trade-off, not an oversight."
+    },
+    {
+      "severity": "low",
+      "issue": "HcVersion hardcoded to '<unknown>' in ErrorLog inserts",
+      "detail": "Both ErrorLog INSERT paths pass the literal string '<unknown>' for HcVersion. No @hcVersion parameter is accepted, so the app version is never captured in the error log entries produced by this SP. This reduces the diagnostic value of the ErrorLog entries."
+    },
+    {
+      "severity": "low",
+      "issue": "Device-not-found check uses zero-UUID guard",
+      "detail": "The device validation is: IF (@userId IS NULL OR @userId = '00000000-0000-0000-0000-000000000000'). The zero-UUID guard is a defensive check — HC.Device.UserId is UNIQUEIDENTIFIER NULL, so a registered device with a NULL UserId would be rejected by the NULL check before the zero-UUID check is reached. The zero-UUID guard is harmless but redundant given the NULL check."
+    },
+    {
+      "severity": "low",
+      "issue": "Device-not-found path and ErrorLog INSERT are outside the transaction",
+      "detail": "The device existence check and its corresponding ErrorLog INSERT occur before BEGIN TRANSACTION. This is acceptable for a read-then-fail pattern, but the ErrorLog INSERT for the device-not-found case is also outside any transaction. If the ErrorLog INSERT itself fails, no error is surfaced to the caller. Consistent with other SPs in this codebase."
+    }
+  ],
+  "breakingChanges": [
+    "Device existence is now validated — HC5 performed no auth or existence check whatsoever; callers whose @deviceId is not registered in HC.Device will now receive a success=0 error response instead of silently inserting",
+    "Response shape changed from a single hardcoded 'Error recorded' rowset (HC5) to the write SP envelope pattern (StatusEnvelope as rowset 0, optional ErrorDetail as rowset 1) — all Flutter callers parsing the HC5 single-rowset response must be updated",
+    "TRY/CATCH added — DB errors that previously propagated as unhandled SQL exceptions are now caught and returned as structured error responses"
+  ]
+}

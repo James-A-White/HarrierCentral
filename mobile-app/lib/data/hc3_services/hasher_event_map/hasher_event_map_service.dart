@@ -1,28 +1,27 @@
 import 'package:harrier_central/imports.dart';
 
-class HasherEventMapTableHelper extends BaseTableHelper with BaseFields {
+class HasherEventMapTableHelper extends BaseTableHelper<AppDomainType>
+    with BaseFields {
   HasherEventMapTableHelper() {
     remoteDbId = 'hemId';
     humanReadableTableName = 'Event Data';
     pageSize = SyncUserDataService.pageSize_hemTable;
-    tableFlag = SyncUserDataService.flagHasherEventMapTable;
+    tableFlag = EnumDataTables.hasherEventMap.flag;
   }
 
   @override
-  String getTableName(dynamic appDomainType) {
+  String getTableName(AppDomainType appDomainType) {
     String tableName = '';
     switch (appDomainType) {
       case AppDomainType.event:
-        tableName = 'hasherEventMapForRunAdmin';
+        tableName = EnumDataTables.hasherEventMap.eventTableName;
         break;
       case AppDomainType.kennel:
-        tableName = 'hasherEventMapForKennelAdmin';
+        tableName = EnumDataTables.hasherEventMap.kennelTableName;
         break;
       case AppDomainType.user:
-        tableName = 'hasherEventMap';
+        tableName = EnumDataTables.hasherEventMap.commonTableName;
         break;
-      default:
-        assert(false);
     }
     return tableName;
   }
@@ -265,7 +264,7 @@ class HasherEventMapService {
 
     final String body = jsonEncode(bodyMap);
 
-    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
+    final String responseBody = await ServiceCommon.sendHttpPost(body);
 
     List<dynamic> adHocData = <dynamic>[];
 
@@ -354,7 +353,7 @@ class HasherEventMapService {
 
     final String body = jsonEncode(bodyMap);
 
-    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
+    final String responseBody = await ServiceCommon.sendHttpPost(body);
 
     List<dynamic> adHocData = <dynamic>[];
 
@@ -396,18 +395,14 @@ class HasherEventMapService {
         .getLastUpdatedTime(
           database,
           tableModel.hasherEventMapTableHelper,
-          tableModel.hasherEventMapTableHelper.getTableName(
-            AppDomainType.event,
-          ),
+          EnumDataTables.hasherEventMap.eventTableName,
           tableModel.hasherEventMapTableHelper.colUpdatedAtValue,
         );
     final int hasherKennelMapLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(
           database,
           tableModel.hasherKennelMapTableHelper,
-          tableModel.hasherKennelMapTableHelper.getTableName(
-            AppDomainType.event,
-          ),
+          EnumDataTables.hasherKennelMap.eventTableName,
           tableModel.hasherKennelMapTableHelper.colUpdatedAtValue,
         );
 
@@ -429,7 +424,7 @@ class HasherEventMapService {
 
     final String body = jsonEncode(bodyMap);
 
-    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
+    final String responseBody = await ServiceCommon.sendHttpPost(body);
 
     List<dynamic> adHocData = <dynamic>[];
 
@@ -501,7 +496,7 @@ class HasherEventMapService {
 
     final String body = jsonEncode(bodyMap);
 
-    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
+    final String responseBody = await ServiceCommon.sendHttpPost(body);
 
     List<dynamic> adHocData = <dynamic>[];
 
@@ -581,7 +576,7 @@ class HasherEventMapService {
       'paymentsUpdatedAfter': paymentsUpdatedAfter.toString(),
     });
 
-    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
+    final String responseBody = await ServiceCommon.sendHttpPost(body);
 
     List<dynamic> adHocData = <dynamic>[];
 
@@ -617,9 +612,7 @@ class HasherEventMapService {
         .getLastUpdatedTime(
           database,
           tableModel.hasherEventMapTableHelper,
-          tableModel.hasherEventMapTableHelper.getTableName(
-            AppDomainType.event,
-          ),
+          EnumDataTables.hasherEventMap.eventTableName,
           tableModel.hasherEventMapTableHelper.colUpdatedAtValue,
         );
 
@@ -641,7 +634,7 @@ class HasherEventMapService {
 
     final String body = jsonEncode(bodyMap);
 
-    final String responseBody = await ServiceCommon.sendHttpPostV2(body);
+    final String responseBody = await ServiceCommon.sendHttpPost(body);
 
     List<dynamic> adHocData = <dynamic>[];
 

@@ -4,6 +4,7 @@ class BetaRibbon extends StatelessWidget {
   const BetaRibbon({
     super.key,
     this.ribbonImage = 'images/icons/beta_ribbon.png',
+    this.showRibbon = true,
     this.text,
     this.title,
     this.child,
@@ -12,6 +13,7 @@ class BetaRibbon extends StatelessWidget {
   });
 
   final String ribbonImage;
+  final bool showRibbon;
   final String? text;
   final String? title;
   final Widget? child;
@@ -20,14 +22,18 @@ class BetaRibbon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String betaFeaturesEnabled =
-        getStringPref(StringPrefsEnum.betaFeaturesEnabled) ?? '';
+    // String betaFeaturesEnabled =
+    //     getStringPref(StringPrefsEnum.betaFeaturesEnabled) ?? '';
 
-    if ((feature != null) &&
-        (!betaFeaturesEnabled.toLowerCase().contains(
-          feature!.key.toLowerCase(),
-        ))) {
-      return const SizedBox.shrink();
+    // if ((feature != null) &&
+    //     (!betaFeaturesEnabled.toLowerCase().contains(
+    //       feature!.key.toLowerCase(),
+    //     ))) {
+    //   return const SizedBox.shrink();
+    // }
+
+    if (!showRibbon) {
+      return child ?? const SizedBox.shrink();
     }
 
     return Stack(

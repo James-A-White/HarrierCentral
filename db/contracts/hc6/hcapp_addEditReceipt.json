@@ -1,0 +1,189 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_addEditReceipt",
+  "version": "1.0.0",
+  "description": "Creates or updates an HC.Receipt record for an event expense. Mode is determined by whether @receiptId already exists in HC.Receipt — if found, performs an UPDATE; otherwise inserts a new row. Passing FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF as @reimbursedBy clears all reimbursement fields (un-reimburse). Passing a valid @reimbursedBy hasher ID sets ReimbursedOn to the current timestamp and copies ReceiptAmount to ReimbursedAmount. After a successful write, delegates to HC6.hcapp_syncEventAdminData to return refreshed event admin data.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth for token validation."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived cryptographic auth token. Validated by HC6.ValidateAppAuth (SP number 43). Auth failure returns errorType=11."
+    },
+    {
+      "name": "receiptId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Receipt.id",
+      "description": "Receipt to update. NULL or the null-UUID (00000000-...) triggers insert mode — a new UUID is generated internally. If the UUID is not found in HC.Receipt, also falls through to insert mode."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Receipt.EventId",
+      "description": "Required. NULL or null-UUID triggers a validation error (errorCode=1243, errorType=12)."
+    },
+    {
+      "name": "receiptShortDesc",
+      "type": "NVARCHAR(500)",
+      "nullable": false,
+      "mapsToColumn": "Receipt.ReceiptShortDesc",
+      "description": "Short description of the expense. Empty string normalised to NULL. On UPDATE, NULL keeps existing value (COALESCE pattern).",
+      "typeMismatch": "Parameter is NVARCHAR(500); table column is NVARCHAR(255). Values between 256 and 500 chars will be silently truncated by SQL Server on insert/update."
+    },
+    {
+      "name": "receiptAmount",
+      "type": "DECIMAL(12,4)",
+      "nullable": false,
+      "mapsToColumn": "Receipt.ReceiptAmount",
+      "description": "Amount of the expense. Negative values normalised to NULL before auth. On UPDATE, NULL keeps existing value (COALESCE pattern)."
+    },
+    {
+      "name": "notes",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": "Receipt.Notes",
+      "description": "Optional free-text notes on the expense. Empty string normalised to NULL. On UPDATE, NULL keeps existing value."
+    },
+    {
+      "name": "reimbursedBy",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Receipt.ReimbursedBy",
+      "description": "Hasher who reimbursed the expense. Null-UUID (00000000-...) normalised to NULL (keep existing). FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF is the clear-reimbursement sentinel — sets @clearReimbursement=1, nulls out all reimbursement fields. Any other non-null UUID triggers auto-population of ReimbursedOn=GETDATE() and ReimbursedAmount=ReceiptAmount."
+    },
+    {
+      "name": "reimbursedOn",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": true,
+      "mapsToColumn": "Receipt.ReimbursedOn",
+      "description": "Reimbursement timestamp. Accepted directly as DATETIMEOFFSET(7) — no brittle string CAST (fixed vs HC5). Values before 2000-01-01 normalised to NULL. Overridden to GETDATE() when @reimbursedBy is set to a real hasher ID."
+    },
+    {
+      "name": "reimbursedAmount",
+      "type": "DECIMAL(12,4)",
+      "nullable": true,
+      "mapsToColumn": "Receipt.ReimbursedAmount",
+      "description": "Amount reimbursed. Negative values normalised to NULL before auth. Overridden from Receipt.ReceiptAmount when @reimbursedBy is a real hasher ID. On UPDATE, NULL keeps existing value (COALESCE pattern)."
+    },
+    {
+      "name": "reimbursedNotes",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": "Receipt.ReimbursedNotes",
+      "description": "Notes on the reimbursement. Empty string normalised to NULL. On UPDATE, NULL keeps existing value."
+    },
+    {
+      "name": "imageUrl",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": "Receipt.ImageUrl",
+      "description": "URL of the receipt image. LEN < 20 normalised to NULL (fixed from HC5 DATALENGTH). On UPDATE, NULL keeps existing value.",
+      "typeMismatch": "Parameter is NVARCHAR(1000); table column is NVARCHAR(500). URLs between 501 and 1000 chars will be silently truncated by SQL Server on insert/update."
+    },
+    {
+      "name": "receiptsUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Sync watermark passed through to HC6.hcapp_syncEventAdminData. NULL is coerced to 'ignore' before delegation. All other syncEventAdminData watermark params are hardcoded to 'ignore'."
+    },
+    {
+      "name": "removed",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Receipt.removed",
+      "description": "Soft-delete flag. -1 normalised to NULL (keep existing). 1 = removed. On UPDATE, NULL keeps existing value (COALESCE pattern)."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "WriteEnvelope",
+      "description": "Always returned as the first rowset. success=1 on success; success=0 on auth failure, validation failure, or unhandled DB error. errorCode and errorType are NULL on success.",
+      "columns": [
+        { "name": "success", "type": "BIT", "nullable": false, "description": "1 = succeeded; 0 = failed." },
+        { "name": "errorCode", "type": "INT", "nullable": true, "description": "Numeric error code. NULL on success. 1243 = null/empty eventId; 1943 = unhandled DB error. Auth error codes come from HC6.ValidateAppAuth." },
+        { "name": "errorType", "type": "INT", "nullable": true, "description": "Error type code. NULL on success. 11=auth; 12=param; 13=not found; 14=removed; 15=business; 19=db." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ErrorDetail",
+      "description": "Returned as rowset 1 on any failure path (auth, validation, or unhandled DB error). Not present on success — rowset 1 on success is the first rowset from hcapp_syncEventAdminData.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID for this error instance." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error type code matching the WriteEnvelope errorType." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Numeric error code matching the WriteEnvelope errorCode." },
+        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short human-readable error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
+        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name from OBJECT_NAME(@@PROCID)." }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "SyncEventAdminData",
+      "description": "On success, rowsets 1+ are the full output of HC6.hcapp_syncEventAdminData (multiple rowsets). See that SP's contract for column definitions. The receipts rowset is refreshed using the caller-supplied @receiptsUpdatedAfter watermark; all other watermarks are 'ignore'.",
+      "columns": []
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Receipt — when @receiptId is non-null and found in HC.Receipt (within transaction)",
+    "INSERT HC.Receipt — when @receiptId is null, null-UUID, or not found in HC.Receipt (within transaction)",
+    "INSERT HC.ErrorLog — on validation failure (null eventId), unhandled CATCH error",
+    "EXEC HC6.hcapp_syncEventAdminData — delegation after commit, outside TRY block; returns multiple rowsets for event admin data refresh"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "@imageUrl parameter width exceeds table column width",
+      "detail": "@imageUrl is NVARCHAR(1000) but HC.Receipt.ImageUrl is NVARCHAR(500). Any URL longer than 500 characters will be silently truncated on INSERT or UPDATE by SQL Server (or raise a string-truncation error depending on ANSI_WARNINGS setting)."
+    },
+    {
+      "severity": "medium",
+      "issue": "@receiptShortDesc parameter width exceeds table column width",
+      "detail": "@receiptShortDesc is NVARCHAR(500) but HC.Receipt.ReceiptShortDesc is NVARCHAR(255). Values between 256 and 500 chars will be silently truncated or raise a truncation error."
+    },
+    {
+      "severity": "medium",
+      "issue": "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF as clear-reimbursement sentinel",
+      "detail": "The all-F UUID (line 120) is a magic sentinel value used to trigger clearing of all reimbursement fields. This is an unusual and undocumented-in-parameters convention that callers must know about. Carried forward from HC5. Consider replacing with an explicit @clearReimbursement BIT parameter in a future version."
+    },
+    {
+      "severity": "medium",
+      "issue": "Negative sentinel values for numeric parameters",
+      "detail": "Lines 69, 71: negative @reimbursedAmount and negative @receiptAmount are normalised to NULL as a sentinel for 'no value'. This is an implicit contract that callers must know — negative expense amounts are not representable. Consider using nullable parameters instead."
+    },
+    {
+      "severity": "medium",
+      "issue": "Sync delegation runs outside the transaction and outside TRY/CATCH",
+      "detail": "Lines 194-205: EXEC HC6.hcapp_syncEventAdminData is called after COMMIT and outside the TRY block. If the delegation fails, the receipt write has already committed and the caller receives no sync data — but also no error envelope. The error from the inner SP propagates directly to the caller as a raw SQL error, bypassing the HC6 error envelope pattern."
+    },
+    {
+      "severity": "low",
+      "issue": "-1 sentinel for @removed",
+      "detail": "Line 68: @removed = -1 is normalised to NULL (keep existing). The HC6 pattern prefers nullable parameters over sentinel magic values. Low severity because this is consistent with HC5 behaviour and the mobile caller is already built around it."
+    },
+    {
+      "severity": "low",
+      "issue": "CostCategory hardcoded to 0 on insert",
+      "detail": "Line 164: CostCategory is always inserted as 0. There is no @costCategory parameter, so callers cannot categorise an expense at creation time. If category management is ever needed, this will require a breaking change."
+    }
+  ],
+  "breakingChanges": [
+    "@reimbursedOn type changed from NVARCHAR(50) to DATETIMEOFFSET(7) — callers that previously sent a date string must now send a typed DATETIMEOFFSET value",
+    "TRY/CATCH and transaction wrapping added — HC5 had neither; error behaviour on insert/update failure is now consistent and enrolled in the HC6 error envelope",
+    "DATALENGTH replaced with LEN for @imageUrl length guard — functionally equivalent for NVARCHAR; no caller impact",
+    "Success envelope rowset (WriteEnvelope) added as rowset 0 — HC5 had no success envelope; callers must consume rowset 0 before the syncEventAdminData rowsets",
+    "Delegation updated from HC5.hcapp_syncEventAdminData to HC6.hcapp_syncEventAdminData"
+  ]
+}

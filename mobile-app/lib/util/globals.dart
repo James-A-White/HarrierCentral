@@ -19,7 +19,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 bool _createIndexes = false;
 
 Future<bool> setupDatabase(
-  Function informUser,
+  void Function(String)? informUser,
   String clientAppIdentifier,
 ) async {
   // bool initialLoad = false;
@@ -53,20 +53,20 @@ Future<bool> setupDatabase(
 
   try {
     await tableModel.syncUserDataService.updateFromBackend(
-      SyncUserDataService.flagCitiesTable |
-          SyncUserDataService.flagRegionsTable |
-          SyncUserDataService.flagCountriesTable,
+      EnumDataTables.cities.flag |
+          EnumDataTables.regions.flag |
+          EnumDataTables.countries.flag |
+          EnumDataTables.songs.flag,
       false,
       informUser: informUser,
-      debugText: 'Globals: Cities, Regions, Countries on launch',
+      debugText: 'Globals: Cities, Regions, Countries, Songs on launch',
       batchText: 'Batch #',
       client: client,
       usePaging: false,
     );
 
     await tableModel.syncUserDataService.updateFromBackend(
-      SyncUserDataService.flagHasherEventMapTable |
-          SyncUserDataService.flagPaymentsTable,
+      EnumDataTables.hasherEventMap.flag | EnumDataTables.payments.flag,
       false,
       informUser: informUser,
       debugText: 'Globals: HEM on launch',
@@ -76,7 +76,7 @@ Future<bool> setupDatabase(
     );
 
     await tableModel.syncUserDataService.updateFromBackend(
-      SyncUserDataService.flagHasherKennelMapTable,
+      EnumDataTables.hasherKennelMap.flag,
       false,
       informUser: informUser,
       debugText: 'Globals: HKM on launch',
@@ -86,7 +86,7 @@ Future<bool> setupDatabase(
     );
 
     await tableModel.syncUserDataService.updateFromBackend(
-      SyncUserDataService.flagKennelsTable,
+      EnumDataTables.kennels.flag,
       false,
       informUser: informUser,
       debugText: 'Globals: Kennels on launch',
@@ -96,7 +96,7 @@ Future<bool> setupDatabase(
     );
 
     await tableModel.syncUserDataService.updateFromBackend(
-      SyncUserDataService.flagNarrowEventsTable,
+      EnumDataTables.events.flag,
       false,
       informUser: informUser,
       debugText: 'Globals: Events on launch',
@@ -106,7 +106,7 @@ Future<bool> setupDatabase(
     );
 
     await tableModel.syncUserDataService.updateFromBackend(
-      SyncUserDataService.flagHashersTable,
+      EnumDataTables.hashers.flag,
       false,
       informUser: informUser,
       debugText: 'Globals: Hashers on launch',
@@ -121,13 +121,13 @@ Future<bool> setupDatabase(
     );
 
     await CommonQueries.deleteRemovedRecords(
-      tableModel.hashersTableHelper.getTableName(AppDomainType.user),
+      EnumDataTables.hashers.commonTableName,
     );
     await CommonQueries.deleteRemovedRecords(
-      tableModel.eventsTableHelper.getTableName(AppDomainType.user),
+      EnumDataTables.events.commonTableName,
     );
     await CommonQueries.deleteRemovedRecords(
-      tableModel.eventsTableHelper.getTableName(AppDomainType.kennel),
+      EnumDataTables.events.commonTableName,
     );
 
     // print('******* > DB Setup step 10');
@@ -148,35 +148,35 @@ Future<bool> setupDatabase(
   }
 
   String message = (await CommonQueries.countRecords(
-    tableModel.hashersTableHelper.getTableName(AppDomainType.user),
+    EnumDataTables.hashers.commonTableName,
   )).toString();
   if (kDebugMode) {
     print('Hashers count = $message');
   }
 
   message = (await CommonQueries.countRecords(
-    tableModel.eventsTableHelper.getTableName(AppDomainType.user),
+    EnumDataTables.events.commonTableName,
   )).toString();
   if (kDebugMode) {
     print('Events count = $message');
   }
 
   message = (await CommonQueries.countRecords(
-    tableModel.kennelsTableHelper.getTableName(AppDomainType.user),
+    EnumDataTables.kennels.commonTableName,
   )).toString();
   if (kDebugMode) {
     print('Kennels count = $message');
   }
 
   message = (await CommonQueries.countRecords(
-    tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.user),
+    EnumDataTables.hasherEventMap.commonTableName,
   )).toString();
   if (kDebugMode) {
     print('Hasher event map count = $message');
   }
 
   message = (await CommonQueries.countRecords(
-    tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.user),
+    EnumDataTables.hasherKennelMap.commonTableName,
   )).toString();
   if (kDebugMode) {
     print('Hasher kennel map count = $message');
@@ -234,6 +234,7 @@ class TableModel extends GetxService {
   // Helpers
   late final CitiesTableHelper citiesTableHelper = CitiesTableHelper();
   late final CountriesTableHelper countriesTableHelper = CountriesTableHelper();
+  late final SongsTableHelper songsTableHelper = SongsTableHelper();
   late final RegionsTableHelper regionsTableHelper = RegionsTableHelper();
   late final ReceiptsTableHelper receiptsTableHelper = ReceiptsTableHelper();
   late final PaymentsTableHelper paymentsTableHelper = PaymentsTableHelper();

@@ -1,0 +1,90 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getEventMessages",
+  "version": "1.0.0",
+  "description": "Returns all messages for a specific event, ordered newest first. Auth token is event-bound: compound of DeviceSecret + CAST(@eventId AS NVARCHAR(50)). Author data is returned as flat columns (authorId, authorFirstName, authorImageUrl) rather than a nested JSON string. hcapp_getEventMessages and hcapp_getEventMessages2 are merged into this single SP.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "Registered device UUID for auth lookup."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Event-bound access token. Validated against DeviceSecret + CAST(@eventId AS NVARCHAR(50)) inside HC6.ValidateAppAuth (SP number 60)."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.EventId",
+      "description": "Internal event ID to retrieve messages for. A NULL value passes the zero UUID as the token suffix before the explicit null check fires, causing an auth failure before the null validation error is reached."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "AuthOrValidationError",
+      "description": "Returned when ValidateAppAuth fails (auth) or @eventId is NULL (param validation). errorType 11 = auth failure from ValidateAppAuth; errorType 12 = null @eventId. SP RETURNs after either error.",
+      "columns": [
+        { "name": "errorId",          "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType",        "type": "INT",              "nullable": false, "description": "11 for auth failure; 12 for null/missing @eventId." },
+        { "name": "errorCode",        "type": "INT",              "nullable": false, "description": "Numeric error code. 1260 for null @eventId." },
+        { "name": "errorTitle",       "type": "NVARCHAR(500)",    "nullable": false, "description": "Short error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)",    "nullable": false, "description": "User-facing error message." },
+        { "name": "errorProc",        "type": "NVARCHAR(128)",    "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "Messages",
+      "description": "All messages for the event on success, ordered by createdAt DESC. Author identity is returned as flat columns joined from HC.Hasher.",
+      "columns": [
+        { "name": "id",              "type": "NVARCHAR(36)",    "nullable": false, "description": "EventMessage.id uppercased via UPPER(). Returned as string, not typed UNIQUEIDENTIFIER." },
+        { "name": "type",            "type": "NVARCHAR(4)",     "nullable": false, "description": "Literal constant 'text' for all rows." },
+        { "name": "text",            "type": "NVARCHAR(500)",   "nullable": false, "description": "EventMessage.MessageContent. NOT NULL in base table." },
+        { "name": "roomId",          "type": "UNIQUEIDENTIFIER","nullable": false, "description": "EventMessage.PublicEventId. NOT NULL in base table." },
+        { "name": "createdAt",       "type": "BIGINT",          "nullable": false, "description": "Unix timestamp in milliseconds computed via DATEDIFF_BIG(MILLISECOND, '1970-01-01', msg.createdAt)." },
+        { "name": "authorId",        "type": "NVARCHAR(36)",    "nullable": false, "description": "Hasher.PublicHasherId uppercased via UPPER(). NOT NULL in base table." },
+        { "name": "authorFirstName", "type": "NVARCHAR(MAX)",   "nullable": true,  "description": "Hasher.DisplayName — computed persisted column derived from HashName/FirstName/LastName. Nullable when all name fields are empty (falls back to '<no names provided>')." },
+        { "name": "authorImageUrl",  "type": "NVARCHAR(1000)",  "nullable": true,  "description": "Hasher.Photo. NULL when hasher has no profile photo." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Inserts a row into HC.ErrorLog when @eventId is NULL"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "NULL @eventId may cause auth failure before param validation",
+      "detail": "When @eventId is NULL, @paramSuffix is set to the zero UUID string ('00000000-0000-0000-0000-000000000000') and passed to ValidateAppAuth. If the token was not generated for that zero UUID, ValidateAppAuth will return an auth error (errorType 11) before the explicit @eventId IS NULL check fires. The caller sees an auth error instead of a parameter error, which is misleading."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH block",
+      "detail": "The SP has SET XACT_ABORT ON but no TRY/CATCH wrapper. An unhandled runtime error (e.g. INNER JOIN against a missing Hasher row due to data integrity issue) will surface as a raw SQL exception rather than a structured error rowset."
+    },
+    {
+      "severity": "low",
+      "issue": "Removed messages not filtered from result",
+      "detail": "EventMessage has a Removed column (SMALLINT). The SELECT does not filter WHERE msg.Removed = 0, so soft-deleted messages are returned to the caller."
+    },
+    {
+      "severity": "low",
+      "issue": "id and authorId returned as uppercased strings, not typed UNIQUEIDENTIFIER",
+      "detail": "UPPER(msg.id) and UPPER(h.PublicHasherId) cause SQL Server to return these as NVARCHAR rather than UNIQUEIDENTIFIER. Flutter callers must normalise to lowercase using normalizeUuid() / .asUuid before comparison or map lookup."
+    }
+  ],
+  "breakingChanges": [
+    "HC5 hcapp_getEventMessages 'author' column (nested JSON string via FOR JSON PATH) removed — replaced with three flat columns: authorId (UNIQUEIDENTIFIER), authorFirstName (DisplayName), authorImageUrl (Photo)",
+    "HC5 hcapp_getEventMessages2 SP removed — its flat-column behaviour is now the only rowset format returned by this SP",
+    "Error rowset shape changed: HC5 included debugMessage column; HC6 error rowset omits debugMessage and adds errorCode",
+    "Auth token compound formula unchanged (DeviceSecret + CAST(@eventId AS NVARCHAR(50))), but token is now validated via centralised HC6.ValidateAppAuth instead of inline logic"
+  ]
+}

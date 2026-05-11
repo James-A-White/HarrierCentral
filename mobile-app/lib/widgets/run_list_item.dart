@@ -2,8 +2,10 @@ import 'package:badges/badges.dart' as badges;
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
+enum LiveRunButtonStatus { hidden, eligible, active }
+
 class RunListItemController extends GetxController {
-  RunListItemController(RunDetailsAggregate futureRun)
+  RunListItemController(this.futureRun)
     : rsvpState = (futureRun.extensions.rsvpState).obs,
       attendanceState = (futureRun.extensions.attendenceState).obs,
       isHareState = (futureRun.extensions.isHare).obs,
@@ -16,7 +18,10 @@ class RunListItemController extends GetxController {
               .obs,
       isPaid = (futureRun.extensions.isPaid).obs,
       hares = (futureRun.event.hares ?? '').obs,
-      locationOneLineDesc = (futureRun.event.locationOneLineDesc ?? '').obs;
+      locationOneLineDesc = (futureRun.event.locationOneLineDesc ?? '').obs,
+      liveRunState = LiveRunService.ensure();
+
+  final RunDetailsAggregate futureRun;
 
   final Rx<int> rsvpState;
   final Rx<int> attendanceState;
@@ -31,7 +36,21 @@ class RunListItemController extends GetxController {
       getBoolPref(BoolPrefsEnum.automaticallySetNotifiationPrefs)?.obs ??
       true.obs;
 
-  void setRsvpState(int state) => rsvpState.value = state;
+  final LiveRunService liveRunState;
+  final Rx<LiveRunButtonStatus> liveRunButtonStatus =
+      LiveRunButtonStatus.hidden.obs;
+  final RxBool liveRunButtonLoading = false.obs;
+  final RxBool liveRunAtStart = false.obs;
+
+  void initLiveRunTracking() {
+    unawaited(Future.microtask(refreshLiveRunButton));
+  }
+
+  void setRsvpState(int state) {
+    rsvpState.value = state;
+    unawaited(refreshLiveRunButton());
+  }
+
   void setEmailState(int state) => emailAlertPreference.value = state;
 
   void setNotificationState(NotificationState state) {
@@ -42,13 +61,67 @@ class RunListItemController extends GetxController {
 
   void setIsPaid(int state) => isPaid.value = state;
 
+  Future<void> refreshLiveRunButton() async {
+    try {
+      liveRunButtonLoading.value = true;
+
+      final now = DateTime.now();
+      final eventStart = futureRun.event.eventStartDatetime;
+      final windowStart = eventStart.subtract(const Duration(minutes: 30));
+      final windowEnd = eventStart.add(const Duration(hours: 6));
+
+      final String eventId = futureRun.event.eventId;
+      final String? activeId = liveRunState.activeRunEventId.value;
+
+      if (activeId != null) {
+        liveRunButtonStatus.value = activeId == eventId
+            ? LiveRunButtonStatus.active
+            : LiveRunButtonStatus.hidden;
+        return;
+      }
+
+      if (now.isBefore(windowStart) || now.isAfter(windowEnd)) {
+        liveRunButtonStatus.value = LiveRunButtonStatus.hidden;
+        return;
+      }
+
+      final bool isCheckedIn = attendanceState.value >= attendenceAtHash.value;
+      final bool hasRsvpYes = rsvpState.value == rsvpYes.value;
+
+      if (isCheckedIn) {
+        liveRunButtonStatus.value = LiveRunButtonStatus.eligible;
+        liveRunAtStart.value = true;
+        return;
+      }
+
+      if (!hasRsvpYes) {
+        liveRunButtonStatus.value = LiveRunButtonStatus.hidden;
+        return;
+      }
+
+      final results = await CommonQueries.isAtRunStart(eventId: eventId);
+      final bool atStart = results.any((item) => item.eventId == eventId);
+      liveRunAtStart.value = atStart;
+      liveRunButtonStatus.value = atStart
+          ? LiveRunButtonStatus.eligible
+          : LiveRunButtonStatus.hidden;
+    } catch (e) {
+      debugPrint('Live run button check failed: $e');
+      liveRunButtonStatus.value = LiveRunButtonStatus.hidden;
+    } finally {
+      liveRunButtonLoading.value = false;
+    }
+  }
+
   // void setHares(String state) => hares.value = state;
   // void setHareState(int state) => isHareState.value = state;
 }
 
 class RunListItem extends StatelessWidget {
   RunListItem({super.key, required this.futureRun, required this.onItemTapped})
-    : rliController = RunListItemController(futureRun);
+    : rliController = RunListItemController(futureRun) {
+    rliController.initLiveRunTracking();
+  }
 
   final RunDetailsAggregate futureRun;
   final Function onItemTapped;
@@ -218,11 +291,12 @@ class RunListItem extends StatelessWidget {
               height: 1.0,
               color: Colors.grey[300],
             ),
+            _buildLiveRunModeButton(context),
             if ((futureRun.event.eventImage != null) &&
                 (futureRun.event.eventImage!.isNotEmpty)) ...<Widget>[
               GestureDetector(
-                onLongPress: () {
-                  Navigator.push<void>(
+                onLongPress: () async {
+                  await Navigator.push<void>(
                     context,
                     MaterialPageRoute<void>(
                       builder: (BuildContext context) => ZoomableImagePage2(
@@ -422,6 +496,7 @@ class RunListItem extends StatelessWidget {
                 ),
               ],
             ),
+
             Obx(() => _getPaymentIconnsWidget()),
           ],
         ),
@@ -457,6 +532,77 @@ class RunListItem extends StatelessWidget {
               }
             },
           );
+  }
+
+  Widget _buildLiveRunModeButton(BuildContext context) {
+    return Obx(() {
+      final state = rliController.liveRunButtonStatus.value;
+      final loading = rliController.liveRunButtonLoading.value;
+      final bool isActiveRun = state == LiveRunButtonStatus.active;
+      final bool anotherRunActive =
+          rliController.liveRunState.hasActiveRun && !isActiveRun;
+
+      final bool isHidden =
+          (state == LiveRunButtonStatus.hidden &&
+              !rliController.liveRunState.isActive(futureRun.event.eventId)) ||
+          anotherRunActive;
+
+      if (isHidden) return const SizedBox.shrink();
+
+      final String label = isActiveRun
+          ? 'Return to Live Run Mode'
+          : 'Start Live Run Mode';
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+        child: SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            icon: loading
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : Icon(isActiveRun ? Icons.directions_run : Icons.play_arrow),
+            label: Text(label, style: ts_button),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isActiveRun ? hc_blue : hc_red,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 12.0),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+            ),
+            onPressed: loading
+                ? null
+                : () async {
+                    if (!isActiveRun) {
+                      rliController.liveRunState.startRun(
+                        eventId: futureRun.event.eventId,
+                        eventName: futureRun.event.eventName,
+                      );
+                      rliController.liveRunButtonStatus.value =
+                          LiveRunButtonStatus.active;
+                    }
+                    await _openLiveRunFeatures(context);
+                  },
+          ),
+        ),
+      );
+    });
+  }
+
+  Future<void> _openLiveRunFeatures(BuildContext context) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => LiveRunShell(run: futureRun)),
+    );
+
+    // Re-evaluate visibility after returning (in case the user ends tracking later).
+    unawaited(rliController.refreshLiveRunButton());
   }
 
   Future<void> _showAllOptionsPopup() async {
@@ -657,10 +803,10 @@ class RunListItem extends StatelessWidget {
                     () => Checkbox(
                       value:
                           rliController.automaticallySetNotifiationPrefs.value,
-                      onChanged: (bool? value) {
+                      onChanged: (bool? value) async {
                         rliController.automaticallySetNotifiationPrefs.value =
                             value ?? true;
-                        setBoolPref(
+                        await setBoolPref(
                           BoolPrefsEnum.automaticallySetNotifiationPrefs,
                           value ?? true,
                         );
@@ -689,9 +835,9 @@ class RunListItem extends StatelessWidget {
       );
 
       if (retVal is EnumEmailAlertState) {
-        _setEmailAlertState(retVal);
+        await _setEmailAlertState(retVal);
       } else if (retVal is NotificationState) {
-        _setNotificationState(retVal);
+        await _setNotificationState(retVal);
       } else if (retVal is EnumRsvpState) {
         await _setRsvpState(retVal);
       }
@@ -996,10 +1142,10 @@ class RunListItem extends StatelessWidget {
                     () => Checkbox(
                       value:
                           rliController.automaticallySetNotifiationPrefs.value,
-                      onChanged: (bool? value) {
+                      onChanged: (bool? value) async {
                         rliController.automaticallySetNotifiationPrefs.value =
                             value ?? true;
-                        setBoolPref(
+                        await setBoolPref(
                           BoolPrefsEnum.automaticallySetNotifiationPrefs,
                           value ?? true,
                         );

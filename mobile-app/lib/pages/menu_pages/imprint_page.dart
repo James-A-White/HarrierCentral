@@ -63,16 +63,22 @@ class ImprintPageContentState extends State<ImprintPageContent> {
   String buildNumber = '';
 
   @override
-  Widget build(BuildContext context) {
-    PackageInfo.fromPlatform().then((PackageInfo packageInfo) {
-      setState(() {
-        appName = packageInfo.appName;
-        packageName = packageInfo.packageName;
-        version = packageInfo.version;
-        buildNumber = packageInfo.buildNumber;
-      });
-    });
+  void initState() {
+    super.initState();
+    unawaited(loadPackageInfo());
+  }
 
+  Future<void> loadPackageInfo() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    appName = packageInfo.appName;
+    packageName = packageInfo.packageName;
+    version = packageInfo.version;
+    buildNumber = packageInfo.buildNumber;
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints viewportConstraints) {
         return SingleChildScrollView(

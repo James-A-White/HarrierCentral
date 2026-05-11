@@ -11,6 +11,7 @@ abstract class UserEventLocation with _$UserEventLocation {
     required double lng,
     required double acc,
     required double alt,
+    String? type,
   }) = _UserEventLocation;
 
   factory UserEventLocation.fromJson(Map<String, dynamic> json) =>

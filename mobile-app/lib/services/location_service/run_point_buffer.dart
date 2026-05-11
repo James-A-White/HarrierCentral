@@ -49,6 +49,10 @@ class RunPointBuffer {
     } finally {
       _uploading = false;
     }
+
+    if (kDebugMode) {
+      print('LocationService: Flushed run buffer.');
+    }
   }
 
   Future<bool> _sendBatch(List<UserEventLocation> batch) async {
@@ -71,7 +75,9 @@ class RunPointBuffer {
           body: body,
         );
         if (resp.statusCode >= 200 && resp.statusCode < 300) {
-          print(resp.body);
+          if (kDebugMode) {
+            print(resp.body);
+          }
           return true;
         }
         // 429/5xx: retry; others: give up
@@ -90,17 +96,4 @@ class RunPointBuffer {
       await Future.delayed(Duration(milliseconds: backoffMs));
     }
   }
-
-  // void _ensureTimer() {
-  //   _timer ??= Timer.periodic(flushInterval, (_) => flush());
-  // }
-
-  // Future<void> dispose({bool flushBeforeDispose = true}) async {
-  //   _timer?.cancel();
-  //   _timer = null;
-  //   if (flushBeforeDispose) {
-  //     await flush();
-  //   }
-  //   _http.close();
-  // }
 }

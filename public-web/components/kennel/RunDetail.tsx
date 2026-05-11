@@ -191,7 +191,7 @@ export function RunDetail({ run, kennel, canonicalPath, extraButtons }: RunDetai
           <img
             src={kennel.logoUrl}
             alt={kennel.name}
-            className="h-20 w-20 shrink-0 rounded-full object-cover"
+            className="h-20 w-20 shrink-0 object-contain"
           />
         )}
         <div className="min-w-0">

@@ -98,8 +98,8 @@ class NewAccountPageContentState extends State<NewAccountPageContent> {
                 ),
 
                 GestureDetector(
-                  onTap: () {
-                    Navigator.pushReplacement<dynamic, dynamic>(
+                  onTap: () async {
+                    await Navigator.pushReplacement<dynamic, dynamic>(
                       context,
                       MaterialPageRoute<dynamic>(
                         builder: (BuildContext context) =>
@@ -154,8 +154,8 @@ class NewAccountPageContentState extends State<NewAccountPageContent> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () {
-                    Navigator.push<dynamic>(
+                  onTap: () async {
+                    await Navigator.push<dynamic>(
                       context,
                       MaterialPageRoute<dynamic>(
                         builder: (BuildContext context) =>
@@ -212,8 +212,8 @@ class NewAccountPageContentState extends State<NewAccountPageContent> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () {
-                    Navigator.pushReplacement<dynamic, dynamic>(
+                  onTap: () async {
+                    await Navigator.pushReplacement<dynamic, dynamic>(
                       context,
                       MaterialPageRoute<dynamic>(
                         builder: (BuildContext context) =>

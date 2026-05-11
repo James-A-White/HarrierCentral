@@ -276,6 +276,16 @@ const Map<int?, String> HASH_GLOBAL_CALENDAR_SETTINGS = <int?, String>{
   1: 'Publish runs on the Harrier Central global calendar',
 };
 
+const Map<int, String> EVENT_GEOGRAPHIC_SCOPE = <int, String>{
+  1: 'Normal run',
+  2: 'Special local event',
+  3: 'Special regional / state event',
+  4: 'Nash Hash / national event',
+  5: 'Interhash / continental event',
+  6: 'World Interhash / global event',
+  7: 'Other special event',
+};
+
 const Map<int?, String> RUN_AUDIENCE = <int?, String>{
   -2: 'Use Kennel Setting',
   0: 'No one',

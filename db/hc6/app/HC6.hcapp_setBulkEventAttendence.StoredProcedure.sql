@@ -81,7 +81,7 @@ END
 -- ---------------------------------------------------------------
 IF (@eventId IS NULL OR @eventId = '00000000-0000-0000-0000-000000000000')
 BEGIN
-    SET @errorCode = 1225; SET @errorType = 2; SET @errorId = NEWID();
+    SET @errorCode = 1225; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Null or empty eventId',
             'A null or empty eventId was passed to ' + @procName, @procName, @userId);
@@ -94,7 +94,7 @@ END
 
 IF (@attendenceState IS NULL OR @attendenceState < 20 OR @attendenceState > 40)
 BEGIN
-    SET @errorCode = 1225; SET @errorType = 2; SET @errorId = NEWID();
+    SET @errorCode = 1225; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Invalid attendance state',
             'Bulk attendance state must be 20–40', @procName, @userId);
@@ -108,7 +108,7 @@ END
 
 IF (@hasherIds IS NULL)
 BEGIN
-    SET @errorCode = 1225; SET @errorType = 2; SET @errorId = NEWID();
+    SET @errorCode = 1225; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Null hasherIds',
             '@hasherIds is required', @procName, @userId);
@@ -177,7 +177,7 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
 
-    SET @errorCode = 1925; SET @errorType = 9; SET @errorId = NEWID();
+    SET @errorCode = 1925; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;

@@ -28,10 +28,12 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
   @override
   void dispose() {
     if (_scannerController != null) {
-      Future.microtask(() async {
-        await _scannerController!.stop();
-        _scannerController!.dispose();
-      });
+      unawaited(
+        Future.microtask(() async {
+          await _scannerController!.stop();
+          unawaited(_scannerController!.dispose());
+        }),
+      );
     }
     super.dispose();
   }
@@ -276,33 +278,37 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
     assert(() {
       if (Platform.isAndroid) {
         // Use pause()/resume() if available; otherwise swap to stop()/start()
-        c
-            .pause()
-            .then((_) {
-              if (!mounted) return;
-              setState(() {
-                _isScanning = false;
-                _onScreenMessage = 'Scanning paused';
-                _state = EQrScannerState.waitingForScan;
-              });
-            })
-            .catchError((e, st) {
-              // Optional: log pause error
-            });
+        unawaited(
+          c
+              .pause()
+              .then((_) {
+                if (!mounted) return;
+                setState(() {
+                  _isScanning = false;
+                  _onScreenMessage = 'Scanning paused';
+                  _state = EQrScannerState.waitingForScan;
+                });
+              })
+              .catchError((e, st) {
+                // Optional: log pause error
+              }),
+        );
       } else if (Platform.isIOS) {
-        c
-            .start()
-            .then((_) {
-              if (!mounted) return;
-              setState(() {
-                _isScanning = true;
-                _onScreenMessage = 'Looking for QR Code';
-                _state = EQrScannerState.scanning;
-              });
-            })
-            .catchError((e, st) {
-              // Optional: log start error
-            });
+        unawaited(
+          c
+              .start()
+              .then((_) {
+                if (!mounted) return;
+                setState(() {
+                  _isScanning = true;
+                  _onScreenMessage = 'Looking for QR Code';
+                  _state = EQrScannerState.scanning;
+                });
+              })
+              .catchError((e, st) {
+                // Optional: log start error
+              }),
+        );
       }
       return true;
     }());

@@ -70,16 +70,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
         getIntPref(IntPrefsEnum.mapCenterOption) ??
         centerOnCurrentLocation.value;
 
-    if (getIntPref(IntPrefsEnum.mapCenterOption) == null) {
-      _mapCenterOption = centerOnCurrentLocation.value;
-      setIntPref(IntPrefsEnum.mapCenterOption, _mapCenterOption);
-    }
-
-    _loadEvents().then((void _) {
-      _loadKennels().then((void _) {
-        setState(() {});
-      });
-    });
+    unawaited(initStateAsync());
 
     final camera = MapCamera(
       crs: Epsg3857(),
@@ -112,6 +103,17 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
       final ctrl = Get.find<FutureRunListPageController>();
       ctrl.mapBounds = camera.visibleBounds;
     }
+  }
+
+  Future<void> initStateAsync() async {
+    if (getIntPref(IntPrefsEnum.mapCenterOption) == null) {
+      _mapCenterOption = centerOnCurrentLocation.value;
+      await setIntPref(IntPrefsEnum.mapCenterOption, _mapCenterOption);
+    }
+
+    await _loadEvents();
+    await _loadKennels();
+    setState(() {});
   }
 
   Widget _searchBar() {
@@ -284,12 +286,11 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
             backgroundColor: Colors.green[700],
             label: 'Show all runs',
             labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () {
+            onTap: () async {
               _textDescription = 'Showing all runs';
               _viewMode = RunLocationsViewMode.all;
-              _loadEvents().then((void _) {
-                setState(() {});
-              });
+              await _loadEvents();
+              setState(() {});
             },
           ),
           SpeedDialChild(
@@ -297,12 +298,11 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
             backgroundColor: hc_blue,
             label: 'Show recent+future runs',
             labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () {
+            onTap: () async {
               _textDescription = 'Showing runs in last 90 days';
               _viewMode = RunLocationsViewMode.recent;
-              _loadEvents().then((void _) {
-                setState(() {});
-              });
+              await _loadEvents();
+              setState(() {});
             },
           ),
           SpeedDialChild(
@@ -310,12 +310,11 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
             backgroundColor: hc_blue,
             label: 'Show all past runs',
             labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () {
+            onTap: () async {
               _textDescription = 'Showing all past runs';
               _viewMode = RunLocationsViewMode.past;
-              _loadEvents().then((void _) {
-                setState(() {});
-              });
+              await _loadEvents();
+              setState(() {});
             },
           ),
           SpeedDialChild(
@@ -323,12 +322,11 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
             backgroundColor: Colors.orange[400],
             label: 'Show my runs',
             labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () {
+            onTap: () async {
               _textDescription = 'Showing runs you\'ve been at';
               _viewMode = RunLocationsViewMode.myRuns;
-              _loadEvents().then((void _) {
-                setState(() {});
-              });
+              await _loadEvents();
+              setState(() {});
             },
           ),
           SpeedDialChild(
@@ -336,10 +334,13 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
             backgroundColor: Colors.purple[700],
             label: 'Change map center',
             labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () {
+            onTap: () async {
               if (_mapCenterOption == centerOnCurrentLocation.value) {
                 _mapCenterOption = centerOnHomeKennel.value;
-                setIntPref(IntPrefsEnum.mapCenterOption, _mapCenterOption);
+                await setIntPref(
+                  IntPrefsEnum.mapCenterOption,
+                  _mapCenterOption,
+                );
 
                 if ((_homeKennelLat != null) && (_homeKennelLon != null)) {
                   _mapController.move(
@@ -354,20 +355,27 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                   );
                 }
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Map will center on home kennel\r\n\r\n',
-                      style: ts_title,
-                      textAlign: TextAlign.center,
+                if (navigatorKey.currentContext != null) {
+                  ScaffoldMessenger.of(
+                    navigatorKey.currentContext!,
+                  ).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Map will center on home kennel\r\n\r\n',
+                        style: ts_title,
+                        textAlign: TextAlign.center,
+                      ),
+                      backgroundColor: hc_blue,
+                      elevation: 200.0,
                     ),
-                    backgroundColor: hc_blue,
-                    elevation: 200.0,
-                  ),
-                );
+                  );
+                }
               } else {
                 _mapCenterOption = centerOnCurrentLocation.value;
-                setIntPref(IntPrefsEnum.mapCenterOption, _mapCenterOption);
+                await setIntPref(
+                  IntPrefsEnum.mapCenterOption,
+                  _mapCenterOption,
+                );
 
                 if ((deviceInfo.deviceLat != null) &&
                     (deviceInfo.deviceLon != null)) {
@@ -377,17 +385,21 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                   );
                 }
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Map will center on current location\r\n\r\n',
-                      style: ts_title,
-                      textAlign: TextAlign.center,
+                if (navigatorKey.currentContext != null) {
+                  ScaffoldMessenger.of(
+                    navigatorKey.currentContext!,
+                  ).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Map will center on current location\r\n\r\n',
+                        style: ts_title,
+                        textAlign: TextAlign.center,
+                      ),
+                      backgroundColor: hc_blue,
+                      elevation: 200.0,
                     ),
-                    backgroundColor: hc_blue,
-                    elevation: 200.0,
-                  ),
-                );
+                  );
+                }
               }
             },
           ),
@@ -399,13 +411,13 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
             backgroundColor: Colors.purple[700],
             label: 'Show / hide search bar',
             labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () {
+            onTap: () async {
               _showFilters = !_showFilters;
               if (!_showFilters) {
                 _searchController.text = '';
                 _searchRunsAndKennelsText = '';
               }
-              setIntPref(
+              await setIntPref(
                 IntPrefsEnum.mapShowSearchBar,
                 _showFilters == false ? 0 : 1,
               );
@@ -417,9 +429,9 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
             backgroundColor: Colors.purple[700],
             label: 'Show / hide kennels',
             labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () {
+            onTap: () async {
               _showKennels = !_showKennels;
-              setIntPref(
+              await setIntPref(
                 IntPrefsEnum.mapShowKennels,
                 _showKennels == false ? 0 : 1,
               );
@@ -447,12 +459,12 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
             coalesce(hem.${tableModel.hasherEventMapTableHelper.colIsHare},0) as isHare,
             k.*,
             ${QueryRuns.searchRunsField}
-            FROM ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} evt
-            INNER JOIN ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} k on evt.${tableModel.eventsTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId}
-            INNER JOIN ${tableModel.citiesTableHelper.getTableName(AppDomainType.user)} c on c.${tableModel.citiesTableHelper.colCityId} = k.${tableModel.kennelsTableHelper.colCityId}
-            INNER JOIN ${tableModel.regionsTableHelper.getTableName(AppDomainType.user)} r on r.${tableModel.regionsTableHelper.colRegionId} = k.${tableModel.kennelsTableHelper.colRegionId}
-            INNER JOIN ${tableModel.countriesTableHelper.getTableName(AppDomainType.user)} n on n.${tableModel.countriesTableHelper.colCountryId} = k.${tableModel.kennelsTableHelper.colCountryId}
-            LEFT OUTER JOIN ${tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.user)} hem on hem.${tableModel.hasherEventMapTableHelper.colEventId} = evt.${tableModel.eventsTableHelper.colEventId} AND hem.${tableModel.hasherEventMapTableHelper.colUserId} = "$userId"
+            FROM ${EnumDataTables.events.commonTableName} evt
+            INNER JOIN ${EnumDataTables.kennels.commonTableName} k on evt.${tableModel.eventsTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId}
+            INNER JOIN ${EnumDataTables.cities.commonTableName} c on c.${tableModel.citiesTableHelper.colCityId} = k.${tableModel.kennelsTableHelper.colCityId}
+            INNER JOIN ${EnumDataTables.regions.commonTableName} r on r.${tableModel.regionsTableHelper.colRegionId} = k.${tableModel.kennelsTableHelper.colRegionId}
+            INNER JOIN ${EnumDataTables.countries.commonTableName} n on n.${tableModel.countriesTableHelper.colCountryId} = k.${tableModel.kennelsTableHelper.colCountryId}
+            LEFT OUTER JOIN ${EnumDataTables.hasherEventMap.commonTableName} hem on hem.${tableModel.hasherEventMapTableHelper.colEventId} = evt.${tableModel.eventsTableHelper.colEventId} AND hem.${tableModel.hasherEventMapTableHelper.colUserId} = "$userId"
             WHERE evt.${tableModel.eventsTableHelper.colIsVisible} = 1
             
           ''';
@@ -588,10 +600,10 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
             k.${tableModel.kennelsTableHelper.colKennelLatitude} as lat,
             k.${tableModel.kennelsTableHelper.colKennelLongitude} as lon,
             ${QueryKennels.searchKennelsField}
-            FROM ${tableModel.kennelsTableHelper.getTableName(AppDomainType.user)} k 
-            INNER JOIN ${tableModel.citiesTableHelper.getTableName(AppDomainType.user)} c on c.${tableModel.citiesTableHelper.colCityId} = k.${tableModel.kennelsTableHelper.colCityId}
-            INNER JOIN ${tableModel.regionsTableHelper.getTableName(AppDomainType.user)} r on r.${tableModel.regionsTableHelper.colRegionId} = k.${tableModel.kennelsTableHelper.colRegionId}
-            INNER JOIN ${tableModel.countriesTableHelper.getTableName(AppDomainType.user)} n on n.${tableModel.countriesTableHelper.colCountryId} = k.${tableModel.kennelsTableHelper.colCountryId}
+            FROM ${EnumDataTables.kennels.commonTableName} k 
+            INNER JOIN ${EnumDataTables.cities.commonTableName} c on c.${tableModel.citiesTableHelper.colCityId} = k.${tableModel.kennelsTableHelper.colCityId}
+            INNER JOIN ${EnumDataTables.regions.commonTableName} r on r.${tableModel.regionsTableHelper.colRegionId} = k.${tableModel.kennelsTableHelper.colRegionId}
+            INNER JOIN ${EnumDataTables.countries.commonTableName} n on n.${tableModel.countriesTableHelper.colCountryId} = k.${tableModel.kennelsTableHelper.colCountryId}
 
            ''';
 
@@ -1115,7 +1127,7 @@ class RunAndKennelMapPageState extends State<RunAndKennelMapPage> {
                           onPressed: () async {
                             final runsListController =
                                 Get.find<FutureRunListPageController>();
-                            runsListController.openList();
+                            await runsListController.openList();
                           },
                           child: Text(
                             'Show List',

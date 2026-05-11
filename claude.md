@@ -100,6 +100,7 @@ for the kennel. Member and public auth are not yet implemented.
 /portal            ← Flutter Web admin portal source
 /public-web        ← Next.js multi-tenant kennel websites (active — see Public Web section)
   /lib/api.ts      ← Server-side API client (calls PublicWebApi shim)
+/mobile-app        ← Flutter iOS/Android mobile app (active — see Mobile App section)
 /docs
   /contracts       ← Auto-generated markdown from contracts
   /screens         ← Screen Behaviour Audits
@@ -108,6 +109,49 @@ for the kennel. Member and public auth are not yet implemented.
   /fixtures        ← Sanitised sample SP payloads
 /tools             ← Prompt assembly and automation scripts
 ```
+
+---
+
+## Mobile App — Flutter iOS/Android
+
+The `/mobile-app` Flutter project is the original Harrier Central client app,
+targeting iOS and Android. It is the **last major component** to be migrated to
+agentic AI development practices and HC6.
+
+### History
+
+- Started ~5 years ago when Flutter was at version 0.8 — predates null-safety,
+  GetX, and Freezed
+- Underwent a major rewrite when Flutter 3.x introduced null-safety
+- GetX was adopted during the rewrite for state management and clean separation
+  of business logic from UI
+- Freezed was adopted for immutable data models (reduces boilerplate, safer
+  model handling)
+- The codebase carries significant technical debt from the pre-null-safety era
+  and the rewrite — expect inconsistency in patterns across older and newer code
+
+### Key Stack Choices
+
+| Concern | Approach |
+|---------|----------|
+| State management / routing | GetX |
+| Immutable models | Freezed |
+| Auth | Device-bound shared secret → short-lived cryptographic token |
+| API | Same Azure Function shim as portal and public web |
+
+### Migration Approach
+
+The app SPs (`/db/hc5/app/`) are in scope for HC6 migration as part of this
+work. Follow the same SP migration sequence used for the portal SPs. App SPs
+use the `hcapp_` prefix in HC6.
+
+**App SP work sequence:**
+1. Read the HC5 SP from `/db/hc5/app/`
+2. Read relevant table definitions from `/db/schema/tables/`
+3. Extract contract JSON → save to `/db/contracts/hc5/<sp_name>.json`
+4. Refactor into HC6 → save to `/db/hc6/app/<sp_name>.sql`
+5. Save HC6 contract → `/db/contracts/hc6/<sp_name>.json`
+6. Commit — one SP per commit
 
 ---
 
@@ -194,17 +238,18 @@ properties. One set of page templates; appearance varies per kennel.
 
 ## Current Focus
 
-The HC5 → HC6 SP migration is complete. Active work is the **public web** —
-per-kennel websites, Puck page builder, and kennel admin tooling.
+Active work is the **Flutter mobile app** — migrating the iOS/Android app to
+agentic AI development practices and HC6. This is the last of the five major
+components to be migrated. See the Mobile App section below for full context.
 
-**What's been shipped (as of 2026-05-05):**
+**What's been shipped (as of 2026-05-10):**
 - All 23 `hcportal_` SPs migrated to HC6 with device-bound auth
 - Flutter portal on HC6 API throughout
 - Public web: kennel landing pages, runs, stats, songs, events, about, run detail
 - Puck page builder: all 6 top-level pages editable per kennel, layouts stored in `HC.KennelWebsite.PageLayoutJson`
 - Admin auth: OTP token flow (Flutter portal → URL token → HMAC session cookie)
 
-**Next likely areas:**
+**Public web next likely areas (lower priority while mobile is active):**
 - Member login system (not yet designed)
 - More Puck blocks (image, text, social links, etc.)
 - Theme editor (colour pickers, background image, CSS variable wiring)

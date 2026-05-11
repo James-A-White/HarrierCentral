@@ -37,6 +37,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
 
   @override
   void initState() {
+    super.initState();
     _initTabs();
     //_pageController = PageController(initialPage: 0, keepPage: true);
 
@@ -49,21 +50,25 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
     _tabController.addListener(() {
       setState(() {});
     });
-    _refreshSqlTablesFromBackend(true).then((void _) {
-      _refreshList(
-        selectedDay: _focusedDay.value,
-        focusedDay: _focusedDay.value,
-      );
-      Future<void>.delayed(const Duration(milliseconds: 500)).then((void _) {
-        setState(() {
-          // force the buttons on the calendar to be drawn
-        });
-      });
-    });
+    unawaited(
+      _refreshSqlTablesFromBackend(true).then((void _) {
+        _refreshList(
+          selectedDay: _focusedDay.value,
+          focusedDay: _focusedDay.value,
+        );
+        unawaited(
+          Future<void>.delayed(const Duration(milliseconds: 500)).then((
+            void _,
+          ) {
+            setState(() {
+              // force the buttons on the calendar to be drawn
+            });
+          }),
+        );
+      }),
+    );
 
-    _animationController.forward();
-
-    super.initState();
+    unawaited(_animationController.forward());
   }
 
   void _initTabs() {
@@ -103,7 +108,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
     }
 
     await tableModel.syncUserDataService.updateFromBackend(
-      SyncUserDataService.flagNarrowEventsTable,
+      EnumDataTables.events.flag,
       true,
       debugText: 'filter_events_page: Events',
     );
@@ -154,7 +159,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
 
-    //       (SELECT COUNT(*) FROM ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} evt2 where kennelId = "${widget.kennel.kennel.kennelId}" AND isVisible = 1) as publishedRunCount//
+    //       (SELECT COUNT(*) FROM ${EnumDataTables.events.commonTableName} evt2 where kennelId = "${widget.kennel.kennel.kennelId}" AND isVisible = 1) as publishedRunCount//
 
     final offsetFromGmtToLocal = Utilities.getSqfliteTimeOffset();
     try {
@@ -162,7 +167,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
           '''
 
           SELECT COUNT(*) as publishedRunCount  
-          FROM ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} evt 
+          FROM ${EnumDataTables.events.commonTableName} evt 
           WHERE kennelId = "${widget.kennel.kennel.kennelId}" AND isVisible = 1
           AND date(datetime(evt.eventStartDatetime)) $dateComparer date(datetime('now','$offsetFromGmtToLocal'))
           ''';
@@ -188,8 +193,8 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
             evt.${tableModel.eventsTableHelper.colEventInboundIntegrationId},
             hkm.${tableModel.hasherKennelMapTableHelper.colAppAccessFlags},
             evt.${tableModel.eventsTableHelper.colCanEditRunAttendence}
-          FROM ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} evt
-          INNER JOIN ${tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.user)} hkm on hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = "${widget.kennel.kennel.kennelId}" and hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = "$userId"
+          FROM ${EnumDataTables.events.commonTableName} evt
+          INNER JOIN ${EnumDataTables.hasherKennelMap.commonTableName} hkm on hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = "${widget.kennel.kennel.kennelId}" and hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = "$userId"
           WHERE evt.${tableModel.eventsTableHelper.colKennelId} = "${widget.kennel.kennel.kennelId}"
           AND date(datetime(evt.${tableModel.eventsTableHelper.colEventStartDatetime})) $dateComparer date(datetime('now','$offsetFromGmtToLocal'))
           ORDER BY evt.${tableModel.eventsTableHelper.colEventStartDatetime} $sortOrder, evt.${tableModel.eventsTableHelper.colEventNumber} $sortOrder
@@ -339,7 +344,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
     });
 
     await tableModel.syncUserDataService.updateFromBackend(
-      SyncUserDataService.flagNarrowEventsTable,
+      EnumDataTables.events.flag,
       true,
       debugText: 'filter_events_page: Events',
     );
@@ -590,10 +595,9 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
               const EdgeInsets.symmetric(horizontal: 15.0, vertical: 0.0),
             ),
           ),
-          onPressed: () {
-            setState(() {
-              _showEventPopup(_selectedDay.value);
-            });
+          onPressed: () async {
+            await _showEventPopup(_selectedDay.value);
+            setState(() {});
           },
           child: Text('Add run placeholder', style: ts_button),
         ),
@@ -657,14 +661,14 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
         final LiteEventModel event = listEvents[index];
         return Dismissible(
           key: Key(event.eventId),
-          confirmDismiss: (DismissDirection direction) {
+          confirmDismiss: (DismissDirection direction) async {
             if ((event.appAccessFlags & authCanManageRuns) != 0) {
+              // the hasher either attended the run as a pack
+              // member or as a hare
+              final bool isVisible = direction == DismissDirection.endToStart;
+              await _updateEvent(eventId: event.eventId, isVisible: isVisible);
               setState(() {
                 // swipe from right to left to indicate that
-                // the hasher either attended the run as a pack
-                // member or as a hare
-                final bool isVisible = direction == DismissDirection.endToStart;
-                _updateEvent(eventId: event.eventId, isVisible: isVisible);
               });
             }
             return Future<bool>.value(false);
@@ -840,7 +844,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
       final int flag =
           isVisible ?? isCountedRun ?? (asboluteEventNumber != null) ? -3 : -2;
       final String sql =
-          'UPDATE ${tableModel.eventsTableHelper.getTableName(AppDomainType.user)} SET canEditRunAttendence = "$flag" where eventId = "$eventId"';
+          'UPDATE ${EnumDataTables.events.commonTableName} SET canEditRunAttendence = "$flag" where eventId = "$eventId"';
       await txn.rawUpdate(sql);
       //print(result.toString() + ' update to events table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
     });

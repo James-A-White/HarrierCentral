@@ -113,8 +113,8 @@ class LoginPageState extends State<ThirdPartyLogin> {
 
                     if (Platform.isIOS) ...<Widget>[
                       GestureDetector(
-                        onTap: () {
-                          _appleLogin();
+                        onTap: () async {
+                          await _appleLogin();
                         },
                         child: const Padding(
                           padding: EdgeInsets.symmetric(

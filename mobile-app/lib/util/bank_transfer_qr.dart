@@ -45,11 +45,11 @@ class BankTransferQr {
                   style: ts_button,
                   textAlign: TextAlign.center,
                 ),
-                onPressed: () {
+                onPressed: () async {
                   ScaffoldMessenger.of(context).hideCurrentSnackBar();
                   final String remittanceInfo =
                       '$paymentReference-$packMemberNameForDisplay';
-                  BankTransferQr.showBankTransferQrCode(
+                  await BankTransferQr.showBankTransferQrCode(
                     context,
                     eventAggregate,
                     isMember != 0,
@@ -66,14 +66,14 @@ class BankTransferQr {
     }
   }
 
-  static void showBankTransferQrCode(
+  static Future<void> showBankTransferQrCode(
     BuildContext context,
     RunAdminAggregate eventAggregate,
     bool member, {
     String? remitString,
     double? remitAmount,
     String? packMemberNameForDisplay,
-  }) {
+  }) async {
     if (eventAggregate.kennel.bankBic != null) {
       num amount = eventAggregate.extensions.memberPrice;
 
@@ -145,7 +145,7 @@ $beneficiaryInfo
         qrText: qrPayload,
       );
 
-      showDialog<void>(
+      await showDialog<void>(
         context: context,
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {

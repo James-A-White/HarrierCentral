@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { getIsCustomDomain } from "@/lib/server-utils";
 import { redirect } from "next/navigation";
 import { notFound } from "next/navigation";
 import { getKennelLandingData, getEvents, getPageLayout, getSongs, getStats } from "@/lib/api";
@@ -77,6 +78,7 @@ export default async function AdminLayoutPage({ params, searchParams }: PageProp
             songs,
             statsRows: statsResult?.rows ?? [],
             hasherCount: statsResult?.hasherCount ?? 0,
+            isCustomDomain: await getIsCustomDomain(),
           }}
         />
       </body>

@@ -18,30 +18,29 @@ class ReceiptsListState extends State<ReceiptsList> {
 
   @override
   void initState() {
-    refreshFromTable();
+    super.initState();
+    unawaited(initStateAsync());
     // DBProvider.db.database.then((Database db) {
     //   db.rawQuery('SELECT * FROM receipts ORDER BY id').then((List<Map<String, dynamic>> result) {
     //     //print(result);
     //   });
     // });
-
-    super.initState();
   }
 
-  void refreshFromTable() {
+  Future<void> initStateAsync() async {
+    await refreshFromTable();
+  }
+
+  Future<void> refreshFromTable() async {
     try {
-      database
-          .query(
-            tableModel.receiptsTableHelper.getTableName(AppDomainType.event),
-          )
-          .then((List<Map<String, dynamic>> results) {
-            setState(() {
-              receiptsList = results;
-            });
-          });
+      receiptsList = await database.query(
+        EnumDataTables.receipts.eventTableName,
+      );
     } catch (e) {
-      //print(e);
+      print(e);
     }
+
+    setState(() {});
   }
 
   @override
@@ -84,17 +83,18 @@ class ReceiptsListState extends State<ReceiptsList> {
             backgroundColor: hc_blue,
             label: 'Add Receipt',
             labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () =>
-                Navigator.push<void>(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (BuildContext context) => ReceiptDetailPage(
-                      eventId: widget.eventAggregate.event.eventId,
-                    ),
+            onTap: () async {
+              await Navigator.push<void>(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (BuildContext context) => ReceiptDetailPage(
+                    eventId: widget.eventAggregate.event.eventId,
                   ),
-                ).then<dynamic>((void receipt) {
-                  refreshFromTable();
-                }),
+                ),
+              );
+
+              await refreshFromTable();
+            },
           ),
         ],
       ),
@@ -113,13 +113,13 @@ class ReceiptsListState extends State<ReceiptsList> {
 
   Future<void> _handleRefresh() async {
     await tableModel.syncEventAdminService.updateFromBackend(
-      SyncEventAdminService.flagReceiptsTable,
+      EnumDataTables.receipts.flag,
       true,
       widget.eventAggregate.event.eventId,
     );
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('Receipts data synchronized $resultStr');
-    refreshFromTable();
+    await refreshFromTable();
   }
 
   Future<void> setReceiptReimbursementStatus(
@@ -131,11 +131,12 @@ class ReceiptsListState extends State<ReceiptsList> {
     await database.transaction<dynamic>((Transaction txn) async {
       final String guidFlag = cancelReimbursement ? GUID_9 : GUID_8;
       final String sql =
-          'UPDATE receipts SET reimbursedBy = "$guidFlag" where receiptId = "$receiptId"';
+          'UPDATE ${EnumDataTables.receipts.eventTableName} SET reimbursedBy = "$guidFlag" where receiptId = "$receiptId"';
       await txn.rawUpdate(sql);
       //print(result.toString() + ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-      refreshFromTable();
     });
+
+    await refreshFromTable();
 
     final ReceiptsModel item = ReceiptsModel(
       userId: userId,
@@ -157,12 +158,12 @@ class ReceiptsListState extends State<ReceiptsList> {
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       await tableModel.baseService.bulkUpdateDatabase(
         tableModel.receiptsTableHelper,
-        tableModel.receiptsTableHelper.getTableName(AppDomainType.event),
+        EnumDataTables.receipts.eventTableName,
         responseBody,
         database,
       );
 
-      refreshFromTable();
+      await refreshFromTable();
     } else {
       await Utilities.showAlert(
         'Error uploading receipt',
@@ -177,11 +178,12 @@ class ReceiptsListState extends State<ReceiptsList> {
     await database.transaction<dynamic>((Transaction txn) async {
       final String guidFlag = removed ? GUID_9 : GUID_8;
       final String sql =
-          'UPDATE receipts SET reimbursedBy = "$guidFlag" where receiptId = "$receiptId"';
+          'UPDATE ${EnumDataTables.receipts.eventTableName} SET reimbursedBy = "$guidFlag" where receiptId = "$receiptId"';
       await txn.rawUpdate(sql);
       //print(result.toString() + ' update to receipts table @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-      refreshFromTable();
     });
+
+    await refreshFromTable();
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
 
@@ -205,11 +207,11 @@ class ReceiptsListState extends State<ReceiptsList> {
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       await tableModel.baseService.bulkUpdateDatabase(
         tableModel.receiptsTableHelper,
-        tableModel.receiptsTableHelper.getTableName(AppDomainType.event),
+        EnumDataTables.receipts.eventTableName,
         responseBody,
         database,
       );
-      refreshFromTable();
+      await refreshFromTable();
     } else {
       await Utilities.showAlert(
         'Error uploading receipt',
@@ -246,18 +248,22 @@ class ReceiptsListState extends State<ReceiptsList> {
 
                         return Dismissible(
                           key: Key(receipt['receiptId']),
-                          confirmDismiss: (DismissDirection direction) {
+                          confirmDismiss: (DismissDirection direction) async {
                             if (direction == DismissDirection.endToStart) {
-                              setReceiptReimbursementStatus(
-                                receipt['receiptId'],
-                                (receipt['reimbursedBy'] != null) &&
-                                    (receipt['reimbursedBy'] != GUID_EMPTY),
+                              unawaited(
+                                setReceiptReimbursementStatus(
+                                  receipt['receiptId'],
+                                  (receipt['reimbursedBy'] != null) &&
+                                      (receipt['reimbursedBy'] != GUID_EMPTY),
+                                ),
                               );
                             } else if (direction ==
                                 DismissDirection.startToEnd) {
-                              setReceiptRemovedStatus(
-                                receipt['receiptId'],
-                                receipt['removed'] == 1,
+                              unawaited(
+                                setReceiptRemovedStatus(
+                                  receipt['receiptId'],
+                                  receipt['removed'] == 1,
+                                ),
                               );
                             }
                             return Future<bool>.value(false);
@@ -386,8 +392,8 @@ class ReceiptsListState extends State<ReceiptsList> {
                                       .extensions
                                       .digAfterDec,
                                   receipt: receiptsList[index],
-                                  itemPressed: () {
-                                    Navigator.push<void>(
+                                  itemPressed: () async {
+                                    await Navigator.push<void>(
                                       context,
                                       MaterialPageRoute<void>(
                                         builder: (BuildContext context) =>
@@ -399,9 +405,8 @@ class ReceiptsListState extends State<ReceiptsList> {
                                               receiptItem: receiptsList[index],
                                             ),
                                       ),
-                                    ).then<dynamic>((void receipt) {
-                                      refreshFromTable();
-                                    });
+                                    );
+                                    await refreshFromTable();
                                   },
                                 ),
                               ],

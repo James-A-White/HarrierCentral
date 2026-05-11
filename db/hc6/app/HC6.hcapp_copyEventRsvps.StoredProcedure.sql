@@ -75,7 +75,7 @@ END
 -- ---------------------------------------------------------------
 IF (@fromEvent IS NULL OR @fromEvent = '00000000-0000-0000-0000-000000000000')
 BEGIN
-    SET @errorCode = 1221; SET @errorType = 2; SET @errorId = NEWID();
+    SET @errorCode = 1221; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Null or empty fromEvent',
             'A null or empty fromEvent was passed to ' + @procName, @procName, @userId);
@@ -88,7 +88,7 @@ END
 
 IF (@toEvent IS NULL OR @toEvent = '00000000-0000-0000-0000-000000000000')
 BEGIN
-    SET @errorCode = 1221; SET @errorType = 2; SET @errorId = NEWID();
+    SET @errorCode = 1221; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Null or empty toEvent',
             'A null or empty toEvent was passed to ' + @procName, @procName, @userId);
@@ -135,7 +135,7 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
 
-    SET @errorCode = 1921; SET @errorType = 9; SET @errorId = NEWID();
+    SET @errorCode = 1921; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;

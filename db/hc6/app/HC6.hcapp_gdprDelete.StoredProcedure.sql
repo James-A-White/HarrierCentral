@@ -78,7 +78,7 @@ BEGIN TRY
             SupportCode                  = '*' + SupportCode,
             ResetCode                    = '*' + ResetCode,
             QR_code                      = '*' + QR_code,
-            QR_secret_code               = NULL,
+            QR_secret_code               = NEWID(),
             HashName                     = 'Deleted User',
             FirstName                    = 'Deleted',
             LastName                     = 'User',
@@ -107,7 +107,7 @@ BEGIN TRY
         IF (@@ROWCOUNT = 0)
         BEGIN
             ROLLBACK TRANSACTION;
-            SET @errorCode = 1511; SET @errorType = 5; SET @errorId = NEWID();
+            SET @errorCode = 1511; SET @errorType = 15; SET @errorId = NEWID();
             INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
             VALUES (@errorId, '<unknown>', 'GDPR delete failed',
                     'User not found or already removed', @procName, @userId);
@@ -128,7 +128,7 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
 
-    SET @errorCode = 1911; SET @errorType = 9; SET @errorId = NEWID();
+    SET @errorCode = 1911; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;

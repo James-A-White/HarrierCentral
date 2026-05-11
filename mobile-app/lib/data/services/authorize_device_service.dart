@@ -81,7 +81,7 @@ class AuthorizeDeviceService {
     Map<String, String> resultMap = <String, String>{};
 
     try {
-      final String responseBody = await ServiceCommon.sendHttpPostV2(body);
+      final String responseBody = await ServiceCommon.sendHttpPost(body);
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {
         final List<dynamic> result = json.decode(responseBody);
@@ -133,7 +133,7 @@ class AuthorizeDeviceService {
             StringPrefsEnum.homeKennelId,
             items['homeKennelId']?.toLowerCase(),
           );
-          await setIntPref(IntPrefsEnum.isBetaTester, items['isBetaTester']);
+          //await setIntPref(IntPrefsEnum.isBetaTester, items['isBetaTester']);
           final int preferences = items['preferences'] ?? 0;
           await setIntPref(IntPrefsEnum.hasherPreferences, preferences);
 

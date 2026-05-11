@@ -7,6 +7,7 @@ import { SiteFooter } from "@/components/kennel/SiteFooter";
 import { PuckRenderer } from "@/components/puck/PuckRenderer";
 import { parseSiteConfig, getDefaultLayout, deriveNavItems } from "@/lib/page-layout";
 import { kennelBaseUrl } from "@/lib/seo";
+import { getIsCustomDomain } from "@/lib/server-utils";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -100,6 +101,7 @@ export default async function KennelPage({ params }: PageProps) {
   ]);
   const futureRuns = eventsResult?.events ?? [];
   const pastRuns   = pastResult?.events   ?? [];
+  const isCustomDomain = await getIsCustomDomain();
   const siteConfig = parseSiteConfig(layoutJson);
   const pageLayout = siteConfig.pages.find(p => p.id === "home")?.layout ?? getDefaultLayout("home");
   const navItems   = deriveNavItems(siteConfig, slug);
@@ -133,7 +135,7 @@ export default async function KennelPage({ params }: PageProps) {
         <main className="relative z-10 mx-auto max-w-7xl px-4 pb-8 md:px-6">
           <PuckRenderer
             data={pageLayout}
-            pageData={{ kennelData, slug, futureRuns, pastRuns }}
+            pageData={{ kennelData, slug, futureRuns, pastRuns, isCustomDomain }}
           />
         </main>
 

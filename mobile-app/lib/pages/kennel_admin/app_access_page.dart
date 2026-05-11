@@ -14,8 +14,8 @@ class AppAccessPageState extends State<AppAccessPage> {
 
   @override
   void initState() {
+     super.initState();
     appAccess = AppAccess(widget.appAccess);
-    super.initState();
   }
 
   @override

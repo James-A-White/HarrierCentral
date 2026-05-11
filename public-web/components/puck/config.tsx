@@ -50,6 +50,7 @@ type BlockProps = {
     viewType: string;
     isFuture: boolean;
     skipNextRun: boolean;
+    eventsOnly: boolean;
     showEmptyDays: boolean;
     count: number;
     days: number;
@@ -64,6 +65,12 @@ type BlockProps = {
     kennelLogoDisplay: string;
     kennelLogoSize: string;
     kennelNameDisplay: string;
+    nameColor: string;
+    detailColor: string;
+    showDivider: boolean;
+    dividerColor: string;
+    dividerWidth: number;
+    scrollContainer: boolean;
     padding: PaddingValue;
     blockBg: string;
   };
@@ -148,6 +155,17 @@ const BG_OPTIONS = [
 ];
 
 const DEFAULT_PADDING: PaddingValue = { top: 0, right: 0, bottom: 0, left: 0 };
+
+const COLOR_OPTIONS = [
+  { label: "Default",    value: ""                         },
+  { label: "Title",      value: "var(--kennel-text-title)" },
+  { label: "Body",       value: "var(--kennel-text-body)"  },
+  { label: "Muted",      value: "var(--kennel-text-muted)" },
+  { label: "Primary",    value: "var(--kennel-primary)"    },
+  { label: "On primary", value: "var(--kennel-primary-fg)" },
+  { label: "White",      value: "#ffffff"                  },
+  { label: "Black",      value: "#000000"                  },
+];
 
 // ─── Shared render helpers ───────────────────────────────────────────────────
 
@@ -383,6 +401,7 @@ export function createPuckConfig(slug: string, navPages: NavPage[] = []): Config
             label: "View type",
             options: [
               { label: "Card",     value: "card"     },
+              { label: "Flat",     value: "flat"     },
               { label: "Calendar", value: "calendar" },
             ],
           },
@@ -395,6 +414,7 @@ export function createPuckConfig(slug: string, navPages: NavPage[] = []): Config
             ],
           },
           skipNextRun: checkboxField("Skip next run (avoids duplicate with Next Run block)"),
+          eventsOnly:  checkboxField("Events only (hide regular runs, show tagged events)"),
           // ── Filters ──────────────────────────────────────────────────────
           count: {
             type: "number",
@@ -448,6 +468,15 @@ export function createPuckConfig(slug: string, navPages: NavPage[] = []): Config
           },
           // ── Calendar-specific ────────────────────────────────────────────
           showEmptyDays: checkboxField("Show empty days (calendar view only)"),
+          // ── Colours ──────────────────────────────────────────────────────
+          nameColor:   { type: "select", label: "Run name colour",   options: COLOR_OPTIONS },
+          detailColor: { type: "select", label: "Detail text colour", options: COLOR_OPTIONS },
+          // ── Divider ───────────────────────────────────────────────────────
+          showDivider:  checkboxField("Show divider between runs"),
+          dividerColor: { type: "select", label: "Divider colour", options: COLOR_OPTIONS },
+          dividerWidth: { type: "number", label: "Divider width (px)", min: 1 },
+          // ── Scroll ────────────────────────────────────────────────────────
+          scrollContainer: checkboxField("Scroll container on desktop (limits height, scrolls internally)"),
           // ── Layout ───────────────────────────────────────────────────────
           blockBg:  { type: "select", label: "Background", options: BG_OPTIONS },
           padding:  paddingField(),
@@ -456,6 +485,7 @@ export function createPuckConfig(slug: string, navPages: NavPage[] = []): Config
           viewType:          "card",
           isFuture:          true,
           skipNextRun:       true,
+          eventsOnly:        false,
           showEmptyDays:     false,
           count:             0,
           days:              0,
@@ -470,14 +500,22 @@ export function createPuckConfig(slug: string, navPages: NavPage[] = []): Config
           kennelLogoDisplay: "multi",
           kennelLogoSize:    "md",
           kennelNameDisplay: "multi",
+          nameColor:         "",
+          detailColor:       "",
+          showDivider:       false,
+          dividerColor:      "",
+          dividerWidth:      1,
+          scrollContainer:   false,
           blockBg:           "",
           padding:           DEFAULT_PADDING,
         },
         render: ({
-          viewType, isFuture, skipNextRun, showEmptyDays,
+          viewType, isFuture, skipNextRun, eventsOnly, showEmptyDays,
           count, days, otherKennelSlugs,
           showRunNumber, showRunName, showDate, showTime, showLocation, showHares, showImage,
           kennelLogoDisplay, kennelLogoSize, kennelNameDisplay,
+          nameColor, detailColor,
+          showDivider, dividerColor, dividerWidth, scrollContainer,
           blockBg, padding,
         }) => (
           <div style={blockStyle(padding, blockBg)}>
@@ -485,6 +523,7 @@ export function createPuckConfig(slug: string, navPages: NavPage[] = []): Config
               viewType={viewType}
               isFuture={isFuture}
               skipNextRun={skipNextRun}
+              eventsOnly={eventsOnly}
               showEmptyDays={showEmptyDays}
               count={count}
               days={days}
@@ -499,6 +538,12 @@ export function createPuckConfig(slug: string, navPages: NavPage[] = []): Config
               kennelLogoDisplay={kennelLogoDisplay}
               kennelLogoSize={kennelLogoSize}
               kennelNameDisplay={kennelNameDisplay}
+              nameColor={nameColor}
+              detailColor={detailColor}
+              showDivider={showDivider}
+              dividerColor={dividerColor}
+              dividerWidth={dividerWidth}
+              scrollContainer={scrollContainer}
             />
           </div>
         ),

@@ -144,7 +144,7 @@ END
 -- ---------------------------------------------------------------
 IF (@kennelId IS NULL OR @kennelId = '00000000-0000-0000-0000-000000000000')
 BEGIN
-    SET @errorCode = 1220; SET @errorType = 2; SET @errorId = NEWID();
+    SET @errorCode = 1220; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Missing kennelId',
             '@kennelId is required for hcapp_addEditEvent', @procName, @userId);
@@ -227,7 +227,7 @@ IF (@eventId IS NOT NULL
     AND EXISTS     (SELECT 1 FROM HC.Event WHERE id = @eventId)
     AND NOT EXISTS (SELECT 1 FROM HC.Event WHERE id = @eventId AND KennelId = @kennelId))
 BEGIN
-    SET @errorCode = 1320; SET @errorType = 3; SET @errorId = NEWID();
+    SET @errorCode = 1320; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Event not found in kennel',
             'eventId exists but belongs to a different kennel', @procName, @userId);
@@ -418,7 +418,7 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
 
-    SET @errorCode = 1920; SET @errorType = 9; SET @errorId = NEWID();
+    SET @errorCode = 1920; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;

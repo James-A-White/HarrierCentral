@@ -1,0 +1,334 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_syncKennelAdminData",
+  "version": "1.0.0",
+  "description": "Incremental pull-sync for kennel-level admin data. Each of the five entity types is gated by a watermark parameter — 'ignore' (default) skips that table. HasherKennelMap is scoped to @kennelId; Payments and HasherEventMap are scoped to @targetHasherId if provided. Used after write SPs that modify kennel-level membership so the admin view is immediately updated. Supports the write-SP delegation pattern via @procName and @param.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to ValidateAppAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived cryptographic token. Validated against the delegating context (@param) or DeviceSecret by ValidateAppAuth."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Kennel to scope the sync to. Required — returns errorCode 1272 if NULL or zero UUID."
+    },
+    {
+      "name": "hashersUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Watermark for HC.Hasher (global, not kennel-scoped). 'ignore' or NULL or <= '2000-01-01' skips the Hashers rowset. Default 'ignore'."
+    },
+    {
+      "name": "kennelsUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Watermark for HC.Kennel (global). 'ignore' or NULL or <= '2000-01-01' skips the Kennels rowset. Default 'ignore'."
+    },
+    {
+      "name": "hasherKennelMapUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Watermark for HC.HasherKennelMap scoped to @kennelId. 'ignore' or NULL or <= '2000-01-01' skips the HasherKennelMap rowset. Default 'ignore'."
+    },
+    {
+      "name": "hasherEventMapUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Watermark for HC.HasherEventMap scoped to @targetHasherId. 'ignore' or NULL or <= '2000-01-01' skips the HasherEventMap rowset."
+    },
+    {
+      "name": "paymentsUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Watermark for HC.Payment scoped to @targetHasherId. 'ignore' or NULL or <= '2000-01-01' skips the Payments rowset."
+    },
+    {
+      "name": "targetHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "When provided, scopes the Payments and HasherEventMap rowsets to this specific hasher. Payments filter uses UserId = @targetHasherId with no kennelId constraint."
+    },
+    {
+      "name": "usePaging",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Default 0 (unlimited). When 1, limits Kennels and HasherKennelMap to 250 rows; Hashers to 1000 rows. HasherEventMap has no page limit even when paging is enabled."
+    },
+    {
+      "name": "procName",
+      "type": "NVARCHAR(128)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Delegating SP name for write-SP delegation pattern. NULL = direct call. Used as the effective proc name in ValidateAppAuth and error logs."
+    },
+    {
+      "name": "param",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Delegating SP token suffix for write-SP delegation pattern. NULL = DeviceSecret only."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Error",
+      "description": "Returned on auth failure (errorType=11 from ValidateAppAuth) or missing kennelId (errorType=12, errorCode=1272). Mutually exclusive with all data rowsets.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Unique ID of the HC.ErrorLog entry." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification. 12=validation (missing kennelId); see ValidateAppAuth for auth error codes." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Specific error code. 1272 = null or zero-UUID kennelId." },
+        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
+        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "Effective SP name (delegating SP name if called via delegation, otherwise OBJECT_NAME(@@PROCID))." }
+      ]
+    },
+    {
+      "index": "conditional",
+      "name": "Kennels",
+      "description": "Emitted when @kennelsUpdatedAfter != 'ignore'. All kennels updated after the watermark (global, not scoped to @kennelId). Ordered by updatedAt ASC, id ASC. Page limit: 250 rows when @usePaging=1.",
+      "columns": [
+        { "name": "kennelId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Kennel.id", "description": "Primary key of the kennel." },
+        { "name": "publicKennelId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Kennel.PublicKennelId", "description": "Public-facing kennel UUID." },
+        { "name": "cityId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Kennel.CityId", "description": "City reference for the kennel." },
+        { "name": "regionId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Kennel.ProvinceStateId", "description": "Province/state reference." },
+        { "name": "countryId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Kennel.CountryId", "description": "Country reference." },
+        { "name": "kennelName", "type": "NVARCHAR(250)", "nullable": false, "mapsToColumn": "Kennel.KennelName", "description": "Full kennel name." },
+        { "name": "kennelShortName", "type": "NVARCHAR(25)", "nullable": false, "mapsToColumn": "Kennel.KennelShortName", "description": "Short kennel name." },
+        { "name": "kennelUniqueShortName", "type": "NVARCHAR(50)", "nullable": false, "mapsToColumn": "Kennel.KennelUniqueShortName", "description": "Unique short name / URL slug." },
+        { "name": "kennelDescription", "type": "NVARCHAR(4000)", "nullable": true, "mapsToColumn": "Kennel.KennelDescription", "description": "Long description." },
+        { "name": "kennelSearchTags", "type": "NVARCHAR(4000)", "nullable": true, "mapsToColumn": "Kennel.KennelSearchTags", "description": "Search tags." },
+        { "name": "kennelLogo", "type": "NVARCHAR(500)", "nullable": false, "mapsToColumn": "Kennel.KennelLogo", "description": "Logo URL." },
+        { "name": "kennelPinColor", "type": "SMALLINT", "nullable": false, "mapsToColumn": "Kennel.KennelPinColor", "description": "Map pin colour code." },
+        { "name": "kennelCoverPhoto", "type": "NVARCHAR(500)", "nullable": true, "mapsToColumn": "Kennel.KennelCoverPhoto", "description": "Cover photo URL." },
+        { "name": "kennelWebsiteUrl", "type": "NVARCHAR(500)", "nullable": true, "mapsToColumn": "Kennel.KennelWebsiteUrl", "description": "External website URL." },
+        { "name": "kennelMismanagementTeam", "type": "NVARCHAR(4000)", "nullable": false, "mapsToColumn": "Kennel.KennelMismanagementTeam", "description": "Mis-management team description. COALESCE to '' so never null." },
+        { "name": "defaultEventCurrencyType", "type": "NVARCHAR(10)", "nullable": true, "mapsToColumn": "Kennel.DefaultEventCurrencyType", "description": "Default currency type code for events." },
+        { "name": "integrationType", "type": "NVARCHAR(50)", "nullable": false, "mapsToColumn": "Kennel.IntegrationType", "description": "Integration type identifier." },
+        { "name": "kennelEventsUrl", "type": "NVARCHAR(500)", "nullable": true, "mapsToColumn": "Kennel.KennelEventsUrl", "description": "External events URL." },
+        { "name": "kennelStatus", "type": "SMALLINT", "nullable": false, "mapsToColumn": "Kennel.KennelStatus", "description": "Kennel status code." },
+        { "name": "allowNegativeCredit", "type": "SMALLINT", "nullable": false, "mapsToColumn": "Kennel.AllowNegativeCredit", "description": "Whether negative hash credit is permitted." },
+        { "name": "allowSelfPayment", "type": "SMALLINT", "nullable": false, "mapsToColumn": "Kennel.AllowSelfPayment", "description": "Whether self-payment is permitted." },
+        { "name": "membershipDurationInMonths", "type": "INT", "nullable": false, "mapsToColumn": "Kennel.MembershipDurationInMonths", "description": "Duration of membership in months." },
+        { "name": "distancePreference", "type": "SMALLINT", "nullable": true, "mapsToColumn": "Kennel.DistancePreference", "description": "Preferred distance unit (metric/imperial)." },
+        { "name": "canEditRunAttendence", "type": "SMALLINT", "nullable": false, "mapsToColumn": "Kennel.CanEditRunAttendence", "description": "Whether attendees can edit their own attendance." },
+        { "name": "kennelInboundIntegrationId", "type": "INT", "nullable": false, "mapsToColumn": "Kennel.InboundIntegrationId", "description": "Inbound integration identifier." },
+        { "name": "kennelLatitude", "type": "DECIMAL(18,14)", "nullable": true, "description": "Kennel.Latitude coalesced with City.Latitude. Falls back to city coords when kennel has no lat." },
+        { "name": "kennelLongitude", "type": "DECIMAL(19,15)", "nullable": true, "description": "Kennel.Longitude coalesced with City.Longitude. Falls back to city coords when kennel has no lon." },
+        { "name": "defaultPriceForMembers", "type": "DECIMAL(10,4)", "nullable": false, "mapsToColumn": "Kennel.DefaultEventPriceForMembers", "description": "Default run price for members." },
+        { "name": "defaultPriceForNonMembers", "type": "DECIMAL(10,4)", "nullable": false, "mapsToColumn": "Kennel.DefaultEventPriceForNonMembers", "description": "Default run price for non-members." },
+        { "name": "defaultRunStartTime", "type": "TIME(7)", "nullable": false, "mapsToColumn": "Kennel.DefaultRunStartTime", "description": "Default run start time of day." },
+        { "name": "runCountStartDate", "type": "DATETIMEOFFSET(7)", "nullable": true, "mapsToColumn": "Kennel.RunCountStartDate", "description": "Date from which run counts are calculated." },
+        { "name": "currencyCode", "type": "NVARCHAR(5)", "nullable": true, "mapsToColumn": "Kennel.CurrencyCode", "description": "ISO currency code." },
+        { "name": "primaryCultureCode", "type": "NVARCHAR(10)", "nullable": true, "mapsToColumn": "Kennel.PrimaryCultureCode", "description": "Primary culture/locale code." },
+        { "name": "currencySymbol", "type": "NVARCHAR(5)", "nullable": true, "mapsToColumn": "Kennel.CurrencySymbol", "description": "Currency symbol character(s)." },
+        { "name": "digitsAfterDecimal", "type": "SMALLINT", "nullable": true, "mapsToColumn": "Kennel.DigitsAfterDecimal", "description": "Decimal places for currency display." },
+        { "name": "bankScheme", "type": "NVARCHAR(10)", "nullable": true, "mapsToColumn": "Kennel.BankScheme", "description": "Banking scheme identifier." },
+        { "name": "bankAccountNumber", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": "Kennel.BankAccountNumber", "description": "Bank account number." },
+        { "name": "bankBic", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": "Kennel.BankBic", "description": "Bank BIC/SWIFT code." },
+        { "name": "bankBeneficiary", "type": "NVARCHAR(150)", "nullable": true, "mapsToColumn": "Kennel.BankBeneficiary", "description": "Bank beneficiary name." },
+        { "name": "kennelPaymentScheme", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": "Kennel.KennelPaymentScheme", "description": "Payment scheme 1 identifier." },
+        { "name": "kennelPaymentUrl", "type": "NVARCHAR(2000)", "nullable": true, "mapsToColumn": "Kennel.KennelPaymentUrl", "description": "Payment URL for scheme 1." },
+        { "name": "kennelPaymentUrlExpires", "type": "DATETIMEOFFSET(7)", "nullable": true, "mapsToColumn": "Kennel.KennelPaymentUrlExpires", "description": "Expiry for payment URL scheme 1." },
+        { "name": "kennelPaymentMemberSurcharge", "type": "DECIMAL(10,4)", "nullable": true, "mapsToColumn": "Kennel.KennelPaymentMemberSurcharge", "description": "Member surcharge for payment scheme 1." },
+        { "name": "kennelPaymentNonMemberSurcharge", "type": "DECIMAL(10,4)", "nullable": true, "mapsToColumn": "Kennel.KennelPaymentNonMemberSurcharge", "description": "Non-member surcharge for payment scheme 1." },
+        { "name": "kennelPaymentScheme2", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": "Kennel.KennelPaymentScheme2", "description": "Payment scheme 2 identifier." },
+        { "name": "kennelPaymentUrl2", "type": "NVARCHAR(2000)", "nullable": true, "mapsToColumn": "Kennel.KennelPaymentUrl2", "description": "Payment URL for scheme 2." },
+        { "name": "kennelPaymentUrlExpires2", "type": "DATETIMEOFFSET(7)", "nullable": true, "mapsToColumn": "Kennel.KennelPaymentUrlExpires2", "description": "Expiry for payment URL scheme 2." },
+        { "name": "kennelPaymentMemberSurcharge2", "type": "DECIMAL(10,4)", "nullable": true, "mapsToColumn": "Kennel.KennelPaymentMemberSurcharge2", "description": "Member surcharge for payment scheme 2." },
+        { "name": "kennelPaymentNonMemberSurcharge2", "type": "DECIMAL(10,4)", "nullable": true, "mapsToColumn": "Kennel.KennelPaymentNonMemberSurcharge2", "description": "Non-member surcharge for payment scheme 2." },
+        { "name": "kennelPaymentScheme3", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": "Kennel.KennelPaymentScheme3", "description": "Payment scheme 3 identifier." },
+        { "name": "kennelPaymentUrl3", "type": "NVARCHAR(2000)", "nullable": true, "mapsToColumn": "Kennel.KennelPaymentUrl3", "description": "Payment URL for scheme 3." },
+        { "name": "kennelPaymentUrlExpires3", "type": "DATETIMEOFFSET(7)", "nullable": true, "mapsToColumn": "Kennel.KennelPaymentUrlExpires3", "description": "Expiry for payment URL scheme 3." },
+        { "name": "kennelPaymentMemberSurcharge3", "type": "DECIMAL(10,4)", "nullable": true, "mapsToColumn": "Kennel.KennelPaymentMemberSurcharge3", "description": "Member surcharge for payment scheme 3." },
+        { "name": "kennelPaymentNonMemberSurcharge3", "type": "DECIMAL(10,4)", "nullable": true, "mapsToColumn": "Kennel.KennelPaymentNonMemberSurcharge3", "description": "Non-member surcharge for payment scheme 3." },
+        { "name": "removed", "type": "SMALLINT", "nullable": false, "mapsToColumn": "Kennel.removed", "description": "Soft-delete flag." },
+        { "name": "updatedAt", "type": "NVARCHAR(50)", "nullable": false, "description": "Local DATETIME2 string (CONVERT from DATETIMEOFFSET). Used as next sync watermark." }
+      ]
+    },
+    {
+      "index": "conditional",
+      "name": "HasherKennelMap",
+      "description": "Emitted when @hasherKennelMapUpdatedAfter != 'ignore'. HKM records for @kennelId updated after the watermark. isMember is computed dynamically from MembershipExpirationDate > GETDATE() (breaking change vs HC5 which returned the stored IsMember column). Ordered by updatedAt ASC, id ASC. Page limit: 250 rows when @usePaging=1.",
+      "columns": [
+        { "name": "hkmId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "HasherKennelMap.id", "description": "Primary key." },
+        { "name": "userId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "HasherKennelMap.UserId", "description": "The hasher this map entry belongs to." },
+        { "name": "kennelId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "HasherKennelMap.KennelId", "description": "The kennel this map entry belongs to." },
+        { "name": "following", "type": "SMALLINT", "nullable": false, "mapsToColumn": "HasherKennelMap.Following", "description": "Whether the hasher is following this kennel." },
+        { "name": "isMember", "type": "INT", "nullable": false, "description": "Computed: 1 if MembershipExpirationDate > GETDATE(), else 0. Breaking change: HC5 returned the stored IsMember column, which could be stale." },
+        { "name": "isHomeKennel", "type": "SMALLINT", "nullable": false, "mapsToColumn": "HasherKennelMap.IsHomeKennel", "description": "Whether this is the hasher's home kennel." },
+        { "name": "isKennelFollowing", "type": "SMALLINT", "nullable": false, "mapsToColumn": "HasherKennelMap.IsKennelFollowing", "description": "Whether the hasher is in the kennel following list." },
+        { "name": "kennelNotificationPreference", "type": "SMALLINT", "nullable": false, "mapsToColumn": "HasherKennelMap.KennelNotificationPreference", "description": "Push notification preference for this kennel." },
+        { "name": "kennelEmailAlertPreference", "type": "SMALLINT", "nullable": false, "mapsToColumn": "HasherKennelMap.KennelEmailAlertPreference", "description": "Email alert preference for this kennel." },
+        { "name": "mismanagementRoles", "type": "INT", "nullable": false, "mapsToColumn": "HasherKennelMap.MismanagementRoles", "description": "Bitmask of mis-management roles." },
+        { "name": "userRoleFlags", "type": "INT", "nullable": false, "mapsToColumn": "HasherKennelMap.UserRoleFlags", "description": "Bitmask of user role flags." },
+        { "name": "appAccessFlags", "type": "INT", "nullable": true, "mapsToColumn": "HasherKennelMap.AppAccessFlags", "description": "Bitmask of app access permissions." },
+        { "name": "kennelCredit", "type": "SMALLMONEY", "nullable": false, "mapsToColumn": "HasherKennelMap.KennelCredit", "description": "Current hash credit balance." },
+        { "name": "discountAmount", "type": "SMALLMONEY", "nullable": false, "mapsToColumn": "HasherKennelMap.DiscountAmount", "description": "Fixed discount amount applied to this hasher." },
+        { "name": "discountPercent", "type": "SMALLINT", "nullable": false, "mapsToColumn": "HasherKennelMap.DiscountPercent", "description": "Percentage discount applied to this hasher." },
+        { "name": "discountDescription", "type": "NVARCHAR(50)", "nullable": false, "mapsToColumn": "HasherKennelMap.DiscountDescription", "description": "Description of the discount." },
+        { "name": "hcTotalRunCount", "type": "INT", "nullable": false, "mapsToColumn": "HasherKennelMap.HcTotalRunCount", "description": "Total run count tracked by Harrier Central." },
+        { "name": "hcHaringCount", "type": "INT", "nullable": false, "mapsToColumn": "HasherKennelMap.HcHaringCount", "description": "Total haring count tracked by Harrier Central." },
+        { "name": "historicalTotalRunCount", "type": "INT", "nullable": false, "mapsToColumn": "HasherKennelMap.HistoricalTotalRunCount", "description": "Historical run count (pre-HC tracking)." },
+        { "name": "historicalHaringCount", "type": "INT", "nullable": false, "mapsToColumn": "HasherKennelMap.HistoricalHaringCount", "description": "Historical haring count (pre-HC tracking)." },
+        { "name": "historicalCountIsEstimate", "type": "INT", "nullable": false, "mapsToColumn": "HasherKennelMap.HistoricalCountIsEstimate", "description": "Whether historical counts are estimates." },
+        { "name": "membershipExpirationDate", "type": "DATETIMEOFFSET(7)", "nullable": true, "mapsToColumn": "HasherKennelMap.MembershipExpirationDate", "description": "Date membership expires. NULL = no membership." },
+        { "name": "memberSince", "type": "DATETIMEOFFSET(7)", "nullable": true, "mapsToColumn": "HasherKennelMap.MemberSince", "description": "Date hasher became a member." },
+        { "name": "dateOfLastRun", "type": "DATETIMEOFFSET(7)", "nullable": true, "mapsToColumn": "HasherKennelMap.DateOfLastRun", "description": "Date of the hasher's last recorded run at this kennel." },
+        { "name": "authorizedDeviceList", "type": "NVARCHAR(1)", "nullable": false, "description": "Always returns empty string ''. Device list is not returned by this SP." },
+        { "name": "authorizedDeviceCount", "type": "INT", "nullable": false, "description": "Always returns 0. Device count is not returned by this SP." },
+        { "name": "kennelUserPhoto", "type": "NVARCHAR(500)", "nullable": true, "mapsToColumn": "HasherKennelMap.KennelUserPhoto", "description": "Kennel-specific profile photo URL." },
+        { "name": "kennelHashName", "type": "NVARCHAR(150)", "nullable": true, "mapsToColumn": "HasherKennelMap.KennelHashName", "description": "Kennel-specific hash name." },
+        { "name": "removed", "type": "SMALLINT", "nullable": false, "mapsToColumn": "HasherKennelMap.removed", "description": "Soft-delete flag." },
+        { "name": "updatedAt", "type": "NVARCHAR(50)", "nullable": false, "description": "Local DATETIME2 string (CONVERT from DATETIMEOFFSET). Used as next sync watermark." }
+      ]
+    },
+    {
+      "index": "conditional",
+      "name": "Hashers",
+      "description": "Emitted when @hashersUpdatedAfter != 'ignore'. All hashers updated after the watermark (global, not kennel-scoped). Ordered by updatedAt ASC, id ASC. Page limit: 1000 rows when @usePaging=1.",
+      "columns": [
+        { "name": "hasherId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Hasher.id", "description": "Primary key of the hasher." },
+        { "name": "firstName", "type": "NVARCHAR(250)", "nullable": false, "mapsToColumn": "Hasher.FirstName", "description": "First name. COALESCE to ''." },
+        { "name": "lastName", "type": "NVARCHAR(250)", "nullable": false, "mapsToColumn": "Hasher.LastName", "description": "Last name. COALESCE to ''." },
+        { "name": "dispName", "type": "NVARCHAR(MAX)", "nullable": false, "mapsToColumn": "Hasher.DisplayName", "description": "Computed display name (persisted column). COALESCE to ''." },
+        { "name": "hashName", "type": "NVARCHAR(250)", "nullable": false, "mapsToColumn": "Hasher.HashName", "description": "Hash name. COALESCE to ''." },
+        { "name": "photo", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": "Hasher.Photo", "description": "Profile photo URL. COALESCE to ''." },
+        { "name": "dispPref", "type": "SMALLINT", "nullable": false, "mapsToColumn": "Hasher.NameDisplayPreference", "description": "Display name preference (0=real name, 1=hash name). COALESCE to 0." },
+        { "name": "includeInGlobalHashDirectory", "type": "SMALLINT", "nullable": false, "mapsToColumn": "Hasher.IncludeInGlobalHashDirectory", "description": "Whether the hasher appears in the global directory. COALESCE to 0." },
+        { "name": "updatedAt", "type": "NVARCHAR(50)", "nullable": false, "description": "Local DATETIME2 string (CONVERT from DATETIMEOFFSET). COALESCE(updatedAt, GETDATE()) before conversion. Used as next sync watermark." },
+        { "name": "removed", "type": "SMALLINT", "nullable": false, "mapsToColumn": "Hasher.Removed", "description": "Soft-delete flag. COALESCE to 0." }
+      ]
+    },
+    {
+      "index": "conditional",
+      "name": "Payments",
+      "description": "Emitted when @paymentsUpdatedAfter != 'ignore'. Payments where UserId = @targetHasherId and updatedAt > watermark. No ORDER BY clause — returned in storage order. No page limit regardless of @usePaging.",
+      "columns": [
+        { "name": "paymentId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Payment.id", "description": "Primary key of the payment." },
+        { "name": "kennelId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Payment.KennelId", "description": "Kennel the payment belongs to. Note: not filtered by @kennelId — may include payments from other kennels." },
+        { "name": "paidBy", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Payment.UserId", "description": "Hasher who made the payment." },
+        { "name": "hemId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Payment.HasherEventMapId", "description": "Associated HasherEventMap record." },
+        { "name": "eventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Payment.EventId", "description": "Event the payment is for." },
+        { "name": "paidTo", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Payment.PaymentProcessedBy_userId", "description": "Hasher who processed/received the payment." },
+        { "name": "creditAmount", "type": "SMALLMONEY", "nullable": false, "mapsToColumn": "Payment.CreditAmount", "description": "Credit amount." },
+        { "name": "debitAmount", "type": "SMALLMONEY", "nullable": false, "mapsToColumn": "Payment.DebitAmount", "description": "Debit amount." },
+        { "name": "creditAvailable", "type": "SMALLMONEY", "nullable": false, "mapsToColumn": "Payment.CreditAvailable", "description": "Available credit at time of payment." },
+        { "name": "paidDate", "type": "DATETIME", "nullable": false, "description": "Payment date cast to DATETIME (loses timezone). Source column is DATETIMEOFFSET(7)." },
+        { "name": "paymentType", "type": "SMALLINT", "nullable": false, "mapsToColumn": "Payment.PaymentType", "description": "Payment type code (0=Unknown, 1=Not paid, 2=Free, 3=Cash, 4=Bank Transfer, etc.)." },
+        { "name": "productType", "type": "SMALLINT", "nullable": false, "mapsToColumn": "Payment.ProductType", "description": "Product type code." },
+        { "name": "cancelledDate", "type": "DATETIME", "nullable": true, "description": "Cancellation date cast to DATETIME (loses timezone). Source column is DATETIMEOFFSET(7)." },
+        { "name": "cancelledBy", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "Payment.CancelledBy_UserId", "description": "Hasher who cancelled the payment." },
+        { "name": "confirmedDate", "type": "DATETIME", "nullable": true, "description": "Confirmation date cast to DATETIME (loses timezone). Source column is DATETIMEOFFSET(7)." },
+        { "name": "confirmedBy", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "Payment.ConfirmedBy_UserId", "description": "Hasher who confirmed the payment." },
+        { "name": "paymentReference", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": "Payment.PaymentReference", "description": "External payment reference." },
+        { "name": "discountAmount", "type": "SMALLMONEY", "nullable": false, "mapsToColumn": "Payment.DiscountAmount", "description": "Discount amount applied." },
+        { "name": "discountPercent", "type": "SMALLINT", "nullable": false, "mapsToColumn": "Payment.DiscountPercent", "description": "Discount percentage applied." },
+        { "name": "discountDescription", "type": "NVARCHAR(50)", "nullable": false, "mapsToColumn": "Payment.DiscountDescription", "description": "Description of the discount." },
+        { "name": "specialRunPriceReason", "type": "NVARCHAR(50)", "nullable": false, "mapsToColumn": "Payment.SpecialRunPriceReason", "description": "Reason for a special run price." },
+        { "name": "notes", "type": "NVARCHAR(500)", "nullable": true, "mapsToColumn": "Payment.Notes", "description": "Free-text notes." },
+        { "name": "doPayForExtras", "type": "SMALLINT", "nullable": false, "mapsToColumn": "Payment.DoPayForExtras", "description": "Whether the payment covers extras." },
+        { "name": "surcharge", "type": "SMALLMONEY", "nullable": false, "mapsToColumn": "Payment.Surcharge", "description": "Payment provider surcharge." },
+        { "name": "paymentProvider", "type": "NVARCHAR(50)", "nullable": true, "mapsToColumn": "Payment.PaymentProvider", "description": "Payment provider name." },
+        { "name": "removed", "type": "SMALLINT", "nullable": false, "mapsToColumn": "Payment.removed", "description": "Soft-delete flag." },
+        { "name": "updatedAt", "type": "NVARCHAR(50)", "nullable": false, "description": "Local DATETIME2 string (CONVERT from DATETIMEOFFSET). Used as next sync watermark." }
+      ]
+    },
+    {
+      "index": "conditional",
+      "name": "HasherEventMap",
+      "description": "Emitted when @hasherEventMapUpdatedAfter != 'ignore'. HEM records where UserId = @targetHasherId and updatedAt > watermark. Joined to HC.Event for denormalised event fields, and to HC.HasherKennelMap for kennel-specific photo and hash name. Ordered by updatedAt ASC, id ASC. No page limit regardless of @usePaging.",
+      "columns": [
+        { "name": "hemId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "HasherEventMap.id", "description": "Primary key of the HEM record." },
+        { "name": "userId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "HasherEventMap.UserId", "description": "The hasher this HEM record belongs to." },
+        { "name": "eventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "HasherEventMap.EventId", "description": "The event this HEM record belongs to." },
+        { "name": "hasherOwnEventId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "HasherEventMap.HasherOwnEventId", "description": "Linked HasherOwnEvent record." },
+        { "name": "userStartEvent", "type": "DATETIMEOFFSET(7)", "nullable": true, "mapsToColumn": "HasherEventMap.UserStartEvent", "description": "User-recorded event start time." },
+        { "name": "userEndEvent", "type": "DATETIMEOFFSET(7)", "nullable": true, "mapsToColumn": "HasherEventMap.UserEndEvent", "description": "User-recorded event end time." },
+        { "name": "rsvpState", "type": "SMALLINT", "nullable": false, "mapsToColumn": "HasherEventMap.RsvpState", "description": "RSVP state code." },
+        { "name": "attendenceState", "type": "SMALLINT", "nullable": false, "mapsToColumn": "HasherEventMap.AttendenceState", "description": "Attendance state code." },
+        { "name": "isHare", "type": "SMALLINT", "nullable": false, "mapsToColumn": "HasherEventMap.IsHare", "description": "Whether the hasher was a hare for this event." },
+        { "name": "eventNotificationPreference", "type": "SMALLINT", "nullable": true, "mapsToColumn": "HasherEventMap.EventNotificationPreference", "description": "Per-event push notification preference." },
+        { "name": "eventEmailAlertPreference", "type": "SMALLINT", "nullable": true, "mapsToColumn": "HasherEventMap.EventEmailAlertPreference", "description": "Per-event email alert preference." },
+        { "name": "eventCountOverride", "type": "SMALLINT", "nullable": true, "mapsToColumn": "HasherEventMap.EventCountOverride", "description": "Override for run count contribution." },
+        { "name": "virginVisitorType", "type": "SMALLINT", "nullable": false, "mapsToColumn": "HasherEventMap.VirginVisitorType", "description": "Virgin/visitor type code." },
+        { "name": "totalHaring", "type": "INT", "nullable": true, "mapsToColumn": "HasherEventMap.TotalHaring", "description": "Cumulative haring count at time of this event." },
+        { "name": "totalHaringThisKennel", "type": "INT", "nullable": true, "mapsToColumn": "HasherEventMap.TotalHaringThisKennel", "description": "Haring count for this kennel at time of this event." },
+        { "name": "totalRuns", "type": "INT", "nullable": true, "mapsToColumn": "HasherEventMap.TotalRuns", "description": "Cumulative run count at time of this event." },
+        { "name": "totalRunsThisKennel", "type": "INT", "nullable": true, "mapsToColumn": "HasherEventMap.TotalRunsThisKennel", "description": "Run count for this kennel at time of this event." },
+        { "name": "displayName", "type": "NVARCHAR(120)", "nullable": true, "mapsToColumn": "HasherEventMap.DisplayName", "description": "Display name override recorded at time of event." },
+        { "name": "email", "type": "NVARCHAR(120)", "nullable": true, "mapsToColumn": "HasherEventMap.Email", "description": "Email recorded at time of event." },
+        { "name": "phoneNumber", "type": "NVARCHAR(120)", "nullable": true, "mapsToColumn": "HasherEventMap.PhoneNumber", "description": "Phone number recorded at time of event." },
+        { "name": "hemEventNumber", "type": "SMALLINT", "nullable": false, "mapsToColumn": "Event.EventNumber", "description": "Run number of the associated event." },
+        { "name": "hemEventName", "type": "NVARCHAR(250)", "nullable": false, "description": "Event name: uses FbEventName when UseFbRunDetails=1, otherwise EventName." },
+        { "name": "hemEventStartDatetime", "type": "DATETIME2", "nullable": false, "description": "Event start datetime as DATETIME2: uses FbEventStartDatetime when UseFbRunDetails=1, otherwise EventStartDatetime." },
+        { "name": "hemEventStartDatetimeGmt", "type": "DATETIME2", "nullable": true, "description": "Event start datetime (GMT) as DATETIME2: uses FbEventStartDatetime when UseFbRunDetails=1, otherwise EventStartDatetimeGmt. Note: second derivation uses Fb column for both local and GMT when UseFbRunDetails=1 — EventStartDatetimeGmt is not used in the FB branch." },
+        { "name": "eventStartDatetimeGmt", "type": "DATETIMEOFFSET(7)", "nullable": true, "description": "COALESCE(Event.EventStartDatetimeGmt, Event.EventStartDatetime). Raw DATETIMEOFFSET, not cast to DATETIME2. Duplicate of hemEventStartDatetimeGmt with different derivation." },
+        { "name": "hemCanEditRunAttendence", "type": "SMALLINT", "nullable": true, "mapsToColumn": "Event.CanEditRunAttendence", "description": "Whether attendees can edit attendance for this event." },
+        { "name": "hemEventIsCountedAndVisible", "type": "INT", "nullable": false, "description": "Computed: 1 if Event.IsCountedRun != 0 AND Event.IsVisible != 0, else 0." },
+        { "name": "hemEventKennelId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Event.KennelId", "description": "Kennel the event belongs to." },
+        { "name": "hemKennelUserPhoto", "type": "NVARCHAR(500)", "nullable": true, "mapsToColumn": "HasherKennelMap.KennelUserPhoto", "description": "Hasher's kennel-specific profile photo. From left-joined HKM row matched on UserId and KennelId from HEM." },
+        { "name": "hemKennelHashName", "type": "NVARCHAR(150)", "nullable": true, "mapsToColumn": "HasherKennelMap.KennelHashName", "description": "Hasher's kennel-specific hash name. From left-joined HKM row." },
+        { "name": "removed", "type": "SMALLINT", "nullable": false, "mapsToColumn": "HasherEventMap.removed", "description": "Soft-delete flag." },
+        { "name": "updatedAt", "type": "NVARCHAR(50)", "nullable": false, "description": "Local DATETIME2 string (CONVERT from DATETIMEOFFSET). Used as next sync watermark." }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Payments not scoped to @kennelId",
+      "detail": "The Payments rowset filters only on pmt.UserId = @targetHasherId with no kennelId restriction (line 291). A call for kennel A can return payments the hasher made at kennels B and C. This may be intentional for a full hasher payment view, but it deviates from the kennel-scoped intent of the SP and should be documented for callers."
+    },
+    {
+      "severity": "medium",
+      "issue": "HasherEventMap has no page limit",
+      "detail": "The HasherEventMap rowset (lines 297-338) has no FETCH NEXT clause. When @usePaging=1, Kennels, HasherKennelMap, and Hashers are page-limited but HEM is not. A hasher with many events could return an unbounded result set."
+    },
+    {
+      "severity": "medium",
+      "issue": "Payments has no ORDER BY and no page limit",
+      "detail": "The Payments rowset (lines 259-292) has no ORDER BY clause and no FETCH NEXT clause. Row order is non-deterministic and the result set is unbounded regardless of @usePaging."
+    },
+    {
+      "severity": "low",
+      "issue": "Duplicate eventStartDatetimeGmt columns with different derivations",
+      "detail": "The HasherEventMap rowset returns two GMT datetime columns: hemEventStartDatetimeGmt (lines 323-324, cast to DATETIME2, uses FB branch for both local and GMT) and eventStartDatetimeGmt (line 325, DATETIMEOFFSET, uses COALESCE(EventStartDatetimeGmt, EventStartDatetime)). These are semantically different and the duplication is a potential source of confusion for callers."
+    },
+    {
+      "severity": "low",
+      "issue": "authorizedDeviceList and authorizedDeviceCount are always empty/zero",
+      "detail": "The HasherKennelMap rowset hardcodes '' for authorizedDeviceList and 0 for authorizedDeviceCount (lines 221-223). These fields appear to be placeholders. Callers should not rely on them containing real data."
+    },
+    {
+      "severity": "low",
+      "issue": "isMember is a CASE expression returning INT not SMALLINT",
+      "detail": "The isMember column (line 201) is produced by a CASE WHEN ... THEN 1 ELSE 0 END expression, which returns INT. The underlying HasherKennelMap.IsMember column is SMALLINT. Callers migrating from HC5 (which returned the stored SMALLINT column) should be aware of the type change and the semantic change (now computed rather than stored)."
+    }
+  ],
+  "breakingChanges": [
+    "isMember in HasherKennelMap rowset is now computed dynamically (CASE WHEN MembershipExpirationDate > GETDATE() THEN 1 ELSE 0 END) instead of returning the stored HasherKennelMap.IsMember SMALLINT column. The stored column can be stale; the computed value reflects current membership state. Column type changes from SMALLINT to INT.",
+    "@procName parameter widened from NVARCHAR(100) in HC5 to NVARCHAR(128) in HC6, matching OBJECT_NAME() return type."
+  ]
+}

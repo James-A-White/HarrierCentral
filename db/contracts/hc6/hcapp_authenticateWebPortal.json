@@ -1,0 +1,156 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_authenticateWebPortal",
+  "version": "1.0.0",
+  "description": "Records a device-authenticated QR code scan for web portal login. The access token is validated against DeviceSecret concatenated with the scan data, binding the token to the specific scan event (single-use per scanData value). On success, inserts a row into HC.WebPortalAuthenticationRequests (idempotent — only inserts if that scanData is not already recorded).",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "Device UUID. Used to look up the user, device secret, and time window for token validation."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token validated against DeviceSecret + scanData concatenation — binds the token to the specific scan event. COALESCE fallback in SP body suggests nullability in practice despite the non-nullable declaration."
+    },
+    {
+      "name": "scanData",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": "WebPortalAuthenticationRequests.scanData",
+      "description": "QR code scan data from the web portal login page. Also used as the second factor in token validation. Note: parameter is NVARCHAR(1000) but the column is NVARCHAR(100) — values longer than 100 characters will be truncated on insert.",
+      "typeMismatch": "Parameter is NVARCHAR(1000); WebPortalAuthenticationRequests.scanData column is NVARCHAR(100). Truncation will occur silently for values over 100 characters."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "Write SP success envelope. Returned on all paths — success and error alike.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "BIT",
+          "nullable": false,
+          "description": "1 on success, 0 on any error (auth failure, device not found, or unhandled DB error)."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "Null on success. Error code on failure: 1304 (device not found), 1104 (auth failure), 1904 (unhandled DB error)."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "Null on success. Error type on failure: 3 (not found / device not registered), 1 (auth failure), 19 (unhandled DB error)."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ErrorDetail",
+      "description": "Returned as rowset 1 on all error paths (device not found, auth failure, unhandled DB error) with standard HC6 error detail columns.",
+      "columns": [
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Unique ID of the HC.ErrorLog entry inserted for this error."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error type code. 3 = device not found, 1 = auth failure, 19 = unhandled DB error."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Numeric error code. 1304 = device not found, 1104 = auth failure, 1904 = unhandled DB error."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Short error title. 'Device not registered', 'Invalid access token', or 'Unexpected error'."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "User-facing error message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "SP name via OBJECT_NAME(@@PROCID)."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "SuccessResult",
+      "description": "Returned as rowset 1 on success only.",
+      "columns": [
+        {
+          "name": "result",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Always 'Success'."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.WebPortalAuthenticationRequests (hasherId, scanData) — only if no existing row with that scanData exists (idempotent)",
+    "INSERT HC.ErrorLog on every error path (device not found, auth failure, unhandled DB error)"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "scanData parameter width mismatch vs column",
+      "detail": "@scanData is declared NVARCHAR(1000) but WebPortalAuthenticationRequests.scanData is NVARCHAR(100). Any scanData value longer than 100 characters will be silently truncated on insert. Should be widened to NVARCHAR(1000) in the table, or narrowed to NVARCHAR(100) in the parameter."
+    },
+    {
+      "severity": "high",
+      "issue": "Auth errors emitted outside TRY/CATCH",
+      "detail": "The device lookup and token validation blocks (lines 56-85) emit error rowsets and RETURN before entering the TRY/CATCH. These paths do not log errors in a protected context, and any failure in the ErrorLog INSERT itself (e.g. constraint violation) would propagate as an unhandled exception with no envelope rowset, leaving the caller without a parseable response."
+    },
+    {
+      "severity": "medium",
+      "issue": "errorType 1 used for auth failure — non-standard",
+      "detail": "The token validation failure path uses errorType = 1 (line 75). The HC6 standard error type for auth failure is 11. errorType 1 is not defined in the standard HC6 error type table."
+    },
+    {
+      "severity": "medium",
+      "issue": "errorType 3 used for device not found — non-standard",
+      "detail": "The device not found path uses errorType = 3 (line 58). The HC6 standard error type for not found is 13. errorType 3 is the HC5-era code. The SP header comment acknowledges this change from HC5 but uses the old code anyway."
+    },
+    {
+      "severity": "low",
+      "issue": "COALESCE on non-nullable @accessToken",
+      "detail": "Line 73 uses COALESCE(@accessToken, 'error') despite @accessToken being declared without NULL. If the caller omits the parameter or passes NULL, COALESCE masks this with the string 'error', causing a token mismatch rather than a clear null-parameter error. Consider declaring the parameter as nullable and returning a 12 (param) error if NULL."
+    },
+    {
+      "severity": "low",
+      "issue": "HcVersion hardcoded as '<unknown>'",
+      "detail": "All HC.ErrorLog inserts use HcVersion = '<unknown>' rather than a real version string. This is consistent with other HC6 SPs but worth noting as a known gap."
+    }
+  ],
+  "breakingChanges": [
+    "Error rowset format completely replaced: HC5 used Pascal-cased non-standard columns (ErrorType, ErrorTitle, ErrorDescription) with no errorId or errorProc. HC6 uses standard camelCase columns (errorId, errorType, errorCode, errorTitle, errorUserMessage, errorProc).",
+    "Success envelope rowset (rowset 0) added — not present in HC5. Callers must read rowset 0 first to determine success/failure before consuming rowset 1.",
+    "Rowset indexing changed: HC5 emitted a single rowset on all paths. HC6 emits rowset 0 (envelope) + rowset 1 (detail or success result) on all paths.",
+    "errorType for device not found changed from 2 (HC5) to 3 (HC6 SP) — though HC6 standard would be 13; see code smell.",
+    "errorType for auth failure remains 1 in the HC6 SP (same as HC5) — though HC6 standard would be 11; see code smell."
+  ]
+}
