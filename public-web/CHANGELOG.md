@@ -1,5 +1,9 @@
 # public-web Changelog
 
+## 0.21.4 — 2026-05-11
+
+- Calendar view: day separator line moved above the date header so date and its runs are visually grouped together
+
 ## 0.21.3 — 2026-05-11
 
 - Kennel logos no longer clipped to any shape across all render locations (StickyNav, RunDetail, RunsPageClient, GlobalRunsList, guest run attribution badge)

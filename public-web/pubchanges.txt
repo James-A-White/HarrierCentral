@@ -1,3 +1,6 @@
+0.21.4
+    • Calendar view: day separator line moved above the date header so date and its runs are visually grouped together
+
 0.21.3
     • Kennel logos no longer clipped to any shape across all render locations (StickyNav, RunDetail, RunsPageClient, GlobalRunsList, guest run badge)
     • RichText: raw HTML enabled via rehype-raw — <u>, <mark>, <details>, <sup>, <sub> etc. work in both Rich Text and Content blocks
