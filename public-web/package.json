@@ -1,6 +1,6 @@
 {
   "name": "public-web",
-  "version": "0.21.2",
+  "version": "0.21.3",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -25,6 +25,7 @@
     "react-leaflet": "^5.0.0",
     "react-markdown": "^10.1.0",
     "react-qr-code": "^2.0.18",
+    "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.1",
     "shadcn": "^4.1.0",
     "tailwind-merge": "^3.5.0",

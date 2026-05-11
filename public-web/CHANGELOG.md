@@ -1,5 +1,11 @@
 # public-web Changelog
 
+## 0.21.3 — 2026-05-11
+
+- Kennel logos no longer clipped to any shape across all render locations (StickyNav, RunDetail, RunsPageClient, GlobalRunsList, guest run attribution badge)
+- RichText: raw HTML enabled via rehype-raw — `<u>`, `<mark>`, `<details>`, `<sup>`, `<sub>` etc. work in both Rich Text and Content blocks
+- RunListBlock: "Scroll container on desktop" checkbox — limits height to ~one screen, scrolls internally; no effect on mobile
+
 ## 0.21.2 — 2026-05-11
 
 - Guest run page: runs from other kennels open within the host kennel's theme with attribution and external link
