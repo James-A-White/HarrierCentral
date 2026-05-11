@@ -208,7 +208,7 @@ export default async function RunDetailPage({ params, searchParams }: PageProps)
         )}
 
         {/* Detail card */}
-        <main className="relative z-10 mx-auto w-full max-w-lg px-4 py-6 md:px-6">
+        <main className="relative z-10 mx-auto w-full max-w-3xl px-4 py-6 md:px-6">
           <div className="rounded-2xl border border-white/[0.08] p-5" style={{ backgroundColor: "var(--kennel-card-bg)" }}>
             <RunDetail run={event} kennel={kennel} />
           </div>
