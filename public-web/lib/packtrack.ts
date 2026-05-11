@@ -19,9 +19,7 @@ export interface PackTrackPayload {
 
 export async function fetchPackTrack(eventId: string): Promise<PackTrackPayload | null> {
   try {
-    const res = await fetch(
-      `https://harriercentralpublicapi.azurewebsites.net/api/GetPositions?eventId=${encodeURIComponent(eventId)}`
-    );
+    const res = await fetch(`/api/packtrack?eventId=${encodeURIComponent(eventId)}`);
     if (!res.ok) return null;
     return (await res.json()) as PackTrackPayload;
   } catch {
