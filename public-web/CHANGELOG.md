@@ -1,5 +1,11 @@
 # public-web Changelog
 
+## 0.21.2 — 2026-05-11
+
+- Guest run page: runs from other kennels open within the host kennel's theme with attribution and external link
+- Clean URLs on custom domains: `londonhash.uk/guest/CityH3/1921` instead of `londonhash.uk/lh3/guest/CityH3/1921`
+- `isCustomDomain` flag threaded from middleware header through all page server components into context
+
 ## 0.21.1 — 2026-05-11
 
 - Fix: RichText colour parameter now applies to headings and bold text, not just body paragraphs
