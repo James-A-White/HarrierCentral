@@ -1,4 +1,8 @@
 
+1.4.4+614
+    • Wire up "Is Promoted Event" checkbox — now correctly sent to hcportal_addEditEvent
+    • Add "Event Type" (Geographic Scope) dropdown to run edit Misc tab with values matching mobile app
+
 1.4.3+613
     • Update Flutter SDK constraint to ^3.41.9 and Dart SDK to >=3.11.5
 
