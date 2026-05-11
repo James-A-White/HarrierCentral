@@ -4,7 +4,7 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import { Navigation, ExternalLink, Copy, Check } from "lucide-react";
 
-const RunDetailMap = dynamic(() => import("./RunDetailMap"), { ssr: false });
+const PackTrackMap = dynamic(() => import("./PackTrackMap"), { ssr: false });
 
 export interface RunDetailRun {
   PublicEventId: string;
@@ -266,9 +266,12 @@ export function RunDetail({ run, kennel, canonicalPath, extraButtons, mapHeight 
             {run.LocationRegion && <Row label="Region" value={run.LocationRegion} />}
             {run.LocationCountry && <Row label="Country" value={run.LocationCountry} />}
             {run.Latitude && run.Longitude && (
-              <div className="mt-4 rounded-xl overflow-hidden" style={{ height: mapHeight }}>
-                <RunDetailMap lat={run.Latitude} lon={run.Longitude} />
-              </div>
+              <PackTrackMap
+                lat={run.Latitude}
+                lon={run.Longitude}
+                eventId={run.PublicEventId}
+                height={mapHeight}
+              />
             )}
           </div>
         </>
