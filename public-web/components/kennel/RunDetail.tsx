@@ -46,6 +46,8 @@ interface RunDetailProps {
   canonicalPath?: string;
   /** Extra buttons to render after the built-in action buttons (e.g. QR code button). */
   extraButtons?: React.ReactNode;
+  /** Height of the embedded map in px. Defaults to 240. */
+  mapHeight?: number;
 }
 
 function SectionDivider() {
@@ -153,7 +155,7 @@ function parseW3w(json: string | null): string | null {
   } catch { return null; }
 }
 
-export function RunDetail({ run, kennel, canonicalPath, extraButtons }: RunDetailProps) {
+export function RunDetail({ run, kennel, canonicalPath, extraButtons, mapHeight = 240 }: RunDetailProps) {
   const [copied, setCopied] = useState(false);
   const { date, kennelTime, browserTime } = fmtRunTime(run);
   const mapsLink = mapsUrl(run.Latitude, run.Longitude, run.LocationOneLineDesc ?? run.EventName);
@@ -264,7 +266,7 @@ export function RunDetail({ run, kennel, canonicalPath, extraButtons }: RunDetai
             {run.LocationRegion && <Row label="Region" value={run.LocationRegion} />}
             {run.LocationCountry && <Row label="Country" value={run.LocationCountry} />}
             {run.Latitude && run.Longitude && (
-              <div className="mt-4 rounded-xl overflow-hidden" style={{ height: 240 }}>
+              <div className="mt-4 rounded-xl overflow-hidden" style={{ height: mapHeight }}>
                 <RunDetailMap lat={run.Latitude} lon={run.Longitude} />
               </div>
             )}
