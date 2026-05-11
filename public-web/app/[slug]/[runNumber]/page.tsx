@@ -208,7 +208,7 @@ export default async function RunDetailPage({ params, searchParams }: PageProps)
         )}
 
         {/* Detail content */}
-        <main className="relative z-10 w-full px-4 py-6 md:px-8">
+        <main className="relative z-10 w-full px-4 pt-6 pb-32 md:px-8">
           <RunDetail run={event} kennel={kennel} mapHeight={480} />
         </main>
       </body>
