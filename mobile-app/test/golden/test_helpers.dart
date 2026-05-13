@@ -8,7 +8,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:harrier_central/util/globals.dart';
-import 'package:harrier_central/util/constants.dart';
 import 'package:harrier_central/services/connectivity_service.dart';
 
 /// Mock path_provider so GetStorage can initialise without a real device.

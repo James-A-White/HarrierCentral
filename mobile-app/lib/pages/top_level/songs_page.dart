@@ -114,11 +114,11 @@ class SongsPage extends StatelessWidget {
                   textStyle: TextStyle(color: Colors.grey.shade700),
                   backgroundColor: Colors.white,
                 ),
+                onPressed: c.clearSearch,
                 child: Text(
                   'X',
                   style: ts_headingBlack.copyWith(color: Colors.grey.shade700),
                 ),
-                onPressed: c.clearSearch,
               ),
             ),
           ],

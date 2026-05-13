@@ -87,10 +87,12 @@ class GpxExportService {
       trackName: trackName,
     );
 
-    await Share.shareXFiles(
-      [XFile(file.path, mimeType: 'application/gpx+xml', name: fileName)],
-      text: 'GPX export for $trackName',
-      subject: 'Run GPX export',
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path, mimeType: 'application/gpx+xml', name: fileName)],
+        text: 'GPX export for $trackName',
+        subject: 'Run GPX export',
+      ),
     );
 
     if (navigatorKey.currentContext != null) {

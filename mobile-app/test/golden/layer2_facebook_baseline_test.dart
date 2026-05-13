@@ -10,7 +10,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:harrier_central/pages/init/new_account.dart';
-import 'package:harrier_central/pages/init/third_party_login.dart';
 import 'package:harrier_central/pages/init/choose_profile_image.dart';
 import 'test_helpers.dart';
 

@@ -13,6 +13,7 @@ _UserEventLocation _$UserEventLocationFromJson(Map<String, dynamic> json) =>
       lng: (json['lng'] as num).toDouble(),
       acc: (json['acc'] as num).toDouble(),
       alt: (json['alt'] as num).toDouble(),
+      type: json['type'] as String?,
     );
 
 Map<String, dynamic> _$UserEventLocationToJson(_UserEventLocation instance) =>
@@ -22,4 +23,5 @@ Map<String, dynamic> _$UserEventLocationToJson(_UserEventLocation instance) =>
       'lng': instance.lng,
       'acc': instance.acc,
       'alt': instance.alt,
+      'type': instance.type,
     };

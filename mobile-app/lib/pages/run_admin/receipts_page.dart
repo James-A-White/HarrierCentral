@@ -37,7 +37,7 @@ class ReceiptsListState extends State<ReceiptsList> {
         EnumDataTables.receipts.eventTableName,
       );
     } catch (e) {
-      print(e);
+      debugPrint(e.toString());
     }
 
     setState(() {});

@@ -93,7 +93,7 @@ export 'package:harrier_central/database/query_kennels.dart';
 export 'package:harrier_central/database/query_runs.dart';
 export 'package:harrier_central/database/query_users.dart';
 export 'package:harrier_central/database/tables.dart';
-export 'package:harrier_central/localization.dart';
+// localization.dart removed — l10n was dormant and never implemented
 export 'package:harrier_central/main.dart';
 export 'package:harrier_central/pages/detail_pages/chat/chat_page_controller.dart';
 export 'package:harrier_central/pages/detail_pages/chat/chat_page.dart';
