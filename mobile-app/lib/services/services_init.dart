@@ -90,4 +90,9 @@ Future<void> initServices() async {
 
   // 6) If you have other async services, await them here similarly with putAsync.
   // No Get.allReady() needed on newer GetX—just await each putAsync you call.
+
+  // S1 (DataRepository): DataRepository.instance is a lazy singleton — no
+  // registration needed here. When the migration progresses and DataRepository
+  // gains async resources of its own (e.g. a direct DB connection), initialise
+  // it here alongside the other services.
 }

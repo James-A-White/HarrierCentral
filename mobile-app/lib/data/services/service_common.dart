@@ -190,6 +190,23 @@ class ServiceCommon {
     return Duration(milliseconds: delayMs);
   }
 
+  // ── Migration note ────────────────────────────────────────────────────────
+  // [checkHttpPostResponse] predates [ServiceResult] and returns raw String
+  // sentinel values (ERROR_UNKNOWN_HTTP_ERROR, ERROR_HANDLED, etc.). Existing
+  // callers depend on this string-based contract.
+  //
+  // For NEW service methods, prefer [ServiceResult<T>] instead:
+  //
+  //   Future<ServiceResult<MyModel>> fetchSomething() async {
+  //     final body = await sendHttpPost(...);
+  //     if (body.startsWith('ERROR')) {
+  //       return ServiceResult.failure(body);
+  //     }
+  //     return ServiceResult.success(MyModel.fromJson(jsonDecode(body)));
+  //   }
+  //
+  // See lib/data/models/service_result.dart for the full API.
+  // ─────────────────────────────────────────────────────────────────────────
   static Future<String> checkHttpPostResponse(
     Response response,
     String requestBody, {
@@ -255,9 +272,15 @@ class ServiceCommon {
         ),
       );
       returnValue = ERROR_UNKNOWN_REMOTE_DB_ERROR;
-      final DbErrorModel errorResult = DbErrorModel.fromJson(
-        json.decode(response.body)[0][0],
-      );
+      // Response body is [[{...}]] — outer array is rowsets, inner array is rows.
+      // Guard against empty arrays before indexing to avoid RangeError.
+      final dynamic decoded = json.decode(response.body);
+      final rowsets = decoded as List<dynamic>;
+      final firstRowset = rowsets.isNotEmpty ? (rowsets[0] as List<dynamic>) : <dynamic>[];
+      final Map<String, dynamic> firstRow = firstRowset.isNotEmpty
+          ? (firstRowset[0] as Map<String, dynamic>)
+          : <String, dynamic>{};
+      final DbErrorModel errorResult = DbErrorModel.fromJson(firstRow);
 
       if (errorCallback != null) {
         final bool errorCallbackResult = await errorCallback(errorResult);

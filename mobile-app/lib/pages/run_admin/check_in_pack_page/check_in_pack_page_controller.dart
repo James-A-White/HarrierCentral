@@ -12,32 +12,18 @@ enum FilterOptions {
   cancel,
 }
 
+// TODO(S4): This controller mixes UI layout state with business logic.
+// Extract UIState and PaymentState into dedicated sub-controllers when
+// this page is next significantly modified.
 class CheckInPackController extends GetxController
     with GetTickerProviderStateMixin {
   final RunAdminAggregate eventAggregate;
   CheckInPackController(this.eventAggregate);
 
+  // ── UI state ──────────────────────────────────────────────────────────────
+  // Display-only observables: animation, scroll, search UI, filter panel.
+
   final GlobalKey packListBoxKey = GlobalKey();
-
-  bool isLoading = true;
-  final RxList<CheckInPackModel> packList = <CheckInPackModel>[].obs;
-  final RxList<CheckInPackModel> filteredList = <CheckInPackModel>[].obs;
-  final RxList<CheckInPackModel> allHashers = <CheckInPackModel>[].obs;
-
-  final RxString searchText = ''.obs;
-  final RxInt countAtHash = 0.obs;
-  final RxInt countComing = 0.obs;
-  final RxInt countPaid = 0.obs;
-  final RxInt countOnIn = 0.obs;
-  final RxInt memberCount = 0.obs;
-  final RxInt drinkCount = 0.obs;
-
-  final RxnInt rsvpIndexUpdating = RxnInt();
-  final RxnInt attendanceIndexUpdating = RxnInt();
-  final RxnInt paymentIndexUpdating = RxnInt();
-
-  final TextEditingController searchController = TextEditingController();
-  final FocusNode searchFocusNode = FocusNode();
 
   late AnimationController animationController;
   late Animation<double> buttonAnimation;
@@ -47,18 +33,45 @@ class CheckInPackController extends GetxController
     initialScrollOffset: 0,
   );
 
+  final TextEditingController searchController = TextEditingController();
+  final FocusNode searchFocusNode = FocusNode();
+
+  final RxString searchText = ''.obs;
   final RxString searchTypeText = ''.obs;
   final RxBool showFilter = false.obs;
   final RxBool highlightSearchType = false.obs;
   final RxBool showMultiSelect = false.obs;
   final RxBool forceShowAllHashers = false.obs;
 
+  // Updating index trackers — used to show spinner on the tapped row.
+  final RxnInt rsvpIndexUpdating = RxnInt();
+  final RxnInt attendanceIndexUpdating = RxnInt();
+  final RxnInt paymentIndexUpdating = RxnInt();
+
+  // ── Domain state ──────────────────────────────────────────────────────────
+  // Member data, attendance/payment counts, filter configuration.
+
+  bool isLoading = true;
+  final RxList<CheckInPackModel> packList = <CheckInPackModel>[].obs;
+  final RxList<CheckInPackModel> filteredList = <CheckInPackModel>[].obs;
+  final RxList<CheckInPackModel> allHashers = <CheckInPackModel>[].obs;
+
+  final RxInt countAtHash = 0.obs;
+  final RxInt countComing = 0.obs;
+  final RxInt countPaid = 0.obs;
+  final RxInt countOnIn = 0.obs;
+  final RxInt memberCount = 0.obs;
+  final RxInt drinkCount = 0.obs;
+
   final Map<String, RxBool> multiSelectValues = {};
+
+  List<RxInt> filterValues = List.generate(7, (_) => 0.obs);
 
   static const String searchKennel = 'Searching Kennel members and RSVPs';
   static const String searchAllHashers = 'Searching all Hashers';
 
-  List<RxInt> filterValues = List.generate(7, (_) => 0.obs);
+  // ── Operations ────────────────────────────────────────────────────────────
+  // Methods that drive data loading, user interactions, and backend calls.
 
   @override
   void onInit() {

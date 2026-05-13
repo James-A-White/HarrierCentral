@@ -4,6 +4,10 @@ import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/util/track_point_filter.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 
+// TODO(S4): This controller mixes UI layout state (map rendering, playback
+// animation, marker building) with domain logic (position loading, track
+// filtering, distance calculation). Extract PlaybackState and TrackDataState
+// into dedicated sub-controllers when this page is next significantly modified.
 class RunTrackerMapController extends GetxController
     with GetSingleTickerProviderStateMixin, WidgetsBindingObserver {
   RunTrackerMapController({
@@ -22,11 +26,30 @@ class RunTrackerMapController extends GetxController
            ? kennelLocation
            : mapCenter;
 
+  // ── UI state ──────────────────────────────────────────────────────────────
+  // Map controllers, playback animation, scroll/carousel controllers.
+
   static const double _zoomFastThreshold = 15.0;
   static const double _zoomSlowThreshold = 22.0;
   static const Duration _playbackFastDuration = Duration(seconds: 10);
   static const Duration _playbackSlowDuration = Duration(seconds: 480);
   static const Duration _autoUpdateInterval = Duration(seconds: 15);
+
+  final MapController mapController = MapController();
+  final FixedExtentScrollController runnerPickerController =
+      FixedExtentScrollController();
+  final PageController timelineCarouselController = PageController();
+  final RxInt timelineCarouselIndex = 0.obs;
+
+  late final AnimationController _playbackController;
+  bool _mapReady = false;
+  bool _isVisible = false;
+  double? _lastRotationDeg;
+  Duration? _lastPlaybackDuration;
+  double _lastMarkerZoom = 0.0;
+
+  // ── Domain state ──────────────────────────────────────────────────────────
+  // Track data, timeline bounds, selection, user identity.
 
   final EventModel event;
   final latlng.LatLng? eventLocation;
@@ -34,12 +57,6 @@ class RunTrackerMapController extends GetxController
   final double minZoom;
   final double maxZoom;
   final double initialZoom;
-
-  final MapController mapController = MapController();
-  final FixedExtentScrollController runnerPickerController =
-      FixedExtentScrollController();
-  final PageController timelineCarouselController = PageController();
-  final RxInt timelineCarouselIndex = 0.obs;
 
   final latlng.LatLng _mapCenterPoint;
   final RxBool _trueNorthLock;
@@ -58,17 +75,14 @@ class RunTrackerMapController extends GetxController
   // Reused across loadPositions() calls to avoid creating a new http.Client each time.
   final GetPositionsApi _positionsApi = GetPositionsApi();
 
-  late final AnimationController _playbackController;
   Worker? _timelineWorker;
   Worker? _selectionWorker;
   StreamSubscription<MapEvent>? _mapEventsSub;
   Timer? _autoUpdateTimer;
-  bool _mapReady = false;
-  bool _isVisible = false;
-  double? _lastRotationDeg;
-  Duration? _lastPlaybackDuration;
   String? _afterTimestampMs;
-  double _lastMarkerZoom = 0.0;
+
+  // ── Operations ────────────────────────────────────────────────────────────
+  // Lifecycle, data loading, playback control, camera, rendering helpers.
 
   bool get _isPlaybackActive =>
       isPlaying.value || _playbackController.isAnimating;
