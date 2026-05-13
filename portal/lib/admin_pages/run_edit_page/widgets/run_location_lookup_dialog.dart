@@ -186,7 +186,9 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
     for (final event in widget.events) {
       final desc = event.locationOneLineDesc?.trim() ?? '';
       if (desc.isEmpty) continue;
-      if (event.syncLat == null || event.syncLong == null) continue;
+      final lat = event.syncLat;
+      final lon = event.syncLong;
+      if (lat == null || lon == null || lat == 0.0 || lon == 0.0) continue;
       final key = desc.toLowerCase();
       if (seen.contains(key)) continue;
       seen.add(key);
