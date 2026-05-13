@@ -164,9 +164,19 @@ BEGIN TRY
 			, evt.[IsCountedRun] AS isCountedRun
 			, evt.[EventNumber] AS eventNumber
 			, evt.[EventGeographicScope] AS eventGeographicScope
-			-- FB lat/lon flag
-			, CASE WHEN (evt.UseFbLatLon = 1 AND evt.fbLatitude IS NOT NULL AND evt.FbLatitude != 0 AND evt.FbLongitude != 0) THEN evt.[fbLatitude] ELSE CASE WHEN COALESCE(evt.[Latitude], ken.Latitude, c.Latitude, 0.0) != 0 THEN COALESCE(evt.[Latitude], ken.Latitude, c.Latitude) ELSE c.Latitude END END AS syncLat
-			, CASE WHEN (evt.UseFbLatLon = 1 AND evt.fbLongitude IS NOT NULL AND evt.FbLatitude != 0 AND evt.FbLongitude != 0) THEN evt.[fbLongitude] ELSE CASE WHEN COALESCE(evt.[Longitude], ken.Longitude, c.Longitude, 0.0) != 0 THEN COALESCE(evt.[Longitude], ken.Longitude, c.Longitude) ELSE c.Longitude END END AS syncLong
+			-- Event-level coordinates only — no kennel/city fallback.
+			-- NULL when the event has no location set; callers use this to exclude
+			-- unlocated events from the Previous Runs location picker.
+			, CASE
+				WHEN evt.UseFbLatLon = 1 AND evt.fbLatitude  IS NOT NULL AND evt.FbLatitude  != 0 AND evt.FbLongitude != 0 THEN evt.[fbLatitude]
+				WHEN evt.[Latitude]  IS NOT NULL AND evt.[Latitude]  != 0 THEN evt.[Latitude]
+				ELSE NULL
+			  END AS syncLat
+			, CASE
+				WHEN evt.UseFbLatLon = 1 AND evt.fbLongitude IS NOT NULL AND evt.FbLatitude  != 0 AND evt.FbLongitude != 0 THEN evt.[fbLongitude]
+				WHEN evt.[Longitude] IS NOT NULL AND evt.[Longitude] != 0 THEN evt.[Longitude]
+				ELSE NULL
+			  END AS syncLong
 
 			, ken.PublishToGoogleCalendar AS kenPublishToGoogleCalendar
 			, ken.DisseminateOnGlobalGoogleCalendar AS kenDisseminateOnGlobalGoogleCalendar
