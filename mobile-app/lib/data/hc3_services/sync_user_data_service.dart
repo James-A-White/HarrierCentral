@@ -149,7 +149,10 @@ class SyncUserDataService {
       // final DateTime startTime = DateTime.now();
       // print('updateFromBackEnd started = 0');
 
-      if (forceRefresh || true) {
+      // TODO(L2): forceRefresh parameter is accepted but the condition is always
+      // true (|| true). Remove forceRefresh from this method signature and all
+      // ~20 call sites when doing a broader cleanup pass.
+      if (true) { // ignore: dead_code
         await getLastUpdatedTimes(tablesToSync);
 
         final DateTime hashersUpdatedAfter =

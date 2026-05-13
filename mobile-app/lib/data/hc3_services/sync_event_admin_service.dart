@@ -100,7 +100,10 @@ class SyncEventAdminService {
       await setStringPref(StringPrefsEnum.adminEventId, eventId);
     }
 
-    if (forceRefresh || true)
+    // TODO(L2): forceRefresh parameter is accepted but the condition is always
+    // true (|| true). Remove forceRefresh from this method signature and all
+    // call sites when doing a broader cleanup pass.
+    if (true) // ignore: dead_code
     // ((paymentsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - paymentsLastUpdate) > PaymentsTableHelper.forceRequeryInterval) ||
     // ((receiptsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - receiptsLastUpdate) > ReceiptsTableHelper.forceRequeryInterval) ||
     // ((hasherEventMapLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hasherEventMapLastUpdate) > HasherEventMapTableHelper.forceRequeryInterval) ||

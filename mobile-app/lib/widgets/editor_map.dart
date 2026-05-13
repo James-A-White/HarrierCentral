@@ -47,6 +47,12 @@ class EditorMapState extends State<EditorMap> {
   }
 
   @override
+  void dispose() {
+    mapController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     // only move the map if the center has changed
     latlng.LatLng mapCenterPoint = widget.mapCenter;

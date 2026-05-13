@@ -9,13 +9,13 @@ class QueryUsers {
   ) async {
     String query =
         '''
-        SELECT  
+        SELECT
           h.*
           FROM ${EnumDataTables.hashers.commonTableName} h
-          WHERE h.${tableModel.hashersTableHelper.colHasherId} = "$userId"
+          WHERE h.${tableModel.hashersTableHelper.colHasherId} = ?
           LIMIT 1
           ''';
 
-    return database.rawQuery(query);
+    return database.rawQuery(query, [userId]);
   }
 }

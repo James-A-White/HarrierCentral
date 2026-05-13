@@ -18,6 +18,13 @@ class ChatPageController extends GetxController {
   List<types.Message> messages = <types.Message>[];
 
   @override
+  void onClose() {
+    // No explicit resources to dispose here (messages is a plain List;
+    // onAppResumed is a one-shot async call with no ongoing subscription).
+    super.onClose();
+  }
+
+  @override
   void onInit() {
     super.onInit();
 

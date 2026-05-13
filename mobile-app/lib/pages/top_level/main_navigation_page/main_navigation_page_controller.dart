@@ -425,8 +425,9 @@ class MainNavigationController extends GetxController
   }
 
   @override
-  void dispose() {
+  void onClose() {
+    WidgetsBinding.instance.removeObserver(this);
     unawaited(_screenWatcherSub?.cancel());
-    super.dispose();
+    super.onClose();
   }
 }

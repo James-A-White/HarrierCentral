@@ -221,6 +221,7 @@ class LiveRunGeneralPage extends StatelessWidget {
     : controller = Get.put(
         LiveRunGeneralController(run: run),
         tag: 'live-run-general-${run.event.eventId}',
+        // TODO: consider fenix:true if re-entry causes issues (L4)
       );
 
   final RunDetailsAggregate run;

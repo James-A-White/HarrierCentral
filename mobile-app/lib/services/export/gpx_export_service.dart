@@ -125,12 +125,8 @@ class GpxExportService {
         ? parts.sublist(1).join('::').trim()
         : null;
 
-    HashRunPointTypes type;
-    try {
-      type = HashRunPointTypes.fromKey(typeKey)!;
-    } catch (_) {
-      return null;
-    }
+    final HashRunPointTypes? type = HashRunPointTypes.fromKey(typeKey);
+    if (type == null) return null; // unknown marker type — skip waypoint
 
     final name = (customLabel != null && customLabel.isNotEmpty)
         ? customLabel

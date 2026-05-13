@@ -108,7 +108,10 @@ class SyncKennelAdminService {
     // final int hashersLastUpdate = (flags & EnumDataTables.hashers.flag) == 0 ? null : getIntPref(HashersTableHelper.lastUpdatedKey) ?? 0;
     // final int hasherKennelMapLastUpdate = (flags & EnumDataTables.hasherKennelMap.flag) == 0 ? null : getIntPref(HasherKennelMapTableHelper.getLastUpdatedKey(TableType.kennelAdmin)) ?? 0;
 
-    if (forceRefresh || true)
+    // TODO(L2): forceRefresh parameter is accepted but the condition is always
+    // true (|| true). Remove forceRefresh from this method signature and all
+    // call sites when doing a broader cleanup pass.
+    if (true) // ignore: dead_code
     // ((kennelsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - kennelsLastUpdate) > KennelsTableHelper.forceRequeryInterval) ||
     // ((hashersLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hashersLastUpdate) > HashersTableHelper.forceRequeryInterval) ||
     // ((hasherKennelMapLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hasherKennelMapLastUpdate) > HasherKennelMapTableHelper.forceRequeryInterval)

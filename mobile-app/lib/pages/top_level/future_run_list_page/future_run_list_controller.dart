@@ -38,6 +38,14 @@ class FutureRunListPageController extends GetxController {
   bool showRsvpInstructions = false;
 
   @override
+  void onClose() {
+    scrollController.dispose();
+    searchController.dispose();
+    searchFocusNode.dispose();
+    super.onClose();
+  }
+
+  @override
   void onInit() {
     super.onInit();
 

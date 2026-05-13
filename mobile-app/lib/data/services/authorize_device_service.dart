@@ -98,12 +98,12 @@ class AuthorizeDeviceService {
           await setStringPref(StringPrefsEnum.deviceId, deviceId);
           await setStringPref(
             StringPrefsEnum.deviceSecret,
-            items['iconDataBase64'],
-          ); // a bit of security through obscurity here
+            items['deviceSecret'],
+          );
           await setIntPref(
             IntPrefsEnum.timeWindow,
-            items['colorPaletteIndex'],
-          ); // a bit of security through obscurity here
+            items['timeWindow'],
+          );
           await setStringPref(StringPrefsEnum.profilePhotoUrl, items['photo']);
           await setStringPref(
             StringPrefsEnum.displayName,
