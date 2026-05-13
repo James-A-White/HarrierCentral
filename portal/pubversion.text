@@ -1,4 +1,8 @@
 
+1.4.5+615
+    • Location lookup: previous runs with no event-level lat/lon no longer appear in the list
+    • SP fix: syncLat/syncLong returns NULL (not city fallback) for unlocated events
+
 1.4.4+614
     • Wire up "Is Promoted Event" checkbox — now correctly sent to hcportal_addEditEvent
     • Add "Event Type" (Geographic Scope) dropdown to run edit Misc tab with values matching mobile app

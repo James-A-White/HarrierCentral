@@ -5,7 +5,7 @@ description: Harrier Central web functions
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.4.4+614
+version: 1.4.5+615
 
 environment:
   sdk: '>=3.11.5 <4.0.0'
