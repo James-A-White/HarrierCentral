@@ -1,3 +1,23 @@
+2.2.3+1096
+    • Fixed critical auth bug — device authorisation was caching wrong server fields, silently breaking token generation
+    • Fixed SQL table creation crash on fresh install (duplicate NOT NULL in hasher-kennel map table)
+    • Fixed SQL injection vulnerability in user query
+    • Fixed GPX export crash when an unknown trail marker type is encountered
+    • PackTrack: live run tracking map now shows per-hasher colour-coded GPS trails with trail markers (checks, drink stops, false trails, etc.)
+    • PackTrack: time scrubber and play/pause controls; playback speed automatically scales with map zoom level
+    • PackTrack: GPX export for sharing your track
+    • Songs page: browse and play kennel songs with lyrics
+    • Live run shell: General, Map, Chat, and QR tabs during a run
+    • Fixed controller lifecycle leaks — scroll controllers, search controllers, and GetX workers now properly disposed
+    • Fixed WidgetsBindingObserver leak in main navigation controller
+    • Fixed MapController not disposed in run location editor
+    • Fixed audio player race condition when rapidly switching songs
+    • Fixed http.Client leak in run point buffer and GPS positions API
+    • Removed 10 dead/commented-out code files; removed defunct Facebook login assets
+    • GetX update IDs centralised into typed constants (prevents silent typo bugs)
+    • Improved error logging in database query catch blocks
+    • Consolidated URL and configuration constants
+
 2.1.3+1054
     • A testing only release
     • Trying to get data collection to work in the background
