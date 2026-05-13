@@ -200,7 +200,7 @@ class MainNavigationController extends GetxController
 
     mainScreenReady.value = true;
 
-    update(['AppScaffold']);
+    update([UpdateIds.appScaffold]);
 
     kennelsListPage = KennelsListPage(key: kennelLocationsPageKey);
     historyListPage = HistoryListPage();
@@ -225,7 +225,7 @@ class MainNavigationController extends GetxController
       mainScreenContent.value = MainPageContent.appContent;
     }
 
-    update(['AppScaffold']);
+    update([UpdateIds.appScaffold]);
 
     // don't configure notifications until here because
     // when a notification is clicked and the app launches,
@@ -385,7 +385,7 @@ class MainNavigationController extends GetxController
     }
 
     // make sure app bar is drawn
-    update(['AppScaffold']);
+    update([UpdateIds.appScaffold]);
 
     // it's OK to not await this async call
     await requestNotificationPermission();

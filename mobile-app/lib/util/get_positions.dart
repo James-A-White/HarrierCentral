@@ -10,6 +10,11 @@ class GetPositionsApi {
   final http.Client _client;
   final Uri _baseUri;
 
+  /// Release the underlying HTTP client.
+  void dispose() {
+    _client.close();
+  }
+
   Future<UserPositionsPayload> fetchPositions({
     required String eventId,
     required String latestClientTimestampMs,

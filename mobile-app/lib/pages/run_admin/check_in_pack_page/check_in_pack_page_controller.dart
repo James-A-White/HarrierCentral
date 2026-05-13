@@ -170,7 +170,7 @@ class CheckInPackController extends GetxController
 
     if (showLoadingIndicator) {
       isLoading = true;
-      update(['AppScaffold']);
+      update([UpdateIds.appScaffold]);
     }
 
     await tableModel.syncEventAdminService.updateFromBackend(
@@ -236,7 +236,7 @@ class CheckInPackController extends GetxController
 
       if (forceRefresh) {
         isLoading = false;
-        update(['AppScaffold']);
+        update([UpdateIds.appScaffold]);
       }
     } catch (e) {
       debugPrint('Error in _refreshCounters: $e');
@@ -455,7 +455,7 @@ class CheckInPackController extends GetxController
 
       if (forceRefresh) {
         isLoading = false;
-        update(['AppScaffold']);
+        update([UpdateIds.appScaffold]);
       }
 
       await filterPackListResults();
@@ -538,7 +538,7 @@ class CheckInPackController extends GetxController
       filteredList.assignAll(results);
     }
 
-    update(['hasherList']);
+    update([UpdateIds.hasherList]);
   }
 
   Future<void> toggleFilterPanel() async {

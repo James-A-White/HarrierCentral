@@ -36,6 +36,7 @@ class SelectRunPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // TODO(S6): ensure Get.delete<SelectRunController>() is called when this page closes.
     final controller = Get.put(
       SelectRunController(runList: runList, initialSelected: selected),
     );

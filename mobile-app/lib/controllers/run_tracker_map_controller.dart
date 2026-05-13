@@ -55,6 +55,9 @@ class RunTrackerMapController extends GetxController
   final latlng.Distance _distanceCalculator = const latlng.Distance();
   final String? _currentUserId = getStringPref(StringPrefsEnum.userId);
 
+  // Reused across loadPositions() calls to avoid creating a new http.Client each time.
+  final GetPositionsApi _positionsApi = GetPositionsApi();
+
   late final AnimationController _playbackController;
   Worker? _timelineWorker;
   Worker? _selectionWorker;
@@ -284,6 +287,7 @@ class RunTrackerMapController extends GetxController
     runnerPickerController.dispose();
     timelineCarouselController.dispose();
     _playbackController.dispose();
+    _positionsApi.dispose();
     super.onClose();
   }
 
@@ -325,9 +329,8 @@ class RunTrackerMapController extends GetxController
     //   'Loading positions for event ${event.eventId}... at ${DateTime.now().microsecondsSinceEpoch}',
     // );
 
-    final api = GetPositionsApi();
     try {
-      final data = await api.fetchPositions(
+      final data = await _positionsApi.fetchPositions(
         eventId: event.eventId,
         latestClientTimestampMs: _afterTimestampMs ?? '0000000000000000000',
       );

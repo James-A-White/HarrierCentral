@@ -89,7 +89,7 @@ class ChatPageController extends GetxController {
         );
 
         messages[index] = updatedMessage;
-        update(['chatMessages']);
+        update([UpdateIds.chatMessages]);
       }
     }
   }
@@ -101,7 +101,7 @@ class ChatPageController extends GetxController {
       final outerItem = jsonDecode(result) as List<dynamic>;
       messages = loadMessages(outerItem[0] as List<dynamic>);
       messagesLoading.value = false;
-      update(['chatMessages']);
+      update([UpdateIds.chatMessages]);
     }
   }
 
@@ -154,7 +154,7 @@ class ChatPageController extends GetxController {
     //   setMapIntPref(MapPrefsEnum.unusedChatCounts, chatsCounts);
     // }
 
-    update(['chatMessages']);
+    update([UpdateIds.chatMessages]);
   }
 
   void handleAttachmentPressed() {

@@ -268,7 +268,11 @@ class TableModel extends GetxService {
   // Cleanup hooks if any helper/service exposes dispose/close
   @override
   void onClose() {
-    // e.g., receiptsTableHelper.dispose();
+    // Release the sync table registry so GC can collect the helper references.
+    tablesForRemoteSync.clear();
+    // The nested table helpers and services are plain Dart objects; they do not
+    // hold closeable resources themselves (HTTP clients are per-request).
+    // If helpers gain dispose() methods in future, call them here.
     super.onClose();
   }
 }

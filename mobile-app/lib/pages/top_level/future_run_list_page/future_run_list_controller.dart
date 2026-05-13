@@ -116,8 +116,14 @@ class FutureRunListPageController extends GetxController {
     //await refreshFromTable(true);
     //chatSummaryMap = await getEventChatMessageCounts();
 
-    if (Firebase.apps.isEmpty) {
-      await Get.putAsync(() => NotificationService().init());
+    // NotificationService is registered in initServices(). If Firebase was not
+    // ready at boot time, register it now on first use.
+    if (Firebase.apps.isNotEmpty &&
+        !Get.isRegistered<NotificationService>()) {
+      await Get.putAsync<NotificationService>(
+        () => NotificationService().init(),
+        permanent: false,
+      );
     }
 
     if (Firebase.apps.isNotEmpty) {
@@ -127,12 +133,12 @@ class FutureRunListPageController extends GetxController {
       }
     }
     // _updateTotalNotificationCounter();
-    update(['runList', 'main_nav_page']);
+    update([UpdateIds.runList, UpdateIds.mainNavPage]);
   }
 
   void refreshRunListUi() {
     filterRuns(false);
-    update(['runList', 'main_nav_page']);
+    update([UpdateIds.runList, UpdateIds.mainNavPage]);
   }
 
   void notificationReceived(RemoteMessage message) {
@@ -164,7 +170,7 @@ class FutureRunListPageController extends GetxController {
 
   //   _updateTotalNotificationCounter();
 
-  //   update(['runList', 'chatTab', 'main_nav_page']);
+  //   update([UpdateIds.runList, UpdateIds.mainNavPage]);
   // }
 
   // void resetNotificationCounters() async {
@@ -190,7 +196,7 @@ class FutureRunListPageController extends GetxController {
 
   //   //showOnlyEventsWithMessages.value = false;
 
-  //   update(['runList', 'chatTab', 'main_nav_page']);
+  //   update([UpdateIds.runList, UpdateIds.mainNavPage]);
   // }
 
   // void _updateTotalNotificationCounter() {
@@ -288,7 +294,7 @@ class FutureRunListPageController extends GetxController {
 
     // _updateTotalNotificationCounter();
 
-    update(['runList', 'chatTab', 'main_nav_page']);
+    update([UpdateIds.runList, UpdateIds.mainNavPage]);
 
     //setState(() {});
 
@@ -468,7 +474,7 @@ class FutureRunListPageController extends GetxController {
       resultCount.value = filteredRuns.length;
     }
 
-    update(['runList']);
+    update([UpdateIds.runList]);
   }
 
   Future<void> clearTables({
@@ -485,7 +491,7 @@ class FutureRunListPageController extends GetxController {
       try {
         await database.rawQuery(query);
       } catch (e) {
-        // log / rethrow / swallow depending on your policy
+        debugPrint('[FutureRunListPageController.clearTables] error: $e');
       }
     }
   }
@@ -515,7 +521,7 @@ class FutureRunListPageController extends GetxController {
     );
 
     await refreshFromTable(true);
-    update(['runList']);
+    update([UpdateIds.runList]);
 
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('Events user data synchronized $resultStr');

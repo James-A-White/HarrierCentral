@@ -22,7 +22,10 @@ class AppLifecycleController extends SuperController<void> {
   @override
   void onResumed() {
     //print('AppLifecycleController: onResumed called');
-    Get.put(LocationService()); // re-subscribe
+    // Re-register LocationService if it was deleted while the app was paused.
+    if (!Get.isRegistered<LocationService>()) {
+      Get.put(LocationService());
+    }
     if (Get.isRegistered<ChatPageController>()) {
       final chatPageController = Get.find<ChatPageController>();
       unawaited(chatPageController.onAppResumed()); // Call your method safely

@@ -55,6 +55,11 @@ class RunPointBuffer {
     }
   }
 
+  /// Release the underlying HTTP client. Call this before discarding the buffer.
+  void dispose() {
+    _http.close();
+  }
+
   Future<bool> _sendBatch(List<UserEventLocation> batch) async {
     if (batch.isEmpty) return true;
 

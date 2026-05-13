@@ -79,7 +79,7 @@ class CommonQueries {
         }
       }
     } catch (e) {
-      //print(e);
+      debugPrint('[CommonQueries.isAtRunNow] error: $e');
     }
     return result;
   }
@@ -283,7 +283,7 @@ class CommonQueries {
         result = results[0]['hasherId'];
       }
     } catch (e) {
-      //print(e);
+      debugPrint('[CommonQueries.getUserIdFromUqr] error: $e');
     }
     return result;
   }
@@ -385,7 +385,7 @@ class CommonQueries {
         );
       }
     } catch (e) {
-      //print(e);
+      debugPrint('[CommonQueries.getNewEvent] error: $e');
     }
 
     return runDetailAggregate;

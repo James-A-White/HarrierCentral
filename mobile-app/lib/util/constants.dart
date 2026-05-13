@@ -4,13 +4,21 @@ import 'package:geolocator/geolocator.dart';
 
 const String RANDOM_STRING_LIST = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
+// ── Connection-test fallback URLs ──────────────────────────────────────────
+const String CONNECTION_TEST_GOOGLE_URL = 'https://www.google.com/generate_204';
+const String CONNECTION_TEST_MSFT_URL =
+    'https://www.msftconnecttest.com/connecttest.txt';
+
+// ── Geofence / location ────────────────────────────────────────────────────
 // lat lon of London Eye
 const double DEFAULT_LATITUDE = 51.5033;
 const double DEFAULT_LONGITUDE = 0.1195;
 
+// ── UI / device ────────────────────────────────────────────────────────────
 const double BASE_DEVICE_WIDTH = 320;
 const double BASE_DEVICE_HEIGHT = 576;
 
+// ── Timeouts / delays (seconds unless noted) ──────────────────────────────
 const int LOGIN_IS_DELAYED_WARNING_1 = 7;
 const int LOGIN_IS_DELAYED_WARNING_2 = 15;
 const int LOGIN_TIMEOUT = 20;
@@ -18,8 +26,11 @@ const int DEFAULT_HTTP_TIMEOUT = 10;
 const int DISPLAY_SPLASH_ON_LAUNCH = 10;
 const int SPLASH_SCREEN_DISPLAY_TIME = 3;
 
+// ── Sync / replication ────────────────────────────────────────────────────
 // we will not allow syncs happen less than 5 seconds apart. This prevents rapid repeated syncs during app startup.
 const int DEBOUNCE_SYNC_USER_DATA = 5;
+
+// ── Kennel membership states ──────────────────────────────────────────────
 const int KENNEL_IS_FOLLOWING = 1;
 const int KENNEL_IS_BLOCKED = 2;
 const int KENNEL_IS_AUTO = 0;
@@ -54,6 +65,7 @@ const double MILES_TO_METERS = 1609.34449;
 
 const LocationAccuracy BASE_APP_LOCATION_ACCURACY = LocationAccuracy.best;
 
+// ── API endpoints ──────────────────────────────────────────────────────────
 const String BASE_HCWEB_UPLOAD_URL = 'https://hcweb.azurewebsites.net/upload/';
 const String BASE_HCWEB_MOBILE_URL = 'HTTPS://P.HC-APP.COM/#/C?';
 
@@ -117,6 +129,8 @@ const String BASE_RECEIPTS_URL =
     'https://harriercentral.blob.core.windows.net/receipts/';
 const String BASE_NEW_VERSION_IMAGES_URL =
     'https://harriercentral.blob.core.windows.net/splash-sequences/';
+
+// ── Storage / blob URLs ────────────────────────────────────────────────────
 
 const String GOOGLE_API_KEY = 'AIzaSyAiJXV8P99FwXq2FtYby7To80e9SBTrV2c';
 

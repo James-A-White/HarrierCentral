@@ -163,6 +163,7 @@ export 'package:harrier_central/util/constants.dart';
 export 'package:harrier_central/util/enums.dart';
 export 'package:harrier_central/util/get_positions.dart';
 export 'package:harrier_central/util/get_storage.dart';
+export 'package:harrier_central/util/update_ids.dart';
 export 'package:harrier_central/util/globals.dart';
 export 'package:harrier_central/util/routes.dart';
 export 'package:harrier_central/util/styles.dart';

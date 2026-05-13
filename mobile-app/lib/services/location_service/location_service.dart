@@ -119,6 +119,8 @@ class LocationService extends GetxService {
   void onClose() {
     // Cancel the stream subscription when the service is closed
     unawaited(_geoLocationStreamSubscription?.cancel());
+    _runBuffer?.dispose();
+    _runBuffer = null;
     super.onClose();
   }
 
@@ -265,6 +267,7 @@ class LocationService extends GetxService {
       if ((_runBuffer != null) && (_runBuffer!.eventId != eventId)) {
         // Reset buffer if eventId/userId changed
         await _runBuffer?.flush();
+        _runBuffer?.dispose();
 
         if (kDebugMode) {
           print('LocationService: Flushed old run buffer.');

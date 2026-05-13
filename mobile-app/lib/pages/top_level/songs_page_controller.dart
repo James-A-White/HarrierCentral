@@ -34,6 +34,8 @@ class SongsPageController extends GetxController
   // Audio player for song audio
   AudioPlayer? audioPlayer;
 
+  bool _isDisposed = false;
+
   /// Fraction of screen height occupied by the lyrics panel when collapsed.
   static const double collapsedLyricsFraction = 0.33;
 
@@ -61,12 +63,14 @@ class SongsPageController extends GetxController
 
   @override
   void onClose() {
+    _isDisposed = true;
     searchController.dispose();
     searchFocusNode.dispose();
     listScrollController.dispose();
     lyricsScrollController.dispose();
     animController.dispose();
     unawaited(audioPlayer?.dispose());
+    audioPlayer = null;
     super.onClose();
   }
 
@@ -75,6 +79,7 @@ class SongsPageController extends GetxController
   // ---------------------------------------------------------------------------
 
   Future<void> loadSongs() async {
+    if (_isDisposed) return;
     try {
       final String tableName = EnumDataTables.songs.commonTableName;
       final List<Map<String, dynamic>> results = await database.rawQuery(
@@ -116,6 +121,7 @@ class SongsPageController extends GetxController
   }
 
   void selectSong(SongsModel song) {
+    if (_isDisposed) return;
     unawaited(audioPlayer?.stop());
     unawaited(audioPlayer?.dispose());
     audioPlayer = null;
@@ -133,6 +139,7 @@ class SongsPageController extends GetxController
   }
 
   void toggleLyricsExpanded() {
+    if (_isDisposed) return;
     isLyricsExpanded.value = !isLyricsExpanded.value;
     if (isLyricsExpanded.value) {
       unawaited(animController.forward());

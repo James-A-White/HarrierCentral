@@ -6,97 +6,102 @@ import 'package:harrier_central/pages/live_run_pages/live_run_general_page.dart'
 import 'package:harrier_central/pages/live_run_pages/live_run_map_page.dart';
 import 'package:harrier_central/pages/live_run_pages/live_run_qr_page.dart';
 
-class LiveRunShell extends StatefulWidget {
+class LiveRunShellController extends GetxController {
+  final RxInt tabIndex = 0.obs;
+
+  void setTab(int i) => tabIndex.value = i;
+
+  @override
+  void onClose() {
+    // Clean up LiveRunService when the shell closes.
+    if (Get.isRegistered<LiveRunService>()) {
+      Get.delete<LiveRunService>(force: true);
+    }
+    super.onClose();
+  }
+}
+
+class LiveRunShell extends StatelessWidget {
   const LiveRunShell({super.key, required this.run});
 
   final RunDetailsAggregate run;
 
   @override
-  State<LiveRunShell> createState() => _LiveRunShellState();
-}
+  Widget build(BuildContext context) {
+    final controller = Get.put(LiveRunShellController());
 
-class _LiveRunShellState extends State<LiveRunShell> {
-  int _currentIndex = 0;
-
-  @override
-  void initState() {
-    super.initState();
     // Ensure state service is available and set active run name for display.
     final liveRunState = LiveRunService.ensure();
     liveRunState.startRun(
-      eventId: widget.run.event.eventId,
-      eventName: widget.run.event.eventName,
+      eventId: run.event.eventId,
+      eventName: run.event.eventName,
     );
-  }
 
-  @override
-  Widget build(BuildContext context) {
     final pages = <Widget>[
-      LiveRunGeneralPage(run: widget.run),
-      LiveRunChatPage(run: widget.run),
-      LiveRunMapPage(run: widget.run),
-      LiveRunQrPage(run: widget.run),
+      LiveRunGeneralPage(run: run),
+      LiveRunChatPage(run: run),
+      LiveRunMapPage(run: run),
+      LiveRunQrPage(run: run),
     ];
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: themeAppBarBackground,
-        elevation: 3,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: Text(
-          widget.run.event.eventName.isEmpty
-              ? 'Live Run Mode'
-              : widget.run.event.eventName,
-          style: ts_appBarTitle,
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'End run tracking (coming soon)',
-            icon: const Icon(Icons.flag_outlined, color: Colors.white),
+    return Obx(
+      () => Scaffold(
+        appBar: AppBar(
+          backgroundColor: themeAppBarBackground,
+          elevation: 3,
+          iconTheme: const IconThemeData(color: Colors.white),
+          title: Text(
+            run.event.eventName.isEmpty ? 'Live Run Mode' : run.event.eventName,
+            style: ts_appBarTitle,
+          ),
+          leading: IconButton(
+            icon: const Icon(Icons.close, color: Colors.white),
             onPressed: () {
-              // Placeholder for future end-run logic.
-              Get.snackbar(
-                'End run tracking',
-                'This will be wired up soon.',
-                snackPosition: SnackPosition.BOTTOM,
-              );
+              Get.delete<LiveRunShellController>(force: true);
+              Navigator.of(context).pop();
             },
           ),
-        ],
-      ),
-      body: pages[_currentIndex],
-      bottomNavigationBar: CurvedNavigationBar(
-        index: _currentIndex,
-        backgroundColor: Colors.transparent,
-        color: Colors.white,
-        buttonBackgroundColor: hc_red,
-        items: [
-          CurvedNavigationBarItem(
-            child: Icon(Icons.dashboard_customize, color: Colors.black54),
-            label: 'Tools',
-          ),
-          CurvedNavigationBarItem(
-            child: Icon(Icons.chat_bubble_outline, color: Colors.black54),
-            label: 'Chat',
-          ),
-          CurvedNavigationBarItem(
-            child: Icon(Icons.map, color: Colors.black54),
-            label: 'Map',
-          ),
-          CurvedNavigationBarItem(
-            child: Icon(Icons.qr_code_2, color: Colors.black54),
-            label: 'QRs',
-          ),
-        ],
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
+          actions: [
+            IconButton(
+              tooltip: 'End run tracking (coming soon)',
+              icon: const Icon(Icons.flag_outlined, color: Colors.white),
+              onPressed: () {
+                // Placeholder for future end-run logic.
+                Get.snackbar(
+                  'End run tracking',
+                  'This will be wired up soon.',
+                  snackPosition: SnackPosition.BOTTOM,
+                );
+              },
+            ),
+          ],
+        ),
+        body: pages[controller.tabIndex.value],
+        bottomNavigationBar: CurvedNavigationBar(
+          index: controller.tabIndex.value,
+          backgroundColor: Colors.transparent,
+          color: Colors.white,
+          buttonBackgroundColor: hc_red,
+          items: [
+            CurvedNavigationBarItem(
+              child: Icon(Icons.dashboard_customize, color: Colors.black54),
+              label: 'Tools',
+            ),
+            CurvedNavigationBarItem(
+              child: Icon(Icons.chat_bubble_outline, color: Colors.black54),
+              label: 'Chat',
+            ),
+            CurvedNavigationBarItem(
+              child: Icon(Icons.map, color: Colors.black54),
+              label: 'Map',
+            ),
+            CurvedNavigationBarItem(
+              child: Icon(Icons.qr_code_2, color: Colors.black54),
+              label: 'QRs',
+            ),
+          ],
+          onTap: controller.setTab,
+        ),
       ),
     );
   }

@@ -61,13 +61,9 @@ class LegalPageContent extends StatefulWidget {
 class LegalPageContentState extends State<LegalPageContent> {
   int tapCounter = 0;
   void backdoorTap() {
-    unawaited(
-      Future<dynamic>.delayed(const Duration(milliseconds: 2500)).then((
-        void _,
-      ) {
-        tapCounter = 0;
-      }),
-    );
+    unawaited(Future<void>.delayed(const Duration(milliseconds: 2500)).then((_) {
+      tapCounter = 0;
+    }));
 
     tapCounter++;
     if (tapCounter == 6) {

@@ -47,7 +47,7 @@ class RunHistoryQueries {
         runHistoryList.add(RunHistoryModel.fromMap(item));
       }
     } catch (e) {
-      //print(e);
+      debugPrint('[RunHistoryQueries.getRunHistory] error: $e');
     }
 
     return runHistoryList;

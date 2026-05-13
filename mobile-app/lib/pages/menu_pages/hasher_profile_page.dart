@@ -2143,7 +2143,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       if ((ps.isGranted) || success) {
         if (await Permission.location.serviceStatus.isEnabled) {
           appModel.hasLocationPermissions = true;
-          final locService = Get.put(LocationService());
+          final locService = Get.isRegistered<LocationService>()
+              ? Get.find<LocationService>()
+              : Get.put(LocationService());
           if (locService.initialized) {
             await Utilities.showAlert(
               'Location Services Enabled',

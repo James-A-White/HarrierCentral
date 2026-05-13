@@ -815,7 +815,7 @@ class Utilities {
         return false;
       }
     } catch (e) {
-      // Optional: log(e)
+      debugPrint('[Utilities.checkHcServer] error: $e');
     }
 
     return false;
@@ -882,10 +882,10 @@ class Utilities {
       final fallbackChecker = InternetConnection.createInstance(
         customCheckOptions: [
           InternetCheckOption(
-            uri: Uri.parse('https://www.google.com/generate_204'),
+            uri: Uri.parse(CONNECTION_TEST_GOOGLE_URL),
           ),
           InternetCheckOption(
-            uri: Uri.parse('https://www.msftconnecttest.com/connecttest.txt'),
+            uri: Uri.parse(CONNECTION_TEST_MSFT_URL),
           ),
         ],
       );

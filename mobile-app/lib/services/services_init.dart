@@ -76,6 +76,18 @@ Future<void> initServices() async {
     );
   }
 
-  // 5) If you have other async services, await them here similarly with putAsync.
+  // 5) NotificationService — initialised once here; callers use Get.find<NotificationService>().
+  if (!Get.isRegistered<NotificationService>()) {
+    if (Firebase.apps.isNotEmpty) {
+      await Get.putAsync<NotificationService>(
+        () => NotificationService().init(),
+        permanent: false,
+      );
+    }
+    // If Firebase is not yet initialised, NotificationService will be registered
+    // lazily the first time it is needed (see future_run_list_controller.onInitAsync).
+  }
+
+  // 6) If you have other async services, await them here similarly with putAsync.
   // No Get.allReady() needed on newer GetX—just await each putAsync you call.
 }
