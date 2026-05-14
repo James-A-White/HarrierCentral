@@ -47,8 +47,11 @@ namespace HcWebApi.Endpoints
      ?? throw new InvalidOperationException("Failed to deserialize the request body.");
 
 
+            // checkConnection is an unauthenticated ping — no deviceId/accessToken required.
+            bool isCheckConnection = (string?)data.queryType == "checkConnection";
+
             // Validate required parameters
-            if (data.deviceId == null || data.accessToken == null)
+            if (!isCheckConnection && (data.deviceId == null || data.accessToken == null))
             {
                 log.LogInformation("Missing required parameters: deviceId or accessToken.");
                 return new BadRequestObjectResult("Missing required parameters: hasherId or accessToken.");

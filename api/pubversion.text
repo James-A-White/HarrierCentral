@@ -1,4 +1,8 @@
 
+1.0.6+4
+    • AppApiHC6: exempt checkConnection from deviceId/accessToken guard
+      (hcapp_checkConnection is an unauthenticated ping — no auth params required)
+
 1.0.5+3
     • Program.cs: Gzip + Brotli response compression for HC6 endpoints only
       (scoped to /api/AppApiHC6 and /api/PortalApiHC6 via UseWhen — HC5 untouched)
