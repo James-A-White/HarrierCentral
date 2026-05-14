@@ -1,6 +1,6 @@
 name: harrier_central
 description: A mobile app to manage your Hash House Harriers life.
-version: 2.2.3+1096 # see CHANGELOG.md for details
+version: 2.2.7+1101 # see CHANGELOG.md for details
 publish_to: none
 
 environment:
@@ -36,7 +36,7 @@ dependencies:
   flutter_avif: ^3.0.0
   flutter_cache_manager: ^3.3.0
   flutter_chat_types: ^3.6.2
-  flutter_chat_ui: ^1.6.15
+  flutter_chat_ui: 1.6.15
   flutter_image_compress: ^2.1.0 
   flutter_linkify: ^6.0.0  
   # flutter_localization: ^0.3.2
@@ -59,9 +59,9 @@ dependencies:
   get_storage: ^2.1.1
   google_api_availability: ^5.0.0 
   http: ^1.6.0
-  image_cropper: ^11.0.0
+  image_cropper: ^12.2.1
   image_picker: ^1.2.1
-  internet_connection_checker_plus: ^2.7.2
+  internet_connection_checker_plus: ^3.0.0
   intl: ^0.20.2
   intro_slider: ^4.2.0
   ive_flutter_core:
@@ -93,14 +93,14 @@ dependencies:
   permission_handler: ^12.0.0+1
   photo_view: ^0.15.0
   progress_stepper: ^3.1.0
-  screen_state: ^4.1.1
+  screen_state: ^5.0.0
   sqflite: ^2.4.2
   # qr_code_scanner: ^1.0.0
   qr_flutter: ^4.0.0
   # responsive_navigation_bar: ^3.2.6 <------ new nav bar
   share_plus: ^12.0.1
   shared_preferences: ^2.0.7 
-  sign_in_with_apple: ^7.0.1
+  sign_in_with_apple: ^8.0.0
   step_progress_indicator: ^1.0.2
   # sumup: ^0.8.1
   table_calendar: ^3.0.2 

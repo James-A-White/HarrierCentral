@@ -1,3 +1,11 @@
+2.2.7+1101
+    • HC6 migration complete — all 35 app stored procedures rewritten to HC6
+      standards and deployed; app now routes through new /api/AppApiHC6 endpoint
+    • Response layer updated for HC6 write SP envelope, flat chat author columns,
+      and improved error detail routing
+    • First Harrier Central mobile release fully developed using agentic AI
+      development practices
+
 2.2.3+1096
     • Fixed critical auth bug — device authorisation was caching wrong server fields, silently breaking token generation
     • Fixed SQL table creation crash on fresh install (duplicate NOT NULL in hasher-kennel map table)
