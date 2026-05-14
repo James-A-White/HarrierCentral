@@ -8,7 +8,7 @@ class ApproveLoginService {
   /// Returns an empty string on timeout or user-elected offline mode.
   /// Returns ERROR_KEY_OK_BTN_PRESSED if the user acknowledged a hard server
   /// error via dialog. Any other ERROR_PREFIX string means a handled API error.
-  Future<String> approveLogin() async {
+  Future<String> approveLogin({Function? errorCallback}) async {
     String? uid = getStringPref(StringPrefsEnum.userId);
     if ((uid ?? '').isEmpty) {
       uid = GUID_EMPTY;
@@ -107,8 +107,6 @@ class ApproveLoginService {
       'hcVersion': version,
       'buildNumber': buildNumber,
       'usesLocSvcs': appModel.hasLocationPermissions ? '1' : '0',
-      'screenWidth': deviceInfo.deviceWidth.toInt().toString(),
-      'screenHeight': deviceInfo.deviceHeight.toInt().toString(),
       'ipInfo': ipInfoJson,
       'locale': Get.deviceLocale?.toString() ?? '',
     };
@@ -172,7 +170,11 @@ class ApproveLoginService {
 
     if (resp.statusCode == 999) return '';
 
-    return ServiceCommon.checkHttpPostResponse(resp, jsonEncode(body));
+    return ServiceCommon.checkHttpPostResponse(
+      resp,
+      jsonEncode(body),
+      errorCallback: errorCallback,
+    );
   }
 
   Future<Position?> getLastKnownLocation() async {

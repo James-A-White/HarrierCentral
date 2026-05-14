@@ -107,7 +107,7 @@ END
 -- ---------------------------------------------------------------
 -- Paging limits
 -- ---------------------------------------------------------------
-DECLARE @paging1000 INT = CASE WHEN COALESCE(@usePaging, 0) = 0 THEN 1000000 ELSE 1000 END;
+DECLARE @paging2500 INT = CASE WHEN COALESCE(@usePaging, 0) = 0 THEN 1000000 ELSE 2500 END;
 DECLARE @paging250  INT = CASE WHEN COALESCE(@usePaging, 0) = 0 THEN 1000000 ELSE 250  END;
 
 -- ---------------------------------------------------------------
@@ -145,7 +145,7 @@ BEGIN
     FROM HC.Hasher h WITH (INDEX(IX_AllSyncHashers))
     WHERE h.updatedAt > @ua
     ORDER BY h.updatedAt ASC, h.id ASC
-    OFFSET 0 ROWS FETCH NEXT @paging1000 ROWS ONLY;
+    OFFSET 0 ROWS FETCH NEXT @paging2500 ROWS ONLY;
 END
 
 -- ---------------------------------------------------------------

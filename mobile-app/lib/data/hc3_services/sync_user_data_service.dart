@@ -17,13 +17,13 @@ class SyncUserDataService {
   // static const int flagsAllData = 0x0003007f;
   // static const int flagAllDataWithoutHashersOrEvents = 0x0003001e;
 
-  static const int pageSize_hashersTable = 1000;
+  static const int pageSize_hashersTable = 2500;
   static const int pageSize_citiesTable = 250;
   static const int pageSize_regionsTable = 250;
   static const int pageSize_countriesTable = 250;
   static const int pageSize_songsTable = 250;
   static const int pageSize_kennelsTable = 250;
-  static const int pageSize_eventsTable = 50;
+  static const int pageSize_eventsTable = 250;
   static const int pageSize_hkmTable = 250;
   static const int pageSize_hemTable = 250;
 

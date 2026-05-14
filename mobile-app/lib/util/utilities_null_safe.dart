@@ -775,23 +775,9 @@ class Utilities {
   static Future<bool> checkHcServer() async {
     const Duration hcServerTimeout = Duration(milliseconds: 5000);
     try {
-      final String userId = getStringPref(StringPrefsEnum.userId) ?? GUID_EMPTY;
-      final String deviceId =
-          getStringPref(StringPrefsEnum.deviceId) ?? GUID_EMPTY;
-      final String deviceSecret =
-          getStringPref(StringPrefsEnum.deviceSecret) ??
-          'no_secret_required_here';
-
-      final String accessToken = Utilities.generateToken(
-        userId,
-        'hcapp_checkConnection',
-        paramString: deviceSecret,
-      );
-
+      // hcapp_checkConnection has no parameters — no auth required.
       final Map<String, String?> bodyMap = <String, String?>{
         'queryType': 'checkConnection',
-        'deviceId': deviceId,
-        'accessToken': accessToken,
       };
 
       final String body = jsonEncode(bodyMap);

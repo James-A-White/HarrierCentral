@@ -107,9 +107,8 @@ END
 -- ---------------------------------------------------------------
 -- Paging limits (0 = unlimited for write-SP delegation)
 -- ---------------------------------------------------------------
-DECLARE @paging1000 INT = CASE WHEN COALESCE(@usePaging, 0) = 0 THEN 1000000 ELSE 1000 END;
+DECLARE @paging2500 INT = CASE WHEN COALESCE(@usePaging, 0) = 0 THEN 1000000 ELSE 2500 END;
 DECLARE @paging250  INT = CASE WHEN COALESCE(@usePaging, 0) = 0 THEN 1000000 ELSE 250  END;
-DECLARE @paging50   INT = CASE WHEN COALESCE(@usePaging, 0) = 0 THEN 1000000 ELSE 50   END;
 
 -- ---------------------------------------------------------------
 -- Normalise watermarks
@@ -154,7 +153,7 @@ BEGIN
     FROM HC.Hasher h
     WHERE h.updatedAt > @ua
     ORDER BY h.updatedAt ASC, h.id ASC
-    OFFSET 0 ROWS FETCH NEXT @paging1000 ROWS ONLY;
+    OFFSET 0 ROWS FETCH NEXT @paging2500 ROWS ONLY;
 END
 
 -- ---------------------------------------------------------------
@@ -491,7 +490,7 @@ BEGIN
           OR evt.id IN (SELECT hem2.EventId FROM HC.HasherEventMap hem2 WHERE hem2.UserId = @userId AND hem2.AttendenceState >= 3)
       )
     ORDER BY evt.updatedAt ASC, evt.id ASC
-    OFFSET 0 ROWS FETCH NEXT @paging50 ROWS ONLY
+    OFFSET 0 ROWS FETCH NEXT @paging250 ROWS ONLY
     OPTION (RECOMPILE);
 END
 

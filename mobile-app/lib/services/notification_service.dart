@@ -55,15 +55,21 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   }
 
   Future<void> getEventChatMessageCounts() async {
-    final userId = getStringPref(StringPrefsEnum.userId);
-    if (userId == null || userId.isEmpty) {
+    final String? userId = getStringPref(StringPrefsEnum.userId);
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    if (!_hasCompleteAuthBundle(
+      userId: userId,
+      deviceId: deviceId,
+      deviceSecret: deviceSecret,
+    )) {
       return;
     }
-    String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-    String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
     final accessToken = Utilities.generateToken(
-      userId,
+      userId!,
       'hcapp_getEventBadgeCount',
       paramString: deviceSecret,
     );
@@ -166,7 +172,8 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
 
         if ((deviceId.isNotEmpty) &&
             (deviceSecret.isNotEmpty) &&
-            (userId.isNotEmpty)) {
+            (userId.isNotEmpty) &&
+            (userId != GUID_EMPTY)) {
           final String accessToken = Utilities.generateToken(
             userId,
             'hcapp_setFcmTokens',
@@ -446,9 +453,18 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     bool? resetBadgeCount,
     bool? resetAllBadgeCounts,
   }) async {
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
-    String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-    String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+    final String? userId = getStringPref(StringPrefsEnum.userId);
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    if (!_hasCompleteAuthBundle(
+      userId: userId,
+      deviceId: deviceId,
+      deviceSecret: deviceSecret,
+    )) {
+      return 0;
+    }
 
     var badgeCount = 0;
 
@@ -458,7 +474,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     // }
 
     final accessToken = Utilities.generateToken(
-      userId,
+      userId!,
       'hcapp_getEventBadgeCount',
       paramString: paramString,
     );
@@ -546,6 +562,21 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     if (kDebugMode) {
       print("Clearing native badge.");
     }
+  }
+
+  bool _hasCompleteAuthBundle({
+    required String? userId,
+    required String? deviceId,
+    required String? deviceSecret,
+  }) {
+    final String normalizedUserId = (userId ?? '').trim();
+    final String normalizedDeviceId = (deviceId ?? '').trim();
+    final String normalizedDeviceSecret = (deviceSecret ?? '').trim();
+
+    return normalizedUserId.isNotEmpty &&
+        normalizedUserId != GUID_EMPTY &&
+        normalizedDeviceId.isNotEmpty &&
+        normalizedDeviceSecret.isNotEmpty;
   }
 
   // --- Disposal ---

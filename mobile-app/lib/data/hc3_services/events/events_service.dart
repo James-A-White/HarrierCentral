@@ -447,19 +447,18 @@ class EventsService extends BaseService {
     final String responseBody = await ServiceCommon.sendHttpPost(body);
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
-      await tableModel.syncUserDataService
+      final List<dynamic> adHocData = await tableModel.syncUserDataService
           .updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
 
-      final dynamic responseJson = jsonDecode(responseBody);
-
-      if (responseJson.length > 0) {
-        if (responseJson[0].length > 0) {
-          eventId = responseJson[0][0]['eventId'];
+      if (adHocData.isNotEmpty) {
+        final String? returnedId = adHocData[0]['eventId'] as String?;
+        if (returnedId != null && returnedId.isNotEmpty) {
+          eventId = returnedId;
         }
       }
     }
 
-    return eventId!; // CHECK
+    return eventId ?? '';
   }
 
   // TODO: Re-implement email run details

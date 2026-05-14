@@ -42,9 +42,8 @@ class AppEntryPageState extends State<AppEntryPage>
         const AssetAvifImage('images/backgrounds/hash_foot_background.avif'),
         navigatorKey.currentState!.context,
       );
+      await _runBoot();
     });
-
-    unawaited(_runBoot());
   }
 
   @override

@@ -217,7 +217,7 @@ enum EdbStatus { uninitialized, opening, opened }
 class AppModel extends GetxService {
   AppModel();
   //StreamSubscription<Position>? geoLocationStream;
-  late DateTime appStartTime;
+  DateTime appStartTime = DateTime.now();
   EdbStatus dbStatus = EdbStatus.uninitialized;
 
   bool hasLocationPermissions = false;

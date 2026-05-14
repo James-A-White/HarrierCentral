@@ -458,6 +458,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
     final EventsService nSvc = EventsService();
     final String eventId = await nSvc.addEditEvent(
       eventId: _eventAggregate.event.eventId,
+      kennelId: _eventAggregate.event.kennelId,
       useFbRunDetails: 1,
     );
 
@@ -523,6 +524,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
         );
 
         _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+        setState(() {
+          _isUpdating = false;
+        });
       }
     } else {
       if ((_eventAggregate.event.eventId.isEmpty) ||
@@ -546,6 +550,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
           final EventsService nSvc = EventsService();
           final String eventId = await nSvc.addEditEvent(
             eventId: _eventAggregate.event.eventId,
+            kennelId: _eventAggregate.event.kennelId,
             locationStreet: _locationStreetController.text,
             locationCity: _locationCityController.text,
             locationRegion: _locationRegionController.text,
@@ -579,10 +584,13 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
           _otherDetailsFormKey.currentState!.save();
 
           FocusScope.of(context).unfocus();
-          _isUpdating = true;
+          setState(() {
+            _isUpdating = true;
+          });
           final EventsService nSvc = EventsService();
           final String eventId = await nSvc.addEditEvent(
             eventId: _eventAggregate.event.eventId,
+            kennelId: _eventAggregate.event.kennelId,
             eventPriceForMembers: _eventPriceForMembersController.text.isEmpty
                 ? -2
                 : double.tryParse(
@@ -1239,6 +1247,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       final EventsService nSvc = EventsService();
                       final String eventId = await nSvc.addEditEvent(
                         eventId: _eventAggregate.event.eventId,
+                        kennelId: _eventAggregate.event.kennelId,
                         eventImageUrl: BASE_EVENT_IMAGE_URL + fileName,
                         useFbImage: 0,
                       );
@@ -1317,6 +1326,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       final EventsService nSvc = EventsService();
                       final String eventId = await nSvc.addEditEvent(
                         eventId: _eventAggregate.event.eventId,
+                        kennelId: _eventAggregate.event.kennelId,
                         useFbImage: 1,
                       );
 
@@ -1838,6 +1848,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                 }
                                 final String eventId = await nSvc.addEditEvent(
                                   eventId: _eventAggregate.event.eventId,
+                                  kennelId: _eventAggregate.event.kennelId,
                                   lat: _mapCenter.latitude,
                                   lon: _mapCenter.longitude,
                                   useFbLatLon: 0,

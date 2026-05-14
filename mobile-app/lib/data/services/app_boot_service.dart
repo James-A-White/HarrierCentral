@@ -53,6 +53,7 @@ class AppBootService {
 
     final String? userId = await _resolveUserId();
     final String? deviceId = getStringPref(StringPrefsEnum.deviceId);
+    final String? deviceSecret = getStringPref(StringPrefsEnum.deviceSecret);
 
     await Utilities.checkForInternetConnection(false);
 
@@ -62,9 +63,58 @@ class AppBootService {
       return;
     }
 
+    // No registered device — skip approveLogin entirely and go to intro.
+    // approveLogin requires a valid deviceSecret; without one, the token is
+    // meaningless and the SP will reject the call.
+    if (deviceId == null || deviceId.isEmpty) {
+      await Navigator.of(
+        navigatorKey.currentContext!,
+      ).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
+      return;
+    }
+
+    // Device ID exists but the rest of the auth bundle is incomplete.
+    // This commonly happens on simulators with stale persisted prefs.
+    if (!_hasCompleteLocalAuthBundle(
+      userId: userId,
+      deviceId: deviceId,
+      deviceSecret: deviceSecret,
+    )) {
+      await _clearStaleDeviceAuthPrefs();
+      await Utilities.showAlert(
+        'Re-authorization Required',
+        'This device has stale or incomplete login credentials. Please re-authorise to continue.',
+        'Continue',
+      );
+      await Navigator.of(
+        navigatorKey.currentContext!,
+      ).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
+      return;
+    }
+
     await _prepareDeviceContext();
 
-    final ApproveLoginModel? loginResult = await _fetchLoginResult();
+    bool reauthorizationHandled = false;
+    final ApproveLoginModel? loginResult = await _fetchLoginResult(
+      errorCallback: (DbErrorModel error) async {
+        if (_isReauthorizationError(error)) {
+          reauthorizationHandled = true;
+          await _clearStaleDeviceAuthPrefs();
+          await Utilities.showAlert(
+            'Re-authorization Required',
+            'Your device authorization has expired or become invalid.\r\n\r\nPlease scan your QR code or enter your Reset Code to restore access.',
+            'Continue',
+          );
+          await Navigator.of(
+            navigatorKey.currentContext!,
+          ).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
+          return true;
+        }
+        return false;
+      },
+    );
+
+    if (reauthorizationHandled) return;
 
     if (loginResult == null) {
       await _handleNoConnection(userId);
@@ -95,6 +145,16 @@ class AppBootService {
 
     Get.reset();
     await clearPrefs();
+    await DBProvider.deleteDb(DB_NAME);
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    // Second reset clears runtime state from the GetMaterialApp we are
+    // about to destroy. Credentials are restored AFTER initPrefs so
+    // GetStorage is fully re-initialised from disk before we write to it —
+    // restoring before this point risks the write being lost if GetStorage's
+    // in-memory state is cleared by the reset.
+    Get.reset();
+    await initPrefs();
 
     for (final entry in strings.entries) {
       await setStringPref(entry.key, entry.value);
@@ -106,13 +166,6 @@ class AppBootService {
       await setDatePref(entry.key, entry.value);
     }
 
-    await DBProvider.deleteDb(DB_NAME);
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    // Second Get.reset() clears the state that belonged to the GetMaterialApp
-    // we are about to destroy, then we re-register everything fresh.
-    Get.reset();
-    await initPrefs();
     await initServices();
     restartKey.currentState?.restartApp();
   }
@@ -134,8 +187,7 @@ class AppBootService {
   /// No API response — show a network error for first-time users (who have no
   /// cached data), or silently continue in offline mode for returning users.
   Future<void> _handleNoConnection(String? userId) async {
-    final bool hasAccount =
-        (userId ?? '').isNotEmpty && userId != GUID_EMPTY;
+    final bool hasAccount = (userId ?? '').isNotEmpty && userId != GUID_EMPTY;
 
     if (!hasAccount) {
       await Utilities.showAlert(
@@ -154,8 +206,7 @@ class AppBootService {
     String? userId,
     ApproveLoginModel loginResult,
   ) async {
-    if (loginResult.serverStatusCode ==
-        serverStatusDownForMaintenance.value) {
+    if (loginResult.serverStatusCode == serverStatusDownForMaintenance.value) {
       await Utilities.showAlert(
         'Down for Maintenance',
         'Harrier Central is temporarily offline for maintenance.\r\n\r\nYou can continue using the app in Offline Mode with cached data.',
@@ -182,8 +233,7 @@ class AppBootService {
     // SQL Server returns UNIQUEIDENTIFIER as uppercase; toLowerCase() normalises
     // before comparison. Replace with normalizeUuid() once uuid_utils.dart exists.
     final String normalizedId = (userId ?? GUID_EMPTY).toLowerCase();
-    final bool isFirstRun =
-        normalizedId.isEmpty || normalizedId == GUID_EMPTY;
+    final bool isFirstRun = normalizedId.isEmpty || normalizedId == GUID_EMPTY;
 
     if (isFirstRun) {
       await Navigator.of(
@@ -222,8 +272,7 @@ class AppBootService {
       await setStringPref(StringPrefsEnum.bootType, BOOT_TYPE_UPGRADE_DB);
     }
 
-    final String resetCode =
-        getStringPref(StringPrefsEnum.resetCode) ?? '';
+    final String resetCode = getStringPref(StringPrefsEnum.resetCode) ?? '';
     if (resetCode.isEmpty) {
       // No reset code — can't re-authorise. Boot offline so the user can
       // recover via their profile page.
@@ -283,8 +332,7 @@ class AppBootService {
         'This device is not authorised to access Harrier Central. Please scan your QR code to re-authorise.',
         'Continue',
       );
-    } else if (approvalCode ==
-        loginApprovalUserAccountDoesNotExist.value) {
+    } else if (approvalCode == loginApprovalUserAccountDoesNotExist.value) {
       await Utilities.showAlert(
         'Account Not Found',
         'Your Harrier Central account could not be found. Please contact your Kennel administrator.',
@@ -345,16 +393,21 @@ class AppBootService {
   }
 
   /// Call the login API and return the parsed model, or null if offline / error.
-  Future<ApproveLoginModel?> _fetchLoginResult() async {
+  Future<ApproveLoginModel?> _fetchLoginResult({
+    Function? errorCallback,
+  }) async {
     if (!Utilities.isConnected()) return null;
 
     final ApproveLoginService svc = ApproveLoginService();
-    final String responseBody = await svc.approveLogin();
+    final String responseBody = await svc.approveLogin(
+      errorCallback: errorCallback,
+    );
 
     // approveLogin shows an error dialog and returns ERROR_KEY_OK_BTN_PRESSED
-    // when the server returns a hard error the user acknowledged — treat as fatal.
+    // when the server returns a hard error the user acknowledged.
+    // Do not force-quit here; let boot choose a safe fallback route.
     if (responseBody == ERROR_KEY_OK_BTN_PRESSED) {
-      exit(0);
+      return null;
     }
 
     if (responseBody.startsWith(ERROR_PREFIX) || responseBody.isEmpty) {
@@ -369,9 +422,7 @@ class AppBootService {
     final List<dynamic> loginRowset = responseJson[1] as List<dynamic>;
     if (loginRowset.isEmpty) return null;
 
-    return ApproveLoginModel.fromJson(
-      loginRowset[0] as Map<String, dynamic>,
-    );
+    return ApproveLoginModel.fromJson(loginRowset[0] as Map<String, dynamic>);
   }
 
   /// Persist the fields from the login result that need to survive restarts.
@@ -408,5 +459,55 @@ class AppBootService {
         'OK, Got it!',
       );
     }
+  }
+
+  bool _hasCompleteLocalAuthBundle({
+    required String? userId,
+    required String? deviceId,
+    required String? deviceSecret,
+  }) {
+    final String normalizedUserId = (userId ?? '').trim();
+    final String normalizedDeviceId = (deviceId ?? '').trim();
+    final String normalizedDeviceSecret = (deviceSecret ?? '').trim();
+
+    return normalizedUserId.isNotEmpty &&
+        normalizedUserId != GUID_EMPTY &&
+        normalizedDeviceId.isNotEmpty &&
+        normalizedDeviceSecret.isNotEmpty;
+  }
+
+  bool _isReauthorizationError(DbErrorModel error) {
+    if (error.errorType == 11) {
+      return true;
+    }
+
+    final String title = (error.errorTitle ?? '').toLowerCase();
+    final String message = (error.errorUserMessage ?? '').toLowerCase();
+    final String debug = (error.debugMessage ?? '').toLowerCase();
+
+    final bool tokenMentioned =
+        title.contains('access token') ||
+        message.contains('access token') ||
+        debug.contains('access token');
+    final bool invalidOrExpired =
+        title.contains('invalid') ||
+        message.contains('invalid') ||
+        debug.contains('invalid') ||
+        title.contains('expired') ||
+        message.contains('expired') ||
+        debug.contains('expired');
+
+    return tokenMentioned && invalidOrExpired;
+  }
+
+  Future<void> _clearStaleDeviceAuthPrefs() async {
+    await removePref(StringPrefsEnum.deviceId);
+    await removePref(StringPrefsEnum.deviceSecret);
+    await removePref(IntPrefsEnum.timeWindow);
+    await removePref(StringPrefsEnum.thirdPartyAccessToken);
+    await removePref(StringPrefsEnum.thirdPartyAuthorizationCode);
+    await removePref(StringPrefsEnum.thirdPartyForceTokenRefresh);
+    await removePref(DatePrefsEnum.thirdPartyTokenLastUpdated);
+    await removePref(DatePrefsEnum.thirdPartyTokenExpires);
   }
 }

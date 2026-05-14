@@ -40,9 +40,7 @@ class SnoozePromotionService {
     SingleResultModel? result;
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
-      json.decode(responseBody).forEach((dynamic item) {
-        result = SingleResultModel(result: item[0]['result']);
-      });
+      result = SingleResultModel(result: 'success');
     }
 
     return result;

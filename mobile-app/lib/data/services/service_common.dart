@@ -100,14 +100,10 @@ class ServiceCommon {
       }
 
       if (isLastAttempt) {
-        Get.closeAllSnackbars();
-        Get.showSnackbar(
-          GetSnackBar(
-            title: 'Connection Issue',
-            message: 'Unable to connect. Please check your connection.',
-            duration: const Duration(seconds: 5),
-            backgroundColor: hc_red,
-          ),
+        _showSnackbarSafely(
+          title: 'Connection Issue',
+          message: 'Unable to connect. Please check your connection.',
+          backgroundColor: hc_red,
         );
 
         return checkHttpPostResponse(
@@ -126,14 +122,11 @@ class ServiceCommon {
       );
 
       if (attempt == 3) {
-        Get.closeAllSnackbars();
-        Get.showSnackbar(
-          GetSnackBar(
-            title: 'Reconnecting',
-            message: 'Experiencing connection issues, retrying…',
-            duration: const Duration(seconds: 4),
-            backgroundColor: hc_blue,
-          ),
+        _showSnackbarSafely(
+          title: 'Reconnecting',
+          message: 'Experiencing connection issues, retrying…',
+          backgroundColor: hc_blue,
+          duration: const Duration(seconds: 4),
         );
       }
 
@@ -188,6 +181,41 @@ class ServiceCommon {
         0.25 + (_retryRandom.nextDouble() * 1.5); // 25%-175% => 75% jitter band
     final int delayMs = (baseMs * jitterFactor).round();
     return Duration(milliseconds: delayMs);
+  }
+
+  static BuildContext? _snackbarContext() {
+    return Get.context ?? Get.overlayContext ?? Get.key.currentContext;
+  }
+
+  static void _showSnackbarSafely({
+    required String title,
+    required String message,
+    required Color backgroundColor,
+    Duration duration = const Duration(seconds: 5),
+  }) {
+    void show() {
+      Get.closeAllSnackbars();
+      Get.showSnackbar(
+        GetSnackBar(
+          title: title,
+          message: message,
+          duration: duration,
+          backgroundColor: backgroundColor,
+        ),
+      );
+    }
+
+    if (_snackbarContext() != null) {
+      show();
+      return;
+    }
+
+    // During bootstrap there may be no GetX context yet; retry next frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_snackbarContext() != null) {
+        show();
+      }
+    });
   }
 
   // ── Migration note ────────────────────────────────────────────────────────
@@ -246,15 +274,10 @@ class ServiceCommon {
             ),
           );
 
-          Get.closeAllSnackbars();
-
-          Get.showSnackbar(
-            GetSnackBar(
-              title: 'Unknown Server Error',
-              message: response.reasonPhrase ?? ' - ${response.body}',
-              duration: const Duration(seconds: 5),
-              backgroundColor: hc_blue,
-            ),
+          _showSnackbarSafely(
+            title: 'Unknown Server Error',
+            message: response.reasonPhrase ?? ' - ${response.body}',
+            backgroundColor: hc_blue,
           );
         }
         // await Utilities.showAlert(
@@ -276,14 +299,18 @@ class ServiceCommon {
       // Guard against empty arrays before indexing to avoid RangeError.
       final dynamic decoded = json.decode(response.body);
       final rowsets = decoded as List<dynamic>;
-      final firstRowset = rowsets.isNotEmpty ? (rowsets[0] as List<dynamic>) : <dynamic>[];
+      final firstRowset = rowsets.isNotEmpty
+          ? (rowsets[0] as List<dynamic>)
+          : <dynamic>[];
       final Map<String, dynamic> firstRow = firstRowset.isNotEmpty
           ? (firstRowset[0] as Map<String, dynamic>)
           : <String, dynamic>{};
       // HC6 write SPs return a success envelope at rowset 0 {success, errorCode, errorType}.
       // The human-readable error detail is at rowset 1. Detect this and redirect.
       Map<String, dynamic> errorRow = firstRow;
-      if (firstRow.containsKey('success') && firstRow['success'] == 0 && rowsets.length > 1) {
+      if (firstRow.containsKey('success') &&
+          firstRow['success'] == 0 &&
+          rowsets.length > 1) {
         final secondRowset = rowsets[1] as List<dynamic>;
         if (secondRowset.isNotEmpty) {
           errorRow = secondRowset[0] as Map<String, dynamic>;
