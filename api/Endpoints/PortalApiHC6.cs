@@ -152,13 +152,38 @@ namespace HcWebApi.Endpoints
                         break;
                 }
 
-                return new OkObjectResult(multipleResults);
+                return CompressedJson(req, multipleResults);
             }
             catch (Exception ex)
             {
                 log.LogError($"Error executing stored procedure: {ex.Message}");
                 return new BadRequestObjectResult($"Error executing stored procedure: {ex.Message}");
             }
+        }
+
+        private static IActionResult CompressedJson(HttpRequest req, object data)
+        {
+            var json = JsonConvert.SerializeObject(data);
+            var bytes = Encoding.UTF8.GetBytes(json);
+            var acceptEncoding = req.Headers["Accept-Encoding"].ToString();
+
+            if (acceptEncoding.Contains("br", StringComparison.OrdinalIgnoreCase))
+            {
+                using var ms = new System.IO.MemoryStream();
+                using (var br = new System.IO.Compression.BrotliStream(ms, System.IO.Compression.CompressionLevel.Fastest))
+                    br.Write(bytes);
+                req.HttpContext.Response.Headers.Append("Content-Encoding", "br");
+                return new FileContentResult(ms.ToArray(), "application/json");
+            }
+            if (acceptEncoding.Contains("gzip", StringComparison.OrdinalIgnoreCase))
+            {
+                using var ms = new System.IO.MemoryStream();
+                using (var gz = new System.IO.Compression.GZipStream(ms, System.IO.Compression.CompressionLevel.Fastest))
+                    gz.Write(bytes);
+                req.HttpContext.Response.Headers.Append("Content-Encoding", "gzip");
+                return new FileContentResult(ms.ToArray(), "application/json");
+            }
+            return new OkObjectResult(data);
         }
 
         private async Task LogRequestAsync(string connectionString, string spName, HttpRequest req)
