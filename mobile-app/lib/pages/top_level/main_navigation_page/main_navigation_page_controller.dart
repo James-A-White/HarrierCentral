@@ -413,7 +413,7 @@ class MainNavigationController extends GetxController
     _screen = Screen();
     try {
       _screenWatcherSub = _screen?.screenStateStream.listen((event) async {
-        if (event == ScreenStateEvent.SCREEN_UNLOCKED) {
+        if (event == ScreenStateEvent.screenUnlocked) {
           if (appModel.hasLocationPermissions) await _checkAreWeAtRunStart();
         }
       });

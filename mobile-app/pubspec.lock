@@ -1004,10 +1004,10 @@ packages:
     dependency: "direct main"
     description:
       name: image_cropper
-      sha256: "46c8f9aae51c8350b2a2982462f85a129e77b04675d35b09db5499437d7a996b"
+      sha256: "95782c9068ff09b95a5ece6a2b5fb31b18d8e544d79ebfa7bdafc08df39b3440"
       url: "https://pub.dev"
     source: hosted
-    version: "11.0.0"
+    version: "12.2.1"
   image_cropper_for_web:
     dependency: transitive
     description:
@@ -1092,10 +1092,10 @@ packages:
     dependency: "direct main"
     description:
       name: internet_connection_checker_plus
-      sha256: ef43530f24de6309f99802358f8a543ea1f2babc153effc84a75133751716892
+      sha256: "64d938ddd9638ceef31aa3db84191c3fada44d3c7c8a1132662feedb852f951e"
       url: "https://pub.dev"
     source: hosted
-    version: "2.9.1+2"
+    version: "3.0.0"
   intl:
     dependency: "direct main"
     description:
@@ -1647,10 +1647,10 @@ packages:
     dependency: "direct main"
     description:
       name: screen_state
-      sha256: de85988dc39f03ab1a8bdadfdd4b0592d71842c161b065a6660dad62d4e42385
+      sha256: "64a4583456f9fa91a8d4c681864384513b65590b0bc18fbc4b74c519c4b66c75"
       url: "https://pub.dev"
     source: hosted
-    version: "4.1.1"
+    version: "5.0.0"
   scroll_to_index:
     dependency: transitive
     description:
@@ -1751,10 +1751,10 @@ packages:
     dependency: "direct main"
     description:
       name: sign_in_with_apple
-      sha256: "8bd875c8e8748272749eb6d25b896f768e7e9d60988446d543fe85a37a2392b8"
+      sha256: "5568378c3cc5993931955357d85e4c3344fa4365006915bdef965fa3de1dc0a5"
       url: "https://pub.dev"
     source: hosted
-    version: "7.0.1"
+    version: "8.0.0"
   sign_in_with_apple_platform_interface:
     dependency: transitive
     description:

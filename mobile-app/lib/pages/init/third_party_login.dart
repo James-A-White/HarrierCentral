@@ -13,7 +13,6 @@ class ThirdPartyLogin extends StatefulWidget {
 class LoginPageState extends State<ThirdPartyLogin> {
   bool _isLoggedIn = false;
   ThirdPartyLoginData? _profileData;
-  //String facebookAccessToken;
 
   // bool _includeInGlobalHashDirectory = true;
 
@@ -54,15 +53,6 @@ class LoginPageState extends State<ThirdPartyLogin> {
         backgroundColor: themeAppBarBackground,
         iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
         title: Text('3rd Party Login', style: ts_appBarTitle),
-        // actions: <Widget>[
-        //   IconButton(
-        //     icon: const Icon(
-        //       Icons.exit_to_app,
-        //       color: Colors.white,
-        //     ),
-        //     onPressed: () => facebookLogin.isLoggedIn.then<dynamic>((bool isLoggedIn) => isLoggedIn ? _logout() : null),
-        //   ),
-        // ],
       ),
       resizeToAvoidBottomInset: true,
       body: Container(
@@ -79,22 +69,6 @@ class LoginPageState extends State<ThirdPartyLogin> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    // GestureDetector(
-                    //   onTap: () {
-                    //     //_facebookLogin();
-                    //   },
-                    //   child: const Padding(
-                    //     padding: EdgeInsets.symmetric(
-                    //         horizontal: 0.0, vertical: 20.0),
-                    //     child: Image(
-                    //       height: 60,
-                    //       fit: BoxFit.fitWidth,
-                    //       image:
-                    //           AssetImage('images/init/facebook_login.png'),
-                    //     ),
-                    //   ),
-                    // ),
-                    // only show Apple login on iOS devices
                     if (!Platform.isIOS) ...<Widget>[
                       Padding(
                         padding: EdgeInsets.symmetric(
@@ -234,69 +208,6 @@ class LoginPageState extends State<ThirdPartyLogin> {
     // Now send the credential (especially `credential.authorizationCode`) to your server to create a session
     // after they have been validated with Apple (see `Integration` section for more information on how to do this)
   }
-
-  // Future<void> _facebookLogin() async {
-  //   // by default the login method has the next permissions ['email','public_profile']
-  //   final LoginResult loginResult = await FacebookAuth.instance.login();
-  //   if (loginResult.status == LoginStatus.success) {
-  //     final AccessToken accessToken = loginResult.accessToken!;
-
-  //     // get the user data
-  //     final Map<String, dynamic> userData = await FacebookAuth.instance.getUserData(fields: 'name,picture.width(1000),email,birthday,gender,link,first_name,last_name');
-
-  //     // await setStringPref(StringPrefsEnum.facebookId, userData['id']);
-  //     // await setStringPref(StringPrefsEnum.facebookAccessToken, accessToken.tokenString);
-  //     // await setStringPref(StringPrefsEnum.facebookEmail, userData['email']);
-  //     await setDatePref(DatePrefsEnum.lastFbTokenUpdate, DateTime.now());
-  //     await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime(2020));
-
-  //     await setStringPref(StringPrefsEnum.thirdPartyAuthorizationCode, ''); // facebook does not have an auth code
-  //     await setStringPref(StringPrefsEnum.thirdPartyAccessToken, accessToken.tokenString);
-  //     await setStringPref(StringPrefsEnum.thirdPartyUserId, userData['id']);
-  //     await setStringPref(StringPrefsEnum.thirdPartyLoginType, ThirdPartyLoginType.facebook.name);
-  //     await setStringPref(StringPrefsEnum.thirdPartyEmail, (userData['email'] ?? '').toString());
-
-  //     await setDatePref(DatePrefsEnum.thirdPartyTokenLastUpdated, DateTime.now());
-  //     // TODO: Fix this eventually (maybe?)
-  //     await setDatePref(DatePrefsEnum.thirdPartyTokenExpires, DateTime(2030));
-
-  //     final ThirdPartyLoginData d = ThirdPartyLoginData(
-  //       ThirdPartyLoginType.facebook.name,
-  //       accessToken.tokenString,
-  //       userData['id'],
-  //       userData['first_name'],
-  //       userData['last_name'],
-  //       photoUrl: userData['picture']['data']['url'],
-  //       accessTokenExpires: DateTime(2030),
-  //       thirdPartyEmail: userData['email'],
-  //     );
-
-  //     if (widget.isNewUser) {
-  //       _emailTextController.value = TextEditingValue(text: (userData['email'] ?? '').toString());
-  //     }
-
-  //     _onLoginStatusChanged(true, loginData: d);
-  //   } else {
-  //     switch (loginResult.status) {
-  //       case LoginStatus.cancelled:
-  //         await setDatePref(DatePrefsEnum.fbLoginCancelled, DateTime.now());
-  //         _onLoginStatusChanged(false);
-  //         break;
-  //       case LoginStatus.failed:
-  //         //print('login failed');
-  //         _onLoginStatusChanged(false);
-  //         break;
-  //       case LoginStatus.operationInProgress:
-  //         //print('another operation is already in progress');
-  //         _onLoginStatusChanged(false);
-  //         break;
-  //       default:
-  //         //print('Unknown Facebook login error');
-  //         _onLoginStatusChanged(false);
-  //         break;
-  //     }
-  //   }
-  // }
 
   Widget _displayUserData(ThirdPartyLoginData? profileData) {
     if (profileData == null) {
@@ -526,15 +437,6 @@ class LoginPageState extends State<ThirdPartyLogin> {
                     await setStringPref(
                       StringPrefsEnum.thirdPartyLoginType,
                       thirdPartyLoginType,
-                    );
-
-                    // await setStringPref(StringPrefsEnum.facebookId, thirdPartyLoginType == 'facebook' ? result[0]['thirdPartyUserId'] : '');
-                    // await setStringPref(StringPrefsEnum.facebookAccessToken, thirdPartyLoginType == 'facebook' ? result[0]['thirdPartyAccessToken'] : '');
-                    await setStringPref(
-                      StringPrefsEnum.facebookProfilePhoto,
-                      thirdPartyLoginType == ThirdPartyLoginType.facebook.name
-                          ? result[0]['photo']
-                          : '',
                     );
 
                     await setStringPref(

@@ -132,6 +132,7 @@ const String BASE_NEW_VERSION_IMAGES_URL =
 
 // ── Storage / blob URLs ────────────────────────────────────────────────────
 
+const String IPINFO_API_TOKEN = '1c7e5ada20ad08';
 const String GOOGLE_API_KEY = 'AIzaSyAiJXV8P99FwXq2FtYby7To80e9SBTrV2c';
 
 const String NOTIFICATION_PREFIX_EVENT_UPDATE = 'evtUpdate_';

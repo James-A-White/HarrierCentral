@@ -287,6 +287,10 @@ class SyncUserDataService {
               'XXXXXXX Server error processing response in SyncUserDataService updateFromBackend XXXXXXXX',
             );
           }
+          // A server error means there are no results to page through.
+          // Without this break, tablesToSync stays non-zero and the while loop
+          // retries the same failing request forever — causing the app to hang.
+          break;
         }
 
         //print('http response processed: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');

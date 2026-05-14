@@ -21,14 +21,7 @@ class ChooseProfileImage extends StatefulWidget {
   ChooseProfileImageState createState() => ChooseProfileImageState();
 }
 
-enum SelectedImageTypeEnum {
-  none,
-  avatar,
-  fromCamera,
-  fromGallery,
-  fromFacebook,
-  fromNetwork,
-}
+enum SelectedImageTypeEnum { none, avatar, fromCamera, fromGallery, fromNetwork }
 
 class ChooseProfileImageState extends State<ChooseProfileImage> {
   SelectedImageTypeEnum _imageTypeSelection = SelectedImageTypeEnum.none;
@@ -37,10 +30,6 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
 
   final double _thumbnailSize = 50.0;
   final double _uploadingImageSize = 180.0;
-
-  final String? _facebookProfileUrl = getStringPref(
-    StringPrefsEnum.facebookProfilePhoto,
-  );
 
   int _selectedAvatarIcon = 1;
 
@@ -51,36 +40,12 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
 
   Future<File>? _imageFromCamera;
   Future<File>? _imageFromGallery;
-  Future<File>? _imageFromFacebook;
-
-  CachedNetworkImage? _facebookProfileImage;
 
   bool _isIos = false;
 
   @override
   void initState() {
     super.initState();
-
-    if ((_facebookProfileImage == null) &&
-        widget.isForThisDevice &&
-        ((_facebookProfileUrl ?? '').isNotEmpty)) {
-      _facebookProfileImage = CachedNetworkImage(
-        imageUrl: _facebookProfileUrl!,
-        //placeholder: HcAppCircularProgressIndicator(key: Key('yyyyyyy')),
-        //errorWidget: const  Icon(Icons.error),
-        // placeholder: (BuildContext context, String url) =>
-        //     HcAppCircularProgressIndicator(key: Key('yyyyyyy')),
-        // errorWidget: (BuildContext context, String url, Exception error) =>
-        //     const  Icon(Icons.error),
-        //fadeOutDuration:  Duration(seconds: 1),
-        fadeInDuration: const Duration(milliseconds: 0),
-        width: _thumbnailSize,
-        height: _thumbnailSize,
-        fit: BoxFit.fill,
-      );
-
-      _imageTypeSelection = SelectedImageTypeEnum.fromFacebook;
-    }
 
     if (widget.currentProfileImage == null) {
       _imageTypeSelection = SelectedImageTypeEnum.none;
@@ -117,7 +82,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
         color: disabled == true ? Colors.grey[500] : Colors.yellow[100],
         border: Border.all(
           color: hc_red,
-          width: 2, //                   <--- border width here
+          width: 2,
         ),
       ),
       child: GestureDetector(
@@ -176,7 +141,6 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
         title: Text('Choose Profile Image', style: ts_appBarTitle),
       ),
       body: Container(
-        //height: MediaQuery.of(context).size.height-200,
         width: MediaQuery.of(context).size.width,
         decoration: Backgrounds.defaultHcBackground(),
         child: Container(
@@ -184,7 +148,6 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
               ? _buildProgressIndicator()
               : Stack(
                   fit: StackFit.expand,
-                  //overflow: Overflow.visible,
                   alignment: AlignmentDirectional.center,
                   children: <Widget>[
                     SizedBox(
@@ -268,7 +231,6 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
                       right: 30,
                       child: Stack(
                         fit: StackFit.loose,
-                        //clipBehavior: Clip.hardEdge,
                         alignment: AlignmentDirectional.center,
                         children: <Widget>[
                           Container(
@@ -283,24 +245,12 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
                           (_imageTypeSelection == SelectedImageTypeEnum.none)
                               ? Container(
                                   margin: const EdgeInsets.all(6.0),
-                                  // Positioned(
-                                  // left: 30,
-                                  // right: 30,
-                                  // child:
                                   child: Image.asset(
                                     'images/icons/create_profile_photo.png',
                                   ),
                                 )
-                              //,
-                              // )
                               : Container(
                                   margin: const EdgeInsets.all(6.0),
-                                  // height: 400,
-                                  // width: 400,
-                                  // Positioned(
-                                  // left: 30,
-                                  // right: 30,
-                                  // child:
                                   child: _getPreviewImage(),
                                 ),
                         ],
@@ -317,7 +267,6 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
                               ? Colors.grey
                               : hc_red,
                         ),
-                        //color: imageTypeSelection == _SelectedImageTypeEnum.none ? Colors.grey : Theme.of(context).accentColor,
                         child: Text('Next', style: ts_button),
                         onPressed: () async {
                           if (_imageTypeSelection !=
@@ -327,8 +276,6 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
                         },
                       ),
                     ),
-
-                    //),
                   ],
                 ),
         ),
@@ -368,8 +315,6 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
   }
 
   Future<void> _processAndContinue() async {
-    // in order to keep our UI fluid, pay close attention to
-    // how the async stuff is handled here...
     setState(() {
       _showCircularProgressIndicator = true;
     });
@@ -401,7 +346,6 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
         break;
       case SelectedImageTypeEnum.fromCamera:
       case SelectedImageTypeEnum.fromGallery:
-      case SelectedImageTypeEnum.fromFacebook:
         profileImageUrl = BASE_PROFILE_PHOTOS_URL + fileName;
         break;
       case SelectedImageTypeEnum.fromNetwork:
@@ -417,9 +361,6 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
         await _upload(file, fileName);
       } else if (_imageTypeSelection == SelectedImageTypeEnum.fromGallery) {
         final File? file = await _imageFromGallery;
-        await _upload(file, fileName);
-      } else if (_imageTypeSelection == SelectedImageTypeEnum.fromFacebook) {
-        final File? file = await _imageFromFacebook;
         await _upload(file, fileName);
       }
 
@@ -453,14 +394,6 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
       }
 
       await Get.off(() => MainNavigationPage(), routeName: '/main');
-
-      // if (!mounted) return;
-      // await Navigator.pushReplacement<dynamic, dynamic>(
-      //   context,
-      //   MaterialPageRoute<dynamic>(
-      //     builder: (BuildContext context) => const MainNavigationPage(),
-      //   ),
-      // );
     }
   }
 
@@ -480,9 +413,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
       request.headers.addAll(headers);
 
       request.bodyBytes = imageFile.readAsBytesSync();
-      await request.send().then((StreamedResponse response) {
-        //print('Avatar thumbnail upload response = ${response.statusCode}');
-      });
+      await request.send().then((StreamedResponse response) {});
 
       return uri.toString();
     }
@@ -499,24 +430,9 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
           'images/avatars/avatar-$_selectedAvatarIcon.jpg',
           fit: BoxFit.fill,
         );
-        // if (_selectedAvatarIcon != null) {
-        //   returnWidget = Image.asset('images/avatars/avatar-$_selectedAvatarIcon.jpg', fit: BoxFit.fill);
-        // } else if ((widget.currentProfileImage != null) && (widget.currentProfileImage.startsWith('bundle://'))) {
-        //   final String avatarPath = 'images/avatars/${widget.currentProfileImage.replaceAll('bundle://', '')}.jpg';
-        //   returnWidget = Image.asset(avatarPath, fit: BoxFit.fill);
-        // }
         break;
       case SelectedImageTypeEnum.fromCamera:
-        returnWidget = _previewImage();
-        break;
       case SelectedImageTypeEnum.fromGallery:
-        returnWidget = _previewImage();
-        break;
-      case SelectedImageTypeEnum.fromFacebook:
-        // returnWidget = Container(
-        //   constraints: const BoxConstraints(),
-        //   child: FittedBox(child: _facebookProfileImage, fit: BoxFit.contain),
-        // );
         returnWidget = _previewImage();
         break;
 
@@ -543,8 +459,6 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
           )
         : CachedNetworkImage(
             imageUrl: url,
-            //errorWidget: (BuildContext context,String url,Exception error) => const  Icon(Icons.error),
-            //errorWidget:  const  Icon(Icons.error),
             fadeInDuration: const Duration(milliseconds: 0),
           );
   }
@@ -594,7 +508,6 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
         }
         break;
       default:
-        await _getImageFromCameraOrGallery(ImageSource.gallery);
         break;
     }
     setState(() {});
@@ -619,9 +532,6 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
         compressQuality: 50,
       );
 
-      // final Uint8List bytes = await croppedFile.readAsBytes();
-      // final File file = File.fromRawPath(bytes);
-
       if (croppedFile != null) {
         setState(() {
           if (_imageTypeSelection == SelectedImageTypeEnum.fromCamera) {
@@ -634,43 +544,10 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
     }
   }
 
-  // void _getImageFromCameraOrGallery(ImageSource source) {
-  //   setState(() {
-  //     ImagePicker().pickImage(source: source).then((XFile image) {
-  //       setState(() {
-  //         if (image == null) {
-  //           setState(() {
-  //             _selectedRadioValue = _previouslySelectedRadioValue;
-  //             _imageTypeSelection = _previousImageTypeSelection;
-  //           });
-  //         } else {
-  //           final ImageCropper ic = ImageCropper();
-  //           final Future<File> img = ic.cropImage(
-  //               sourcePath: image.path,
-  //               aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
-  //               aspectRatioPresets: <CropAspectRatioPreset>[CropAspectRatioPreset.square],
-  //               maxWidth: 300,
-  //               maxHeight: 300,
-  //               compressFormat: ImageCompressFormat.jpg,
-  //               compressQuality: 50);
-
-  //           if (_imageTypeSelection == SelectedImageTypeEnum.fromCamera) {
-  //             _imageFromCamera = img;
-  //           } else {
-  //             _imageFromGallery = img;
-  //           }
-  //         }
-  //       });
-  //     });
-  //   });
-  // }
-
   Widget _previewImage() {
     return FutureBuilder<File>(
-      future: (_imageTypeSelection == SelectedImageTypeEnum.fromCamera)
+      future: _imageTypeSelection == SelectedImageTypeEnum.fromCamera
           ? _imageFromCamera
-          : (_imageTypeSelection == SelectedImageTypeEnum.fromFacebook)
-          ? _imageFromFacebook
           : _imageFromGallery,
       builder: (BuildContext context, AsyncSnapshot<File> snapshot) {
         if (snapshot.connectionState == ConnectionState.done &&
@@ -682,11 +559,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
             textAlign: TextAlign.center,
           );
         } else {
-          return Image.asset(
-            'images/icons/create_profile_photo.png',
-            // height: 100,
-            // width: 100,
-          );
+          return Image.asset('images/icons/create_profile_photo.png');
         }
       },
     );

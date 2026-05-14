@@ -81,6 +81,7 @@ export 'package:harrier_central/data/models/single_result/single_result_model.da
 export 'package:harrier_central/data/models/user_event_location/user_event_location.dart';
 export 'package:harrier_central/data/models/user_positions/user_positions.dart';
 export 'package:harrier_central/data/models/user_run_history/user_run_history_model.dart';
+export 'package:harrier_central/data/services/app_boot_service.dart';
 export 'package:harrier_central/data/services/approve_login_service.dart';
 export 'package:harrier_central/data/services/authenticate_web_portal_service.dart';
 export 'package:harrier_central/data/services/authorize_device_service.dart';

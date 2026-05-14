@@ -39,8 +39,8 @@ class AuthorizeDeviceService {
       );
     }
 
-    var deviceIdUuid = Uuid();
-    String deviceId = deviceIdUuid.v4(); // Generate a random GUID
+    final deviceIdUuid = Uuid();
+    final String deviceId = deviceIdUuid.v4();
 
     Map<String, String> params = (<String, String>{
       'queryType': 'authorizeDevice',
@@ -111,7 +111,7 @@ class AuthorizeDeviceService {
             items['displayName'],
           );
           await setStringPref(StringPrefsEnum.email, items['email']);
-          //await setStringPref(StringPrefsEnum.facebookId, items['facebookId']);
+
           await setStringPref(StringPrefsEnum.firstName, items['firstName']);
           await setStringPref(StringPrefsEnum.hashName, items['hashName']);
           await setStringPref(StringPrefsEnum.lastName, items['lastName']);

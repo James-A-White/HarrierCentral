@@ -1,3 +1,18 @@
+2.2.9+1103
+    • Fixed hang on startup — sync paging loop no longer retries forever on a
+      transient server error; was most visible as a freeze just after "Loading Hashers"
+    • Fixed double DB write in processThirdPartyLogin — error responses were being
+      passed to the JSON parser on the second (unconditional) sync call
+    • Boot flow refactored into AppBootService — all startup paths now clearly
+      separated and named; server-down, login-disapproved, and DB upgrade failures
+      now show proper user-facing messages instead of silently hanging
+    • Credential prefs round-trip (BOOT_TYPE_RELOAD_DATA) centralised into a
+      single list — adding a new credential pref is now a one-line change
+    • Facebook login removed — all dead Facebook code cleared from login,
+      profile image, and service layers
+    • ipinfo API token moved from inline string to named constant
+    • Screen unlock enum renamed to match updated package API (screenUnlocked)
+
 2.2.7+1101
     • HC6 migration complete — all 35 app stored procedures rewritten to HC6
       standards and deployed; app now routes through new /api/AppApiHC6 endpoint

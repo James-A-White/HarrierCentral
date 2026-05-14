@@ -452,11 +452,6 @@ class HashersService extends BaseService {
       }
     }
 
-    if (!newUserForThisDevice) {
-      await tableModel.syncUserDataService
-          .updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
-    }
-
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       final dynamic result = json.decode(responseBody);
       return result;
