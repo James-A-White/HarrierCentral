@@ -92,7 +92,8 @@ class AuthorizeDeviceService {
             'message': 'Could not download profile. Check your QR code',
           };
         } else {
-          Map<String, dynamic> items = result[0][0];
+          // HC6: rowset 0 is the write SP success envelope; profile data is at rowset 1.
+          Map<String, dynamic> items = result[1][0];
           // Do not clear prefs, because then we clear the prefs that were set by authorize login upon app launch
           //await clearAllPrefs();
           await setStringPref(StringPrefsEnum.deviceId, deviceId);

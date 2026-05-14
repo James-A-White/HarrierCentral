@@ -280,7 +280,16 @@ class ServiceCommon {
       final Map<String, dynamic> firstRow = firstRowset.isNotEmpty
           ? (firstRowset[0] as Map<String, dynamic>)
           : <String, dynamic>{};
-      final DbErrorModel errorResult = DbErrorModel.fromJson(firstRow);
+      // HC6 write SPs return a success envelope at rowset 0 {success, errorCode, errorType}.
+      // The human-readable error detail is at rowset 1. Detect this and redirect.
+      Map<String, dynamic> errorRow = firstRow;
+      if (firstRow.containsKey('success') && firstRow['success'] == 0 && rowsets.length > 1) {
+        final secondRowset = rowsets[1] as List<dynamic>;
+        if (secondRowset.isNotEmpty) {
+          errorRow = secondRowset[0] as Map<String, dynamic>;
+        }
+      }
+      final DbErrorModel errorResult = DbErrorModel.fromJson(errorRow);
 
       if (errorCallback != null) {
         final bool errorCallbackResult = await errorCallback(errorResult);

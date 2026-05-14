@@ -265,7 +265,8 @@ class AppEntryPageState extends State<AppEntryPage>
       } else if (!responseBody.startsWith(ERROR_PREFIX)) {
         List<dynamic> responseJson = jsonDecode(responseBody);
 
-        loginResult = ApproveLoginModel.fromJson(responseJson[0][0]);
+        // HC6: rowset 0 is the write SP success envelope; login data is at rowset 1.
+        loginResult = ApproveLoginModel.fromJson(responseJson[1][0]);
       }
     }
 

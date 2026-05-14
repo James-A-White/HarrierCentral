@@ -338,15 +338,27 @@ class ChatPageController extends GetxController {
 
   List<Map<String, dynamic>> preprocessMessages(List<dynamic> messageList) {
     return messageList.map((item) {
-      final Map<String, dynamic> message = item as Map<String, dynamic>;
+      final Map<String, dynamic> message =
+          Map<String, dynamic>.from(item as Map<String, dynamic>);
 
-      // Decode the author field if it is a string
+      // HC5: author was a serialised JSON string stored in the DB.
       if (message['author'] is String) {
         message['author'] = jsonDecode(message['author'].toString());
       }
+      // HC6: author is flat columns — reconstruct the object expected by flutter_chat_types.
+      else if (message.containsKey('authorId')) {
+        message['author'] = <String, dynamic>{
+          'id': message['authorId'],
+          'firstName': message['authorFirstName'],
+          'imageUrl': message['authorImageUrl'],
+          'type': 'user',
+        };
+        message.remove('authorId');
+        message.remove('authorFirstName');
+        message.remove('authorImageUrl');
+      }
 
       message['showStatus'] = true;
-      //message['status'] = Status.sending;
 
       return message;
     }).toList();

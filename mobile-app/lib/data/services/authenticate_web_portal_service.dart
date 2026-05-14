@@ -31,9 +31,11 @@ class AuthenticateWebPortalService {
     SingleResultModel? result;
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
-      json.decode(responseBody).forEach((dynamic item) {
-        result = SingleResultModel(result: item[0]['result']);
-      });
+      // HC6: rowset 0 is the write SP success envelope; result data is at rowset 1.
+      final decoded = json.decode(responseBody) as List<dynamic>;
+      if (decoded.length > 1) {
+        result = SingleResultModel(result: (decoded[1] as List<dynamic>)[0]['result']);
+      }
     }
 
     return result;
