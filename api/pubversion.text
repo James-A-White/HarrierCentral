@@ -1,4 +1,8 @@
 
+1.0.4+2
+    • AppApiHC6: new endpoint at /api/AppApiHC6 — routes to [HC6].[hcapp_...] SPs
+      (faithful copy of AppApi; Google Calendar and FCM notification post-processing preserved)
+
 1.0.3+1
     • PublicWebAdminApi: added redeemAdminToken to allowlist for OTP session exchange
 
