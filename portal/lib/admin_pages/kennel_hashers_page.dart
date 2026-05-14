@@ -1009,7 +1009,7 @@ class KennelHashersController extends GetxController {
               hashers[context.rowIdx].photo,
               height: 200,
               width: 200,
-              errorBuilder: (_, __, ___) => const SizedBox(
+              errorBuilder: (_, _, _) => const SizedBox(
                 height: 200,
                 width: 200,
                 child: Icon(Icons.person, color: Colors.grey),

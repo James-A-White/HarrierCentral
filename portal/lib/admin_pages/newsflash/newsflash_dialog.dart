@@ -69,7 +69,7 @@ class _NewsflashDialog extends StatelessWidget {
                   height: 250,
                   width: double.infinity,
                   fit: BoxFit.contain,
-                  errorBuilder: (_, error, __) {
+                  errorBuilder: (_, error, _) {
                     debugPrint('Newsflash image load error: $error');
                     return const SizedBox.shrink();
                   },

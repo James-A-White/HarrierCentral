@@ -267,7 +267,7 @@ class _LogoPreviewTile extends StatelessWidget {
                                 'images/generic_logos/${url.replaceAll('bundle://', '')}.png'
                                     .toLowerCase(),
                                 fit: BoxFit.contain,
-                                errorBuilder: (_, __, ___) => Icon(
+                                errorBuilder: (_, _, _) => Icon(
                                   Icons.broken_image_outlined,
                                   color: Colors.grey.shade500,
                                   size: 40,
@@ -276,7 +276,7 @@ class _LogoPreviewTile extends StatelessWidget {
                             : HcNetworkImage(
                                 url,
                                 fit: BoxFit.contain,
-                                errorBuilder: (_, __, ___) => Icon(
+                                errorBuilder: (_, _, _) => Icon(
                                   Icons.broken_image_outlined,
                                   color: Colors.grey.shade500,
                                   size: 40,

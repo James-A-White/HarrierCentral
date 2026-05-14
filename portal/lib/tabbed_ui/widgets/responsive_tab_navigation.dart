@@ -1,8 +1,8 @@
-/// Responsive Tab Navigation Widget
-///
-/// Provides a responsive navigation system that switches between:
-/// - Tab bar (for wide/normal screens)
-/// - Hamburger menu dropdown (for narrow and mobile screens)
+// Responsive Tab Navigation Widget
+//
+// Provides a responsive navigation system that switches between:
+// - Tab bar (for wide/normal screens)
+// - Hamburger menu dropdown (for narrow and mobile screens)
 
 import 'package:hcportal/imports.dart';
 

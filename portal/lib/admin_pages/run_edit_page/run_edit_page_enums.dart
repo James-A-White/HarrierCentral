@@ -1,9 +1,9 @@
-/// Run Edit Page Enums
-///
-/// This file contains all enum definitions used in the run editing form.
-/// Enums are organized into categories:
-/// - Tab types (RunTabType) - defines the tabs in the form
-/// - Field enums - defines fields within each tab
+// Run Edit Page Enums
+//
+// This file contains all enum definitions used in the run editing form.
+// Enums are organized into categories:
+// - Tab types (RunTabType) - defines the tabs in the form
+// - Field enums - defines fields within each tab
 
 import 'package:hcportal/imports.dart';
 

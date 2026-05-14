@@ -215,7 +215,7 @@ class _CategoryDetailDialogState extends State<CategoryDetailDialog> {
                       ? const Center(child: Text('No data found'))
                       : ListView.separated(
                           itemCount: _sortedRows.length,
-                          separatorBuilder: (_, __) => const Divider(height: 1),
+                          separatorBuilder: (_, _) => const Divider(height: 1),
                           itemBuilder: (context, index) {
                             final row = _sortedRows[index];
                             return Padding(

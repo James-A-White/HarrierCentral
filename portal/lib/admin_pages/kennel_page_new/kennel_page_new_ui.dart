@@ -1,12 +1,12 @@
-/// Kennel Edit Page UI
-///
-/// This file contains the main UI for editing kennel information.
-/// Uses GetX for state management with the [GetView] pattern for cleaner code.
-///
-/// Structure:
-/// - [KennelEditPage] - Main page widget (GetView-based)
-/// - Tab content widgets for each section
-/// - Extension methods for building widgets (in part files)
+// Kennel Edit Page UI
+//
+// This file contains the main UI for editing kennel information.
+// Uses GetX for state management with the [GetView] pattern for cleaner code.
+//
+// Structure:
+// - [KennelEditPage] - Main page widget (GetView-based)
+// - Tab content widgets for each section
+// - Extension methods for building widgets (in part files)
 
 import 'package:hcportal/tabbed_ui/widgets/tri_state_checkbox_field.dart';
 import 'package:intl/intl.dart';

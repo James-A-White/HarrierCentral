@@ -82,8 +82,19 @@ class IntegrationSourceSelector extends StatelessWidget {
               children: [
                 _buildTitle(),
                 const SizedBox(height: 8),
-                _buildExternalOption(),
-                _buildLocalOption(),
+                RadioGroup<bool>(
+                  groupValue: useExternalSource.value,
+                  onChanged: (value) {
+                    useExternalSource.value = value ?? false;
+                    onChanged?.call();
+                  },
+                  child: Column(
+                    children: [
+                      _buildExternalOption(),
+                      _buildLocalOption(),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -109,14 +120,7 @@ class IntegrationSourceSelector extends StatelessWidget {
 
     return Row(
       children: [
-        Radio<bool>(
-          value: true,
-          groupValue: useExternalSource.value,
-          onChanged: (value) {
-            useExternalSource.value = value ?? false;
-            onChanged?.call();
-          },
-        ),
+        const Radio<bool>(value: true),
         Expanded(child: Text(label)),
       ],
     );
@@ -127,14 +131,7 @@ class IntegrationSourceSelector extends StatelessWidget {
 
     return Row(
       children: [
-        Radio<bool>(
-          value: false,
-          groupValue: useExternalSource.value,
-          onChanged: (value) {
-            useExternalSource.value = value ?? false;
-            onChanged?.call();
-          },
-        ),
+        const Radio<bool>(value: false),
         Expanded(child: Text(label)),
       ],
     );
@@ -189,7 +186,7 @@ class IntegrationSourceToggle extends StatelessWidget {
           title: Text(label),
           subtitle: subtitle != null ? Text(subtitle!) : null,
           value: useExternalSource.value,
-          activeColor: activeColor ?? Colors.blue.shade600,
+          activeThumbColor: activeColor ?? Colors.blue.shade600,
           onChanged: (value) {
             useExternalSource.value = value;
             onChanged?.call();
@@ -257,7 +254,15 @@ class MultiSourceSelector<T> extends StatelessWidget {
               children: [
                 Text(title, style: titleStyleBlack),
                 const SizedBox(height: 8),
-                ...options.map((option) => _buildOption(option)),
+                RadioGroup<T>(
+                  groupValue: selectedValue.value,
+                  onChanged: (value) {
+                    if (value != null) onChanged(value);
+                  },
+                  child: Column(
+                    children: options.map((option) => _buildOption(option)).toList(),
+                  ),
+                ),
               ],
             ),
           ),
@@ -267,15 +272,7 @@ class MultiSourceSelector<T> extends StatelessWidget {
   Widget _buildOption(SourceOption<T> option) {
     return Row(
       children: [
-        Radio<T>(
-          value: option.value,
-          groupValue: selectedValue.value,
-          onChanged: (value) {
-            if (value != null) {
-              onChanged(value);
-            }
-          },
-        ),
+        Radio<T>(value: option.value),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

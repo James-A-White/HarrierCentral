@@ -244,7 +244,7 @@ class TabPageStandardLayoutState extends State<TabPageStandardLayout>
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),
@@ -382,7 +382,7 @@ class _ModernActionButton extends StatelessWidget {
         : Colors.grey.shade300;
 
     return Material(
-      color: isEnabled ? color.withOpacity(0.1) : Colors.grey.shade100,
+      color: isEnabled ? color.withValues(alpha: 0.1) : Colors.grey.shade100,
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
         onTap: onPressed,

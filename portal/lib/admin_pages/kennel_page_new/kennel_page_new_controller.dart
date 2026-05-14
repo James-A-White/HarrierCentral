@@ -1,14 +1,14 @@
-/// Kennel Page Form Controller
-///
-/// This controller manages the state and business logic for the kennel editing form.
-/// It extends [TabUiController] to leverage tabbed UI functionality and validation.
-///
-/// Key responsibilities:
-/// - Managing form state (edited vs original data)
-/// - Auto-save functionality
-/// - Form validation and dirty state tracking
-/// - Tab state management
-/// - API communication for saving changes
+// Kennel Page Form Controller
+//
+// This controller manages the state and business logic for the kennel editing form.
+// It extends [TabUiController] to leverage tabbed UI functionality and validation.
+//
+// Key responsibilities:
+// - Managing form state (edited vs original data)
+// - Auto-save functionality
+// - Form validation and dirty state tracking
+// - Tab state management
+// - API communication for saving changes
 
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:hcportal/imports.dart';

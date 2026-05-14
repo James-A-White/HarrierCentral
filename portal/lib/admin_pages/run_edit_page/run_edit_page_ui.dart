@@ -1,19 +1,17 @@
-/// Run Edit Page UI
-///
-/// This file contains the main UI for editing run information.
-/// Uses GetX for state management with the [GetView] pattern for cleaner code.
-///
-/// Structure:
-/// - [RunEditPage] - Main page widget (GetView-based)
-/// - Tab content widgets for each section
+// Run Edit Page UI
+//
+// This file contains the main UI for editing run information.
+// Uses GetX for state management with the [GetView] pattern for cleaner code.
+//
+// Structure:
+// - [RunEditPage] - Main page widget (GetView-based)
+// - Tab content widgets for each section
 
 import 'package:intl/intl.dart';
 import 'package:hcportal/imports.dart';
 import 'package:hcportal/admin_pages/kennel_page_new/kennel_page_new_enums.dart';
 import 'package:latlng/latlng.dart';
 import 'package:map/map.dart' as geo_map;
-import 'run_edit_page_enums.dart';
-import 'run_edit_page_controller.dart';
 
 part 'pages/run_basic_info_page/layout.dart';
 part 'pages/run_location_page/layout.dart';
@@ -422,37 +420,34 @@ class RunBasicInfoTabContent extends StatelessWidget {
                   style: titleStyleBlack,
                 ),
                 const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Radio<bool>(
-                      value: true,
-                      groupValue: controller.useExtRunDetails.value,
-                      onChanged: (value) {
-                        controller.useExtRunDetails.value = value ?? false;
-                        controller.checkIfFormIsDirty();
-                      },
-                    ),
-                    Expanded(
-                      child: Text(
-                        'Use data from ${INBOUND_DATA_SOURCES[controller.inboundIntegrationId.value]} (read-only)',
+                RadioGroup<bool>(
+                  groupValue: controller.useExtRunDetails.value,
+                  onChanged: (value) {
+                    controller.useExtRunDetails.value = value ?? false;
+                    controller.checkIfFormIsDirty();
+                  },
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          const Radio<bool>(value: true),
+                          Expanded(
+                            child: Text(
+                              'Use data from ${INBOUND_DATA_SOURCES[controller.inboundIntegrationId.value]} (read-only)',
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Radio<bool>(
-                      value: false,
-                      groupValue: controller.useExtRunDetails.value,
-                      onChanged: (value) {
-                        controller.useExtRunDetails.value = value ?? false;
-                        controller.checkIfFormIsDirty();
-                      },
-                    ),
-                    const Expanded(
-                      child: Text('Use Harrier Central data (editable)'),
-                    ),
-                  ],
+                      Row(
+                        children: [
+                          const Radio<bool>(value: false),
+                          const Expanded(
+                            child: Text('Use Harrier Central data (editable)'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -1209,7 +1204,7 @@ class RunOtherTabContent extends StatelessWidget {
     return Obx(() => SizedBox(
           width: 300,
           child: DropdownButtonFormField<String>(
-            value: controller.country.value,
+            initialValue: controller.country.value,
             decoration: InputDecoration(
               labelText: 'Country',
               fillColor: Colors.yellow.shade100,

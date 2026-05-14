@@ -1,6 +1,5 @@
 import 'package:carousel_slider/carousel_slider.dart' as cs;
 import 'package:hcportal/imports.dart';
-import 'package:hcportal/admin_pages/usage_data_page/usage_data_page_controller.dart';
 import 'package:hcportal/admin_pages/usage_data_page/login_history_dialog.dart';
 import 'package:hcportal/models/usage_data_new_events/usage_data_new_events.dart';
 
@@ -733,7 +732,7 @@ class _UserPhoto extends StatelessWidget {
           );
         },
         child: HcNetworkImage(photo, fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => const ColoredBox(
+            errorBuilder: (_, _, _) => const ColoredBox(
               color: Colors.grey,
               child: Icon(Icons.person, color: Colors.white),
             )),
@@ -744,7 +743,7 @@ class _UserPhoto extends StatelessWidget {
       return Image.network(
         '${photo.replaceAll('bundle://', 'https://harriercentral.blob.core.windows.net/profile-photos/')}.jpg',
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => const ColoredBox(
+        errorBuilder: (_, _, _) => const ColoredBox(
           color: Colors.grey,
           child: Icon(Icons.person, color: Colors.white),
         ),

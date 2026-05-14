@@ -27,7 +27,7 @@ class TextDropdownField<T extends TabUiController> extends StatelessWidget {
           child: SizedBox(
             width: width,
             child: DropdownButtonFormField<int>(
-              value: value.value,
+              initialValue: value.value,
               decoration: InputDecoration(
                 labelText: label,
                 labelStyle: bodyStyleBlack,

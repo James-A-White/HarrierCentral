@@ -1,9 +1,5 @@
-import 'dart:typed_data';
-
-import 'package:file_picker/file_picker.dart';
 import 'package:web/web.dart' as web;
 import 'package:hcportal/imports.dart';
-import 'package:hcportal/tabbed_ui/widgets/sidebar_hover_region.dart';
 import 'package:image/image.dart' as image;
 
 /// Document/image upload manager that shows current value, preview, remove, and upload actions.
@@ -185,7 +181,7 @@ class DocumentManagerField extends StatelessWidget {
                         ),
                       );
                     },
-                    errorBuilder: (_, __, ___) => const Icon(
+                    errorBuilder: (_, _, _) => const Icon(
                       Icons.broken_image_outlined,
                       color: Colors.grey,
                     ),
@@ -652,7 +648,7 @@ class _DroppablePlaceholderState extends State<_DroppablePlaceholder> {
                     'images/generic_logos/${widget.bundleUrl!.replaceAll('bundle://', '')}.png'
                         .toLowerCase(),
                     fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => const Icon(
+                    errorBuilder: (_, _, _) => const Icon(
                       Icons.broken_image_outlined,
                       color: Colors.grey,
                     ),

@@ -1,5 +1,4 @@
 import 'package:hcportal/imports.dart';
-import 'package:hcportal/tabbed_ui/widgets/sidebar_hover_region.dart';
 
 /// Tri-state checkbox field with sidebar hover and validity updates.
 class TriStateCheckboxField extends StatelessWidget {

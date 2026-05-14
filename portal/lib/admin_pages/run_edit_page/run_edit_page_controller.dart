@@ -1,14 +1,14 @@
-/// Run Edit Page Controller
-///
-/// This controller manages the state and business logic for the run editing form.
-/// It extends [TabUiController] to leverage tabbed UI functionality and validation.
-///
-/// Key responsibilities:
-/// - Managing form state (edited vs original data)
-/// - Auto-save functionality
-/// - Form validation and dirty state tracking
-/// - Tab state management
-/// - API communication for saving changes
+// Run Edit Page Controller
+//
+// This controller manages the state and business logic for the run editing form.
+// It extends [TabUiController] to leverage tabbed UI functionality and validation.
+//
+// Key responsibilities:
+// - Managing form state (edited vs original data)
+// - Auto-save functionality
+// - Form validation and dirty state tracking
+// - Tab state management
+// - API communication for saving changes
 
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:hcportal/imports.dart';
@@ -1187,14 +1187,14 @@ class RunEditPageController extends TabUiController
     final source = edr.runDetails;
 
     // Use ext (external) field as fallback when the primary field is null.
-    String _loc(String? primary, String? ext) =>
+    String loc(String? primary, String? ext) =>
         (primary != null && primary.isNotEmpty) ? primary : (ext ?? '');
     final lat = source.hcLatitude ?? source.fbLatitude;
     final lon = source.hcLongitude ?? source.fbLongitude;
 
     // --- Place description (Basic Info tab) ---
     final placeDesc =
-        _loc(source.locationOneLineDesc, source.extLocationOneLineDesc);
+        loc(source.locationOneLineDesc, source.extLocationOneLineDesc);
     final placeKey =
         '${RunTabType.basicInfo.key}_${RunBasicInfoField.placeDescription.name}';
     textControllers[placeKey]?.text = placeDesc;
@@ -1203,15 +1203,15 @@ class RunEditPageController extends TabUiController
 
     // --- Address fields (Location tab) ---
     _updateAddressField(RunLocationField.street,
-        _loc(source.locationStreet, source.extLocationStreet));
+        loc(source.locationStreet, source.extLocationStreet));
     _updateAddressField(RunLocationField.city,
-        _loc(source.locationCity, source.extLocationCity));
+        loc(source.locationCity, source.extLocationCity));
     _updateAddressField(RunLocationField.postcode,
-        _loc(source.locationPostCode, source.extLocationPostCode));
+        loc(source.locationPostCode, source.extLocationPostCode));
     _updateAddressField(RunLocationField.region,
-        _loc(source.locationRegion, source.extLocationRegion));
+        loc(source.locationRegion, source.extLocationRegion));
     _updateAddressField(RunLocationField.country,
-        _loc(source.locationCountry, source.extLocationCountry));
+        loc(source.locationCountry, source.extLocationCountry));
     _updateAddressField(
         RunLocationField.phone, source.locationPhoneNumber ?? '');
 

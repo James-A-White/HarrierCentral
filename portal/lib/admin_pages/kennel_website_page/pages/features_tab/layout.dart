@@ -89,7 +89,7 @@ class _FeaturesTabContent extends StatelessWidget {
               style: const TextStyle(fontSize: 12, color: Colors.black54)),
           value: flag.value,
           onChanged: (v) => controller.updateFeatureFlag(key, v),
-          activeColor: Colors.teal.shade600,
+          activeThumbColor: Colors.teal.shade600,
         );
       }),
     );

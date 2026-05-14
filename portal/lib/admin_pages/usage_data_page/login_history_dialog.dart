@@ -1,5 +1,4 @@
 import 'package:hcportal/imports.dart';
-import 'package:hcportal/admin_pages/usage_data_page/usage_data_page_controller.dart';
 import 'package:intl/intl.dart';
 
 class LoginHistoryDialog extends StatelessWidget {
@@ -18,7 +17,7 @@ class LoginHistoryDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _historyFuture = controller.getLoginHistory(userId);
+    final historyFuture = controller.getLoginHistory(userId);
     return Dialog(
       child: Container(
         width: 700,
@@ -37,7 +36,7 @@ class LoginHistoryDialog extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             FutureBuilder<List<UdLoginHistoryModel>>(
-              future: _historyFuture,
+              future: historyFuture,
               builder: (context, snapshot) {
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return const SizedBox.shrink();
@@ -82,7 +81,7 @@ class LoginHistoryDialog extends StatelessWidget {
             // Data rows
             Expanded(
               child: FutureBuilder<List<UdLoginHistoryModel>>(
-                future: _historyFuture,
+                future: historyFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(
@@ -111,7 +110,7 @@ class LoginHistoryDialog extends StatelessWidget {
                       Expanded(
                         child: ListView.separated(
                           itemCount: history.length,
-                          separatorBuilder: (_, __) => const Divider(height: 1),
+                          separatorBuilder: (_, _) => const Divider(height: 1),
                           itemBuilder: (context, index) {
                             final entry = history[index];
                             final dateStr = DateFormat('MMM d, yyyy  h:mm a')

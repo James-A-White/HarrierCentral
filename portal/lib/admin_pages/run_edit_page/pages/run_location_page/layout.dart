@@ -68,7 +68,7 @@ class RunLocationTabContent extends StatelessWidget {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            Colors.black.withOpacity(0.25),
+                            Colors.black.withValues(alpha: 0.25),
                             Colors.transparent,
                           ],
                         ),
@@ -304,37 +304,34 @@ class RunLocationTabContent extends StatelessWidget {
               children: [
                 Text('Address Source', style: titleStyleBlack),
                 const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Radio<bool>(
-                      value: true,
-                      groupValue: controller.useExtLocation.value,
-                      onChanged: (value) {
-                        controller.useExtLocation.value = value ?? false;
-                        controller.checkIfFormIsDirty();
-                      },
-                    ),
-                    Expanded(
-                      child: Text(
-                        'Use address from ${INBOUND_DATA_SOURCES[controller.inboundIntegrationId.value]} (read-only)',
+                RadioGroup<bool>(
+                  groupValue: controller.useExtLocation.value,
+                  onChanged: (value) {
+                    controller.useExtLocation.value = value ?? false;
+                    controller.checkIfFormIsDirty();
+                  },
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          const Radio<bool>(value: true),
+                          Expanded(
+                            child: Text(
+                              'Use address from ${INBOUND_DATA_SOURCES[controller.inboundIntegrationId.value]} (read-only)',
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Radio<bool>(
-                      value: false,
-                      groupValue: controller.useExtLocation.value,
-                      onChanged: (value) {
-                        controller.useExtLocation.value = value ?? false;
-                        controller.checkIfFormIsDirty();
-                      },
-                    ),
-                    const Expanded(
-                      child: Text('Use Harrier Central address (editable)'),
-                    ),
-                  ],
+                      Row(
+                        children: [
+                          const Radio<bool>(value: false),
+                          const Expanded(
+                            child: Text('Use Harrier Central address (editable)'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 8),
                 OutlinedButton.icon(
@@ -360,37 +357,34 @@ class RunLocationTabContent extends StatelessWidget {
               children: [
                 Text('Coordinates Source', style: titleStyleBlack),
                 const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Radio<bool>(
-                      value: true,
-                      groupValue: controller.useExtLatLon.value,
-                      onChanged: (value) {
-                        controller.useExtLatLon.value = value ?? false;
-                        controller.checkIfFormIsDirty();
-                      },
-                    ),
-                    Expanded(
-                      child: Text(
-                        'Use coordinates from ${INBOUND_DATA_SOURCES[controller.inboundIntegrationId.value]} (read-only)',
+                RadioGroup<bool>(
+                  groupValue: controller.useExtLatLon.value,
+                  onChanged: (value) {
+                    controller.useExtLatLon.value = value ?? false;
+                    controller.checkIfFormIsDirty();
+                  },
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          const Radio<bool>(value: true),
+                          Expanded(
+                            child: Text(
+                              'Use coordinates from ${INBOUND_DATA_SOURCES[controller.inboundIntegrationId.value]} (read-only)',
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Radio<bool>(
-                      value: false,
-                      groupValue: controller.useExtLatLon.value,
-                      onChanged: (value) {
-                        controller.useExtLatLon.value = value ?? false;
-                        controller.checkIfFormIsDirty();
-                      },
-                    ),
-                    const Expanded(
-                      child: Text('Use Harrier Central coordinates (editable)'),
-                    ),
-                  ],
+                      Row(
+                        children: [
+                          const Radio<bool>(value: false),
+                          const Expanded(
+                            child: Text('Use Harrier Central coordinates (editable)'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -550,7 +544,7 @@ class _InteractiveMapWidgetState extends State<_InteractiveMapWidget> {
                       final url =
                           'https://www.google.com/maps/vt/pb=!1m4!1m3!1i$z!2i$x!3i$y!2m3!1e0!2sm!3i420120488!3m7!2sen!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0!5m1!1e0!23i4111425';
                       return Image.network(url, fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const SizedBox.shrink());
+                          errorBuilder: (_, _, _) => const SizedBox.shrink());
                     },
                   ),
 
