@@ -1,5 +1,7 @@
 using System;
+using System.IO.Compression;
 using Azure.Data.Tables;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,7 +9,34 @@ using Microsoft.Extensions.DependencyInjection;
 var builder = FunctionsApplication.CreateBuilder(args);
 
 // This sets up all existing Function triggers, routing, JSON settings, etc.
-builder.ConfigureFunctionsWebApplication();
+// Compression is scoped to HC6 endpoints only via UseWhen — HC5 endpoints
+// (AppApi, PortalApi, etc.) are untouched.
+builder.ConfigureFunctionsWebApplication(app =>
+{
+    app.UseWhen(
+        ctx => ctx.Request.Path.StartsWithSegments("/api/AppApiHC6") ||
+               ctx.Request.Path.StartsWithSegments("/api/PortalApiHC6"),
+        branch => branch.UseResponseCompression()
+    );
+});
+
+// Compress all JSON responses — covers every function in this host.
+// EnableForHttps: Azure Functions is always HTTPS; without this flag the
+// middleware skips compression entirely.
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
+});
+builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
+{
+    options.Level = CompressionLevel.Fastest;
+});
+builder.Services.Configure<GzipCompressionProviderOptions>(options =>
+{
+    options.Level = CompressionLevel.Fastest;
+});
 
 // Register the IHttpClientFactory for BoxProxyFunctions
 builder.Services.AddHttpClient();

@@ -1,4 +1,8 @@
 
+1.0.5+3
+    • Program.cs: Gzip + Brotli response compression for HC6 endpoints only
+      (scoped to /api/AppApiHC6 and /api/PortalApiHC6 via UseWhen — HC5 untouched)
+
 1.0.4+2
     • AppApiHC6: new endpoint at /api/AppApiHC6 — routes to [HC6].[hcapp_...] SPs
       (faithful copy of AppApi; Google Calendar and FCM notification post-processing preserved)

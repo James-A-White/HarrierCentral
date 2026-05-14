@@ -430,6 +430,14 @@ BEGIN CATCH
 END CATCH;
 
 -- ---------------------------------------------------------------
+-- Return the saved eventId as adHocData so the caller can
+-- identify the record (rowset 1 — before sync data)
+-- ---------------------------------------------------------------
+SELECT
+    1                                         AS adHocDataId,
+    LOWER(CAST(@eventId AS NVARCHAR(40)))     AS eventId;
+
+-- ---------------------------------------------------------------
 -- Delegate to syncUserData (outside TRY — runs after commit)
 -- ---------------------------------------------------------------
 SET @hasherKennelMapUpdatedAfter = COALESCE(@hasherKennelMapUpdatedAfter, 'ignore');
