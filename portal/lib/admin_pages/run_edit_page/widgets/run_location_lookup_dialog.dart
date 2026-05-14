@@ -1,14 +1,13 @@
-/// Run Location Lookup Dialog
-///
-/// A dialog with two tabs:
-/// 1. **Previous Runs** – browse/search unique past run locations on a map.
-/// 2. **Search Places** – query the online gazetteer (same API used on the
-///    Location tab) and pick from the results.
-///
-/// Returns a [LocationLookupResult] that wraps either a [RunListModel]
-/// (previous run) or a gazetteer [Results] (place search).
+// Run Location Lookup Dialog
+//
+// A dialog with two tabs:
+// 1. Previous Runs – browse/search unique past run locations on a map.
+// 2. Search Places – query the online gazetteer (same API used on the
+//    Location tab) and pick from the results.
+//
+// Returns a [LocationLookupResult] that wraps either a [RunListModel]
+// (previous run) or a gazetteer [Results] (place search).
 
-import 'dart:convert';
 import 'package:hcportal/imports.dart';
 import 'package:hcportal/models/azure_geo_model.dart';
 import 'package:http/http.dart' as http;
@@ -637,7 +636,7 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
                           'https://www.google.com/maps/vt/pb=!1m4!1m3!1i$z!2i$x!3i$y!2m3!1e0!2sm!3i420120488!3m7!2sen!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0!5m1!1e0!23i4111425';
                       return Image.network(url,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
+                          errorBuilder: (_, _, _) =>
                               const SizedBox.shrink());
                     },
                   ),
@@ -843,7 +842,7 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
                 )
               : ListView.separated(
                   itemCount: _gazetteerResults.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  separatorBuilder: (_, _) => const Divider(height: 1),
                   itemBuilder: (context, index) => _buildGazetteerTile(index),
                 ),
         ),
@@ -1042,7 +1041,7 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
                           'https://www.google.com/maps/vt/pb=!1m4!1m3!1i$z!2i$x!3i$y!2m3!1e0!2sm!3i420120488!3m7!2sen!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0!5m1!1e0!23i4111425';
                       return Image.network(url,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
+                          errorBuilder: (_, _, _) =>
                               const SizedBox.shrink());
                     },
                   ),

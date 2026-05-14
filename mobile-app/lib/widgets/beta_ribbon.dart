@@ -38,7 +38,7 @@ class BetaRibbon extends StatelessWidget {
 
     return Stack(
       children: [
-        if (child != null) child!,
+        ?child,
         Positioned(
           left: 0,
           top: ribbonTopMargin?.toDouble() ?? 0,

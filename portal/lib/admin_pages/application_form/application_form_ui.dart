@@ -1,7 +1,6 @@
 // import 'dart:typed_data';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:hcportal/tabbed_ui/widgets/tri_state_checkbox_field.dart';
 import 'application_form_controller.dart';
 import 'application_form_enums.dart';

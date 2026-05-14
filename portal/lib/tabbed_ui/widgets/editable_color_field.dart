@@ -115,7 +115,7 @@ class EditableColorField extends StatelessWidget {
           child: tc != null
               ? ValueListenableBuilder<TextEditingValue>(
                   valueListenable: tc,
-                  builder: (_, value, __) => _FieldRow(
+                  builder: (_, value, _) => _FieldRow(
                     label: uiControl.label,
                     hexValue: value.text.isNotEmpty ? value.text : null,
                     onClear: () => _clearValue(tc),

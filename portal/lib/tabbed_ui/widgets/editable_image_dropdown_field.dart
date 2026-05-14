@@ -87,7 +87,7 @@ class EditableImageDropdownField<T extends TabUiController>
 
     return DropdownButtonFormField<int>(
       key: uiControl.globalKey,
-      value: value.value,
+      initialValue: value.value,
       decoration: InputDecoration(
         labelText: uiControl.label,
         labelStyle: bodyStyleBlack,

@@ -77,7 +77,7 @@ class EditableDropdownField<T extends TabUiController> extends StatelessWidget {
   Widget _buildDropdown() {
     return DropdownButtonFormField<int>(
       key: uiControl.globalKey,
-      value: value.value,
+      initialValue: value.value,
       decoration: InputDecoration(
         labelText: uiControl.label,
         labelStyle: bodyStyleBlack,

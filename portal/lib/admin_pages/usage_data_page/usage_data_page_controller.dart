@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:hcportal/imports.dart';
-import 'package:hcportal/admin_pages/usage_data_page/category_detail_dialog.dart';
 import 'package:hcportal/models/usage_data_new_events/usage_data_new_events.dart';
 
 class UsageDataPageController extends GetxController {

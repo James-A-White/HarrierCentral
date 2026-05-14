@@ -65,7 +65,7 @@ class KennelLogo extends StatelessWidget {
         child: kennelLogoUrl.contains('bundle://')
             ? Stack(alignment: Alignment.center, children: <Widget>[
                 Image.asset(('images/generic_logos/${kennelLogoUrl.replaceAll('bundle://', '')}.png').toLowerCase(), fit: BoxFit.fill,
-                    errorBuilder: (_, __, ___) => const SizedBox.shrink()),
+                    errorBuilder: (_, _, _) => const SizedBox.shrink()),
                 FractionallySizedBox(
                   widthFactor: .55,
                   child: AutoSizeText(
@@ -90,7 +90,7 @@ class KennelLogo extends StatelessWidget {
                 width: (logoHeight ?? 10000.0) + .0,
                 height: (logoHeight ?? 10000.0) + .0,
                 fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                errorBuilder: (_, _, _) => const SizedBox.shrink(),
               ),
       ),
     );

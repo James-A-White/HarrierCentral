@@ -201,7 +201,7 @@ class KennelWebsiteController extends TabUiController
   @override
   Future<void> close() async {
     await save(false);
-    Get.back<void>(result: originalData);
+    Get.back(result: originalData);
   }
 
   // ---------------------------------------------------------------------------

@@ -1,11 +1,10 @@
-/// Kennel Run Tags Tab Content
-///
-/// This file defines the UI for the Run Tags tab in the kennel editing form.
-/// It displays selectable chips organized by tag groups, similar to the
-/// application form tags UI pattern.
+// Kennel Run Tags Tab Content
+//
+// This file defines the UI for the Run Tags tab in the kennel editing form.
+// It displays selectable chips organized by tag groups, similar to the
+// application form tags UI pattern.
 
 import 'package:hcportal/imports.dart';
-import '../../kennel_page_new_controller.dart';
 import '../../kennel_page_new_enums.dart';
 
 // ---------------------------------------------------------------------------

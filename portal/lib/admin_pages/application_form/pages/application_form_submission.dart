@@ -126,7 +126,7 @@ extension ApplicationSubmission on TestFormPage {
                         )
                       : Align(
                           alignment: Alignment.center,
-                          child: Container(
+                          child: SizedBox(
                             height: isSubmittable ? 65 : null,
                             width: isSubmittable ? 200 : null,
                             child: ElevatedButton(

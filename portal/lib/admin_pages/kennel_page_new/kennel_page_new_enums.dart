@@ -1,10 +1,10 @@
-/// Kennel Page Enums
-///
-/// This file contains all enum definitions used in the kennel editing form.
-/// Enums are organized into categories:
-/// - Tab types (KennelTabType) - defines the tabs in the form
-/// - Field enums - defines fields within each tab
-/// - Form types (AppFormTypes) - defines form sections with word limits
+// Kennel Page Enums
+//
+// This file contains all enum definitions used in the kennel editing form.
+// Enums are organized into categories:
+// - Tab types (KennelTabType) - defines the tabs in the form
+// - Field enums - defines fields within each tab
+// - Form types (AppFormTypes) - defines form sections with word limits
 
 import 'package:hcportal/imports.dart';
 

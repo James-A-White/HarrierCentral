@@ -154,7 +154,7 @@ class RunListItem extends StatelessWidget {
       _resolvedImageUrl!,
       width: double.infinity,
       fit: BoxFit.fitWidth,
-      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+      errorBuilder: (_, _, _) => const SizedBox.shrink(),
     );
   }
 

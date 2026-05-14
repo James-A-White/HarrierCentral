@@ -1,5 +1,4 @@
 import 'package:hcportal/imports.dart';
-import 'package:pdf/pdf.dart';
 import 'package:pdfrx/pdfrx.dart';
 
 class CheckinSheetPage extends StatelessWidget {

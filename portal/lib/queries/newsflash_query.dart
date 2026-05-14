@@ -135,14 +135,14 @@ Future<bool> addEditNewsflash({
     'queryType': 'addEditNewsflash',
     'deviceId': _deviceId(),
     'accessToken': _token('hcportal_addEditNewsflash'),
-    if (newsflashId != null) 'newsflashId': newsflashId,
+    'newsflashId': ?newsflashId,
     'title': title,
     'bodyText': bodyText,
     if (imageUrl != null && imageUrl.isNotEmpty) 'imageUrl': imageUrl,
     'startDate': startDate.toIso8601String().substring(0, 10),
     if (endDate != null)
       'endDate': endDate.toIso8601String().substring(0, 10),
-    if (kennelId != null) 'kennelId': kennelId,
+    'kennelId': ?kennelId,
   };
 
   final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);

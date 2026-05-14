@@ -55,7 +55,7 @@ class NewsflashManagementPage extends StatelessWidget {
         return ListView.separated(
           padding: const EdgeInsets.all(16),
           itemCount: controller.newsflashes.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 8),
+          separatorBuilder: (_, _) => const SizedBox(height: 8),
           itemBuilder: (context, index) {
             final nf = controller.newsflashes[index];
             return _NewsflashTile(
@@ -386,10 +386,10 @@ class _NewsflashForm extends StatelessWidget {
                   // Image
                   ValueListenableBuilder<bool>(
                     valueListenable: isUploading,
-                    builder: (_, uploading, __) {
+                    builder: (_, uploading, _) {
                       return ValueListenableBuilder<String?>(
                         valueListenable: imageUrlState,
-                        builder: (_, imageUrl, __) {
+                        builder: (_, imageUrl, _) {
                           return _ImagePicker(
                             imageUrl: imageUrl,
                             isUploading: uploading,
@@ -408,7 +408,7 @@ class _NewsflashForm extends StatelessWidget {
                       Expanded(
                         child: ValueListenableBuilder<DateTime>(
                           valueListenable: startDateState,
-                          builder: (_, startDate, __) {
+                          builder: (_, startDate, _) {
                             return _DateField(
                               label: 'Start date *',
                               date: startDate,
@@ -421,7 +421,7 @@ class _NewsflashForm extends StatelessWidget {
                       Expanded(
                         child: ValueListenableBuilder<DateTime?>(
                           valueListenable: endDateState,
-                          builder: (_, endDate, __) {
+                          builder: (_, endDate, _) {
                             return _DateField(
                               label: 'End date (optional)',
                               date: endDate,
@@ -438,7 +438,7 @@ class _NewsflashForm extends StatelessWidget {
                   // Kennel selector
                   ValueListenableBuilder<String?>(
                     valueListenable: kennelIdState,
-                    builder: (_, kennelId, __) {
+                    builder: (_, kennelId, _) {
                       return DropdownButtonFormField<String?>(
                         initialValue: kennelId,
                         decoration: const InputDecoration(
@@ -521,7 +521,7 @@ class _ImagePicker extends StatelessWidget {
             height: 250,
             width: double.infinity,
             fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+            errorBuilder: (_, _, _) => const Icon(Icons.broken_image),
           ),
           const SizedBox(height: 6),
           Row(
