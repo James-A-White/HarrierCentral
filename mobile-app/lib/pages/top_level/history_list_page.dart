@@ -450,7 +450,7 @@ class HistoryListPageState extends State<HistoryListPage>
               ],
             ),
             height: 100,
-            width: MediaQuery.of(context).size.width,
+            width: MediaQuery.sizeOf(context).width,
             child: Row(
               children: <Widget>[
                 ProfilePhoto(

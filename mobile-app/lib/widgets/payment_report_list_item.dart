@@ -42,7 +42,7 @@ class PaymentReportListItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           SizedBox(
-            width: MediaQuery.of(context).size.width,
+            width: MediaQuery.sizeOf(context).width,
             child: Row(
               children: <Widget>[
                 const SizedBox(width: 10.0),

@@ -68,7 +68,7 @@ class KennelMemberListItem extends StatelessWidget {
         }
       },
       child: IntrinsicWidth(
-        stepWidth: MediaQuery.of(context).size.width,
+        stepWidth: MediaQuery.sizeOf(context).width,
         child: Row(
           //crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
@@ -147,7 +147,7 @@ class KennelMemberListItem extends StatelessWidget {
             ),
             Container(
               padding: const EdgeInsets.only(left: 10.0, bottom: 2.0),
-              width: MediaQuery.of(context).size.width - 145,
+              width: MediaQuery.sizeOf(context).width - 145,
               child: Column(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.center,

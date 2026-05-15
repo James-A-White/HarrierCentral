@@ -247,7 +247,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
       body: _isLoading
           ? Container(
               height:
-                  MediaQuery.of(context).size.height -
+                  MediaQuery.sizeOf(context).height -
                   appBar.preferredSize.height,
               decoration: Backgrounds.defaultHcBackground(),
               child: _buildCircularProgressIndicator(),
@@ -285,7 +285,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                     // Positioned(
                                     //   top: 40,
                                     //   //bottom: 20,
-                                    //   width: MediaQuery.of(context).size.width,
+                                    //   width: MediaQuery.sizeOf(context).width,
                                     //   child:
                                     Container(
                                       padding: const EdgeInsets.all(30.0),
@@ -417,7 +417,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                       ),
                     ],
                   ),
-                  width: MediaQuery.of(context).size.width,
+                  width: MediaQuery.sizeOf(context).width,
                   height: 60,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,

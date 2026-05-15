@@ -141,7 +141,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
         title: Text('Choose Profile Image', style: ts_appBarTitle),
       ),
       body: Container(
-        width: MediaQuery.of(context).size.width,
+        width: MediaQuery.sizeOf(context).width,
         decoration: Backgrounds.defaultHcBackground(),
         child: Container(
           child: _showCircularProgressIndicator

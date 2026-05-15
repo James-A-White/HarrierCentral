@@ -630,21 +630,21 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     return Stack(
       children: <Widget>[
         SizedBox(
-          height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.sizeOf(context).height,
+          width: MediaQuery.sizeOf(context).width,
         ),
         Positioned(
           top: 0,
           left: 0,
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.sizeOf(context).width,
+          height: MediaQuery.sizeOf(context).height,
           child: AppScaffold(
             //key: ScaffoldKey,
             appBar: appBar,
             body: _isLoading
                 ? Container(
                     height:
-                        MediaQuery.of(context).size.height -
+                        MediaQuery.sizeOf(context).height -
                         (appBar?.preferredSize.height ?? 0),
                     decoration: Backgrounds.defaultHcBackground(),
                     child: _buildCircularProgressIndicator(),
@@ -652,7 +652,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                 : Container(
                     decoration: Backgrounds.defaultHcBackground(),
                     height:
-                        MediaQuery.of(context).size.height -
+                        MediaQuery.sizeOf(context).height -
                         (appBar?.preferredSize.height ?? 0),
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
@@ -671,7 +671,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: <Widget>[
                               SizedBox(
-                                width: MediaQuery.of(context).size.width,
+                                width: MediaQuery.sizeOf(context).width,
                                 child: Column(
                                   children: <Widget>[
                                     Text(
@@ -2067,7 +2067,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
               left: 20,
             ),
             height: 60,
-            width: MediaQuery.of(context).size.width,
+            width: MediaQuery.sizeOf(context).width,
             color: Colors.yellow[100],
             child: StyleForConnected(
               child: ElevatedButton(

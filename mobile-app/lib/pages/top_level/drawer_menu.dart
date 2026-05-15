@@ -48,8 +48,8 @@ class DrawerMenuState extends State<DrawerMenu> {
                     Image.asset(
                       'images/other/drawer_image.jpg',
                       fit: BoxFit.fill,
-                      height: MediaQuery.of(context).size.height,
-                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.sizeOf(context).height,
+                      width: MediaQuery.sizeOf(context).width,
                     ),
                   ],
                 ),
@@ -60,7 +60,7 @@ class DrawerMenuState extends State<DrawerMenu> {
               //top:50,
               //top:10,
               top: 40,
-              width: MediaQuery.of(context).size.width,
+              width: MediaQuery.sizeOf(context).width,
               child: Column(
                 children: <Widget>[
                   // ListTile(

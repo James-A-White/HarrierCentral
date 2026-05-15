@@ -77,7 +77,7 @@
 //       // ),
 //       body: Container(
 //         decoration: Backgrounds.defaultHcBackground(),
-//         height: MediaQuery.of(context).size.height,
+//         height: MediaQuery.sizeOf(context).height,
 //         child: Center(
 //           child: Container(
 //               margin: const EdgeInsets.all(20.0),
@@ -150,7 +150,7 @@
 // //         ),
 // //       body: Container(
 // //         decoration: Backgrounds.defaultHcBackground(),
-// //         height: MediaQuery.of(context).size.height,
+// //         height: MediaQuery.sizeOf(context).height,
 // //         child: Center(
 // //           child: Container(
 // //             margin: const EdgeInsets.all(20.0),

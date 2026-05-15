@@ -92,7 +92,7 @@ class QrGroup extends StatelessWidget {
                 child: QrImageView(
                   data: url,
                   version: QrVersions.auto,
-                  size: math.min(160, MediaQuery.of(context).size.width / 2),
+                  size: math.min(160, MediaQuery.sizeOf(context).width / 2),
                 ),
               ),
             ),

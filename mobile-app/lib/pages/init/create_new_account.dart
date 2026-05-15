@@ -15,14 +15,14 @@ class CreateNewAccountPageState extends State<CreateNewAccountPage> {
     return Stack(
       children: <Widget>[
         SizedBox(
-          height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.sizeOf(context).height,
+          width: MediaQuery.sizeOf(context).width,
         ),
         Positioned(
           top: 0,
           left: 0,
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.sizeOf(context).width,
+          height: MediaQuery.sizeOf(context).height,
           child: AppScaffold(
             appBar: AppBar(
               centerTitle: true,
@@ -32,8 +32,8 @@ class CreateNewAccountPageState extends State<CreateNewAccountPage> {
             ),
             body: Container(
               decoration: Backgrounds.defaultHcBackground(),
-              height: MediaQuery.of(context).size.height,
-              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.sizeOf(context).height,
+              width: MediaQuery.sizeOf(context).width,
               child: const CreateNewAccountPageContent(),
             ),
           ),

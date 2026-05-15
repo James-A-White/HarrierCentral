@@ -219,7 +219,7 @@ class CheckInPackPage extends StatelessWidget {
                   alignment: AlignmentDirectional.topStart,
                   children: <Widget>[
                     SizedBox(
-                      height: MediaQuery.of(context).size.height,
+                      height: MediaQuery.sizeOf(context).height,
                       width: 10,
                     ),
                     PositionedTransition(
@@ -646,7 +646,7 @@ class CheckInPackPage extends StatelessWidget {
                         ),
                         height: 85,
                         padding: const EdgeInsets.only(top: 10),
-                        width: MediaQuery.of(context).size.width,
+                        width: MediaQuery.sizeOf(context).width,
                         //color: Colors.white,
                         child: Row(
                           children: [
@@ -805,7 +805,7 @@ class CheckInPackPage extends StatelessWidget {
             color: controller.shouldHighlightHasher(hasher)
                 ? Colors.amber.shade100
                 : Colors.white,
-            width: MediaQuery.of(context).size.width - multselectMargin,
+            width: MediaQuery.sizeOf(context).width - multselectMargin,
 
             child: Stack(
               children: [
@@ -977,7 +977,7 @@ class CheckInPackPage extends StatelessWidget {
           ],
         ),
         padding: const EdgeInsets.only(top: 10),
-        width: MediaQuery.of(context).size.width,
+        width: MediaQuery.sizeOf(context).width,
         height: 120,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,

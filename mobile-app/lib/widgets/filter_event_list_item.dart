@@ -29,7 +29,7 @@ class FilterEventListItem extends StatelessWidget {
       },
       child: Container(
         margin: const EdgeInsets.only(left: 5, top: 5, bottom: 5),
-        width: MediaQuery.of(context).size.width,
+        width: MediaQuery.sizeOf(context).width,
         height: 70,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,

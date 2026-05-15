@@ -326,7 +326,7 @@ class LeaderboardState extends State<Leaderboard>
                     children: <Widget>[
                       Expanded(
                         child: SizedBox(
-                          width: MediaQuery.of(context).size.width,
+                          width: MediaQuery.sizeOf(context).width,
                           child: CustomScrollView(
                             controller: _leaderScrollController,
                             slivers: <Widget>[

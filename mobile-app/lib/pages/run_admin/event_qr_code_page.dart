@@ -124,7 +124,7 @@ class EventQrCodePageState extends State<EventQrCodePage>
               bottom: 0,
               child: SizedBox(
                 key: tabKey,
-                width: MediaQuery.of(context).size.width,
+                width: MediaQuery.sizeOf(context).width,
                 child: TabBarView(
                   controller: _tabController,
                   children: <Widget>[

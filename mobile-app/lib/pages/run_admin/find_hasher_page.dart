@@ -308,7 +308,7 @@ class HasherListView extends StatelessWidget {
         return;
       },
       child: SizedBox(
-        width: MediaQuery.of(context).size.width,
+        width: MediaQuery.sizeOf(context).width,
         child: Stack(
           children: <Widget>[
             if (hasherList[index].photo != null) ...<Widget>[
@@ -442,7 +442,7 @@ class HasherListView extends StatelessWidget {
               left: 75,
               top: 0,
               child: Container(
-                width: MediaQuery.of(context).size.width - 80,
+                width: MediaQuery.sizeOf(context).width - 80,
                 height: 65,
                 color: Colors.transparent,
               ),

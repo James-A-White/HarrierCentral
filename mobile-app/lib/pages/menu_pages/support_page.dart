@@ -68,20 +68,20 @@ class SupportPageState extends State<SupportPage> {
     return Stack(
       children: <Widget>[
         SizedBox(
-          height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.sizeOf(context).height,
+          width: MediaQuery.sizeOf(context).width,
         ),
         Positioned(
           top: 0,
           left: 0,
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.sizeOf(context).width,
+          height: MediaQuery.sizeOf(context).height,
           child: AppScaffold(
             appBar: appBar,
             body: isLoading
                 ? Container(
                     height:
-                        MediaQuery.of(context).size.height -
+                        MediaQuery.sizeOf(context).height -
                         appBar.preferredSize.height,
                     decoration: Backgrounds.defaultHcBackground(),
                     child: _buildCircularProgressIndicator(),
@@ -89,7 +89,7 @@ class SupportPageState extends State<SupportPage> {
                 : Container(
                     decoration: Backgrounds.defaultHcBackground(),
                     height:
-                        MediaQuery.of(context).size.height -
+                        MediaQuery.sizeOf(context).height -
                         appBar.preferredSize.height,
                     child: SingleChildScrollView(
                       child: Padding(
@@ -118,15 +118,15 @@ class SupportPageState extends State<SupportPage> {
                             const SizedBox(height: 15.0),
                             SizedBox(
                               height:
-                                  (MediaQuery.of(context).size.width * 0.8 <
-                                      MediaQuery.of(context).size.height * 0.4)
-                                  ? MediaQuery.of(context).size.width * 0.8
-                                  : MediaQuery.of(context).size.height * 0.4,
+                                  (MediaQuery.sizeOf(context).width * 0.8 <
+                                      MediaQuery.sizeOf(context).height * 0.4)
+                                  ? MediaQuery.sizeOf(context).width * 0.8
+                                  : MediaQuery.sizeOf(context).height * 0.4,
                               width:
-                                  (MediaQuery.of(context).size.width * 0.8 <
-                                      MediaQuery.of(context).size.height * 0.4)
-                                  ? MediaQuery.of(context).size.width * 0.8
-                                  : MediaQuery.of(context).size.height * 0.4,
+                                  (MediaQuery.sizeOf(context).width * 0.8 <
+                                      MediaQuery.sizeOf(context).height * 0.4)
+                                  ? MediaQuery.sizeOf(context).width * 0.8
+                                  : MediaQuery.sizeOf(context).height * 0.4,
                               child: Stack(
                                 alignment: AlignmentDirectional.center,
                                 children: <Widget>[

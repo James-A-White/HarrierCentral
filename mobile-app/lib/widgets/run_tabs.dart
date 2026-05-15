@@ -484,7 +484,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: <Widget>[
                         SizedBox(
-                          width: MediaQuery.of(context).size.width / 5.5,
+                          width: MediaQuery.sizeOf(context).width / 5.5,
                           child: Column(
                             children: <Widget>[
                               Text('Going', style: rsvpTitlesView),
@@ -556,7 +556,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                           ),
                         ),
                         SizedBox(
-                          width: MediaQuery.of(context).size.width / 5.5,
+                          width: MediaQuery.sizeOf(context).width / 5.5,
                           child: Column(
                             children: <Widget>[
                               Text(
@@ -631,7 +631,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                           ),
                         ),
                         SizedBox(
-                          width: MediaQuery.of(context).size.width / 5.5,
+                          width: MediaQuery.sizeOf(context).width / 5.5,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: <Widget>[
@@ -706,7 +706,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                           ),
                         ),
                         SizedBox(
-                          width: MediaQuery.of(context).size.width / 5.5,
+                          width: MediaQuery.sizeOf(context).width / 5.5,
                           child: Column(
                             children: <Widget>[
                               Text(
@@ -1101,7 +1101,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                     bottom: 15.0,
                                   ),
                                   padding: const EdgeInsets.all(8.0),
-                                  width: MediaQuery.of(context).size.width,
+                                  width: MediaQuery.sizeOf(context).width,
                                   child: Scrollbar(
                                     controller: _scrollController,
                                     child: RefreshIndicator(
@@ -2011,7 +2011,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                 PreferredSize(
                   preferredSize: const Size.fromHeight(120.0),
                   child: Container(
-                    width: MediaQuery.of(context).size.width,
+                    width: MediaQuery.sizeOf(context).width,
                     height: 40.0,
                     decoration: BoxDecoration(
                       color: Theme.of(context).primaryColorLight,

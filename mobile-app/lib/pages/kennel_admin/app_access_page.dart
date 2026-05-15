@@ -37,7 +37,7 @@ class AppAccessPageState extends State<AppAccessPage> {
                 bottom: 70.0,
               ),
               decoration: Backgrounds.defaultHcBackgroundLight(),
-              height: MediaQuery.of(context).size.height,
+              height: MediaQuery.sizeOf(context).height,
               child: SingleChildScrollView(
                 child: Column(
                   children: <Widget>[

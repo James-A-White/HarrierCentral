@@ -45,14 +45,14 @@ class UserQrCodePageState extends State<UserQrCodePage>
     return Stack(
       children: <Widget>[
         SizedBox(
-          height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.sizeOf(context).height,
+          width: MediaQuery.sizeOf(context).width,
         ),
         Positioned(
           top: 0,
           left: 0,
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.sizeOf(context).width,
+          height: MediaQuery.sizeOf(context).height,
           child: AppScaffold(
             appBar: _appBar,
             body: Container(
@@ -117,7 +117,7 @@ class UserQrCodePageState extends State<UserQrCodePage>
                     top: 80,
                     bottom: 0,
                     child: SizedBox(
-                      width: MediaQuery.of(context).size.width,
+                      width: MediaQuery.sizeOf(context).width,
                       child: TabBarView(
                         controller: _tabController,
                         children: const <Widget>[QrScannerTab(), QrCodeTab()],
@@ -305,8 +305,8 @@ class QrCodeTabState extends State<QrCodeTab>
 
               //   child: Container(
               //                       color: Colors.white,
-              //     height: MediaQuery.of(context).size.width * 0.8,
-              //     width: MediaQuery.of(context).size.width * 0.8,
+              //     height: MediaQuery.sizeOf(context).width * 0.8,
+              //     width: MediaQuery.sizeOf(context).width * 0.8,
               //   ),
               // ),
               Expanded(

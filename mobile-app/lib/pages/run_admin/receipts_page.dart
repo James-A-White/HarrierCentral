@@ -100,7 +100,7 @@ class ReceiptsListState extends State<ReceiptsList> {
       ),
       // body: Container(
       //   decoration: Backgrounds.defaultHcBackground(),
-      //   height: MediaQuery.of(context).size.height,
+      //   height: MediaQuery.sizeOf(context).height,
       //   child: Container(
       //     margin: const EdgeInsets.all(30.0),
       //     color: themeLightBackground,
@@ -452,7 +452,7 @@ class ReceiptListItem extends StatelessWidget {
         itemPressed();
       },
       child: SizedBox(
-        width: MediaQuery.of(context).size.width,
+        width: MediaQuery.sizeOf(context).width,
         child: Row(
           // crossAxisAlignment: CrossAxisAlignment.center,
           // mainAxisAlignment: MainAxisAlignment.start,

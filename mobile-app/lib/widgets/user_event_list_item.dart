@@ -67,7 +67,7 @@ class UserEventListItem extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.only(left: 5, top: 5, bottom: 5),
-      width: MediaQuery.of(context).size.width,
+      width: MediaQuery.sizeOf(context).width,
       child: IntrinsicHeight(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,

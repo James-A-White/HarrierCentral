@@ -157,8 +157,8 @@
 //   @override
 //   Widget build(BuildContext context) {
 //     return SizedBox(
-//       height: MediaQuery.of(context).size.height,
-//       width: MediaQuery.of(context).size.width,
+//       height: MediaQuery.sizeOf(context).height,
+//       width: MediaQuery.sizeOf(context).width,
 //       child: Center(child: Text(' In App Purchase\r\nPage Placeholder', textAlign: TextAlign.center, style: headingStyle)),
 //     );
 //   }
