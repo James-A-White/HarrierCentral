@@ -249,13 +249,10 @@ class PaymentsService {
       hasherId = GUID_EMPTY;
     }
 
-    final String tokenParameterString =
-        '$deviceSecret${hasherEventMapId!.toUpperCase()}#$hasherId#${paymentAmount.toInt()}#${eventId.toUpperCase()}';
-
     final String accessToken = Utilities.generateToken(
       userId,
       'hcapp_processPayment',
-      paramString: tokenParameterString,
+      paramString: deviceSecret,
     );
 
     final int hasherEventMapLastUpdated = await tableModel.baseService
