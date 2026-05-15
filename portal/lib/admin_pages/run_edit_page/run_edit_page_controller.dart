@@ -1132,7 +1132,7 @@ class RunEditPageController extends TabUiController
       ));
 
       final result = await Get.dialog<LocationLookupResult>(
-        const RunLocationLookupDialog(),
+        RunLocationLookupDialog(controller: lookupController!),
         barrierDismissible: true,
       );
 

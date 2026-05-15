@@ -11,7 +11,7 @@
 //
 // State is managed by [RunLocationLookupController]. The caller
 // (RunEditPageController.openLocationLookupDialog) creates the controller
-// via Get.put() before showing the dialog and deletes it afterwards.
+// and passes it directly — avoids Get.find() timing issues during close animation.
 //
 // The two map widgets are extracted as tiny StatefulWidgets — the map
 // package requires setState after transformer.drag(), matching the same
@@ -355,11 +355,13 @@ class RunLocationLookupController extends GetxController
 // ---------------------------------------------------------------------------
 
 class RunLocationLookupDialog extends StatelessWidget {
-  const RunLocationLookupDialog({super.key});
+  const RunLocationLookupDialog({required this.controller, super.key});
+
+  final RunLocationLookupController controller;
 
   @override
   Widget build(BuildContext context) {
-    final c = Get.find<RunLocationLookupController>();
+    final c = controller;
     return Dialog(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 900, maxHeight: 700),

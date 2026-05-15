@@ -1,4 +1,8 @@
 
+1.4.9+619
+    • Fix location lookup dialog crash — pass controller as constructor param
+      instead of Get.find() to avoid "not found" error during close animation
+
 1.4.8+618
     • RunLocationLookupDialog converted to GetX — controller manages all
       state, dialog is StatelessWidget, map sub-widgets use ever() listeners
