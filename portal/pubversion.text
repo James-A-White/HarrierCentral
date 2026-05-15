@@ -1,4 +1,12 @@
 
+1.4.7+617
+    • Fix memory leak: searchFocusNode and searchController moved from
+      module-level globals into RunListPageController, disposed in onClose()
+    • Fix stale run list: editing a run now refreshes the sidebar list
+      concurrently with the detail panel re-fetch
+    • RegisterVirginPage converted from StatefulWidget to StatelessWidget
+    • RunDetailWidget converted from StatefulWidget to StatelessWidget
+
 1.4.5+615
     • Location lookup: previous runs with no event-level lat/lon no longer appear in the list
     • SP fix: syncLat/syncLong returns NULL (not city fallback) for unlocated events

@@ -24,8 +24,6 @@ const String TEXT_SIX_MONTHS = 'Six months';
 const String TEXT_ONE_YEAR = 'One year';
 const String TEXT_ALL_RUNS_EVENTS = 'All runs / events';
 
-final FocusNode _searchFocusNode = FocusNode();
-final TextEditingController _searchController = TextEditingController();
 
 class RunListPage extends StatelessWidget {
   RunListPage(
@@ -964,8 +962,8 @@ class RunListPage extends StatelessWidget {
                   ..searchRunsText = text
                   ..setDisplayedEvents();
               },
-              focusNode: _searchFocusNode,
-              controller: _searchController,
+              focusNode: formController.searchFocusNode,
+              controller: formController.searchController,
               keyboardType: TextInputType.text,
               style: const TextStyle(fontSize: 13, color: Color(0xFF0F172A)),
               decoration: const InputDecoration(
@@ -980,10 +978,10 @@ class RunListPage extends StatelessWidget {
               ),
             ),
           ),
-          if (_searchController.text.isNotEmpty)
+          if (formController.searchController.text.isNotEmpty)
             GestureDetector(
               onTap: () {
-                _searchController.text = '';
+                formController.searchController.text = '';
                 formController
                   ..searchRunsText = ''
                   ..setDisplayedEvents();

@@ -1,13 +1,8 @@
 import 'package:hcportal/imports.dart';
 
-class RegisterVirginPage extends StatefulWidget {
+class RegisterVirginPage extends StatelessWidget {
   const RegisterVirginPage({super.key});
 
-  @override
-  RegisterVirginPageState createState() => RegisterVirginPageState();
-}
-
-class RegisterVirginPageState extends State<RegisterVirginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

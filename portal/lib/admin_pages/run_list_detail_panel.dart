@@ -752,6 +752,10 @@ class RunListDetailPanel extends StatelessWidget {
                     isAddMode: false,
                   ),
                 );
+                // Refresh the sidebar list and the detail panel concurrently.
+                // refreshEvents() re-fetches allEvents so the run's name/date/etc.
+                // in the list item reflect any edits made in RunEditPage.
+                unawaited(controller.refreshEvents());
                 controller.eventForSingleEventDetailsView.value =
                     await querySingleEvent(rdm.publicEventId ?? '');
               },

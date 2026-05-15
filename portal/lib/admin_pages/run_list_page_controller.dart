@@ -56,6 +56,9 @@ class RunListPageController extends GetxController
   late StreamSubscription<RemoteMessage> _fcmSubscription;
   Map<String, int> thisEventChatCount = {};
 
+  final FocusNode searchFocusNode = FocusNode();
+  final TextEditingController searchController = TextEditingController();
+
   final ScrollController kennelPickerScrollController = ScrollController();
   final RxBool kennelPickerHasOverflow = false.obs;
   final RxBool kennelPickerAtStart = true.obs;
@@ -119,6 +122,8 @@ class RunListPageController extends GetxController
     unawaited(_fcmSubscription.cancel());
     _worker?.dispose();
     tabController.dispose();
+    searchFocusNode.dispose();
+    searchController.dispose();
     kennelPickerScrollController
       ..removeListener(_onKennelPickerScroll)
       ..dispose();

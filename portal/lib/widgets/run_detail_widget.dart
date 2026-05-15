@@ -4,7 +4,7 @@ import 'package:hcportal/imports.dart';
 import 'package:intl/intl.dart';
 import 'package:web/web.dart' as web;
 
-class RunDetailWidget extends StatefulWidget {
+class RunDetailWidget extends StatelessWidget {
   const RunDetailWidget({
     required this.rdm,
     required this.participants,
@@ -19,34 +19,6 @@ class RunDetailWidget extends StatefulWidget {
   final bool textThemeIsLight;
   final bool isNarrowScreen;
   final String? backgroundColor;
-
-  @override
-  RunDetailWidgetState createState() => RunDetailWidgetState();
-}
-
-class RunDetailWidgetState extends State<RunDetailWidget> {
-  RunDetailWidgetState();
-
-  @override
-  void initState() {
-    super.initState();
-    //_rsvpIcon = Future<Widget>.value(getRsvpWidget(widget.futureRun.rsvpState, widget.futureRun.isHare));
-    //WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void dispose() {
-    //WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  // @override
-  // void didChangeAppLifecycleState(AppLifecycleState state) {
-  //   //print('App lifecycle state => ' + state.toString());
-  //   super.didChangeAppLifecycleState(state);
-  // }
-
-  //Future<Widget> _rsvpIcon;
 
   static const int flexLeft = 30;
   static const int flexRight = 70;
@@ -75,7 +47,7 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
             flex: flexLeft,
             child: Text(
               label,
-              style: widget.textThemeIsLight
+              style: textThemeIsLight
                   ? listLabelStyle
                   : listLabelStyle.copyWith(color: Colors.blue.shade900),
               textAlign: TextAlign.right,
@@ -91,7 +63,7 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
             flex: flexRight,
             child: Text(
               (useExternalField == 1 ? externalField : internalField) ?? '',
-              style: widget.textThemeIsLight
+              style: textThemeIsLight
                   ? listValueStyle
                   : listValueStyle.copyWith(color: Colors.black),
               textAlign: TextAlign.left,
@@ -105,6 +77,7 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
   }
 
   String _getMapUrl(
+    BuildContext context,
     RunDetailsModel rdm,
     bool suppressWarning, {
     bool useGoogle = false,
@@ -189,14 +162,14 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
     // print(screenWidth);
     return Column(
       children: <Widget>[
-        if (((widget.rdm.useFbImage != 1
-                        ? widget.rdm.eventImage
-                        : widget.rdm.extEventImage) ??
+        if (((rdm.useFbImage != 1
+                        ? rdm.eventImage
+                        : rdm.extEventImage) ??
                     '')
                 .isNotEmpty &&
-            (widget.rdm.useFbImage != 1
-                    ? widget.rdm.eventImage
-                    : widget.rdm.extEventImage)!
+            (rdm.useFbImage != 1
+                    ? rdm.eventImage
+                    : rdm.extEventImage)!
                 .startsWith('http')) ...<Widget>[
           Padding(
             padding: const EdgeInsets.all(20),
@@ -208,9 +181,9 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
                     builder: (BuildContext context) => ZoomableImagePage2(
                       key: UniqueKey(),
                       pageTitle: 'Zoomable Event Image',
-                      imageUrl: widget.rdm.useFbImage != 1
-                          ? widget.rdm.eventImage
-                          : widget.rdm.extEventImage,
+                      imageUrl: rdm.useFbImage != 1
+                          ? rdm.eventImage
+                          : rdm.extEventImage,
                       appBarBackgroundColor: themeAppBarBackground,
                       background: Backgrounds.defaultHcBackground(),
                     ),
@@ -218,9 +191,9 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
                 );
               },
               child: HcNetworkImage(
-                (widget.rdm.useFbImage != 1
-                    ? widget.rdm.eventImage
-                    : widget.rdm.extEventImage)!,
+                (rdm.useFbImage != 1
+                    ? rdm.eventImage
+                    : rdm.extEventImage)!,
                 errorBuilder: (
                   BuildContext context,
                   Object exception,
@@ -235,7 +208,7 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
                   return Text(
                     '😢 Missing Image 😢',
                     style: TextStyle(
-                      color: widget.textThemeIsLight
+                      color: textThemeIsLight
                           ? Colors.white
                           : Colors.blue.shade900,
                       fontSize: 24,
@@ -251,7 +224,7 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
             child: FancyDivider(
               key: UniqueKey(),
               innerColor:
-                  widget.textThemeIsLight ? Colors.white : Colors.blue.shade900,
+                  textThemeIsLight ? Colors.white : Colors.blue.shade900,
             ),
           ),
         ],
@@ -262,24 +235,24 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              if ((widget.rdm.kennelLogo != null) &&
-                  (widget.rdm.kennelShortName != null)) ...<Widget>[
+              if ((rdm.kennelLogo != null) &&
+                  (rdm.kennelShortName != null)) ...<Widget>[
                 KennelLogo(
-                  kennelLogoUrl: widget.rdm.kennelLogo!,
-                  kennelShortName: widget.rdm.kennelShortName!,
-                  logoHeight: (widget.isNarrowScreen) ? 130.0 : 75.0,
-                  rightPadding: widget.isNarrowScreen ? 0.0 : 25.0,
+                  kennelLogoUrl: rdm.kennelLogo!,
+                  kennelShortName: rdm.kennelShortName!,
+                  logoHeight: (isNarrowScreen) ? 130.0 : 75.0,
+                  rightPadding: isNarrowScreen ? 0.0 : 25.0,
                 ),
               ],
-              if (!widget.isNarrowScreen) ...<Widget>[
+              if (!isNarrowScreen) ...<Widget>[
                 Flexible(
                   child: AutoSizeText(
-                    ((widget.rdm.useFbRunDetails != 1) ||
-                            (widget.rdm.extEventName == null))
-                        ? widget.rdm.eventName
-                        : widget.rdm.extEventName!,
+                    ((rdm.useFbRunDetails != 1) ||
+                            (rdm.extEventName == null))
+                        ? rdm.eventName
+                        : rdm.extEventName!,
                     minFontSize: 9,
-                    style: widget.textThemeIsLight
+                    style: textThemeIsLight
                         ? titleStyle
                         : titleStyle.copyWith(color: Colors.blue.shade900),
                     textAlign: TextAlign.center,
@@ -290,15 +263,15 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
             ],
           ),
         ),
-        if (widget.isNarrowScreen) ...<Widget>[
+        if (isNarrowScreen) ...<Widget>[
           const SizedBox(height: 15),
           AutoSizeText(
-            ((widget.rdm.useFbRunDetails != 1) ||
-                    (widget.rdm.extEventName == null))
-                ? widget.rdm.eventName
-                : widget.rdm.extEventName!,
+            ((rdm.useFbRunDetails != 1) ||
+                    (rdm.extEventName == null))
+                ? rdm.eventName
+                : rdm.extEventName!,
             minFontSize: 9,
-            style: widget.textThemeIsLight
+            style: textThemeIsLight
                 ? titleStyle
                 : titleStyle.copyWith(color: Colors.blue.shade900),
             textAlign: TextAlign.center,
@@ -310,12 +283,12 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
           child: FancyDivider(
             key: UniqueKey(),
             innerColor:
-                widget.textThemeIsLight ? Colors.white : Colors.blue.shade900,
+                textThemeIsLight ? Colors.white : Colors.blue.shade900,
           ),
         ),
         Text(
           'Event details',
-          style: widget.textThemeIsLight
+          style: textThemeIsLight
               ? headingStyle
               : headingStyle.copyWith(color: Colors.blue.shade900),
         ),
@@ -332,7 +305,7 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
                   flex: flexLeft,
                   child: Text(
                     'Kennel:',
-                    style: widget.textThemeIsLight
+                    style: textThemeIsLight
                         ? listLabelStyle
                         : listLabelStyle.copyWith(color: Colors.blue.shade900),
                     textAlign: TextAlign.right,
@@ -347,8 +320,8 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
                 Expanded(
                   flex: flexRight,
                   child: Text(
-                    widget.rdm.kennelName ?? '<no kennel>',
-                    style: widget.textThemeIsLight
+                    rdm.kennelName ?? '<no kennel>',
+                    style: textThemeIsLight
                         ? listValueStyle
                         : listValueStyle.copyWith(color: Colors.black),
                     textAlign: TextAlign.left,
@@ -359,15 +332,15 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
               ],
             ),
 
-            if ((widget.rdm.eventNumber != 0) &&
-                (widget.rdm.isCountedRun != 0)) ...<Widget>[
+            if ((rdm.eventNumber != 0) &&
+                (rdm.isCountedRun != 0)) ...<Widget>[
               Row(
                 children: <Widget>[
                   Expanded(
                     flex: flexLeft,
                     child: Text(
                       'Run #:',
-                      style: widget.textThemeIsLight
+                      style: textThemeIsLight
                           ? listLabelStyle
                           : listLabelStyle.copyWith(
                               color: Colors.blue.shade900,
@@ -384,8 +357,8 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
                   Expanded(
                     flex: flexRight,
                     child: Text(
-                      '${widget.rdm.eventNumber}',
-                      style: widget.textThemeIsLight
+                      '${rdm.eventNumber}',
+                      style: textThemeIsLight
                           ? listValueStyle
                           : listValueStyle.copyWith(color: Colors.black),
                       textAlign: TextAlign.left,
@@ -403,7 +376,7 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
                   flex: flexLeft,
                   child: Text(
                     'Date:',
-                    style: widget.textThemeIsLight
+                    style: textThemeIsLight
                         ? listLabelStyle
                         : listLabelStyle.copyWith(color: Colors.blue.shade900),
                     textAlign: TextAlign.right,
@@ -419,12 +392,12 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
                   flex: flexRight,
                   child: Text(
                     DateFormat('E, MMM d, yyyy').format(
-                      ((widget.rdm.useFbRunDetails != 1) ||
-                              (widget.rdm.extEventStartDatetime == null))
-                          ? widget.rdm.eventStartDatetime
-                          : widget.rdm.extEventStartDatetime!,
+                      ((rdm.useFbRunDetails != 1) ||
+                              (rdm.extEventStartDatetime == null))
+                          ? rdm.eventStartDatetime
+                          : rdm.extEventStartDatetime!,
                     ),
-                    style: widget.textThemeIsLight
+                    style: textThemeIsLight
                         ? listValueStyle
                         : listValueStyle.copyWith(color: Colors.black),
                     textAlign: TextAlign.left,
@@ -440,7 +413,7 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
                   flex: flexLeft,
                   child: Text(
                     'Time:',
-                    style: widget.textThemeIsLight
+                    style: textThemeIsLight
                         ? listLabelStyle
                         : listLabelStyle.copyWith(color: Colors.blue.shade900),
                     textAlign: TextAlign.right,
@@ -456,12 +429,12 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
                   flex: flexRight,
                   child: Text(
                     DateFormat('h:mm a').format(
-                      ((widget.rdm.useFbRunDetails != 1) ||
-                              (widget.rdm.extEventStartDatetime == null))
-                          ? widget.rdm.eventStartDatetime
-                          : widget.rdm.extEventStartDatetime!,
+                      ((rdm.useFbRunDetails != 1) ||
+                              (rdm.extEventStartDatetime == null))
+                          ? rdm.eventStartDatetime
+                          : rdm.extEventStartDatetime!,
                     ),
-                    style: widget.textThemeIsLight
+                    style: textThemeIsLight
                         ? listValueStyle
                         : listValueStyle.copyWith(color: Colors.black),
                     textAlign: TextAlign.left,
@@ -474,19 +447,19 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
 
             ..._getRow(
               'Place',
-              widget.rdm.locationOneLineDesc,
-              widget.rdm.extLocationOneLineDesc,
-              widget.rdm.useFbRunDetails,
+              rdm.locationOneLineDesc,
+              rdm.extLocationOneLineDesc,
+              rdm.useFbRunDetails,
             ),
 
-            if (widget.rdm.eventGeographicScope != 0) ...<Widget>[
+            if (rdm.eventGeographicScope != 0) ...<Widget>[
               Row(
                 children: <Widget>[
                   Expanded(
                     flex: flexLeft,
                     child: Text(
                       'Event:',
-                      style: widget.textThemeIsLight
+                      style: textThemeIsLight
                           ? listLabelStyle
                           : listLabelStyle.copyWith(
                               color: Colors.blue.shade900,
@@ -504,8 +477,8 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
                     flex: flexRight,
                     child: Text(
                       SPECIAL_EVENT_STRINGS.keys
-                          .elementAt(widget.rdm.eventGeographicScope),
-                      style: widget.textThemeIsLight
+                          .elementAt(rdm.eventGeographicScope),
+                      style: textThemeIsLight
                           ? listValueStyle
                           : listValueStyle.copyWith(color: Colors.black),
                       textAlign: TextAlign.left,
@@ -522,7 +495,7 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
                   flex: flexLeft,
                   child: Text(
                     'Run fees:',
-                    style: widget.textThemeIsLight
+                    style: textThemeIsLight
                         ? listLabelStyle
                         : listLabelStyle.copyWith(color: Colors.blue.shade900),
                     textAlign: TextAlign.right,
@@ -537,13 +510,13 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
                 Expanded(
                   flex: flexRight,
                   child: Text(
-                    ((widget.rdm.eventPriceForMembers ??
-                                widget.rdm.kennelDefaultEventPriceForMembers ??
+                    ((rdm.eventPriceForMembers ??
+                                rdm.kennelDefaultEventPriceForMembers ??
                                 0) >
                             0)
-                        ? '${IveCoreUtilities.getFormattedMoney(widget.rdm.eventPriceForMembers ?? widget.rdm.kennelDefaultEventPriceForMembers ?? 0, widget.rdm.digitsAfterDecimal ?? 2, widget.rdm.currencySymbol ?? '^')} (members)'
+                        ? '${IveCoreUtilities.getFormattedMoney(rdm.eventPriceForMembers ?? rdm.kennelDefaultEventPriceForMembers ?? 0, rdm.digitsAfterDecimal ?? 2, rdm.currencySymbol ?? '^')} (members)'
                         : '',
-                    style: widget.textThemeIsLight
+                    style: textThemeIsLight
                         ? listValueStyle
                         : listValueStyle.copyWith(color: Colors.black),
                     textAlign: TextAlign.left,
@@ -559,7 +532,7 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
                   flex: flexLeft,
                   child: Text(
                     '',
-                    style: widget.textThemeIsLight
+                    style: textThemeIsLight
                         ? listLabelStyle
                         : listLabelStyle.copyWith(color: Colors.blue.shade900),
                     textAlign: TextAlign.right,
@@ -574,14 +547,13 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
                 Expanded(
                   flex: flexRight,
                   child: Text(
-                    ((widget.rdm.eventPriceForNonMembers ??
-                                widget
-                                    .rdm.kennelDefaultEventPriceForNonMembers ??
+                    ((rdm.eventPriceForNonMembers ??
+                                rdm.kennelDefaultEventPriceForNonMembers ??
                                 0) >
                             0)
-                        ? '${IveCoreUtilities.getFormattedMoney(widget.rdm.eventPriceForNonMembers ?? widget.rdm.kennelDefaultEventPriceForNonMembers ?? 0, widget.rdm.digitsAfterDecimal ?? 2, widget.rdm.currencySymbol ?? '^')} (non-members)'
+                        ? '${IveCoreUtilities.getFormattedMoney(rdm.eventPriceForNonMembers ?? rdm.kennelDefaultEventPriceForNonMembers ?? 0, rdm.digitsAfterDecimal ?? 2, rdm.currencySymbol ?? '^')} (non-members)'
                         : '',
-                    style: widget.textThemeIsLight
+                    style: textThemeIsLight
                         ? listValueStyle
                         : listValueStyle.copyWith(color: Colors.black),
                     textAlign: TextAlign.left,
@@ -592,14 +564,14 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
               ],
             ),
 
-            if ((widget.rdm.eventPriceForExtras ?? 0) != 0) ...<Widget>[
+            if ((rdm.eventPriceForExtras ?? 0) != 0) ...<Widget>[
               Row(
                 children: <Widget>[
                   Expanded(
                     flex: flexLeft,
                     child: Text(
                       'Extra fee:',
-                      style: widget.textThemeIsLight
+                      style: textThemeIsLight
                           ? listLabelStyle
                           : listLabelStyle.copyWith(
                               color: Colors.blue.shade900,
@@ -616,14 +588,14 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
                   Expanded(
                     flex: flexRight,
                     child: Text(
-                      ((widget.rdm.eventPriceForNonMembers ??
-                                  widget.rdm
+                      ((rdm.eventPriceForNonMembers ??
+                                  rdm
                                       .kennelDefaultEventPriceForNonMembers ??
                                   0) >
                               0)
-                          ? '${IveCoreUtilities.getFormattedMoney(widget.rdm.eventPriceForExtras ?? 0, widget.rdm.digitsAfterDecimal ?? 2, widget.rdm.currencySymbol ?? '^')} (${widget.rdm.extrasDescription})'
+                          ? '${IveCoreUtilities.getFormattedMoney(rdm.eventPriceForExtras ?? 0, rdm.digitsAfterDecimal ?? 2, rdm.currencySymbol ?? '^')} (${rdm.extrasDescription})'
                           : '',
-                      style: widget.textThemeIsLight
+                      style: textThemeIsLight
                           ? listValueStyle
                           : listValueStyle.copyWith(color: Colors.black),
                       textAlign: TextAlign.left,
@@ -635,14 +607,14 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
               ),
             ],
 
-            if ((widget.rdm.hares ?? '') != '') ...<Widget>[
+            if ((rdm.hares ?? '') != '') ...<Widget>[
               Row(
                 children: <Widget>[
                   Expanded(
                     flex: flexLeft,
                     child: Text(
                       'Hares:',
-                      style: widget.textThemeIsLight
+                      style: textThemeIsLight
                           ? listLabelStyle
                           : listLabelStyle.copyWith(
                               color: Colors.blue.shade900,
@@ -659,8 +631,8 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
                   Expanded(
                     flex: flexRight,
                     child: Text(
-                      widget.rdm.hares ?? '',
-                      style: widget.textThemeIsLight
+                      rdm.hares ?? '',
+                      style: textThemeIsLight
                           ? listValueStyle
                           : listValueStyle.copyWith(color: Colors.black),
                       textAlign: TextAlign.left,
@@ -677,7 +649,7 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
             //           Expanded(
             //             child: Text(
             //               'Distance:',
-            //               style: widget.textThemeIsLight ? listLabelStyle : listLabelStyle.copyWith(color:Colors.blue.shade900),
+            //               style: textThemeIsLight ? listLabelStyle : listLabelStyle.copyWith(color:Colors.blue.shade900),
             //               textAlign: TextAlign.right,
             //               maxLines: 1,
             //               overflow: TextOverflow.ellipsis,
@@ -695,7 +667,7 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
             //                         ? Utilities.getDistance(distToEvent, context, isMetric: distancePreference == 0) + ' from here'
             //                         : '<unknown>'
             //                     : '',
-            //                 style: widget.textThemeIsLight ? listValueStyle : listValueStyle.copyWith(color: Colors.black),
+            //                 style: textThemeIsLight ? listValueStyle : listValueStyle.copyWith(color: Colors.black),
             //                 textAlign: TextAlign.left,
             //                 maxLines: 1,
             //                 overflow: TextOverflow.ellipsis,
@@ -707,39 +679,39 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
 
             ..._getRow(
               'Street:',
-              widget.rdm.locationStreet,
-              widget.rdm.extLocationStreet,
-              widget.rdm.useFbLocation,
+              rdm.locationStreet,
+              rdm.extLocationStreet,
+              rdm.useFbLocation,
             ),
             ..._getRow(
               'Post code:',
-              widget.rdm.locationPostCode,
-              widget.rdm.extLocationPostCode,
-              widget.rdm.useFbLocation,
+              rdm.locationPostCode,
+              rdm.extLocationPostCode,
+              rdm.useFbLocation,
             ),
             ..._getRow(
               'City:',
-              widget.rdm.locationCity,
-              widget.rdm.extLocationCity,
-              widget.rdm.useFbLocation,
+              rdm.locationCity,
+              rdm.extLocationCity,
+              rdm.useFbLocation,
             ),
             ..._getRow(
               'Sub-region:',
-              widget.rdm.locationSubRegion,
-              widget.rdm.extLocationSubRegion,
-              widget.rdm.useFbLocation,
+              rdm.locationSubRegion,
+              rdm.extLocationSubRegion,
+              rdm.useFbLocation,
             ),
             ..._getRow(
               'Region:',
-              widget.rdm.locationRegion,
-              widget.rdm.extLocationRegion,
-              widget.rdm.useFbLocation,
+              rdm.locationRegion,
+              rdm.extLocationRegion,
+              rdm.useFbLocation,
             ),
             ..._getRow(
               'Country:',
-              widget.rdm.locationCountry,
-              widget.rdm.extLocationCountry,
-              widget.rdm.useFbLocation,
+              rdm.locationCountry,
+              rdm.extLocationCountry,
+              rdm.useFbLocation,
             ),
           ],
         ),
@@ -755,12 +727,12 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
                   style: TextStyle(color: Colors.white),
                 ),
                 onPressed: () async {
-                  if (widget.rdm.publicEventId != null) {
+                  if (rdm.publicEventId != null) {
                     final isDebugging =
                         web.window.location.href.contains('localhost');
 
                     final url =
-                        '${isDebugging ? 'localhost:8080' : 'https://www.hashruns.org'}/${widget.rdm.kennelUniqueShortName}/${widget.rdm.absoluteEventNumber ?? widget.rdm.eventNumber}';
+                        '${isDebugging ? 'localhost:8080' : 'https://www.hashruns.org'}/${rdm.kennelUniqueShortName}/${rdm.absoluteEventNumber ?? rdm.eventNumber}';
 
                     await Clipboard.setData(ClipboardData(text: url));
 
@@ -775,7 +747,7 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
                 },
               ),
             ),
-            if (_getMapUrl(widget.rdm, true, useGoogle: true)
+            if (_getMapUrl(context, rdm, true, useGoogle: true)
                 .isNotEmpty) ...<Widget>[
               const SizedBox(width: 40),
               Padding(
@@ -788,7 +760,7 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
                   ),
                   onPressed: () async {
                     final linkUrl =
-                        _getMapUrl(widget.rdm, false, useGoogle: true);
+                        _getMapUrl(context, rdm, false, useGoogle: true);
                     if (Uri.parse(linkUrl).isAbsolute) {
                       openWindow(linkUrl, '_blank');
                       //js.context.callMethod('open', <String>[linkUrl]);
@@ -803,7 +775,7 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
                     // if (await canLaunch(linkUrl)) {
                     //   await launch(linkUrl);
                     // } else {
-                    //   linkUrl = _getMapUrl(widget.rdm, false, useApple: true);
+                    //   linkUrl = _getMapUrl(rdm, false, useApple: true);
                     //   if (await canLaunch(linkUrl)) {
                     //     await launch(linkUrl);
                     //   } else {
@@ -838,12 +810,12 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
         //           child: Text('Pay for Hash', style: buttonTextStyle),
         //         ),
         //       ),
-        if ((widget.rdm.tags1 != 0) || (widget.rdm.tags2 != 0)) ...<Widget>[
+        if ((rdm.tags1 != 0) || (rdm.tags2 != 0)) ...<Widget>[
           Column(
             children: <Widget>[
               FancyDivider(
                 key: UniqueKey(),
-                innerColor: widget.textThemeIsLight
+                innerColor: textThemeIsLight
                     ? Colors.white
                     : Colors.blue.shade900,
                 topMargin: 30.0,
@@ -851,7 +823,7 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
               ),
               Text(
                 'Event tags',
-                style: widget.textThemeIsLight
+                style: textThemeIsLight
                     ? headingStyle
                     : headingStyle.copyWith(color: Colors.blue.shade900),
               ),
@@ -865,20 +837,20 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
                     if (((((RUN_TAGS.values.elementAt(i)) ~/ 4294967296) ==
                                 1) &&
                             (((RUN_TAGS.values.elementAt(i)) &
-                                    widget.rdm.tags1 &
+                                    rdm.tags1 &
                                     0x7FFFFFFF) !=
                                 0)) ||
                         ((((RUN_TAGS.values.elementAt(i)) ~/ 4294967296) ==
                                 2) &&
                             (((RUN_TAGS.values.elementAt(i)) &
-                                    widget.rdm.tags2 &
+                                    rdm.tags2 &
                                     0x7FFFFFFF) !=
                                 0))) ...<Widget>[
                       Container(
                         margin: const EdgeInsets.only(left: 30, bottom: 10),
                         child: Text(
                           '•  ${RUN_TAGS.keys.elementAt(i)}',
-                          style: widget.textThemeIsLight
+                          style: textThemeIsLight
                               ? listValueStyle
                               : listValueStyle.copyWith(color: Colors.black),
                         ),
@@ -892,28 +864,28 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
           ),
         ],
 
-        if ((widget.rdm.eventDescription.isNotEmpty) ||
-            ((widget.rdm.extEventDescription ?? '').isNotEmpty)) ...<Widget>[
+        if ((rdm.eventDescription.isNotEmpty) ||
+            ((rdm.extEventDescription ?? '').isNotEmpty)) ...<Widget>[
           FancyDivider(
             key: UniqueKey(),
             innerColor:
-                widget.textThemeIsLight ? Colors.white : Colors.blue.shade900,
+                textThemeIsLight ? Colors.white : Colors.blue.shade900,
             topMargin: 30.0,
           ),
           Padding(
             padding: EdgeInsets.symmetric(
               vertical: 20,
-              horizontal: widget.isNarrowScreen ? 20.0 : 80.0,
+              horizontal: isNarrowScreen ? 20.0 : 80.0,
             ),
-            child: widget.rdm.useFbRunDetails != 1
+            child: rdm.useFbRunDetails != 1
                 ? Linkify(
-                    text: widget.rdm.eventDescription.replaceAll('\r\n', '\n'),
-                    style: widget.textThemeIsLight
+                    text: rdm.eventDescription.replaceAll('\r\n', '\n'),
+                    style: textThemeIsLight
                         ? bodyStyle
                         : bodyStyle.copyWith(
                             color: Colors.black,
                           ),
-                    linkStyle: widget.textThemeIsLight
+                    linkStyle: textThemeIsLight
                         ? bodyStyleYellow
                         : bodyStyleYellow.copyWith(
                             color: Colors.blue.shade900,
@@ -932,14 +904,14 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
                     },
                   )
                 : Linkify(
-                    text: (widget.rdm.extEventDescription ?? '')
+                    text: (rdm.extEventDescription ?? '')
                         .replaceAll('\r\n', '\n'),
-                    style: widget.textThemeIsLight
+                    style: textThemeIsLight
                         ? bodyStyle
                         : bodyStyle.copyWith(
                             color: Colors.black,
                           ),
-                    linkStyle: widget.textThemeIsLight
+                    linkStyle: textThemeIsLight
                         ? bodyStyleYellow
                         : bodyStyleYellow.copyWith(
                             color: Colors.blue.shade900,
@@ -960,11 +932,11 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
           ),
         ],
 
-        if ((widget.rdm.eventFacebookId ?? '') != '') ...<Widget>[
+        if ((rdm.eventFacebookId ?? '') != '') ...<Widget>[
           FancyDivider(
             key: UniqueKey(),
             innerColor:
-                widget.textThemeIsLight ? Colors.white : Colors.blue.shade900,
+                textThemeIsLight ? Colors.white : Colors.blue.shade900,
             topMargin: 30.0,
           ),
           Padding(
@@ -981,7 +953,7 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
               ),
               onPressed: () async {
                 final linkUrl =
-                    'https://www.facebook.com/${widget.rdm.eventFacebookId}';
+                    'https://www.facebook.com/${rdm.eventFacebookId}';
                 if (Uri.parse(linkUrl).isAbsolute) {
                   openWindow(linkUrl, '_blank');
                   //js.context.callMethod('open', <String>[linkUrl]);
@@ -999,24 +971,24 @@ class RunDetailWidgetState extends State<RunDetailWidget> {
         ],
 
         const SizedBox(height: 15),
-        if ((widget.rdm.eventStartDatetime.isBefore(DateTime.now())) &&
-            (widget.participants.isNotEmpty)) ...<Widget>[
+        if ((rdm.eventStartDatetime.isBefore(DateTime.now())) &&
+            (participants.isNotEmpty)) ...<Widget>[
           FancyDivider(
             key: UniqueKey(),
             innerColor:
-                widget.textThemeIsLight ? Colors.white : Colors.blue.shade900,
+                textThemeIsLight ? Colors.white : Colors.blue.shade900,
             topMargin: 30.0,
           ),
           const SizedBox(height: 25),
           Text(
             'The Pack',
-            style: widget.textThemeIsLight
+            style: textThemeIsLight
                 ? headingStyle
                 : headingStyle.copyWith(color: Colors.blue.shade900),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: ParticipantsTable(widget.participants),
+            child: ParticipantsTable(participants),
           ),
           const SizedBox(height: 40),
         ],
