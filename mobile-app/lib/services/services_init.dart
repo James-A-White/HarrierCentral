@@ -95,4 +95,10 @@ Future<void> initServices() async {
   // registration needed here. When the migration progresses and DataRepository
   // gains async resources of its own (e.g. a direct DB connection), initialise
   // it here alongside the other services.
+
+  // DataChangeService: broadcast stream for cross-controller change notification.
+  if (Get.isRegistered<DataChangeService>()) {
+    await Get.delete<DataChangeService>(force: true);
+  }
+  Get.lazyPut<DataChangeService>(() => DataChangeService(), fenix: true);
 }
