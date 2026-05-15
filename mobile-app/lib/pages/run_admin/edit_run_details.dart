@@ -5,14 +5,12 @@ import 'package:latlong2/latlong.dart' as latlng;
 class EditRunDetailsPage extends StatefulWidget {
   const EditRunDetailsPage(
     this.isNewRun,
-    this.eventAggregate,
-    this.getUpdatedEventAggregate, {
+    this.eventAggregate, {
     super.key,
   });
 
   final bool isNewRun;
   final RunAdminAggregate eventAggregate;
-  final Function getUpdatedEventAggregate;
 
   @override
   EditRunDetailsPageState createState() => EditRunDetailsPageState();
@@ -462,7 +460,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
       useFbRunDetails: 1,
     );
 
-    _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+    await _refreshAfterSave(eventId);
     setState(() {
       _isUpdating = false;
       _setTextFields();
@@ -480,6 +478,18 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     });
+  }
+
+  Future<void> _refreshAfterSave(String eventId) async {
+    final String userId = getStringPref(StringPrefsEnum.userId) ?? '';
+    final RunAdminAggregate? updated =
+        await CommonQueries.getEventAdminInfoFromLocalCache(eventId, userId);
+    if (updated != null) {
+      _eventAggregate = updated;
+    }
+    Get.find<DataChangeService>().notify(
+      DataChangeEvent(type: DataChangeType.runUpdated, id: eventId),
+    );
   }
 
   Future<void> _updateRunDetails(EditingTabEnum tabType) async {
@@ -523,7 +533,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                 ),
         );
 
-        _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+        await _refreshAfterSave(eventId);
         setState(() {
           _isUpdating = false;
         });
@@ -559,7 +569,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
             locationCountry: _locationCountryController.text,
           );
 
-          _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+          await _refreshAfterSave(eventId);
           setState(() {
             _isUpdating = false;
             // final SnackBar snackBar = SnackBar(
@@ -626,7 +636,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
             usersCanEditRunAttendence: _usersCanEditRunAttendence,
           );
 
-          _eventAggregate = await widget.getUpdatedEventAggregate(eventId);
+          await _refreshAfterSave(eventId);
           setState(() {
             _isUpdating = false;
             final SnackBar snackBar = SnackBar(
@@ -1252,9 +1262,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                         useFbImage: 0,
                       );
 
-                      _eventAggregate = await widget.getUpdatedEventAggregate(
-                        eventId,
-                      );
+                      await _refreshAfterSave(eventId);
 
                       if (widget.isNewRun) {
                         setState(() {
@@ -1330,9 +1338,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                         useFbImage: 1,
                       );
 
-                      _eventAggregate = await widget.getUpdatedEventAggregate(
-                        eventId,
-                      );
+                      await _refreshAfterSave(eventId);
                       setState(() {
                         _isUpdating = false;
                         final SnackBar snackBar = SnackBar(
@@ -1458,10 +1464,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                                 useFbImage: 1,
                                               );
 
-                                          _eventAggregate = await widget
-                                              .getUpdatedEventAggregate(
-                                                eventId,
-                                              );
+                                          await _refreshAfterSave(eventId);
                                           setState(() {
                                             _isUpdating = false;
                                             final SnackBar snackBar = SnackBar(
@@ -1853,8 +1856,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                   lon: _mapCenter.longitude,
                                   useFbLatLon: 0,
                                 );
-                                _eventAggregate = await widget
-                                    .getUpdatedEventAggregate(eventId);
+                                await _refreshAfterSave(eventId);
 
                                 if (widget.isNewRun) {
                                   setState(() {
@@ -1915,8 +1917,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                         useFbLatLon: 1,
                                       );
 
-                                  _eventAggregate = await widget
-                                      .getUpdatedEventAggregate(eventId);
+                                  await _refreshAfterSave(eventId);
                                   setState(() {
                                     if ((_eventAggregate.extensions.latitude ==
                                             null) ||
