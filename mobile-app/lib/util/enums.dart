@@ -25,7 +25,6 @@ enum StringPrefsEnum {
   deviceSecret,
   displayName,
   email,
-  facebookProfilePhoto,
   fcmToken,
   firstName,
   gender,
@@ -487,7 +486,7 @@ enum SplashSequenceType {
   }
 }
 
-enum ThirdPartyLoginType { apple, facebook, none }
+enum ThirdPartyLoginType { apple, none }
 
 enum EnumDataContext { user, event, kennel }
 

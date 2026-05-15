@@ -3,7 +3,6 @@
 import 'package:harrier_central/imports.dart';
 
 enum RouteNames {
-  FACEBOOK_LOGIN,
   MAIN_LANDING_PAGE,
   AVATAR_ICON_PAGE,
   NEW_ACCOUNT,
@@ -16,7 +15,6 @@ enum RouteNames {
 }
 
 final Map<String, WidgetBuilder> routes = <String, WidgetBuilder>{
-  //RouteNames.FACEBOOK_LOGIN.toString(): (BuildContext context) => ThirdPartyLogin(true),
   RouteNames.MAIN_LANDING_PAGE.toString():
       (BuildContext context) => const MainNavigationPage(),
   RouteNames.NEW_ACCOUNT.toString():

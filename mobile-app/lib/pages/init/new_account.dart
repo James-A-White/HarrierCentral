@@ -15,14 +15,14 @@ class NewAccountPageState extends State<NewAccountPage> {
     return Stack(
       children: <Widget>[
         SizedBox(
-          height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.sizeOf(context).height,
+          width: MediaQuery.sizeOf(context).width,
         ),
         Positioned(
           top: 0,
           left: 0,
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.sizeOf(context).width,
+          height: MediaQuery.sizeOf(context).height,
           child: AppScaffold(
             appBar: AppBar(
               centerTitle: true,
@@ -32,8 +32,8 @@ class NewAccountPageState extends State<NewAccountPage> {
             ),
             body: Container(
               decoration: Backgrounds.defaultHcBackground(),
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height,
+              width: MediaQuery.sizeOf(context).width,
+              height: MediaQuery.sizeOf(context).height,
               child: const NewAccountPageContent(),
             ),
           ),
@@ -253,7 +253,7 @@ class NewAccountPageContentState extends State<NewAccountPageContent> {
                             children: <Widget>[
                               Text('Use Third Party', style: localTitleStyle),
                               Text(
-                                'Create a new Harrier Central account or connect to your existing account using a third-party login provider such as Apple or Facebook',
+                                'Create a new Harrier Central account or connect to your existing account using a third-party login provider such as Apple',
                                 style: localBodyStyle.copyWith(fontSize: 16.0),
                                 //softWrap: true,
                               ),
@@ -264,41 +264,6 @@ class NewAccountPageContentState extends State<NewAccountPageContent> {
                     ),
                   ),
                 ),
-                // IveCoreUtilities.styleForDisabled(
-                //     Container(
-                //       padding: const EdgeInsets.all(10),
-                //       decoration: BoxDecoration(
-                //         borderRadius: BorderRadius.circular(20.0),
-                //         color: Colors.white,
-                //         border: Border.all(
-                //           color: hc_red,
-                //           width: 2, //                   <--- border width here
-                //         ),
-                //       ),
-                //       child: Row(
-                //         children: <Widget>[
-                //           Image(
-                //             width: PROFILE_PIC_SIZE2 * deviceInfo.deviceWidthScaleFactor,
-                //             height: PROFILE_PIC_SIZE2 * deviceInfo.deviceWidthScaleFactor,
-                //             fit: BoxFit.fill,
-                //             image: const AssetImage('images/icons/qrPhone.png'),
-                //           ),
-                //           const SizedBox(height: 1, width: 10),
-                //           Expanded(
-                //             child:
-                //                 Column(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                //               Text('Transfer app', style: localTitleStyle),
-                //               Text(
-                //                 'Use a QR code to transfer your Harrier Central account to this phone from another phone',
-                //                 style: localBodyStyle,
-                //                 //softWrap: true,
-                //               ),
-                //             ]),
-                //           ),
-                //         ],
-                //       ),
-                //     ),
-                //     borderRadius: 20.0),
               ],
             ),
           ),
