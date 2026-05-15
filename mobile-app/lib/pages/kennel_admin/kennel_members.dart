@@ -121,7 +121,7 @@ class KennelMemberListState extends State<KennelMembersList>
       final String message = (await CommonQueries.countRecords(
         EnumDataTables.hasherKennelMap.kennelTableName,
       )).toString();
-      print('HKM count = $message');
+      debugPrint('HKM count = $message');
     }
 
     final String query =
@@ -382,7 +382,7 @@ class KennelMemberListState extends State<KennelMembersList>
         fit: StackFit.loose,
         alignment: AlignmentDirectional.topStart,
         children: <Widget>[
-          SizedBox(height: MediaQuery.of(context).size.height, width: 10),
+          SizedBox(height: MediaQuery.sizeOf(context).height, width: 10),
 
           // (snapshot?.data == null || snapshot.data.isEmpty)
 
@@ -746,7 +746,7 @@ class KennelMemberListState extends State<KennelMembersList>
         ],
       ),
       padding: const EdgeInsets.only(top: 10),
-      width: MediaQuery.of(context).size.width,
+      width: MediaQuery.sizeOf(context).width,
       height: 85,
       child: Column(
         children: <Widget>[
@@ -925,7 +925,7 @@ class KennelMemberListState extends State<KennelMembersList>
         ],
       ),
       padding: const EdgeInsets.only(top: 10),
-      width: MediaQuery.of(context).size.width,
+      width: MediaQuery.sizeOf(context).width,
       height: 120,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,

@@ -158,7 +158,7 @@ class RunListItem extends StatelessWidget {
 
     String eventName = futureRun.event.eventName;
     if (kDebugMode) {
-      print('Event Name: $eventName');
+      debugPrint('Event Name: $eventName');
     }
 
     final event = DateTime.parse(
@@ -205,7 +205,7 @@ class RunListItem extends StatelessWidget {
                 ),
                 Expanded(
                   child: Container(
-                    width: MediaQuery.of(context).size.width,
+                    width: MediaQuery.sizeOf(context).width,
                     padding: const EdgeInsets.only(top: 5.0, left: 5.0),
                     child: AutoSizeText(
                       futureRun.event.eventName,

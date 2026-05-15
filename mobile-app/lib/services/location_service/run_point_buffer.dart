@@ -51,7 +51,7 @@ class RunPointBuffer {
     }
 
     if (kDebugMode) {
-      print('LocationService: Flushed run buffer.');
+      debugPrint('LocationService: Flushed run buffer.');
     }
   }
 
@@ -81,7 +81,7 @@ class RunPointBuffer {
         );
         if (resp.statusCode >= 200 && resp.statusCode < 300) {
           if (kDebugMode) {
-            print(resp.body);
+            debugPrint(resp.body);
           }
           return true;
         }

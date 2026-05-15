@@ -258,7 +258,7 @@ class CommonQueries {
       }
     } catch (e) {
       if (kDebugMode) {
-        print(e);
+        debugPrint('');
       }
     }
     return resultList;
@@ -487,12 +487,12 @@ class CommonQueries {
         }
       } catch (e) {
         if (kDebugMode) {
-          print(e);
+          debugPrint('');
         }
       }
     } catch (e) {
       if (kDebugMode) {
-        print(e);
+        debugPrint('');
       }
     }
 

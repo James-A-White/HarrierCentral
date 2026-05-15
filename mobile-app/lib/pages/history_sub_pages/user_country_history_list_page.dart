@@ -176,7 +176,7 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
       }
     } catch (e) {
       if (kDebugMode) {
-        print(e);
+        debugPrint('');
       }
     }
   }
@@ -186,14 +186,14 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
     return Stack(
       children: <Widget>[
         SizedBox(
-          height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.sizeOf(context).height,
+          width: MediaQuery.sizeOf(context).width,
         ),
         Positioned(
           top: 0,
           left: 0,
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.sizeOf(context).width,
+          height: MediaQuery.sizeOf(context).height,
           child: AppScaffold(
             appBar: AppBar(
               centerTitle: true,

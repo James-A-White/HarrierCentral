@@ -892,7 +892,7 @@ class CheckInPackController extends GetxController
     final String? hasherId = packMember.hasherId;
 
     if (kDebugMode) {
-      print('rsvpState = $rsvpState');
+      debugPrint('rsvpState = $rsvpState');
     }
 
     final List<dynamic> adHocData = await tableModel.hasherEventMapService

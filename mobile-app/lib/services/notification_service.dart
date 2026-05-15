@@ -125,7 +125,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
 
   Future<void> refreshFcmListenerOnResume() async {
     if (kDebugMode) {
-      print("App resumed – refreshing FCM listener");
+      debugPrint("App resumed – refreshing FCM listener");
     }
     await _ensureFcmListener();
   }
@@ -201,7 +201,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
             await setBoolPref(BoolPrefsEnum.fcmTokenSavedToServer, true);
           } catch (e) {
             if (kDebugMode) {
-              print('Connection error: ${e.toString()}');
+              debugPrint('Connection error: ${e.toString()}');
             }
           }
         }
@@ -209,7 +209,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
         await setBoolPref(BoolPrefsEnum.notificationPreferencesRequested, true);
 
         if (kDebugMode) {
-          print(
+          debugPrint(
             'Notification permission status: ${settings.authorizationStatus}',
           );
         }
@@ -219,7 +219,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
           false,
         );
         if (kDebugMode) {
-          print(
+          debugPrint(
             'Firebase not initialized, cannot request notification permission.',
           );
         }
@@ -235,7 +235,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       if (initialMessage != null) {
         await _handleNotificationClick(initialMessage);
         if (kDebugMode) {
-          print('Initial message received: ${initialMessage.data}');
+          debugPrint('Initial message received: ${initialMessage.data}');
         }
       }
     }
@@ -245,14 +245,14 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
       await _handleNotificationClick(message);
       if (kDebugMode) {
-        print('Message opened app received: ${message.data}');
+        debugPrint('Message opened app received: ${message.data}');
       }
     });
   }
 
   Future<void> _handleForegroundMessage(RemoteMessage message) async {
     if (kDebugMode) {
-      print("Foreground message received: ${message.data}");
+      debugPrint("Foreground message received: ${message.data}");
     }
 
     // 1. Badge Update Logic: Calculate and update unread counts
@@ -295,7 +295,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
           .processNotificationClickOnResume(message);
     } else {
       if (kDebugMode) {
-        print(
+        debugPrint(
           "FutureRunListPageController not found, cannot process notification click.",
         );
       }
@@ -321,18 +321,18 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
           }
 
           if (kDebugMode) {
-            print('Handling chat message: ${message.data}');
+            debugPrint('Handling chat message: ${message.data}');
           }
         } catch (e) {
           if (kDebugMode) {
-            print("ChatController not found: $e");
+            debugPrint("ChatController not found: $e");
           }
         }
         break;
 
       default:
         if (kDebugMode) {
-          print("Unhandled message type: $messageType");
+          debugPrint("Unhandled message type: $messageType");
         }
     }
   }
@@ -364,7 +364,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     // 1. Initial Checks and Guard Clauses
     if (publicEventId == null || publicEventId.isEmpty) {
       if (kDebugMode) {
-        print('Badge Update: PublicEventId is null or empty. Skipping.');
+        debugPrint('Badge Update: PublicEventId is null or empty. Skipping.');
       }
       return;
     }
@@ -394,14 +394,14 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
         unreadEventCounts[publicEventId]!.value = serverChatCount;
 
         if (kDebugMode) {
-          print(
+          debugPrint(
             'Badge Update: Event $publicEventId count changed from $previouslyUnread to $serverChatCount via .update().',
           );
         }
       } else {
         unreadEventCounts[publicEventId] = serverChatCount.obs;
         if (kDebugMode) {
-          print(
+          debugPrint(
             'Badge Update: Event $publicEventId added with count $serverChatCount.',
           );
         }
@@ -412,7 +412,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       _recalculateGlobalBadgeCount();
     } else {
       if (kDebugMode) {
-        print(
+        debugPrint(
           'Badge Update: Event $publicEventId count is unchanged ($serverChatCount).',
         );
       }
@@ -444,7 +444,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     _updateChatCountBadges(publicEventId, badgeCount);
 
     if (kDebugMode) {
-      print('Badge count after marking as viewed: $badgeCount');
+      debugPrint('Badge count after marking as viewed: $badgeCount');
     }
   }
 
@@ -516,7 +516,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
         // Handle the case where the array is empty or the structure is unexpected
         badgeCount = 0; // Or whatever default value is appropriate
         if (kDebugMode) {
-          print('Warning: Decoded body is empty or not a List.');
+          debugPrint('Warning: Decoded body is empty or not a List.');
         }
       }
     }
@@ -560,7 +560,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     // ⚠️ IMPLEMENT EXTERNAL BADGE CLEAR LOGIC HERE
     // Example: FlutterAppBadger.removeBadge();
     if (kDebugMode) {
-      print("Clearing native badge.");
+      debugPrint("Clearing native badge.");
     }
   }
 

@@ -283,7 +283,7 @@ class SyncUserDataService {
         } else {
           if (kDebugMode) {
             // ignore: avoid_print
-            print(
+            debugPrint(
               'XXXXXXX Server error processing response in SyncUserDataService updateFromBackend XXXXXXXX',
             );
           }

@@ -67,14 +67,14 @@ class LocationService extends GetxService {
               updateDeviceLocation,
               onError: (error) {
                 if (kDebugMode) {
-                  print('LocationStream Error: $error');
+                  debugPrint('LocationStream Error: $error');
                   // Handle specific errors like service being disabled
                 }
               },
             );
 
         if (kDebugMode) {
-          print('LocationService: Started run tracking.');
+          debugPrint('LocationService: Started run tracking.');
         }
       } else {
         // stop tracking
@@ -97,14 +97,14 @@ class LocationService extends GetxService {
               updateDeviceLocation,
               onError: (error) {
                 if (kDebugMode) {
-                  print('LocationStream Error: $error');
+                  debugPrint('LocationStream Error: $error');
                 }
                 // Handle specific errors like service being disabled
               },
             );
 
         if (kDebugMode) {
-          print('LocationService: Stopped run tracking.');
+          debugPrint('LocationService: Stopped run tracking.');
         }
       }
     });
@@ -145,7 +145,7 @@ class LocationService extends GetxService {
       if ((requestedPermission == LocationPermission.denied) ||
           (requestedPermission == LocationPermission.deniedForever)) {
         if (kDebugMode) {
-          print('Location permission denied by user.');
+          debugPrint('Location permission denied by user.');
         }
         return;
       }
@@ -166,7 +166,7 @@ class LocationService extends GetxService {
 
           onError: (error) {
             if (kDebugMode) {
-              print('LocationStream Error: $error');
+              debugPrint('LocationStream Error: $error');
             }
             // Handle specific errors like service being disabled
           },
@@ -180,7 +180,7 @@ class LocationService extends GetxService {
         ),
       ).then(updateDeviceLocation).catchError((e) {
         if (kDebugMode) {
-          print('Initial Location Fetch Error: $e');
+          debugPrint('Initial Location Fetch Error: $e');
         }
       }),
     );
@@ -270,7 +270,7 @@ class LocationService extends GetxService {
         _runBuffer?.dispose();
 
         if (kDebugMode) {
-          print('LocationService: Flushed old run buffer.');
+          debugPrint('LocationService: Flushed old run buffer.');
         }
         _runBuffer = null;
         // wait for next location update to re-initialize
@@ -294,7 +294,7 @@ class LocationService extends GetxService {
 
       if (pointStr != null) {
         if (kDebugMode) {
-          print(pointStr);
+          debugPrint(pointStr);
         }
       }
 
@@ -312,7 +312,7 @@ class LocationService extends GetxService {
     }
 
     if (kDebugMode) {
-      print('LocationService: Updated to Lat: $lat, Lon: $lon');
+      debugPrint('LocationService: Updated to Lat: $lat, Lon: $lon');
     }
 
     if ((forceFlush) ||

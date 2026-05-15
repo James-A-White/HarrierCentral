@@ -96,7 +96,7 @@ class SongsPageController extends GetxController
       filterResults();
     } catch (e) {
       if (kDebugMode) {
-        print('SongsPageController.loadSongs error: $e');
+        debugPrint('SongsPageController.loadSongs error: $e');
       }
     }
 

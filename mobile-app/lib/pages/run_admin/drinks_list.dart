@@ -170,7 +170,7 @@ class DrinksListState extends State<DrinksList>
       }
     } catch (e) {
       if (kDebugMode) {
-        print(e);
+        debugPrint('');
       }
     }
   }

@@ -228,7 +228,7 @@ class Utilities {
       );
     } catch (e) {
       if (kDebugMode) {
-        print(e);
+        debugPrint('');
       }
     }
   }
