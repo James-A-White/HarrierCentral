@@ -3,6 +3,8 @@ import 'package:harrier_central/imports.dart';
 class FutureRunListPageController extends GetxController {
   FutureRunListPageController();
 
+  StreamSubscription<DataChangeEvent>? _dataChangeSub;
+
   RxDouble width = 0.0.obs;
   RxDouble height = 0.0.obs;
 
@@ -39,6 +41,7 @@ class FutureRunListPageController extends GetxController {
 
   @override
   void onClose() {
+    _dataChangeSub?.cancel();
     scrollController.dispose();
     searchController.dispose();
     searchFocusNode.dispose();
@@ -103,6 +106,8 @@ class FutureRunListPageController extends GetxController {
     searchController.text = '';
     searchRunsText.value = '';
 
+    _dataChangeSub = Get.find<DataChangeService>().stream.listen(_onDataChange);
+
     unawaited(onInitAsync());
   }
 
@@ -134,6 +139,13 @@ class FutureRunListPageController extends GetxController {
     }
     // _updateTotalNotificationCounter();
     update([UpdateIds.runList, UpdateIds.mainNavPage]);
+  }
+
+  void _onDataChange(DataChangeEvent event) {
+    if (event.type == DataChangeType.runUpdated ||
+        event.type == DataChangeType.runCreated) {
+      unawaited(refreshFromTable(true));
+    }
   }
 
   void refreshRunListUi() {
