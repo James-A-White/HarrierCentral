@@ -1094,6 +1094,7 @@ class RunEditPageController extends TabUiController
   /// so the same dialog can be launched from either place.
   Future<void> openLocationLookupDialog() async {
     isLookupLoading.value = true;
+    RunLocationLookupController? lookupController;
 
     try {
       // Get all events from the parent run list controller
@@ -1120,15 +1121,18 @@ class RunEditPageController extends TabUiController
       // Allow the UI to show the loading state before opening dialog
       await Future<void>.delayed(Duration.zero);
 
-      // Show the lookup dialog
+      // Create the dialog controller with all params before showing the dialog.
+      // Deleted in finally so it's always cleaned up, even on exception.
+      lookupController = Get.put(RunLocationLookupController(
+        events: events,
+        kennelLat: lat,
+        kennelLon: lon,
+        kennelCountryCodes: kd.kennelCountryCodes,
+        initialPlaceDescription: currentPlaceDesc,
+      ));
+
       final result = await Get.dialog<LocationLookupResult>(
-        RunLocationLookupDialog(
-          events: events,
-          kennelLat: lat,
-          kennelLon: lon,
-          kennelCountryCodes: kd.kennelCountryCodes,
-          initialPlaceDescription: currentPlaceDesc,
-        ),
+        const RunLocationLookupDialog(),
         barrierDismissible: true,
       );
 
@@ -1141,6 +1145,9 @@ class RunEditPageController extends TabUiController
         }
       }
     } finally {
+      if (lookupController != null) {
+        unawaited(Get.delete<RunLocationLookupController>(force: true));
+      }
       isLookupLoading.value = false;
     }
   }

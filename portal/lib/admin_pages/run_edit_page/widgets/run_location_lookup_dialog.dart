@@ -1,3 +1,4 @@
+// ignore_for_file: library_private_types_in_public_api
 // Run Location Lookup Dialog
 //
 // A dialog with two tabs:
@@ -7,6 +8,14 @@
 //
 // Returns a [LocationLookupResult] that wraps either a [RunListModel]
 // (previous run) or a gazetteer [Results] (place search).
+//
+// State is managed by [RunLocationLookupController]. The caller
+// (RunEditPageController.openLocationLookupDialog) creates the controller
+// via Get.put() before showing the dialog and deletes it afterwards.
+//
+// The two map widgets are extracted as tiny StatefulWidgets — the map
+// package requires setState after transformer.drag(), matching the same
+// pattern used by _InteractiveMapWidget in run_location_page/layout.dart.
 
 import 'package:hcportal/imports.dart';
 import 'package:hcportal/models/azure_geo_model.dart';
@@ -55,134 +64,94 @@ class _UniqueLocation {
 }
 
 // ---------------------------------------------------------------------------
-// Dialog
+// Controller
 // ---------------------------------------------------------------------------
 
-/// Shows a dialog with two tabs: previous run locations and gazetteer search.
-///
-/// Returns a [LocationLookupResult] or `null` if the user cancels.
-class RunLocationLookupDialog extends StatefulWidget {
-  const RunLocationLookupDialog({
+class RunLocationLookupController extends GetxController
+    with GetSingleTickerProviderStateMixin {
+  RunLocationLookupController({
     required this.events,
     required this.kennelLat,
     required this.kennelLon,
     required this.kennelCountryCodes,
     this.initialPlaceDescription,
-    super.key,
   });
 
-  /// All events (past + future) available for location lookup.
+  // ── Constructor params ────────────────────────────────────────────────────
+
   final List<RunListModel> events;
-
-  /// Kennel latitude for initial map centre (fallback when no locations have coords).
   final double kennelLat;
-
-  /// Kennel longitude for initial map centre.
   final double kennelLon;
-
-  /// Comma-separated country codes for biasing gazetteer search.
   final String kennelCountryCodes;
-
-  /// Current place description value – used to pre-select a matching location.
   final String? initialPlaceDescription;
 
-  @override
-  State<RunLocationLookupDialog> createState() =>
-      _RunLocationLookupDialogState();
-}
+  // ── Shared ────────────────────────────────────────────────────────────────
 
-class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
-    with SingleTickerProviderStateMixin {
-  // ---------------------------------------------------------------------------
-  // State — shared
-  // ---------------------------------------------------------------------------
+  late final TabController tabController;
 
-  late final TabController _tabController;
-
-  // ---------------------------------------------------------------------------
-  // State — Previous Runs tab
-  // ---------------------------------------------------------------------------
+  // ── Previous Runs tab ─────────────────────────────────────────────────────
 
   late final List<_UniqueLocation> _allLocations;
-  List<_UniqueLocation> _filteredLocations = [];
-  final TextEditingController _searchController = TextEditingController();
+  final RxList<_UniqueLocation> filteredLocations = <_UniqueLocation>[].obs;
+  final TextEditingController searchController = TextEditingController();
+  final RxString searchText = ''.obs;
+  final Rx<int?> selectedIndex = Rx<int?>(null);
+  final ScrollController listScrollController = ScrollController();
+  final Map<int, GlobalKey> itemKeys = {};
+  late final geo_map.MapController mapController;
 
-  int? _selectedIndex; // index into _filteredLocations
-  late geo_map.MapController _mapController;
-  final ScrollController _listScrollController = ScrollController();
-  final Map<int, GlobalKey> _itemKeys = {};
+  // ── Gazetteer tab ─────────────────────────────────────────────────────────
 
-  // Gesture tracking
-  Offset _dragStart = Offset.zero;
-  double _zoomStart = 10.0;
-
-  // ---------------------------------------------------------------------------
-  // State — Gazetteer Search tab
-  // ---------------------------------------------------------------------------
-
-  final TextEditingController _gazetteerSearchController =
+  final TextEditingController gazetteerSearchController =
       TextEditingController();
-  List<Results> _gazetteerResults = [];
-  bool _isSearching = false;
-  int? _gazetteerSelectedIndex;
-  late geo_map.MapController _gazetteerMapController;
-  Offset _gazDragStart = Offset.zero;
-  double _gazZoomStart = 10.0;
+  final RxString gazetteerSearchText = ''.obs;
+  final RxList<Results> gazetteerResults = <Results>[].obs;
+  final RxBool isSearching = false.obs;
+  final Rx<int?> gazetteerSelectedIndex = Rx<int?>(null);
+  late final geo_map.MapController gazetteerMapController;
 
-  // ---------------------------------------------------------------------------
-  // Lifecycle
-  // ---------------------------------------------------------------------------
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
 
   @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+  void onInit() {
+    super.onInit();
+    tabController = TabController(length: 2, vsync: this);
     _buildUniqueLocations();
-    _filteredLocations = List.of(_allLocations);
-    _initMapController();
-    _initGazetteerMapController();
+    filteredLocations.assignAll(_allLocations);
+    mapController = geo_map.MapController(
+      location: LatLng(Angle.degree(kennelLat), Angle.degree(kennelLon)),
+      zoom: 11,
+    );
+    gazetteerMapController = geo_map.MapController(
+      location: LatLng(Angle.degree(kennelLat), Angle.degree(kennelLon)),
+      zoom: 11,
+    );
     _applyInitialSearch();
-
-    // After the first frame, scroll the list to centre the pre-selected item.
-    if (_selectedIndex != null) {
+    if (selectedIndex.value != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        unawaited(_scrollToSelectedIndex());
+        unawaited(scrollToSelectedIndex());
       });
     }
   }
 
   @override
-  void dispose() {
-    _tabController.dispose();
-    _searchController.dispose();
-    _listScrollController.dispose();
-    _gazetteerSearchController.dispose();
-    super.dispose();
+  void onClose() {
+    tabController.dispose();
+    searchController.dispose();
+    listScrollController.dispose();
+    gazetteerSearchController.dispose();
+    super.onClose();
   }
 
-  /// Scrolls the list so [_selectedIndex] is centred in the viewport.
-  Future<void> _scrollToSelectedIndex() async {
-    if (_selectedIndex == null) return;
-    final key = _itemKeys[_selectedIndex!];
-    if (key == null || key.currentContext == null) return;
-    await Scrollable.ensureVisible(
-      key.currentContext!,
-      alignment: 0.5,
-      duration: const Duration(milliseconds: 200),
-    );
-  }
-
-  // ---------------------------------------------------------------------------
-  // Helpers
-  // ---------------------------------------------------------------------------
+  // ── Helpers ───────────────────────────────────────────────────────────────
 
   /// De-duplicates events by [locationOneLineDesc], keeping only the first
-  /// occurrence (i.e. the most recent or whichever appears first in the list).
+  /// occurrence. Skips events without lat/lon.
   void _buildUniqueLocations() {
     final seen = <String>{};
     final result = <_UniqueLocation>[];
 
-    for (final event in widget.events) {
+    for (final event in events) {
       final desc = event.locationOneLineDesc?.trim() ?? '';
       if (desc.isEmpty) continue;
       final lat = event.syncLat;
@@ -200,7 +169,6 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
       ));
     }
 
-    // Sort alphabetically by label
     result
         .sort((a, b) => a.label.toLowerCase().compareTo(b.label.toLowerCase()));
 
@@ -214,172 +182,198 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
   /// 4. No matches → switches to the gazetteer tab, pre-fills it, and
   ///    automatically fires a search.
   void _applyInitialSearch() {
-    final desc = widget.initialPlaceDescription?.trim() ?? '';
+    final desc = initialPlaceDescription?.trim() ?? '';
     if (desc.isEmpty) return;
 
-    // Pre-fill the search field and filter the list
-    _searchController.text = desc;
+    searchController.text = desc;
+    searchText.value = desc;
     final query = desc.toLowerCase();
-    _filteredLocations = _allLocations
+    final matches = _allLocations
         .where((loc) => loc.label.toLowerCase().contains(query))
         .toList();
+    filteredLocations.assignAll(matches);
 
-    if (_filteredLocations.length == 1) {
-      // Exactly one match — auto-select it and centre the map
-      _selectedIndex = 0;
-      final loc = _filteredLocations[0];
+    if (filteredLocations.length == 1) {
+      selectedIndex.value = 0;
+      final loc = filteredLocations[0];
       if (loc.lat != null && loc.lon != null) {
-        _mapController.center =
+        mapController.center =
             LatLng(Angle.degree(loc.lat!), Angle.degree(loc.lon!));
-        _mapController.zoom = 14;
+        mapController.zoom = 14;
       }
-    } else if (_filteredLocations.isEmpty) {
-      // No matches in past runs — switch to gazetteer and auto-search
-      _gazetteerSearchController.text = desc;
+    } else if (filteredLocations.isEmpty) {
+      gazetteerSearchController.text = desc;
+      gazetteerSearchText.value = desc;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _tabController.animateTo(1);
-        unawaited(_performGazetteerSearch());
+        tabController.animateTo(1);
+        unawaited(performGazetteerSearch());
       });
     }
-    // Multiple matches: just show the filtered list, no auto-selection needed
   }
 
-  /// Centres the map on the kennel's coordinates.
-  void _initMapController() {
-    _mapController = geo_map.MapController(
-      location: LatLng(
-        Angle.degree(widget.kennelLat),
-        Angle.degree(widget.kennelLon),
-      ),
-      zoom: 11,
+  Future<void> scrollToSelectedIndex() async {
+    final idx = selectedIndex.value;
+    if (idx == null) return;
+    final key = itemKeys[idx];
+    if (key == null || key.currentContext == null) return;
+    await Scrollable.ensureVisible(
+      key.currentContext!,
+      alignment: 0.5,
+      duration: const Duration(milliseconds: 200),
     );
   }
 
-  /// Initialises the gazetteer tab map controller.
-  void _initGazetteerMapController() {
-    _gazetteerMapController = geo_map.MapController(
-      location: LatLng(
-        Angle.degree(widget.kennelLat),
-        Angle.degree(widget.kennelLon),
-      ),
-      zoom: 11,
-    );
-  }
+  // ── Previous Runs tab actions ─────────────────────────────────────────────
 
-  void _onSearchChanged(String text) {
+  void onSearchChanged(String text) {
     final query = text.trim().toLowerCase();
-    setState(() {
-      _selectedIndex = null;
-      _itemKeys.clear();
-      if (query.isEmpty) {
-        _filteredLocations = List.of(_allLocations);
-      } else {
-        _filteredLocations = _allLocations
+    searchText.value = text;
+    selectedIndex.value = null;
+    itemKeys.clear();
+    if (query.isEmpty) {
+      filteredLocations.assignAll(_allLocations);
+    } else {
+      filteredLocations.assignAll(
+        _allLocations
             .where((loc) => loc.label.toLowerCase().contains(query))
-            .toList();
-      }
-    });
+            .toList(),
+      );
+    }
   }
 
-  void _selectLocation(int filteredIndex, {bool scrollToItem = false}) {
-    final loc = _filteredLocations[filteredIndex];
-    setState(() {
-      _selectedIndex = filteredIndex;
-    });
-    // Centre map on this location if it has coordinates
+  void clearSearch() {
+    searchController.clear();
+    onSearchChanged('');
+  }
+
+  void selectLocation(int index, {bool scrollToItem = false}) {
+    final loc = filteredLocations[index];
+    selectedIndex.value = index;
     if (loc.lat != null && loc.lon != null) {
-      setState(() {
-        _mapController.center =
-            LatLng(Angle.degree(loc.lat!), Angle.degree(loc.lon!));
-        _mapController.zoom = 14;
-      });
+      mapController.center =
+          LatLng(Angle.degree(loc.lat!), Angle.degree(loc.lon!));
+      mapController.zoom = 14;
     }
     if (scrollToItem) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        unawaited(_scrollToSelectedIndex());
+        unawaited(scrollToSelectedIndex());
       });
     }
   }
 
-  void _confirmSelection(int filteredIndex) {
-    Get.back(result: PreviousRunResult(_filteredLocations[filteredIndex].run));
+  void confirmSelection(int index) {
+    Get.back(result: PreviousRunResult(filteredLocations[index].run));
   }
 
-  // ---------------------------------------------------------------------------
-  // Build
-  // ---------------------------------------------------------------------------
+  // ── Gazetteer tab actions ─────────────────────────────────────────────────
+
+  void onGazetteerSearchChanged(String text) {
+    gazetteerSearchText.value = text;
+  }
+
+  void clearGazetteerSearch() {
+    gazetteerSearchController.clear();
+    gazetteerSearchText.value = '';
+    gazetteerResults.clear();
+    gazetteerSelectedIndex.value = null;
+  }
+
+  Future<void> performGazetteerSearch() async {
+    final searchText = gazetteerSearchController.text.trim();
+    if (searchText.isEmpty) return;
+
+    isSearching.value = true;
+    gazetteerSelectedIndex.value = null;
+
+    try {
+      final body = <String, dynamic>{
+        'placeName': searchText,
+        'lat': kennelLat,
+        'lon': kennelLon,
+        'radius': 160934, // 100 miles
+        'countrySet': kennelCountryCodes,
+      };
+
+      final url = Uri.parse(PORTAL_GEOCODE_PLACE_TO_ADDRESS_API_URL);
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Accept': '*/*',
+        },
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final azurePlace = AzurePlace.fromJson(
+          jsonDecode(response.body) as Map<String, dynamic>,
+        );
+        final results = azurePlace.results ?? [];
+        gazetteerResults.assignAll(results);
+
+        if (results.isNotEmpty) {
+          final first = results[0];
+          if (first.position?.lat != null && first.position?.lon != null) {
+            gazetteerMapController.center = LatLng(
+              Angle.degree(first.position!.lat!),
+              Angle.degree(first.position!.lon!),
+            );
+            gazetteerMapController.zoom = results.length == 1 ? 14 : 12;
+          }
+          if (results.length == 1) {
+            gazetteerSelectedIndex.value = 0;
+          }
+        }
+      }
+    } catch (_) {
+      // Search failed — leave results empty
+    } finally {
+      isSearching.value = false;
+    }
+  }
+
+  void selectGazetteerResult(int index) {
+    gazetteerSelectedIndex.value = index;
+    final result = gazetteerResults[index];
+    if (result.position?.lat != null && result.position?.lon != null) {
+      gazetteerMapController.center = LatLng(
+        Angle.degree(result.position!.lat!),
+        Angle.degree(result.position!.lon!),
+      );
+      gazetteerMapController.zoom = 14;
+    }
+  }
+
+  void confirmGazetteerSelection(int index) {
+    Get.back(result: GazetteerResult(gazetteerResults[index]));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Dialog
+// ---------------------------------------------------------------------------
+
+class RunLocationLookupDialog extends StatelessWidget {
+  const RunLocationLookupDialog({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final c = Get.find<RunLocationLookupController>();
     return Dialog(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 900, maxHeight: 700),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildHeader(),
-            // Bubble tab bar with sliding indicator
-            Container(
-              color: Colors.grey.shade200,
-              padding: const EdgeInsets.only(
-                  left: 16, right: 16, bottom: 12, top: 4),
-              child: AnimatedBuilder(
-                animation: _tabController,
-                builder: (context, _) => LayoutBuilder(
-                  builder: (context, constraints) {
-                    final tabWidth = (constraints.maxWidth - 8) / 2;
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: Colors.brown.shade100,
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      padding: const EdgeInsets.all(4),
-                      child: Stack(
-                        children: [
-                          // Sliding pill indicator
-                          AnimatedPositioned(
-                            duration: const Duration(milliseconds: 250),
-                            curve: Curves.easeInOut,
-                            left: _tabController.index * tabWidth,
-                            top: 0,
-                            bottom: 0,
-                            width: tabWidth,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.red.shade900,
-                                borderRadius: BorderRadius.circular(26),
-                              ),
-                            ),
-                          ),
-                          // Tab labels
-                          Row(
-                            children: [
-                              _buildBubbleTab(
-                                index: 0,
-                                icon: FontAwesome5Solid.history,
-                                label: 'Previous Runs',
-                              ),
-                              _buildBubbleTab(
-                                index: 1,
-                                icon: FontAwesome5Solid.search_location,
-                                label: 'Search Places',
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-            // Tab content
+            _buildHeader(c),
+            _buildTabBar(c),
             Flexible(
               child: TabBarView(
-                controller: _tabController,
+                controller: c.tabController,
                 children: [
-                  _buildPreviousRunsTab(),
-                  _buildGazetteerTab(),
+                  _buildPreviousRunsTab(c),
+                  _buildGazetteerTab(c),
                 ],
               ),
             ),
@@ -389,11 +383,9 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Header
-  // ---------------------------------------------------------------------------
+  // ── Header ────────────────────────────────────────────────────────────────
 
-  Widget _buildHeader() {
+  Widget _buildHeader(RunLocationLookupController c) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       color: Colors.grey.shade200,
@@ -415,22 +407,75 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Bubble Tab Helper
-  // ---------------------------------------------------------------------------
+  // ── Bubble tab bar ────────────────────────────────────────────────────────
 
-  Widget _buildBubbleTab({
+  Widget _buildTabBar(RunLocationLookupController c) {
+    return Container(
+      color: Colors.grey.shade200,
+      padding:
+          const EdgeInsets.only(left: 16, right: 16, bottom: 12, top: 4),
+      child: AnimatedBuilder(
+        animation: c.tabController,
+        builder: (context, _) => LayoutBuilder(
+          builder: (context, constraints) {
+            final tabWidth = (constraints.maxWidth - 8) / 2;
+            return Container(
+              decoration: BoxDecoration(
+                color: Colors.brown.shade100,
+                borderRadius: BorderRadius.circular(30),
+              ),
+              padding: const EdgeInsets.all(4),
+              child: Stack(
+                children: [
+                  AnimatedPositioned(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeInOut,
+                    left: c.tabController.index * tabWidth,
+                    top: 0,
+                    bottom: 0,
+                    width: tabWidth,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade900,
+                        borderRadius: BorderRadius.circular(26),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      _buildBubbleTab(
+                        c,
+                        index: 0,
+                        icon: FontAwesome5Solid.history,
+                        label: 'Previous Runs',
+                      ),
+                      _buildBubbleTab(
+                        c,
+                        index: 1,
+                        icon: FontAwesome5Solid.search_location,
+                        label: 'Search Places',
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBubbleTab(
+    RunLocationLookupController c, {
     required int index,
     required IconData icon,
     required String label,
   }) {
-    final isSelected = _tabController.index == index;
+    final isSelected = c.tabController.index == index;
     return Expanded(
       child: GestureDetector(
-        onTap: () {
-          _tabController.animateTo(index);
-          setState(() {});
-        },
+        onTap: () => c.tabController.animateTo(index),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           color: Colors.transparent,
@@ -438,7 +483,8 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(icon,
-                  size: 15, color: isSelected ? Colors.white : Colors.black87),
+                  size: 15,
+                  color: isSelected ? Colors.white : Colors.black87),
               const SizedBox(width: 8),
               Text(
                 label,
@@ -453,130 +499,304 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Tab 1 — Previous Runs
-  // ---------------------------------------------------------------------------
+  // ── Tab 1 — Previous Runs ─────────────────────────────────────────────────
 
-  Widget _buildPreviousRunsTab() {
+  Widget _buildPreviousRunsTab(RunLocationLookupController c) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Left panel — filter + list
-        SizedBox(
-          width: 360,
-          child: _buildSearchPanel(),
-        ),
+        SizedBox(width: 360, child: _buildSearchPanel(c)),
         const VerticalDivider(width: 1),
-        // Right panel — map
-        Expanded(child: _buildMap()),
+        Expanded(child: _PreviousRunsMap(controller: c)),
       ],
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Search panel (left)
-  // ---------------------------------------------------------------------------
-
-  Widget _buildSearchPanel() {
+  Widget _buildSearchPanel(RunLocationLookupController c) {
     return Column(
       children: [
-        // Search field
+        // Search field — suffix icon reacts to searchText
         Padding(
           padding: const EdgeInsets.all(12),
-          child: TextField(
-            controller: _searchController,
-            decoration: InputDecoration(
-              hintText: 'Type to filter locations…',
-              prefixIcon: const Icon(Icons.search),
-              suffixIcon: _searchController.text.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear),
-                      onPressed: () {
-                        _searchController.clear();
-                        _onSearchChanged('');
-                      },
-                    )
-                  : null,
-              border: const OutlineInputBorder(),
-              isDense: true,
+          child: Obx(
+            () => TextField(
+              controller: c.searchController,
+              decoration: InputDecoration(
+                hintText: 'Type to filter locations…',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: c.searchText.value.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: c.clearSearch,
+                      )
+                    : null,
+                border: const OutlineInputBorder(),
+                isDense: true,
+              ),
+              onChanged: c.onSearchChanged,
             ),
-            onChanged: _onSearchChanged,
           ),
         ),
 
         // Results list
         Expanded(
-          child: _filteredLocations.isEmpty
-              ? const Center(child: Text('No matching locations'))
-              : SingleChildScrollView(
-                  controller: _listScrollController,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      for (var index = 0;
-                          index < _filteredLocations.length;
-                          index++)
-                        ..._buildLocationTile(index),
-                    ],
+          child: Obx(
+            () => c.filteredLocations.isEmpty
+                ? const Center(child: Text('No matching locations'))
+                : SingleChildScrollView(
+                    controller: c.listScrollController,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (var i = 0; i < c.filteredLocations.length; i++)
+                          ..._buildLocationTile(c, i),
+                      ],
+                    ),
                   ),
-                ),
+          ),
         ),
       ],
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Location tile builder
-  // ---------------------------------------------------------------------------
-
-  /// Builds a single location tile with a divider, keyed for scroll targeting.
-  List<Widget> _buildLocationTile(int index) {
-    final loc = _filteredLocations[index];
-    final isSelected = index == _selectedIndex;
-    _itemKeys.putIfAbsent(index, () => GlobalKey());
-
+  List<Widget> _buildLocationTile(RunLocationLookupController c, int index) {
+    c.itemKeys.putIfAbsent(index, () => GlobalKey());
     return [
-      ListTile(
-        key: _itemKeys[index],
+      Obx(() {
+        final isSelected = index == c.selectedIndex.value;
+        final loc = c.filteredLocations[index];
+        return ListTile(
+          key: c.itemKeys[index],
+          selected: isSelected,
+          selectedTileColor: Colors.blue.shade50,
+          leading: CircleAvatar(
+            backgroundColor: isSelected ? Colors.green : Colors.red[800],
+            child: Text(
+              '${index + 1}',
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
+          title: Text(
+            loc.label,
+            style: bodyStyleBlack.copyWith(fontWeight: FontWeight.bold),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          subtitle: Text(
+            loc.run.eventCityAndCountry,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: isSelected
+              ? ElevatedButton(
+                  onPressed: () => c.confirmSelection(index),
+                  style: defaultButtonStyle,
+                  child: Text('Use', style: textStyleButton),
+                )
+              : const Icon(Icons.chevron_right),
+          onTap: () => c.selectLocation(index),
+          onLongPress: () => c.confirmSelection(index),
+        );
+      }),
+      if (index < c.filteredLocations.length - 1) const Divider(height: 1),
+    ];
+  }
+
+  // ── Tab 2 — Gazetteer Search ──────────────────────────────────────────────
+
+  Widget _buildGazetteerTab(RunLocationLookupController c) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(width: 360, child: _buildGazetteerPanel(c)),
+        const VerticalDivider(width: 1),
+        Expanded(child: _GazetteerMap(controller: c)),
+      ],
+    );
+  }
+
+  Widget _buildGazetteerPanel(RunLocationLookupController c) {
+    return Column(
+      children: [
+        // Search input row
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Expanded(
+                child: Obx(
+                  () => TextField(
+                    controller: c.gazetteerSearchController,
+                    decoration: InputDecoration(
+                      hintText: 'Search for a place…',
+                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: c.gazetteerSearchText.value.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: c.clearGazetteerSearch,
+                            )
+                          : null,
+                      border: const OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                    onChanged: c.onGazetteerSearchChanged,
+                    onSubmitted: (_) => unawaited(c.performGazetteerSearch()),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Obx(
+                () => ElevatedButton(
+                  onPressed: c.isSearching.value
+                      ? null
+                      : () => unawaited(c.performGazetteerSearch()),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                  ),
+                  child: c.isSearching.value
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                            backgroundColor: Colors.blue,
+                          ),
+                        )
+                      : const Text(
+                          'Search',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Results list
+        Expanded(
+          child: Obx(
+            () => c.gazetteerResults.isEmpty
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      child: Text(
+                        c.isSearching.value
+                            ? 'Searching…'
+                            : c.gazetteerSearchController.text.isEmpty
+                                ? 'Enter a place name, address, or establishment'
+                                : 'No results found',
+                        style: bodyStyleBlack.copyWith(
+                            color: Colors.grey.shade700),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  )
+                : ListView.separated(
+                    itemCount: c.gazetteerResults.length,
+                    separatorBuilder: (_, _) => const Divider(height: 1),
+                    itemBuilder: (context, index) =>
+                        _buildGazetteerTile(c, index),
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGazetteerTile(RunLocationLookupController c, int index) {
+    return Obx(() {
+      final result = c.gazetteerResults[index];
+      final isSelected = index == c.gazetteerSelectedIndex.value;
+      final address = result.address;
+      final name = result.poi?.name ?? address?.freeformAddress ?? 'Unknown';
+      final subtitle = <String?>[
+        address?.municipality,
+        address?.countrySubdivision,
+        address?.country,
+      ].where((s) => s != null && s.isNotEmpty).join(', ');
+
+      return ListTile(
         selected: isSelected,
         selectedTileColor: Colors.blue.shade50,
         leading: CircleAvatar(
-          backgroundColor: isSelected ? Colors.green : Colors.red[800],
+          backgroundColor: isSelected ? Colors.green : Colors.blue[700],
           child: Text(
             '${index + 1}',
             style: const TextStyle(color: Colors.white),
           ),
         ),
         title: Text(
-          loc.label,
+          name,
           style: bodyStyleBlack.copyWith(fontWeight: FontWeight.bold),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
-        subtitle: Text(
-          loc.run.eventCityAndCountry,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
+        subtitle: subtitle.isNotEmpty
+            ? Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis)
+            : null,
         trailing: isSelected
             ? ElevatedButton(
-                onPressed: () => _confirmSelection(index),
+                onPressed: () => c.confirmGazetteerSelection(index),
                 style: defaultButtonStyle,
                 child: Text('Use', style: textStyleButton),
               )
             : const Icon(Icons.chevron_right),
-        onTap: () => _selectLocation(index),
-        onLongPress: () => _confirmSelection(index),
-      ),
-      if (index < _filteredLocations.length - 1) const Divider(height: 1),
-    ];
+        onTap: () => c.selectGazetteerResult(index),
+        onLongPress: () => c.confirmGazetteerSelection(index),
+      );
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Map sub-widgets — StatefulWidget for gesture tracking
+//
+// The map package (geo_map.MapLayout) manages its own rebuilds via
+// ChangeNotifier, so gesture mutations (zoom, drag) don't need setState.
+// ever() listeners fire setState when business-logic state changes
+// (filter results, selection) so map markers repaint correctly.
+// ---------------------------------------------------------------------------
+
+class _PreviousRunsMap extends StatefulWidget {
+  const _PreviousRunsMap({required this.controller});
+  final RunLocationLookupController controller;
+
+  @override
+  State<_PreviousRunsMap> createState() => _PreviousRunsMapState();
+}
+
+class _PreviousRunsMapState extends State<_PreviousRunsMap> {
+  Offset _dragStart = Offset.zero;
+  double _zoomStart = 10.0;
+  late final Worker _filteredWatcher;
+  late final Worker _selectedWatcher;
+
+  @override
+  void initState() {
+    super.initState();
+    _filteredWatcher = ever(widget.controller.filteredLocations, (_) {
+      if (mounted) setState(() {});
+    });
+    _selectedWatcher = ever(widget.controller.selectedIndex, (_) {
+      if (mounted) setState(() {});
+    });
   }
 
-  // ---------------------------------------------------------------------------
-  // Map (right)
-  // ---------------------------------------------------------------------------
+  @override
+  void dispose() {
+    _filteredWatcher.dispose();
+    _selectedWatcher.dispose();
+    super.dispose();
+  }
 
-  Widget _buildMap() {
+  @override
+  Widget build(BuildContext context) {
+    final c = widget.controller;
     return Container(
       margin: const EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -585,51 +805,42 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
       ),
       clipBehavior: Clip.antiAlias,
       child: geo_map.MapLayout(
-        controller: _mapController,
-        builder: (BuildContext context, geo_map.MapTransformer transformer) {
+        controller: c.mapController,
+        builder: (context, transformer) {
           return GestureDetector(
             behavior: HitTestBehavior.opaque,
             onDoubleTap: () {
-              setState(() {
-                _mapController.zoom =
-                    (_mapController.zoom + 1.0).clamp(1.0, 20.0);
-              });
+              c.mapController.zoom =
+                  (c.mapController.zoom + 1.0).clamp(1.0, 20.0);
             },
             onScaleStart: (details) {
               _dragStart = details.focalPoint;
-              _zoomStart = _mapController.zoom;
+              _zoomStart = c.mapController.zoom;
             },
             onScaleUpdate: (details) {
-              setState(() {
-                if ((details.scale - 1.0).abs() > 0.01) {
-                  final newZoom = _zoomStart * details.scale;
-                  _mapController.zoom = newZoom.clamp(1.0, 20.0);
-                }
-                final now = details.focalPoint;
-                final diff = now - _dragStart;
-                _dragStart = now;
-                transformer.drag(diff.dx, diff.dy);
-              });
+              if ((details.scale - 1.0).abs() > 0.01) {
+                c.mapController.zoom =
+                    (_zoomStart * details.scale).clamp(1.0, 20.0);
+              }
+              final now = details.focalPoint;
+              transformer.drag(
+                  (now - _dragStart).dx, (now - _dragStart).dy);
+              _dragStart = now;
             },
             child: Listener(
               behavior: HitTestBehavior.opaque,
               onPointerSignal: (event) {
                 if (event is PointerScrollEvent) {
-                  setState(() {
-                    final newZoom =
-                        _mapController.zoom - (event.scrollDelta.dy / 100.0);
-                    _mapController.zoom = newZoom.clamp(1.0, 20.0);
-                  });
+                  c.mapController.zoom =
+                      (c.mapController.zoom - event.scrollDelta.dy / 100.0)
+                          .clamp(1.0, 20.0);
                 } else if (event is PointerScaleEvent) {
-                  setState(() {
-                    final newZoom = _mapController.zoom * event.scale;
-                    _mapController.zoom = newZoom.clamp(1.0, 20.0);
-                  });
+                  c.mapController.zoom =
+                      (c.mapController.zoom * event.scale).clamp(1.0, 20.0);
                 }
               },
               child: Stack(
                 children: [
-                  // Map tiles
                   geo_map.TileLayer(
                     builder: (context, x, y, z) {
                       final url =
@@ -640,9 +851,7 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
                               const SizedBox.shrink());
                     },
                   ),
-
-                  // Location pins
-                  ..._buildLocationMarkers(transformer),
+                  ..._buildLocationMarkers(c, transformer),
                 ],
               ),
             ),
@@ -652,80 +861,32 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Map markers
-  // ---------------------------------------------------------------------------
-
-  List<Widget> _buildLocationMarkers(geo_map.MapTransformer transformer) {
+  List<Widget> _buildLocationMarkers(
+    RunLocationLookupController c,
+    geo_map.MapTransformer transformer,
+  ) {
     final markers = <Widget>[];
     Widget? selectedMarker;
 
-    // Only show pins for locations currently in the filtered list,
-    // so pin numbers always match list numbers.
-    for (var i = 0; i < _filteredLocations.length; i++) {
-      final loc = _filteredLocations[i];
+    for (var i = 0; i < c.filteredLocations.length; i++) {
+      final loc = c.filteredLocations[i];
       if (loc.lat == null || loc.lon == null) continue;
 
       final pos = transformer.toOffset(
         LatLng(Angle.degree(loc.lat!), Angle.degree(loc.lon!)),
       );
-
-      final isSelected = i == _selectedIndex;
+      final isSelected = i == c.selectedIndex.value;
 
       final marker = Positioned(
         left: pos.dx - 16,
         top: pos.dy - 45,
         child: GestureDetector(
-          onTap: () => _selectLocation(i, scrollToItem: true),
-          onDoubleTap: () => _confirmSelection(i),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: isSelected ? Colors.green : Colors.red[800],
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.4),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Text(
-                    '${i + 1}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                width: 2,
-                height: 12,
-                decoration: BoxDecoration(
-                  color: isSelected ? Colors.green : Colors.red[800],
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      blurRadius: 2,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+          onTap: () => c.selectLocation(i, scrollToItem: true),
+          onDoubleTap: () => c.confirmSelection(i),
+          child: _buildPin(i, isSelected: isSelected, color: Colors.red[800]!),
         ),
       );
 
-      // Defer the selected marker so it renders on top of all others.
       if (isSelected) {
         selectedMarker = marker;
       } else {
@@ -733,255 +894,46 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
       }
     }
 
-    // Add selected marker last so it's always on top.
-    if (selectedMarker != null) {
-      markers.add(selectedMarker);
-    }
-
+    if (selectedMarker != null) markers.add(selectedMarker);
     return markers;
   }
+}
 
-  // ---------------------------------------------------------------------------
-  // Tab 2 — Gazetteer Search
-  // ---------------------------------------------------------------------------
+class _GazetteerMap extends StatefulWidget {
+  const _GazetteerMap({required this.controller});
+  final RunLocationLookupController controller;
 
-  Widget _buildGazetteerTab() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // Left panel — search input + results list
-        SizedBox(
-          width: 360,
-          child: _buildGazetteerPanel(),
-        ),
-        const VerticalDivider(width: 1),
-        // Right panel — map
-        Expanded(child: _buildGazetteerMap()),
-      ],
-    );
-  }
+  @override
+  State<_GazetteerMap> createState() => _GazetteerMapState();
+}
 
-  Widget _buildGazetteerPanel() {
-    return Column(
-      children: [
-        // Search input
-        Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _gazetteerSearchController,
-                  decoration: InputDecoration(
-                    hintText: 'Search for a place…',
-                    prefixIcon: const Icon(Icons.search),
-                    suffixIcon: _gazetteerSearchController.text.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear),
-                            onPressed: () {
-                              _gazetteerSearchController.clear();
-                              setState(() {
-                                _gazetteerResults = [];
-                                _gazetteerSelectedIndex = null;
-                              });
-                            },
-                          )
-                        : null,
-                    border: const OutlineInputBorder(),
-                    isDense: true,
-                  ),
-                  onSubmitted: (_) => _performGazetteerSearch(),
-                ),
-              ),
-              const SizedBox(width: 8),
-              ElevatedButton(
-                onPressed: _isSearching ? null : _performGazetteerSearch,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
-                ),
-                child: _isSearching
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                          backgroundColor: Colors.blue,
-                        ),
-                      )
-                    : const Text(
-                        'Search',
-                        style: TextStyle(color: Colors.white),
-                      ),
-              ),
-            ],
-          ),
-        ),
+class _GazetteerMapState extends State<_GazetteerMap> {
+  Offset _dragStart = Offset.zero;
+  double _zoomStart = 10.0;
+  late final Worker _resultsWatcher;
+  late final Worker _selectedWatcher;
 
-        // Results list
-        Expanded(
-          child: _gazetteerResults.isEmpty
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
-                    child: Text(
-                      _isSearching
-                          ? 'Searching…'
-                          : _gazetteerSearchController.text.isEmpty
-                              ? 'Enter a place name, address, or establishment'
-                              : 'No results found',
-                      style:
-                          bodyStyleBlack.copyWith(color: Colors.grey.shade700),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                )
-              : ListView.separated(
-                  itemCount: _gazetteerResults.length,
-                  separatorBuilder: (_, _) => const Divider(height: 1),
-                  itemBuilder: (context, index) => _buildGazetteerTile(index),
-                ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildGazetteerTile(int index) {
-    final result = _gazetteerResults[index];
-    final isSelected = index == _gazetteerSelectedIndex;
-    final address = result.address;
-
-    // Build display name
-    final name = result.poi?.name ?? address?.freeformAddress ?? 'Unknown';
-    // Build subtitle from address parts
-    final subtitle = <String?>[
-      address?.municipality,
-      address?.countrySubdivision,
-      address?.country,
-    ].where((s) => s != null && s.isNotEmpty).join(', ');
-
-    return ListTile(
-      selected: isSelected,
-      selectedTileColor: Colors.blue.shade50,
-      leading: CircleAvatar(
-        backgroundColor: isSelected ? Colors.green : Colors.blue[700],
-        child: Text(
-          '${index + 1}',
-          style: const TextStyle(color: Colors.white),
-        ),
-      ),
-      title: Text(
-        name,
-        style: bodyStyleBlack.copyWith(fontWeight: FontWeight.bold),
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
-      ),
-      subtitle: subtitle.isNotEmpty
-          ? Text(
-              subtitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            )
-          : null,
-      trailing: isSelected
-          ? ElevatedButton(
-              onPressed: () => _confirmGazetteerSelection(index),
-              style: defaultButtonStyle,
-              child: Text('Use', style: textStyleButton),
-            )
-          : const Icon(Icons.chevron_right),
-      onTap: () => _selectGazetteerResult(index),
-      onLongPress: () => _confirmGazetteerSelection(index),
-    );
-  }
-
-  Future<void> _performGazetteerSearch() async {
-    final searchText = _gazetteerSearchController.text.trim();
-    if (searchText.isEmpty) return;
-
-    setState(() {
-      _isSearching = true;
-      _gazetteerSelectedIndex = null;
+  @override
+  void initState() {
+    super.initState();
+    _resultsWatcher = ever(widget.controller.gazetteerResults, (_) {
+      if (mounted) setState(() {});
     });
-
-    try {
-      final body = <String, dynamic>{
-        'placeName': searchText,
-        'lat': widget.kennelLat,
-        'lon': widget.kennelLon,
-        'radius': 160934, // 100 miles
-        'countrySet': widget.kennelCountryCodes,
-      };
-
-      final url = Uri.parse(PORTAL_GEOCODE_PLACE_TO_ADDRESS_API_URL);
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Accept': '*/*',
-        },
-        body: jsonEncode(body),
-      );
-
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        final azurePlace = AzurePlace.fromJson(
-          jsonDecode(response.body) as Map<String, dynamic>,
-        );
-        setState(() {
-          _gazetteerResults = azurePlace.results ?? [];
-          if (_gazetteerResults.isNotEmpty) {
-            final first = _gazetteerResults[0];
-            if (first.position?.lat != null && first.position?.lon != null) {
-              _gazetteerMapController.center = LatLng(
-                Angle.degree(first.position!.lat!),
-                Angle.degree(first.position!.lon!),
-              );
-              // Zoom closer when there's only one result
-              _gazetteerMapController.zoom =
-                  _gazetteerResults.length == 1 ? 14 : 12;
-            }
-            // Auto-select when only one result returned
-            if (_gazetteerResults.length == 1) {
-              _gazetteerSelectedIndex = 0;
-            }
-          }
-        });
-      }
-    } catch (_) {
-      // Search failed — leave results empty
-    } finally {
-      setState(() => _isSearching = false);
-    }
-  }
-
-  void _selectGazetteerResult(int index) {
-    final result = _gazetteerResults[index];
-    setState(() {
-      _gazetteerSelectedIndex = index;
-      if (result.position?.lat != null && result.position?.lon != null) {
-        _gazetteerMapController.center = LatLng(
-          Angle.degree(result.position!.lat!),
-          Angle.degree(result.position!.lon!),
-        );
-        _gazetteerMapController.zoom = 14;
-      }
+    _selectedWatcher = ever(widget.controller.gazetteerSelectedIndex, (_) {
+      if (mounted) setState(() {});
     });
   }
 
-  void _confirmGazetteerSelection(int index) {
-    Get.back(result: GazetteerResult(_gazetteerResults[index]));
+  @override
+  void dispose() {
+    _resultsWatcher.dispose();
+    _selectedWatcher.dispose();
+    super.dispose();
   }
 
-  // ---------------------------------------------------------------------------
-  // Gazetteer Map
-  // ---------------------------------------------------------------------------
-
-  Widget _buildGazetteerMap() {
+  @override
+  Widget build(BuildContext context) {
+    final c = widget.controller;
     return Container(
       margin: const EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -990,51 +942,44 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
       ),
       clipBehavior: Clip.antiAlias,
       child: geo_map.MapLayout(
-        controller: _gazetteerMapController,
-        builder: (BuildContext context, geo_map.MapTransformer transformer) {
+        controller: c.gazetteerMapController,
+        builder: (context, transformer) {
           return GestureDetector(
             behavior: HitTestBehavior.opaque,
             onDoubleTap: () {
-              setState(() {
-                _gazetteerMapController.zoom =
-                    (_gazetteerMapController.zoom + 1.0).clamp(1.0, 20.0);
-              });
+              c.gazetteerMapController.zoom =
+                  (c.gazetteerMapController.zoom + 1.0).clamp(1.0, 20.0);
             },
             onScaleStart: (details) {
-              _gazDragStart = details.focalPoint;
-              _gazZoomStart = _gazetteerMapController.zoom;
+              _dragStart = details.focalPoint;
+              _zoomStart = c.gazetteerMapController.zoom;
             },
             onScaleUpdate: (details) {
-              setState(() {
-                if ((details.scale - 1.0).abs() > 0.01) {
-                  final newZoom = _gazZoomStart * details.scale;
-                  _gazetteerMapController.zoom = newZoom.clamp(1.0, 20.0);
-                }
-                final now = details.focalPoint;
-                final diff = now - _gazDragStart;
-                _gazDragStart = now;
-                transformer.drag(diff.dx, diff.dy);
-              });
+              if ((details.scale - 1.0).abs() > 0.01) {
+                c.gazetteerMapController.zoom =
+                    (_zoomStart * details.scale).clamp(1.0, 20.0);
+              }
+              final now = details.focalPoint;
+              transformer.drag(
+                  (now - _dragStart).dx, (now - _dragStart).dy);
+              _dragStart = now;
             },
             child: Listener(
               behavior: HitTestBehavior.opaque,
               onPointerSignal: (event) {
                 if (event is PointerScrollEvent) {
-                  setState(() {
-                    final newZoom = _gazetteerMapController.zoom -
-                        (event.scrollDelta.dy / 100.0);
-                    _gazetteerMapController.zoom = newZoom.clamp(1.0, 20.0);
-                  });
+                  c.gazetteerMapController.zoom =
+                      (c.gazetteerMapController.zoom -
+                              event.scrollDelta.dy / 100.0)
+                          .clamp(1.0, 20.0);
                 } else if (event is PointerScaleEvent) {
-                  setState(() {
-                    final newZoom = _gazetteerMapController.zoom * event.scale;
-                    _gazetteerMapController.zoom = newZoom.clamp(1.0, 20.0);
-                  });
+                  c.gazetteerMapController.zoom =
+                      (c.gazetteerMapController.zoom * event.scale)
+                          .clamp(1.0, 20.0);
                 }
               },
               child: Stack(
                 children: [
-                  // Map tiles
                   geo_map.TileLayer(
                     builder: (context, x, y, z) {
                       final url =
@@ -1045,9 +990,7 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
                               const SizedBox.shrink());
                     },
                   ),
-
-                  // Gazetteer result pins
-                  ..._buildGazetteerMarkers(transformer),
+                  ..._buildGazetteerMarkers(c, transformer),
                 ],
               ),
             ),
@@ -1057,11 +1000,14 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
     );
   }
 
-  List<Widget> _buildGazetteerMarkers(geo_map.MapTransformer transformer) {
+  List<Widget> _buildGazetteerMarkers(
+    RunLocationLookupController c,
+    geo_map.MapTransformer transformer,
+  ) {
     final markers = <Widget>[];
 
-    for (var i = 0; i < _gazetteerResults.length; i++) {
-      final result = _gazetteerResults[i];
+    for (var i = 0; i < c.gazetteerResults.length; i++) {
+      final result = c.gazetteerResults[i];
       if (result.position?.lat == null || result.position?.lon == null) {
         continue;
       }
@@ -1072,60 +1018,16 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
           Angle.degree(result.position!.lon!),
         ),
       );
-
-      final isSelected = i == _gazetteerSelectedIndex;
+      final isSelected = i == c.gazetteerSelectedIndex.value;
 
       markers.add(
         Positioned(
           left: pos.dx - 16,
           top: pos.dy - 45,
           child: GestureDetector(
-            onTap: () => _selectGazetteerResult(i),
-            onDoubleTap: () => _confirmGazetteerSelection(i),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: isSelected ? Colors.green : Colors.blue[700],
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.4),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Text(
-                      '${i + 1}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                ),
-                Container(
-                  width: 2,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: isSelected ? Colors.green : Colors.blue[700],
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.3),
-                        blurRadius: 2,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+            onTap: () => c.selectGazetteerResult(i),
+            onDoubleTap: () => c.confirmGazetteerSelection(i),
+            child: _buildPin(i, isSelected: isSelected, color: Colors.blue[700]!),
           ),
         ),
       );
@@ -1133,4 +1035,55 @@ class _RunLocationLookupDialogState extends State<RunLocationLookupDialog>
 
     return markers;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Shared pin widget
+// ---------------------------------------------------------------------------
+
+Widget _buildPin(int index, {required bool isSelected, required Color color}) {
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.green : color,
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.4),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Text(
+            '${index + 1}',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+        ),
+      ),
+      Container(
+        width: 2,
+        height: 12,
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.green : color,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 2,
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
 }

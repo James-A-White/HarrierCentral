@@ -1,4 +1,11 @@
 
+1.4.8+618
+    • RunLocationLookupDialog converted to GetX — controller manages all
+      state, dialog is StatelessWidget, map sub-widgets use ever() listeners
+      for reactive marker repaints
+    • _buildPin extracted as shared function, eliminating duplicated marker
+      rendering between Previous Runs and Gazetteer map tabs
+
 1.4.7+617
     • Fix memory leak: searchFocusNode and searchController moved from
       module-level globals into RunListPageController, disposed in onClose()
