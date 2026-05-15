@@ -84,7 +84,7 @@ class MainNavigationController extends GetxController
 
   // Page keys
   final runAndKennelMapPageKey = GlobalKey<RunAndKennelMapPageState>();
-  final kennelLocationsPageKey = GlobalKey<KennelsListPageState>();
+  final kennelLocationsPageKey = GlobalKey();
 
   // Pages
   Widget futureRunsListPage = Container();

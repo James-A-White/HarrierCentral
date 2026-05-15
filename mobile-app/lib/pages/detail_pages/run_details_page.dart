@@ -63,12 +63,15 @@ class RunDetailsPageState extends State<RunDetailsPage> {
               : IconButton(
                   icon: const Icon(FontAwesome.gear, color: Colors.white),
                   onPressed: () async {
-                    await Navigator.push<dynamic>(
-                      context,
-                      MaterialPageRoute<dynamic>(
-                        builder: (BuildContext context) =>
-                            RunAdminPage(eventId: _futureRun.event.eventId),
-                      ),
+                    final String eventId = _futureRun.event.eventId;
+                    await Get.to(
+                      () => RunAdminPage(eventId: eventId),
+                      binding: BindingsBuilder(() {
+                        Get.put(
+                          RunAdminController(eventId: eventId),
+                          tag: eventId,
+                        );
+                      }),
                     );
 
                     final refresh = widget.refreshPage;

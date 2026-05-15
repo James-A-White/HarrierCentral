@@ -511,22 +511,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
                 await Navigator.push<dynamic>(
                   context,
                   MaterialPageRoute<dynamic>(
-                    builder: (BuildContext context) => EditRunDetailsPage(
-                      false,
-                      rda!,
-                      (String eventId) async {
-                        final String userId = getStringPref(
-                          StringPrefsEnum.userId,
-                        )!;
-                        rda =
-                            await CommonQueries.getEventAdminInfoFromLocalCache(
-                              eventId,
-                              userId,
-                            );
-                        _isLoading = false;
-                        return rda;
-                      },
-                    ),
+                    builder: (BuildContext context) => EditRunDetailsPage(false, rda!),
                   ),
                 );
                 await _refreshSqlTablesFromBackend(true);
@@ -564,21 +549,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
               await Navigator.push<dynamic>(
                 context,
                 MaterialPageRoute<dynamic>(
-                  builder: (BuildContext context) => EditRunDetailsPage(
-                    true,
-                    rda!,
-                    (String eventId) async {
-                      final String userId = getStringPref(
-                        StringPrefsEnum.userId,
-                      )!;
-                      rda = await CommonQueries.getEventAdminInfoFromLocalCache(
-                        eventId,
-                        userId,
-                      );
-                      _isLoading = false;
-                      return rda;
-                    },
-                  ),
+                  builder: (BuildContext context) => EditRunDetailsPage(true, rda!),
                 ),
               );
             }

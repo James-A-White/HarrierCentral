@@ -333,9 +333,8 @@ class MainNavigationPage extends StatelessWidget {
                     SizedBox();
               }
               if (controller.currentPage.value == 1) {
-                return controller.kennelLocationsPageKey.currentState
-                        ?.getKennelFab() ??
-                    SizedBox();
+                // KennelsListPage owns its own FAB via AppScaffold.floatingActionButton
+                return SizedBox();
               }
             }
             return SizedBox();
