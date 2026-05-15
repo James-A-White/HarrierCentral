@@ -230,9 +230,7 @@ class AppBootService {
       return;
     }
 
-    // SQL Server returns UNIQUEIDENTIFIER as uppercase; toLowerCase() normalises
-    // before comparison. Replace with normalizeUuid() once uuid_utils.dart exists.
-    final String normalizedId = (userId ?? GUID_EMPTY).toLowerCase();
+    final String normalizedId = normalizeUuid(userId ?? GUID_EMPTY);
     final bool isFirstRun = normalizedId.isEmpty || normalizedId == GUID_EMPTY;
 
     if (isFirstRun) {

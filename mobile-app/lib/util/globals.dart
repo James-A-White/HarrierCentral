@@ -16,6 +16,25 @@ NotificationService get notificationService => Get.find<NotificationService>();
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
+/// Shorthand for the current user's ID from preferences.
+String? getUserId() => getStringPref(StringPrefsEnum.userId);
+
+/// Show a standardised Harrier Central snackbar via GetX.
+void showHcSnackbar(
+  String message, {
+  bool isError = false,
+  Duration duration = const Duration(seconds: 3),
+}) {
+  Get.snackbar(
+    isError ? 'Error' : 'Harrier Central',
+    message,
+    snackPosition: SnackPosition.BOTTOM,
+    backgroundColor: isError ? hc_red : hc_blue,
+    colorText: Colors.white,
+    duration: duration,
+  );
+}
+
 bool _createIndexes = false;
 
 Future<bool> setupDatabase(
@@ -151,44 +170,44 @@ Future<bool> setupDatabase(
     EnumDataTables.hashers.commonTableName,
   )).toString();
   if (kDebugMode) {
-    print('Hashers count = $message');
+    debugPrint('Hashers count = $message');
   }
 
   message = (await CommonQueries.countRecords(
     EnumDataTables.events.commonTableName,
   )).toString();
   if (kDebugMode) {
-    print('Events count = $message');
+    debugPrint('Events count = $message');
   }
 
   message = (await CommonQueries.countRecords(
     EnumDataTables.kennels.commonTableName,
   )).toString();
   if (kDebugMode) {
-    print('Kennels count = $message');
+    debugPrint('Kennels count = $message');
   }
 
   message = (await CommonQueries.countRecords(
     EnumDataTables.hasherEventMap.commonTableName,
   )).toString();
   if (kDebugMode) {
-    print('Hasher event map count = $message');
+    debugPrint('Hasher event map count = $message');
   }
 
   message = (await CommonQueries.countRecords(
     EnumDataTables.hasherKennelMap.commonTableName,
   )).toString();
   if (kDebugMode) {
-    print('Hasher kennel map count = $message');
+    debugPrint('Hasher kennel map count = $message');
   }
 
   if (kDebugMode) {
-    print('******* > DB Setup step 11');
+    debugPrint('******* > DB Setup step 11');
   }
 
   appModel.dbStatus = EdbStatus.opened;
   if (kDebugMode) {
-    print('******* > DB Setup step 12');
+    debugPrint('******* > DB Setup step 12');
   }
 
   return true;
