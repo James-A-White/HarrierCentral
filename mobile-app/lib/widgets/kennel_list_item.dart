@@ -110,7 +110,7 @@ class KennelListItemState extends State<KennelListItem> {
                     widget.kennelSelected();
                   },
                   child: Container(
-                    width: MediaQuery.of(context).size.width - 70,
+                    width: MediaQuery.sizeOf(context).width - 70,
                     padding: const EdgeInsets.only(top: 7.0, left: 5.0, bottom: 2.0, right: 5.0),
                     child: AutoSizeText(
                       widget.kennelItem.kennel.kennelName,

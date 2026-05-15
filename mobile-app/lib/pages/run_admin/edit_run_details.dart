@@ -357,7 +357,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
               child: SizedBox(
                 //key: _tabKey,
                 //color: Colors.teal,
-                width: MediaQuery.of(context).size.width,
+                width: MediaQuery.sizeOf(context).width,
                 child: TabBarView(
                   physics: const NeverScrollableScrollPhysics(),
                   controller: _tabController,
@@ -1614,7 +1614,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
             children: <Widget>[
               // Container(
               //   //decoration: Backgrounds.defaultHcBackground(),
-              //   height: MediaQuery.of(context).size.height - 300,
+              //   height: MediaQuery.sizeOf(context).height - 300,
               //   child:
               EditorMap(
                 _eventAggregate.extensions.latitude == null

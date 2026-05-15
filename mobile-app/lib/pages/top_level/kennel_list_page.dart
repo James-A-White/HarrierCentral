@@ -144,7 +144,7 @@ class KennelsListPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.only(left: 10),
       color: Colors.white,
-      width: MediaQuery.of(context).size.width,
+      width: MediaQuery.sizeOf(context).width,
       child: Row(
         children: <Widget>[
           Expanded(

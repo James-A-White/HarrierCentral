@@ -92,8 +92,8 @@ class RunAdminPage extends StatelessWidget {
       ),
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.sizeOf(context).height,
+        width: MediaQuery.sizeOf(context).width,
         padding: const EdgeInsets.only(left: 20, right: 20),
         child: AndroidSafeArea(
           child: ConnectedWidget(
