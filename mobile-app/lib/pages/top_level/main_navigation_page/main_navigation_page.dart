@@ -328,9 +328,8 @@ class MainNavigationPage extends StatelessWidget {
           floatingActionButton: Obx(() {
             if (!controller.isFlipped.value) {
               if (controller.currentPage.value == 2) {
-                return controller.runAndKennelMapPageKey.currentState
-                        ?.getMapFab() ??
-                    SizedBox();
+                // The map page owns its own FAB inside its AppScaffold.
+                return SizedBox();
               }
               if (controller.currentPage.value == 1) {
                 // KennelsListPage owns its own FAB via AppScaffold.floatingActionButton

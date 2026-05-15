@@ -83,7 +83,7 @@ class MainNavigationController extends GetxController
   final showChatBubbleLoading = false.obs;
 
   // Page keys
-  final runAndKennelMapPageKey = GlobalKey<RunAndKennelMapPageState>();
+  final runAndKennelMapPageKey = GlobalKey();
   final kennelLocationsPageKey = GlobalKey();
 
   // Pages
