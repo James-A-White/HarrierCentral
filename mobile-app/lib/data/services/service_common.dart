@@ -10,6 +10,12 @@ class ServiceCommon {
   static const int _baseBackoffMs = 500;
   static final Random _retryRandom = Random();
 
+  // Per-request timeout. If a single POST stalls longer than this the call is
+  // treated as a non-retryable connection failure (status 0) so the caller
+  // moves on instead of hanging forever. 30 s covers slow Azure cold-starts
+  // while still preventing the infinite-boot-hang on partially-connected networks.
+  static const Duration _requestTimeout = Duration(seconds: 30);
+
   static Future<void> recordError(
     String httpBody,
     String error, {
@@ -101,8 +107,10 @@ class ServiceCommon {
 
       if (isLastAttempt) {
         _showSnackbarSafely(
-          title: 'Connection Issue',
-          message: 'Unable to connect. Please check your connection.',
+          title: response.statusCode == 0 ? 'Request Timed Out' : 'Connection Issue',
+          message: response.statusCode == 0
+              ? 'The server took too long to respond. Please try again.'
+              : 'Unable to connect. Please check your connection.',
           backgroundColor: hc_red,
         );
 
@@ -147,10 +155,18 @@ class ServiceCommon {
         Uri.parse(BASE_AF_API_URL),
         headers: <String, String>{'content-type': 'application/json'},
         body: requestBody,
-      ).catchError((dynamic error) {
-        unawaited(recordError(requestBody, error.toString()));
-        return Future<Response>.value(Response('', 500)); // CHECK
-      });
+      )
+          .timeout(
+            _requestTimeout,
+            // Status 0 = our internal "request timed out" sentinel.
+            // _isRetryableStatus treats 0 as non-retryable so a hung request
+            // fails fast instead of burning all 6 retry slots at 30 s each.
+            onTimeout: () => Response('', 0),
+          )
+          .catchError((dynamic error) {
+            unawaited(recordError(requestBody, error.toString()));
+            return Future<Response>.value(Response('', 500));
+          });
     }
 
     return client
@@ -159,19 +175,21 @@ class ServiceCommon {
           headers: <String, String>{'content-type': 'application/json'},
           body: requestBody,
         )
+        .timeout(
+          _requestTimeout,
+          onTimeout: () => Response('', 0),
+        )
         .catchError((dynamic error) {
           unawaited(recordError(requestBody, error.toString()));
-          return Future<Response>.value(Response('', 500)); // CHECK
+          return Future<Response>.value(Response('', 500));
         });
   }
 
   static bool _isRetryableStatus(int statusCode) {
-    if (statusCode == 408 || statusCode == 429) {
-      return true;
-    }
-    if (statusCode >= 500) {
-      return true;
-    }
+    // 0 = our request-timed-out sentinel — don't retry, fail fast.
+    if (statusCode == 0) return false;
+    if (statusCode == 408 || statusCode == 429) return true;
+    if (statusCode >= 500) return true;
     return false;
   }
 
