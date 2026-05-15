@@ -233,7 +233,7 @@ class KennelsListPageController extends GetxController {
     final int newEmail = queryResults[0]['kennelEmailAlertPreference'] as int;
     final int newIsHomeKennel = queryResults[0]['isHomeKennel'] as int;
 
-    filteredList[index] = KennelListAggregate(
+    final newAggregate = KennelListAggregate(
       kennel: item.kennel,
       extensions: item.extensions,
       isHomeKennel: newIsHomeKennel == 1,
@@ -244,13 +244,26 @@ class KennelsListPageController extends GetxController {
       ),
     );
 
+    // Write to filteredList immediately for reactive UI feedback.
+    filteredList[index] = newAggregate;
+
+    // Sync globalKennelMainPageList — _filterResults() rebuilds filteredList from
+    // this list, so without this update the new following state is overwritten.
+    final globalList = tableModel.globalKennelMainPageList;
+    if (globalList != null) {
+      final globalIndex = globalList.indexWhere(
+        (k) => k.kennel.kennelId.toLowerCase() == item.kennel.kennelId.toLowerCase(),
+      );
+      if (globalIndex != -1) {
+        globalList[globalIndex] = newAggregate;
+      }
+    }
+
     // Handle home kennel flag — clear it on all other items if this one is now home
     if (newIsHomeKennel == 1) {
       for (int i = 0; i < filteredList.length; i++) {
         if (i != index) filteredList[i].isHomeKennel = false;
       }
-      // Also update the global list
-      final globalList = tableModel.globalKennelMainPageList;
       if (globalList != null) {
         for (final k in globalList) {
           k.isHomeKennel = k.kennel.kennelId.toLowerCase() == item.kennel.kennelId.toLowerCase();
@@ -302,12 +315,20 @@ class KennelsListPageController extends GetxController {
     item.extensions.notificationsRequested = -1;
     if (results.isNotEmpty) {
       final int newPref = results[0]['notificationPreference'] as int;
-      filteredList[index] = KennelListAggregate(
+      final newAggregate = KennelListAggregate(
         kennel: item.kennel,
         extensions: item.extensions,
         isHomeKennel: item.isHomeKennel,
         hkm: item.hkm?.copyWith(kennelNotificationPreference: newPref),
       );
+      filteredList[index] = newAggregate;
+      final globalList = tableModel.globalKennelMainPageList;
+      if (globalList != null) {
+        final gi = globalList.indexWhere(
+          (k) => k.kennel.kennelId.toLowerCase() == item.kennel.kennelId.toLowerCase(),
+        );
+        if (gi != -1) globalList[gi] = newAggregate;
+      }
     } else {
       filteredList.refresh();
     }
@@ -331,12 +352,20 @@ class KennelsListPageController extends GetxController {
     item.extensions.emailAlertRequested = -1;
     if (results.isNotEmpty) {
       final int newPref = results[0]['emailAlertPreference'] as int;
-      filteredList[index] = KennelListAggregate(
+      final newAggregate = KennelListAggregate(
         kennel: item.kennel,
         extensions: item.extensions,
         isHomeKennel: item.isHomeKennel,
         hkm: item.hkm?.copyWith(kennelEmailAlertPreference: newPref),
       );
+      filteredList[index] = newAggregate;
+      final globalList = tableModel.globalKennelMainPageList;
+      if (globalList != null) {
+        final gi = globalList.indexWhere(
+          (k) => k.kennel.kennelId.toLowerCase() == item.kennel.kennelId.toLowerCase(),
+        );
+        if (gi != -1) globalList[gi] = newAggregate;
+      }
     } else {
       filteredList.refresh();
     }

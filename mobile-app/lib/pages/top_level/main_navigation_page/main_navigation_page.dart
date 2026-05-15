@@ -72,6 +72,7 @@ class MainNavigationPage extends StatelessWidget {
                                   }
 
                                   await setPage(0);
+                                  await badgeController.refreshFromTable(true);
 
                                   // return badgeController
                                   //     .showOnlyEventsWithMessages

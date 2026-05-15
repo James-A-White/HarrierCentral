@@ -178,6 +178,10 @@ class CheckInPackController extends GetxController
 
   Future<void> refreshSqlTablesFromBackend(bool showLoadingIndicator) async {
     if (Utilities.isNotConnected()) {
+      if (showLoadingIndicator && isLoading) {
+        isLoading = false;
+        update([UpdateIds.appScaffold]);
+      }
       return;
     }
 
@@ -246,13 +250,13 @@ class CheckInPackController extends GetxController
       }).toList();
 
       drinkCount.value = specialRunNumbers.length;
-
+    } catch (e) {
+      debugPrint('Error in _refreshCounters: $e');
+    } finally {
       if (forceRefresh) {
         isLoading = false;
         update([UpdateIds.appScaffold]);
       }
-    } catch (e) {
-      debugPrint('Error in _refreshCounters: $e');
     }
   }
 
@@ -688,11 +692,12 @@ class CheckInPackController extends GetxController
             (paymentType == paymentHashCredit.value) ||
             (paymentType == paymentBankTransferOtherAmount.value)) &&
         ((eventAggregate.event.eventPriceForExtras ?? 0) != 0)) {
-      final double runOnlyPrice =
-          specialRunPrice ??
-          (filteredList[index].isMember != 0
-              ? eventAggregate.extensions.memberPrice
-              : eventAggregate.extensions.nonMemberPrice);
+      final double runOnlyPrice = (paymentType == paymentFreeRun.value)
+          ? 0.0
+          : (specialRunPrice ??
+              (filteredList[index].isMember != 0
+                  ? eventAggregate.extensions.memberPrice
+                  : eventAggregate.extensions.nonMemberPrice));
       final double runPlusExtrasPrice =
           runOnlyPrice + (eventAggregate.event.eventPriceForExtras!);
 

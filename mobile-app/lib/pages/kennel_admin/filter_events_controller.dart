@@ -48,9 +48,15 @@ class FilterEventsController extends GetxController {
     super.onInit();
     unawaited(
       _refreshSqlTablesFromBackend(true).then((void _) {
+        // For past mode, jump the calendar to the most recent past event so the
+        // user sees a populated month instead of today (which has no past events).
+        DateTime initialDay = focusedDay.value;
+        if (pageType == FilterEventsPageType.past && allEvents.isNotEmpty) {
+          initialDay = toDateOnly(allEvents.first.eventStartDatetime);
+        }
         _refreshList(
-          selectedDay: focusedDay.value,
-          focusedDay: focusedDay.value,
+          selectedDay: initialDay,
+          focusedDay: initialDay,
         );
         unawaited(
           Future<void>.delayed(const Duration(milliseconds: 500)).then(

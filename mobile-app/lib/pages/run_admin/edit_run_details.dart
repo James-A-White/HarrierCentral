@@ -1224,6 +1224,13 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
       future: _imageFromGallery,
       builder: (BuildContext context, AsyncSnapshot<File?> snapshot) {
         if (snapshot.hasData) {
+          if (_isUpdating) {
+            return const SizedBox(
+              height: 70.0,
+              width: 70.0,
+              child: HcAppCircularProgressIndicator(key: Key('8812340021')),
+            );
+          }
           return Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -1249,6 +1256,9 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                   onPressed: () async {
                     if ((_eventAggregate.event.eventId.isNotEmpty) &&
                         (_eventAggregate.event.eventId != GUID_EMPTY)) {
+                      setState(() {
+                        _isUpdating = true;
+                      });
                       final String fileName = await _upload(
                         snapshot.data!,
                         _eventAggregate.event.eventId,

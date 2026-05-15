@@ -81,10 +81,10 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
           e.${tableModel.eventsTableHelper.colEventName} as eventName,
           e.${tableModel.eventsTableHelper.colEventNumber} as eventNumber,
           n.${tableModel.countriesTableHelper.colCountryName} as countryName,
-          n.${tableModel.countriesTableHelper.colFlagFile} as flagFile,
+          coalesce(n.${tableModel.countriesTableHelper.colFlagFile},'') as flagFile,
           k.${tableModel.kennelsTableHelper.colKennelName} as kennelName,
           k.${tableModel.kennelsTableHelper.colKennelShortName} as kennelShortName,
-          coalesce(k.${tableModel.kennelsTableHelper.colDigitsAfterDecimal},n.${tableModel.countriesTableHelper.colDigitsAfterDecimal},2) as digitsAfterDecimal, 
+          coalesce(k.${tableModel.kennelsTableHelper.colDigitsAfterDecimal},n.${tableModel.countriesTableHelper.colDigitsAfterDecimal},2) as digitsAfterDecimal,
           coalesce(k.${tableModel.kennelsTableHelper.colCurrencySymbol},n.${tableModel.countriesTableHelper.colCurrencySymbol},"$dollarSign") as currencySymbol,
           k.${tableModel.kennelsTableHelper.colKennelLogo} as kennelLogo,
           e.${tableModel.eventsTableHelper.colEventStartDatetime} as eventStartDatetime,
@@ -102,30 +102,28 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
           FROM ${EnumDataTables.events.commonTableName} e
           INNER JOIN kennels k on e.${tableModel.eventsTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId}
           INNER JOIN ${EnumDataTables.countries.commonTableName} n on e.${tableModel.eventsTableHelper.colCountryId} = n.${tableModel.countriesTableHelper.colCountryId}
-          LEFT OUTER JOIN ${tableModel.hasherEventMapTableHelper.getTableName(widget.appDomain)} hem on hem.${tableModel.hasherEventMapTableHelper.colEventId} = e.${tableModel.eventsTableHelper.colEventId} 
+          LEFT OUTER JOIN ${tableModel.hasherEventMapTableHelper.getTableName(widget.appDomain)} hem on hem.${tableModel.hasherEventMapTableHelper.colEventId} = e.${tableModel.eventsTableHelper.colEventId}
           AND hem.${tableModel.hasherEventMapTableHelper.colUserId}  = "$userId"
           LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(widget.appDomain)} pay on pay.${tableModel.paymentsTableHelper.colHemId} = hem.${tableModel.hasherEventMapTableHelper.colHemId} AND pay.${tableModel.paymentsTableHelper.colCancelledBy} IS NULL
-          WHERE e.${tableModel.eventsTableHelper.colIsCountedRun} = 1 
-          AND e.${tableModel.eventsTableHelper.colIsVisible} = 1 
+          WHERE e.${tableModel.eventsTableHelper.colIsCountedRun} = 1
+          AND e.${tableModel.eventsTableHelper.colIsVisible} = 1
           AND e.${tableModel.eventsTableHelper.colRemoved} = 0
-          AND e.${tableModel.eventsTableHelper.colCountryId} = "${widget.countryId}" 
-          AND coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) >= $attendenceState 
+          AND e.${tableModel.eventsTableHelper.colCountryId} = "${widget.countryId}"
+          AND coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) >= $attendenceState
           AND julianday(e.${tableModel.eventsTableHelper.colEventStartDatetime}) <= julianday('now','$offsetFromGmtToLocal')
         UNION
-          -- this part of the query is for where we want to cache run details in cases
-          -- where the user is not following the Kennel and the run detail information will
-          -- not be present on the device as a part of a run record
-          SELECT 
+          -- Covers old runs no longer in the events cache — HEM-only records.
+          SELECT
           hem.${tableModel.hasherEventMapTableHelper.colTotalRunsThisKennel} as totalRunsThisKennel,
           hem.${tableModel.hasherEventMapTableHelper.colTotalHaringThisKennel} as totalHaringThisKennel,
           hem.${tableModel.hasherEventMapTableHelper.colEventId} as eventId,
-          hem.${tableModel.hasherEventMapTableHelper.colEventName} as eventName,
+          coalesce(hem.${tableModel.hasherEventMapTableHelper.colEventName},'') as eventName,
           hem.${tableModel.hasherEventMapTableHelper.colEventNumber} as eventNumber,
           n.${tableModel.countriesTableHelper.colCountryName} as countryName,
-          n.${tableModel.countriesTableHelper.colFlagFile} as flagFile,
+          coalesce(n.${tableModel.countriesTableHelper.colFlagFile},'') as flagFile,
           k.${tableModel.kennelsTableHelper.colKennelName} as kennelName,
           k.${tableModel.kennelsTableHelper.colKennelShortName} as kennelShortName,
-          coalesce(k.${tableModel.kennelsTableHelper.colDigitsAfterDecimal},n.${tableModel.countriesTableHelper.colDigitsAfterDecimal},2) as digitsAfterDecimal, 
+          coalesce(k.${tableModel.kennelsTableHelper.colDigitsAfterDecimal},n.${tableModel.countriesTableHelper.colDigitsAfterDecimal},2) as digitsAfterDecimal,
           coalesce(k.${tableModel.kennelsTableHelper.colCurrencySymbol},n.${tableModel.countriesTableHelper.colCurrencySymbol},"$dollarSign") as currencySymbol,
           k.${tableModel.kennelsTableHelper.colKennelLogo} as kennelLogo,
           hem.${tableModel.hasherEventMapTableHelper.colEventStartDatetime} as eventStartDatetime,
@@ -137,21 +135,21 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
           coalesce(hem.${tableModel.hasherEventMapTableHelper.colIsHare},0) as isHare,
           pay.${tableModel.paymentsTableHelper.colCreditAmount} as creditAmount,
           pay.${tableModel.paymentsTableHelper.colDebitAmount} as debitAmount,
-          pay.${tableModel.paymentsTableHelper.colPaymentType} as paymentType,
           pay.${tableModel.paymentsTableHelper.colCreditAvailable} as creditAvailable,
+          pay.${tableModel.paymentsTableHelper.colPaymentType} as paymentType,
           pay.${tableModel.paymentsTableHelper.colDoPayForExtras} as doPayForExtras
           FROM ${tableModel.hasherEventMapTableHelper.getTableName(widget.appDomain)} hem
           INNER JOIN ${EnumDataTables.kennels.commonTableName} k on k.${tableModel.kennelsTableHelper.colKennelId} = ${tableModel.hasherEventMapTableHelper.colEventKennelId}
           INNER JOIN ${EnumDataTables.countries.commonTableName} n on n.${tableModel.countriesTableHelper.colCountryId} = ${tableModel.hasherEventMapTableHelper.colCountryId}
           LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(widget.appDomain)} pay on pay.${tableModel.paymentsTableHelper.colHemId} = hem.${tableModel.hasherEventMapTableHelper.colHemId} AND pay.${tableModel.paymentsTableHelper.colCancelledBy} IS NULL
-          WHERE 
+          WHERE
           hem.${tableModel.hasherEventMapTableHelper.colEventId} NOT IN (SELECT eventId FROM ${EnumDataTables.events.commonTableName})
           AND hem.${tableModel.hasherEventMapTableHelper.colUserId} = "$userId"
-          AND hem.${tableModel.hasherEventMapTableHelper.colEventIsCountedAndVisible} = 1 
-          AND hem.${tableModel.hasherEventMapTableHelper.colRemoved} = 0 
-          AND hem.${tableModel.hasherEventMapTableHelper.colCountryId} = "${widget.countryId}" 
-          AND coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) >= $attendenceState 
-          AND julianday(hem.${tableModel.hasherEventMapTableHelper.colEventStartDatetime}) <= julianday('now','$offsetFromGmtToLocal') 
+          AND hem.${tableModel.hasherEventMapTableHelper.colEventIsCountedAndVisible} = 1
+          AND hem.${tableModel.hasherEventMapTableHelper.colRemoved} = 0
+          AND hem.${tableModel.hasherEventMapTableHelper.colCountryId} = "${widget.countryId}"
+          AND coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) >= $attendenceState
+          AND julianday(hem.${tableModel.hasherEventMapTableHelper.colEventStartDatetime}) <= julianday('now','$offsetFromGmtToLocal')
           ORDER BY eventStartDatetime desc
           ''';
 
@@ -160,24 +158,27 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
       final List<Map<String, dynamic>> results = await database.rawQuery(query);
 
       for (int i = 0; i < results.length; i++) {
-        final UserRunHistoryModel hlrItem = UserRunHistoryModel.fromMap(
-          results[i],
-        );
-        _runCountsList.add(hlrItem);
-
-        // hlrItem.totalHaringThisKennel = -1;
-        // hlrItem.totalRunsThisKennel = -1;
-
-        if (forceRefresh && (i == results.length - 1)) {
-          setState(() {
-            _isLoading = false;
-          });
+        try {
+          final UserRunHistoryModel hlrItem = UserRunHistoryModel.fromMap(
+            results[i],
+          );
+          _runCountsList.add(hlrItem);
+        } catch (e) {
+          if (kDebugMode) {
+            debugPrint('user_country_history: skipping unparseable row $i: $e');
+          }
         }
       }
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('');
+        debugPrint('user_country_history: query failed: $e');
       }
+    }
+
+    if (forceRefresh && mounted) {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 

@@ -59,6 +59,13 @@
                 "args": [
                     "--web-port", "8080"
                 ]
+            },
+            {
+                "name": "HC Mobile — iOS Simulator",
+                "type": "dart",
+                "request": "launch",
+                "program": "${workspaceFolder:mobile-app}/lib/main.dart",
+                "deviceId": "4B61CF1C-E3DD-4724-B62B-FC134FE53363"
             }
         ]
     }
