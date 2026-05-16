@@ -5,6 +5,23 @@ on the Harrier Central codebase. Read this before making any changes.
 
 ---
 
+## Session Start — TODO Review
+
+At the start of every session, read the TODO file for the active component and
+display its contents to James before doing anything else.
+
+| Working directory | TODO file |
+|-------------------|-----------|
+| `mobile-app/`     | `todos/app.md` |
+| `portal/`         | `todos/portal.md` |
+| `public-web/`     | `todos/public-web.md` |
+| `api/`            | `todos/api.md` |
+
+If the session spans multiple components, show all relevant TODO files.
+If a TODO item is completed during the session, mark it `[x]` in the file.
+
+---
+
 ## Non-Negotiable Design Decisions
 
 These are firm decisions that must not be revisited or worked around:
