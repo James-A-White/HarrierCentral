@@ -198,7 +198,6 @@ class HashersService extends BaseService {
     final String body = jsonEncode(<String, String?>{
       'queryType': 'addEditUser',
       'deviceId': deviceId,
-      'userId': userId,
       'accessToken': accessToken,
       'hcVersion': hcVersion,
       'hashersUpdatedAfter': hashersUpdatedAfter.toString(),
