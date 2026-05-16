@@ -40,7 +40,7 @@ AS
 --     a new payment after cancelling any existing one for that HEM row.
 -- Parameters:
 --   @deviceId               - Registered device UUID
---   @accessToken            - Standard device-secret token (paramString = DeviceSecret, matching all other HC6 app SPs)
+--   @accessToken            - Compound token: paramString = DeviceSecret + HemId + '#' + INT(paymentAmount)
 --   @userIdWhoPaid          - The hasher who owes the payment
 --   @eventId                - The event being paid for
 --   @hasherEventMapId       - HEM row; resolved from userIdWhoPaid if NULL
@@ -85,12 +85,25 @@ DECLARE @userId       UNIQUEIDENTIFIER;
 DECLARE @deviceSecret NVARCHAR(150);
 DECLARE @timeWindow   INT;
 
+-- Look up the device secret so the compound param can be built before calling ValidateAppAuth.
+-- ValidateAppAuth will overwrite @deviceSecret via OUTPUT with the same value.
+SELECT @deviceSecret = UPPER(d.DeviceSecret) FROM HC.Device d WHERE d.id = @deviceId;
+
+-- Compound token context: deviceSecret + hemId + '#' + INT(paymentAmount)
+-- @hasherEventMapId may already be NULL here (normalised from GUID_EMPTY above).
+-- @paymentAmount uses COALESCE(0) so the token is still deterministic if the SP returns
+-- an early validation error before amount is checked.
+DECLARE @paramSuffix NVARCHAR(650) =
+    @deviceSecret
+    + UPPER(CAST(COALESCE(@hasherEventMapId, '00000000-0000-0000-0000-000000000000') AS NVARCHAR(50)))
+    + '#' + CAST(CAST(COALESCE(@paymentAmount, 0) AS INT) AS NVARCHAR(50));
+
 EXEC HC6.ValidateAppAuth
     @deviceId     = @deviceId,
     @accessToken  = @accessToken,
     @procName     = @procName,
     @spNumber     = 40,
-    @param        = NULL,
+    @param        = @paramSuffix,
     @userId       = @userId       OUTPUT,
     @deviceSecret = @deviceSecret OUTPUT,
     @timeWindow   = @timeWindow   OUTPUT,

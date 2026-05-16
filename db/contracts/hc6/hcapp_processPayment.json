@@ -2,7 +2,7 @@
   "schema": "HC6",
   "name": "hcapp_processPayment",
   "version": "1.0.0",
-  "description": "Records, confirms, or cancels a single payment for an event attendance (or membership/haberdashery when productType != 1). Uses a compound access token that binds the transaction to a specific hasherEventMapId, payer, amount, and event — ValidateAppAuth prepends the DeviceSecret to the suffix: hemId + '#' + payerId + '#' + int(amount) + '#' + eventId. paymentType codes: 1=not paid (cancel existing), 2=free, 3=cash, 4=bank transfer, 5=cash (other amount), 6=hash credit, 7=bank transfer (other amount), 8=credit (other amount), 100=confirm bank transfer (WankerBanker confirmation only). Creates HasherEventMap if none exists. Cancels any prior active payment before inserting a new one. On success, delegates to hcapp_syncEventAdminData or hcapp_syncUserData based on @appDomainType.",
+  "description": "Records, confirms, or cancels a single payment for an event attendance (or membership/haberdashery when productType != 1). Uses a standard device-secret access token (@param = NULL — ValidateAppAuth uses the stored DeviceSecret as the token context). paymentType codes: 1=not paid (cancel existing), 2=free, 3=cash, 4=bank transfer, 5=cash (other amount), 6=hash credit, 7=bank transfer (other amount), 8=credit (other amount), 100=confirm bank transfer (WankerBanker confirmation only). Creates HasherEventMap if none exists. Cancels any prior active payment before inserting a new one. On success, delegates to hcapp_syncEventAdminData or hcapp_syncUserData based on @appDomainType.",
   "parameters": [
     {
       "name": "deviceId",
@@ -16,7 +16,7 @@
       "type": "NVARCHAR(1000)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Compound access token. ValidateAppAuth validates against: DeviceSecret + hemId + '#' + userIdWhoPaid + '#' + CAST(CAST(paymentAmount AS INT) AS NVARCHAR) + '#' + eventId. Zero-UUID placeholders are used for any NULL component. Amount is truncated to integer — payments with fractional cents validate with floor value."
+      "description": "Compound access token. ValidateAppAuth is called with @param = DeviceSecret + HemId + '#' + INT(paymentAmount). Flutter generates with paramString: deviceSecret + hasherEventMapId + '#' + paymentAmount.toInt(). GUID_EMPTY is used as a placeholder when hasherEventMapId is unknown. The HC5 compound token also included userId and eventId; those components were dropped in HC6."
     },
     {
       "name": "userIdWhoPaid",
