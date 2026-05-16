@@ -2,6 +2,14 @@
 
 ## 2.4.2+1108 (2026-05-16)
 
+### Enhancements
+
+- **Profile — distance preference auto-saves on selection**: Selecting a distance
+  unit (Auto / Kilometers / Miles) in the profile settings now immediately saves the
+  preference to the server without requiring the "Save Changes" button. A spinner
+  appears next to the "Distance Preference" heading while the call is in-flight, and
+  the radio group is non-interactive until the save completes.
+
 ### Bug fixes
 
 - **Hash History — wrong table domain in hasher profile view**: Run history launched

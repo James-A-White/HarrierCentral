@@ -600,6 +600,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   int _nameDisplayPreference = 1;
   int _distancePreference = 0;
   int _autoRunPreference = 2;
+  bool _isDistanceUpdating = false;
 
   void _handleRadioValueChange0(int? value) {
     setState(() {
@@ -613,6 +614,44 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       _distancePreference = value ?? 0;
       _checkDirty();
     });
+    if (widget.pageType == EnumMyProfilePageType.myProfile) {
+      _saveDistancePreference();
+    }
+  }
+
+  Future<void> _saveDistancePreference() async {
+    setState(() {
+      _isDistanceUpdating = true;
+    });
+    final HashersService srv = HashersService();
+    final String responseBody = await srv.addEditUser(
+      targetUserId: _hasher.hasherId,
+      firstName: _hasher.firstName ?? '',
+      lastName: _hasher.lastName ?? '',
+      email: _emailController.text,
+      hashName: _hasher.hashName ?? '',
+      photo: _hasher.photo ?? '',
+      eventId: GUID_EMPTY,
+      kennelId: GUID_EMPTY,
+      historicalTotalRunCount: '-1',
+      historicalHaringCount: '-1',
+      historicalCountIsEstimate: _historicalCountIsEstimate ?? false,
+      preferences: _distancePreference + _autoRunPreference,
+      nameDisplayPreference: -1,
+    );
+    if (!responseBody.startsWith(ERROR_PREFIX)) {
+      await setIntPref(
+        IntPrefsEnum.hasherPreferences,
+        _distancePreference + _autoRunPreference,
+      );
+      _hasherPreferences = _distancePreference + _autoRunPreference;
+    }
+    if (mounted) {
+      setState(() {
+        _isDistanceUpdating = false;
+        _checkDirty();
+      });
+    }
   }
 
   void _handleRadioValueChange2(int? value) {
@@ -890,31 +929,61 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         topMargin: 30.0,
                                                         bottomMargin: 20.0,
                                                       ),
-                                                      Container(
-                                                        decoration: BoxDecoration(
-                                                          color: Colors
-                                                              .yellow[100],
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                5.0,
-                                                              ),
-                                                        ),
-                                                        child: RadioGroup(
-                                                          groupValue:
-                                                              _distancePreference,
-                                                          onChanged:
-                                                              _handleRadioValueChange1,
-                                                          child: Column(
-                                                            children: <Widget>[
-                                                              const SizedBox(
-                                                                height: 10,
-                                                                width: 10,
-                                                              ),
-                                                              Text(
-                                                                'Distance Preference',
-                                                                style:
-                                                                    ts_headingBlack,
-                                                              ),
+                                                      AbsorbPointer(
+                                                        absorbing:
+                                                            _isDistanceUpdating,
+                                                        child: Container(
+                                                          decoration: BoxDecoration(
+                                                            color: Colors
+                                                                .yellow[100],
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  5.0,
+                                                                ),
+                                                          ),
+                                                          child: RadioGroup(
+                                                            groupValue:
+                                                                _distancePreference,
+                                                            onChanged:
+                                                                _handleRadioValueChange1,
+                                                            child: Column(
+                                                              children: <Widget>[
+                                                                const SizedBox(
+                                                                  height: 10,
+                                                                  width: 10,
+                                                                ),
+                                                                Row(
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .center,
+                                                                  children: <
+                                                                    Widget
+                                                                  >[
+                                                                    Text(
+                                                                      'Distance Preference',
+                                                                      style:
+                                                                          ts_headingBlack,
+                                                                    ),
+                                                                    if (_isDistanceUpdating) ...<
+                                                                      Widget
+                                                                    >[
+                                                                      const SizedBox(
+                                                                        width:
+                                                                            8,
+                                                                      ),
+                                                                      const SizedBox(
+                                                                        width:
+                                                                            16,
+                                                                        height:
+                                                                            16,
+                                                                        child: CircularProgressIndicator(
+                                                                          strokeWidth:
+                                                                              2,
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ],
+                                                                ),
                                                               const SizedBox(
                                                                 height: 10,
                                                                 width: 10,
@@ -964,6 +1033,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             ],
                                                           ),
                                                         ),
+                                                      ),
                                                       ),
                                                     ],
                                                   ),
