@@ -115,7 +115,7 @@ class ChatPageController extends GetxController {
     final accessToken = Utilities.generateToken(
       userId,
       'hcapp_getEventMessages',
-      paramString: deviceSecret + eventId,
+      paramString: deviceSecret,
     );
 
     final body = <String, String>{
@@ -313,7 +313,7 @@ class ChatPageController extends GetxController {
     final accessToken = Utilities.generateToken(
       userId,
       'hcapp_sendEventMessage',
-      paramString: deviceSecret + eventId,
+      paramString: deviceSecret,
     );
 
     final body = <String, dynamic>{

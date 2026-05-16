@@ -72,6 +72,8 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
 
     final offsetFromGmtToLocal = Utilities.getSqfliteTimeOffset();
 
+    final String normalizedCountryId = normalizeUuid(widget.countryId);
+
     String query =
         '''
           SELECT
@@ -100,7 +102,7 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
           pay.${tableModel.paymentsTableHelper.colPaymentType} as paymentType,
           pay.${tableModel.paymentsTableHelper.colDoPayForExtras} as doPayForExtras
           FROM ${EnumDataTables.events.commonTableName} e
-          INNER JOIN kennels k on e.${tableModel.eventsTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId}
+          INNER JOIN ${EnumDataTables.kennels.commonTableName} k on e.${tableModel.eventsTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId}
           INNER JOIN ${EnumDataTables.countries.commonTableName} n on e.${tableModel.eventsTableHelper.colCountryId} = n.${tableModel.countriesTableHelper.colCountryId}
           LEFT OUTER JOIN ${tableModel.hasherEventMapTableHelper.getTableName(widget.appDomain)} hem on hem.${tableModel.hasherEventMapTableHelper.colEventId} = e.${tableModel.eventsTableHelper.colEventId}
           AND hem.${tableModel.hasherEventMapTableHelper.colUserId}  = "$userId"
@@ -108,7 +110,7 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
           WHERE e.${tableModel.eventsTableHelper.colIsCountedRun} = 1
           AND e.${tableModel.eventsTableHelper.colIsVisible} = 1
           AND e.${tableModel.eventsTableHelper.colRemoved} = 0
-          AND e.${tableModel.eventsTableHelper.colCountryId} = "${widget.countryId}"
+          AND lower(e.${tableModel.eventsTableHelper.colCountryId}) = "$normalizedCountryId"
           AND coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) >= $attendenceState
           AND julianday(e.${tableModel.eventsTableHelper.colEventStartDatetime}) <= julianday('now','$offsetFromGmtToLocal')
         UNION
@@ -139,15 +141,15 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
           pay.${tableModel.paymentsTableHelper.colPaymentType} as paymentType,
           pay.${tableModel.paymentsTableHelper.colDoPayForExtras} as doPayForExtras
           FROM ${tableModel.hasherEventMapTableHelper.getTableName(widget.appDomain)} hem
-          INNER JOIN ${EnumDataTables.kennels.commonTableName} k on k.${tableModel.kennelsTableHelper.colKennelId} = ${tableModel.hasherEventMapTableHelper.colEventKennelId}
-          INNER JOIN ${EnumDataTables.countries.commonTableName} n on n.${tableModel.countriesTableHelper.colCountryId} = ${tableModel.hasherEventMapTableHelper.colCountryId}
+          INNER JOIN ${EnumDataTables.kennels.commonTableName} k on k.${tableModel.kennelsTableHelper.colKennelId} = hem.${tableModel.hasherEventMapTableHelper.colEventKennelId}
+          INNER JOIN ${EnumDataTables.countries.commonTableName} n on n.${tableModel.countriesTableHelper.colCountryId} = hem.${tableModel.hasherEventMapTableHelper.colCountryId}
           LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(widget.appDomain)} pay on pay.${tableModel.paymentsTableHelper.colHemId} = hem.${tableModel.hasherEventMapTableHelper.colHemId} AND pay.${tableModel.paymentsTableHelper.colCancelledBy} IS NULL
           WHERE
           hem.${tableModel.hasherEventMapTableHelper.colEventId} NOT IN (SELECT eventId FROM ${EnumDataTables.events.commonTableName})
           AND hem.${tableModel.hasherEventMapTableHelper.colUserId} = "$userId"
           AND hem.${tableModel.hasherEventMapTableHelper.colEventIsCountedAndVisible} = 1
           AND hem.${tableModel.hasherEventMapTableHelper.colRemoved} = 0
-          AND hem.${tableModel.hasherEventMapTableHelper.colCountryId} = "${widget.countryId}"
+          AND lower(hem.${tableModel.hasherEventMapTableHelper.colCountryId}) = "$normalizedCountryId"
           AND coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) >= $attendenceState
           AND julianday(hem.${tableModel.hasherEventMapTableHelper.colEventStartDatetime}) <= julianday('now','$offsetFromGmtToLocal')
           ORDER BY eventStartDatetime desc
@@ -157,6 +159,14 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
     try {
       final List<Map<String, dynamic>> results = await database.rawQuery(query);
 
+      if (kDebugMode) {
+        debugPrint(
+          'user_country_history: countryId=${widget.countryId} normalizedCountryId=$normalizedCountryId userId=$userId tabIndex=${_tabController.index} rawRowCount=${results.length}',
+        );
+      }
+
+      int parseFailures = 0;
+
       for (int i = 0; i < results.length; i++) {
         try {
           final UserRunHistoryModel hlrItem = UserRunHistoryModel.fromMap(
@@ -164,10 +174,17 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
           );
           _runCountsList.add(hlrItem);
         } catch (e) {
+          parseFailures++;
           if (kDebugMode) {
             debugPrint('user_country_history: skipping unparseable row $i: $e');
           }
         }
+      }
+
+      if (kDebugMode && parseFailures > 0) {
+        debugPrint(
+          'user_country_history: parsed=${_runCountsList.length} parseFailures=$parseFailures',
+        );
       }
     } catch (e) {
       if (kDebugMode) {

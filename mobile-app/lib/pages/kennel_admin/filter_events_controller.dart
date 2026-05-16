@@ -31,8 +31,8 @@ class FilterEventsController extends GetxController {
   final Map<DateTime, List<LiteEventModel>> calendarEvents =
       <DateTime, List<LiteEventModel>>{};
 
-  List<Map<String, dynamic>> publishedRunCountSqlResult =
-      <Map<String, dynamic>>[];
+  final RxList<Map<String, dynamic>> publishedRunCountSqlResult =
+      <Map<String, dynamic>>[].obs;
 
   /// ID of the list item currently being updated (for inline spinner).
   final RxString itemBeingUpdatedId = ''.obs;
@@ -121,7 +121,7 @@ class FilterEventsController extends GetxController {
           WHERE kennelId = "${kennel.kennel.kennelId}" AND isVisible = 1
           AND date(datetime(evt.eventStartDatetime)) $dateComparer date(datetime('now','$offsetFromGmtToLocal'))
           ''';
-      publishedRunCountSqlResult = await database.rawQuery(sql);
+      publishedRunCountSqlResult.value = await database.rawQuery(sql);
     } catch (e) {
       // swallow
     }
@@ -178,6 +178,11 @@ class FilterEventsController extends GetxController {
       EnumDataTables.events.flag,
       true,
       debugText: 'filter_events_page: Events',
+    );
+    await tableModel.syncKennelAdminService.updateFromBackend(
+      EnumDataTables.hasherKennelMap.flag,
+      true,
+      kennel.kennel.kennelId,
     );
     await _refreshEventFromTables(true);
     isLoading.value = false;

@@ -44,9 +44,6 @@ DECLARE @errorType INT;
 DECLARE @errorTitle NVARCHAR(500);
 DECLARE @errorMsg   NVARCHAR(MAX);
 
--- Compound token suffix — ValidateAppAuth prepends DeviceSecret
-DECLARE @paramSuffix NVARCHAR(500) = CAST(COALESCE(@eventId, '00000000-0000-0000-0000-000000000000') AS NVARCHAR(50));
-
 DECLARE @userId       UNIQUEIDENTIFIER;
 DECLARE @deviceSecret NVARCHAR(150);
 DECLARE @timeWindow   INT;
@@ -56,7 +53,7 @@ EXEC HC6.ValidateAppAuth
     @accessToken  = @accessToken,
     @procName     = @procName,
     @spNumber     = 60,
-    @param        = @paramSuffix,
+    @param        = NULL,
     @userId       = @userId       OUTPUT,
     @deviceSecret = @deviceSecret OUTPUT,
     @timeWindow   = @timeWindow   OUTPUT,

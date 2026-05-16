@@ -141,8 +141,8 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
           pay.${tableModel.paymentsTableHelper.colCreditAvailable} as creditAvailable,
           pay.${tableModel.paymentsTableHelper.colDoPayForExtras} as doPayForExtras
           FROM ${tableModel.hasherEventMapTableHelper.getTableName(widget.appDomain)} hem
-          INNER JOIN ${EnumDataTables.kennels.commonTableName} k on k.${tableModel.kennelsTableHelper.colKennelId} = ${tableModel.hasherEventMapTableHelper.colEventKennelId}
-          INNER JOIN ${EnumDataTables.countries.commonTableName} n on n.${tableModel.countriesTableHelper.colCountryId} = ${tableModel.hasherEventMapTableHelper.colCountryId}
+          INNER JOIN ${EnumDataTables.kennels.commonTableName} k on k.${tableModel.kennelsTableHelper.colKennelId} = hem.${tableModel.hasherEventMapTableHelper.colEventKennelId}
+          INNER JOIN ${EnumDataTables.countries.commonTableName} n on n.${tableModel.countriesTableHelper.colCountryId} = hem.${tableModel.hasherEventMapTableHelper.colCountryId}
           LEFT OUTER JOIN ${tableModel.paymentsTableHelper.getTableName(widget.appDomain)} pay on pay.${tableModel.paymentsTableHelper.colHemId} = hem.${tableModel.hasherEventMapTableHelper.colHemId} AND pay.${tableModel.paymentsTableHelper.colCancelledBy} IS NULL
           WHERE 
           hem.${tableModel.hasherEventMapTableHelper.colEventId} NOT IN (SELECT eventId FROM ${EnumDataTables.events.commonTableName})

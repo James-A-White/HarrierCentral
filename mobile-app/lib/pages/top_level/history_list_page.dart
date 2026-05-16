@@ -21,7 +21,7 @@ class CountryStats {
       hareCount: map['hareCount'] ?? 0,
       countryName: map['countryName'] ?? '',
       flagFile: map['flagFile'] ?? '',
-      countryId: map['countryId'] ?? '',
+      countryId: normalizeUuid((map['countryId'] ?? '').toString()),
     );
   }
 
@@ -31,6 +31,7 @@ class CountryStats {
       'hareCount': hareCount,
       'countryName': countryName,
       'flagFile': flagFile,
+      'countryId': countryId,
     };
   }
 }
@@ -72,8 +73,7 @@ class HistoryListPageState extends State<HistoryListPage>
 
   Future<void> queryCountryStats(bool forceRefresh) async {
     final offsetFromGmtToLocal = Utilities.getSqfliteTimeOffset();
-
-    //final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = getStringPref(StringPrefsEnum.userId)!;
 
     final String hcRunsQuery =
         '''
@@ -89,8 +89,9 @@ class HistoryListPageState extends State<HistoryListPage>
           WHERE evt.${tableModel.eventsTableHelper.colRemoved} = 0
           AND evt.${tableModel.eventsTableHelper.colIsCountedRun} != 0
           AND evt.${tableModel.eventsTableHelper.colIsVisible} != 0
+          AND hem.${tableModel.hasherEventMapTableHelper.colUserId} = "$userId"
           AND julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetime}) <= julianday('now','$offsetFromGmtToLocal') 
-          GROUP BY countries.${tableModel.countriesTableHelper.colCountryName}, countries.${tableModel.countriesTableHelper.colFlagFile}
+          GROUP BY countries.${tableModel.countriesTableHelper.colCountryName}, countries.${tableModel.countriesTableHelper.colCountryId}, countries.${tableModel.countriesTableHelper.colFlagFile}
           ORDER BY runCount desc
           ''';
 
@@ -105,7 +106,8 @@ class HistoryListPageState extends State<HistoryListPage>
           FROM ${EnumDataTables.hasherKennelMap.commonTableName} hkm
           INNER JOIN ${EnumDataTables.kennels.commonTableName} ken on hkm.${tableModel.hasherKennelMapTableHelper.colKennelId} = ken.${tableModel.kennelsTableHelper.colKennelId}
           INNER JOIN ${EnumDataTables.countries.commonTableName} countries on ken.${tableModel.kennelsTableHelper.colCountryId} = countries.${tableModel.countriesTableHelper.colCountryId}
-          GROUP BY countries.${tableModel.countriesTableHelper.colCountryName}, countries.${tableModel.countriesTableHelper.colFlagFile}
+          WHERE hkm.${tableModel.hasherKennelMapTableHelper.colUserId} = "$userId"
+          GROUP BY countries.${tableModel.countriesTableHelper.colCountryName}, countries.${tableModel.countriesTableHelper.colCountryId}, countries.${tableModel.countriesTableHelper.colFlagFile}
           ORDER BY runCount desc
           ''';
 
@@ -138,7 +140,7 @@ class HistoryListPageState extends State<HistoryListPage>
           //   'Historic - Country = ${historicItem.countryName} / Count = ${historicItem.runCount} / Hare = ${historicItem.hareCount}',
           // );
 
-          _runCountsListByCountry[historicItem.countryName] = (historicItem);
+          _runCountsListByCountry[historicItem.countryId] = historicItem;
         }
       }
 
@@ -150,13 +152,13 @@ class HistoryListPageState extends State<HistoryListPage>
           //   'HC - Country = ${hcItem.countryName} / Count = ${hcItem.runCount} / Hare = ${hcItem.hareCount}',
           // );
 
-          if (_runCountsListByCountry[hcItem.countryName] != null) {
-            _runCountsListByCountry[hcItem.countryName]!.hareCount +=
+          if (_runCountsListByCountry[hcItem.countryId] != null) {
+            _runCountsListByCountry[hcItem.countryId]!.hareCount +=
                 hcItem.hareCount;
-            _runCountsListByCountry[hcItem.countryName]!.runCount +=
+            _runCountsListByCountry[hcItem.countryId]!.runCount +=
                 hcItem.runCount;
           } else {
-            _runCountsListByCountry[hcItem.countryName] = hcItem;
+            _runCountsListByCountry[hcItem.countryId] = hcItem;
           }
         }
       }
