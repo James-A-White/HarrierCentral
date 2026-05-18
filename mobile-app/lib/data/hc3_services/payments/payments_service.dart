@@ -150,12 +150,6 @@ class PaymentsService {
     final String deviceSecret =
         getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-    final String accessToken = Utilities.generateToken(
-      userId,
-      'hcapp_processBulkPayment',
-      paramString: deviceSecret,
-    );
-
     final int hasherEventMapLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(
           database,
@@ -187,10 +181,9 @@ class PaymentsService {
       paymentsLastUpdated + 1,
     );
 
-    final Map<String, String?> bodyMap = <String, String?>{
+    final Map<String, String?> bulkPayBody = <String, String?>{
       'queryType': 'processBulkPayment',
       'deviceId': deviceId,
-      'accessToken': accessToken,
       'userIdsWhoPaid': hasherIds,
       'eventId': eventId,
       'paymentType': paymentType.toString(),
@@ -201,9 +194,14 @@ class PaymentsService {
       'transactionTimestamp': DateTime.now().toString(),
     };
 
-    final String body = jsonEncode(bodyMap);
-
-    final String responseBody = await ServiceCommon.sendHttpPost(body);
+    final String responseBody = await ServiceCommon.sendHttpPost(() {
+      bulkPayBody['accessToken'] = Utilities.generateToken(
+        userId,
+        'hcapp_processBulkPayment',
+        paramString: deviceSecret,
+      );
+      return jsonEncode(bulkPayBody);
+    });
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       results = await tableModel.syncEventAdminService
@@ -249,12 +247,6 @@ class PaymentsService {
       hasherId = GUID_EMPTY;
     }
 
-    final String accessToken = Utilities.generateToken(
-      userId,
-      'hcapp_processPayment',
-      paramString: '$deviceSecret${hasherEventMapId!}#${paymentAmount.toInt()}',
-    );
-
     final int hasherEventMapLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(
           database,
@@ -288,10 +280,9 @@ class PaymentsService {
 
     final String appDomainStr = appDomainType.toString();
 
-    final Map<String, String?> bodyMap = <String, String?>{
+    final Map<String, String?> payBody = <String, String?>{
       'queryType': 'processPayment',
       'deviceId': deviceId,
-      'accessToken': accessToken,
       'userIdWhoPaid': hasherId,
       'eventId': eventId,
       'hasherEventMapId': hasherEventMapId,
@@ -312,7 +303,7 @@ class PaymentsService {
     };
 
     if (specialRunPrice != null) {
-      bodyMap.addAll(<String, String>{
+      payBody.addAll(<String, String>{
         'specialRunPrice': specialRunPrice.toString(),
         'specialRunPriceReason': specialRunPriceReason ?? '',
         'useSpecialPriceAsDefault':
@@ -320,9 +311,17 @@ class PaymentsService {
       });
     }
 
-    final String body = jsonEncode(bodyMap);
-
-    final String responseBody = await ServiceCommon.sendHttpPost(body);
+    // Compound token includes hasherEventMapId and paymentAmount — both captured
+    // by the closure so they stay consistent with the body across retries.
+    final String hemId = hasherEventMapId ?? GUID_EMPTY;
+    final String responseBody = await ServiceCommon.sendHttpPost(() {
+      payBody['accessToken'] = Utilities.generateToken(
+        userId,
+        'hcapp_processPayment',
+        paramString: '$deviceSecret$hemId#${paymentAmount.toInt()}',
+      );
+      return jsonEncode(payBody);
+    });
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       if (appDomainType == AppDomainType.event) {

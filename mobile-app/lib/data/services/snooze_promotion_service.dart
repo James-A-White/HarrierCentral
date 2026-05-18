@@ -17,25 +17,23 @@ class SnoozePromotionService {
     final String deviceSecret =
         getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-    final String accessToken = Utilities.generateToken(
-      userId,
-      'hcapp_snoozePromotion',
-      paramString: deviceSecret,
+    final String responseBody = await ServiceCommon.sendHttpPost(
+      () => jsonEncode(<String, String>{
+        'queryType': 'snoozePromotion',
+        'deviceId': deviceId,
+        'accessToken': Utilities.generateToken(
+          userId,
+          'hcapp_snoozePromotion',
+          paramString: deviceSecret,
+        ),
+        'promotionId': promotionId,
+        'snoozeUntilDate': deletePromotion
+            ? '2100-01-01'
+            : DateFormat(
+                'yyyy-MM-dd',
+              ).format(DateTime.now().add(const Duration(days: 4))),
+      }),
     );
-
-    final String body = jsonEncode(<String, String>{
-      'queryType': 'snoozePromotion',
-      'deviceId': deviceId,
-      'accessToken': accessToken,
-      'promotionId': promotionId,
-      'snoozeUntilDate': deletePromotion
-          ? '2100-01-01'
-          : DateFormat(
-              'yyyy-MM-dd',
-            ).format(DateTime.now().add(const Duration(days: 4))),
-    });
-
-    final String responseBody = await ServiceCommon.sendHttpPost(body);
 
     SingleResultModel? result;
 

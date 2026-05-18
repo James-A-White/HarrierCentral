@@ -188,16 +188,9 @@ class SyncUserDataService {
         String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
         String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-        final String accessToken = Utilities.generateToken(
-          userId,
-          'hcapp_syncUserData',
-          paramString: deviceSecret,
-        );
-
         final Map<String, dynamic> params = <String, dynamic>{
           'queryType': 'syncUserData',
           'deviceId': deviceId,
-          'accessToken': accessToken,
           'citiesUpdatedAfter': (tablesToSync & EnumDataTables.cities.flag) == 0
               ? 'ignore'
               : ('${citiesUpdatedAfter}000000').substring(0, 26),
@@ -250,12 +243,17 @@ class SyncUserDataService {
             if (t.isSet(tablesToSync)) t.helperFrom(tableModel),
         ];
 
-        final String body = jsonEncode(params);
-
         //print('http request issued: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
 
         final String responseBody = await ServiceCommon.sendHttpPost(
-          body,
+          () {
+            params['accessToken'] = Utilities.generateToken(
+              userId,
+              'hcapp_syncUserData',
+              paramString: deviceSecret,
+            );
+            return jsonEncode(params);
+          },
           client: client,
         );
 

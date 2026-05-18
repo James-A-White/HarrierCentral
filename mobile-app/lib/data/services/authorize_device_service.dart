@@ -17,13 +17,6 @@ class AuthorizeDeviceService {
       deviceDataJson = jsonEncode(iosInfo.data);
     }
 
-    final String accessToken = Utilities.generateToken(
-      GUID_EMPTY,
-      'hcapp_authorizeDevice',
-      timeWindow:
-          30, // since the device secret and time window have not yet been created, default to 30 for the time window and don't pass a device secret
-    );
-
     final String hcVersion =
         getStringPref(StringPrefsEnum.harrierCentralVersionAndBuild) ??
         '<no HC version>';
@@ -45,7 +38,6 @@ class AuthorizeDeviceService {
     Map<String, String> params = (<String, String>{
       'queryType': 'authorizeDevice',
       'deviceId': deviceId,
-      'accessToken': accessToken,
       'hcVersion':
           getStringPref(StringPrefsEnum.harrierCentralVersionAndBuild) ??
           '<no HC version>',
@@ -76,12 +68,18 @@ class AuthorizeDeviceService {
       }
     }
 
-    final String body = jsonEncode(params);
-
     Map<String, String> resultMap = <String, String>{};
 
     try {
-      final String responseBody = await ServiceCommon.sendHttpPost(body);
+      final String responseBody = await ServiceCommon.sendHttpPost(() {
+        // timeWindow: 30 — device secret not yet known at authorizeDevice time
+        params['accessToken'] = Utilities.generateToken(
+          GUID_EMPTY,
+          'hcapp_authorizeDevice',
+          timeWindow: 30,
+        );
+        return jsonEncode(params);
+      });
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {
         final List<dynamic> result = json.decode(responseBody);

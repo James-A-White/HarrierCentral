@@ -43,8 +43,13 @@ class ServiceCommon {
     return;
   }
 
+  // [bodyFactory] is called once per attempt so the access token embedded in
+  // the body is always freshly generated at the moment the POST fires.  This
+  // prevents "Invalid Access Token" errors when iOS suspends the Dart isolate
+  // while the app is backgrounded, causing queued requests to arrive at the
+  // server outside their 30-second token window.
   static Future<String> sendHttpPost(
-    String requestBody, {
+    String Function() bodyFactory, {
     Function? errorCallback,
     Client? client,
     bool bypassConnectionCheck = false,
@@ -70,6 +75,7 @@ class ServiceCommon {
     final int maxAttempts = noRetries ? 1 : _maxRetryAttempts;
 
     for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+      final String requestBody = bodyFactory();
       final Response response = await _postWithClient(
         requestBody,
         client: client,

@@ -136,13 +136,7 @@ class HashersService extends BaseService {
 
     String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
-    String paramString = deviceSecret + targetUserId;
-
-    final String accessToken = Utilities.generateToken(
-      userId,
-      'hcapp_addEditUser',
-      paramString: paramString,
-    );
+    final String paramString = deviceSecret + targetUserId;
 
     DateTime hashersUpdatedAfter;
     DateTime hasherEventMapUpdatedAfter;
@@ -195,10 +189,9 @@ class HashersService extends BaseService {
       hasherKennelMapUpdatedAfter = DateTime(2050, 1, 1);
     }
 
-    final String body = jsonEncode(<String, String?>{
+    final Map<String, String?> addEditBody = <String, String?>{
       'queryType': 'addEditUser',
       'deviceId': deviceId,
-      'accessToken': accessToken,
       'hcVersion': hcVersion,
       'hashersUpdatedAfter': hashersUpdatedAfter.toString(),
       'hasherEventMapUpdatedAfter':
@@ -230,12 +223,19 @@ class HashersService extends BaseService {
       'latitude': deviceInfo.deviceLat.toString(),
       'longitude': deviceInfo.deviceLon.toString(),
       'nameDisplayPreference': nameDisplayPreference.toString(),
-    });
+    };
 
     bool dbErrorIsDuplicateEmail = false;
 
     String responseBody = await ServiceCommon.sendHttpPost(
-      body,
+      () {
+        addEditBody['accessToken'] = Utilities.generateToken(
+          userId ?? GUID_EMPTY,
+          'hcapp_addEditUser',
+          paramString: paramString,
+        );
+        return jsonEncode(addEditBody);
+      },
       errorCallback: (DbErrorModel dbError) async {
         bool okButtonPressed = false;
         if (dbError.errorType == DB_ERROR_EMAIL_ALREADY_EXISTS) {
@@ -334,36 +334,36 @@ class HashersService extends BaseService {
     String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-    final String accessToken = Utilities.generateToken(
-      userId,
-      'hcapp_addEditUser',
-      paramString: deviceSecret + targetUserId,
+    final String picParamString = deviceSecret + targetUserId;
+
+    final String responseBody = await ServiceCommon.sendHttpPost(
+      () => jsonEncode(<String, String?>{
+        'queryType': 'addEditUser',
+        'deviceId': deviceId,
+        'accessToken': Utilities.generateToken(
+          userId,
+          'hcapp_addEditUser',
+          paramString: picParamString,
+        ),
+        'hcVersion': hcVersion,
+        'hashersUpdatedAfter': 'ignore',
+        'hasherEventMapUpdatedAfter': 'ignore',
+        'hasherKennelMapUpdatedAfter': 'ignore',
+        'targetUserId': targetUserId,
+        'email': '',
+        'firstName': '',
+        'lastName': '',
+        'hashName': '',
+        'photo': photo,
+        'includeInGlobalHashDirectory': '-1',
+        'eventId': GUID_EMPTY,
+        'kennelId': GUID_EMPTY,
+        'historicalTotalRunCount': '-1',
+        'historicalHaringCount': '-1',
+        'historicalCountIsEstimate': '-1',
+        'followKennelOnAddNewUser': null,
+      }),
     );
-
-    final String body = jsonEncode(<String, String?>{
-      'queryType': 'addEditUser',
-      'deviceId': deviceId,
-      'accessToken': accessToken,
-      'hcVersion': hcVersion,
-      'hashersUpdatedAfter': 'ignore',
-      'hasherEventMapUpdatedAfter': 'ignore',
-      'hasherKennelMapUpdatedAfter': 'ignore',
-      'targetUserId': targetUserId,
-      'email': '',
-      'firstName': '',
-      'lastName': '',
-      'hashName': '',
-      'photo': photo,
-      'includeInGlobalHashDirectory': '-1',
-      'eventId': GUID_EMPTY,
-      'kennelId': GUID_EMPTY,
-      'historicalTotalRunCount': '-1',
-      'historicalHaringCount': '-1',
-      'historicalCountIsEstimate': '-1',
-      'followKennelOnAddNewUser': null,
-    });
-
-    final String responseBody = await ServiceCommon.sendHttpPost(body);
 
     // I checked and the error condition is being properly handled by the caller
     return !responseBody.startsWith(ERROR_PREFIX);
@@ -414,35 +414,33 @@ class HashersService extends BaseService {
       hashersUpdatedAfter = DateTime(2050, 1, 1);
     }
 
-    final String accessToken = Utilities.generateToken(
-      userId,
-      'hcapp_processThirdPartyLogin',
-      paramString: deviceSecret + userId,
+    final String responseBody = await ServiceCommon.sendHttpPost(
+      () => jsonEncode(<String, String?>{
+        'queryType': 'processThirdPartyLogin',
+        'deviceId': deviceId,
+        'accessToken': Utilities.generateToken(
+          userId,
+          'hcapp_processThirdPartyLogin',
+          paramString: deviceSecret + userId,
+        ),
+        'hashersUpdatedAfter': hashersUpdatedAfter.toString(),
+        'firstName': loginData.firstName,
+        'lastName': loginData.lastName,
+        'hashName': hashName,
+        'email': email,
+        'photo': loginData.photoUrl ?? '',
+        'thirdPartyLoginType': loginData.loginType,
+        'thirdPartyUserId': loginData.id,
+        'thirdPartyAccessToken': loginData.accessToken,
+        'thirdPartyAuthorizationCode': loginData.authorizationCode ?? '',
+        'thirdPartyAccessTokenExpires': loginData.accessTokenExpires?.toString(),
+        'includeInGlobalHashDirectory': includeInGlobalHashDirectory.toString(),
+        'hcVersion': hcVersion,
+        'latitude': deviceInfo.deviceLat.toString(),
+        'longitude': deviceInfo.deviceLon.toString(),
+        'thirdPartyEmail': loginData.thirdPartyEmail,
+      }),
     );
-
-    final String body = jsonEncode(<String, String?>{
-      'queryType': 'processThirdPartyLogin',
-      'deviceId': deviceId,
-      'accessToken': accessToken,
-      'hashersUpdatedAfter': hashersUpdatedAfter.toString(),
-      'firstName': loginData.firstName,
-      'lastName': loginData.lastName,
-      'hashName': hashName,
-      'email': email,
-      'photo': loginData.photoUrl ?? '',
-      'thirdPartyLoginType': loginData.loginType,
-      'thirdPartyUserId': loginData.id,
-      'thirdPartyAccessToken': loginData.accessToken,
-      'thirdPartyAuthorizationCode': loginData.authorizationCode ?? '',
-      'thirdPartyAccessTokenExpires': loginData.accessTokenExpires?.toString(),
-      'includeInGlobalHashDirectory': includeInGlobalHashDirectory.toString(),
-      'hcVersion': hcVersion,
-      'latitude': deviceInfo.deviceLat.toString(),
-      'longitude': deviceInfo.deviceLon.toString(),
-      'thirdPartyEmail': loginData.thirdPartyEmail,
-    });
-
-    final String responseBody = await ServiceCommon.sendHttpPost(body);
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       if (!newUserForThisDevice) {

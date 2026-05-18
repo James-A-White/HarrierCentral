@@ -249,12 +249,6 @@ class EventsService extends BaseService {
     String deviceSecret = (getStringPref(StringPrefsEnum.deviceSecret) ?? '')
         .toUpperCase();
 
-    final String accessToken = Utilities.generateToken(
-      userId,
-      'hcapp_addEditEvent',
-      paramString: deviceSecret,
-    );
-
     final int eventsLastUpdated = await getLastUpdatedTime(
       database,
       tableModel.eventsTableHelper,
@@ -270,7 +264,6 @@ class EventsService extends BaseService {
     final Map<String, String> bodyMap = <String, String>{
       'queryType': 'addEditEvent',
       'deviceId': deviceId,
-      'accessToken': accessToken,
       'narrowEventsUpdatedAfter': eventUpdatedAfter.toString(),
     };
 
@@ -442,9 +435,14 @@ class EventsService extends BaseService {
       bodyMap.addAll(<String, String>{'extrasDescription': extrasDescription});
     }
 
-    final String body = jsonEncode(bodyMap);
-
-    final String responseBody = await ServiceCommon.sendHttpPost(body);
+    final String responseBody = await ServiceCommon.sendHttpPost(() {
+      bodyMap['accessToken'] = Utilities.generateToken(
+        userId,
+        'hcapp_addEditEvent',
+        paramString: deviceSecret,
+      );
+      return jsonEncode(bodyMap);
+    });
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       final List<dynamic> adHocData = await tableModel.syncUserDataService

@@ -129,12 +129,6 @@ class ReceiptsService {
     final String deviceSecret =
         getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-    final String accessToken = Utilities.generateToken(
-      userId,
-      'hcapp_addEditReceipt',
-      paramString: deviceSecret,
-    );
-
     final int receiptsLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(
           database,
@@ -146,14 +140,18 @@ class ReceiptsService {
       receiptsLastUpdated + 1,
     );
 
-    final String body = tableModel.receiptsTableHelper.toQueryBody(
-      deviceId,
-      accessToken,
-      item,
-      receiptsUpdatedAfter.toString(),
-    );
-
-    final String responseBody = await ServiceCommon.sendHttpPost(body);
+    final String responseBody = await ServiceCommon.sendHttpPost(() {
+      return tableModel.receiptsTableHelper.toQueryBody(
+        deviceId,
+        Utilities.generateToken(
+          userId,
+          'hcapp_addEditReceipt',
+          paramString: deviceSecret,
+        ),
+        item,
+        receiptsUpdatedAfter.toString(),
+      );
+    });
 
     // callers are properly handling Error conditions
     return responseBody;

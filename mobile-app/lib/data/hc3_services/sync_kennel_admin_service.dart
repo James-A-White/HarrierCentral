@@ -164,16 +164,9 @@ class SyncKennelAdminService {
       String deviceSecret = (getStringPref(StringPrefsEnum.deviceSecret) ?? '')
           .toUpperCase();
 
-      final String accessToken = Utilities.generateToken(
-        userId,
-        'hcapp_syncKennelAdminData',
-        paramString: deviceSecret,
-      );
-
       final Map<String, dynamic> params = <String, String>{
         'queryType': 'syncKennelAdminData',
         'deviceId': deviceId,
-        'accessToken': accessToken,
         'kennelId': kennelId,
         'hashersUpdatedAfter': (flags & EnumDataTables.hashers.flag) == 0
             ? 'ignore'
@@ -199,9 +192,14 @@ class SyncKennelAdminService {
         params['targetHasherId'] = targetHasherId;
       }
 
-      final String body = jsonEncode(params);
-
-      final String responseBody = await ServiceCommon.sendHttpPost(body);
+      final String responseBody = await ServiceCommon.sendHttpPost(() {
+        params['accessToken'] = Utilities.generateToken(
+          userId,
+          'hcapp_syncKennelAdminData',
+          paramString: deviceSecret,
+        );
+        return jsonEncode(params);
+      });
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {
         await updateSqlTablesWithResultsFromBackendApiCall(

@@ -13,20 +13,18 @@ class AuthenticateWebPortalService {
     final String deviceSecret =
         getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-    final String accessToken = Utilities.generateToken(
-      userId,
-      'hcapp_authenticateWebPortal',
-      paramString: deviceSecret + scan,
+    final String responseBody = await ServiceCommon.sendHttpPost(
+      () => jsonEncode(<String, String>{
+        'queryType': 'authenticateWebPortal',
+        'deviceId': deviceId,
+        'accessToken': Utilities.generateToken(
+          userId,
+          'hcapp_authenticateWebPortal',
+          paramString: deviceSecret + scan,
+        ),
+        'scanData': scan,
+      }),
     );
-
-    final String body = jsonEncode(<String, String>{
-      'queryType': 'authenticateWebPortal',
-      'deviceId': deviceId,
-      'accessToken': accessToken,
-      'scanData': scan,
-    });
-
-    final String responseBody = await ServiceCommon.sendHttpPost(body);
 
     SingleResultModel? result;
 

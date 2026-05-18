@@ -112,20 +112,18 @@ class ChatPageController extends GetxController {
 
     //print('Get Event Messages called at ${DateTime.now().toIso8601String()}');
 
-    final accessToken = Utilities.generateToken(
-      userId,
-      'hcapp_getEventMessages',
-      paramString: deviceSecret,
+    final jsonResult = await ServiceCommon.sendHttpPost(
+      () => jsonEncode(<String, String>{
+        'queryType': 'getEventMessages',
+        'deviceId': deviceId,
+        'accessToken': Utilities.generateToken(
+          userId,
+          'hcapp_getEventMessages',
+          paramString: deviceSecret,
+        ),
+        'eventId': eventId,
+      }),
     );
-
-    final body = <String, String>{
-      'queryType': 'getEventMessages',
-      'deviceId': deviceId,
-      'accessToken': accessToken,
-      'eventId': eventId,
-    };
-
-    final jsonResult = await ServiceCommon.sendHttpPost(jsonEncode(body));
 
     return jsonResult;
   }
@@ -310,23 +308,21 @@ class ChatPageController extends GetxController {
     String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-    final accessToken = Utilities.generateToken(
-      userId,
-      'hcapp_sendEventMessage',
-      paramString: deviceSecret,
+    await ServiceCommon.sendHttpPost(
+      () => jsonEncode(<String, dynamic>{
+        'queryType': 'sendEventMessage',
+        'deviceId': deviceId,
+        'accessToken': Utilities.generateToken(
+          userId,
+          'hcapp_sendEventMessage',
+          paramString: deviceSecret,
+        ),
+        'eventId': eventId,
+        'messageId': uuid,
+        'messageContent': textMessage.text,
+        'messageReleasabilityFlags': 63,
+      }),
     );
-
-    final body = <String, dynamic>{
-      'queryType': 'sendEventMessage',
-      'deviceId': deviceId,
-      'accessToken': accessToken,
-      'eventId': eventId,
-      'messageId': uuid,
-      'messageContent': textMessage.text,
-      'messageReleasabilityFlags': 63,
-    };
-
-    await ServiceCommon.sendHttpPost(jsonEncode(body));
 
     // print(result);
     // await sendNotification(

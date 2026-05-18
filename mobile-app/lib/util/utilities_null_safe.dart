@@ -783,7 +783,7 @@ class Utilities {
       final String body = jsonEncode(bodyMap);
 
       final String responseBody = await ServiceCommon.sendHttpPost(
-        body,
+        () => body,
         bypassConnectionCheck: true,
       ).timeout(hcServerTimeout, onTimeout: () => '${ERROR_PREFIX}Timeout');
 

@@ -13,20 +13,18 @@ class GetResetCodeService {
     final String deviceSecret =
         getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-    final String accessToken = Utilities.generateToken(
-      userId,
-      'hcapp_getResetCode',
-      paramString: deviceSecret,
+    final String responseBody = await ServiceCommon.sendHttpPost(
+      () => jsonEncode(<String, String>{
+        'queryType': 'getResetCode',
+        'deviceId': deviceId,
+        'accessToken': Utilities.generateToken(
+          userId,
+          'hcapp_getResetCode',
+          paramString: deviceSecret,
+        ),
+        'supportCode': supportCode,
+      }),
     );
-
-    final String body = jsonEncode(<String, String>{
-      'queryType': 'getResetCode',
-      'deviceId': deviceId,
-      'accessToken': accessToken,
-      'supportCode': supportCode,
-    });
-
-    final String responseBody = await ServiceCommon.sendHttpPost(body);
 
     SingleResultModel? result;
 

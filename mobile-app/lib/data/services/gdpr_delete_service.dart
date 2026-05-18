@@ -13,19 +13,17 @@ class GdprDeleteService {
     final String deviceSecret =
         getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-    final String accessToken = Utilities.generateToken(
-      userId,
-      'hcapp_gdprDelete',
-      paramString: deviceSecret,
+    final String responseBody = await ServiceCommon.sendHttpPost(
+      () => jsonEncode(<String, String>{
+        'queryType': 'gdprDelete',
+        'deviceId': deviceId,
+        'accessToken': Utilities.generateToken(
+          userId,
+          'hcapp_gdprDelete',
+          paramString: deviceSecret,
+        ),
+      }),
     );
-
-    final String body = jsonEncode(<String, String>{
-      'queryType': 'gdprDelete',
-      'deviceId': deviceId,
-      'accessToken': accessToken,
-    });
-
-    final String responseBody = await ServiceCommon.sendHttpPost(body);
 
     SingleResultModel? result;
 

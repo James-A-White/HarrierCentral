@@ -13,20 +13,18 @@ class GetInviteCodeService {
     final String deviceSecret =
         getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-    final String accessToken = Utilities.generateToken(
-      userId,
-      'hcapp_getInviteCode',
-      paramString: deviceSecret,
+    final String responseBody = await ServiceCommon.sendHttpPost(
+      () => jsonEncode(<String, String>{
+        'queryType': 'getInviteCode',
+        'deviceId': deviceId,
+        'accessToken': Utilities.generateToken(
+          userId,
+          'hcapp_getInviteCode',
+          paramString: deviceSecret,
+        ),
+        'targetUserId': targetUserId,
+      }),
     );
-
-    final String body = jsonEncode(<String, String>{
-      'queryType': 'getInviteCode',
-      'deviceId': deviceId,
-      'accessToken': accessToken,
-      'targetUserId': targetUserId,
-    });
-
-    final String responseBody = await ServiceCommon.sendHttpPost(body);
 
     SingleResultModel? result;
 

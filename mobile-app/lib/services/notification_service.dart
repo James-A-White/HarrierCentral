@@ -68,19 +68,19 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       return;
     }
 
-    final accessToken = Utilities.generateToken(
-      userId!,
-      'hcapp_getEventBadgeCount',
-      paramString: deviceSecret,
-    );
-
     final body = <String, dynamic>{
       'queryType': 'getEventBadgeCount',
       'deviceId': deviceId,
-      'accessToken': accessToken,
     };
 
-    String responseBody = await ServiceCommon.sendHttpPost(jsonEncode(body));
+    String responseBody = await ServiceCommon.sendHttpPost(() {
+      body['accessToken'] = Utilities.generateToken(
+        userId!,
+        'hcapp_getEventBadgeCount',
+        paramString: deviceSecret,
+      );
+      return jsonEncode(body);
+    });
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       final decoded = json.decode(responseBody) as List;
@@ -174,17 +174,10 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
             (deviceSecret.isNotEmpty) &&
             (userId.isNotEmpty) &&
             (userId != GUID_EMPTY)) {
-          final String accessToken = Utilities.generateToken(
-            userId,
-            'hcapp_setFcmTokens',
-            paramString: deviceSecret,
-          );
-
-          Map<String, String> params = (<String, String>{
+          final Map<String, String> params = <String, String>{
             'queryType': 'setFcmTokens',
             'deviceId': deviceId,
-            'accessToken': accessToken,
-          });
+          };
 
           if (apnsToken != null) {
             params.addAll({'apnsToken': apnsToken});
@@ -194,10 +187,15 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
             params.addAll({'fcmToken': fcmToken});
           }
 
-          final String body = jsonEncode(params);
-
           try {
-            await ServiceCommon.sendHttpPost(body);
+            await ServiceCommon.sendHttpPost(() {
+              params['accessToken'] = Utilities.generateToken(
+                userId,
+                'hcapp_setFcmTokens',
+                paramString: deviceSecret,
+              );
+              return jsonEncode(params);
+            });
             await setBoolPref(BoolPrefsEnum.fcmTokenSavedToServer, true);
           } catch (e) {
             if (kDebugMode) {
@@ -473,16 +471,9 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     //   paramString = deviceSecret + publicEventId;
     // }
 
-    final accessToken = Utilities.generateToken(
-      userId!,
-      'hcapp_getEventBadgeCount',
-      paramString: paramString,
-    );
-
     final body = <String, dynamic>{
       'queryType': 'getEventBadgeCount',
       'deviceId': deviceId,
-      'accessToken': accessToken,
     };
 
     if (publicEventId != null) {
@@ -497,7 +488,14 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       body.addAll({'resetAllBadgeCounts': resetAllBadgeCounts ? 1 : 0});
     }
 
-    final responseBody = await ServiceCommon.sendHttpPost(jsonEncode(body));
+    final responseBody = await ServiceCommon.sendHttpPost(() {
+      body['accessToken'] = Utilities.generateToken(
+        userId!,
+        'hcapp_getEventBadgeCount',
+        paramString: paramString,
+      );
+      return jsonEncode(body);
+    });
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       // Decode the JSON string into a Dart object (likely a List of Lists or a List of Maps)

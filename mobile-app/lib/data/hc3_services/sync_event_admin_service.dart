@@ -162,16 +162,9 @@ class SyncEventAdminService {
       String deviceSecret = (getStringPref(StringPrefsEnum.deviceSecret) ?? '')
           .toUpperCase();
 
-      final String accessToken = Utilities.generateToken(
-        userId,
-        'hcapp_syncEventAdminData',
-        paramString: deviceSecret,
-      );
-
-      final String body = jsonEncode(<String, String>{
+      final Map<String, String> syncBody = <String, String>{
         'queryType': 'syncEventAdminData',
         'deviceId': deviceId,
-        'accessToken': accessToken,
         'eventId': eventId,
         'hashersUpdatedAfter': (flags & EnumDataTables.hashers.flag) == 0
             ? 'ignore'
@@ -194,9 +187,16 @@ class SyncEventAdminService {
             ? 'ignore'
             : ('${receiptsUpdatedAfter}000000').substring(0, 26),
         'usePaging': usePaging ? '1' : '0',
-      });
+      };
 
-      final String responseBody = await ServiceCommon.sendHttpPost(body);
+      final String responseBody = await ServiceCommon.sendHttpPost(() {
+        syncBody['accessToken'] = Utilities.generateToken(
+          userId,
+          'hcapp_syncEventAdminData',
+          paramString: deviceSecret,
+        );
+        return jsonEncode(syncBody);
+      });
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {
         await updateSqlTablesWithResultsFromBackendApiCall(

@@ -164,12 +164,6 @@ class HasherKennelMapService {
     final String deviceSecret =
         getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-    final String accessToken = Utilities.generateToken(
-      userId,
-      'hcapp_setEmailAndNotificationPrefs',
-      paramString: deviceSecret,
-    );
-
     final int hasherEventMapLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(
           database,
@@ -190,10 +184,9 @@ class HasherKennelMapService {
     final DateTime hasherKennelMapUpdatedAfter =
         DateTime.fromMicrosecondsSinceEpoch(hasherKennelMapLastUpdated + 1);
 
-    final Map<String, Object?> bodyMap = <String, Object?>{
+    final Map<String, Object?> hkmBody = <String, Object?>{
       'queryType': 'setEmailAndNotificationPrefs',
       'deviceId': deviceId,
-      'accessToken': accessToken,
       'hasherId': hasherId,
       'kennelId': kennelId,
       'eventId': null,
@@ -203,9 +196,14 @@ class HasherKennelMapService {
       'hasherKennelMapUpdatedAfter': hasherKennelMapUpdatedAfter.toString(),
     };
 
-    final String body = jsonEncode(bodyMap);
-
-    final String responseBody = await ServiceCommon.sendHttpPost(body);
+    final String responseBody = await ServiceCommon.sendHttpPost(() {
+      hkmBody['accessToken'] = Utilities.generateToken(
+        userId,
+        'hcapp_setEmailAndNotificationPrefs',
+        paramString: deviceSecret,
+      );
+      return jsonEncode(hkmBody);
+    });
 
     List<dynamic> adHocData = <dynamic>[];
 
@@ -253,12 +251,6 @@ class HasherKennelMapService {
     final String deviceSecret =
         getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-    final String accessToken = Utilities.generateToken(
-      userId,
-      'hcapp_joinKennel',
-      paramString: deviceSecret,
-    );
-
     final int hasherKennelMapLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(
           database,
@@ -292,10 +284,9 @@ class HasherKennelMapService {
 
     monthsToAddToMembership ??= 0;
 
-    final String body = jsonEncode(<String, Object?>{
+    final Map<String, Object?> joinBody = <String, Object?>{
       'queryType': 'joinKennel',
       'deviceId': deviceId,
-      'accessToken': accessToken,
       'kennelId': kennelId,
       'targetUserId': targetUserId ?? userId,
       'isFollowing': followingState,
@@ -309,9 +300,16 @@ class HasherKennelMapService {
           .substring(0, 26),
       'kennelsUpdatedAfter': ('${kennelsUpdatedAfter}000000').substring(0, 26),
       'hashersUpdatedAfter': ('${hashersUpdatedAfter}000000').substring(0, 26),
-    });
+    };
 
-    final String responseBody = await ServiceCommon.sendHttpPost(body);
+    final String responseBody = await ServiceCommon.sendHttpPost(() {
+      joinBody['accessToken'] = Utilities.generateToken(
+        userId,
+        'hcapp_joinKennel',
+        paramString: deviceSecret,
+      );
+      return jsonEncode(joinBody);
+    });
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       if (responseBody.isNotEmpty) {

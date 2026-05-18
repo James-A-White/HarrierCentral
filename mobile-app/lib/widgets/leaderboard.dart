@@ -180,20 +180,18 @@ class LeaderboardState extends State<Leaderboard>
       final String deviceSecret =
           getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-      final String accessToken = Utilities.generateToken(
-        userId,
-        'hcapp_getLeaderboard',
-        paramString: deviceSecret,
+      responseBody = await ServiceCommon.sendHttpPost(
+        () => jsonEncode(<String, Object?>{
+          'queryType': 'getLeaderboard',
+          'deviceId': deviceId,
+          'accessToken': Utilities.generateToken(
+            userId,
+            'hcapp_getLeaderboard',
+            paramString: deviceSecret,
+          ),
+          'kennelId': widget.kennelId,
+        }),
       );
-
-      final String body = jsonEncode(<String, Object?>{
-        'queryType': 'getLeaderboard',
-        'deviceId': deviceId,
-        'accessToken': accessToken,
-        'kennelId': widget.kennelId,
-      });
-
-      responseBody = await ServiceCommon.sendHttpPost(body);
       updateLocalLeaderboardCache = true;
     } else {
       responseBody = getStringPref(StringPrefsEnum.leaderboardJson) ?? '';
