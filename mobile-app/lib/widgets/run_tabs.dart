@@ -2548,8 +2548,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     if (state == LiveRunButtonStatus.hidden) return const SizedBox.shrink();
 
     final String label = isActiveRun
-        ? 'Return to Live Run Mode'
-        : 'Start Live Run Mode';
+        ? 'Return to Live Run Tools'
+        : 'Show Live Run Tools';
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
@@ -2565,7 +2565,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 )
-              : Icon(isActiveRun ? Icons.directions_run : Icons.play_arrow),
+              : const Icon(Icons.directions_run),
           label: Text(label, style: ts_button),
           style: ElevatedButton.styleFrom(
             backgroundColor: isActiveRun ? hc_blue : hc_red,

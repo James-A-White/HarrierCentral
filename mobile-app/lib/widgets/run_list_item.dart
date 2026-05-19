@@ -550,8 +550,8 @@ class RunListItem extends StatelessWidget {
       if (isHidden) return const SizedBox.shrink();
 
       final String label = isActiveRun
-          ? 'Return to Live Run Mode'
-          : 'Start Live Run Mode';
+          ? 'Return to Live Run Tools'
+          : 'Show Live Run Tools';
 
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
@@ -567,7 +567,7 @@ class RunListItem extends StatelessWidget {
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   )
-                : Icon(isActiveRun ? Icons.directions_run : Icons.play_arrow),
+                : const Icon(Icons.directions_run),
             label: Text(label, style: ts_button),
             style: ElevatedButton.styleFrom(
               backgroundColor: isActiveRun ? hc_blue : hc_red,
