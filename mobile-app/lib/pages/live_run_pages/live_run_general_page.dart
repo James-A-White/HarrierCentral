@@ -238,62 +238,84 @@ class LiveRunGeneralPage extends StatelessWidget {
   Widget _buildTopButtons(BuildContext context) {
     return Obx(() {
       final tracking = controller.isTracking.value;
-      final Color trackingColor = tracking
-          ? Colors.green.shade700
-          : Colors.red.shade700;
+
+      final buttonShape = RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      );
+      const buttonPadding = EdgeInsets.symmetric(vertical: 3);
+
+      if (!tracking) {
+        return SizedBox(
+          height: 45,
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            icon: const Icon(Icons.play_arrow, size: 20, color: Colors.white),
+            label: Text(
+              'Start Run Tracking',
+              style: ts_button.copyWith(fontSize: 18),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green.shade700,
+              foregroundColor: Colors.white,
+              padding: buttonPadding,
+              shape: buttonShape,
+            ),
+            onPressed: controller.toggleTracking,
+          ),
+        );
+      }
+
+      // Tracking active — Pause and End Run side by side.
       return SizedBox(
         height: 45,
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.pause, size: 20, color: Colors.white),
+                label: Text(
+                  'Pause',
+                  style: ts_button.copyWith(fontSize: 18),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange.shade700,
+                  foregroundColor: Colors.white,
+                  padding: buttonPadding,
+                  shape: buttonShape,
+                ),
+                onPressed: controller.toggleTracking,
+              ),
+            ),
+            const SizedBox(width: 10),
             Expanded(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: trackingColor,
-                  padding: const EdgeInsets.symmetric(vertical: 3),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  backgroundColor: hc_red,
+                  foregroundColor: Colors.white,
+                  padding: buttonPadding,
+                  shape: buttonShape,
                 ),
-                onPressed: controller.toggleTracking,
+                // TODO: wire up full End Run flow (mark On Inn + flush + confirm)
+                onPressed: controller.stopTracking,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      tracking ? Icons.pause : Icons.play_arrow,
-                      size: 20,
-                      color: Colors.white,
+                    Image.asset(
+                      'images/live_run_trail_markers/oninn.png',
+                      height: 26,
+                      width: 26,
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      tracking ? 'Stop Run Tracking' : 'Start Run Tracking',
+                      'End Run',
                       style: ts_button.copyWith(fontSize: 18),
                     ),
                   ],
                 ),
               ),
             ),
-            // const SizedBox(width: 12),
-            // Expanded(
-            //   child: ElevatedButton(
-            //     style: ElevatedButton.styleFrom(
-            //       backgroundColor: Colors.red.shade700,
-            //       padding: const EdgeInsets.symmetric(vertical: 3),
-            //       shape: RoundedRectangleBorder(
-            //         borderRadius: BorderRadius.circular(10),
-            //       ),
-            //     ),
-            //     onPressed: () {
-            //       Get.snackbar(
-            //         'Help is on the way',
-            //         'Open the Map tab to re-orient yourself.',
-            //         snackPosition: SnackPosition.BOTTOM,
-            //       );
-            //     },
-            //     child: Text("I'm Lost", style: ts_button),
-            //   ),
-            // ),
           ],
         ),
       );
