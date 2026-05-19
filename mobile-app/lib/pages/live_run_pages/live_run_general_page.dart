@@ -331,8 +331,40 @@ class LiveRunGeneralPage extends StatelessWidget {
                   padding: buttonPadding,
                   shape: buttonShape,
                 ),
-                // TODO: wire up full End Run flow (mark On Inn + flush + confirm)
-                onPressed: controller.stopTracking,
+                onPressed: () async {
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (_) => AlertDialog(
+                      title: Text('End Run?', style: ts_alertDialogTitle),
+                      content: Text(
+                        'Are you sure you want to end your run? '
+                        'Once stopped, tracking cannot be restarted. '
+                        'Your data will be saved.',
+                        style: ts_alertDialogBody,
+                      ),
+                      actions: [
+                        ElevatedButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey.shade600,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: Text('Keep Tracking', style: ts_button),
+                        ),
+                        ElevatedButton(
+                          onPressed: () => Navigator.of(context).pop(true),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: hc_red,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: Text('End Run', style: ts_button),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirmed == true) controller.stopTracking();
+                },
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
