@@ -2,7 +2,8 @@
 
 import 'package:geolocator/geolocator.dart';
 import 'run_point_buffer.dart';
-import 'package:harrier_central/imports.dart'; // Assume this is imported in your main project
+import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/util/track_point_filter.dart';
 
 // Constants (replace with your actual constants)
 
@@ -23,6 +24,12 @@ class LocationService extends GetxService {
 
   RunPointBuffer? _runBuffer;
   DateTime _lastFlushTime = DateTime.now();
+
+  // Filtered distance for the current tracking session.
+  // Updated on every GPS point using the same TrackPointFilter as the map view.
+  final RxDouble filteredSessionDistanceMeters = 0.0.obs;
+  final List<TrackPoint> _sessionTrack = [];
+  final TrackPointFilter _sessionFilter = TrackPointFilter();
 
   /// Reactive property that is true if the location has been updated in the last 60 seconds.
   /// Note: To make this indicator automatically turn OFF after 60 seconds,
@@ -51,6 +58,10 @@ class LocationService extends GetxService {
     ever<bool>(joinRunTracking, (value) async {
       // react to state change here
       if (value) {
+        // Reset session track so distance starts from zero for this run.
+        _sessionTrack.clear();
+        filteredSessionDistanceMeters.value = 0.0;
+
         // start tracking
         var locationSettings = getLocSettings(
           DISTANCE_BETWEEN_APP_WAKEUPS, // distanceFilter in meters
@@ -309,6 +320,19 @@ class LocationService extends GetxService {
       );
       _runBuffer?.enqueue(point);
       locationUpdateCount.value++;
+
+      // Append to the local session track and recompute filtered distance.
+      // Uses the same TrackPointFilter as the map view so both displays agree.
+      _sessionTrack.add(TrackPoint(
+        lat: double.parse(lat.toStringAsFixed(5)),
+        lng: double.parse(lon.toStringAsFixed(5)),
+        acc: double.parse(accuracy.toStringAsFixed(2)),
+        alt: double.parse(altitude.toStringAsFixed(2)),
+        timestampMs: tsMs,
+      ));
+      final filtered = _sessionFilter.filterAndInterpolate(_sessionTrack);
+      filteredSessionDistanceMeters.value =
+          TrackPointFilter.cumulativeDistanceMeters(filtered);
     }
 
     if (kDebugMode) {

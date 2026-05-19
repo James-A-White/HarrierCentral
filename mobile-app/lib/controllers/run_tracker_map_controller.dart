@@ -131,24 +131,7 @@ class RunTrackerMapController extends GetxController
     final runner = _runnerById(_currentUserId);
     if (runner == null) return null;
     final cutoff = timelineAvailable ? currentTimestampMs.value : null;
-    final interpolatedTrack = _interpolatedTrackPoints(runner, cutoff);
-    if (interpolatedTrack.length < 2) {
-      return 0.0;
-    }
-
-    var total = 0.0;
-    for (var i = 1; i < interpolatedTrack.length; i++) {
-      final prev = interpolatedTrack[i - 1];
-      final current = interpolatedTrack[i];
-      if (prev.lat == current.lat && prev.lng == current.lng) {
-        continue;
-      }
-      total += _distanceCalculator(
-        latlng.LatLng(prev.lat, prev.lng),
-        latlng.LatLng(current.lat, current.lng),
-      );
-    }
-    return total;
+    return _sumInterpolatedDistance(_interpolatedTrackPoints(runner, cutoff));
   }
 
   List<Marker> get runnerMarkers {
@@ -664,20 +647,19 @@ class RunTrackerMapController extends GetxController
     final runner = _runnerById(selectedRunnerId.value);
     if (runner == null) return null;
     final cutoff = timelineAvailable ? currentTimestampMs.value : null;
-    final interpolatedTrack = _interpolatedTrackPoints(runner, cutoff);
-    if (interpolatedTrack.length < 2) {
-      return 0.0;
-    }
+    return _sumInterpolatedDistance(_interpolatedTrackPoints(runner, cutoff));
+  }
+
+  double _sumInterpolatedDistance(List<_InterpolatedPoint> track) {
+    if (track.length < 2) return 0.0;
     var total = 0.0;
-    for (var i = 1; i < interpolatedTrack.length; i++) {
-      final prev = interpolatedTrack[i - 1];
-      final current = interpolatedTrack[i];
-      if (prev.lat == current.lat && prev.lng == current.lng) {
-        continue;
-      }
+    for (var i = 1; i < track.length; i++) {
+      final prev = track[i - 1];
+      final curr = track[i];
+      if (prev.lat == curr.lat && prev.lng == curr.lng) continue;
       total += _distanceCalculator(
         latlng.LatLng(prev.lat, prev.lng),
-        latlng.LatLng(current.lat, current.lng),
+        latlng.LatLng(curr.lat, curr.lng),
       );
     }
     return total;

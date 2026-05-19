@@ -1,6 +1,5 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
-import 'package:latlong2/latlong.dart' as latlng;
 
 class LiveRunGeneralController extends GetxController {
   LiveRunGeneralController({required this.run}) {
@@ -10,7 +9,6 @@ class LiveRunGeneralController extends GetxController {
 
   final RunDetailsAggregate run;
   final LocationService _locationService = Get.find<LocationService>();
-  final latlng.Distance _distance = const latlng.Distance();
 
   // Carousel state for QR codes lives in the controller to keep the page stateless.
   final PageController qrPageController = PageController(viewportFraction: 0.9);
@@ -24,8 +22,6 @@ class LiveRunGeneralController extends GetxController {
 
   DateTime? _trackingStartedAt;
   Timer? _elapsedTicker;
-  latlng.LatLng? _lastPoint;
-  double _distanceMeters = 0.0;
 
   String get runWebsiteUrl {
     if (run.event.isCountedRun != 0) {
@@ -75,8 +71,6 @@ class LiveRunGeneralController extends GetxController {
 
     if (newValue) {
       _trackingStartedAt = DateTime.now();
-      _distanceMeters = 0.0;
-      _lastPoint = null;
       distanceKm.value = 0.0;
       elapsed.value = Duration.zero;
     }
@@ -112,39 +106,10 @@ class LiveRunGeneralController extends GetxController {
   void _handlePosition(Position? position) {
     lastPosition.value = position;
     if (!isTracking.value || position == null) return;
-
-    // Prefer the map controller's filtered/interpolated distance for accuracy.
-    final currentPoint = latlng.LatLng(position.latitude, position.longitude);
-    final mappedDistance = _getMapDistanceKm();
-    if (mappedDistance != null) {
-      distanceKm.value = mappedDistance;
-      _distanceMeters = mappedDistance * 1000.0;
-    } else {
-      if (_lastPoint != null) {
-        _distanceMeters += _distance.as(
-          latlng.LengthUnit.Meter,
-          _lastPoint!,
-          currentPoint,
-        );
-        distanceKm.value = _distanceMeters / 1000.0;
-      }
-    }
-    _lastPoint = currentPoint;
-
+    distanceKm.value =
+        _locationService.filteredSessionDistanceMeters.value / 1000.0;
     _trackingStartedAt ??= DateTime.now();
     _updateElapsed();
-  }
-
-  double? _getMapDistanceKm() {
-    if (!Get.isRegistered<RunTrackerMapController>(tag: run.event.eventId)) {
-      return null;
-    }
-    final controller = Get.find<RunTrackerMapController>(
-      tag: run.event.eventId,
-    );
-    final meters = controller.currentUserDistanceMeters();
-    if (meters == null) return null;
-    return meters / 1000.0;
   }
 
   void _startElapsedTicker() {
