@@ -20,6 +20,9 @@ class LiveRunGeneralController extends GetxController {
   final Rx<Duration> elapsed = const Duration().obs;
   final Rx<Position?> lastPosition = Rx<Position?>(null);
 
+  // Exposes LocationService.isPaused directly so the UI Obx can observe it.
+  RxBool get isPaused => _locationService.isPaused;
+
   DateTime? _trackingStartedAt;
   Timer? _elapsedTicker;
 
@@ -82,11 +85,20 @@ class LiveRunGeneralController extends GetxController {
     }
   }
 
+  Future<void> pauseTracking() async {
+    await _locationService.pauseTracking();
+    _stopElapsedTicker();
+  }
+
+  void resumeTracking() {
+    _locationService.resumeTracking();
+    // _handleTrackingToggle fires when joinRunTracking becomes true,
+    // restarting the elapsed ticker.
+  }
+
   void stopTracking() {
-    if (_locationService.joinRunTracking.value) {
-      _locationService.joinRunTracking.value = false;
-      _stopElapsedTicker();
-    }
+    unawaited(_locationService.stopTracking());
+    _stopElapsedTicker();
   }
 
   Future<void> markPoint(HashRunPointTypes type, {String? label}) async {
@@ -244,7 +256,10 @@ class LiveRunGeneralPage extends StatelessWidget {
       );
       const buttonPadding = EdgeInsets.symmetric(vertical: 3);
 
-      if (!tracking) {
+      final paused = controller.isPaused.value;
+
+      if (!tracking && !paused) {
+        // Not running — full-width start button.
         return SizedBox(
           height: 45,
           width: double.infinity,
@@ -265,28 +280,48 @@ class LiveRunGeneralPage extends StatelessWidget {
         );
       }
 
-      // Tracking active — Pause and End Run side by side.
+      // Tracking or paused — left button toggles Auto Pause / Resume,
+      // right button ends the run.
+      final leftButton = paused
+          ? ElevatedButton.icon(
+              icon: const Icon(
+                Icons.play_arrow,
+                size: 20,
+                color: Colors.white,
+              ),
+              label: Text(
+                'Resume',
+                style: ts_button.copyWith(fontSize: 18),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green.shade700,
+                foregroundColor: Colors.white,
+                padding: buttonPadding,
+                shape: buttonShape,
+              ),
+              onPressed: controller.resumeTracking,
+            )
+          : ElevatedButton.icon(
+              icon: const Icon(Icons.pause, size: 20, color: Colors.white),
+              label: Text(
+                'Auto Pause',
+                style: ts_button.copyWith(fontSize: 18),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange.shade700,
+                foregroundColor: Colors.white,
+                padding: buttonPadding,
+                shape: buttonShape,
+              ),
+              onPressed: () => unawaited(controller.pauseTracking()),
+            );
+
       return SizedBox(
         height: 45,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.pause, size: 20, color: Colors.white),
-                label: Text(
-                  'Pause',
-                  style: ts_button.copyWith(fontSize: 18),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange.shade700,
-                  foregroundColor: Colors.white,
-                  padding: buttonPadding,
-                  shape: buttonShape,
-                ),
-                onPressed: controller.toggleTracking,
-              ),
-            ),
+            Expanded(child: leftButton),
             const SizedBox(width: 10),
             Expanded(
               child: ElevatedButton(

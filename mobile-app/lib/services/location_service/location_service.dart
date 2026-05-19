@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
 import 'package:geolocator/geolocator.dart';
+import 'package:latlong2/latlong.dart' as latlng;
 import 'run_point_buffer.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/util/track_point_filter.dart';
@@ -31,6 +32,16 @@ class LocationService extends GetxService {
   final List<TrackPoint> _sessionTrack = [];
   final TrackPointFilter _sessionFilter = TrackPointFilter();
 
+  // Auto-pause state. When true, GPS is monitored at a finer interval but
+  // no points are recorded. Tracking resumes automatically once the device
+  // has moved >= _autoPauseResumeDistanceMeters from the pause point.
+  final RxBool isPaused = false.obs;
+  static const double _autoPauseResumeDistanceMeters = 100.0;
+  latlng.LatLng? _pausePoint;
+  // Prevents the ever(joinRunTracking) worker from resetting the session track
+  // when transitioning from paused → tracking (vs. a fresh start).
+  bool _isResumingFromPause = false;
+
   /// Reactive property that is true if the location has been updated in the last 60 seconds.
   /// Note: To make this indicator automatically turn OFF after 60 seconds,
   /// the consuming widget must be inside a timed mechanism (e.g., a periodic GetX worker)
@@ -56,67 +67,72 @@ class LocationService extends GetxService {
     unawaited(onInitAsync());
 
     ever<bool>(joinRunTracking, (value) async {
-      // react to state change here
       if (value) {
-        // Reset session track so distance starts from zero for this run.
-        _sessionTrack.clear();
-        filteredSessionDistanceMeters.value = 0.0;
-
-        // start tracking
-        var locationSettings = getLocSettings(
-          DISTANCE_BETWEEN_APP_WAKEUPS, // distanceFilter in meters
-          LOCATION_ACCURACY,
-          true, // allowBackgroundLocationUpdates
-          false, // pauseLocationUpdatesAutomatically
-        );
-
-        await _geoLocationStreamSubscription?.cancel();
-        _geoLocationStreamSubscription =
-            Geolocator.getPositionStream(
-              locationSettings: locationSettings,
-            ).listen(
-              updateDeviceLocation,
-              onError: (error) {
-                if (kDebugMode) {
-                  debugPrint('LocationStream Error: $error');
-                  // Handle specific errors like service being disabled
-                }
-              },
-            );
-
-        if (kDebugMode) {
-          debugPrint('LocationService: Started run tracking.');
+        // Starting or resuming tracking. Only reset the session track on a
+        // fresh start — resuming from pause continues the same session.
+        if (!_isResumingFromPause) {
+          _sessionTrack.clear();
+          filteredSessionDistanceMeters.value = 0.0;
         }
-      } else {
-        // stop tracking
-        var locationSettings = getLocSettings(
-          100, // distanceFilter in meters
-          LocationAccuracy.lowest,
-          false, // allowBackgroundLocationUpdates
-          true, // pauseLocationUpdatesAutomatically
+        _isResumingFromPause = false;
+
+        final locationSettings = getLocSettings(
+          DISTANCE_BETWEEN_APP_WAKEUPS,
+          LOCATION_ACCURACY,
+          true,
+          false,
         );
-
         await _geoLocationStreamSubscription?.cancel();
+        _geoLocationStreamSubscription = Geolocator.getPositionStream(
+          locationSettings: locationSettings,
+        ).listen(
+          updateDeviceLocation,
+          onError: (error) {
+            if (kDebugMode) debugPrint('LocationStream Error: $error');
+          },
+        );
+        if (kDebugMode) debugPrint('LocationService: Started run tracking.');
 
+      } else if (isPaused.value) {
+        // Paused — keep monitoring at a finer interval so auto-resume can
+        // fire when the device moves >= _autoPauseResumeDistanceMeters.
+        final locationSettings = getLocSettings(
+          15, // fine enough to detect 100m movement reliably
+          LocationAccuracy.high,
+          true,
+          false,
+        );
+        await _geoLocationStreamSubscription?.cancel();
+        _geoLocationStreamSubscription = Geolocator.getPositionStream(
+          locationSettings: locationSettings,
+        ).listen(
+          updateDeviceLocation,
+          onError: (error) {
+            if (kDebugMode) debugPrint('LocationStream Error: $error');
+          },
+        );
+        if (kDebugMode) debugPrint('LocationService: Auto-paused. Monitoring for resume.');
+
+      } else {
+        // Fully stopped — drop back to low-power idle stream.
+        final locationSettings = getLocSettings(
+          100,
+          LocationAccuracy.lowest,
+          false,
+          true,
+        );
+        await _geoLocationStreamSubscription?.cancel();
         await _runBuffer?.flush();
         _lastFlushTime = DateTime.now();
-
-        _geoLocationStreamSubscription =
-            Geolocator.getPositionStream(
-              locationSettings: locationSettings,
-            ).listen(
-              updateDeviceLocation,
-              onError: (error) {
-                if (kDebugMode) {
-                  debugPrint('LocationStream Error: $error');
-                }
-                // Handle specific errors like service being disabled
-              },
-            );
-
-        if (kDebugMode) {
-          debugPrint('LocationService: Stopped run tracking.');
-        }
+        _geoLocationStreamSubscription = Geolocator.getPositionStream(
+          locationSettings: locationSettings,
+        ).listen(
+          updateDeviceLocation,
+          onError: (error) {
+            if (kDebugMode) debugPrint('LocationStream Error: $error');
+          },
+        );
+        if (kDebugMode) debugPrint('LocationService: Stopped run tracking.');
       }
     });
   }
@@ -234,6 +250,59 @@ class LocationService extends GetxService {
     return locationSettings;
   }
 
+  // Pauses tracking: records the pause point, switches to low-power monitoring,
+  // and flushes any buffered points. The session track is preserved so distance
+  // continues accumulating correctly on resume.
+  // isPaused must be set BEFORE joinRunTracking so the ever worker sees the
+  // correct state when it fires.
+  Future<void> pauseTracking() async {
+    if (!joinRunTracking.value) return;
+    final pos = lastKnownPosition.value;
+    if (pos != null) {
+      _pausePoint = latlng.LatLng(pos.latitude, pos.longitude);
+    }
+    isPaused.value = true;
+    joinRunTracking.value = false; // ever worker: isPaused==true → monitoring settings
+    await _runBuffer?.flush();
+    _lastFlushTime = DateTime.now();
+  }
+
+  // Resumes tracking after a pause (manual or auto). Continues the same
+  // session — distance and elapsed time keep accumulating without a reset.
+  // _isResumingFromPause must be set BEFORE joinRunTracking so the ever
+  // worker skips the session-track reset.
+  void resumeTracking() {
+    if (!isPaused.value) return;
+    _pausePoint = null;
+    _isResumingFromPause = true;
+    isPaused.value = false;
+    joinRunTracking.value = true; // ever worker: _isResumingFromPause==true → no reset
+  }
+
+  // Fully ends the session regardless of current state (tracking or paused).
+  Future<void> stopTracking() async {
+    _pausePoint = null;
+    _isResumingFromPause = false;
+    final wasPaused = isPaused.value;
+    if (wasPaused) isPaused.value = false;
+    if (joinRunTracking.value) {
+      joinRunTracking.value = false; // ever worker handles flush + idle stream
+    } else if (wasPaused) {
+      // Was paused: joinRunTracking is already false so the ever worker won't
+      // fire — manually restore idle stream settings.
+      final settings = getLocSettings(100, LocationAccuracy.lowest, false, true);
+      await _geoLocationStreamSubscription?.cancel();
+      _geoLocationStreamSubscription = Geolocator.getPositionStream(
+        locationSettings: settings,
+      ).listen(
+        updateDeviceLocation,
+        onError: (error) {
+          if (kDebugMode) debugPrint('LocationStream Error: $error');
+        },
+      );
+    }
+  }
+
   Future<void> markPoint(HashRunPointTypes pointType, {String? label}) async {
     final position = await Geolocator.getCurrentPosition(
       locationSettings: const LocationSettings(accuracy: LocationAccuracy.best),
@@ -273,6 +342,23 @@ class LocationService extends GetxService {
     deviceInfo.deviceLon = lon;
     deviceInfo.deviceAccuracy = accuracy;
     deviceInfo.deviceAltitude = altitude;
+
+    // Auto-resume: if paused and device has moved far enough, resume tracking.
+    // Falls through to the joinRunTracking block below so the resuming position
+    // is recorded as the first point of the resumed segment.
+    if (isPaused.value) {
+      final pausePt = _pausePoint;
+      if (pausePt != null) {
+        final distMeters = const latlng.Distance()(
+          pausePt,
+          latlng.LatLng(lat, lon),
+        );
+        if (distMeters >= _autoPauseResumeDistanceMeters) {
+          resumeTracking();
+        }
+      }
+      if (isPaused.value) return; // still paused — don't record
+    }
 
     if (joinRunTracking.value) {
       if ((_runBuffer != null) && (_runBuffer!.eventId != eventId)) {
