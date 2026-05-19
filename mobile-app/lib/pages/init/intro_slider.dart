@@ -171,7 +171,7 @@ class IntroSliderPageState extends State<IntroSliderPage> {
     // introSlider = null;
     // slides.clear();
     // addSlides();
-    // setState(() {
+    // setStateIfMounted(() {
     //   buildIntroSlider();
     // });
     await Navigator.of(

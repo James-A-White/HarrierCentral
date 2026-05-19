@@ -171,6 +171,7 @@ export 'package:harrier_central/util/bank_transfer_qr.dart';
 export 'package:harrier_central/util/connection2.dart';
 export 'package:harrier_central/util/constants.dart';
 export 'package:harrier_central/util/enums.dart';
+export 'package:harrier_central/util/safe_set_state.dart';
 export 'package:harrier_central/util/uuid_utils.dart';
 export 'package:harrier_central/util/get_positions.dart';
 export 'package:harrier_central/util/get_storage.dart';

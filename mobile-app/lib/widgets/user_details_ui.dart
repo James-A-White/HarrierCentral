@@ -1,7 +1,13 @@
 import 'package:harrier_central/imports.dart';
 
 class UserDetailsUi extends StatefulWidget {
-  const UserDetailsUi({super.key, this.firstName, this.lastName, this.email, this.hashName});
+  const UserDetailsUi({
+    super.key,
+    this.firstName,
+    this.lastName,
+    this.email,
+    this.hashName,
+  });
 
   final String? firstName;
   final String? lastName;
@@ -13,7 +19,8 @@ class UserDetailsUi extends StatefulWidget {
   UserDetailsUiState createState() => UserDetailsUiState();
 }
 
-class UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserver {
+class UserDetailsUiState extends State<UserDetailsUi>
+    with WidgetsBindingObserver {
   UserDetailsUiState();
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -49,7 +56,7 @@ class UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserve
   }
 
   // void updateUi(String firstName, String lastName, String email) {
-  //   setState(() {
+  //   setStateIfMounted(() {
   //     signupEmailController.text = email;
   //     signupFirstNameController.text = firstName;
   //     signupLastNameController.text = lastName;
@@ -80,9 +87,7 @@ class UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserve
     return Card(
       elevation: 2.0,
       color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
       child: SizedBox(
         width: 300.0,
         //height: 225.0,
@@ -91,7 +96,12 @@ class UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserve
           child: Column(
             children: <Widget>[
               Padding(
-                padding: const EdgeInsets.only(top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
+                padding: const EdgeInsets.only(
+                  top: 3.0,
+                  bottom: 3.0,
+                  left: 25.0,
+                  right: 25.0,
+                ),
                 child: TextFormField(
                   focusNode: myFocusNodeFirstName,
                   controller: signupFirstNameController,
@@ -110,22 +120,20 @@ class UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserve
                   style: ts_titleMediumBlack,
                   decoration: InputDecoration(
                     border: InputBorder.none,
-                    icon: const Icon(
-                      FontAwesome.user,
-                      color: Colors.black,
-                    ),
+                    icon: const Icon(FontAwesome.user, color: Colors.black),
                     hintText: 'First Name',
                     hintStyle: ts_hint,
                   ),
                 ),
               ),
-              Container(
-                width: 250.0,
-                height: 1.0,
-                color: Colors.grey[400],
-              ),
+              Container(width: 250.0, height: 1.0, color: Colors.grey[400]),
               Padding(
-                padding: const EdgeInsets.only(top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
+                padding: const EdgeInsets.only(
+                  top: 3.0,
+                  bottom: 3.0,
+                  left: 25.0,
+                  right: 25.0,
+                ),
                 child: TextFormField(
                   onChanged: (String text) {
                     _returnValues.lastName = text;
@@ -144,22 +152,20 @@ class UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserve
                   style: ts_titleMediumBlack,
                   decoration: InputDecoration(
                     border: InputBorder.none,
-                    icon: const Icon(
-                      FontAwesome.user,
-                      color: Colors.black,
-                    ),
+                    icon: const Icon(FontAwesome.user, color: Colors.black),
                     hintText: 'Last Name',
                     hintStyle: ts_hint,
                   ),
                 ),
               ),
-              Container(
-                width: 250.0,
-                height: 1.0,
-                color: Colors.grey[400],
-              ),
+              Container(width: 250.0, height: 1.0, color: Colors.grey[400]),
               Padding(
-                padding: const EdgeInsets.only(top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
+                padding: const EdgeInsets.only(
+                  top: 3.0,
+                  bottom: 3.0,
+                  left: 25.0,
+                  right: 25.0,
+                ),
                 child: TextFormField(
                   onChanged: (String text) {
                     _returnValues.email = text;
@@ -171,22 +177,20 @@ class UserDetailsUiState extends State<UserDetailsUi> with WidgetsBindingObserve
                   style: ts_titleMediumBlack,
                   decoration: InputDecoration(
                     border: InputBorder.none,
-                    icon: const Icon(
-                      FontAwesome.envelope,
-                      color: Colors.black,
-                    ),
+                    icon: const Icon(FontAwesome.envelope, color: Colors.black),
                     hintText: 'Email Address',
                     hintStyle: ts_hint,
                   ),
                 ),
               ),
-              Container(
-                width: 250.0,
-                height: 1.0,
-                color: Colors.grey[400],
-              ),
+              Container(width: 250.0, height: 1.0, color: Colors.grey[400]),
               Padding(
-                padding: const EdgeInsets.only(top: 3.0, bottom: 3.0, left: 25.0, right: 25.0),
+                padding: const EdgeInsets.only(
+                  top: 3.0,
+                  bottom: 3.0,
+                  left: 25.0,
+                  right: 25.0,
+                ),
                 child: TextFormField(
                   onChanged: (String text) {
                     _returnValues.hashName = text;

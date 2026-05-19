@@ -52,24 +52,19 @@ class PaymentReportListItem extends StatelessWidget {
                     maxLines: 3,
                     //'xxxx xxxx xxx xxx xxxx xxxx xxxx xxxx',
                     style: TextStyle(
-                      fontFamily:
-                          (paymentReportItem.extensions.isMember != 0)
-                              ? 'AvenirNextCondensedDemiBold'
-                              : 'AvenirNextCondensedMedium',
+                      fontFamily: (paymentReportItem.extensions.isMember != 0)
+                          ? 'AvenirNextCondensedDemiBold'
+                          : 'AvenirNextCondensedMedium',
                       color:
                           ((((paymentReportItem.payment?.paymentType ??
-                                              paymentTypeUnknown.value) ==
-                                          paymentBankTransfer.value) ||
-                                      ((paymentReportItem
-                                                  .payment
-                                                  ?.paymentType ??
-                                              paymentTypeUnknown.value) ==
-                                          paymentBankTransferOtherAmount
-                                              .value)) &&
-                                  (paymentReportItem.payment?.confirmedBy ==
-                                      null))
-                              ? hc_red
-                              : Colors.black,
+                                          paymentTypeUnknown.value) ==
+                                      paymentBankTransfer.value) ||
+                                  ((paymentReportItem.payment?.paymentType ??
+                                          paymentTypeUnknown.value) ==
+                                      paymentBankTransferOtherAmount.value)) &&
+                              (paymentReportItem.payment?.confirmedBy == null))
+                          ? hc_red
+                          : Colors.black,
                       fontStyle: FontStyle.normal,
                       fontSize: 22.0,
                       height: 1.0,
@@ -86,18 +81,16 @@ class PaymentReportListItem extends StatelessWidget {
                       style: TextStyle(
                         color:
                             ((((paymentReportItem.payment?.paymentType ??
-                                                paymentTypeUnknown.value) ==
-                                            paymentBankTransfer.value) ||
-                                        ((paymentReportItem
-                                                    .payment
-                                                    ?.paymentType ??
-                                                paymentTypeUnknown.value) ==
-                                            paymentBankTransferOtherAmount
-                                                .value)) &&
-                                    (paymentReportItem.payment?.confirmedBy ==
-                                        null))
-                                ? hc_red
-                                : Colors.black,
+                                            paymentTypeUnknown.value) ==
+                                        paymentBankTransfer.value) ||
+                                    ((paymentReportItem.payment?.paymentType ??
+                                            paymentTypeUnknown.value) ==
+                                        paymentBankTransferOtherAmount
+                                            .value)) &&
+                                (paymentReportItem.payment?.confirmedBy ==
+                                    null))
+                            ? hc_red
+                            : Colors.black,
                         fontFamily: 'AvenirNextCondensedDemiBold',
                         fontStyle: FontStyle.normal,
                         fontSize: 22.0,
@@ -111,18 +104,18 @@ class PaymentReportListItem extends StatelessWidget {
                         style: TextStyle(
                           color:
                               ((((paymentReportItem.payment?.paymentType ??
-                                                  paymentTypeUnknown.value) ==
-                                              paymentBankTransfer.value) ||
-                                          ((paymentReportItem
-                                                      .payment
-                                                      ?.paymentType ??
-                                                  paymentTypeUnknown.value) ==
-                                              paymentBankTransferOtherAmount
-                                                  .value)) &&
-                                      (paymentReportItem.payment?.confirmedBy ==
-                                          null))
-                                  ? hc_red
-                                  : Colors.black,
+                                              paymentTypeUnknown.value) ==
+                                          paymentBankTransfer.value) ||
+                                      ((paymentReportItem
+                                                  .payment
+                                                  ?.paymentType ??
+                                              paymentTypeUnknown.value) ==
+                                          paymentBankTransferOtherAmount
+                                              .value)) &&
+                                  (paymentReportItem.payment?.confirmedBy ==
+                                      null))
+                              ? hc_red
+                              : Colors.black,
                           fontFamily: 'AvenirNextCondensedDemiBold',
                           fontStyle: FontStyle.normal,
                           fontSize: 16.0,
@@ -135,20 +128,19 @@ class PaymentReportListItem extends StatelessWidget {
                 const SizedBox(width: 10),
                 Padding(
                   padding: const EdgeInsets.only(bottom: 5.0),
-                  child:
-                      paymentReportItem.isLoading
-                          ? Icon(delayIcon, color: hc_blue, size: 37.0)
-                          : Image.asset(
-                            'images/icons/payment_type_${paymentReportItem.payment?.paymentType ?? 0}.png',
-                            height: 30.0,
-                            width: 30.0,
-                            color:
-                                (paymentReportItem.payment?.paymentType ??
-                                            paymentTypeUnknown.value) <=
-                                        paymentNotPaid.value
-                                    ? hc_red
-                                    : Colors.green[700],
-                          ),
+                  child: paymentReportItem.isLoading
+                      ? Icon(delayIcon, color: hc_blue, size: 37.0)
+                      : Image.asset(
+                          'images/icons/payment_type_${paymentReportItem.payment?.paymentType ?? 0}.png',
+                          height: 30.0,
+                          width: 30.0,
+                          color:
+                              (paymentReportItem.payment?.paymentType ??
+                                      paymentTypeUnknown.value) <=
+                                  paymentNotPaid.value
+                              ? hc_red
+                              : Colors.green[700],
+                        ),
                 ),
                 const SizedBox(width: 10),
               ],
@@ -183,14 +175,13 @@ class PaymentTotalsCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String total =
-        creditAmount == 0
-            ? ''
-            : IveCoreUtilities.getFormattedMoney(
-              creditAmount,
-              digitsAfterDecimal,
-              currencySymbol,
-            );
+    final String total = creditAmount == 0
+        ? ''
+        : IveCoreUtilities.getFormattedMoney(
+            creditAmount,
+            digitsAfterDecimal,
+            currencySymbol,
+          );
 
     return SizedBox(
       width: 40,

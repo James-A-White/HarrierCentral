@@ -11,13 +11,16 @@ enum EnumSortKennelListBy {
 
 class KennelsListPageController extends GetxController {
   final RxList<KennelListAggregate> filteredList = <KennelListAggregate>[].obs;
-  final Rx<EnumSortKennelListBy> sortByType = EnumSortKennelListBy.following.obs;
+  final Rx<EnumSortKennelListBy> sortByType =
+      EnumSortKennelListBy.following.obs;
   final RxBool isLoading = false.obs;
   final RxString searchText = ''.obs;
 
   final TextEditingController searchController = TextEditingController();
   final FocusNode searchFocusNode = FocusNode();
-  final ScrollController scrollController = ScrollController(initialScrollOffset: 0);
+  final ScrollController scrollController = ScrollController(
+    initialScrollOffset: 0,
+  );
 
   StreamSubscription<DataChangeEvent>? _dataChangeSub;
 
@@ -25,7 +28,11 @@ class KennelsListPageController extends GetxController {
   void onInit() {
     super.onInit();
     searchController.text = '';
-    debounce<String>(searchText, (_) => _filterResults(), time: const Duration(milliseconds: 400));
+    debounce<String>(
+      searchText,
+      (_) => _filterResults(),
+      time: const Duration(milliseconds: 400),
+    );
     _dataChangeSub = Get.find<DataChangeService>().stream.listen(_onDataChange);
     unawaited(onInitAsync());
   }
@@ -61,22 +68,28 @@ class KennelsListPageController extends GetxController {
       tableModel.globalKennelMainPageList = <KennelListAggregate>[];
 
       try {
-        final List<Map<String, dynamic>> results = await QueryKennels.queryKennels(
-          EnumKennelQueryType.topKennelPage,
-          EnumKennelQueryContext.user,
-          hasherId: hasherId,
-        );
+        final List<Map<String, dynamic>> results =
+            await QueryKennels.queryKennels(
+              EnumKennelQueryType.topKennelPage,
+              EnumKennelQueryContext.user,
+              hasherId: hasherId,
+            );
 
         double? dist;
 
         for (int i = 0; i < results.length; i++) {
           try {
-            final KennelsModel kennelItem = tableModel.kennelsTableHelper.fromMap(results[i]);
-            final KennelListQueryExtenstions extensionsItem = KennelListQueryExtenstions.fromMap(results[i]);
+            final KennelsModel kennelItem = tableModel.kennelsTableHelper
+                .fromMap(results[i]);
+            final KennelListQueryExtenstions extensionsItem =
+                KennelListQueryExtenstions.fromMap(results[i]);
 
             HasherKennelMapModel? hkmItem;
-            if (results[i][tableModel.hasherKennelMapTableHelper.colHkmId] != null) {
-              hkmItem = tableModel.hasherKennelMapTableHelper.fromMap(results[i]);
+            if (results[i][tableModel.hasherKennelMapTableHelper.colHkmId] !=
+                null) {
+              hkmItem = tableModel.hasherKennelMapTableHelper.fromMap(
+                results[i],
+              );
             }
 
             if ((deviceInfo.deviceLat != null) &&
@@ -96,15 +109,18 @@ class KennelsListPageController extends GetxController {
             extensionsItem.notificationsRequested = -1;
             extensionsItem.emailAlertRequested = -1;
 
-            final bool isHomeKennel = kennelItem.kennelId.toLowerCase() ==
+            final bool isHomeKennel =
+                kennelItem.kennelId.toLowerCase() ==
                 getStringPref(StringPrefsEnum.homeKennelId)?.toLowerCase();
 
-            tableModel.globalKennelMainPageList!.add(KennelListAggregate(
-              kennel: kennelItem,
-              extensions: extensionsItem,
-              hkm: hkmItem,
-              isHomeKennel: isHomeKennel,
-            ));
+            tableModel.globalKennelMainPageList!.add(
+              KennelListAggregate(
+                kennel: kennelItem,
+                extensions: extensionsItem,
+                hkm: hkmItem,
+                isHomeKennel: isHomeKennel,
+              ),
+            );
           } catch (e) {
             if (kDebugMode) print(e);
           }
@@ -137,28 +153,44 @@ class KennelsListPageController extends GetxController {
   void _sortList(List<KennelListAggregate> list) {
     final sort = sortByType.value;
 
-    if (sort == EnumSortKennelListBy.distance && appModel.hasLocationPermissions) {
-      list.sort((a, b) =>
-          (a.isHomeKennel ? 0.0 : a.extensions.distToKennel ?? 0)
-              .compareTo(b.isHomeKennel ? 0.0 : b.extensions.distToKennel ?? 0));
-    } else if (sort == EnumSortKennelListBy.distance || sort == EnumSortKennelListBy.kennelName) {
-      list.sort((a, b) =>
-          (a.isHomeKennel ? ' ' : a.kennel.kennelName.trim())
-              .compareTo(b.isHomeKennel ? ' ' : b.kennel.kennelName.trim()));
+    if (sort == EnumSortKennelListBy.distance &&
+        appModel.hasLocationPermissions) {
+      list.sort(
+        (a, b) => (a.isHomeKennel ? 0.0 : a.extensions.distToKennel ?? 0)
+            .compareTo(b.isHomeKennel ? 0.0 : b.extensions.distToKennel ?? 0),
+      );
+    } else if (sort == EnumSortKennelListBy.distance ||
+        sort == EnumSortKennelListBy.kennelName) {
+      list.sort(
+        (a, b) => (a.isHomeKennel ? ' ' : a.kennel.kennelName.trim()).compareTo(
+          b.isHomeKennel ? ' ' : b.kennel.kennelName.trim(),
+        ),
+      );
     } else if (sort == EnumSortKennelListBy.cityName) {
-      list.sort((a, b) =>
-          (a.isHomeKennel ? ' ' : (a.extensions.cityName ?? '').trim())
-              .compareTo(b.isHomeKennel ? ' ' : (b.extensions.cityName ?? '').trim()));
+      list.sort(
+        (a, b) => (a.isHomeKennel ? ' ' : (a.extensions.cityName ?? '').trim())
+            .compareTo(
+              b.isHomeKennel ? ' ' : (b.extensions.cityName ?? '').trim(),
+            ),
+      );
     } else if (sort == EnumSortKennelListBy.countryRegionName) {
       list.sort((a, b) {
         int result =
             (a.isHomeKennel ? ' ' : (a.extensions.countryName ?? '').trim())
-                .compareTo(b.isHomeKennel ? ' ' : (b.extensions.countryName ?? '').trim());
+                .compareTo(
+                  b.isHomeKennel
+                      ? ' '
+                      : (b.extensions.countryName ?? '').trim(),
+                );
         if (result == 0) {
-          result = (a.extensions.regionName ?? '').trim().compareTo((b.extensions.regionName ?? '').trim());
+          result = (a.extensions.regionName ?? '').trim().compareTo(
+            (b.extensions.regionName ?? '').trim(),
+          );
         }
         if (result == 0) {
-          result = (a.extensions.cityName ?? '').trim().compareTo((b.extensions.cityName ?? '').trim());
+          result = (a.extensions.cityName ?? '').trim().compareTo(
+            (b.extensions.cityName ?? '').trim(),
+          );
         }
         return result;
       });
@@ -171,13 +203,28 @@ class KennelsListPageController extends GetxController {
         final int aFollow = a.hkm?.following ?? 0;
         final int bFollow = b.hkm?.following ?? 0;
 
-        int result = (aFollow == 1 ? 0 : aFollow == 2 ? 2 : 1)
-            .compareTo(bFollow == 1 ? 0 : bFollow == 2 ? 2 : 1);
+        int result =
+            (aFollow == 1
+                    ? 0
+                    : aFollow == 2
+                    ? 2
+                    : 1)
+                .compareTo(
+                  bFollow == 1
+                      ? 0
+                      : bFollow == 2
+                      ? 2
+                      : 1,
+                );
 
         if (result == 0) {
           result = appModel.hasLocationPermissions
-              ? (a.extensions.distToKennel ?? 0.0).compareTo(b.extensions.distToKennel ?? 0.0)
-              : a.kennel.kennelName.trim().compareTo(b.kennel.kennelName.trim());
+              ? (a.extensions.distToKennel ?? 0.0).compareTo(
+                  b.extensions.distToKennel ?? 0.0,
+                )
+              : a.kennel.kennelName.trim().compareTo(
+                  b.kennel.kennelName.trim(),
+                );
         }
         return result;
       });
@@ -220,7 +267,9 @@ class KennelsListPageController extends GetxController {
 
     await setStringPref(
       StringPrefsEnum.homeKennelId,
-      queryResults[0]['isHomeKennel'] == 1 ? item.kennel.kennelId.toLowerCase() : '',
+      queryResults[0]['isHomeKennel'] == 1
+          ? item.kennel.kennelId.toLowerCase()
+          : '',
     );
 
     // Update this item's HKM data
@@ -252,7 +301,9 @@ class KennelsListPageController extends GetxController {
     final globalList = tableModel.globalKennelMainPageList;
     if (globalList != null) {
       final globalIndex = globalList.indexWhere(
-        (k) => k.kennel.kennelId.toLowerCase() == item.kennel.kennelId.toLowerCase(),
+        (k) =>
+            k.kennel.kennelId.toLowerCase() ==
+            item.kennel.kennelId.toLowerCase(),
       );
       if (globalIndex != -1) {
         globalList[globalIndex] = newAggregate;
@@ -266,7 +317,9 @@ class KennelsListPageController extends GetxController {
       }
       if (globalList != null) {
         for (final k in globalList) {
-          k.isHomeKennel = k.kennel.kennelId.toLowerCase() == item.kennel.kennelId.toLowerCase();
+          k.isHomeKennel =
+              k.kennel.kennelId.toLowerCase() ==
+              item.kennel.kennelId.toLowerCase();
         }
       }
     } else {
@@ -274,7 +327,8 @@ class KennelsListPageController extends GetxController {
     }
 
     // Delete stale events and re-sync for this kennel
-    final String sql = '''
+    final String sql =
+        '''
       DELETE FROM ${EnumDataTables.events.commonTableName}
       WHERE ${tableModel.eventsTableHelper.colKennelId} = '${item.kennel.kennelId}'
     ''';
@@ -291,13 +345,18 @@ class KennelsListPageController extends GetxController {
     _filterResults();
 
     // Notify other controllers (e.g. FutureRunListPageController)
-    Get.find<DataChangeService>().notify(DataChangeEvent(
-      type: DataChangeType.kennelFollowStatusChanged,
-      id: item.kennel.kennelId,
-    ));
+    Get.find<DataChangeService>().notify(
+      DataChangeEvent(
+        type: DataChangeType.kennelFollowStatusChanged,
+        id: item.kennel.kennelId,
+      ),
+    );
   }
 
-  Future<void> updateNotificationStatus(int index, NotificationState state) async {
+  Future<void> updateNotificationStatus(
+    int index,
+    NotificationState state,
+  ) async {
     final KennelListAggregate item = filteredList[index];
     item.extensions.notificationsRequested = state.value;
     filteredList.refresh();
@@ -325,7 +384,9 @@ class KennelsListPageController extends GetxController {
       final globalList = tableModel.globalKennelMainPageList;
       if (globalList != null) {
         final gi = globalList.indexWhere(
-          (k) => k.kennel.kennelId.toLowerCase() == item.kennel.kennelId.toLowerCase(),
+          (k) =>
+              k.kennel.kennelId.toLowerCase() ==
+              item.kennel.kennelId.toLowerCase(),
         );
         if (gi != -1) globalList[gi] = newAggregate;
       }
@@ -362,7 +423,9 @@ class KennelsListPageController extends GetxController {
       final globalList = tableModel.globalKennelMainPageList;
       if (globalList != null) {
         final gi = globalList.indexWhere(
-          (k) => k.kennel.kennelId.toLowerCase() == item.kennel.kennelId.toLowerCase(),
+          (k) =>
+              k.kennel.kennelId.toLowerCase() ==
+              item.kennel.kennelId.toLowerCase(),
         );
         if (gi != -1) globalList[gi] = newAggregate;
       }
@@ -376,10 +439,14 @@ class KennelsListPageController extends GetxController {
     filteredList.value = [];
 
     String query = 'DELETE FROM ${EnumDataTables.kennels.commonTableName}';
-    try { await database.rawQuery(query); } catch (_) {}
+    try {
+      await database.rawQuery(query);
+    } catch (_) {}
 
     query = 'DELETE FROM ${EnumDataTables.hasherKennelMap.commonTableName}';
-    try { await database.rawQuery(query); } catch (_) {}
+    try {
+      await database.rawQuery(query);
+    } catch (_) {}
 
     await tableModel.syncUserDataService.updateFromBackend(
       EnumDataTables.kennels.flag | EnumDataTables.hasherKennelMap.flag,
@@ -395,7 +462,8 @@ class KennelsListPageController extends GetxController {
 
     await Navigator.of(context).push<dynamic>(
       MaterialPageRoute<dynamic>(
-        builder: (BuildContext context) => KennelAdminMainPage(kennelAggregateItem: kennel),
+        builder: (BuildContext context) =>
+            KennelAdminMainPage(kennelAggregateItem: kennel),
       ),
     );
 

@@ -40,7 +40,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
   }
 
   void _onLoginStatusChanged(bool loggedIn, {ThirdPartyLoginData? loginData}) {
-    setState(() {
+    setStateIfMounted(() {
       _isLoggedIn = loggedIn;
       _profileData = loginData;
     });
@@ -356,7 +356,7 @@ class LoginPageState extends State<ThirdPartyLogin> {
                 if (!widget.isNewUser ||
                     ((_formKey.currentState != null) &&
                         (_formKey.currentState!.validate()))) {
-                  setState(() {
+                  setStateIfMounted(() {
                     _isLoading = true;
                   });
 

@@ -88,7 +88,7 @@ class KennelMemberListState extends State<KennelMembersList>
     _buttonAnimation =
         Tween<double>(begin: 0, end: 90.0 / 360.0).animate(_animationController)
           ..addListener(() {
-            setState(() {});
+            setStateIfMounted(() {});
           });
   }
 
@@ -97,7 +97,7 @@ class KennelMemberListState extends State<KennelMembersList>
     await _refreshCounters(true);
 
     if (!mounted) return;
-    setState(() {});
+    setStateIfMounted(() {});
   }
 
   Future<void> _refreshKennelMembersFromTable(bool forceRefresh) async {
@@ -186,7 +186,7 @@ class KennelMemberListState extends State<KennelMembersList>
         if (forceRefresh && (i == results.length - 1)) {
           _kennelMemberListFuture = Future<List<dynamic>>.value(kList);
           await filterResults();
-          setState(() {});
+          setStateIfMounted(() {});
         }
       }
     } catch (e) {
@@ -241,7 +241,7 @@ class KennelMemberListState extends State<KennelMembersList>
         countHasRecentRuns = results[0]['hasRecentRuns'];
       }
       if (forceRefresh) {
-        setState(() {});
+        setStateIfMounted(() {});
       }
     } catch (e) {
       //print(e);
@@ -315,7 +315,7 @@ class KennelMemberListState extends State<KennelMembersList>
 
               // Optional: show loading / optimistic UI
               if (!mounted) return;
-              setState(() {
+              setStateIfMounted(() {
                 widget.kennelListAggregate.extensions.followingRequested = -1;
                 // _isLoading = true;
               });
@@ -337,12 +337,12 @@ class KennelMemberListState extends State<KennelMembersList>
                 await _refreshCounters(true);
 
                 if (!mounted) return;
-                setState(() {
+                setStateIfMounted(() {
                   // _isLoading = false;
                 });
               } catch (e) {
                 if (!mounted) return;
-                setState(() {
+                setStateIfMounted(() {
                   // _isLoading = false;
                 });
                 // optionally log / show snackbar
@@ -576,7 +576,7 @@ class KennelMemberListState extends State<KennelMembersList>
                                         true,
                                       );
                                       await _refreshCounters(true);
-                                      setState(() {});
+                                      setStateIfMounted(() {});
                                     },
                                 modifyMembershipCallback: (EnumMemberPopupActions? retVal) async {
                                   if (retVal == null) return;
@@ -694,7 +694,7 @@ class KennelMemberListState extends State<KennelMembersList>
                                             .data![index]
                                             .kennelEmailAlertPreference =
                                         -1;
-                                    setState(() {});
+                                    setStateIfMounted(() {});
                                     final List<dynamic> queryResults = await srv
                                         .updateHasherKennelStatus(
                                           widget
@@ -708,7 +708,7 @@ class KennelMemberListState extends State<KennelMembersList>
                                         );
 
                                     if (!mounted) return;
-                                    setState(() {
+                                    setStateIfMounted(() {
                                       if (queryResults.isNotEmpty) {
                                         snapshot
                                                 .data![index]
@@ -769,7 +769,7 @@ class KennelMemberListState extends State<KennelMembersList>
                     await _refreshKennelMembersFromTable(true);
                     await _refreshCounters(true);
                     if (!mounted) return;
-                    setState(() {});
+                    setStateIfMounted(() {});
                   },
                   icon: Icon(
                     FontAwesome5Solid.arrow_alt_circle_right,
@@ -795,7 +795,7 @@ class KennelMemberListState extends State<KennelMembersList>
                       onChanged: (String text) async {
                         _searchText = text;
                         await filterResults();
-                        setState(() {});
+                        setStateIfMounted(() {});
                       },
                       focusNode: _searchFocusNode,
                       controller: _searchController,
@@ -939,7 +939,7 @@ class KennelMemberListState extends State<KennelMembersList>
               await _refreshKennelMembersFromTable(true);
               await _refreshCounters(true);
               if (!mounted) return;
-              setState(() {});
+              setStateIfMounted(() {});
             },
             filterValues: _filterValues,
           ),
@@ -951,7 +951,7 @@ class KennelMemberListState extends State<KennelMembersList>
               await _refreshKennelMembersFromTable(true);
               await _refreshCounters(true);
               if (!mounted) return;
-              setState(() {});
+              setStateIfMounted(() {});
             },
             filterValues: _filterValues,
           ),
@@ -963,7 +963,7 @@ class KennelMemberListState extends State<KennelMembersList>
           //   onTap: () {
           //     refreshKennelMembersFromTable(true).then((void _) {
           //       _refreshCounters(true);
-          //       setState(() {});
+          //       setStateIfMounted(() {});
           //     });
           //   },
           //   filterValues: filterValues,
@@ -977,7 +977,7 @@ class KennelMemberListState extends State<KennelMembersList>
               await _refreshKennelMembersFromTable(true);
               await _refreshCounters(true);
               if (!mounted) return;
-              setState(() {});
+              setStateIfMounted(() {});
             },
             filterValues: _filterValues,
           ),
@@ -1013,7 +1013,7 @@ class KennelMemberListState extends State<KennelMembersList>
   }
 
   Future<void> _handleRefresh() async {
-    setState(() {
+    setStateIfMounted(() {
       //_isLoading = true;
     });
 
@@ -1028,7 +1028,7 @@ class KennelMemberListState extends State<KennelMembersList>
     //print('Kennel member data synchronized $resultStr');
     await _refreshKennelMembersFromTable(true);
     await _refreshCounters(true);
-    setState(() {});
+    setStateIfMounted(() {});
   }
 
   Future<void> _modifyMembership(
@@ -1039,7 +1039,7 @@ class KennelMemberListState extends State<KennelMembersList>
     final HasherKennelMapService srv = HasherKennelMapService();
     widget.kennelListAggregate.extensions.followingRequested = -1;
 
-    setState(() {
+    setStateIfMounted(() {
       snapshot.data![index] = snapshot.data![index].copyWith(
         memberInfoBeingUpdated: true,
       );
@@ -1053,7 +1053,7 @@ class KennelMemberListState extends State<KennelMembersList>
 
     await _refreshKennelMembersFromTable(true);
     if (!mounted) return;
-    setState(() {
+    setStateIfMounted(() {
       snapshot.data![index] = snapshot.data![index].copyWith(
         memberInfoBeingUpdated: false,
       );
@@ -1069,7 +1069,7 @@ class KennelMemberListState extends State<KennelMembersList>
   }) async {
     final HasherKennelMapService srv = HasherKennelMapService();
     widget.kennelListAggregate.extensions.followingRequested = -1;
-    setState(() {
+    setStateIfMounted(() {
       snapshot.data![index] = snapshot.data![index].copyWith(
         memberInfoBeingUpdated: true,
       );
@@ -1085,7 +1085,7 @@ class KennelMemberListState extends State<KennelMembersList>
 
     await _refreshKennelMembersFromTable(true);
     if (!mounted) return;
-    setState(() {
+    setStateIfMounted(() {
       snapshot.data![index] = snapshot.data![index].copyWith(
         memberInfoBeingUpdated: false,
       );
@@ -1097,7 +1097,7 @@ class KennelMemberListState extends State<KennelMembersList>
   //   final HasherKennelMapService srv = HasherKennelMapService();
   //   widget.kennel.extensions.followingRequested = -1;
   //   item.homeKennelBeingUpdated = true;
-  //   setState(() {});
+  //   setStateIfMounted(() {});
   //   srv
   //       .updateHasherKennelStatus(widget.kennel.kennel.kennelId, AppDomainType.kennel,
   //           targetUserId: item.hasherId, followingState: followTypeToggleHomeKennel.value, isHomeKennel: isHomeKennel)
@@ -1105,7 +1105,7 @@ class KennelMemberListState extends State<KennelMembersList>
   //     refreshKennelMembersFromTable(true).then((void _) {
   //       item.homeKennelBeingUpdated = false;
   //       _refreshCounters(true);
-  //       setState(() {});
+  //       setStateIfMounted(() {});
   //     });
   //   });
   // }

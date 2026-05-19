@@ -94,7 +94,7 @@ class FutureRunsListPage extends StatelessWidget {
                         onPressed: () {
                           controller.searchController.text = '';
                           controller.searchRunsText.value = '';
-                          //setState(() {
+                          //setStateIfMounted(() {
                           controller.filterRuns(true);
                           //});
                         },

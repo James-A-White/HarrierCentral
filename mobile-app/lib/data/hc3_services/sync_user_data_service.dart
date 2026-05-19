@@ -152,7 +152,8 @@ class SyncUserDataService {
       // TODO(L2): forceRefresh parameter is accepted but the condition is always
       // true (|| true). Remove forceRefresh from this method signature and all
       // ~20 call sites when doing a broader cleanup pass.
-      if (true) { // ignore: dead_code
+      if (true) {
+        // ignore: dead_code
         await getLastUpdatedTimes(tablesToSync);
 
         final DateTime hashersUpdatedAfter =
@@ -245,17 +246,14 @@ class SyncUserDataService {
 
         //print('http request issued: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
 
-        final String responseBody = await ServiceCommon.sendHttpPost(
-          () {
-            params['accessToken'] = Utilities.generateToken(
-              userId,
-              'hcapp_syncUserData',
-              paramString: deviceSecret,
-            );
-            return jsonEncode(params);
-          },
-          client: client,
-        );
+        final String responseBody = await ServiceCommon.sendHttpPost(() {
+          params['accessToken'] = Utilities.generateToken(
+            userId,
+            'hcapp_syncUserData',
+            paramString: deviceSecret,
+          );
+          return jsonEncode(params);
+        }, client: client);
 
         //print('http response received: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
 

@@ -52,12 +52,11 @@ class KennelFilterCell extends StatelessWidget {
                   ? FontAwesome.circle_thin
                   : FontAwesome.check_circle,
               size: 35,
-              color:
-                  (color ?? filterValues[index]) == -1
-                      ? hc_red
-                      : filterValues[index] == 0
-                      ? Colors.grey[350]
-                      : Colors.green,
+              color: (color ?? filterValues[index]) == -1
+                  ? hc_red
+                  : filterValues[index] == 0
+                  ? Colors.grey[350]
+                  : Colors.green,
             ),
           ),
           SizedBox(

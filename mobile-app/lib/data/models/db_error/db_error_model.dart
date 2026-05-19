@@ -23,8 +23,6 @@ abstract class DbErrorModel with _$DbErrorModel implements BaseModel {
   }
 }
 
-
-
 // import 'package:harrier_central/imports_null_safe.dart';
 
 // class DbErrorModel {
@@ -79,4 +77,3 @@ abstract class DbErrorModel with _$DbErrorModel implements BaseModel {
 //     return items[0];
 //   }
 // }
-

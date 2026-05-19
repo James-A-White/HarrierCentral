@@ -65,7 +65,8 @@ class DefaultFirebaseOptions {
     projectId: 'harrier-central-mobile',
     databaseURL: 'https://harrier-central-mobile.firebaseio.com',
     storageBucket: 'harrier-central-mobile.firebasestorage.app',
-    iosClientId: '699693953835-o537dp89b34r5nuvpo2p2t3r3sj3bs04.apps.googleusercontent.com',
+    iosClientId:
+        '699693953835-o537dp89b34r5nuvpo2p2t3r3sj3bs04.apps.googleusercontent.com',
     iosBundleId: 'com.harriercentral.app',
   );
 }

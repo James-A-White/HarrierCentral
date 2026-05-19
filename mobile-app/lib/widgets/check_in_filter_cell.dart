@@ -53,12 +53,11 @@ class CheckinFiltersCell extends StatelessWidget {
                     ? FontAwesome.circle_thin
                     : FontAwesome.check_circle,
                 size: 35,
-                color:
-                    (color ?? filterValues[index].value) == -1
-                        ? hc_red
-                        : filterValues[index].value == 0
-                        ? Colors.grey[350]
-                        : Colors.green,
+                color: (color ?? filterValues[index].value) == -1
+                    ? hc_red
+                    : filterValues[index].value == 0
+                    ? Colors.grey[350]
+                    : Colors.green,
               ),
             ),
           ),

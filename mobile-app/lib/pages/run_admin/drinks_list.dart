@@ -75,7 +75,7 @@ class DrinksListState extends State<DrinksList>
   Future<void> _refreshSqlTablesFromBackend(bool showLoadingIndicator) async {
     if (Utilities.isConnected()) {
       if (showLoadingIndicator) {
-        setState(() {
+        setStateIfMounted(() {
           _isLoading = true;
         });
       }
@@ -93,7 +93,7 @@ class DrinksListState extends State<DrinksList>
 
       await _refreshDrinksFromTable(true);
 
-      setState(() {
+      setStateIfMounted(() {
         _isLoading = false;
       });
     }
@@ -191,7 +191,7 @@ class DrinksListState extends State<DrinksList>
                   child: Padding(
                     padding: const EdgeInsets.all(30.0),
                     child: Text(
-                      'No awards yet for this Hash',
+                      'No awards yet for this Trail',
                       textAlign: TextAlign.center,
                       style: ts_headingVeryLarge.copyWith(
                         color: themeBackgroundColor,

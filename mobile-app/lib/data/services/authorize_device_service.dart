@@ -99,10 +99,7 @@ class AuthorizeDeviceService {
             StringPrefsEnum.deviceSecret,
             items['deviceSecret'],
           );
-          await setIntPref(
-            IntPrefsEnum.timeWindow,
-            items['timeWindow'],
-          );
+          await setIntPref(IntPrefsEnum.timeWindow, items['timeWindow']);
           await setStringPref(StringPrefsEnum.profilePhotoUrl, items['photo']);
           await setStringPref(
             StringPrefsEnum.displayName,

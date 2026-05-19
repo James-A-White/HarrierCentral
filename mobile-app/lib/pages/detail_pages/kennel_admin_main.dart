@@ -71,9 +71,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
               child: Obx(() {
                 if (controller.isLoading.value) {
                   return const Center(
-                    child: HcAppCircularProgressIndicator(
-                      key: Key('16637721'),
-                    ),
+                    child: HcAppCircularProgressIndicator(key: Key('16637721')),
                   );
                 }
                 return SingleChildScrollView(
@@ -112,7 +110,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSync),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
-            setState(() {});
+            setStateIfMounted(() {});
           },
         ),
       ],
@@ -124,7 +122,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
   // ---------------------------------------------------------------------------
   Widget _buildLogoSection(BuildContext context) {
     final kennel = widget.kennelAggregateItem.kennel;
-    final hasCoverPhoto = ((kennel.kennelCoverPhoto ?? '').isNotEmpty &&
+    final hasCoverPhoto =
+        ((kennel.kennelCoverPhoto ?? '').isNotEmpty &&
         kennel.kennelCoverPhoto!.startsWith('http'));
 
     if (hasCoverPhoto) {
@@ -150,10 +149,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
           ),
           const Padding(
             padding: EdgeInsets.only(top: 45.0, bottom: 15.0),
-            child: FancyDivider(
-              key: Key('23423413'),
-              innerColor: Colors.white,
-            ),
+            child: FancyDivider(key: Key('23423413'), innerColor: Colors.white),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 20, bottom: 5),
@@ -173,9 +169,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                   ),
                 );
               },
-              child: CachedNetworkImage(
-                imageUrl: kennel.kennelCoverPhoto!,
-              ),
+              child: CachedNetworkImage(imageUrl: kennel.kennelCoverPhoto!),
             ),
           ),
         ],
@@ -296,9 +290,8 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                   await Navigator.push<dynamic>(
                     context,
                     MaterialPageRoute<dynamic>(
-                      builder: (BuildContext context) => RunAndKennelMapPage(
-                        kennel: agg.kennel,
-                      ),
+                      builder: (BuildContext context) =>
+                          RunAndKennelMapPage(kennel: agg.kennel),
                     ),
                   );
                 },
@@ -330,7 +323,10 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                         ),
                         Padding(
                           padding: const EdgeInsets.only(
-                              left: 10, right: 10, top: 8),
+                            left: 10,
+                            right: 10,
+                            top: 8,
+                          ),
                           child: Text(
                             'Email run stats',
                             textAlign: TextAlign.center,
@@ -359,18 +355,19 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                   agg.extensions.currencySymbol ?? r'$',
                             )
                             .then((Map<String, String> result) async {
-                          ScaffoldMessenger.of(navigatorKey.currentContext!)
-                              .hideCurrentSnackBar();
-                          if ((result['result'] ?? '')
-                              .toLowerCase()
-                              .startsWith('success')) {
-                            await Utilities.showAlert(
-                              'E-mail successfully sent',
-                              'Your Kennel run stats report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
-                              'OK',
-                            );
-                          }
-                        });
+                              ScaffoldMessenger.of(
+                                navigatorKey.currentContext!,
+                              ).hideCurrentSnackBar();
+                              if ((result['result'] ?? '')
+                                  .toLowerCase()
+                                  .startsWith('success')) {
+                                await Utilities.showAlert(
+                                  'E-mail successfully sent',
+                                  'Your Kennel run stats report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
+                                  'OK',
+                                );
+                              }
+                            });
                       }
                     },
                   ),
@@ -400,7 +397,10 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                           ),
                           Padding(
                             padding: const EdgeInsets.only(
-                                left: 10, right: 10, top: 4),
+                              left: 10,
+                              right: 10,
+                              top: 4,
+                            ),
                             child: Text(
                               'Manage Members',
                               textAlign: TextAlign.center,
@@ -430,10 +430,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
         ),
         const Padding(
           padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
-          child: FancyDivider(
-            key: Key('5511334'),
-            innerColor: Colors.white,
-          ),
+          child: FancyDivider(key: Key('5511334'), innerColor: Colors.white),
         ),
       ],
     );
@@ -467,7 +464,10 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                 ),
                 Padding(
                   padding: EdgeInsets.only(
-                      left: 10, right: 10, top: labelTopPadding),
+                    left: 10,
+                    right: 10,
+                    top: labelTopPadding,
+                  ),
                   child: Text(
                     label,
                     textAlign: TextAlign.center,
@@ -512,10 +512,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
         ),
         const Padding(
           padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
-          child: FancyDivider(
-            key: Key('11939302'),
-            innerColor: Colors.white,
-          ),
+          child: FancyDivider(key: Key('11939302'), innerColor: Colors.white),
         ),
       ],
     );
@@ -529,7 +526,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
     return Column(
       children: <Widget>[
         ConnectedWidget(
-          refreshFunction: () => setState(() {}),
+          refreshFunction: () => setStateIfMounted(() {}),
           disconnectedChild: Padding(
             padding: const EdgeInsets.only(top: 1, bottom: 30),
             child: Center(
@@ -599,12 +596,14 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       );
                                     } else {
                                       final List<maps.AvailableMap>
-                                          availableMaps =
+                                      availableMaps =
                                           await maps.MapLauncher.installedMaps;
                                       final maps.AvailableMap activeMap =
                                           availableMaps
-                                              .where((maps.AvailableMap map) =>
-                                                  map.mapName == mapName)
+                                              .where(
+                                                (maps.AvailableMap map) =>
+                                                    map.mapName == mapName,
+                                              )
                                               .first;
                                       await activeMap.showMarker(
                                         coords: maps.Coords(
@@ -613,19 +612,17 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                         ),
                                         title:
                                             activeMap.mapName.contains('Google')
-                                                ? ''
-                                                : agg.kennel.kennelName,
+                                            ? ''
+                                            : agg.kennel.kennelName,
                                         description: agg.kennel.kennelName,
                                       );
                                     }
                                   }
                                 },
                                 child: Container(
-                                  margin:
-                                      const EdgeInsets.only(bottom: 110.0),
+                                  margin: const EdgeInsets.only(bottom: 110.0),
                                   child: Stack(
-                                    alignment:
-                                        AlignmentDirectional.topCenter,
+                                    alignment: AlignmentDirectional.topCenter,
                                     children: <Widget>[
                                       Image.asset(
                                         'images/icons/grey_square_pin.png',
@@ -633,8 +630,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       Positioned(
                                         top: 14,
                                         child: KennelLogo(
-                                          kennelLogoUrl:
-                                              agg.kennel.kennelLogo,
+                                          kennelLogoUrl: agg.kennel.kennelLogo,
                                           kennelShortName:
                                               agg.kennel.kennelShortName,
                                           logoHeight: 60.0,
@@ -673,7 +669,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                     ),
                     val,
                   );
-                  setState(() {
+                  setStateIfMounted(() {
                     _sliderValue = val;
                   });
                 }
@@ -686,16 +682,16 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
           'Last run:',
           agg.extensions.lastRunDate != null
               ? DateFormat('E, MMM d,  h:mm a').format(
-                  DateTime.parse(
-                      agg.extensions.lastRunDate!.substring(0, 19)))
+                  DateTime.parse(agg.extensions.lastRunDate!.substring(0, 19)),
+                )
               : '<no run found>',
         ),
         _infoRow(
           'Next run:',
           agg.extensions.nextRunDate != null
               ? DateFormat('E, MMM d,  h:mm a').format(
-                  DateTime.parse(
-                      agg.extensions.nextRunDate!.substring(0, 19)))
+                  DateTime.parse(agg.extensions.nextRunDate!.substring(0, 19)),
+                )
               : '<no run found>',
         ),
         _infoRow(
@@ -714,8 +710,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
         // Mismanagement — reactive
         Obx(() {
           final mm = controller.mismanagement.value;
-          final rawTeam =
-              agg.kennel.kennelMismanagementTeam ?? '';
+          final rawTeam = agg.kennel.kennelMismanagementTeam ?? '';
           if (mm == null ||
               rawTeam.trim().isEmpty ||
               rawTeam.toLowerCase().contains('none listed')) {
@@ -785,7 +780,10 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.only(
-                      left: 12.0, top: 8.0, bottom: 8.0),
+                    left: 12.0,
+                    top: 8.0,
+                    bottom: 8.0,
+                  ),
                 ),
                 child: Row(
                   children: <Widget>[
@@ -862,8 +860,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                   QrGroup(
                     context: context,
                     title: '${agg.kennel.kennelShortName} upcoming Runs',
-                    description:
-                        '${agg.kennel.kennelName} upcoming runs',
+                    description: '${agg.kennel.kennelName} upcoming runs',
                     url: controller.kennelUrlForQr,
                     helpTitle:
                         'URL for upcoming ${agg.kennel.kennelShortName} runs',
@@ -871,17 +868,15 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                         "This link opens a page with all upcoming ${agg.kennel.kennelShortName} runs.\r\n\r\nNavigate to this page and scroll down to see everything that's planned!",
                   ),
                   if (((agg.kennel.kennelWebsiteUrl ?? '').isNotEmpty) &&
-                      (agg.kennel.kennelWebsiteUrl!
-                          .toLowerCase()
-                          .startsWith('http'))) ...<Widget>[
+                      (agg.kennel.kennelWebsiteUrl!.toLowerCase().startsWith(
+                        'http',
+                      ))) ...<Widget>[
                     QrGroup(
                       context: context,
                       title: '${agg.kennel.kennelShortName} Website',
-                      description:
-                          '${agg.kennel.kennelShortName} Website',
+                      description: '${agg.kennel.kennelShortName} Website',
                       url: agg.kennel.kennelWebsiteUrl!,
-                      helpTitle:
-                          '${agg.kennel.kennelShortName} Website',
+                      helpTitle: '${agg.kennel.kennelShortName} Website',
                       helpText:
                           "This link takes you to the ${agg.kennel.kennelName} website — your go-to place for everything about Hashing with ${agg.kennel.kennelShortName}!",
                     ),
@@ -912,7 +907,10 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.only(
-                          left: 12.0, top: 8.0, bottom: 8.0),
+                        left: 12.0,
+                        top: 8.0,
+                        bottom: 8.0,
+                      ),
                     ),
                     child: Row(
                       children: <Widget>[
@@ -969,7 +967,10 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.only(
-                        left: 12.0, top: 8.0, bottom: 8.0),
+                      left: 12.0,
+                      top: 8.0,
+                      bottom: 8.0,
+                    ),
                   ),
                   child: Row(
                     children: <Widget>[
@@ -989,17 +990,17 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                   onPressed: () async {
                     final List<Map<String, dynamic>> results =
                         await QueryKennels.queryKennelGallery(
-                      agg.kennel.kennelId,
-                    );
+                          agg.kennel.kennelId,
+                        );
                     if (!mounted) return;
                     await Navigator.push<void>(
                       navigatorKey.currentContext!,
                       MaterialPageRoute<void>(
                         builder: (BuildContext context) =>
                             HashRunArtGalleryPage(
-                          key: const Key('52233311'),
-                          items: results,
-                        ),
+                              key: const Key('52233311'),
+                              items: results,
+                            ),
                       ),
                     );
                   },
@@ -1014,7 +1015,10 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.only(
-                        left: 12.0, top: 8.0, bottom: 8.0),
+                      left: 12.0,
+                      top: 8.0,
+                      bottom: 8.0,
+                    ),
                   ),
                   child: Row(
                     children: <Widget>[
@@ -1038,9 +1042,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                       MaterialPageRoute<void>(
                         builder: (BuildContext context) => GenericWidgetPage(
                           key: const Key('52233311'),
-                          widget: Leaderboard(
-                            kennelId: agg.kennel.kennelId,
-                          ),
+                          widget: Leaderboard(kennelId: agg.kennel.kennelId),
                           appBarTitle: 'Get a Life (Leaderboards)',
                         ),
                       ),

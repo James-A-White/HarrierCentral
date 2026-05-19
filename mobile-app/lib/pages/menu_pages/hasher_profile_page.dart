@@ -151,7 +151,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     }
 
     try {
-      setState(() {
+      setStateIfMounted(() {
         _isLoading = true;
       });
       final List<Map<String, dynamic>> results = await database.rawQuery(query);
@@ -195,7 +195,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
       _isLoading = false;
       _checkDirty();
-      setState(() {});
+      setStateIfMounted(() {});
     } catch (e) {
       //print(e);
     }
@@ -275,7 +275,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       _isLoading = false;
     }
 
-    setState(() {});
+    setStateIfMounted(() {});
   }
 
   String getDistancePreferenceAsString(int distPref) {
@@ -333,7 +333,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
     }
 
     if (isDirty != _isDirty) {
-      setState(() {
+      setStateIfMounted(() {
         _isDirty = isDirty;
       });
     }
@@ -365,7 +365,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
 
       // write the value of the email address to local preferences
 
-      setState(() {
+      setStateIfMounted(() {
         _isLoading = true;
       });
 
@@ -434,7 +434,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         }
 
         await _refreshUserDataFromTable(true);
-        setState(() {
+        setStateIfMounted(() {
           _isLoading = false;
           _checkDirty();
         });
@@ -460,7 +460,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       }
     } else {
       //    If all data are not valid then start auto validation.
-      setState(() {
+      setStateIfMounted(() {
         _autoValidate = true;
       });
     }
@@ -576,7 +576,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
               child: Checkbox(
                 value: _historicalCountIsEstimateWidget ?? false,
                 onChanged: (bool? value) {
-                  setState(() {
+                  setStateIfMounted(() {
                     _historicalCountIsEstimateWidget = value ?? false;
                     _checkDirty();
                   });
@@ -603,14 +603,14 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   bool _isDistanceUpdating = false;
 
   void _handleRadioValueChange0(int? value) {
-    setState(() {
+    setStateIfMounted(() {
       _nameDisplayPreference = value ?? 0;
       _checkDirty();
     });
   }
 
   void _handleRadioValueChange1(int? value) {
-    setState(() {
+    setStateIfMounted(() {
       _distancePreference = value ?? 0;
       _checkDirty();
     });
@@ -620,7 +620,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   }
 
   Future<void> _saveDistancePreference() async {
-    setState(() {
+    setStateIfMounted(() {
       _isDistanceUpdating = true;
     });
     final HashersService srv = HashersService();
@@ -647,7 +647,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       _hasherPreferences = _distancePreference + _autoRunPreference;
     }
     if (mounted) {
-      setState(() {
+      setStateIfMounted(() {
         _isDistanceUpdating = false;
         _checkDirty();
       });
@@ -655,7 +655,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   }
 
   void _handleRadioValueChange2(int? value) {
-    setState(() {
+    setStateIfMounted(() {
       _autoRunPreference = value ?? 0;
       _checkDirty();
     });
@@ -956,9 +956,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                   mainAxisAlignment:
                                                                       MainAxisAlignment
                                                                           .center,
-                                                                  children: <
-                                                                    Widget
-                                                                  >[
+                                                                  children: <Widget>[
                                                                     Text(
                                                                       'Distance Preference',
                                                                       style:
@@ -984,56 +982,56 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                     ],
                                                                   ],
                                                                 ),
-                                                              const SizedBox(
-                                                                height: 10,
-                                                                width: 10,
-                                                              ),
-                                                              Row(
-                                                                children: <Widget>[
-                                                                  Radio<int>(
-                                                                    value: 0,
-                                                                  ),
-                                                                  const Text(
-                                                                    'Auto',
-                                                                    style: TextStyle(
-                                                                      fontSize:
-                                                                          16.0,
+                                                                const SizedBox(
+                                                                  height: 10,
+                                                                  width: 10,
+                                                                ),
+                                                                Row(
+                                                                  children: <Widget>[
+                                                                    Radio<int>(
+                                                                      value: 0,
                                                                     ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              Row(
-                                                                children: <Widget>[
-                                                                  Radio<int>(
-                                                                    value: 2,
-                                                                  ),
-                                                                  const Text(
-                                                                    'Kilometers',
-                                                                    style: TextStyle(
-                                                                      fontSize:
-                                                                          16.0,
+                                                                    const Text(
+                                                                      'Auto',
+                                                                      style: TextStyle(
+                                                                        fontSize:
+                                                                            16.0,
+                                                                      ),
                                                                     ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              Row(
-                                                                children: <Widget>[
-                                                                  Radio<int>(
-                                                                    value: 3,
-                                                                  ),
-                                                                  const Text(
-                                                                    'Miles',
-                                                                    style: TextStyle(
-                                                                      fontSize:
-                                                                          16.0,
+                                                                  ],
+                                                                ),
+                                                                Row(
+                                                                  children: <Widget>[
+                                                                    Radio<int>(
+                                                                      value: 2,
                                                                     ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ],
+                                                                    const Text(
+                                                                      'Kilometers',
+                                                                      style: TextStyle(
+                                                                        fontSize:
+                                                                            16.0,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                Row(
+                                                                  children: <Widget>[
+                                                                    Radio<int>(
+                                                                      value: 3,
+                                                                    ),
+                                                                    const Text(
+                                                                      'Miles',
+                                                                      style: TextStyle(
+                                                                        fontSize:
+                                                                            16.0,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ],
+                                                            ),
                                                           ),
                                                         ),
-                                                      ),
                                                       ),
                                                     ],
                                                   ),
@@ -1328,7 +1326,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         value:
                                                             _addAsKennelFollower,
                                                         onChanged: (bool? value) {
-                                                          setState(() {
+                                                          setStateIfMounted(() {
                                                             _addAsKennelFollower =
                                                                 value ?? false;
                                                           });
@@ -1535,10 +1533,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             _userRunHistoryLoading
                                                             ? null
                                                             : () async {
-                                                                setState(() {
-                                                                  _userRunHistoryLoading =
-                                                                      true;
-                                                                });
+                                                                setStateIfMounted(
+                                                                  () {
+                                                                    _userRunHistoryLoading =
+                                                                        true;
+                                                                  },
+                                                                );
                                                                 final runHistory =
                                                                     await RunHistoryQueries.getRunHistory(
                                                                       widget
@@ -1566,10 +1566,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                           .hasherId,
                                                                 );
 
-                                                                setState(() {
-                                                                  _userRunHistoryLoading =
-                                                                      false;
-                                                                });
+                                                                setStateIfMounted(
+                                                                  () {
+                                                                    _userRunHistoryLoading =
+                                                                        false;
+                                                                  },
+                                                                );
 
                                                                 if (context
                                                                     .mounted) {
@@ -1706,7 +1708,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                           .mapPreference,
                                                     );
 
-                                                    setState(() {
+                                                    setStateIfMounted(() {
                                                       _externalMapProvider =
                                                           null;
                                                     });
@@ -2163,7 +2165,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSync),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
-            setState(() {});
+            setStateIfMounted(() {});
           },
         ),
       ],

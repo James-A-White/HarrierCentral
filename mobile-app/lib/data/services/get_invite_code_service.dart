@@ -31,7 +31,9 @@ class GetInviteCodeService {
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       final List<dynamic> parsed = json.decode(responseBody) as List<dynamic>;
       if (parsed.isNotEmpty && (parsed[0] as List).isNotEmpty) {
-        result = SingleResultModel(result: parsed[0][0]['inviteCode'] as String?);
+        result = SingleResultModel(
+          result: parsed[0][0]['inviteCode'] as String?,
+        );
       }
     }
 

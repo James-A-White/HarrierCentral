@@ -107,9 +107,14 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
   Map<String, dynamic> _packCount = <String, dynamic>{};
 
+  void _safeSetState(VoidCallback fn) {
+    if (!mounted) return;
+    setStateIfMounted(fn);
+  }
+
   Future<void> _refreshHemTableFromBackend(bool showLoadingIndicator) async {
     if (showLoadingIndicator) {
-      setState(() {
+      _safeSetState(() {
         //_isLoading = true;
       });
     }
@@ -122,7 +127,10 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('Pack member data synchronized $resultStr');
 
-    _thePackList = _refreshPackListFromTable();
+    final Future<List<PackListAggregate>> packListFuture =
+        _refreshPackListFromTable();
+    _thePackList = packListFuture;
+    await packListFuture;
     await _refreshPackCountFromTable(true);
   }
 
@@ -212,7 +220,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         _packCount = results[0];
       }
       if (callSetState) {
-        setState(() {});
+        _safeSetState(() {});
       }
     } catch (e) {
       //print(e);
@@ -241,10 +249,12 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     //print('Current time in GMT: ${DateTime.now().toUtc().toString()}');
     unawaited(_refreshLiveRunButton());
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
+      if (!mounted) return;
+
+      _safeSetState(() {
         _tabController = TabController(vsync: this, length: _tabs.length);
         _gridListTabController = TabController(vsync: this, length: 2);
-        setState(() => _isTabControllerReady = true);
+        _isTabControllerReady = true;
 
         if (widget.openToTab != RunTab.details) {
           // switch to the chat tab if a notification was tapped to open the app
@@ -260,6 +270,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         // }
 
         _tabController.addListener(() async {
+          if (!mounted) return;
+
           FocusScope.of(context).unfocus();
 
           if (_fabIsVisible !=
@@ -269,29 +281,34 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
           if (_tabs[_tabController.index].text == LABEL_RSVP) {
             await _refreshHemTableFromBackend(false);
+            if (!mounted) return;
 
             _showTopWidget = true;
             _slideTopWidget = false;
-            setState(() {});
+            _safeSetState(() {});
 
             await Future.delayed(
               Duration(seconds: DISPLAY_LOGO_IN_RSVP_DURATION),
             );
+            if (!mounted) return;
+
             _showTopWidget = false;
 
-            setState(() {});
+            _safeSetState(() {});
             //print('refreshing RSVP data from backend @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
           }
           if (_tabs[_tabController.index].text == LABEL_CHAT) {
             _showTopWidget = true;
             _slideTopWidget = false;
-            setState(() {});
+            _safeSetState(() {});
             unawaited(
               Future.delayed(
                 Duration(seconds: DISPLAY_LOGO_IN_RSVP_DURATION),
               ).then((_) {
+                if (!mounted) return;
+
                 _showTopWidget = false;
-                setState(() {});
+                _safeSetState(() {});
               }),
             );
           }
@@ -306,9 +323,10 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
             }
           }
 
+          if (!mounted) return;
           widget.relayActiveTab(_tabController.index);
 
-          setState(() {});
+          _safeSetState(() {});
         });
       });
     });
@@ -338,11 +356,11 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
     _mapCenter = latlng.LatLng(xLat, xLon);
     _saveUserMapPreference.addListener(() {
-      setState(() {});
+      _safeSetState(() {});
     });
 
     // Future.delayed(const Duration(seconds: 7)).then((value) {
-    //   setState(() {
+    //   setStateIfMounted(() {
     //     _showTopWidget = false;
     //   });
     // });
@@ -389,7 +407,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           rsvpState: r,
           isPaid: p != -1 ? p : widget.futureRun.extensions.isPaid,
         );
-        setState(() {});
+        setStateIfMounted(() {});
       },
     );
   }
@@ -404,7 +422,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   Widget _buildRsvpView() {
     return ConnectedWidget(
       refreshFunction: () {
-        setState(() {});
+        setStateIfMounted(() {});
       },
       showConnectButton: true,
       disconnectedChild: Padding(
@@ -423,6 +441,13 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           if ((!snapshot.hasData) || (snapshot.data == null)) {
             return const HcAppCircularProgressIndicator(key: Key('42223995'));
           } else {
+            final List<PackListAggregate> packList =
+                snapshot.data ?? <PackListAggregate>[];
+            final PackListAggregate? currentUser =
+                (_thisUserIndex >= 0 && _thisUserIndex < packList.length)
+                ? packList[_thisUserIndex]
+                : null;
+
             return Center(
               child: Column(
                 //mainAxisSize: MainAxisSize.min,
@@ -436,7 +461,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                             opacity: _showTopWidget ? 1.0 : 0.0,
                             duration: Duration(milliseconds: 400),
                             onEnd: () {
-                              setState(() {
+                              if (!mounted) return;
+
+                              _safeSetState(() {
                                 _slideTopWidget = true;
                               });
                             },
@@ -505,19 +532,12 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                   ),
                                   IconButton(
                                     icon: const Icon(FontAwesome.check_circle),
-                                    color: _thisUserIndex == -1
+                                    color: currentUser == null
                                         ? Colors.grey
-                                        : snapshot
-                                                  .data![_thisUserIndex]
-                                                  .hem
-                                                  .rsvpState ==
+                                        : currentUser.hem.rsvpState ==
                                               rsvpYes.value
                                         ? Colors.green
-                                        : (snapshot
-                                                      .data![_thisUserIndex]
-                                                      .hem
-                                                      .rsvpState ==
-                                                  -1 &&
+                                        : (currentUser.hem.rsvpState == -1 &&
                                               _rsvpRequested == rsvpYes)
                                         ? hc_blue
                                         : Colors.grey,
@@ -583,19 +603,12 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                     icon: const Icon(
                                       FontAwesome.question_circle,
                                     ),
-                                    color: _thisUserIndex == -1
+                                    color: currentUser == null
                                         ? Colors.grey
-                                        : snapshot
-                                                  .data![_thisUserIndex]
-                                                  .hem
-                                                  .rsvpState ==
+                                        : currentUser.hem.rsvpState ==
                                               rsvpMaybe.value
                                         ? Colors.orange
-                                        : (snapshot
-                                                      .data![_thisUserIndex]
-                                                      .hem
-                                                      .rsvpState ==
-                                                  -1 &&
+                                        : (currentUser.hem.rsvpState == -1 &&
                                               _rsvpRequested == rsvpMaybe)
                                         ? hc_blue
                                         : Colors.grey,
@@ -657,19 +670,12 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                   ),
                                   IconButton(
                                     icon: const Icon(FontAwesome.times_circle),
-                                    color: _thisUserIndex == -1
+                                    color: currentUser == null
                                         ? Colors.grey
-                                        : snapshot
-                                                  .data![_thisUserIndex]
-                                                  .hem
-                                                  .rsvpState ==
+                                        : currentUser.hem.rsvpState ==
                                               rsvpNo.value
                                         ? hc_red
-                                        : (snapshot
-                                                      .data![_thisUserIndex]
-                                                      .hem
-                                                      .rsvpState ==
-                                                  -1 &&
+                                        : (currentUser.hem.rsvpState == -1 &&
                                               _rsvpRequested == rsvpNo)
                                         ? hc_blue
                                         : Colors.grey,
@@ -731,19 +737,12 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                     icon: const ImageIcon(
                                       AssetImage('images/icons/hare_icon.png'),
                                     ),
-                                    color: _thisUserIndex == -1
+                                    color: currentUser == null
                                         ? Colors.grey
-                                        : snapshot
-                                                  .data![_thisUserIndex]
-                                                  .hem
-                                                  .isHare ==
+                                        : currentUser.hem.isHare ==
                                               isHareYes.value
                                         ? Colors.deepPurple
-                                        : snapshot
-                                                  .data![_thisUserIndex]
-                                                  .hem
-                                                  .isHare ==
-                                              -1
+                                        : currentUser.hem.isHare == -1
                                         ? hc_blue
                                         : Colors.grey,
                                     //tooltip: 'Select to follow a Kennel',
@@ -799,15 +798,15 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                 style: ts_headingVeryLarge,
                                 textAlign: TextAlign.center,
                               ),
-                              if (_thisUserIndex == -1) ..._getRsvpButtons(),
-                              if (_thisUserIndex == -1) ...<Widget>[
+                              if (currentUser == null) ..._getRsvpButtons(),
+                              if (currentUser == null) ...<Widget>[
                                 const Expanded(flex: 40, child: SizedBox()),
                               ],
                             ],
                           )
                         : Column(
                             children: <Widget>[
-                              if ((_thisUserIndex == -1) &&
+                              if ((currentUser == null) &&
                                   (widget.futureRun.event.eventStartDatetime
                                       .isAfter(
                                         DateTime.now().subtract(
@@ -815,14 +814,11 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                         ),
                                       )))
                                 ..._getRsvpButtons(),
-                              if (_thisUserIndex == -1) ...<Widget>[
+                              if (currentUser == null) ...<Widget>[
                                 const SizedBox(height: 10),
                               ],
-                              if ((_thisUserIndex >= 0) &&
-                                  (snapshot
-                                          .data![_thisUserIndex]
-                                          .hem
-                                          .rsvpState >=
+                              if ((currentUser != null) &&
+                                  (currentUser.hem.rsvpState >=
                                       rsvpMaybe.value)) ...<Widget>[
                                 Padding(
                                   padding: const EdgeInsets.only(bottom: 8.0),
@@ -917,6 +913,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                                         .event
                                                         .eventDescription ??
                                                     ''),
+                                            location: Utilities.buildMapLocation(
+                                                widget.futureRun.event,
+                                            ),
                                             startDate: localTime,
                                             endDate: localTime.add(
                                               Duration(hours: 4),
@@ -980,7 +979,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                       //         event: newEvent,
                                       //       )
                                       //       .then((evenId) {
-                                      //         setState(() {
+                                      //         setStateIfMounted(() {
                                       //           debugPrint(
                                       //             'Event Id is: $evenId',
                                       //           );
@@ -1048,7 +1047,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                 // Reviewed for 2.0+
                                 child: TabBar(
                                   onTap: (void _) {
-                                    setState(() {});
+                                    setStateIfMounted(() {});
                                   },
                                   isScrollable:
                                       true, // <-- required for labelPadding
@@ -1395,7 +1394,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   //   if (willHare) {
   //     List<PackListAggregate>? lPla = await _thePackList;
   //     if (lPla != null) {
-  //       setState(() {
+  //       setStateIfMounted(() {
   //         if (_thisUserIndex >= 0) {
   //           PackListAggregate a = lPla[_thisUserIndex];
   //           lPla[_thisUserIndex] = PackListAggregate(
@@ -1432,8 +1431,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   Future<void> _setRsvpState(EnumRsvpState rsvpState) async {
     List<PackListAggregate>? lPla = await _thePackList;
     if (lPla != null) {
-      setState(() {
-        if (_thisUserIndex >= 0) {
+      setStateIfMounted(() {
+        if (_thisUserIndex >= 0 && _thisUserIndex < lPla.length) {
           // _thePackList[_thisUserIndex].hem.rsvpState = -1;
           // _thePackList[_thisUserIndex].hem.isHare = 0;
 
@@ -1458,6 +1457,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         );
 
     await _refreshHemTableFromBackend(false);
+    print(
+      '[_setRsvpState] adHocData length: ${adHocData.length}, contents: $adHocData',
+    );
     final String serverMessage = adHocData[0]['serverMessage'] ?? '';
 
     if (serverMessage.isNotEmpty) {
@@ -1479,7 +1481,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                     opacity: _showTopWidget ? 1.0 : 0.0,
                     duration: Duration(milliseconds: 400),
                     onEnd: () {
-                      setState(() {
+                      if (!mounted) return;
+
+                      _safeSetState(() {
                         _slideTopWidget = true;
                       });
                     },
@@ -1547,7 +1551,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
     return ConnectedWidget(
       refreshFunction: () {
-        setState(() {});
+        setStateIfMounted(() {});
       },
       showConnectButton: true,
       disconnectedChild: Padding(
@@ -1605,7 +1609,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                         top: 10.0,
                         child: GestureDetector(
                           onTap: () {
-                            setState(() {
+                            setStateIfMounted(() {
                               _trueNorthLock = !_trueNorthLock;
                             });
                           },
@@ -1636,7 +1640,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                     DEFAULT_LONGITUDE,
                               );
 
-                              setState(() {});
+                              setStateIfMounted(() {});
                             },
                             child: SizedBox(
                               height: 50.0,
@@ -1652,7 +1656,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                           top: 10.0,
                           child: GestureDetector(
                             onTap: () {
-                              setState(() {
+                              setStateIfMounted(() {
                                 if ((deviceInfo.deviceLat != null) &&
                                     (deviceInfo.deviceLon != null)) {
                                   _mapCenter = latlng.LatLng(
@@ -1749,7 +1753,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                               ),
                             ),
                             onPressed: () {
-                              setState(() {
+                              setStateIfMounted(() {
                                 locService.joinRunTracking.value =
                                     !locService.joinRunTracking.value;
                                 locService.eventId =
@@ -1822,7 +1826,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       return;
     }
 
-    setState(() {
+    setStateIfMounted(() {
       _isExportingTrack = true;
     });
 
@@ -1838,7 +1842,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       _showExportMessage('Export failed: $error');
     } finally {
       if (mounted) {
-        setState(() {
+        setStateIfMounted(() {
           _isExportingTrack = false;
         });
       }
@@ -2159,7 +2163,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                       _buildMapView(),
                       ConnectedWidget(
                         refreshFunction: () {
-                          setState(() {});
+                          setStateIfMounted(() {});
                         },
                         showConnectButton: true,
                         disconnectedChild: Padding(
@@ -2579,7 +2583,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                       eventId: widget.futureRun.event.eventId,
                       eventName: widget.futureRun.event.eventName,
                     );
-                    setState(() {
+                    setStateIfMounted(() {
                       _liveRunStatus = LiveRunButtonStatus.active;
                     });
                   }
@@ -2596,7 +2600,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   }
 
   Future<void> _refreshLiveRunButton() async {
-    setState(() => _liveRunLoading = true);
+    _safeSetState(() => _liveRunLoading = true);
     try {
       final now = DateTime.now();
       final eventStart = widget.futureRun.event.eventStartDatetime;
@@ -2642,9 +2646,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       debugPrint('Live run button check failed: $e');
       _liveRunStatus = LiveRunButtonStatus.hidden;
     } finally {
-      if (mounted) {
-        setState(() => _liveRunLoading = false);
-      }
+      _safeSetState(() => _liveRunLoading = false);
     }
   }
 }

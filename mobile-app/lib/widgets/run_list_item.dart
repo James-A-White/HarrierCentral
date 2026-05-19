@@ -1195,6 +1195,9 @@ class RunListItem extends StatelessWidget {
               rliController.automaticallySetNotifiationPrefs.value,
         );
 
+    print(
+      '[_setRsvpState/rli] adHocData length: ${adHocData.length}, contents: $adHocData',
+    );
     final int rsvpResult = adHocData[0]['rsvpState'];
     final int willHareResult = adHocData[0]['willHareState'];
     final String hares = adHocData[0]['hares'] ?? '';

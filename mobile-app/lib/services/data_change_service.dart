@@ -1,11 +1,7 @@
 import 'dart:async';
 import 'package:get/get.dart';
 
-enum DataChangeType {
-  runUpdated,
-  runCreated,
-  kennelFollowStatusChanged,
-}
+enum DataChangeType { runUpdated, runCreated, kennelFollowStatusChanged }
 
 class DataChangeEvent {
   const DataChangeEvent({required this.type, required this.id});

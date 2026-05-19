@@ -234,7 +234,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                         // ).then(
                         //   (dynamic value) {
                         //     if (widget.ScaffoldKey.currentState != null) {
-                        //       widget.ScaffoldKey.currentState!.setState(() {});
+                        //       widget.ScaffoldKey.currentState!.setStateIfMounted(() {});
                         //     }
                         //   },
                       );

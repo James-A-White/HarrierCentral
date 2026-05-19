@@ -202,10 +202,7 @@ class RunAndKennelMapController extends GetxController {
       final lat = homeKennelLat.value;
       final lon = homeKennelLon.value;
       if (lat != null && lon != null) {
-        mapController.move(
-          latlng.LatLng(lat, lon),
-          mapController.camera.zoom,
-        );
+        mapController.move(latlng.LatLng(lat, lon), mapController.camera.zoom);
       } else if (deviceInfo.deviceLat != null && deviceInfo.deviceLon != null) {
         mapController.move(
           latlng.LatLng(deviceInfo.deviceLat!, deviceInfo.deviceLon!),
@@ -262,10 +259,7 @@ class RunAndKennelMapController extends GetxController {
       searchController.text = '';
       searchText.value = '';
     }
-    await setIntPref(
-      IntPrefsEnum.mapShowSearchBar,
-      showFilters.value ? 1 : 0,
-    );
+    await setIntPref(IntPrefsEnum.mapShowSearchBar, showFilters.value ? 1 : 0);
   }
 
   // ---------------------------------------------------------------------------
@@ -273,10 +267,7 @@ class RunAndKennelMapController extends GetxController {
   // ---------------------------------------------------------------------------
   Future<void> toggleShowKennels() async {
     showKennels.value = !showKennels.value;
-    await setIntPref(
-      IntPrefsEnum.mapShowKennels,
-      showKennels.value ? 1 : 0,
-    );
+    await setIntPref(IntPrefsEnum.mapShowKennels, showKennels.value ? 1 : 0);
     _bumpMarkers();
   }
 
@@ -334,8 +325,8 @@ class RunAndKennelMapController extends GetxController {
   // Run marker tap
   // ---------------------------------------------------------------------------
   Future<void> onRunMarkerTap(String eventId) async {
-    final RunDetailsAggregate? run =
-        await tableModel.eventsService.getSingleRun(eventId);
+    final RunDetailsAggregate? run = await tableModel.eventsService
+        .getSingleRun(eventId);
     if (run == null) return;
     if (navigatorKey.currentContext == null) return;
     await Navigator.push<dynamic>(
@@ -355,13 +346,12 @@ class RunAndKennelMapController extends GetxController {
         getStringPref(StringPrefsEnum.homeKennelId)?.toLowerCase();
 
     final String hasherId = getStringPref(StringPrefsEnum.userId)!;
-    final List<Map<String, dynamic>> results =
-        await QueryKennels.queryKennels(
-          EnumKennelQueryType.singleKennel,
-          EnumKennelQueryContext.user,
-          hasherId: hasherId,
-          kennelId: kennelId,
-        );
+    final List<Map<String, dynamic>> results = await QueryKennels.queryKennels(
+      EnumKennelQueryType.singleKennel,
+      EnumKennelQueryContext.user,
+      hasherId: hasherId,
+      kennelId: kennelId,
+    );
 
     if (results.isEmpty) return;
 
@@ -375,8 +365,9 @@ class RunAndKennelMapController extends GetxController {
       );
     }
 
-    final KennelsModel kennelItem =
-        tableModel.kennelsTableHelper.fromMap(results[0]);
+    final KennelsModel kennelItem = tableModel.kennelsTableHelper.fromMap(
+      results[0],
+    );
 
     HasherKennelMapModel? hkmItem;
     if (results[0]['hkmId'] != null) {
@@ -412,7 +403,8 @@ class RunAndKennelMapController extends GetxController {
   Future<void> _loadEvents() async {
     final String userId = getStringPref(StringPrefsEnum.userId)!;
 
-    String query = '''
+    String query =
+        '''
       SELECT
         evt.*,
         case when evt.${tableModel.eventsTableHelper.colUseFbLatLon} = 0 then evt.${tableModel.eventsTableHelper.colHcLatitude} else coalesce(evt.${tableModel.eventsTableHelper.colFbLatitude},evt.${tableModel.eventsTableHelper.colHcLatitude}) end as lat,
@@ -553,9 +545,7 @@ class RunAndKennelMapController extends GetxController {
       if ((mode == RunLocationsViewMode.all) ||
           (mode == RunLocationsViewMode.past && dt.isBefore(DateTime.now())) ||
           (mode == RunLocationsViewMode.recent &&
-              dt.isAfter(
-                DateTime.now().subtract(const Duration(days: 90)),
-              )) ||
+              dt.isAfter(DateTime.now().subtract(const Duration(days: 90)))) ||
           (mode == RunLocationsViewMode.myRuns &&
               (run.extensions.attendenceState) >= attendenceAtHash.value)) {
         runLocationMarkers.add(marker);
@@ -567,7 +557,8 @@ class RunAndKennelMapController extends GetxController {
   // Load kennels from local DB
   // ---------------------------------------------------------------------------
   Future<void> _loadKennels() async {
-    String query = '''
+    String query =
+        '''
       SELECT
         k.${tableModel.kennelsTableHelper.colKennelId} as kennelId,
         k.${tableModel.kennelsTableHelper.colKennelLogo} as logo,
@@ -598,8 +589,10 @@ class RunAndKennelMapController extends GetxController {
     _filteredKennels = <Map<String, dynamic>>[];
     if (_allKennels.isNotEmpty) {
       if (searchKennelsText.isNotEmpty) {
-        final List<String> searchItems =
-            searchKennelsText.trim().toLowerCase().split(',');
+        final List<String> searchItems = searchKennelsText
+            .trim()
+            .toLowerCase()
+            .split(',');
         _filteredKennels.addAll(_allKennels);
         for (String st in searchItems) {
           if (st.trim().isEmpty) continue;
@@ -611,20 +604,18 @@ class RunAndKennelMapController extends GetxController {
           }
           final List<String> orItems = term.split('+');
 
-          _filteredKennels = _filteredKennels
-              .where((Map<String, dynamic> a) {
-                for (String orItem in orItems) {
-                  if (orItem.trim().isEmpty) continue;
-                  final String needle = ' ${orItem.trim().toLowerCase()}';
-                  final String haystack = a['searchKennelsText'].toLowerCase();
-                  if (haystack.contains(needle) ||
-                      removeDiacritics(haystack).contains(needle)) {
-                    return !negate;
-                  }
-                }
-                return negate;
-              })
-              .toList();
+          _filteredKennels = _filteredKennels.where((Map<String, dynamic> a) {
+            for (String orItem in orItems) {
+              if (orItem.trim().isEmpty) continue;
+              final String needle = ' ${orItem.trim().toLowerCase()}';
+              final String haystack = a['searchKennelsText'].toLowerCase();
+              if (haystack.contains(needle) ||
+                  removeDiacritics(haystack).contains(needle)) {
+                return !negate;
+              }
+            }
+            return negate;
+          }).toList();
         }
       } else {
         _filteredKennels.addAll(_allKennels);
@@ -642,15 +633,14 @@ class RunAndKennelMapController extends GetxController {
     try {
       kennelMarkers = <Marker>[];
 
-      final String? homeKennelId =
-          getStringPref(StringPrefsEnum.homeKennelId)?.toLowerCase();
+      final String? homeKennelId = getStringPref(
+        StringPrefsEnum.homeKennelId,
+      )?.toLowerCase();
 
       if (_filteredKennels.isNotEmpty) {
         for (int i = 0; i < _filteredKennels.length; i++) {
-          final double? lat =
-              (_filteredKennels[i]['lat'] as num?)?.toDouble();
-          final double? lon =
-              (_filteredKennels[i]['lon'] as num?)?.toDouble();
+          final double? lat = (_filteredKennels[i]['lat'] as num?)?.toDouble();
+          final double? lon = (_filteredKennels[i]['lon'] as num?)?.toDouble();
 
           if (lat == null || lon == null) continue;
 

@@ -278,7 +278,7 @@ class OtherPaymentPopup extends StatelessWidget {
                                                   .value
                                               ? (bool? val) {
                                                   if (val != null) {
-                                                    //setState(() {
+                                                    //setStateIfMounted(() {
                                                     controller
                                                         .paySpecialPriceWithCredit
                                                         .value = !controller
@@ -365,7 +365,7 @@ class OtherPaymentPopup extends StatelessWidget {
                                                   .value
                                               ? (bool? val) {
                                                   if (val != null) {
-                                                    //setState(() {
+                                                    //setStateIfMounted(() {
                                                     controller
                                                         .specialPriceIsDefaultForUser
                                                         .value = !controller
@@ -433,7 +433,7 @@ class OtherPaymentPopup extends StatelessWidget {
 
                                   onChanged: (bool? val) {
                                     if (val != null) {
-                                      //setState(() {
+                                      //setStateIfMounted(() {
                                       // _recalculateTotal();
                                       controller.specialPriceEnabled.value =
                                           !controller.specialPriceEnabled.value;
@@ -595,7 +595,7 @@ class OtherPaymentPopup extends StatelessWidget {
                                                   .value =
                                               false;
                                         }
-                                        // setState(() {});
+                                        // setStateIfMounted(() {});
                                       }
                                     },
                                     value: controller.topUpCreditEnabled.value,

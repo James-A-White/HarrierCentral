@@ -1,5 +1,3 @@
-
-
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
@@ -21,7 +19,13 @@ class ChooseProfileImage extends StatefulWidget {
   ChooseProfileImageState createState() => ChooseProfileImageState();
 }
 
-enum SelectedImageTypeEnum { none, avatar, fromCamera, fromGallery, fromNetwork }
+enum SelectedImageTypeEnum {
+  none,
+  avatar,
+  fromCamera,
+  fromGallery,
+  fromNetwork,
+}
 
 class ChooseProfileImageState extends State<ChooseProfileImage> {
   SelectedImageTypeEnum _imageTypeSelection = SelectedImageTypeEnum.none;
@@ -57,11 +61,13 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
       _imageTypeSelection = SelectedImageTypeEnum.fromNetwork;
     }
 
-    unawaited(SystemChrome.setPreferredOrientations(<DeviceOrientation>[
-      DeviceOrientation.portraitUp,
-    ]));
+    unawaited(
+      SystemChrome.setPreferredOrientations(<DeviceOrientation>[
+        DeviceOrientation.portraitUp,
+      ]),
+    );
 
-    setState(() {
+    setStateIfMounted(() {
       _showCircularProgressIndicator = false;
     });
   }
@@ -80,10 +86,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10.0),
         color: disabled == true ? Colors.grey[500] : Colors.yellow[100],
-        border: Border.all(
-          color: hc_red,
-          width: 2,
-        ),
+        border: Border.all(color: hc_red, width: 2),
       ),
       child: GestureDetector(
         child: Column(
@@ -315,7 +318,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
   }
 
   Future<void> _processAndContinue() async {
-    setState(() {
+    setStateIfMounted(() {
       _showCircularProgressIndicator = true;
     });
 
@@ -467,7 +470,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
     SelectedImageTypeEnum value, {
     bool forceOpen = false,
   }) async {
-    setState(() {
+    setStateIfMounted(() {
       _previouslySelectedRadioValue = _selectedRadioValue;
       _selectedRadioValue = value.index;
       _previousImageTypeSelection = _imageTypeSelection;
@@ -485,11 +488,11 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
             ),
           ).then((dynamic onValue) {
             if (onValue != null) {
-              setState(() {
+              setStateIfMounted(() {
                 _selectedAvatarIcon = onValue;
               });
             } else {
-              setState(() {
+              setStateIfMounted(() {
                 _selectedRadioValue = _previouslySelectedRadioValue;
                 _imageTypeSelection = _previousImageTypeSelection;
               });
@@ -510,14 +513,14 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
       default:
         break;
     }
-    setState(() {});
+    setStateIfMounted(() {});
   }
 
   Future<void> _getImageFromCameraOrGallery(ImageSource source) async {
     final XFile? image = await ImagePicker().pickImage(source: source);
 
     if (image == null) {
-      setState(() {
+      setStateIfMounted(() {
         _selectedRadioValue = _previouslySelectedRadioValue;
         _imageTypeSelection = _previousImageTypeSelection;
       });
@@ -533,7 +536,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
       );
 
       if (croppedFile != null) {
-        setState(() {
+        setStateIfMounted(() {
           if (_imageTypeSelection == SelectedImageTypeEnum.fromCamera) {
             _imageFromCamera = Future<File>.value(File(croppedFile.path));
           } else {

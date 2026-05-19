@@ -10,8 +10,7 @@ class CheckInScannerController extends GetxController {
   final RxString onScreenMessage = 'Waiting to scan'.obs;
   final RxBool isScanning = false.obs;
   final RxBool isScanningAtRunStart = true.obs;
-  final Rx<EQrScannerState> scannerState =
-      EQrScannerState.waitingForScan.obs;
+  final Rx<EQrScannerState> scannerState = EQrScannerState.waitingForScan.obs;
 
   // ── Internal (non-reactive) fields ─────────────────────────────────────────
 
@@ -167,10 +166,7 @@ class CheckInScannerController extends GetxController {
         );
 
         final PaymentPopupResult? popupResult =
-            await Get.dialog<PaymentPopupResult>(
-              pp,
-              barrierDismissible: false,
-            );
+            await Get.dialog<PaymentPopupResult>(pp, barrierDismissible: false);
 
         if ((popupResult != null) && (popupResult.transactionType != -1)) {
           onScreenMessage.value = 'Please wait, processing payment';
@@ -217,8 +213,7 @@ class CheckInScannerController extends GetxController {
 
       if (paymentResult[0]['attendenceState'] == attendenceAtHash.value) {
         message += ' is checked in and';
-      } else if (paymentResult[0]['attendenceState'] ==
-          attendenceOnIn.value) {
+      } else if (paymentResult[0]['attendenceState'] == attendenceOnIn.value) {
         message += ' is On Inn and';
       }
 

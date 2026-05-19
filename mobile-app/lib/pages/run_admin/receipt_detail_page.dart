@@ -135,7 +135,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
           removed: 0,
         );
 
-        setState(() {
+        setStateIfMounted(() {
           _isLoading = true;
         });
 
@@ -160,7 +160,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
         }
       } else {
         //    If all data are not valid then start auto validation.
-        setState(() {
+        setStateIfMounted(() {
           _autoValidate = true;
         });
       }
@@ -322,7 +322,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                                                 _imageFromCamera =
                                                     await onImageButtonPressed();
 
-                                                setState(() {});
+                                                setStateIfMounted(() {});
                                               },
                                               child: Text(
                                                 'Scan Receipt',

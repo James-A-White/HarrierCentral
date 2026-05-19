@@ -571,23 +571,63 @@ class MainNavigationPage extends StatelessWidget {
                       animationDuration: const Duration(milliseconds: 300),
                       items: [
                         CurvedNavigationBarItem(
-                          child: Padding(padding: const EdgeInsets.only(top: 5), child: Icon(MaterialCommunityIcons.run_fast, color: controller.currentPage.value == 0 ? Colors.white : themeBackgroundColor)),
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 5),
+                            child: Icon(
+                              MaterialCommunityIcons.run_fast,
+                              color: controller.currentPage.value == 0
+                                  ? Colors.white
+                                  : themeBackgroundColor,
+                            ),
+                          ),
                           label: 'Runs',
                         ),
                         CurvedNavigationBarItem(
-                          child: Padding(padding: const EdgeInsets.only(top: 5), child: Icon(FontAwesome.home, color: controller.currentPage.value == 1 ? Colors.white : themeBackgroundColor)),
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 5),
+                            child: Icon(
+                              FontAwesome.home,
+                              color: controller.currentPage.value == 1
+                                  ? Colors.white
+                                  : themeBackgroundColor,
+                            ),
+                          ),
                           label: 'Kennels',
                         ),
                         CurvedNavigationBarItem(
-                          child: Padding(padding: const EdgeInsets.only(top: 5), child: Icon(FontAwesome.map, color: controller.currentPage.value == 2 ? Colors.white : themeBackgroundColor)),
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 5),
+                            child: Icon(
+                              FontAwesome.map,
+                              color: controller.currentPage.value == 2
+                                  ? Colors.white
+                                  : themeBackgroundColor,
+                            ),
+                          ),
                           label: 'Explore',
                         ),
                         CurvedNavigationBarItem(
-                          child: Padding(padding: const EdgeInsets.only(top: 5), child: Icon(FontAwesome.list_ul, color: controller.currentPage.value == 3 ? Colors.white : themeBackgroundColor)),
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 5),
+                            child: Icon(
+                              FontAwesome.list_ul,
+                              color: controller.currentPage.value == 3
+                                  ? Colors.white
+                                  : themeBackgroundColor,
+                            ),
+                          ),
                           label: 'History',
                         ),
                         CurvedNavigationBarItem(
-                          child: Padding(padding: const EdgeInsets.only(top: 5), child: Icon(Icons.music_note, color: controller.currentPage.value == 4 ? Colors.white : themeBackgroundColor)),
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 5),
+                            child: Icon(
+                              Icons.music_note,
+                              color: controller.currentPage.value == 4
+                                  ? Colors.white
+                                  : themeBackgroundColor,
+                            ),
+                          ),
                           label: 'Songs',
                         ),
                       ],

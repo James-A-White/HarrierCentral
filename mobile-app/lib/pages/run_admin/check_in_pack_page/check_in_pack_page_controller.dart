@@ -695,9 +695,9 @@ class CheckInPackController extends GetxController
       final double runOnlyPrice = (paymentType == paymentFreeRun.value)
           ? 0.0
           : (specialRunPrice ??
-              (filteredList[index].isMember != 0
-                  ? eventAggregate.extensions.memberPrice
-                  : eventAggregate.extensions.nonMemberPrice));
+                (filteredList[index].isMember != 0
+                    ? eventAggregate.extensions.memberPrice
+                    : eventAggregate.extensions.nonMemberPrice));
       final double runPlusExtrasPrice =
           runOnlyPrice + (eventAggregate.event.eventPriceForExtras!);
 
@@ -1190,7 +1190,7 @@ class CheckInPackController extends GetxController
       }
 
       if (type != 'cancel') {
-        // setState(() {
+        // setStateIfMounted(() {
         //   _isLoading = true;
         // });
         await tableModel
@@ -1209,7 +1209,7 @@ class CheckInPackController extends GetxController
         await refreshPackListFromTables(false);
         await _refreshCounters(forceRefresh: true);
 
-        // setState(() {
+        // setStateIfMounted(() {
         //   _isLoading = false;
         // });
 
@@ -1240,7 +1240,7 @@ class CheckInPackController extends GetxController
         //             .showSnackBar(snackBar)
         //             .closed
         //             .then((SnackBarClosedReason reason) {
-        //               setState(() {
+        //               setStateIfMounted(() {
         //                 if ((scrollIndex ?? -1) >= 0) {
         //                   if (_scrollController.hasClients) {
         //                     _scrollController.animateTo(

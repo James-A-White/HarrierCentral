@@ -111,7 +111,9 @@ class RunAdminPage extends StatelessWidget {
             ),
             child: Obx(() {
               if (controller.isLoading.value) {
-                return const HcAppCircularProgressIndicator(key: Key('16093026'));
+                return const HcAppCircularProgressIndicator(
+                  key: Key('16093026'),
+                );
               }
               final aggregate = controller.eventAggregate.value;
               if (aggregate == null) return Container();
@@ -158,7 +160,8 @@ class RunAdminPage extends StatelessWidget {
                       false,
                       aggregate.extensions.isMapAndDistanceValid ?? false,
                       eventUrlWithKennelBackup:
-                          aggregate.event.eventUrl ?? aggregate.kennel.kennelEventsUrl,
+                          aggregate.event.eventUrl ??
+                          aggregate.kennel.kennelEventsUrl,
                     ),
                   ],
                 ),
@@ -263,10 +266,8 @@ class RunAdminPage extends StatelessWidget {
                 await Navigator.push<dynamic>(
                   context,
                   MaterialPageRoute<dynamic>(
-                    builder: (BuildContext context) => EditRunDetailsPage(
-                      false,
-                      aggregate,
-                    ),
+                    builder: (BuildContext context) =>
+                        EditRunDetailsPage(false, aggregate),
                   ),
                 );
               },

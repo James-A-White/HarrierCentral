@@ -211,7 +211,7 @@ class Utilities {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       // MapSnackbar(saveUserMapPreference, (bool x) {
-                      //   setState(() {
+                      //   setStateIfMounted(() {
                       //     saveUserMapPreference.value = x;
                       //   });
                       // }),
@@ -867,12 +867,8 @@ class Utilities {
       // --- Fallback to general internet check ---
       final fallbackChecker = InternetConnection.createInstance(
         customCheckOptions: [
-          InternetCheckOption(
-            uri: Uri.parse(CONNECTION_TEST_GOOGLE_URL),
-          ),
-          InternetCheckOption(
-            uri: Uri.parse(CONNECTION_TEST_MSFT_URL),
-          ),
+          InternetCheckOption(uri: Uri.parse(CONNECTION_TEST_GOOGLE_URL)),
+          InternetCheckOption(uri: Uri.parse(CONNECTION_TEST_MSFT_URL)),
         ],
       );
 
@@ -1113,6 +1109,47 @@ class Utilities {
     }
 
     return s;
+  }
+
+  // Returns a map-resolvable location string for use in calendar invites and
+  // similar contexts where the string must be parseable by a mapping service.
+  //
+  // Priority:
+  //   1. Structured address — only when specific enough (postcode present, or
+  //      street + city both present). Skips subRegion and omits street when
+  //      neither city nor postcode is available.
+  //   2. Coordinates — "lat,lon" decimal format, respecting useFbLatLon.
+  //   3. locationOneLineDesc — human-readable fallback (may not be map-resolvable).
+  //   4. null — nothing useful available; callers should treat as absent.
+  static String? buildMapLocation(EventModel evt) {
+    final street = (evt.locationStreet ?? '').trim();
+    final city = (evt.locationCity ?? '').trim();
+    final region = (evt.locationRegion ?? '').trim();
+    final postCode = (evt.locationPostCode ?? '').trim();
+    final country = (evt.locationCountry ?? '').trim();
+
+    if (postCode.isNotEmpty || (street.isNotEmpty && city.isNotEmpty)) {
+      final parts = <String>[];
+      if (street.isNotEmpty && (city.isNotEmpty || postCode.isNotEmpty)) {
+        parts.add(street);
+      }
+      if (city.isNotEmpty) parts.add(city);
+      if (region.isNotEmpty) parts.add(region);
+      if (postCode.isNotEmpty) parts.add(postCode);
+      if (country.isNotEmpty) parts.add(country);
+      if (parts.isNotEmpty) return parts.join(', ');
+    }
+
+    double? lat = evt.hcLatitude;
+    double? lon = evt.hcLongitude;
+    if (evt.useFbLatLon != 0) {
+      lat = evt.fbLatitude;
+      lon = evt.fbLongitude;
+    }
+    if (lat != null && lon != null) return '$lat,$lon';
+
+    final oneLineDesc = (evt.locationOneLineDesc ?? '').trim();
+    return oneLineDesc.isNotEmpty ? oneLineDesc : null;
   }
 
   static String getSqfliteTimeOffset({int offsetInMinutes = 0}) {

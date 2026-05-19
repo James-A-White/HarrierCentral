@@ -5,14 +5,17 @@ class KennelsListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final KennelsListPageController controller = Get.put(KennelsListPageController());
+    final KennelsListPageController controller = Get.put(
+      KennelsListPageController(),
+    );
 
     return AppScaffold(
       extendBody: true,
       floatingActionButton: _buildFab(controller),
       body: Obx(() {
         final bool showSpinner =
-            controller.filteredList.isEmpty && tableModel.globalKennelMainPageList == null;
+            controller.filteredList.isEmpty &&
+            tableModel.globalKennelMainPageList == null;
 
         if (showSpinner) {
           return const Center(
@@ -20,7 +23,8 @@ class KennelsListPage extends StatelessWidget {
           );
         }
 
-        final bool isEmpty = controller.filteredList.isEmpty &&
+        final bool isEmpty =
+            controller.filteredList.isEmpty &&
             tableModel.globalKennelMainPageList != null &&
             tableModel.globalKennelMainPageList!.isEmpty;
 
@@ -30,15 +34,16 @@ class KennelsListPage extends StatelessWidget {
               ? Center(child: Text('Loading Kennels.', style: ts_headingLarge))
               : NestedScrollView(
                   controller: controller.scrollController,
-                  headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-                    return <Widget>[
-                      SliverList(
-                        delegate: SliverChildListDelegate(<Widget>[
-                          _buildSearchBar(context, controller),
-                        ]),
-                      ),
-                    ];
-                  },
+                  headerSliverBuilder:
+                      (BuildContext context, bool innerBoxIsScrolled) {
+                        return <Widget>[
+                          SliverList(
+                            delegate: SliverChildListDelegate(<Widget>[
+                              _buildSearchBar(context, controller),
+                            ]),
+                          ),
+                        ];
+                      },
                   body: RefreshIndicator(
                     onRefresh: controller.handleRefresh,
                     child: ListView.builder(
@@ -48,14 +53,26 @@ class KennelsListPage extends StatelessWidget {
                           return Container(height: 100.0);
                         }
                         return Padding(
-                          padding: const EdgeInsets.only(left: 10.0, right: 10.0),
+                          padding: const EdgeInsets.only(
+                            left: 10.0,
+                            right: 10.0,
+                          ),
                           child: KennelListItem(
                             kennelItem: controller.filteredList[index],
-                            kennelSelected: () => controller.navigateToKennelAdmin(context, index),
-                            onFollowSelected: (int followValue, int isHomeKennel) =>
-                                controller.updateFollowStatus(index, followValue, isHomeKennel),
+                            kennelSelected: () => controller
+                                .navigateToKennelAdmin(context, index),
+                            onFollowSelected:
+                                (int followValue, int isHomeKennel) =>
+                                    controller.updateFollowStatus(
+                                      index,
+                                      followValue,
+                                      isHomeKennel,
+                                    ),
                             onNotificationSelected: (NotificationState state) =>
-                                controller.updateNotificationStatus(index, state),
+                                controller.updateNotificationStatus(
+                                  index,
+                                  state,
+                                ),
                             onEmailSelected: (dynamic retVal) =>
                                 controller.updateEmailStatus(index, retVal),
                           ),
@@ -132,7 +149,8 @@ class KennelsListPage extends StatelessWidget {
           label: 'Sort by country/region name',
           labelStyle: const TextStyle(fontSize: 18.0),
           onTap: () async {
-            controller.sortByType.value = EnumSortKennelListBy.countryRegionName;
+            controller.sortByType.value =
+                EnumSortKennelListBy.countryRegionName;
             await controller.refreshFromTable(true);
           },
         ),
@@ -140,7 +158,10 @@ class KennelsListPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSearchBar(BuildContext context, KennelsListPageController controller) {
+  Widget _buildSearchBar(
+    BuildContext context,
+    KennelsListPageController controller,
+  ) {
     return Container(
       padding: const EdgeInsets.only(left: 10),
       color: Colors.white,

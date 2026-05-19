@@ -15,10 +15,7 @@ class RunAndKennelMapPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ctrl = Get.put(
-      RunAndKennelMapController(kennel: kennel),
-      tag: _tag,
-    );
+    final ctrl = Get.put(RunAndKennelMapController(kennel: kennel), tag: _tag);
 
     return AppScaffold(
       body: kennel == null
@@ -84,10 +81,7 @@ class _MapFab extends StatelessWidget {
             onTap: () => unawaited(controller.selectViewModePast()),
           ),
           SpeedDialChild(
-            child: const Icon(
-              MaterialCommunityIcons.run,
-              color: Colors.black,
-            ),
+            child: const Icon(MaterialCommunityIcons.run, color: Colors.black),
             backgroundColor: Colors.orange[400],
             label: 'Show my runs',
             labelStyle: const TextStyle(fontSize: 18.0),
@@ -259,12 +253,7 @@ class _RunLocationsBody extends StatelessWidget {
                       TileLayer(
                         urlTemplate:
                             'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-                        subdomains: const <String>[
-                          'mt0',
-                          'mt1',
-                          'mt2',
-                          'mt3',
-                        ],
+                        subdomains: const <String>['mt0', 'mt1', 'mt2', 'mt3'],
                       ),
                       MarkerLayer(
                         markers: <Marker>[
@@ -308,21 +297,20 @@ class _RunLocationsBody extends StatelessWidget {
                             color: Colors.black12,
                             borderStrokeWidth: 3,
                           ),
-                          builder:
-                              (BuildContext context, List<Marker> markers) {
-                                RunAndKennelMapController.heroCounter++;
-                                return FloatingActionButton(
-                                  backgroundColor: Colors.purple[600],
-                                  onPressed: null,
-                                  heroTag:
-                                      'btn_${RunAndKennelMapController.heroCounter}',
-                                  child: AutoSizeText(
-                                    markers.length.toString(),
-                                    maxLines: 1,
-                                    style: ts_button,
-                                  ),
-                                );
-                              },
+                          builder: (BuildContext context, List<Marker> markers) {
+                            RunAndKennelMapController.heroCounter++;
+                            return FloatingActionButton(
+                              backgroundColor: Colors.purple[600],
+                              onPressed: null,
+                              heroTag:
+                                  'btn_${RunAndKennelMapController.heroCounter}',
+                              child: AutoSizeText(
+                                markers.length.toString(),
+                                maxLines: 1,
+                                style: ts_button,
+                              ),
+                            );
+                          },
                         ),
                       ),
                       MarkerClusterLayerWidget(
@@ -335,21 +323,20 @@ class _RunLocationsBody extends StatelessWidget {
                             color: Colors.black12,
                             borderStrokeWidth: 3,
                           ),
-                          builder:
-                              (BuildContext context, List<Marker> markers) {
-                                RunAndKennelMapController.heroCounter++;
-                                return FloatingActionButton(
-                                  backgroundColor: hc_blue,
-                                  onPressed: null,
-                                  heroTag:
-                                      'btn_${RunAndKennelMapController.heroCounter}',
-                                  child: AutoSizeText(
-                                    markers.length.toString(),
-                                    maxLines: 1,
-                                    style: ts_button,
-                                  ),
-                                );
-                              },
+                          builder: (BuildContext context, List<Marker> markers) {
+                            RunAndKennelMapController.heroCounter++;
+                            return FloatingActionButton(
+                              backgroundColor: hc_blue,
+                              onPressed: null,
+                              heroTag:
+                                  'btn_${RunAndKennelMapController.heroCounter}',
+                              child: AutoSizeText(
+                                markers.length.toString(),
+                                maxLines: 1,
+                                style: ts_button,
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ],
@@ -402,10 +389,7 @@ class _RunLocationsBody extends StatelessWidget {
                     width: 135,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.only(
-                          top: 0.0,
-                          bottom: 0.0,
-                        ),
+                        padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
                       ),
                       onPressed: () async {
                         final runsListController =

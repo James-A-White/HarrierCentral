@@ -17,7 +17,7 @@
 //     _products = <QProduct>[];
 //     try {
 //       final QOfferings offerings = await Qonversion.offerings();
-//       setState(() {
+//       setStateIfMounted(() {
 //         _products = offerings.main.products;
 //       });
 //     } catch (e) {

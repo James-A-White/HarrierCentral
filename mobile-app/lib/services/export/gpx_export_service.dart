@@ -89,7 +89,9 @@ class GpxExportService {
 
     await SharePlus.instance.share(
       ShareParams(
-        files: [XFile(file.path, mimeType: 'application/gpx+xml', name: fileName)],
+        files: [
+          XFile(file.path, mimeType: 'application/gpx+xml', name: fileName),
+        ],
         text: 'GPX export for $trackName',
         subject: 'Run GPX export',
       ),

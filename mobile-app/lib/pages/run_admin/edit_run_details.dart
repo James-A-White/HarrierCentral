@@ -3,11 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 
 class EditRunDetailsPage extends StatefulWidget {
-  const EditRunDetailsPage(
-    this.isNewRun,
-    this.eventAggregate, {
-    super.key,
-  });
+  const EditRunDetailsPage(this.isNewRun, this.eventAggregate, {super.key});
 
   final bool isNewRun;
   final RunAdminAggregate eventAggregate;
@@ -320,7 +316,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                   // reviewed for 2.0+
                   child: TabBar(
                     onTap: (void _) {
-                      setState(() {});
+                      setStateIfMounted(() {});
                     },
                     labelStyle: ts_tabSelected,
                     unselectedLabelStyle: ts_tabUnselected,
@@ -386,7 +382,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
     _tabController = TabController(vsync: this, length: _tabs.length);
     _tabController.addListener(() {
       FocusScope.of(context).unfocus();
-      setState(() {
+      setStateIfMounted(() {
         _currentTab = EditingTabEnum.fromInt(_tabController.index)!;
       });
     });
@@ -402,39 +398,39 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
     _setTextFields();
 
     _focusNodeEventName.addListener(() {
-      setState(() {});
+      setStateIfMounted(() {});
     });
 
     _focusNodeEventDescription.addListener(() {
-      setState(() {});
+      setStateIfMounted(() {});
     });
 
     _focusNodeDatetime.addListener(() {
-      setState(() {});
+      setStateIfMounted(() {});
     });
 
     _focusNodeLocationOneLineDesc.addListener(() {
-      setState(() {});
+      setStateIfMounted(() {});
     });
 
     _focusNodeAbsoluteEventNumber.addListener(() {
-      setState(() {});
+      setStateIfMounted(() {});
     });
 
     _focusNodeEventPriceForMembers.addListener(() {
-      setState(() {});
+      setStateIfMounted(() {});
     });
 
     _focusNodeEventPriceForNonMembers.addListener(() {
-      setState(() {});
+      setStateIfMounted(() {});
     });
 
     _eventPriceForExtrasController.addListener(() {
-      setState(() {});
+      setStateIfMounted(() {});
     });
 
     _extrasDescriptionController.addListener(() {
-      setState(() {});
+      setStateIfMounted(() {});
     });
   }
 
@@ -450,7 +446,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
   }
 
   Future<void> _useExternalSourceDetails() async {
-    setState(() {
+    setStateIfMounted(() {
       _isUpdating = true;
     });
     final EventsService nSvc = EventsService();
@@ -461,7 +457,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
     );
 
     await _refreshAfterSave(eventId);
-    setState(() {
+    setStateIfMounted(() {
       _isUpdating = false;
       _setTextFields();
       final SnackBar snackBar = SnackBar(
@@ -499,7 +495,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
         _detailsFormKey.currentState!.save();
 
         FocusScope.of(context).unfocus();
-        setState(() {
+        setStateIfMounted(() {
           _isUpdating = true;
         });
 
@@ -534,7 +530,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
         );
 
         await _refreshAfterSave(eventId);
-        setState(() {
+        setStateIfMounted(() {
           _isUpdating = false;
         });
       }
@@ -553,7 +549,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
           _addressFormKey.currentState!.save();
 
           FocusScope.of(context).unfocus();
-          setState(() {
+          setStateIfMounted(() {
             _isUpdating = true;
           });
 
@@ -570,7 +566,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
           );
 
           await _refreshAfterSave(eventId);
-          setState(() {
+          setStateIfMounted(() {
             _isUpdating = false;
             // final SnackBar snackBar = SnackBar(
             //   duration: const Duration(seconds: 3),
@@ -594,7 +590,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
           _otherDetailsFormKey.currentState!.save();
 
           FocusScope.of(context).unfocus();
-          setState(() {
+          setStateIfMounted(() {
             _isUpdating = true;
           });
           final EventsService nSvc = EventsService();
@@ -637,7 +633,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
           );
 
           await _refreshAfterSave(eventId);
-          setState(() {
+          setStateIfMounted(() {
             _isUpdating = false;
             final SnackBar snackBar = SnackBar(
               duration: const Duration(seconds: 3),
@@ -809,7 +805,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                 await Future<void>.delayed(
                                   const Duration(milliseconds: 500),
                                 );
-                                setState(() {
+                                setStateIfMounted(() {
                                   _isUpdating = false;
                                 });
                               }
@@ -1065,7 +1061,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                             _eventDatetimeController.text = formatted;
 
                             // Optionally trigger rebuild or setState
-                            setState(() {});
+                            setStateIfMounted(() {});
                           }
                         },
                         decoration: InputDecoration(
@@ -1085,15 +1081,15 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       // DateTimePicker(
                       //   onFieldSubmitted: (value) {
                       //     _eventDatetimeController.text = value;
-                      //     setState(() {});
+                      //     setStateIfMounted(() {});
                       //   },
                       //   onChanged: (value) {
                       //     _eventDatetimeController.text = value;
-                      //     setState(() {});
+                      //     setStateIfMounted(() {});
                       //   },
                       //   onSaved: (newValue) {
                       //     _eventDatetimeController.text = newValue ?? '';
-                      //     setState(() {});
+                      //     setStateIfMounted(() {});
                       //   },
                       //   decoration: InputDecoration(
                       //     labelText: 'Date / Time',
@@ -1189,7 +1185,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                 await Future<void>.delayed(
                                   const Duration(milliseconds: 500),
                                 );
-                                setState(() {
+                                setStateIfMounted(() {
                                   _isUpdating = false;
                                 });
                               }
@@ -1204,7 +1200,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                         ),
                         onPressed: () async {
                           await _useExternalSourceDetails();
-                          setState(() {});
+                          setStateIfMounted(() {});
                         },
                       ),
                     ],
@@ -1256,7 +1252,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                   onPressed: () async {
                     if ((_eventAggregate.event.eventId.isNotEmpty) &&
                         (_eventAggregate.event.eventId != GUID_EMPTY)) {
-                      setState(() {
+                      setStateIfMounted(() {
                         _isUpdating = true;
                       });
                       final String fileName = await _upload(
@@ -1275,7 +1271,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       await _refreshAfterSave(eventId);
 
                       if (widget.isNewRun) {
-                        setState(() {
+                        setStateIfMounted(() {
                           _isUpdating = false;
                         });
                         await Future<void>.delayed(
@@ -1283,7 +1279,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                         );
                         _tabController.animateTo(_currentTab.next);
                       } else {
-                        setState(() {
+                        setStateIfMounted(() {
                           _isUpdating = false;
                         });
 
@@ -1338,7 +1334,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       style: ts_button,
                     ),
                     onPressed: () async {
-                      setState(() {
+                      setStateIfMounted(() {
                         _isUpdating = true;
                       });
                       final EventsService nSvc = EventsService();
@@ -1349,7 +1345,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       );
 
                       await _refreshAfterSave(eventId);
-                      setState(() {
+                      setStateIfMounted(() {
                         _isUpdating = false;
                         final SnackBar snackBar = SnackBar(
                           duration: const Duration(seconds: 3),
@@ -1378,7 +1374,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                   ),
                   child: Text('Use original image', style: ts_button),
                   onPressed: () {
-                    setState(() {
+                    setStateIfMounted(() {
                       _imageFromGallery = Future<File?>.value(null);
                     });
                   },
@@ -1461,7 +1457,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                           style: ts_button,
                                         ),
                                         onPressed: () async {
-                                          setState(() {
+                                          setStateIfMounted(() {
                                             _isUpdating = true;
                                           });
                                           final EventsService nSvc =
@@ -1475,7 +1471,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                               );
 
                                           await _refreshAfterSave(eventId);
-                                          setState(() {
+                                          setStateIfMounted(() {
                                             _isUpdating = false;
                                             final SnackBar snackBar = SnackBar(
                                               duration: const Duration(
@@ -1535,7 +1531,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       ElevatedButton(
                         child: Text('Skip', style: ts_button),
                         onPressed: () {
-                          setState(() {
+                          setStateIfMounted(() {
                             _tabController.animateTo(_currentTab.next);
                           });
                         },
@@ -1588,7 +1584,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
       final XFile? image = await ImagePicker().pickImage(source: source);
 
       if (image == null) {
-        // setState(() {
+        // setStateIfMounted(() {
         //   _selectedRadioValue = _previouslySelectedRadioValue;
         //   _imageTypeSelection = _previousImageTypeSelection;
         // });
@@ -1604,7 +1600,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
           compressQuality: 50,
         );
 
-        setState(() {
+        setStateIfMounted(() {
           if (croppedFile != null) {
             _imageFromGallery = Future<File>.value(File(croppedFile.path));
           }
@@ -1651,7 +1647,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                   (_mapCenter.longitude == CLEAR_LATLONG)) ...<Widget>[
                 GestureDetector(
                   onTapDown: (dynamic tapDownDetails) {
-                    setState(() {
+                    setStateIfMounted(() {
                       _mapCenter = latlng.LatLng(
                         _eventAggregate.extensions.kenlLat,
                         _eventAggregate.extensions.kenlLon,
@@ -1710,7 +1706,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                 top: 10.0,
                 child: GestureDetector(
                   onTap: () {
-                    setState(() {
+                    setStateIfMounted(() {
                       _mapCenter = const latlng.LatLng(
                         CLEAR_LATLONG,
                         CLEAR_LATLONG,
@@ -1734,7 +1730,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                   top: 10.0,
                   child: GestureDetector(
                     onTap: () {
-                      setState(() {
+                      setStateIfMounted(() {
                         _mapCenter = latlng.LatLng(
                           deviceInfo.deviceLat!,
                           deviceInfo.deviceLon!,
@@ -1759,7 +1755,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                   top: 10.0,
                   child: GestureDetector(
                     onTap: () {
-                      setState(() {
+                      setStateIfMounted(() {
                         _mapCenter = latlng.LatLng(
                           _eventAggregate.extensions.latitude!,
                           _eventAggregate.extensions.longitude!,
@@ -1781,7 +1777,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                 top: 10.0,
                 child: GestureDetector(
                   onTap: () {
-                    setState(() {
+                    setStateIfMounted(() {
                       _trueNorthLock = !_trueNorthLock;
                     });
                   },
@@ -1815,7 +1811,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                             ElevatedButton(
                               child: Text('Skip', style: ts_button),
                               onPressed: () {
-                                setState(() {
+                                setStateIfMounted(() {
                                   _tabController.animateTo(_currentTab.next);
                                 });
                               },
@@ -1844,7 +1840,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                   EditingTabEnum.details.index,
                                 );
                               } else {
-                                setState(() {
+                                setStateIfMounted(() {
                                   _isUpdating = true;
                                 });
                                 final EventsService nSvc = EventsService();
@@ -1869,7 +1865,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                 await _refreshAfterSave(eventId);
 
                                 if (widget.isNewRun) {
-                                  setState(() {
+                                  setStateIfMounted(() {
                                     _isUpdating = false;
                                   });
                                   await Future<void>.delayed(
@@ -1896,7 +1892,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                 await Future<void>.delayed(
                                   const Duration(milliseconds: 500),
                                 );
-                                setState(() {
+                                setStateIfMounted(() {
                                   _isUpdating = false;
                                 });
 
@@ -1917,7 +1913,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                   //overflow: TextOverflow.ellipsis,
                                 ),
                                 onPressed: () async {
-                                  setState(() {
+                                  setStateIfMounted(() {
                                     _isUpdating = true;
                                   });
                                   final EventsService nSvc = EventsService();
@@ -1928,7 +1924,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                       );
 
                                   await _refreshAfterSave(eventId);
-                                  setState(() {
+                                  setStateIfMounted(() {
                                     if ((_eventAggregate.extensions.latitude ==
                                             null) ||
                                         (_eventAggregate.extensions.longitude ==
@@ -2436,7 +2432,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                       child: RadioGroup(
                         groupValue: _eventGeographicScope,
                         onChanged: (int? value) {
-                          setState(() {
+                          setStateIfMounted(() {
                             _eventGeographicScope = value ?? 0;
                           });
                         },
@@ -2529,7 +2525,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                       style: ts_button,
                                     ),
                                     onPressed: () async {
-                                      setState(() {
+                                      setStateIfMounted(() {
                                         _isUpdating = true;
                                       });
                                       await _updateRunDetails(
@@ -2557,7 +2553,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                           navigatorKey.currentContext!,
                                         ).showSnackBar(snackBar);
                                       }
-                                      setState(() {
+                                      setStateIfMounted(() {
                                         _isUpdating = false;
                                       });
                                     },
@@ -2570,7 +2566,7 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                           //     child: ElevatedButton(
                           //       child: Text('Use Facebook', style: buttonLabelStyleMedium),
                           //       onPressed: () {
-                          //         setState(() {
+                          //         setStateIfMounted(() {
                           //           _isUpdating = true;
                           //           _useFacebookDetails();
                           //         });

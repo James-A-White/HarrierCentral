@@ -237,7 +237,7 @@ class SupportPageState extends State<SupportPage> {
                             //                     //print('Master data synchronized $resultStr');
 
                             //                     if (_resetCodeTextController.text.length == 6) {
-                            //                       setState(() {
+                            //                       setStateIfMounted(() {
                             //                         isLoading = true;
                             //                       });
 
@@ -246,7 +246,7 @@ class SupportPageState extends State<SupportPage> {
                             //                       if (!mounted) return;
                             //                       final Map<String, String> result = await srv.authorizeDevice(navigatorKey.currentContext!, QR_PREFIX_USER_RESET_CODE + _resetCodeTextController.text.toUpperCase());
 
-                            //                       setState(() {
+                            //                       setStateIfMounted(() {
                             //                         isLoading = false;
                             //                       });
 
@@ -287,7 +287,7 @@ class SupportPageState extends State<SupportPage> {
                             //                     // print('Master data synchronized $resultStr');
 
                             //                     if (_resetCodeTextController.text.length == 6) {
-                            //                       setState(() {
+                            //                       setStateIfMounted(() {
                             //                         isLoading = true;
                             //                       });
 
@@ -296,7 +296,7 @@ class SupportPageState extends State<SupportPage> {
                             //                       if (!mounted) return;
                             //                       final Map<String, String> result = await srv.authorizeDevice(navigatorKey.currentContext!, QR_PREFIX_USER_RESET_CODE + _resetCodeTextController.text.toUpperCase());
 
-                            //                       setState(() {
+                            //                       setStateIfMounted(() {
                             //                         isLoading = false;
                             //                       });
 
@@ -333,7 +333,7 @@ class SupportPageState extends State<SupportPage> {
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSync),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
-            setState(() {});
+            setStateIfMounted(() {});
           },
         ),
       ],

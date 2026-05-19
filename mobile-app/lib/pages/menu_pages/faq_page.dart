@@ -41,7 +41,7 @@ class FaqPageState extends State<FaqPage> {
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSync),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
-            setState(() {});
+            setStateIfMounted(() {});
           },
         ),
       ],

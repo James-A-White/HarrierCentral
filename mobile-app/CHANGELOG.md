@@ -1,5 +1,22 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.4.3+1109 (2026-05-19)
+
+### Code quality
+
+- **`setStateIfMounted` utility**: Added `safe_set_state.dart` — a `State<T>`
+  extension that wraps `setState` with a mounted guard. Exported globally via
+  `imports.dart`.
+- **Codebase-wide `setState` → `setStateIfMounted` migration**: Replaced all
+  bare `setState` calls across ~80 files (pages, widgets, controllers) with
+  the guarded variant, eliminating a class of "setState called after dispose"
+  crashes that can surface when async callbacks complete after a widget unmounts.
+- **`buildMapLocation()` utility**: Added to `Utilities` in
+  `utilities_null_safe.dart` — resolves an `EventModel` to a map-resolvable
+  location string (structured address → coordinates → one-line description).
+- **`dart format`**: Applied formatter across the codebase to normalise line
+  lengths and indentation.
+
 ## 2.4.2+1108 (2026-05-16)
 
 ### Enhancements

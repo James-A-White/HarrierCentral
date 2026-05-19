@@ -47,12 +47,12 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
       // This means the user tapped a new tab, but the animation hasn't finished yet.
       //print('Tab is changing to index: ${_tabController.index}');
       await _refreshRunHistoryFromTable(true);
-      //setState(() {});
+      //setStateIfMounted(() {});
     } else if (_tabController.index != _tabController.previousIndex) {
       // This is triggered after the tab has finished changing.
       //print('Tab changed to index: ${_tabController.index}');
       await _refreshRunHistoryFromTable(true);
-      //setState(() {});
+      //setStateIfMounted(() {});
     }
   }
 
@@ -193,7 +193,7 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
     }
 
     if (forceRefresh && mounted) {
-      setState(() {
+      setStateIfMounted(() {
         _isLoading = false;
       });
     }
@@ -328,7 +328,7 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSync),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
-            setState(() {});
+            setStateIfMounted(() {});
           },
         ),
       ],
@@ -342,7 +342,7 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
   }
 
   Future<void> _handleRefresh() async {
-    setState(() {
+    setStateIfMounted(() {
       _isLoading = true;
     });
 
@@ -360,7 +360,7 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
     //print('User data synchronized $resultStr');
     await _refreshRunHistoryFromTable(true);
     //_kennelInfo = await widget.refreshKennelInfo();
-    setState(() {
+    setStateIfMounted(() {
       _isLoading = false;
     });
   }
@@ -504,7 +504,7 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
                   // reviewed for 2.0+
                   child: TabBar(
                     onTap: (void _) {
-                      setState(() {});
+                      setStateIfMounted(() {});
                     },
                     labelStyle: ts_tabSelected,
                     unselectedLabelStyle: ts_tabUnselected,
@@ -632,7 +632,7 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
 
                               // await historyListPageKey.currentState.refreshRunHistoryFromTable(true);
 
-                              setState(() {});
+                              setStateIfMounted(() {});
                             }
                             return Future<bool>.value(false);
                           },
@@ -822,7 +822,7 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
                                     EnumAttendenceState attendenceState,
                                     EnumIsHare isHare,
                                   ) async {
-                                    setState(() {
+                                    setStateIfMounted(() {
                                       _runCountsList[index] =
                                           _runCountsList[index].copyWith(
                                             isUpdating: true,
@@ -858,7 +858,7 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
                                       }
                                     }
 
-                                    setState(() {
+                                    setStateIfMounted(() {
                                       _runCountsList[index] =
                                           _runCountsList[index].copyWith(
                                             isUpdating: false,
@@ -905,7 +905,7 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
     );
 
     await _refreshRunHistoryFromTable(true);
-    setState(() {
+    setStateIfMounted(() {
       _isLoading = false;
     });
   }

@@ -428,7 +428,7 @@ class QrScannerTabState extends State<QrScannerTab>
               .pause()
               .then((_) {
                 if (!mounted) return;
-                setState(() {
+                setStateIfMounted(() {
                   _isScanning = false;
                   _onScreenMessage = 'Scanning paused';
                   _state = EQrScannerState.waitingForScan;
@@ -444,7 +444,7 @@ class QrScannerTabState extends State<QrScannerTab>
               .start()
               .then((_) {
                 if (!mounted) return;
-                setState(() {
+                setStateIfMounted(() {
                   _isScanning = true;
                   _onScreenMessage = 'Looking for QR Code';
                   _state = EQrScannerState.scanning;
@@ -464,7 +464,7 @@ class QrScannerTabState extends State<QrScannerTab>
       if (_isScanning && ((doScanning == null) || !doScanning)) {
         await _scannerController!.pause();
         _isScanning = false;
-        setState(() {
+        setStateIfMounted(() {
           _onScreenMessage = 'Scanning paused';
         });
         _state = EQrScannerState.waitingForScan;
@@ -472,7 +472,7 @@ class QrScannerTabState extends State<QrScannerTab>
         if ((doScanning == null) || doScanning) {
           await _scannerController!.start();
           _isScanning = true;
-          setState(() {
+          setStateIfMounted(() {
             _onScreenMessage = 'Looking for QR Code';
           });
           _state = EQrScannerState.scanning;
@@ -495,7 +495,7 @@ class QrScannerTabState extends State<QrScannerTab>
     await player.play();
     await player.dispose();
 
-    setState(() {
+    setStateIfMounted(() {
       _onScreenMessage = 'Processing QR Scan';
       _state = EQrScannerState.isProcessing;
     });
@@ -513,7 +513,7 @@ class QrScannerTabState extends State<QrScannerTab>
     );
 
     if (result['validScan'] == 'false') {
-      setState(() {
+      setStateIfMounted(() {
         _state = EQrScannerState.qrNotRecognized;
         _onScreenMessage = result['validHcQr'] == 'true'
             ? 'This QR code is not valid here'
@@ -540,7 +540,7 @@ class QrScannerTabState extends State<QrScannerTab>
               isHare: isHareNo.value,
             );
 
-        setState(() {
+        setStateIfMounted(() {
           _state = EQrScannerState.dataRecorded;
           if (adHocData.isNotEmpty) {
             _onScreenMessage = adHocData[0]['userMessage'];
@@ -564,7 +564,7 @@ class QrScannerTabState extends State<QrScannerTab>
             queryResult.replaceAll(',', '.'),
           );
           if (hoursUntilNextEvent != null) {
-            setState(() {
+            setStateIfMounted(() {
               if (hoursUntilNextEvent > 24) {
                 _onScreenMessage =
                     'The next event does not open for check-in for another ${NumberFormat('###').format(hoursUntilNextEvent / 24)} days';
@@ -584,7 +584,7 @@ class QrScannerTabState extends State<QrScannerTab>
           }
         } else {
           if (queryResult == EMPTY_RESULT) {
-            setState(() {
+            setStateIfMounted(() {
               _onScreenMessage =
                   'There is no event for this Kennel at this time';
             });
@@ -601,7 +601,7 @@ class QrScannerTabState extends State<QrScannerTab>
                   isHare: isHareNo.value,
                 );
 
-            setState(() {
+            setStateIfMounted(() {
               if (adHocData.isNotEmpty) {
                 _onScreenMessage = adHocData[0]['userMessage'];
               } else {
@@ -616,7 +616,7 @@ class QrScannerTabState extends State<QrScannerTab>
           scanData,
         );
 
-        setState(() {
+        setStateIfMounted(() {
           if ((returnValue != null) &&
               (returnValue.result != null) &&
               (returnValue.result!.isNotEmpty)) {
@@ -632,7 +632,7 @@ class QrScannerTabState extends State<QrScannerTab>
     // final Future<ProcessQrScanModel> apiCall =
     //     srv.processQrScan('', scanResult, 'UserScan', '', '', '');
     // apiCall.then((ProcessQrScanModel result) {
-    //   setState(() => barcode = result.resultStr1);
+    //   setStateIfMounted(() => barcode = result.resultStr1);
     // });
 
     // return Future<void>(() {});(() {});
@@ -664,7 +664,7 @@ class QrScannerTabState extends State<QrScannerTab>
   //   // If the controller is updated then update the UI.
   //   controller.addListener(() {
   //     if (mounted) {
-  //       setState(() {});
+  //       setStateIfMounted(() {});
   //     }
   //     if (controller.value.hasError) {
   //       showInSnackBar('Camera error ${controller.value.errorDescription}');
@@ -679,7 +679,7 @@ class QrScannerTabState extends State<QrScannerTab>
   //   }
 
   //   if (mounted) {
-  //     setState(() {});
+  //     setStateIfMounted(() {});
   //     controller.startScanning();
   //   }
 
@@ -696,7 +696,7 @@ class QrScannerTabState extends State<QrScannerTab>
   // void _onQRViewCreated(QRViewController controller) {
   //   _scannerController = controller;
   //   if (_scannerController != null) {
-  //     setState(() {
+  //     setStateIfMounted(() {
   //       _isScanning = true;
   //       _onScreenMessage = 'Looking for QR Code';
   //       _state = EQrScannerState.scanning;
@@ -704,13 +704,13 @@ class QrScannerTabState extends State<QrScannerTab>
 
   //     _scannerController!.scannedDataStream.listen((Barcode scanData) async {
   //       await _scannerController!.pauseCamera();
-  //       setState(() {
+  //       setStateIfMounted(() {
   //         _isScanning = false;
   //         _result = scanData.code;
   //       });
   //       if (_result != null) {
   //         await _onCodeRead(_result!);
-  //         setState(() {});
+  //         setStateIfMounted(() {});
   //       }
   //     });
   //   }

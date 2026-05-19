@@ -52,7 +52,7 @@ class PaymentReportState extends State<PaymentReportPage> {
   }
 
   Future<void> _refreshSqlTablesFromBackend() async {
-    setState(() {
+    setStateIfMounted(() {
       _isLoading = true;
     });
 
@@ -69,7 +69,7 @@ class PaymentReportState extends State<PaymentReportPage> {
     await _refreshListsFromTable();
     await refreshTotals();
     _isLoading = false;
-    setState(() {});
+    setStateIfMounted(() {});
   }
 
   Future<void> _refreshListsFromTable() async {
@@ -147,7 +147,7 @@ SELECT
               a.extensions.paidByName.compareTo(b.extensions.paidByName),
         );
         _applyFilter();
-        setState(() {});
+        setStateIfMounted(() {});
       }
     }
   }
@@ -209,7 +209,7 @@ SELECT
           ''';
 
       final List<Map<String, dynamic>> results = await database.rawQuery(sql);
-      setState(() {
+      setStateIfMounted(() {
         _paymentTotals = results;
         _totalCollected = 0;
         _extrasPaid = 0;
@@ -627,7 +627,7 @@ SELECT
                                         confirmDismiss:
                                             (DismissDirection direction) async {
                                               //print(direction.toString() + ' ' + index.toString() + ' ' + widget.eventAggregate.extensions.nonMemberPrice.toString());
-                                              setState(() {
+                                              setStateIfMounted(() {
                                                 _filteredList[index].isLoading =
                                                     true;
                                               });
@@ -640,7 +640,7 @@ SELECT
                                                 );
                                                 await _refreshListsFromTable();
                                                 await refreshTotals();
-                                                setState(() {});
+                                                setStateIfMounted(() {});
                                               } else {
                                                 final double paymentAmount =
                                                     (_filteredList[index]
@@ -919,7 +919,7 @@ SELECT
       );
       await _refreshListsFromTable();
       await refreshTotals();
-      setState(() {
+      setStateIfMounted(() {
         BankTransferQr.showBankTransferSnackbar(
           widget.eventAggregate,
           results,
@@ -941,7 +941,7 @@ SELECT
       );
       await _refreshListsFromTable();
       await refreshTotals();
-      setState(() {
+      setStateIfMounted(() {
         BankTransferQr.showBankTransferSnackbar(
           widget.eventAggregate,
           results,
@@ -967,7 +967,7 @@ SELECT
     }
 
     _applyFilter();
-    setState(() {});
+    setStateIfMounted(() {});
   }
 
   Container _listItem(PaymentAggregate item, BuildContext topContext) {
@@ -1017,7 +1017,7 @@ SELECT
 
             if (ppResult != null) {
               if (ppResult.transactionType != -1) {
-                setState(() {
+                setStateIfMounted(() {
                   item.isLoading = true;
                 });
 
@@ -1033,7 +1033,7 @@ SELECT
 
                 // payForEvent(item, paymentValue.transactionType, paymentValue.transactionValue).then((List<dynamic> results) {
                 //   _refreshListsFromTable().then((void _) {
-                //     setState(() {
+                //     setStateIfMounted(() {
                 //       refreshTotals();
                 //       BankTransferQr.showBankTransferSnackbar(widget.eventAggregate, results, paymentValue.transactionType, topContext, item.extensions.paidByName, item.extensions.isMember, paymentValue.transactionValue);
                 //     });
@@ -1046,21 +1046,21 @@ SELECT
                 await _displayPaymentDetails(item, context) ?? 'cancel';
 
             if (action == 'cancel') {
-              setState(() {
+              setStateIfMounted(() {
                 item.isLoading = true;
               });
               await _payForEvent(item, paymentNotPaid.value, 0);
               await _refreshListsFromTable();
               await refreshTotals();
-              setState(() {});
+              setStateIfMounted(() {});
             } else if (action == 'confirm') {
-              setState(() {
+              setStateIfMounted(() {
                 item.isLoading = true;
               });
               await _payForEvent(item, paymentConfirmBankTransfer.value, -1);
               await _refreshListsFromTable();
               await refreshTotals();
-              setState(() {});
+              setStateIfMounted(() {});
             }
           }
         },

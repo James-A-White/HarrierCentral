@@ -15,9 +15,7 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
   @override
   void initState() {
     super.initState();
-    controller = Get.put(
-      CheckInScannerController(widget.eventAggregate),
-    );
+    controller = Get.put(CheckInScannerController(widget.eventAggregate));
   }
 
   @override
@@ -42,8 +40,7 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
                 if (!mounted) return;
                 controller.isScanning.value = false;
                 controller.onScreenMessage.value = 'Scanning paused';
-                controller.scannerState.value =
-                    EQrScannerState.waitingForScan;
+                controller.scannerState.value = EQrScannerState.waitingForScan;
               })
               .catchError((Object e, StackTrace st) {}),
         );
@@ -110,9 +107,7 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
                                   WidgetStateProperty.resolveWith<Color?>((
                                     Set<WidgetState> states,
                                   ) {
-                                    if (states.contains(
-                                      WidgetState.disabled,
-                                    )) {
+                                    if (states.contains(WidgetState.disabled)) {
                                       return Colors.grey.shade700;
                                     }
                                     return null;
@@ -121,9 +116,7 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
                                   WidgetStateProperty.resolveWith<TextStyle?>((
                                     Set<WidgetState> states,
                                   ) {
-                                    if (states.contains(
-                                      WidgetState.disabled,
-                                    )) {
+                                    if (states.contains(WidgetState.disabled)) {
                                       return TextStyle(
                                         color: Colors.grey.shade200,
                                       );
@@ -156,14 +149,12 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
                               child: AspectRatio(
                                 aspectRatio: 1.0,
                                 child: MobileScanner(
-                                  controller:
-                                      controller.scannerController,
+                                  controller: controller.scannerController,
                                   onDetect: (BarcodeCapture result) {
                                     final String? rawValue =
                                         result.barcodes.first.rawValue;
                                     unawaited(
-                                      controller
-                                          .onCodeDetected(rawValue),
+                                      controller.onCodeDetected(rawValue),
                                     );
                                   },
                                 ),
@@ -171,33 +162,26 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
                             ),
                             if ((!controller.isScanning.value) &&
                                 (controller.scannerState.value ==
-                                    EQrScannerState
-                                        .waitingForScan)) ...<Widget>[
-                              Image.asset('images/other/qr_scanner.png'),
-                            ],
+                                    EQrScannerState.waitingForScan)) ...<
+                              Widget
+                            >[Image.asset('images/other/qr_scanner.png')],
                             if ((!controller.isScanning.value) &&
                                 (controller.scannerState.value ==
-                                    EQrScannerState
-                                        .isProcessing)) ...<Widget>[
+                                    EQrScannerState.isProcessing)) ...<Widget>[
                               Image.asset(
                                 'images/other/uploading_to_cloud.png',
                               ),
                             ],
                             if ((!controller.isScanning.value) &&
                                 (controller.scannerState.value ==
-                                    EQrScannerState
-                                        .dataRecorded)) ...<Widget>[
-                              Image.asset(
-                                'images/other/run_info_recorded.png',
-                              ),
+                                    EQrScannerState.dataRecorded)) ...<Widget>[
+                              Image.asset('images/other/run_info_recorded.png'),
                             ],
                             if ((!controller.isScanning.value) &&
                                 (controller.scannerState.value ==
                                     EQrScannerState
                                         .qrNotRecognized)) ...<Widget>[
-                              Image.asset(
-                                'images/other/qr_not_recognized.png',
-                              ),
+                              Image.asset('images/other/qr_not_recognized.png'),
                             ],
                           ],
                         ),
@@ -215,9 +199,7 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
                                   WidgetStateProperty.resolveWith<Color?>((
                                     Set<WidgetState> states,
                                   ) {
-                                    if (states.contains(
-                                      WidgetState.disabled,
-                                    )) {
+                                    if (states.contains(WidgetState.disabled)) {
                                       return Colors.grey.shade700;
                                     }
                                     return null;
@@ -226,9 +208,7 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
                                   WidgetStateProperty.resolveWith<TextStyle?>((
                                     Set<WidgetState> states,
                                   ) {
-                                    if (states.contains(
-                                      WidgetState.disabled,
-                                    )) {
+                                    if (states.contains(WidgetState.disabled)) {
                                       return TextStyle(
                                         color: Colors.grey.shade200,
                                       );

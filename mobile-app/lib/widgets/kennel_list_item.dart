@@ -13,7 +13,8 @@ class KennelListItem extends StatefulWidget {
 
   final KennelListAggregate kennelItem;
   final Function kennelSelected;
-  final Future<void> Function(int followValue, int isHomeKennel) onFollowSelected;
+  final Future<void> Function(int followValue, int isHomeKennel)
+  onFollowSelected;
   final Future<void> Function(NotificationState state) onNotificationSelected;
   final Future<void> Function(dynamic retVal) onEmailSelected;
 
@@ -28,16 +29,20 @@ class KennelListItemState extends State<KennelListItem> {
   void initState() {
     super.initState();
     _distancePreference =
-        (getIntPref(IntPrefsEnum.hasherPreferences) ?? 0) & hasherPref_distanceMeasuredIn;
+        (getIntPref(IntPrefsEnum.hasherPreferences) ?? 0) &
+        hasherPref_distanceMeasuredIn;
     if (_distancePreference == 0) {
-      _distancePreference = (widget.kennelItem.extensions.distanceUnitsPref ?? 0) + 2;
+      _distancePreference =
+          (widget.kennelItem.extensions.distanceUnitsPref ?? 0) + 2;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     String path = 'images/icons/bell_silver_strike_out_50px.png';
-    switch (NotificationState.fromInt(widget.kennelItem.hkm?.kennelNotificationPreference ?? 0)) {
+    switch (NotificationState.fromInt(
+      widget.kennelItem.hkm?.kennelNotificationPreference ?? 0,
+    )) {
       case NotificationState.auto:
         path = 'images/icons/bell_silver_50px.png';
         break;
@@ -82,14 +87,27 @@ class KennelListItemState extends State<KennelListItem> {
                     },
                     child: Column(
                       children: <Widget>[
-                        if (widget.kennelItem.extensions.followingRequested != -1)
+                        if (widget.kennelItem.extensions.followingRequested !=
+                            -1)
                           Image.asset(delayIconAsset, width: 24, height: 24)
                         else if (widget.kennelItem.hkm?.following == 1)
-                          Image.asset('images/icons/checkbox_yes.png', width: 24, height: 24)
+                          Image.asset(
+                            'images/icons/checkbox_yes.png',
+                            width: 24,
+                            height: 24,
+                          )
                         else if (widget.kennelItem.hkm?.following == 2)
-                          Image.asset('images/icons/checkbox_no.png', width: 24, height: 24)
+                          Image.asset(
+                            'images/icons/checkbox_no.png',
+                            width: 24,
+                            height: 24,
+                          )
                         else
-                          Image.asset('images/icons/checkbox_empty.png', width: 24, height: 24),
+                          Image.asset(
+                            'images/icons/checkbox_empty.png',
+                            width: 24,
+                            height: 24,
+                          ),
                       ],
                     ),
                   ),
@@ -100,7 +118,8 @@ class KennelListItemState extends State<KennelListItem> {
                   : Container(
                       alignment: Alignment.topLeft,
                       padding: const EdgeInsets.only(right: 5.0, bottom: 2.0),
-                      child: widget.kennelItem.extensions.followingRequested != -1
+                      child:
+                          widget.kennelItem.extensions.followingRequested != -1
                           ? Icon(delayIcon, size: 35, color: hc_blue)
                           : Icon(FontAwesome.home, size: 35, color: hc_red),
                     ),
@@ -111,7 +130,12 @@ class KennelListItemState extends State<KennelListItem> {
                   },
                   child: Container(
                     width: MediaQuery.sizeOf(context).width - 70,
-                    padding: const EdgeInsets.only(top: 7.0, left: 5.0, bottom: 2.0, right: 5.0),
+                    padding: const EdgeInsets.only(
+                      top: 7.0,
+                      left: 5.0,
+                      bottom: 2.0,
+                      right: 5.0,
+                    ),
                     child: AutoSizeText(
                       widget.kennelItem.kennel.kennelName,
                       style: ts_titleCondensedBlack,
@@ -135,10 +159,18 @@ class KennelListItemState extends State<KennelListItem> {
                           width: 24.0,
                           height: 24.0,
                           fit: BoxFit.fill,
-                          image: widget.kennelItem.hkm?.kennelEmailAlertPreference == 1
-                              ? const AssetImage('images/icons/envelope_gold_50px.png')
+                          image:
+                              widget
+                                      .kennelItem
+                                      .hkm
+                                      ?.kennelEmailAlertPreference ==
+                                  1
+                              ? const AssetImage(
+                                  'images/icons/envelope_gold_50px.png',
+                                )
                               : const AssetImage(
-                                  'images/icons/envelope_silver_strike_out_50px.png'),
+                                  'images/icons/envelope_silver_strike_out_50px.png',
+                                ),
                         ),
                 ),
               ),
@@ -148,9 +180,15 @@ class KennelListItemState extends State<KennelListItem> {
                   onTap: () async {
                     await _showNotificationPopup(context);
                   },
-                  child: widget.kennelItem.extensions.notificationsRequested != -1
+                  child:
+                      widget.kennelItem.extensions.notificationsRequested != -1
                       ? Icon(delayIcon, color: hc_blue, size: 24.0)
-                      : Image(width: 24.0, height: 24.0, fit: BoxFit.fill, image: AssetImage(path)),
+                      : Image(
+                          width: 24.0,
+                          height: 24.0,
+                          fit: BoxFit.fill,
+                          image: AssetImage(path),
+                        ),
                 ),
               ),
             ],
@@ -184,39 +222,49 @@ class KennelListItemState extends State<KennelListItem> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         const SizedBox(width: 10.0, height: 10.0),
-                        if (widget.kennelItem.extensions.location != null) ...<Widget>[
-                          Text(widget.kennelItem.extensions.location!, style: ts_regularMediumBlack),
+                        if (widget.kennelItem.extensions.location !=
+                            null) ...<Widget>[
+                          Text(
+                            widget.kennelItem.extensions.location!,
+                            style: ts_regularMediumBlack,
+                          ),
                         ],
                         if ((appModel.hasLocationPermissions) &&
-                            (widget.kennelItem.extensions.distToKennel != null)) ...<Widget>[
+                            (widget.kennelItem.extensions.distToKennel !=
+                                null)) ...<Widget>[
                           Text(
                             '${Utilities.getDistance(widget.kennelItem.extensions.distToKennel!, isMetric: _distancePreference == 2)} from here',
                             style: ts_regularMediumBlack,
                           ),
                         ],
                         if ((widget.kennelItem.hkm != null) &&
-                            (widget.kennelItem.hkm!.hcTotalRunCount != 0)) ...<Widget>[
+                            (widget.kennelItem.hkm!.hcTotalRunCount !=
+                                0)) ...<Widget>[
                           Text(
                             'Runs: ${widget.kennelItem.hkm!.historicalCountIsEstimate == 0 ? '' : '~'}${widget.kennelItem.hkm!.hcTotalRunCount + widget.kennelItem.hkm!.historicalTotalRunCount}, Times hared: ${widget.kennelItem.hkm!.hcHaringCount + widget.kennelItem.hkm!.historicalHaringCount}',
                             style: ts_titleMedium.copyWith(color: hc_blue),
                           ),
                         ],
-                        if (widget.kennelItem.hkm?.dateOfLastRun != null) ...<Widget>[
+                        if (widget.kennelItem.hkm?.dateOfLastRun !=
+                            null) ...<Widget>[
                           Text(
                             'Last run: ${widget.kennelItem.hkm!.dateOfLastRun!.year != DateTime.now().year ? DateFormat('E, MMM d, yyyy').format(widget.kennelItem.hkm!.dateOfLastRun!) : DateFormat('E, MMM d').format(widget.kennelItem.hkm!.dateOfLastRun!)}',
                             style: ts_titleMedium.copyWith(color: hc_blue),
                           ),
                         ],
                         if ((widget.kennelItem.hkm != null) &&
-                            (widget.kennelItem.hkm!.kennelCredit != 0)) ...<Widget>[
+                            (widget.kennelItem.hkm!.kennelCredit !=
+                                0)) ...<Widget>[
                           Text(
                             (widget.kennelItem.hkm!.kennelCredit >= 0
                                     ? 'Credit available: '
                                     : 'Funds owed: ') +
                                 IveCoreUtilities.getFormattedMoney(
                                   widget.kennelItem.hkm!.kennelCredit.abs(),
-                                  widget.kennelItem.kennel.digitsAfterDecimal ?? 2,
-                                  widget.kennelItem.kennel.currencySymbol ?? r'$^',
+                                  widget.kennelItem.kennel.digitsAfterDecimal ??
+                                      2,
+                                  widget.kennelItem.kennel.currencySymbol ??
+                                      r'$^',
                                 ),
                             style: TextStyle(
                               fontFamily: 'AvenirNextDemiBold',
@@ -308,7 +356,10 @@ class KennelListItemState extends State<KennelListItem> {
                 Container(
                   height: 30,
                   width: 30,
-                  decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle),
+                  decoration: const BoxDecoration(
+                    color: Colors.green,
+                    shape: BoxShape.circle,
+                  ),
                 ),
                 const Icon(FontAwesome.home, color: Colors.white, size: 23),
               ],
@@ -320,7 +371,10 @@ class KennelListItemState extends State<KennelListItem> {
                 Container(
                   height: 30,
                   width: 30,
-                  decoration: BoxDecoration(color: hc_red, shape: BoxShape.circle),
+                  decoration: BoxDecoration(
+                    color: hc_red,
+                    shape: BoxShape.circle,
+                  ),
                 ),
                 const Icon(FontAwesome.home, color: Colors.white, size: 23),
               ],
@@ -362,7 +416,10 @@ class KennelListItemState extends State<KennelListItem> {
           Container(
             height: 30,
             width: 30,
-            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
           ),
           const Positioned(
             left: 3,
@@ -383,7 +440,10 @@ class KennelListItemState extends State<KennelListItem> {
           Container(
             height: 30,
             width: 30,
-            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
           ),
           const Positioned(
             left: 3,
@@ -404,7 +464,10 @@ class KennelListItemState extends State<KennelListItem> {
           Container(
             height: 30,
             width: 30,
-            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
           ),
           const Positioned(
             left: 3,
@@ -425,7 +488,10 @@ class KennelListItemState extends State<KennelListItem> {
           Container(
             height: 30,
             width: 30,
-            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
           ),
           const Positioned(
             left: 3,
@@ -483,14 +549,30 @@ class KennelListItemState extends State<KennelListItem> {
 
     String distance = '50';
     switch (distPref) {
-      case 0: distance = '0'; break;
-      case 1: distance = '10'; break;
-      case 2: distance = '25'; break;
-      case 3: distance = '50'; break;
-      case 4: distance = '75'; break;
-      case 5: distance = '100'; break;
-      case 6: distance = '150'; break;
-      case 7: distance = '200'; break;
+      case 0:
+        distance = '0';
+        break;
+      case 1:
+        distance = '10';
+        break;
+      case 2:
+        distance = '25';
+        break;
+      case 3:
+        distance = '50';
+        break;
+      case 4:
+        distance = '75';
+        break;
+      case 5:
+        distance = '100';
+        break;
+      case 6:
+        distance = '150';
+        break;
+      case 7:
+        distance = '200';
+        break;
     }
 
     return '$distance $unitsOfMeasure';
@@ -504,7 +586,10 @@ class KennelListItemState extends State<KennelListItem> {
           Container(
             height: 30,
             width: 30,
-            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
           ),
           const Positioned(
             left: 3,
@@ -525,7 +610,10 @@ class KennelListItemState extends State<KennelListItem> {
           Container(
             height: 30,
             width: 30,
-            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
           ),
           const Positioned(
             left: 3,
@@ -534,7 +622,9 @@ class KennelListItemState extends State<KennelListItem> {
               width: 25.0,
               height: 25.0,
               fit: BoxFit.fill,
-              image: AssetImage('images/icons/envelope_silver_strike_out_50px.png'),
+              image: AssetImage(
+                'images/icons/envelope_silver_strike_out_50px.png',
+              ),
             ),
           ),
         ],

@@ -32,7 +32,9 @@ class AuthenticateWebPortalService {
       // HC6: rowset 0 is the write SP success envelope; result data is at rowset 1.
       final decoded = json.decode(responseBody) as List<dynamic>;
       if (decoded.length > 1) {
-        result = SingleResultModel(result: (decoded[1] as List<dynamic>)[0]['result']);
+        result = SingleResultModel(
+          result: (decoded[1] as List<dynamic>)[0]['result'],
+        );
       }
     }
 

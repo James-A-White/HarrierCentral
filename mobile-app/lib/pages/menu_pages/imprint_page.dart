@@ -41,7 +41,7 @@ class ImprintPageState extends State<ImprintPage> {
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSync),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
-            setState(() {});
+            setStateIfMounted(() {});
           },
         ),
       ],
@@ -74,7 +74,7 @@ class ImprintPageContentState extends State<ImprintPageContent> {
     packageName = packageInfo.packageName;
     version = packageInfo.version;
     buildNumber = packageInfo.buildNumber;
-    setState(() {});
+    setStateIfMounted(() {});
   }
 
   @override

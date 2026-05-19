@@ -354,6 +354,10 @@ class HasherEventMapService {
 
     List<dynamic> adHocData = <dynamic>[];
 
+    print(
+      '[setEventRsvp] responseBody prefix: ${responseBody.length > 200 ? responseBody.substring(0, 200) : responseBody}',
+    );
+
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       if (appDomainType == AppDomainType.event) {
         adHocData = await tableModel.syncEventAdminService
@@ -365,6 +369,10 @@ class HasherEventMapService {
         assert(false);
       }
     }
+
+    print(
+      '[setEventRsvp] adHocData length: ${adHocData.length}, contents: $adHocData',
+    );
 
     return adHocData;
   }

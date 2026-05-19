@@ -26,7 +26,7 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
   void initState() {
     super.initState();
     // createFileOfPdfUrl().then((File f) {
-    //   setState(() {
+    //   setStateIfMounted(() {
     //     pathPDF = f.path;
     //   });
     // });
@@ -87,7 +87,7 @@ class PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSync),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
-            setState(() {});
+            setStateIfMounted(() {});
           },
         ),
       ],

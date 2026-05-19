@@ -164,7 +164,7 @@ class HistoryListPageState extends State<HistoryListPage>
       }
 
       // if (forceRefresh && (i == results.length - 1)) {
-      //   setState(() {});
+      //   setStateIfMounted(() {});
       // }
       //}
     } catch (e) {
@@ -217,7 +217,7 @@ class HistoryListPageState extends State<HistoryListPage>
         }
 
         if (forceRefresh && (i == results.length - 1)) {
-          setState(() {
+          setStateIfMounted(() {
             _isLoading = false;
           });
         }
@@ -232,12 +232,12 @@ class HistoryListPageState extends State<HistoryListPage>
       // This means the user tapped a new tab, but the animation hasn't finished yet.
       //print('Tab is changing to index: ${_tabController.index}');
       //_refreshRunHistoryFromTable(true);
-      setState(() {});
+      setStateIfMounted(() {});
     } else if (_tabController.index != _tabController.previousIndex) {
       // This is triggered after the tab has finished changing.
       //print('Tab changed to index: ${_tabController.index}');
       //_refreshRunHistoryFromTable(true);
-      setState(() {});
+      setStateIfMounted(() {});
     }
   }
 
@@ -313,7 +313,7 @@ class HistoryListPageState extends State<HistoryListPage>
   }
 
   Future<void> _handleRefresh() async {
-    setState(() {
+    setStateIfMounted(() {
       _isLoading = true;
     });
 
@@ -329,7 +329,7 @@ class HistoryListPageState extends State<HistoryListPage>
     //print('Hasher data synchronized $resultStr');
     await queryKennelStats(true);
     await queryCountryStats(true);
-    setState(() {
+    setStateIfMounted(() {
       _isLoading = false;
     });
   }
@@ -368,7 +368,7 @@ class HistoryListPageState extends State<HistoryListPage>
                             // reviewed for 2.0+
                             child: TabBar(
                               onTap: (void _) {
-                                setState(() {});
+                                setStateIfMounted(() {});
                               },
                               labelStyle: ts_tabSelected,
                               unselectedLabelStyle: ts_tabUnselected,

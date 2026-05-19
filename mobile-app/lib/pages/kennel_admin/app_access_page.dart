@@ -14,7 +14,7 @@ class AppAccessPageState extends State<AppAccessPage> {
 
   @override
   void initState() {
-     super.initState();
+    super.initState();
     appAccess = AppAccess(widget.appAccess);
   }
 
@@ -122,7 +122,7 @@ class AppAccessPageState extends State<AppAccessPage> {
               value: value,
               onChanged: (bool? value) {
                 if (value != null) {
-                  setState(() {
+                  setStateIfMounted(() {
                     toggleState(value);
                   });
                 }

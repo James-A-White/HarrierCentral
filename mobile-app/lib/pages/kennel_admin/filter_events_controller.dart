@@ -4,10 +4,7 @@ import 'package:intl/intl.dart';
 enum FilterEventsPageType { past, future }
 
 class FilterEventsController extends GetxController {
-  FilterEventsController({
-    required this.kennel,
-    required this.pageType,
-  });
+  FilterEventsController({required this.kennel, required this.pageType});
 
   final KennelListAggregate kennel;
   final FilterEventsPageType pageType;
@@ -54,17 +51,14 @@ class FilterEventsController extends GetxController {
         if (pageType == FilterEventsPageType.past && allEvents.isNotEmpty) {
           initialDay = toDateOnly(allEvents.first.eventStartDatetime);
         }
-        _refreshList(
-          selectedDay: initialDay,
-          focusedDay: initialDay,
-        );
+        _refreshList(selectedDay: initialDay, focusedDay: initialDay);
         unawaited(
-          Future<void>.delayed(const Duration(milliseconds: 500)).then(
-            (void _) {
-              // Force calendar button repaint after data arrives.
-              allEvents.refresh();
-            },
-          ),
+          Future<void>.delayed(const Duration(milliseconds: 500)).then((
+            void _,
+          ) {
+            // Force calendar button repaint after data arrives.
+            allEvents.refresh();
+          }),
         );
       }),
     );
@@ -76,8 +70,7 @@ class FilterEventsController extends GetxController {
 
   DateTime toDateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
-  bool get isDateBeingUpdated =>
-      dateBeingUpdated.value != _dateTimeUnassigned;
+  bool get isDateBeingUpdated => dateBeingUpdated.value != _dateTimeUnassigned;
 
   bool isDateCurrentlyUpdating(DateTime date) =>
       toDateOnly(dateBeingUpdated.value) == toDateOnly(date) &&
@@ -106,16 +99,19 @@ class FilterEventsController extends GetxController {
   }
 
   Future<void> _refreshEventFromTables(bool forceRefresh) async {
-    final String sortOrder =
-        pageType == FilterEventsPageType.future ? 'ASC' : 'DESC';
-    final String dateComparer =
-        pageType == FilterEventsPageType.future ? '>=' : '<=';
+    final String sortOrder = pageType == FilterEventsPageType.future
+        ? 'ASC'
+        : 'DESC';
+    final String dateComparer = pageType == FilterEventsPageType.future
+        ? '>='
+        : '<=';
 
     final String userId = getStringPref(StringPrefsEnum.userId)!;
     final offsetFromGmtToLocal = Utilities.getSqfliteTimeOffset();
 
     try {
-      final String sql = '''
+      final String sql =
+          '''
           SELECT COUNT(*) as publishedRunCount
           FROM ${EnumDataTables.events.commonTableName} evt
           WHERE kennelId = "${kennel.kennel.kennelId}" AND isVisible = 1
@@ -127,7 +123,8 @@ class FilterEventsController extends GetxController {
     }
 
     try {
-      final String sql = '''
+      final String sql =
+          '''
           SELECT
             evt.${tableModel.eventsTableHelper.colEventId},
             evt.${tableModel.eventsTableHelper.colIsVisible},
@@ -147,19 +144,19 @@ class FilterEventsController extends GetxController {
           ORDER BY evt.${tableModel.eventsTableHelper.colEventStartDatetime} $sortOrder, evt.${tableModel.eventsTableHelper.colEventNumber} $sortOrder
           ''';
 
-      final List<Map<String, dynamic>> allEventsSqlResult =
-          await database.rawQuery(sql);
+      final List<Map<String, dynamic>> allEventsSqlResult = await database
+          .rawQuery(sql);
 
       calendarEvents.clear();
       allEvents.clear();
       selectedEvents.clear();
 
       for (int i = 0; i < allEventsSqlResult.length; i++) {
-        final LiteEventModel event =
-            LiteEventModel.fromJson(allEventsSqlResult[i]);
+        final LiteEventModel event = LiteEventModel.fromJson(
+          allEventsSqlResult[i],
+        );
         allEvents.add(event);
-        final DateTime eventDate =
-            toDateOnly(event.eventStartDatetime);
+        final DateTime eventDate = toDateOnly(event.eventStartDatetime);
         if (calendarEvents[eventDate] == null) {
           calendarEvents[eventDate] = <LiteEventModel>[];
         }
@@ -206,10 +203,7 @@ class FilterEventsController extends GetxController {
 
   void onDaySelected(DateTime newSelectedDay, DateTime newFocusedDay) {
     if (!isSameDay(selectedDay.value, newSelectedDay)) {
-      _refreshList(
-        selectedDay: newSelectedDay,
-        focusedDay: newFocusedDay,
-      );
+      _refreshList(selectedDay: newSelectedDay, focusedDay: newFocusedDay);
     }
   }
 
@@ -280,10 +274,7 @@ class FilterEventsController extends GetxController {
     }
   }
 
-  Future<void> setRunNumber(
-    LiteEventModel event,
-    BuildContext context,
-  ) async {
+  Future<void> setRunNumber(LiteEventModel event, BuildContext context) async {
     final RunNumberPopup newEventPopup = RunNumberPopup(
       runNumber: event.absoluteEventNumber,
     );

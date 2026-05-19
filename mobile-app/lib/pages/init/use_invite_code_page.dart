@@ -45,7 +45,7 @@ class UseInviteCodePageState extends State<UseInviteCodePage> {
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSync),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
-            setState(() {});
+            setStateIfMounted(() {});
           },
         ),
       ],
@@ -141,7 +141,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
               .pause()
               .then((_) {
                 if (!mounted) return;
-                setState(() {
+                setStateIfMounted(() {
                   _isScanning = false;
                   // _onScreenMessage = 'Scanning paused';
                   // _state = EQrScannerState.waitingForScan;
@@ -157,7 +157,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
               .start()
               .then((_) {
                 if (!mounted) return;
-                setState(() {
+                setStateIfMounted(() {
                   _isScanning = true;
                   // _onScreenMessage = 'Looking for QR Code';
                   // _state = EQrScannerState.scanning;
@@ -268,7 +268,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                               alignment: Alignment.center,
                             ),
                             onPressed: () async {
-                              setState(() {
+                              setStateIfMounted(() {
                                 _showQrScanner = !_showQrScanner;
                                 if (_scannerController != null) {
                                   if (_showQrScanner) {
@@ -332,7 +332,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                       //       child: Checkbox(
                       //         value: _includeInGlobalHashDirectory,
                       //         onChanged: (bool value) {
-                      //           setState(() {
+                      //           setStateIfMounted(() {
                       //             _includeInGlobalHashDirectory = value;
                       //             // checkDirty();
                       //           });
@@ -427,7 +427,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                         if (_formKey.currentState!.validate()) {
                           // If the form is valid, display a snackbar. In the real world,
                           // you'd often call a server or save the information in a database.
-                          setState(() {
+                          setStateIfMounted(() {
                             _isLoading = true;
                           });
 
@@ -441,7 +441,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                                         .toUpperCase(),
                               );
 
-                          setState(() {
+                          setStateIfMounted(() {
                             _isLoading = false;
                           });
 
@@ -505,7 +505,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
             Utilities.qrScanTypeFlag_userSecretCode,
       );
       await _scannerController!.pause();
-      setState(() {
+      setStateIfMounted(() {
         _showQrScanner = false;
       });
 
@@ -516,7 +516,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
           'OK',
         );
       } else {
-        setState(() {
+        setStateIfMounted(() {
           _inviteCodeTextController.text = scanResult.replaceAll(
             QR_PREFIX_USER_RESET_CODE,
             '',
@@ -544,7 +544,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
 
   // void _onQRViewCreated(QRViewController controller) {
   //   _scannerController = controller;
-  //   setState(() {
+  //   setStateIfMounted(() {
   //     // _isScanning = true;
   //     // _onScreenMessage = 'Looking for QR Code';
   //     // _state = EQrScannerState.scanning;

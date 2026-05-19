@@ -433,7 +433,8 @@ class HashersService extends BaseService {
         'thirdPartyUserId': loginData.id,
         'thirdPartyAccessToken': loginData.accessToken,
         'thirdPartyAuthorizationCode': loginData.authorizationCode ?? '',
-        'thirdPartyAccessTokenExpires': loginData.accessTokenExpires?.toString(),
+        'thirdPartyAccessTokenExpires': loginData.accessTokenExpires
+            ?.toString(),
         'includeInGlobalHashDirectory': includeInGlobalHashDirectory.toString(),
         'hcVersion': hcVersion,
         'latitude': deviceInfo.deviceLat.toString(),

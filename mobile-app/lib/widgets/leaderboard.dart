@@ -159,7 +159,7 @@ class LeaderboardState extends State<Leaderboard>
       _leaderboardSortColumnIndex = 0;
       _sortOrderAsc = false;
       _sortLeaderboard(_leaderboardSortColumnIndex, false);
-      setState(() {});
+      setStateIfMounted(() {});
     }
   }
 
@@ -355,7 +355,7 @@ class LeaderboardState extends State<Leaderboard>
                                             _leaderboardSortColumnIndex,
                                             false,
                                           );
-                                          setState(() {});
+                                          setStateIfMounted(() {});
                                         },
                                         physics:
                                             const NeverScrollableScrollPhysics(),
@@ -406,7 +406,7 @@ class LeaderboardState extends State<Leaderboard>
                                             checkColor: Colors.white,
                                             activeColor: hc_red,
                                             onChanged: (value) {
-                                              setState(() {
+                                              setStateIfMounted(() {
                                                 _showKennels = !_showKennels;
                                               });
                                             },
@@ -442,7 +442,7 @@ class LeaderboardState extends State<Leaderboard>
                                             checkColor: Colors.white,
                                             activeColor: hc_red,
                                             onChanged: (value) {
-                                              setState(() {
+                                              setStateIfMounted(() {
                                                 _showHomeKennel =
                                                     !_showHomeKennel;
                                               });
@@ -503,7 +503,7 @@ class LeaderboardState extends State<Leaderboard>
                                         const SizedBox(width: 4.0),
                                         GestureDetector(
                                           onTap: () {
-                                            setState(() {
+                                            setStateIfMounted(() {
                                               _sortLeaderboard(0, true);
                                             });
                                           },
@@ -528,7 +528,7 @@ class LeaderboardState extends State<Leaderboard>
                                         ),
                                         GestureDetector(
                                           onTap: () {
-                                            setState(() {
+                                            setStateIfMounted(() {
                                               _sortLeaderboard(1, true);
                                             });
                                           },
@@ -554,7 +554,7 @@ class LeaderboardState extends State<Leaderboard>
                                         Expanded(
                                           child: GestureDetector(
                                             onTap: () {
-                                              setState(() {
+                                              setStateIfMounted(() {
                                                 _sortLeaderboard(2, true);
                                               });
                                             },
@@ -582,7 +582,7 @@ class LeaderboardState extends State<Leaderboard>
                                       children: <Widget>[
                                         GestureDetector(
                                           onTap: () {
-                                            setState(() {
+                                            setStateIfMounted(() {
                                               _sortLeaderboard(0, true);
                                             });
                                           },
@@ -602,7 +602,7 @@ class LeaderboardState extends State<Leaderboard>
                                         ),
                                         GestureDetector(
                                           onTap: () {
-                                            setState(() {
+                                            setStateIfMounted(() {
                                               _sortLeaderboard(1, true);
                                             });
                                           },
@@ -623,7 +623,7 @@ class LeaderboardState extends State<Leaderboard>
                                         Expanded(
                                           child: GestureDetector(
                                             onTap: () {
-                                              setState(() {
+                                              setStateIfMounted(() {
                                                 _sortLeaderboard(2, true);
                                               });
                                             },
@@ -857,7 +857,7 @@ class LeaderboardState extends State<Leaderboard>
                     child: TextField(
                       autocorrect: false,
                       onChanged: (String text) {
-                        setState(() {
+                        setStateIfMounted(() {
                           _filterResults(_searchController.text);
                           _sortLeaderboard(_leaderboardSortColumnIndex, false);
                         });
@@ -894,7 +894,7 @@ class LeaderboardState extends State<Leaderboard>
                       ),
                       onPressed: () {
                         _searchController.text = '';
-                        setState(() {
+                        setStateIfMounted(() {
                           _filterResults(_searchController.text);
                           _sortLeaderboard(_leaderboardSortColumnIndex, false);
                         });

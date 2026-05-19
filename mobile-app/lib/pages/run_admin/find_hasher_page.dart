@@ -23,7 +23,7 @@ class FindHasherPageState extends State<FindHasherPage> {
 
   Future<void> findHasher() async {
     //    if (showLoadingIndicator) {
-    setState(() {
+    setStateIfMounted(() {
       _isLoading = true;
     });
     //}
@@ -36,7 +36,7 @@ class FindHasherPageState extends State<FindHasherPage> {
     );
 
     _hasherList = list.cast<HashersModel>();
-    setState(() {
+    setStateIfMounted(() {
       if (_hasherList.isNotEmpty) {
         _hasherList.sort(
           (dynamic a, dynamic b) => (a.dispName ?? '').toLowerCase().compareTo(
@@ -53,7 +53,7 @@ class FindHasherPageState extends State<FindHasherPage> {
   }
 
   void filterHasherList(String filterText) {
-    setState(() {
+    setStateIfMounted(() {
       if (_hasherList.isNotEmpty) {
         if (filterText.isEmpty) {
           _filteredList = _hasherList;
@@ -85,7 +85,7 @@ class FindHasherPageState extends State<FindHasherPage> {
   TextEditingController searchController = TextEditingController();
 
   // void _onSearchTextChanged() {
-  //   setState(() {
+  //   setStateIfMounted(() {
   //     //print('onSearchTextChanged = ${DateTime.now().millisecondsSinceEpoch}');
   //   });
   // }
@@ -146,7 +146,7 @@ class FindHasherPageState extends State<FindHasherPage> {
           Expanded(
             child: TextField(
               onChanged: (String text) {
-                //setState(() {
+                //setStateIfMounted(() {
                 filterHasherList(text);
                 // });
               },

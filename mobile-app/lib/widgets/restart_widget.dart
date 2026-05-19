@@ -1,6 +1,7 @@
 // restart_widget.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:harrier_central/util/safe_set_state.dart';
 
 final GlobalKey<RestartWidgetState> restartKey =
     GlobalKey<RestartWidgetState>();
@@ -22,7 +23,7 @@ class RestartWidgetState extends State<RestartWidget> {
 
   void restartApp() {
     // 1. Unmount the RootApp immediately by switching to the placeholder.
-    setState(() {
+    setStateIfMounted(() {
       showApp = false; // This swaps RootApp with SizedBox.shrink()
     });
 
@@ -33,7 +34,7 @@ class RestartWidgetState extends State<RestartWidget> {
       Future.microtask(() {
         Future.delayed(const Duration(milliseconds: 50), () {
           if (mounted) {
-            setState(() {
+            setStateIfMounted(() {
               key = UniqueKey(); // Generate a new key for the new RootApp
               showApp = true; // Show the RootApp again
             });

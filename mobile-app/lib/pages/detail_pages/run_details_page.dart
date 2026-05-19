@@ -77,7 +77,7 @@ class RunDetailsPageState extends State<RunDetailsPage> {
                     final refresh = widget.refreshPage;
                     if (refresh == null || !mounted) return;
 
-                    setState(() => _isUpdating = true);
+                    setStateIfMounted(() => _isUpdating = true);
 
                     dynamic rda;
                     try {
@@ -87,7 +87,7 @@ class RunDetailsPageState extends State<RunDetailsPage> {
                     }
 
                     if (!mounted) return;
-                    setState(() {
+                    setStateIfMounted(() {
                       if (rda != null) _futureRun = rda;
                       _isUpdating = false;
                     });

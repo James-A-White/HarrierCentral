@@ -38,13 +38,14 @@ class EmailReportsService {
         'currencySymbol': currencySymbol,
       });
 
-      final Response response = await post(
-        Uri.parse(EMAIL_KENNEL_RUN_STATS_API_URL),
-        headers: <String, String>{'content-type': 'application/json'},
-        body: body,
-      ).catchError((dynamic error) {
-        return Future<Response>.value(Response('error', 500));
-      });
+      final Response response =
+          await post(
+            Uri.parse(EMAIL_KENNEL_RUN_STATS_API_URL),
+            headers: <String, String>{'content-type': 'application/json'},
+            body: body,
+          ).catchError((dynamic error) {
+            return Future<Response>.value(Response('error', 500));
+          });
 
       return <String, String>{'result': response.body, 'email': emailAddress};
     }

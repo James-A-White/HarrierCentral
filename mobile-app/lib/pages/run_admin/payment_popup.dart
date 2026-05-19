@@ -252,7 +252,7 @@ class PaymentPopupState extends State<PaymentPopup> {
   Future<void> _handleRadioValueChange1(int? value) async {
     if (value != null) {
       if (value != PaymentPopup.otherAmountRowId) {
-        setState(() {
+        setStateIfMounted(() {
           _selectedValue = value;
         });
       } else {
@@ -274,7 +274,7 @@ class PaymentPopupState extends State<PaymentPopup> {
             );
 
         if ((result != null) && (result.action != 'cancel')) {
-          setState(() {
+          setStateIfMounted(() {
             _otherPaymentResult = result;
             _selectedValue = value;
 

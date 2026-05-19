@@ -40,8 +40,7 @@ class KennelAdminController extends GetxController {
     kennelUrlForQr =
         '$BASE_HASHRUNS_DOT_ORG_URL${kennelAggregateItem.kennel.kennelUniqueShortName}';
 
-    _dataChangeSub =
-        Get.find<DataChangeService>().stream.listen(_onDataChange);
+    _dataChangeSub = Get.find<DataChangeService>().stream.listen(_onDataChange);
 
     unawaited(_syncAndLoad());
   }
@@ -61,8 +60,9 @@ class KennelAdminController extends GetxController {
       mismanagement.value = null;
       return;
     }
-    mismanagement.value =
-        trimmed.contains('\r') ? trimmed.split('\r') : trimmed.split('\n');
+    mismanagement.value = trimmed.contains('\r')
+        ? trimmed.split('\r')
+        : trimmed.split('\n');
   }
 
   Future<void> _syncAndLoad() async {
@@ -97,8 +97,11 @@ class KennelAdminController extends GetxController {
       LIMIT 1
     ''');
 
-    final int following =
-        rows.isNotEmpty ? (rows[0][tableModel.hasherKennelMapTableHelper.colFollowing] as int? ?? 0) : 0;
+    final int following = rows.isNotEmpty
+        ? (rows[0][tableModel.hasherKennelMapTableHelper.colFollowing]
+                  as int? ??
+              0)
+        : 0;
 
     if (following == 1) return;
 
@@ -117,7 +120,8 @@ class KennelAdminController extends GetxController {
       EnumDataTables.events.flag,
       true,
       forceReplicateAllRunsForKennel: kennelId,
-      debugText: 'kennel_admin_controller: auto-follow + force-replicate for admin',
+      debugText:
+          'kennel_admin_controller: auto-follow + force-replicate for admin',
     );
   }
 
@@ -156,16 +160,18 @@ class KennelAdminController extends GetxController {
           );
         }
 
-        final EventModel eventItem =
-            tableModel.eventsTableHelper.fromMap(results[i]);
-        final KennelsModel kennelItem =
-            tableModel.kennelsTableHelper.fromMap(results[i]);
+        final EventModel eventItem = tableModel.eventsTableHelper.fromMap(
+          results[i],
+        );
+        final KennelsModel kennelItem = tableModel.kennelsTableHelper.fromMap(
+          results[i],
+        );
         final RunQueryExtensionsModel extensionsItem =
             RunQueryExtensionsModel.fromJsonWithDateSearchText(
-          results[i],
-          eventItem.eventStartDatetime,
-          dist,
-        );
+              results[i],
+              eventItem.eventStartDatetime,
+              dist,
+            );
 
         String paymentLinkUrl = '';
         if (((eventItem.eventPaymentUrl ?? '') != '') &&
@@ -174,16 +180,20 @@ class KennelAdminController extends GetxController {
           paymentLinkUrl = eventItem.eventPaymentUrl!;
         } else if (((kennelItem.kennelPaymentUrl ?? '') != '') &&
             ((kennelItem.kennelPaymentUrlExpires == null) ||
-                (kennelItem.kennelPaymentUrlExpires!.isAfter(DateTime.now())))) {
+                (kennelItem.kennelPaymentUrlExpires!.isAfter(
+                  DateTime.now(),
+                )))) {
           paymentLinkUrl = kennelItem.kennelPaymentUrl!;
         }
 
-        newRuns.add(RunDetailsAggregate(
-          event: eventItem,
-          kennel: kennelItem,
-          extensions: extensionsItem,
-          paymentUrl: paymentLinkUrl,
-        ));
+        newRuns.add(
+          RunDetailsAggregate(
+            event: eventItem,
+            kennel: kennelItem,
+            extensions: extensionsItem,
+            paymentUrl: paymentLinkUrl,
+          ),
+        );
       }
       allRuns.value = newRuns;
     }

@@ -17,7 +17,7 @@ class GetResetCodePopupState extends State<GetResetCodePopup> {
       title: Text('Get Invite Code', style: ts_alertDialogTitle),
       content: TextField(
         onChanged: (String x) {
-          setState(() {});
+          setStateIfMounted(() {});
         },
         autofocus: true,
         focusNode: myFocusNodeFirstName,
@@ -91,7 +91,7 @@ class GetResetCodePopupState extends State<GetResetCodePopup> {
             );
 
             if (!mounted) return;
-            setState(() {
+            setStateIfMounted(() {
               getResetCodeTextController.text = result?.result ?? '';
             });
 
@@ -156,7 +156,7 @@ class GetResetCodePopupState extends State<GetResetCodePopup> {
   }
 
   // void _handleRadioValueChange1(int value) {
-  //   setState(() {
+  //   setStateIfMounted(() {
   //     //widget.selectedValue = value;
 
   //     // switch (_radioValue1) {

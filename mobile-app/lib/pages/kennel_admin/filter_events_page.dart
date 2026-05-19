@@ -35,10 +35,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
     super.initState();
 
     _controller = Get.put(
-      FilterEventsController(
-        kennel: widget.kennel,
-        pageType: widget.pageType,
-      ),
+      FilterEventsController(kennel: widget.kennel, pageType: widget.pageType),
     );
 
     _initTabs();
@@ -50,7 +47,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
 
     _tabController = TabController(vsync: this, length: _tabs.length);
     _tabController.addListener(() {
-      setState(() {});
+      setStateIfMounted(() {});
     });
 
     unawaited(_animationController.forward());
@@ -288,11 +285,12 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
                         color: Colors.blue.shade600,
                         borderRadius: BorderRadius.circular(6.0),
                       ),
-                      formatButtonTextStyle:
-                          const TextStyle().copyWith(color: Colors.white),
+                      formatButtonTextStyle: const TextStyle().copyWith(
+                        color: Colors.white,
+                      ),
                     ),
                     onFormatChanged: (CalendarFormat format) {
-                      setState(() {
+                      setStateIfMounted(() {
                         _calendarFormat = format;
                       });
                     },
@@ -300,8 +298,10 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
                       _controller.focusedDay.value = newFocusedDay;
                     },
                     eventLoader: (DateTime dt) {
-                      return _controller.calendarEvents[
-                              _controller.toDateOnly(dt)] as List<dynamic>? ??
+                      return _controller.calendarEvents[_controller.toDateOnly(
+                                dt,
+                              )]
+                              as List<dynamic>? ??
                           [];
                     },
                     onDaySelected: _controller.onDaySelected,
@@ -317,183 +317,187 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
                       todayDecoration: BoxDecoration(
                         color: Colors.deepOrange[200],
                       ),
-                      markerDecoration:
-                          BoxDecoration(color: Colors.brown[700]),
+                      markerDecoration: BoxDecoration(color: Colors.brown[700]),
                       outsideDaysVisible: false,
                     ),
                     calendarBuilders: CalendarBuilders<dynamic>(
-                      todayBuilder: (
-                        BuildContext context,
-                        DateTime date,
-                        DateTime focusedDay,
-                      ) {
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: Colors.blue.shade100,
-                            border: Border.all(
-                              color: Colors.black26,
-                              width: 1.0,
-                            ),
-                          ),
-                          width: 100,
-                          height: 50,
-                          child: Text(
-                            '${date.day}',
-                            style:
-                                const TextStyle().copyWith(fontSize: 16.0),
-                          ),
-                        );
-                      },
-                      outsideBuilder: (
-                        BuildContext context,
-                        DateTime date,
-                        DateTime focusedDay,
-                      ) {
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                            border: Border.all(
-                              color: Colors.black12,
-                              width: 1.0,
-                            ),
-                          ),
-                          width: 100,
-                          height: 50,
-                          child: Text(
-                            '${date.day}',
-                            style: const TextStyle().copyWith(
-                              fontSize: 16.0,
-                              color: Colors.grey.shade400,
-                            ),
-                          ),
-                        );
-                      },
-                      defaultBuilder: (
-                        BuildContext context,
-                        DateTime date,
-                        DateTime focusedDay,
-                      ) {
-                        final DateTime dateOnly =
-                            _controller.toDateOnly(date);
-                        final bool isUpdating =
-                            _controller.isDateCurrentlyUpdating(date);
-                        final List<LiteEventModel>? events =
-                            _controller.calendarEvents[dateOnly];
-                        final int eventCount = events?.length ?? 0;
+                      todayBuilder:
+                          (
+                            BuildContext context,
+                            DateTime date,
+                            DateTime focusedDay,
+                          ) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: Colors.blue.shade100,
+                                border: Border.all(
+                                  color: Colors.black26,
+                                  width: 1.0,
+                                ),
+                              ),
+                              width: 100,
+                              height: 50,
+                              child: Text(
+                                '${date.day}',
+                                style: const TextStyle().copyWith(
+                                  fontSize: 16.0,
+                                ),
+                              ),
+                            );
+                          },
+                      outsideBuilder:
+                          (
+                            BuildContext context,
+                            DateTime date,
+                            DateTime focusedDay,
+                          ) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade100,
+                                border: Border.all(
+                                  color: Colors.black12,
+                                  width: 1.0,
+                                ),
+                              ),
+                              width: 100,
+                              height: 50,
+                              child: Text(
+                                '${date.day}',
+                                style: const TextStyle().copyWith(
+                                  fontSize: 16.0,
+                                  color: Colors.grey.shade400,
+                                ),
+                              ),
+                            );
+                          },
+                      defaultBuilder:
+                          (
+                            BuildContext context,
+                            DateTime date,
+                            DateTime focusedDay,
+                          ) {
+                            final DateTime dateOnly = _controller.toDateOnly(
+                              date,
+                            );
+                            final bool isUpdating = _controller
+                                .isDateCurrentlyUpdating(date);
+                            final List<LiteEventModel>? events =
+                                _controller.calendarEvents[dateOnly];
+                            final int eventCount = events?.length ?? 0;
 
-                        Color bgColor;
-                        if (eventCount == 0) {
-                          bgColor =
-                              dateOnly
+                            Color bgColor;
+                            if (eventCount == 0) {
+                              bgColor =
+                                  dateOnly
                                           .difference(
-                                            _controller
-                                                .toDateOnly(DateTime.now()),
+                                            _controller.toDateOnly(
+                                              DateTime.now(),
+                                            ),
                                           )
                                           .inDays >=
                                       0
                                   ? Colors.white
                                   : Colors.grey.shade200;
-                        } else if (eventCount > 1) {
-                          bgColor = Colors.red.shade100;
-                        } else {
-                          final LiteEventModel evt = events![0];
-                          if (evt.isVisible == 0) {
-                            bgColor = Colors.grey.shade300;
-                          } else if (evt.isCountedRun == 1) {
-                            bgColor = Colors.green.shade100;
-                          } else {
-                            bgColor = Colors.yellow.shade200;
-                          }
-                        }
-
-                        final bool isFocused =
-                            dateOnly ==
-                            _controller.toDateOnly(focused);
-
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: bgColor,
-                            border: isFocused
-                                ? Border.all(color: hc_red, width: 3.0)
-                                : Border.all(
-                                    color: Colors.black26,
-                                    width: 1.0,
-                                  ),
-                          ),
-                          width: 100,
-                          height: 50,
-                          child: Stack(
-                            alignment: AlignmentDirectional.center,
-                            children: <Widget>[
-                              Positioned(
-                                top: 1.0,
-                                left: 1.0,
-                                child: Text(
-                                  '${date.day}',
-                                  style: const TextStyle().copyWith(
-                                    fontSize: 16.0,
-                                    color: dateOnly
-                                                .difference(
-                                                  _controller.toDateOnly(
-                                                    DateTime.now(),
-                                                  ),
-                                                )
-                                                .inDays >=
-                                            0
-                                        ? Colors.black
-                                        : Colors.grey.shade500,
-                                  ),
-                                ),
-                              ),
-                              if (isUpdating) ...<Widget>[
-                                Positioned(
-                                  right: 1.0,
-                                  child: Icon(
-                                    delayIcon,
-                                    color: hc_blue,
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        );
-                      },
-                      markerBuilder: (
-                        BuildContext context,
-                        DateTime date,
-                        List<dynamic> events,
-                      ) {
-                        final List<Widget> children = <Widget>[];
-
-                        if (events.isNotEmpty) {
-                          if (events.length <= 5) {
-                            for (int i = 0; i < events.length; i++) {
-                              children.add(
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.only(bottom: 5.0),
-                                  child: Icon(
-                                    FontAwesome.circle,
-                                    size: 8.0,
-                                    color: events[i].isVisible == 0
-                                        ? Colors.grey
-                                        : events[i].isCountedRun == 0
-                                        ? hc_red
-                                        : hc_blue,
-                                  ),
-                                ),
-                              );
+                            } else if (eventCount > 1) {
+                              bgColor = Colors.red.shade100;
+                            } else {
+                              final LiteEventModel evt = events![0];
+                              if (evt.isVisible == 0) {
+                                bgColor = Colors.grey.shade300;
+                              } else if (evt.isCountedRun == 1) {
+                                bgColor = Colors.green.shade100;
+                              } else {
+                                bgColor = Colors.yellow.shade200;
+                              }
                             }
-                          } else {
-                            children.add(Text(events.length.toString()));
-                          }
-                        }
 
-                        return Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: children,
-                        );
-                      },
+                            final bool isFocused =
+                                dateOnly == _controller.toDateOnly(focused);
+
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: bgColor,
+                                border: isFocused
+                                    ? Border.all(color: hc_red, width: 3.0)
+                                    : Border.all(
+                                        color: Colors.black26,
+                                        width: 1.0,
+                                      ),
+                              ),
+                              width: 100,
+                              height: 50,
+                              child: Stack(
+                                alignment: AlignmentDirectional.center,
+                                children: <Widget>[
+                                  Positioned(
+                                    top: 1.0,
+                                    left: 1.0,
+                                    child: Text(
+                                      '${date.day}',
+                                      style: const TextStyle().copyWith(
+                                        fontSize: 16.0,
+                                        color:
+                                            dateOnly
+                                                    .difference(
+                                                      _controller.toDateOnly(
+                                                        DateTime.now(),
+                                                      ),
+                                                    )
+                                                    .inDays >=
+                                                0
+                                            ? Colors.black
+                                            : Colors.grey.shade500,
+                                      ),
+                                    ),
+                                  ),
+                                  if (isUpdating) ...<Widget>[
+                                    Positioned(
+                                      right: 1.0,
+                                      child: Icon(delayIcon, color: hc_blue),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            );
+                          },
+                      markerBuilder:
+                          (
+                            BuildContext context,
+                            DateTime date,
+                            List<dynamic> events,
+                          ) {
+                            final List<Widget> children = <Widget>[];
+
+                            if (events.isNotEmpty) {
+                              if (events.length <= 5) {
+                                for (int i = 0; i < events.length; i++) {
+                                  children.add(
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 5.0,
+                                      ),
+                                      child: Icon(
+                                        FontAwesome.circle,
+                                        size: 8.0,
+                                        color: events[i].isVisible == 0
+                                            ? Colors.grey
+                                            : events[i].isCountedRun == 0
+                                            ? hc_red
+                                            : hc_blue,
+                                      ),
+                                    ),
+                                  );
+                                }
+                              } else {
+                                children.add(Text(events.length.toString()));
+                              }
+                            }
+
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: children,
+                            );
+                          },
                     ),
                   ),
                 ),
@@ -503,25 +507,21 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
                 // selected day and it is not in the past.
                 if (_controller
                             .toDateOnly(selected)
-                            .difference(
-                              _controller.toDateOnly(DateTime.now()),
-                            )
+                            .difference(_controller.toDateOnly(DateTime.now()))
                             .inDays >=
                         0 &&
-                    (_controller.calendarEvents[
-                                _controller.toDateOnly(selected)]
-                            ?.length ??
-                        0) ==
-                        1) ...<Widget>[
-                  _buildEditButton(selected),
-                ],
+                    (_controller
+                                .calendarEvents[_controller.toDateOnly(
+                                  selected,
+                                )]
+                                ?.length ??
+                            0) ==
+                        1) ...<Widget>[_buildEditButton(selected)],
                 _buildAddButtons(selected),
               ],
             ),
           ),
-          Expanded(
-            child: _listView(_controller.selectedEvents.toList()),
-          ),
+          Expanded(child: _listView(_controller.selectedEvents.toList())),
         ],
       );
     });
@@ -542,9 +542,9 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
             if (rawEvent != null) {
               final RunAdminAggregate? rda =
                   await CommonQueries.getEventAdminInfoFromLocalCache(
-                rawEvent.eventId,
-                getStringPref(StringPrefsEnum.userId)!,
-              );
+                    rawEvent.eventId,
+                    getStringPref(StringPrefsEnum.userId)!,
+                  );
 
               if (rda != null) {
                 if (!mounted) return;
@@ -604,10 +604,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
         ElevatedButton(
           style: ButtonStyle(
             padding: WidgetStateProperty.all<EdgeInsets>(
-              const EdgeInsets.symmetric(
-                horizontal: 15.0,
-                vertical: 0.0,
-              ),
+              const EdgeInsets.symmetric(horizontal: 15.0, vertical: 0.0),
             ),
           ),
           onPressed: () async {
@@ -639,8 +636,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
             key: Key(event.eventId),
             confirmDismiss: (DismissDirection direction) async {
               if ((event.appAccessFlags & authCanManageRuns) != 0) {
-                final bool isVisible =
-                    direction == DismissDirection.endToStart;
+                final bool isVisible = direction == DismissDirection.endToStart;
                 await _controller.updateEvent(
                   eventId: event.eventId,
                   isVisible: isVisible,
@@ -664,10 +660,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
                   ),
                   Padding(
                     padding: const EdgeInsets.only(left: 15.0),
-                    child: Text(
-                      'Hide event',
-                      style: ts_titleMedium,
-                    ),
+                    child: Text('Hide event', style: ts_titleMedium),
                   ),
                 ],
               ),
@@ -689,10 +682,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
                   ),
                   Padding(
                     padding: const EdgeInsets.only(right: 15.0),
-                    child: Text(
-                      'Show event',
-                      style: ts_titleMedium,
-                    ),
+                    child: Text('Show event', style: ts_titleMedium),
                   ),
                 ],
               ),
@@ -703,9 +693,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
             child: Stack(
               children: <Widget>[
                 if (updatingId == event.eventId) ...<Widget>[
-                  const HcAppCircularProgressIndicator(
-                    key: Key('5050202'),
-                  ),
+                  const HcAppCircularProgressIndicator(key: Key('5050202')),
                 ],
                 Opacity(
                   opacity: updatingId == event.eventId ? 0.4 : 1,
@@ -713,7 +701,8 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
                     event: event,
                     kennelShortName: widget.kennel.kennel.kennelShortName,
                     updateEvent: (dynamic retVal) async {
-                      final EnumEventFilterType ft = retVal as EnumEventFilterType;
+                      final EnumEventFilterType ft =
+                          retVal as EnumEventFilterType;
                       _controller.itemBeingUpdatedId.value = event.eventId;
 
                       switch (ft) {
@@ -745,8 +734,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
                           await _controller.setRunNumber(event, context);
                           break;
                         case eventFilterType_refreshOnly:
-                          await _controller
-                              .refreshSqlTablesFromBackend(false);
+                          await _controller.refreshSqlTablesFromBackend(false);
                           await _controller.refreshEventFromTables(true);
                           _controller.refreshList();
                           break;

@@ -42,7 +42,7 @@ class CreateNewAccountPageState extends State<CreateNewAccountPage> {
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSync),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
-            setState(() {});
+            setStateIfMounted(() {});
           },
         ),
       ],
@@ -145,7 +145,7 @@ class CreateNewAccountPageContentState
                       //       child: Checkbox(
                       //         value: includeInGlobalHashDirectory,
                       //         onChanged: (bool value) {
-                      //           setState(() {
+                      //           setStateIfMounted(() {
                       //             includeInGlobalHashDirectory = value;
                       //           });
                       //         },
@@ -188,7 +188,7 @@ class CreateNewAccountPageContentState
                       if (_myDetailsUiStateKey.currentState!.validateForm()) {
                         // If the form is valid, display a snackbar. In the real world,
                         // you'd often call a server or save the information in a database.
-                        setState(() {
+                        setStateIfMounted(() {
                           isLoading = true;
                         });
 

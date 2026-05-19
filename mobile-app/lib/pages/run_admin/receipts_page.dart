@@ -40,7 +40,7 @@ class ReceiptsListState extends State<ReceiptsList> {
       debugPrint(e.toString());
     }
 
-    setState(() {});
+    setStateIfMounted(() {});
   }
 
   @override
@@ -171,7 +171,7 @@ class ReceiptsListState extends State<ReceiptsList> {
         'OK',
       );
     }
-    setState(() {});
+    setStateIfMounted(() {});
   }
 
   Future<void> setReceiptRemovedStatus(String receiptId, bool removed) async {

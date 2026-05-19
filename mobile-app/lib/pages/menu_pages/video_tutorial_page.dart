@@ -24,13 +24,13 @@
 //   @override
 //   void initState() {
 //     _listener = () {
-//       setState(() {});
+//       setStateIfMounted(() {});
 //     };
 
 //     _controller = VideoPlayerController.network(widget.videoUrl)
 //       ..addListener(_listener)
 //       ..initialize().then((void _) {
-//         setState(() {
+//         setStateIfMounted(() {
 //           _chewieController = ChewieController(
 //             videoPlayerController: _controller!,
 //             aspectRatio: 1080 / 1920,
@@ -40,7 +40,7 @@
 //         });
 //       });
 //     // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
-//     setState(() {});
+//     setStateIfMounted(() {});
 
 //     super.initState();
 //   }
@@ -67,7 +67,7 @@
 //       ),
 //       // floatingActionButton: FloatingActionButton(
 //       //   onPressed: () {
-//       //     setState(() {
+//       //     setStateIfMounted(() {
 //       //       _controller.value.isPlaying ? _controller.pause() : _controller.play().then((void _) {});
 //       //     });
 //       //   },
@@ -105,11 +105,11 @@
 
 // //         });
 // //         // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
-// //         setState(() {});
+// //         setStateIfMounted(() {});
 // //       });
 // //     super.initState();
 // //     listener = () {
-// //       setState(() {});
+// //       setStateIfMounted(() {});
 // //     };
 // //   }
 
@@ -136,7 +136,7 @@
 // //       ),
 // //       floatingActionButton: FloatingActionButton(
 // //           onPressed: () {
-// //             setState(() {
+// //             setStateIfMounted(() {
 // //               _controller.value.isPlaying
 // //                   ? _controller.pause()
 // //                   : _controller.play().then((void _){

@@ -54,18 +54,17 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
           ),
           Padding(
             padding: const EdgeInsets.only(top: 15.0, bottom: 5.0),
-            child:
-                (widget.areWeAtRunData.eventNumber != 0)
-                    ? Text(
-                      (eventPrice <= widget.areWeAtRunData.kennelCredit)
-                          ? 'Check in to ${widget.areWeAtRunData.kennelShortName}\'s ${widget.areWeAtRunData.eventName} (Run #${widget.areWeAtRunData.eventNumber})'
-                          : 'Would you like to check in to ${widget.areWeAtRunData.kennelShortName}\'s ${widget.areWeAtRunData.eventName} (Run #${widget.areWeAtRunData.eventNumber})',
-                    )
-                    : Text(
-                      (eventPrice <= widget.areWeAtRunData.kennelCredit)
-                          ? 'Check in to ${widget.areWeAtRunData.kennelShortName}\'s ${widget.areWeAtRunData.eventName}'
-                          : 'Would you like to check in to ${widget.areWeAtRunData.kennelShortName}\'s ${widget.areWeAtRunData.eventName}',
-                    ),
+            child: (widget.areWeAtRunData.eventNumber != 0)
+                ? Text(
+                    (eventPrice <= widget.areWeAtRunData.kennelCredit)
+                        ? 'Check in to ${widget.areWeAtRunData.kennelShortName}\'s ${widget.areWeAtRunData.eventName} (Run #${widget.areWeAtRunData.eventNumber})'
+                        : 'Would you like to check in to ${widget.areWeAtRunData.kennelShortName}\'s ${widget.areWeAtRunData.eventName} (Run #${widget.areWeAtRunData.eventNumber})',
+                  )
+                : Text(
+                    (eventPrice <= widget.areWeAtRunData.kennelCredit)
+                        ? 'Check in to ${widget.areWeAtRunData.kennelShortName}\'s ${widget.areWeAtRunData.eventName}'
+                        : 'Would you like to check in to ${widget.areWeAtRunData.kennelShortName}\'s ${widget.areWeAtRunData.eventName}',
+                  ),
           ),
 
           // pay for run only buttons

@@ -1,10 +1,7 @@
 import 'package:harrier_central/imports.dart';
 
 class CreateNewEventPopup extends StatefulWidget {
-  const CreateNewEventPopup(
-    this.title, {
-    super.key,
-  });
+  const CreateNewEventPopup(this.title, {super.key});
 
   final String title;
 
@@ -19,10 +16,7 @@ class CreateNewEventPopupState extends State<CreateNewEventPopup> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.title,
-        style: ts_alertDialogTitle,
-      ),
+      title: Text(widget.title, style: ts_alertDialogTitle),
       content: TextField(
         autofocus: true,
         focusNode: myFocusNodeFirstName,
@@ -45,35 +39,39 @@ class CreateNewEventPopupState extends State<CreateNewEventPopup> {
         //   child: Container(
         //     width: 60.0,
         //     child:
+        TextButton(
+          style: text_button_style.copyWith(
+            backgroundColor: WidgetStatePropertyAll(hc_blue),
+          ),
+          child: Text('Add counted run', style: ts_button),
+          onPressed: () {
+            Navigator.of(context).pop(<String, String>{
+              'type': eventFilterType_countEvent.value.toString(),
+              'eventName': eventNameAmountTextController.text,
+            });
+          },
+        ),
 
         TextButton(
-            style: text_button_style.copyWith(backgroundColor: WidgetStatePropertyAll(hc_blue)),
-            child: Text(
-              'Add counted run',
-              style: ts_button,
-            ),
-            onPressed: () {
-              Navigator.of(context).pop(<String, String>{'type': eventFilterType_countEvent.value.toString(), 'eventName': eventNameAmountTextController.text});
-            }),
-
-        TextButton(
-            style: text_button_style.copyWith(backgroundColor: WidgetStatePropertyAll(hc_blue)),
-            child: Text(
-              'Add other event',
-              style: ts_button,
-            ),
-            onPressed: () {
-              Navigator.of(context).pop(<String, String>{'type': eventFilterType_doNotCountEvent.value.toString(), 'eventName': eventNameAmountTextController.text});
-            }),
+          style: text_button_style.copyWith(
+            backgroundColor: WidgetStatePropertyAll(hc_blue),
+          ),
+          child: Text('Add other event', style: ts_button),
+          onPressed: () {
+            Navigator.of(context).pop(<String, String>{
+              'type': eventFilterType_doNotCountEvent.value.toString(),
+              'eventName': eventNameAmountTextController.text,
+            });
+          },
+        ),
 
         TextButton(
           style: text_button_style,
-          child: Text(
-            'Cancel',
-            style: ts_button,
-          ),
+          child: Text('Cancel', style: ts_button),
           onPressed: () {
-            Navigator.of(context).pop(<String, String>{'type': 'cancel', 'eventName': ''});
+            Navigator.of(
+              context,
+            ).pop(<String, String>{'type': 'cancel', 'eventName': ''});
           },
         ),
       ],

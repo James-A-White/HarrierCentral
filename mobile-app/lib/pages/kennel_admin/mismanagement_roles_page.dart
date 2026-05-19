@@ -358,7 +358,7 @@ class MismanagementRolesPageState extends State<MismanagementRolesPage> {
             child: Checkbox(
               value: value,
               onChanged: (bool? value) {
-                setState(() {
+                setStateIfMounted(() {
                   toggleState(value ?? false);
                 });
               },

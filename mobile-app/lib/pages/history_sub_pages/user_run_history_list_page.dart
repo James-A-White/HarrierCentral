@@ -47,12 +47,12 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
       // This means the user tapped a new tab, but the animation hasn't finished yet.
       //('Tab is changing to index: ${_tabController.index}');
       await _refreshRunHistoryFromTable(true);
-      //setState(() {});
+      //setStateIfMounted(() {});
     } else if (_tabController.index != _tabController.previousIndex) {
       // This is triggered after the tab has finished changing.
       //print('Tab changed to index: ${_tabController.index}');
       await _refreshRunHistoryFromTable(true);
-      //setState(() {});
+      //setStateIfMounted(() {});
     }
   }
 
@@ -172,7 +172,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
               .map((run) => run.flagFile)
               .toSet()
               .length;
-          setState(() {
+          setStateIfMounted(() {
             _isLoading = false;
           });
         }
@@ -323,7 +323,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
           lastSync: getDatePref(DatePrefsEnum.lastSuccessfulUserDataSync),
           ribbonImage: 'images/icons/offline_mode.png',
           refreshFunction: () {
-            setState(() {});
+            setStateIfMounted(() {});
           },
         ),
       ],
@@ -337,7 +337,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
   }
 
   Future<void> _handleRefresh() async {
-    setState(() {
+    setStateIfMounted(() {
       _isLoading = true;
     });
 
@@ -355,7 +355,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
     //print('User data synchronized $resultStr');
     await _refreshRunHistoryFromTable(true);
     _kennelInfo = await widget.refreshKennelInfo();
-    setState(() {
+    setStateIfMounted(() {
       _isLoading = false;
     });
   }
@@ -614,7 +614,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
                   // reviewed for 2.0+
                   child: TabBar(
                     onTap: (void _) {
-                      setState(() {});
+                      setStateIfMounted(() {});
                     },
                     labelStyle: ts_tabSelected,
                     unselectedLabelStyle: ts_tabUnselected,
@@ -738,7 +738,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
 
                               // await historyListPageKey.currentState.refreshRunHistoryFromTable(true);
 
-                              setState(() {});
+                              setStateIfMounted(() {});
                             }
                             return Future<bool>.value(false);
                           },
@@ -932,7 +932,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
                                     EnumAttendenceState attendenceState,
                                     EnumIsHare isHare,
                                   ) async {
-                                    setState(() {
+                                    setStateIfMounted(() {
                                       _runCountsList[index] =
                                           _runCountsList[index].copyWith(
                                             isUpdating: true,
@@ -968,7 +968,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
                                       }
                                     }
 
-                                    setState(() {
+                                    setStateIfMounted(() {
                                       _runCountsList[index] =
                                           _runCountsList[index].copyWith(
                                             isUpdating: false,
@@ -1015,7 +1015,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
     );
 
     await _refreshRunHistoryFromTable(true);
-    setState(() {
+    setStateIfMounted(() {
       _isLoading = false;
     });
   }

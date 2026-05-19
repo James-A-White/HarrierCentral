@@ -334,8 +334,9 @@ class ChatPageController extends GetxController {
 
   List<Map<String, dynamic>> preprocessMessages(List<dynamic> messageList) {
     return messageList.map((item) {
-      final Map<String, dynamic> message =
-          Map<String, dynamic>.from(item as Map<String, dynamic>);
+      final Map<String, dynamic> message = Map<String, dynamic>.from(
+        item as Map<String, dynamic>,
+      );
 
       // HC5: author was a serialised JSON string stored in the DB.
       if (message['author'] is String) {

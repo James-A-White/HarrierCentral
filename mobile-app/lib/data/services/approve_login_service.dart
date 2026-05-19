@@ -50,17 +50,18 @@ class ApproveLoginService {
     String ipInfoJson;
     try {
       final String ipv4 = await Ipify.ipv4();
-      final Response response = await get(
-        Uri.parse('https://ipinfo.io/$ipv4?token=$IPINFO_API_TOKEN'),
-      )
-          .catchError((dynamic error) {
-            if (kDebugMode) print(error.toString());
-            return Response('<no ip information available>', 500);
-          })
-          .timeout(
-            const Duration(milliseconds: 4000),
-            onTimeout: () => Response('<no ip information available>', 500),
-          );
+      final Response response =
+          await get(
+                Uri.parse('https://ipinfo.io/$ipv4?token=$IPINFO_API_TOKEN'),
+              )
+              .catchError((dynamic error) {
+                if (kDebugMode) print(error.toString());
+                return Response('<no ip information available>', 500);
+              })
+              .timeout(
+                const Duration(milliseconds: 4000),
+                onTimeout: () => Response('<no ip information available>', 500),
+              );
       ipInfoJson = response.body;
     } on Exception catch (_) {
       ipInfoJson = '''{
@@ -100,9 +101,11 @@ class ApproveLoginService {
       'systemName': systemName,
       'systemVersion': systemVersion,
       'manufacturer': manufacturer,
-      'latitude': position?.latitude.toString() ??
+      'latitude':
+          position?.latitude.toString() ??
           (deviceInfo.deviceLat ?? DEFAULT_LATITUDE).toString(),
-      'longitude': position?.longitude.toString() ??
+      'longitude':
+          position?.longitude.toString() ??
           (deviceInfo.deviceLon ?? DEFAULT_LONGITUDE).toString(),
       'hcVersion': version,
       'buildNumber': buildNumber,
@@ -113,8 +116,9 @@ class ApproveLoginService {
 
     // Report any splash sequence viewed in the previous session so the server
     // can suppress it from showing again on other devices for the same user.
-    final DateTime? splashSequenceViewed =
-        getDatePref(DatePrefsEnum.splashSequenceViewedAt);
+    final DateTime? splashSequenceViewed = getDatePref(
+      DatePrefsEnum.splashSequenceViewedAt,
+    );
     if (splashSequenceViewed != null) {
       body['splashSequenceViewed'] = splashSequenceViewed.toString();
       body['splashSequenceRootName'] = getStringPref(

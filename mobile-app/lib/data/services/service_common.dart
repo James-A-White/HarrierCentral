@@ -113,7 +113,9 @@ class ServiceCommon {
 
       if (isLastAttempt) {
         _showSnackbarSafely(
-          title: response.statusCode == 0 ? 'Request Timed Out' : 'Connection Issue',
+          title: response.statusCode == 0
+              ? 'Request Timed Out'
+              : 'Connection Issue',
           message: response.statusCode == 0
               ? 'The server took too long to respond. Please try again.'
               : 'Unable to connect. Please check your connection.',
@@ -158,10 +160,10 @@ class ServiceCommon {
   }) async {
     if (client == null) {
       return post(
-        Uri.parse(BASE_AF_API_URL),
-        headers: <String, String>{'content-type': 'application/json'},
-        body: requestBody,
-      )
+            Uri.parse(BASE_AF_API_URL),
+            headers: <String, String>{'content-type': 'application/json'},
+            body: requestBody,
+          )
           .timeout(
             _requestTimeout,
             // Status 0 = our internal "request timed out" sentinel.
@@ -181,10 +183,7 @@ class ServiceCommon {
           headers: <String, String>{'content-type': 'application/json'},
           body: requestBody,
         )
-        .timeout(
-          _requestTimeout,
-          onTimeout: () => Response('', 0),
-        )
+        .timeout(_requestTimeout, onTimeout: () => Response('', 0))
         .catchError((dynamic error) {
           unawaited(recordError(requestBody, error.toString()));
           return Future<Response>.value(Response('', 500));

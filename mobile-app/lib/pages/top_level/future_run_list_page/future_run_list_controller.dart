@@ -123,8 +123,7 @@ class FutureRunListPageController extends GetxController {
 
     // NotificationService is registered in initServices(). If Firebase was not
     // ready at boot time, register it now on first use.
-    if (Firebase.apps.isNotEmpty &&
-        !Get.isRegistered<NotificationService>()) {
+    if (Firebase.apps.isNotEmpty && !Get.isRegistered<NotificationService>()) {
       await Get.putAsync<NotificationService>(
         () => NotificationService().init(),
         permanent: false,
@@ -308,7 +307,7 @@ class FutureRunListPageController extends GetxController {
 
     update([UpdateIds.runList, UpdateIds.mainNavPage]);
 
-    //setState(() {});
+    //setStateIfMounted(() {});
 
     // Navigator.push<dynamic>(
     //   context,
@@ -338,7 +337,7 @@ class FutureRunListPageController extends GetxController {
     //       thisEventChatCount[run.event.publicEventId] = 0;
     //     }
 
-    //     setState(() {});
+    //     setStateIfMounted(() {});
     //   });
     // });
   }

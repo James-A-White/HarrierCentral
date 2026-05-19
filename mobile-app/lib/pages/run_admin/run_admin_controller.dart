@@ -26,7 +26,8 @@ class RunAdminController extends GetxController {
   }
 
   void _onDataChange(DataChangeEvent event) {
-    if (event.type == DataChangeType.runUpdated && event.id.toLowerCase() == eventId.toLowerCase()) {
+    if (event.type == DataChangeType.runUpdated &&
+        event.id.toLowerCase() == eventId.toLowerCase()) {
       unawaited(getRunDetails());
     }
   }
