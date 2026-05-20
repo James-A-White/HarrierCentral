@@ -208,6 +208,7 @@ export 'package:harrier_central/widgets/payment_report_list_item.dart';
 export 'package:harrier_central/widgets/payment_snackbar.dart';
 export 'package:harrier_central/widgets/pill_arrow_buttons.dart';
 export 'package:harrier_central/widgets/profile_photo.dart';
+export 'package:harrier_central/widgets/chat_strip_widget.dart';
 export 'package:harrier_central/widgets/qr_group.dart';
 export 'package:harrier_central/widgets/restart_widget.dart';
 export 'package:harrier_central/widgets/run_details.dart';

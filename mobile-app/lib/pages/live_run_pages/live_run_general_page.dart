@@ -180,7 +180,7 @@ class LiveRunGeneralPage extends StatelessWidget {
                     const SizedBox(height: 8),
                     _buildQrNavButton(),
                     const SizedBox(height: 8),
-                    Expanded(child: _buildChatSection()),
+                    _buildChatSection(),
                   ],
                 ),
               ),
@@ -565,17 +565,9 @@ class LiveRunGeneralPage extends StatelessWidget {
   }
 
   Widget _buildChatSection() {
-    return Card(
-      margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 6,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: ChatPage(
-          eventId: run.event.eventId,
-          publicEventId: run.event.publicEventId,
-        ),
-      ),
+    return ChatStripWidget(
+      eventId: run.event.eventId,
+      publicEventId: run.event.publicEventId,
     );
   }
 }
