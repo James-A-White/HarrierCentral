@@ -132,7 +132,12 @@ class KennelPhotoService {
           'blobUrl': data['blobUrl'] as String,
         };
       }
-    } catch (_) {}
+      debugPrint(
+        'GetPhotoUploadToken failed: HTTP ${response.statusCode} — ${response.body}',
+      );
+    } catch (e) {
+      debugPrint('GetPhotoUploadToken exception: $e');
+    }
     return null;
   }
 

@@ -25,8 +25,11 @@ namespace HcWebApi.Endpoints
         {
             string dbConn = Environment.GetEnvironmentVariable("HcDbConnectionString")
                 ?? throw new InvalidOperationException("HcDbConnectionString is not set.");
-            string storageConn = Environment.GetEnvironmentVariable("AzureWebJobsStorage")
-                ?? throw new InvalidOperationException("AzureWebJobsStorage is not set.");
+            // HC_BLOB_STORAGE_CONNECTION_STRING must point to the harriercentral storage
+            // account and include the account key (required for SAS token signing).
+            string storageConn = Environment.GetEnvironmentVariable("HC_BLOB_STORAGE_CONNECTION_STRING")
+                ?? Environment.GetEnvironmentVariable("AzureWebJobsStorage")
+                ?? throw new InvalidOperationException("No blob storage connection string configured.");
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             JObject data;
@@ -89,7 +92,19 @@ namespace HcWebApi.Endpoints
                 string blobPath = $"{kennelId}/{userId}-{photoGuid}.jpg";
                 var blobServiceClient = new BlobServiceClient(storageConn);
                 var containerClient = blobServiceClient.GetBlobContainerClient("kennel-photos");
-                await containerClient.CreateIfNotExistsAsync(Azure.Storage.Blobs.Models.PublicAccessType.Blob);
+
+                // Best-effort container creation — may already exist or public access may
+                // be disabled at the account level. Neither case should block SAS generation.
+                try
+                {
+                    await containerClient.CreateIfNotExistsAsync(
+                        Azure.Storage.Blobs.Models.PublicAccessType.Blob);
+                }
+                catch (Exception ex)
+                {
+                    _log.LogWarning("kennel-photos container creation skipped: {Message}", ex.Message);
+                }
+
                 var blobClient = containerClient.GetBlobClient(blobPath);
 
                 var sasBuilder = new BlobSasBuilder
@@ -109,7 +124,7 @@ namespace HcWebApi.Endpoints
             catch (Exception ex)
             {
                 _log.LogError("GetPhotoUploadToken SAS generation error: {Message}", ex.Message);
-                return new StatusCodeResult(500);
+                return new ObjectResult(new { error = ex.Message }) { StatusCode = 500 };
             }
         }
     }
