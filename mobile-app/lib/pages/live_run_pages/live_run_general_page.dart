@@ -175,12 +175,14 @@ class LiveRunGeneralPage extends StatelessWidget {
                     const SizedBox(height: 12),
                     // _buildActionsRow(context),
                     // const SizedBox(height: 12),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _buildMarkerGrid(context),
-                        _buildPhotoButton(),
-                      ],
+                    IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _buildMarkerGrid(context),
+                          _buildPhotoButton(),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 8),
                     _buildQrNavButton(),
