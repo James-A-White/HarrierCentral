@@ -1,50 +1,24 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
-import 'package:latlong2/latlong.dart' as latlng;
 
 class LiveRunGeneralController extends GetxController {
   LiveRunGeneralController({required this.run}) {
     LiveRunService.ensure();
-    qrItems = _buildQrItems();
   }
 
   final RunDetailsAggregate run;
   final LocationService _locationService = Get.find<LocationService>();
-  final latlng.Distance _distance = const latlng.Distance();
-
-  // Carousel state for QR codes lives in the controller to keep the page stateless.
-  final PageController qrPageController = PageController(viewportFraction: 0.9);
-  final RxInt currentQrIndex = 0.obs;
-  late final List<QrShareItem> qrItems;
 
   final RxBool isTracking = false.obs;
   final RxDouble distanceKm = 0.0.obs;
   final Rx<Duration> elapsed = const Duration().obs;
   final Rx<Position?> lastPosition = Rx<Position?>(null);
 
+  // Exposes LocationService.isPaused directly so the UI Obx can observe it.
+  RxBool get isPaused => _locationService.isPaused;
+
   DateTime? _trackingStartedAt;
   Timer? _elapsedTicker;
-  latlng.LatLng? _lastPoint;
-  double _distanceMeters = 0.0;
-
-  String get runWebsiteUrl {
-    if (run.event.isCountedRun != 0) {
-      return '$BASE_HASHRUNS_DOT_ORG_URL${run.kennel.kennelUniqueShortName}/${run.event.eventNumber}';
-    }
-    return '$BASE_HASHRUNS_DOT_ORG_URL#/RID?publicEventId=${run.event.publicEventId}';
-  }
-
-  /// Prefer a kennel landing page; fall back to kennel website; lastly use run page.
-  String get kennelWebsiteUrl {
-    final slug = run.kennel.kennelUniqueShortName;
-    if (slug.isNotEmpty) {
-      return '$BASE_HASHRUNS_DOT_ORG_URL$slug';
-    }
-    if (run.kennel.kennelWebsiteUrl?.isNotEmpty == true) {
-      return run.kennel.kennelWebsiteUrl!;
-    }
-    return runWebsiteUrl;
-  }
 
   @override
   void onInit() {
@@ -64,7 +38,6 @@ class LiveRunGeneralController extends GetxController {
   @override
   void onClose() {
     _stopElapsedTicker();
-    qrPageController.dispose();
     super.onClose();
   }
 
@@ -75,8 +48,6 @@ class LiveRunGeneralController extends GetxController {
 
     if (newValue) {
       _trackingStartedAt = DateTime.now();
-      _distanceMeters = 0.0;
-      _lastPoint = null;
       distanceKm.value = 0.0;
       elapsed.value = Duration.zero;
     }
@@ -88,15 +59,39 @@ class LiveRunGeneralController extends GetxController {
     }
   }
 
+  Future<void> pauseTracking() async {
+    await _locationService.pauseTracking();
+    _stopElapsedTicker();
+  }
+
+  void resumeTracking() {
+    _locationService.resumeTracking();
+    // _handleTrackingToggle fires when joinRunTracking becomes true,
+    // restarting the elapsed ticker.
+  }
+
   void stopTracking() {
-    if (_locationService.joinRunTracking.value) {
-      _locationService.joinRunTracking.value = false;
-      _stopElapsedTicker();
-    }
+    unawaited(_locationService.stopTracking());
+    _stopElapsedTicker();
   }
 
   Future<void> markPoint(HashRunPointTypes type, {String? label}) async {
     await _locationService.markPoint(type, label: label);
+  }
+
+  Future<void> takePhoto() async {
+    final blobUrl = await KennelPhotoService().captureAndUpload(
+      eventId: run.event.eventId,
+      kennelId: run.kennel.kennelId,
+    );
+    if (blobUrl != null) {
+      Get.snackbar(
+        'Photo saved',
+        'Your photo has been added to the run.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: hc_blue,
+      );
+    }
   }
 
   void _handleTrackingToggle(bool value) {
@@ -112,39 +107,10 @@ class LiveRunGeneralController extends GetxController {
   void _handlePosition(Position? position) {
     lastPosition.value = position;
     if (!isTracking.value || position == null) return;
-
-    // Prefer the map controller's filtered/interpolated distance for accuracy.
-    final currentPoint = latlng.LatLng(position.latitude, position.longitude);
-    final mappedDistance = _getMapDistanceKm();
-    if (mappedDistance != null) {
-      distanceKm.value = mappedDistance;
-      _distanceMeters = mappedDistance * 1000.0;
-    } else {
-      if (_lastPoint != null) {
-        _distanceMeters += _distance.as(
-          latlng.LengthUnit.Meter,
-          _lastPoint!,
-          currentPoint,
-        );
-        distanceKm.value = _distanceMeters / 1000.0;
-      }
-    }
-    _lastPoint = currentPoint;
-
+    distanceKm.value =
+        _locationService.filteredSessionDistanceMeters.value / 1000.0;
     _trackingStartedAt ??= DateTime.now();
     _updateElapsed();
-  }
-
-  double? _getMapDistanceKm() {
-    if (!Get.isRegistered<RunTrackerMapController>(tag: run.event.eventId)) {
-      return null;
-    }
-    final controller = Get.find<RunTrackerMapController>(
-      tag: run.event.eventId,
-    );
-    final meters = controller.currentUserDistanceMeters();
-    if (meters == null) return null;
-    return meters / 1000.0;
   }
 
   void _startElapsedTicker() {
@@ -173,47 +139,6 @@ class LiveRunGeneralController extends GetxController {
     return '$hours:$minutes:$seconds';
   }
 
-  List<QrShareItem> _buildQrItems() {
-    final items = <QrShareItem>[
-      QrShareItem(
-        title: 'Run #${run.event.eventNumber}',
-        description: 'this run',
-        url: runWebsiteUrl,
-      ),
-      QrShareItem(
-        title: 'Next ${run.kennel.kennelShortName} Run',
-        description: 'next ${run.kennel.kennelShortName} run',
-        url:
-            '$BASE_HASHRUNS_DOT_ORG_URL${run.kennel.kennelUniqueShortName}/nextrun',
-      ),
-    ];
-
-    final kennelRunsUrl = run.event.isCountedRun != 0
-        ? '$BASE_HASHRUNS_DOT_ORG_URL${run.kennel.kennelUniqueShortName}'
-        : '';
-    if (kennelRunsUrl.isNotEmpty) {
-      items.add(
-        QrShareItem(
-          title: '${run.kennel.kennelShortName} upcoming Runs',
-          description: '${run.kennel.kennelName} upcoming runs',
-          url: kennelRunsUrl,
-        ),
-      );
-    }
-
-    final kennelWebsite = kennelWebsiteUrl;
-    if (kennelWebsite.isNotEmpty) {
-      items.add(
-        QrShareItem(
-          title: '${run.kennel.kennelShortName} Website',
-          description: '${run.kennel.kennelName} website',
-          url: kennelWebsite,
-        ),
-      );
-    }
-
-    return items;
-  }
 }
 
 class LiveRunGeneralPage extends StatelessWidget {
@@ -251,15 +176,16 @@ class LiveRunGeneralPage extends StatelessWidget {
                     // _buildActionsRow(context),
                     // const SizedBox(height: 12),
                     Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         _buildMarkerGrid(context),
-                        //const SizedBox(width: 12),
-                        Expanded(child: _buildQrSmall()),
+                        _buildPhotoButton(),
                       ],
                     ),
-                    const SizedBox(height: 12),
-                    Expanded(child: _buildChatSection()),
+                    const SizedBox(height: 8),
+                    _buildQrNavButton(),
+                    const SizedBox(height: 8),
+                    _buildChatSection(),
                   ],
                 ),
               ),
@@ -273,115 +199,196 @@ class LiveRunGeneralPage extends StatelessWidget {
   Widget _buildTopButtons(BuildContext context) {
     return Obx(() {
       final tracking = controller.isTracking.value;
-      final Color trackingColor = tracking
-          ? Colors.green.shade700
-          : Colors.red.shade700;
+
+      final buttonShape = RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      );
+      const buttonPadding = EdgeInsets.symmetric(vertical: 3);
+
+      final paused = controller.isPaused.value;
+
+      if (!tracking && !paused) {
+        // Not running — full-width start button.
+        return SizedBox(
+          height: 45,
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            icon: const Icon(Icons.play_arrow, size: 20, color: Colors.white),
+            label: Text(
+              'Start Run Tracking',
+              style: ts_button.copyWith(fontSize: 18),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green.shade700,
+              foregroundColor: Colors.white,
+              padding: buttonPadding,
+              shape: buttonShape,
+            ),
+            onPressed: controller.toggleTracking,
+          ),
+        );
+      }
+
+      // Tracking or paused — left button toggles Auto Pause / Resume,
+      // right button ends the run.
+      final leftButton = paused
+          ? ElevatedButton.icon(
+              icon: const Icon(
+                Icons.play_arrow,
+                size: 20,
+                color: Colors.white,
+              ),
+              label: Text(
+                'Resume',
+                style: ts_button.copyWith(fontSize: 18),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green.shade700,
+                foregroundColor: Colors.white,
+                padding: buttonPadding,
+                shape: buttonShape,
+              ),
+              onPressed: controller.resumeTracking,
+            )
+          : ElevatedButton.icon(
+              icon: const Icon(Icons.pause, size: 20, color: Colors.white),
+              label: Text(
+                'Auto Pause',
+                style: ts_button.copyWith(fontSize: 18),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange.shade700,
+                foregroundColor: Colors.white,
+                padding: buttonPadding,
+                shape: buttonShape,
+              ),
+              onPressed: () => unawaited(controller.pauseTracking()),
+            );
+
       return SizedBox(
         height: 45,
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Expanded(child: leftButton),
+            const SizedBox(width: 10),
             Expanded(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: trackingColor,
-                  padding: const EdgeInsets.symmetric(vertical: 3),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  backgroundColor: hc_red,
+                  foregroundColor: Colors.white,
+                  padding: buttonPadding,
+                  shape: buttonShape,
                 ),
-                onPressed: controller.toggleTracking,
+                onPressed: () async {
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (_) => AlertDialog(
+                      title: Text('End Run?', style: ts_alertDialogTitle),
+                      content: Text(
+                        'Are you sure you want to end your run? '
+                        'Once stopped, tracking cannot be restarted. '
+                        'Your data will be saved.',
+                        style: ts_alertDialogBody,
+                      ),
+                      actions: [
+                        ElevatedButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey.shade600,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: Text('Keep Tracking', style: ts_button),
+                        ),
+                        ElevatedButton(
+                          onPressed: () => Navigator.of(context).pop(true),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: hc_red,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: Text('End Run', style: ts_button),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirmed == true) controller.stopTracking();
+                },
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      tracking ? Icons.pause : Icons.play_arrow,
-                      size: 20,
-                      color: Colors.white,
+                    Image.asset(
+                      'images/live_run_trail_markers/oninn.png',
+                      height: 26,
+                      width: 26,
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      tracking ? 'Stop Run Tracking' : 'Start Run Tracking',
+                      'End Run',
                       style: ts_button.copyWith(fontSize: 18),
                     ),
                   ],
                 ),
               ),
             ),
-            // const SizedBox(width: 12),
-            // Expanded(
-            //   child: ElevatedButton(
-            //     style: ElevatedButton.styleFrom(
-            //       backgroundColor: Colors.red.shade700,
-            //       padding: const EdgeInsets.symmetric(vertical: 3),
-            //       shape: RoundedRectangleBorder(
-            //         borderRadius: BorderRadius.circular(10),
-            //       ),
-            //     ),
-            //     onPressed: () {
-            //       Get.snackbar(
-            //         'Help is on the way',
-            //         'Open the Map tab to re-orient yourself.',
-            //         snackPosition: SnackPosition.BOTTOM,
-            //       );
-            //     },
-            //     child: Text("I'm Lost", style: ts_button),
-            //   ),
-            // ),
           ],
         ),
       );
     });
   }
 
-  Widget _buildQrSmall() {
-    final items = controller.qrItems;
-    if (items.isEmpty) return const SizedBox.shrink();
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const SizedBox(height: 3),
-        // Text('Share', style: ts_button.copyWith(color: Colors.yellow)),
-        // const SizedBox(height: 12),
-        SizedBox(
-          height: 180,
-          child: PageView.builder(
-            controller: controller.qrPageController,
-            onPageChanged: (index) => controller.currentQrIndex.value = index,
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              final item = items[index];
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Container(
-                    //padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: QrImageView(data: item.url, size: 110),
-                  ),
-                  const SizedBox(height: 6),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: AutoSizeText(
-                      item.title,
-                      textAlign: TextAlign.center,
-                      style: ts_titleMediumBold,
-                      maxLines: 3,
-                      minFontSize: 12,
-                    ),
-                  ),
-                ],
-              );
-            },
+  Widget _buildPhotoButton() {
+    return Obx(() {
+      final active = controller.isTracking.value || controller.isPaused.value;
+      return Expanded(
+        child: Padding(
+          padding: const EdgeInsets.only(left: 10),
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: active ? hc_blue : Colors.grey.shade700,
+              foregroundColor: Colors.white,
+              disabledBackgroundColor: Colors.grey.shade700,
+              disabledForegroundColor: Colors.white54,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            onPressed: active ? () => unawaited(controller.takePhoto()) : null,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.camera_alt, size: 44),
+                const SizedBox(height: 8),
+                Text(
+                  'Take\nPhoto',
+                  textAlign: TextAlign.center,
+                  style: ts_button.copyWith(fontSize: 15),
+                ),
+              ],
+            ),
           ),
         ),
-      ],
+      );
+    });
+  }
+
+  Widget _buildQrNavButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 36,
+      child: OutlinedButton.icon(
+        icon: const Icon(Icons.qr_code_2, size: 18),
+        label: const Text('QR Codes'),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Colors.white,
+          side: const BorderSide(color: Colors.white54),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        onPressed: () => Get.find<LiveRunShellController>().setTab(3),
+      ),
     );
   }
 
@@ -563,29 +570,10 @@ class LiveRunGeneralPage extends StatelessWidget {
   }
 
   Widget _buildChatSection() {
-    return Card(
-      margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 6,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: ChatPage(
-          eventId: run.event.eventId,
-          publicEventId: run.event.publicEventId,
-        ),
-      ),
+    return ChatStripWidget(
+      eventId: run.event.eventId,
+      publicEventId: run.event.publicEventId,
     );
   }
 }
 
-class QrShareItem {
-  const QrShareItem({
-    required this.title,
-    required this.description,
-    required this.url,
-  });
-
-  final String title;
-  final String description;
-  final String url;
-}

@@ -87,6 +87,7 @@ export 'package:harrier_central/data/services/authenticate_web_portal_service.da
 export 'package:harrier_central/data/services/authorize_device_service.dart';
 export 'package:harrier_central/data/services/email_reports_service.dart';
 export 'package:harrier_central/data/services/get_reset_code_service.dart';
+export 'package:harrier_central/data/services/kennel_photo_service.dart';
 export 'package:harrier_central/data/services/service_common.dart';
 export 'package:harrier_central/data/services/snooze_promotion_service.dart';
 export 'package:harrier_central/database/common_queries.dart';
@@ -208,6 +209,7 @@ export 'package:harrier_central/widgets/payment_report_list_item.dart';
 export 'package:harrier_central/widgets/payment_snackbar.dart';
 export 'package:harrier_central/widgets/pill_arrow_buttons.dart';
 export 'package:harrier_central/widgets/profile_photo.dart';
+export 'package:harrier_central/widgets/chat_strip_widget.dart';
 export 'package:harrier_central/widgets/qr_group.dart';
 export 'package:harrier_central/widgets/restart_widget.dart';
 export 'package:harrier_central/widgets/run_details.dart';

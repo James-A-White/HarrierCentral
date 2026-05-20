@@ -717,6 +717,17 @@ enum HashRunPointTypes {
     'Caution',
     '⚠️',
     'caution.png',
+  ),
+  photo(
+    'PHO',
+    12,
+    '📷 Photo 📷',
+    MaterialCommunityIcons.camera,
+    Colors.lightBlue,
+    'Camera',
+    '📷',
+    'photo.png',
+    // Note: photo.png asset not yet added; map overlay falls back to camera icon.
   );
 
   final String key;

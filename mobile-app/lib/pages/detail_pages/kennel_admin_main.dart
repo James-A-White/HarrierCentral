@@ -1,6 +1,7 @@
 //import 'dart:ui' as ui;
 
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/pages/kennel_admin/hash_flash_approval_page.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 import 'package:map_launcher/map_launcher.dart' as maps;
@@ -428,6 +429,32 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
               ),
           ],
         ),
+        if (agg.hkm?.mismanagement.getMismanagementState(mmRoleFlagHashFlash) ??
+            false)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _adminButton(
+                icon: MaterialCommunityIcons.camera_account,
+                iconSize: 52,
+                iconTopPadding: 4,
+                label: 'Review\r\nPhotos',
+                onPressed: () async {
+                  if (Utilities.isConnected(showDialog: true)) {
+                    await Navigator.push<void>(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (_) => HashFlashApprovalPage(
+                          kennelId: agg.kennel.kennelId,
+                          kennelName: agg.kennel.kennelShortName,
+                        ),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ],
+          ),
         const Padding(
           padding: EdgeInsets.only(top: 50.0, bottom: 25.0),
           child: FancyDivider(key: Key('5511334'), innerColor: Colors.white),

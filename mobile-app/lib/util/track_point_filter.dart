@@ -219,6 +219,20 @@ class TrackPointFilter {
     return startAlt + (endAlt - startAlt) * ratio;
   }
 
+  /// Sums the cumulative distance in meters between consecutive points.
+  /// Pass the output of [filterAndInterpolate] to get a noise-cleaned distance.
+  static double cumulativeDistanceMeters(List<TrackPoint> points) {
+    if (points.length < 2) return 0.0;
+    var total = 0.0;
+    for (var i = 1; i < points.length; i++) {
+      total += _distanceCalculator(
+        latlng.LatLng(points[i - 1].lat, points[i - 1].lng),
+        latlng.LatLng(points[i].lat, points[i].lng),
+      );
+    }
+    return total;
+  }
+
   /// Creates a summary of filtering statistics for debugging.
   FilterStats getFilterStats(
     List<TrackPoint> original,
