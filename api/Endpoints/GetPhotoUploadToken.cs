@@ -91,7 +91,7 @@ namespace HcWebApi.Endpoints
             {
                 string blobPath = $"{kennelId}/{userId}-{photoGuid}.jpg";
                 var blobServiceClient = new BlobServiceClient(storageConn);
-                var containerClient = blobServiceClient.GetBlobContainerClient("kennel-photos");
+                var containerClient = blobServiceClient.GetBlobContainerClient("trail-photos");
 
                 // Best-effort container creation — may already exist or public access may
                 // be disabled at the account level. Neither case should block SAS generation.
@@ -102,14 +102,14 @@ namespace HcWebApi.Endpoints
                 }
                 catch (Exception ex)
                 {
-                    _log.LogWarning("kennel-photos container creation skipped: {Message}", ex.Message);
+                    _log.LogWarning("trail-photos container creation skipped: {Message}", ex.Message);
                 }
 
                 var blobClient = containerClient.GetBlobClient(blobPath);
 
                 var sasBuilder = new BlobSasBuilder
                 {
-                    BlobContainerName = "kennel-photos",
+                    BlobContainerName = "trail-photos",
                     BlobName          = blobPath,
                     Resource          = "b",
                     ExpiresOn         = DateTimeOffset.UtcNow.AddMinutes(15)
