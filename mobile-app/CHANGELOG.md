@@ -1,5 +1,44 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.4.4+1110 (2026-05-20)
+
+### New features
+
+- **KennelPhotos — photo capture during a live run**: Hashers can now take photos
+  mid-run using the new **Take Photo** button on the Live Run Tools tab. Photos are
+  uploaded directly to Azure Blob Storage via a short-lived SAS token, then recorded
+  against the run. A `PHO` marker is enqueued into the GPS track feed so the photo
+  location appears on the map.
+
+- **KennelPhotos — sharing preference**: Sharing is controlled by a three-level
+  preference (per-run → per-kennel → global). Photos default to private; members
+  can opt in to share with the Hash Flash for review.
+
+- **Hash Flash approval screen**: Committee members with the Hash Flash role can
+  now review shared photos from the kennel admin page. Each photo can be approved
+  (made public), kept private, or deleted. Accessible via the **Review Photos**
+  button in the kennel admin functions section (visible only to Hash Flash role
+  holders).
+
+- **Live Run Tools — chat strip**: The embedded full chat UI on the Tools tab is
+  replaced with a compact read-only strip showing the last 3 messages, a total
+  message count badge, and an **Open Chat** button that jumps to the Chat tab.
+
+- **Live Run Tools — QR codes button**: The QR code carousel is removed from the
+  Tools tab. A slim **QR Codes** outline button now navigates directly to the
+  existing QR tab.
+
+### Bug fixes
+
+- **Live Run nav bar — selected icon invisible**: The active tab icon was
+  `Colors.black54` regardless of state, making it invisible against the red
+  button background. Selected icons are now white.
+
+- **Live Run Tools — page crash on load**: Two layout assertion failures fixed:
+  `Expanded` was incorrectly nested inside an `Obx` wrapper (must be a direct
+  `Row` child), and `CrossAxisAlignment.stretch` was applied to a `Row` inside
+  an unbounded-height `Column` (resolved with `IntrinsicHeight`).
+
 ## 2.4.3+1109 (2026-05-19)
 
 ### Code quality

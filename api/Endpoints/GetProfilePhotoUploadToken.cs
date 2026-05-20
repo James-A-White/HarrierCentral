@@ -25,8 +25,9 @@ namespace HcWebApi.Endpoints
         {
             string dbConn = Environment.GetEnvironmentVariable("HcDbConnectionString")
                 ?? throw new InvalidOperationException("HcDbConnectionString is not set.");
-            string storageConn = Environment.GetEnvironmentVariable("AzureWebJobsStorage")
-                ?? throw new InvalidOperationException("AzureWebJobsStorage is not set.");
+            string storageConn = Environment.GetEnvironmentVariable("HC_BLOB_STORAGE_CONNECTION_STRING")
+                ?? Environment.GetEnvironmentVariable("AzureWebJobsStorage")
+                ?? throw new InvalidOperationException("No blob storage connection string configured.");
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             JObject data;
@@ -104,7 +105,7 @@ namespace HcWebApi.Endpoints
             catch (Exception ex)
             {
                 _log.LogError("GetProfilePhotoUploadToken SAS generation error: {Message}", ex.Message);
-                return new StatusCodeResult(500);
+                return new ObjectResult(new { error = ex.Message }) { StatusCode = 500 };
             }
         }
     }
