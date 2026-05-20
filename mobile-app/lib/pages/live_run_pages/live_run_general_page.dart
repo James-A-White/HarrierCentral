@@ -4,16 +4,10 @@ import 'package:harrier_central/imports.dart';
 class LiveRunGeneralController extends GetxController {
   LiveRunGeneralController({required this.run}) {
     LiveRunService.ensure();
-    qrItems = _buildQrItems();
   }
 
   final RunDetailsAggregate run;
   final LocationService _locationService = Get.find<LocationService>();
-
-  // Carousel state for QR codes lives in the controller to keep the page stateless.
-  final PageController qrPageController = PageController(viewportFraction: 0.9);
-  final RxInt currentQrIndex = 0.obs;
-  late final List<QrShareItem> qrItems;
 
   final RxBool isTracking = false.obs;
   final RxDouble distanceKm = 0.0.obs;
@@ -25,25 +19,6 @@ class LiveRunGeneralController extends GetxController {
 
   DateTime? _trackingStartedAt;
   Timer? _elapsedTicker;
-
-  String get runWebsiteUrl {
-    if (run.event.isCountedRun != 0) {
-      return '$BASE_HASHRUNS_DOT_ORG_URL${run.kennel.kennelUniqueShortName}/${run.event.eventNumber}';
-    }
-    return '$BASE_HASHRUNS_DOT_ORG_URL#/RID?publicEventId=${run.event.publicEventId}';
-  }
-
-  /// Prefer a kennel landing page; fall back to kennel website; lastly use run page.
-  String get kennelWebsiteUrl {
-    final slug = run.kennel.kennelUniqueShortName;
-    if (slug.isNotEmpty) {
-      return '$BASE_HASHRUNS_DOT_ORG_URL$slug';
-    }
-    if (run.kennel.kennelWebsiteUrl?.isNotEmpty == true) {
-      return run.kennel.kennelWebsiteUrl!;
-    }
-    return runWebsiteUrl;
-  }
 
   @override
   void onInit() {
@@ -63,7 +38,6 @@ class LiveRunGeneralController extends GetxController {
   @override
   void onClose() {
     _stopElapsedTicker();
-    qrPageController.dispose();
     super.onClose();
   }
 
@@ -103,6 +77,16 @@ class LiveRunGeneralController extends GetxController {
 
   Future<void> markPoint(HashRunPointTypes type, {String? label}) async {
     await _locationService.markPoint(type, label: label);
+  }
+
+  // TODO(phase3): wire to KennelPhotoService.captureAndUpload()
+  Future<void> takePhoto() async {
+    Get.snackbar(
+      'Coming soon',
+      'Photo capture will be available in the next update.',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: hc_blue,
+    );
   }
 
   void _handleTrackingToggle(bool value) {
@@ -150,47 +134,6 @@ class LiveRunGeneralController extends GetxController {
     return '$hours:$minutes:$seconds';
   }
 
-  List<QrShareItem> _buildQrItems() {
-    final items = <QrShareItem>[
-      QrShareItem(
-        title: 'Run #${run.event.eventNumber}',
-        description: 'this run',
-        url: runWebsiteUrl,
-      ),
-      QrShareItem(
-        title: 'Next ${run.kennel.kennelShortName} Run',
-        description: 'next ${run.kennel.kennelShortName} run',
-        url:
-            '$BASE_HASHRUNS_DOT_ORG_URL${run.kennel.kennelUniqueShortName}/nextrun',
-      ),
-    ];
-
-    final kennelRunsUrl = run.event.isCountedRun != 0
-        ? '$BASE_HASHRUNS_DOT_ORG_URL${run.kennel.kennelUniqueShortName}'
-        : '';
-    if (kennelRunsUrl.isNotEmpty) {
-      items.add(
-        QrShareItem(
-          title: '${run.kennel.kennelShortName} upcoming Runs',
-          description: '${run.kennel.kennelName} upcoming runs',
-          url: kennelRunsUrl,
-        ),
-      );
-    }
-
-    final kennelWebsite = kennelWebsiteUrl;
-    if (kennelWebsite.isNotEmpty) {
-      items.add(
-        QrShareItem(
-          title: '${run.kennel.kennelShortName} Website',
-          description: '${run.kennel.kennelName} website',
-          url: kennelWebsite,
-        ),
-      );
-    }
-
-    return items;
-  }
 }
 
 class LiveRunGeneralPage extends StatelessWidget {
@@ -228,14 +171,15 @@ class LiveRunGeneralPage extends StatelessWidget {
                     // _buildActionsRow(context),
                     // const SizedBox(height: 12),
                     Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         _buildMarkerGrid(context),
-                        //const SizedBox(width: 12),
-                        Expanded(child: _buildQrSmall()),
+                        _buildPhotoButton(),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
+                    _buildQrNavButton(),
+                    const SizedBox(height: 8),
                     Expanded(child: _buildChatSection()),
                   ],
                 ),
@@ -389,53 +333,57 @@ class LiveRunGeneralPage extends StatelessWidget {
     });
   }
 
-  Widget _buildQrSmall() {
-    final items = controller.qrItems;
-    if (items.isEmpty) return const SizedBox.shrink();
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const SizedBox(height: 3),
-        // Text('Share', style: ts_button.copyWith(color: Colors.yellow)),
-        // const SizedBox(height: 12),
-        SizedBox(
-          height: 180,
-          child: PageView.builder(
-            controller: controller.qrPageController,
-            onPageChanged: (index) => controller.currentQrIndex.value = index,
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              final item = items[index];
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Container(
-                    //padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: QrImageView(data: item.url, size: 110),
-                  ),
-                  const SizedBox(height: 6),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: AutoSizeText(
-                      item.title,
-                      textAlign: TextAlign.center,
-                      style: ts_titleMediumBold,
-                      maxLines: 3,
-                      minFontSize: 12,
-                    ),
-                  ),
-                ],
-              );
-            },
+  Widget _buildPhotoButton() {
+    return Obx(() {
+      final active = controller.isTracking.value || controller.isPaused.value;
+      return Expanded(
+        child: Padding(
+          padding: const EdgeInsets.only(left: 10),
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: active ? hc_blue : Colors.grey.shade700,
+              foregroundColor: Colors.white,
+              disabledBackgroundColor: Colors.grey.shade700,
+              disabledForegroundColor: Colors.white54,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            onPressed: active ? () => unawaited(controller.takePhoto()) : null,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.camera_alt, size: 44),
+                const SizedBox(height: 8),
+                Text(
+                  'Take\nPhoto',
+                  textAlign: TextAlign.center,
+                  style: ts_button.copyWith(fontSize: 15),
+                ),
+              ],
+            ),
           ),
         ),
-      ],
+      );
+    });
+  }
+
+  Widget _buildQrNavButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 36,
+      child: OutlinedButton.icon(
+        icon: const Icon(Icons.qr_code_2, size: 18),
+        label: const Text('QR Codes'),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Colors.white,
+          side: const BorderSide(color: Colors.white54),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        onPressed: () => Get.find<LiveRunShellController>().setTab(3),
+      ),
     );
   }
 
@@ -632,14 +580,3 @@ class LiveRunGeneralPage extends StatelessWidget {
   }
 }
 
-class QrShareItem {
-  const QrShareItem({
-    required this.title,
-    required this.description,
-    required this.url,
-  });
-
-  final String title;
-  final String description;
-  final String url;
-}
