@@ -339,12 +339,14 @@ class LiveRunGeneralPage extends StatelessWidget {
   }
 
   Widget _buildPhotoButton() {
-    return Obx(() {
-      final active = controller.isTracking.value || controller.isPaused.value;
-      return Expanded(
-        child: Padding(
-          padding: const EdgeInsets.only(left: 10),
-          child: ElevatedButton(
+    // Expanded must be a direct Row child — Obx wraps only the reactive button.
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.only(left: 10),
+        child: Obx(() {
+          final active =
+              controller.isTracking.value || controller.isPaused.value;
+          return ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: active ? hc_blue : Colors.grey.shade700,
               foregroundColor: Colors.white,
@@ -367,10 +369,10 @@ class LiveRunGeneralPage extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-        ),
-      );
-    });
+          );
+        }),
+      ),
+    );
   }
 
   Widget _buildQrNavButton() {
