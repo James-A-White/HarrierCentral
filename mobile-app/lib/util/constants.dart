@@ -79,6 +79,10 @@ const String BASE_AF_API_URL = 'https://$BASE_AF_URL/api/AppApiHC6';
 const String BASE_AF_CONNECTION_TEST_URL = 'https://$BASE_AF_URL/api/TestApi';
 
 // new APIs below
+const String PHOTO_UPLOAD_TOKEN_URL =
+    'https://$BASE_AF_URL/api/GetPhotoUploadToken';
+const String PROFILE_PHOTO_UPLOAD_TOKEN_URL =
+    'https://$BASE_AF_URL/api/GetProfilePhotoUploadToken';
 
 const String EMAIL_KENNEL_RUN_STATS_API_URL =
     "https://$BASE_AF_URL/api/SendKennelRunStatsReport";

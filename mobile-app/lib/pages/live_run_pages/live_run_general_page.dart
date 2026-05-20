@@ -79,14 +79,19 @@ class LiveRunGeneralController extends GetxController {
     await _locationService.markPoint(type, label: label);
   }
 
-  // TODO(phase3): wire to KennelPhotoService.captureAndUpload()
   Future<void> takePhoto() async {
-    Get.snackbar(
-      'Coming soon',
-      'Photo capture will be available in the next update.',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: hc_blue,
+    final blobUrl = await KennelPhotoService().captureAndUpload(
+      eventId: run.event.eventId,
+      kennelId: run.kennel.kennelId,
     );
+    if (blobUrl != null) {
+      Get.snackbar(
+        'Photo saved',
+        'Your photo has been added to the run.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: hc_blue,
+      );
+    }
   }
 
   void _handleTrackingToggle(bool value) {
