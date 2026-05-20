@@ -84,19 +84,31 @@ class LiveRunShell extends StatelessWidget {
           buttonBackgroundColor: hc_red,
           items: [
             CurvedNavigationBarItem(
-              child: Icon(Icons.dashboard_customize, color: Colors.black54),
+              child: Obx(() => Icon(Icons.dashboard_customize,
+                  color: controller.tabIndex.value == 0
+                      ? Colors.white
+                      : Colors.black54)),
               label: 'Tools',
             ),
             CurvedNavigationBarItem(
-              child: Icon(Icons.chat_bubble_outline, color: Colors.black54),
+              child: Obx(() => Icon(Icons.chat_bubble_outline,
+                  color: controller.tabIndex.value == 1
+                      ? Colors.white
+                      : Colors.black54)),
               label: 'Chat',
             ),
             CurvedNavigationBarItem(
-              child: Icon(Icons.map, color: Colors.black54),
+              child: Obx(() => Icon(Icons.map,
+                  color: controller.tabIndex.value == 2
+                      ? Colors.white
+                      : Colors.black54)),
               label: 'Map',
             ),
             CurvedNavigationBarItem(
-              child: Icon(Icons.qr_code_2, color: Colors.black54),
+              child: Obx(() => Icon(Icons.qr_code_2,
+                  color: controller.tabIndex.value == 3
+                      ? Colors.white
+                      : Colors.black54)),
               label: 'QRs',
             ),
           ],
