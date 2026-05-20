@@ -214,6 +214,25 @@ class KennelPhotoService {
 
   // ── Public query methods (called by Hash Flash screen + map) ─────────────
 
+  Future<String> getKennelPendingPhotos({required String kennelId}) async {
+    final userId = getStringPref(StringPrefsEnum.userId)!;
+    final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    return ServiceCommon.sendHttpPost(
+      () => jsonEncode(<String, String>{
+        'queryType': 'getKennelPendingPhotos',
+        'deviceId': deviceId,
+        'accessToken': Utilities.generateToken(
+          userId,
+          'hcapp_getKennelPendingPhotos',
+          paramString: deviceSecret,
+        ),
+        'kennelId': kennelId,
+      }),
+    );
+  }
+
   Future<String> getRunPhotos({
     required String eventId,
     String? afterUpdatedAt,
