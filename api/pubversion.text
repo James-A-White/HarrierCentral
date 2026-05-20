@@ -1,4 +1,13 @@
 
+1.0.7+5
+    • GetPhotoUploadToken: new endpoint — validates auth + kennel membership via
+      hcapp_getPhotoUploadToken SP, returns a 15-minute SAS write token for
+      kennel-photos/{kennelId}/{userId}-{photoGuid}.jpg
+    • GetProfilePhotoUploadToken: new endpoint — validates auth via
+      hcapp_getProfilePhotoUploadToken SP, returns a 15-minute SAS write token
+      for profile-photos/{userId}.jpg (replaces hardcoded 2028 SAS token)
+    • Added Azure.Storage.Blobs 12.22.2 NuGet dependency
+
 1.0.6+4
     • AppApiHC6: exempt checkConnection from deviceId/accessToken guard
       (hcapp_checkConnection is an unauthenticated ping — no auth params required)
