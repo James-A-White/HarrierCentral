@@ -8,6 +8,7 @@ class KennelPhotoService {
   Future<String?> captureAndUpload({
     required String eventId,
     required String kennelId,
+    required String kennelSlug,
     int? perRunSharingOverride,
   }) async {
     // 1. Pick and crop from camera
@@ -20,6 +21,7 @@ class KennelPhotoService {
     // 3. Request a short-lived SAS write token from the API
     final tokenResult = await _getUploadToken(
       kennelId: kennelId,
+      kennelSlug: kennelSlug,
       photoGuid: photoGuid,
     );
     if (tokenResult == null) {
@@ -103,6 +105,7 @@ class KennelPhotoService {
 
   Future<Map<String, String>?> _getUploadToken({
     required String kennelId,
+    required String kennelSlug,
     required String photoGuid,
   }) async {
     final userId = getStringPref(StringPrefsEnum.userId)!;
@@ -121,6 +124,7 @@ class KennelPhotoService {
             paramString: deviceSecret,
           ),
           'kennelId': kennelId,
+          'kennelSlug': kennelSlug,
           'photoGuid': photoGuid,
         }),
       ).timeout(const Duration(seconds: 30));

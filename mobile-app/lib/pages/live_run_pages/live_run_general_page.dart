@@ -83,6 +83,7 @@ class LiveRunGeneralController extends GetxController {
     final blobUrl = await KennelPhotoService().captureAndUpload(
       eventId: run.event.eventId,
       kennelId: run.kennel.kennelId,
+      kennelSlug: run.kennel.kennelUniqueShortName,
     );
     if (blobUrl != null) {
       Get.snackbar(

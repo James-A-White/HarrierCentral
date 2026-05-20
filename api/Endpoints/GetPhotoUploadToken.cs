@@ -36,10 +36,11 @@ namespace HcWebApi.Endpoints
             try { data = JObject.Parse(requestBody); }
             catch { return new BadRequestObjectResult("Invalid JSON body."); }
 
-            string? deviceId   = data["deviceId"]?.ToString();
+            string? deviceId    = data["deviceId"]?.ToString();
             string? accessToken = data["accessToken"]?.ToString();
-            string? kennelId   = data["kennelId"]?.ToString();
-            string? photoGuid  = data["photoGuid"]?.ToString();
+            string? kennelId    = data["kennelId"]?.ToString();
+            string? kennelSlug  = data["kennelSlug"]?.ToString();
+            string? photoGuid   = data["photoGuid"]?.ToString();
 
             if (string.IsNullOrEmpty(deviceId) || string.IsNullOrEmpty(accessToken) ||
                 string.IsNullOrEmpty(kennelId) || string.IsNullOrEmpty(photoGuid))
@@ -89,7 +90,9 @@ namespace HcWebApi.Endpoints
 
             try
             {
-                string blobPath = $"{kennelId}/{userId}-{photoGuid}.jpg";
+                // Use kennel slug for the folder name when provided; fall back to UUID.
+                string folder   = !string.IsNullOrEmpty(kennelSlug) ? kennelSlug : kennelId!;
+                string blobPath = $"{folder}/{userId}-{photoGuid}.jpg";
                 var blobServiceClient = new BlobServiceClient(storageConn);
                 var containerClient = blobServiceClient.GetBlobContainerClient("trail-photos");
 
