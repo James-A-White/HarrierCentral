@@ -95,7 +95,7 @@ IF NOT EXISTS (
     SELECT 1 FROM HC.HasherKennelMap
     WHERE UserId = @userId
       AND KennelId = @kennelId
-      AND IsMember = 1
+      AND Following = 1
 )
 BEGIN
     SET @errorCode = 1330; SET @errorType = 13; SET @errorId = NEWID();
