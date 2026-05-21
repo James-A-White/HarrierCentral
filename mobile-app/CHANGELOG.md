@@ -1,5 +1,16 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.4.7+1113 (2026-05-21)
+
+### Code quality
+
+- **Sync services — dead code removal**: Removed a long-standing `if (true)`
+  dead-code wrapper from all three sync services (`SyncUserDataService`,
+  `SyncKennelAdminService`, `SyncEventAdminService`). The original cache-expiry
+  condition was commented out years ago and replaced with an unconditional
+  `if (true)` placeholder, leaving the entire method body unnecessarily
+  nested. No behaviour change.
+
 ## 2.4.6+1112 (2026-05-21)
 
 ### Bug fixes
