@@ -1,5 +1,33 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.4.5+1111 (2026-05-21)
+
+### Enhancements
+
+- **Photo review — 6-level approval scale**: The Hash Flash approval screen is
+  replaced by a full **Photo Review** screen with two rejection options (Keep
+  Private, Delete) and four escalating approval levels, each implying all
+  levels below it:
+  - **Share with Hash** — visible to all Harrier Central users on run maps
+  - **Run Gallery** — also appears in the run's photo gallery
+  - **Home Gallery** — also featured on the kennel home page
+  - **Event Cover** — also set as the run's cover photo (`HC.Event.EventCoverPhotoUrl`)
+
+- **Photo review — expanded reviewer roles**: The Review Photos button in the
+  kennel admin page is now visible to Hash Flash, Grand Master, Vice-GM, and RA
+  (previously Hash Flash only).
+
+- **Photo upload — kennel slug folder**: Photos now upload into
+  `trail-photos/{kennelSlug}/` in Azure Blob Storage rather than a UUID-named
+  folder. The slug is resolved server-side so no app rebuild was required for
+  the initial fix.
+
+### Bug fixes
+
+- **Photo upload — upload token error**: Fixed a 403 auth failure caused by the
+  SP checking `IsMember = 1` (defaults to 0); relaxed to `Following = 1` so any
+  kennel follower can take photos during a run.
+
 ## 2.4.4+1110 (2026-05-20)
 
 ### New features
