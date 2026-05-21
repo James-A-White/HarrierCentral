@@ -343,15 +343,13 @@ class KennelPhotoService {
     );
   }
 
-  // ── Share intent sheet ───────────────────────────────────────────────────
+  // ── Share intent page ────────────────────────────────────────────────────
 
-  Future<_PhotoShareIntent?> _showShareSheet(File imageFile) {
-    return Get.bottomSheet<_PhotoShareIntent>(
-      _ShareSheet(imageFile: imageFile),
-      isScrollControlled: false,
-      backgroundColor: Colors.transparent,
-      isDismissible: true,
-      enableDrag: true,
+  Future<_PhotoShareIntent?> _showShareSheet(File imageFile) async {
+    return Get.to<_PhotoShareIntent>(
+      () => _PhotoSharePage(imageFile: imageFile),
+      transition: Transition.downToUp,
+      duration: const Duration(milliseconds: 280),
     );
   }
 }
@@ -360,96 +358,77 @@ class KennelPhotoService {
 
 enum _PhotoShareIntent { discard, savePrivate, saveAndShare }
 
-// ── Bottom sheet widget ───────────────────────────────────────────────────────
+// ── Full-screen photo review + intent page ───────────────────────────────────
 
-class _ShareSheet extends StatelessWidget {
-  const _ShareSheet({required this.imageFile});
+class _PhotoSharePage extends StatelessWidget {
+  const _PhotoSharePage({required this.imageFile});
 
   final File imageFile;
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Drag handle
-            Padding(
-              padding: const EdgeInsets.only(top: 10, bottom: 6),
-              child: Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Column(
+        children: [
+          // Photo fills all available space above the button panel
+          Expanded(
+            child: Image.file(
+              imageFile,
+              fit: BoxFit.contain,
+              width: double.infinity,
+            ),
+          ),
+
+          // Fixed bottom panel — never overflows
+          Container(
+            color: Colors.black,
+            padding: EdgeInsets.only(
+              left: 12,
+              right: 12,
+              top: 12,
+              bottom: MediaQuery.of(context).padding.bottom + 12,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _IntentButton(
+                  icon: Icons.delete_outline,
+                  label: 'Discard',
+                  subtitle: 'Remove the photo',
+                  color: hc_red,
+                  onTap: () =>
+                      Get.back(result: _PhotoShareIntent.discard),
                 ),
-              ),
-            ),
-
-            // Photo preview
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 220),
-              child: Image.file(
-                imageFile,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
-              child: Text(
-                'What would you like to do with this photo?',
-                style: ts_bodySmall.copyWith(
-                  color: Colors.black54,
-                  fontStyle: FontStyle.italic,
+                const SizedBox(height: 8),
+                _IntentButton(
+                  icon: Icons.lock_outline,
+                  label: 'Save privately',
+                  subtitle: 'Visible only to you',
+                  color: Colors.grey.shade700,
+                  onTap: () =>
+                      Get.back(result: _PhotoShareIntent.savePrivate),
                 ),
-                textAlign: TextAlign.center,
-              ),
+                const SizedBox(height: 8),
+                _IntentButton(
+                  icon: Icons.share_outlined,
+                  label: 'Save and share',
+                  subtitle: 'Forwards to Hash Flash for review',
+                  color: Colors.green.shade700,
+                  onTap: () =>
+                      Get.back(result: _PhotoShareIntent.saveAndShare),
+                ),
+              ],
             ),
-
-            // Discard
-            _SheetButton(
-              icon: Icons.delete_outline,
-              label: 'Discard',
-              subtitle: 'Remove the photo',
-              color: hc_red,
-              onTap: () => Get.back(result: _PhotoShareIntent.discard),
-            ),
-
-            // Save privately
-            _SheetButton(
-              icon: Icons.lock_outline,
-              label: 'Save privately',
-              subtitle: 'Visible only to you',
-              color: Colors.grey.shade600,
-              onTap: () => Get.back(result: _PhotoShareIntent.savePrivate),
-            ),
-
-            // Save & share
-            _SheetButton(
-              icon: Icons.share_outlined,
-              label: 'Save and share',
-              subtitle: 'Forwards to Hash Flash for review',
-              color: Colors.green.shade700,
-              onTap: () => Get.back(result: _PhotoShareIntent.saveAndShare),
-            ),
-
-            const SizedBox(height: 12),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _SheetButton extends StatelessWidget {
-  const _SheetButton({
+class _IntentButton extends StatelessWidget {
+  const _IntentButton({
     required this.icon,
     required this.label,
     required this.subtitle,
@@ -465,41 +444,38 @@ class _SheetButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: color,
-            foregroundColor: Colors.white,
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          foregroundColor: Colors.white,
+          alignment: Alignment.centerLeft,
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
           ),
-          onPressed: onTap,
-          child: Row(
-            children: [
-              Icon(icon, size: 22),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(label,
-                        style: ts_button.copyWith(fontSize: 15)),
-                    Text(subtitle,
-                        style: ts_bodySmall.copyWith(
-                            color: Colors.white70, fontSize: 12)),
-                  ],
-                ),
+        ),
+        onPressed: onTap,
+        child: Row(
+          children: [
+            Icon(icon, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: ts_button.copyWith(fontSize: 15)),
+                  Text(
+                    subtitle,
+                    style: ts_bodySmall.copyWith(
+                        color: Colors.white70, fontSize: 12),
+                  ),
+                ],
               ),
-              const Icon(Icons.chevron_right,
-                  size: 20, color: Colors.white60),
-            ],
-          ),
+            ),
+            const Icon(Icons.chevron_right, size: 18, color: Colors.white60),
+          ],
         ),
       ),
     );
