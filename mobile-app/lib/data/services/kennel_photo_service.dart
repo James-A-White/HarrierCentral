@@ -92,6 +92,12 @@ class KennelPhotoService {
   // ── Photo capture ────────────────────────────────────────────────────────
 
   Future<File?> _pickAndCrop() async {
+    // iOS/Android simulators have no camera. Load a bundled JPEG so the full
+    // token → upload → record flow can be exercised without a physical device.
+    if (!deviceInfo.isPhysicalDevice) {
+      return _simulatorPlaceholder();
+    }
+
     final picked = await ImagePicker().pickImage(
       source: ImageSource.camera,
       imageQuality: 70,
@@ -108,6 +114,21 @@ class KennelPhotoService {
     if (cropped == null) return null;
 
     return File(cropped.path);
+  }
+
+  /// Returns a temp File backed by the splash screen JPEG so tests on the
+  /// simulator don't need to touch the camera at all.
+  Future<File?> _simulatorPlaceholder() async {
+    try {
+      final data = await rootBundle.load('images/init/splash_screen.jpg');
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/hc_simulator_photo.jpg');
+      await file.writeAsBytes(data.buffer.asUint8List());
+      return file;
+    } catch (e) {
+      debugPrint('KennelPhotoService: simulator placeholder failed: $e');
+      return null;
+    }
   }
 
   // ── SAS token request ────────────────────────────────────────────────────

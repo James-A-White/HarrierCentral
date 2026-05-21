@@ -1,5 +1,15 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.4.8+1114 (2026-05-21)
+
+### Developer experience
+
+- **KennelPhotos — simulator support**: Running on the iOS or Android
+  simulator no longer blocks at the camera step. When `isPhysicalDevice`
+  is false the app loads the bundled splash-screen JPEG as a placeholder,
+  then runs the full token → blob upload → database record flow as normal.
+  No user-visible change on physical devices.
+
 ## 2.4.7+1113 (2026-05-21)
 
 ### Code quality
