@@ -110,7 +110,8 @@ BEGIN
     RETURN;
 END
 
-SELECT 1 AS success, @userId AS userId, @kennelId AS kennelId,
+SELECT 1 AS success, NULL AS errorCode, NULL AS errorType;
+SELECT @userId AS userId, @kennelId AS kennelId,
     k.KennelUniqueShortName AS kennelSlug
 FROM HC.Kennel k
 WHERE k.id = @kennelId;
