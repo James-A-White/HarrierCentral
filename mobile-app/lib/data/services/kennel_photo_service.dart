@@ -1,5 +1,14 @@
 import 'package:harrier_central/imports.dart';
 
+// Photo review action codes — match hcapp_updatePhotoStatus @action parameter.
+// Actions 3–6 are cumulative: each level implies all lower approval levels.
+const int photoActionDelete          = 1; // hard-delete (inappropriate content)
+const int photoActionKeepPrivate     = 2; // back to uploader-only (status 0)
+const int photoActionShare           = 3; // visible to all HC users on run maps (status 2)
+const int photoActionAddToGallery    = 4; // + appears in run photo gallery (status 3)
+const int photoActionAddToHomeGallery = 5; // + appears on kennel home page (status 4)
+const int photoActionMakeEventCover  = 6; // + set as run cover photo (status 5)
+
 class KennelPhotoService {
   /// Orchestrates the full capture → upload → record flow.
   ///
