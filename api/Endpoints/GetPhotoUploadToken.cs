@@ -40,6 +40,7 @@ namespace HcWebApi.Endpoints
             string? accessToken = data["accessToken"]?.ToString();
             string? kennelId    = data["kennelId"]?.ToString();
             string? kennelSlug  = data["kennelSlug"]?.ToString();
+            string? runFolder   = data["runFolder"]?.ToString();
             string? photoGuid   = data["photoGuid"]?.ToString();
 
             if (string.IsNullOrEmpty(deviceId) || string.IsNullOrEmpty(accessToken) ||
@@ -97,9 +98,11 @@ namespace HcWebApi.Endpoints
 
             try
             {
-                // Use kennel slug for the folder name when provided; fall back to UUID.
-                string folder   = !string.IsNullOrEmpty(kennelSlug) ? kennelSlug : kennelId!;
-                string blobPath = $"{folder}/{userId}-{photoGuid}.jpg";
+                // Path: trail-photos/{kennelSlug}/{runFolder}/{userId}-{photoGuid}.jpg
+                // runFolder is "<kennelSlug>-<runNumber>" for numbered runs, "other" otherwise.
+                string folder    = !string.IsNullOrEmpty(kennelSlug) ? kennelSlug : kennelId!;
+                string subFolder = !string.IsNullOrEmpty(runFolder)  ? runFolder  : "other";
+                string blobPath  = $"{folder}/{subFolder}/{userId}-{photoGuid}.jpg";
                 var blobServiceClient = new BlobServiceClient(storageConn);
                 var containerClient = blobServiceClient.GetBlobContainerClient("trail-photos");
 

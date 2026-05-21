@@ -1,5 +1,21 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.4.9+1115 (2026-05-21)
+
+### Enhancements
+
+- **KennelPhotos — run-scoped storage path**: Photos are now stored under
+  `trail-photos/{kennelSlug}/{kennelSlug}-{runNumber}/{filename}` for
+  numbered runs (e.g. `shhh/shhh-456/…`), or `trail-photos/{kennelSlug}/other/{filename}`
+  when the run has no number. All photos from the same run land in the same
+  Azure Blob Storage subfolder, making manual browsing and future bulk
+  operations straightforward.
+
+- **KennelPhotos — enriched PHO GPS marker**: The PHO track-point label now
+  encodes the run folder and full blob filename
+  (`<runFolder>/<userId>-<photoGuid>.jpg`) so the map renderer can locate
+  the photo directly without a separate cache lookup.
+
 ## 2.4.8+1114 (2026-05-21)
 
 ### Developer experience

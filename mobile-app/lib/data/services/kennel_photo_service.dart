@@ -18,8 +18,13 @@ class KennelPhotoService {
     required String eventId,
     required String kennelId,
     required String kennelSlug,
+    required int eventNumber,
     int? perRunSharingOverride,
   }) async {
+    // Run folder: "<kennelSlug>-<runNumber>" when there is a run number,
+    // otherwise "other". Nested under the kennel slug in blob storage.
+    final runFolder = eventNumber > 0 ? '$kennelSlug-$eventNumber' : 'other';
+
     // 1. Pick and crop from camera
     final imageFile = await _pickAndCrop();
     if (imageFile == null) return null; // user cancelled
@@ -31,6 +36,7 @@ class KennelPhotoService {
     final tokenResult = await _getUploadToken(
       kennelId: kennelId,
       kennelSlug: kennelSlug,
+      runFolder: runFolder,
       photoGuid: photoGuid,
     );
     if (tokenResult == null) {
@@ -84,7 +90,7 @@ class KennelPhotoService {
     }
 
     // 6. Enqueue a PHO marker into the GPS track feed
-    _enqueuePhotoMarker(photoGuid: photoGuid);
+    _enqueuePhotoMarker(runFolder: runFolder, photoGuid: photoGuid);
 
     return blobUrl;
   }
@@ -136,6 +142,7 @@ class KennelPhotoService {
   Future<Map<String, String>?> _getUploadToken({
     required String kennelId,
     required String kennelSlug,
+    required String runFolder,
     required String photoGuid,
   }) async {
     final userId = getStringPref(StringPrefsEnum.userId)!;
@@ -155,6 +162,7 @@ class KennelPhotoService {
           ),
           'kennelId': kennelId,
           'kennelSlug': kennelSlug,
+          'runFolder': runFolder,
           'photoGuid': photoGuid,
         }),
       ).timeout(const Duration(seconds: 30));
@@ -240,13 +248,20 @@ class KennelPhotoService {
 
   // ── GPS track marker ─────────────────────────────────────────────────────
 
-  void _enqueuePhotoMarker({required String photoGuid}) {
+  void _enqueuePhotoMarker({
+    required String runFolder,
+    required String photoGuid,
+  }) {
     final locationService = Get.find<LocationService>();
     final userId = getStringPref(StringPrefsEnum.userId) ?? '';
+    // Label encodes the run folder and the full blob filename so the map
+    // renderer can locate the photo without a cache lookup.
+    // Format: "<runFolder>/<userId>-<photoGuid>.jpg"
+    // e.g.  "shhh-456/a3f1c9...-9d2e3b....jpg"
     unawaited(
       locationService.markPoint(
         HashRunPointTypes.photo,
-        label: '$userId+$photoGuid',
+        label: '$runFolder/$userId-$photoGuid.jpg',
       ),
     );
   }
