@@ -182,9 +182,10 @@ BEGIN TRY
             UpdatedAt = GETUTCDATE()
         WHERE id = @photoId;
 
-        -- TODO: when HC.Event.EventCoverPhotoUrl column is added, wire up action=6 here:
-        -- IF (@action = 6 AND @photoEventId IS NOT NULL)
-        --     UPDATE HC.Event SET EventCoverPhotoUrl = @photoBlobUrl WHERE id = @photoEventId;
+        IF (@action = 6 AND @photoEventId IS NOT NULL)
+            UPDATE HC.Event
+            SET EventCoverPhotoUrl = @photoBlobUrl
+            WHERE id = @photoEventId;
 
         COMMIT TRANSACTION;
         SELECT 1 AS success, NULL AS errorCode, NULL AS errorType;
