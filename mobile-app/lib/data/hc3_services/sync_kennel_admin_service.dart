@@ -108,106 +108,96 @@ class SyncKennelAdminService {
     // final int hashersLastUpdate = (flags & EnumDataTables.hashers.flag) == 0 ? null : getIntPref(HashersTableHelper.lastUpdatedKey) ?? 0;
     // final int hasherKennelMapLastUpdate = (flags & EnumDataTables.hasherKennelMap.flag) == 0 ? null : getIntPref(HasherKennelMapTableHelper.getLastUpdatedKey(TableType.kennelAdmin)) ?? 0;
 
-    // TODO(L2): forceRefresh parameter is accepted but the condition is always
-    // true (|| true). Remove forceRefresh from this method signature and all
-    // call sites when doing a broader cleanup pass.
-    if (true) // ignore: dead_code
-    // ((kennelsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - kennelsLastUpdate) > KennelsTableHelper.forceRequeryInterval) ||
-    // ((hashersLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hashersLastUpdate) > HashersTableHelper.forceRequeryInterval) ||
-    // ((hasherKennelMapLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hasherKennelMapLastUpdate) > HasherKennelMapTableHelper.forceRequeryInterval)
-    // )
-    {
-      // check to see if we need to clear the cache
-      //int lastCacheClear = getIntPref(CitiesTableHelper.lastCacheClearKey);
+    // check to see if we need to clear the cache
+    //int lastCacheClear = getIntPref(CitiesTableHelper.lastCacheClearKey);
 
-      // if (lastCacheClear == null) {
-      //   // if lastCacheClear is null that means we've never cleared the
-      //   // cache. This happens on startup. So, go ahead and set the lastCacheClear
-      //   // date to now and set lastCacheClear to now to prevent the
-      //   // cache from clearing immediatly upon startup
-      //   lastCacheClear = DateTime.now().millisecondsSinceEpoch;
-      //   setIntPref(CitiesTableHelper.lastCacheClearKey,
-      //       DateTime.now().millisecondsSinceEpoch);
-      // }
+    // if (lastCacheClear == null) {
+    //   // if lastCacheClear is null that means we've never cleared the
+    //   // cache. This happens on startup. So, go ahead and set the lastCacheClear
+    //   // date to now and set lastCacheClear to now to prevent the
+    //   // cache from clearing immediatly upon startup
+    //   lastCacheClear = DateTime.now().millisecondsSinceEpoch;
+    //   setIntPref(CitiesTableHelper.lastCacheClearKey,
+    //       DateTime.now().millisecondsSinceEpoch);
+    // }
 
-      // if (lastCacheClear + CitiesTableHelper.cacheDuration <
-      //     DateTime.now().millisecondsSinceEpoch) {
-      //   //print(
-      //       'clearing ${CitiesTableHelper.tableName} cache @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-      //   await clearTable();
-      // }
+    // if (lastCacheClear + CitiesTableHelper.cacheDuration <
+    //     DateTime.now().millisecondsSinceEpoch) {
+    //   //print(
+    //       'clearing ${CitiesTableHelper.tableName} cache @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+    //   await clearTable();
+    // }
 
-      // get the last updated time of any of the records in
-      // the table and add one second to it
-      await getLastUpdatedTimes(flags);
+    // get the last updated time of any of the records in
+    // the table and add one second to it
+    await getLastUpdatedTimes(flags);
 
-      final DateTime kennelsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
-        _kennelLastUpdated + 1,
+    final DateTime kennelsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
+      _kennelLastUpdated + 1,
+    );
+    final DateTime hashersUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
+      _hashersLastUpdated + 1,
+    );
+    final DateTime hasherKennelMapUpdatedAfter =
+        DateTime.fromMicrosecondsSinceEpoch(_hasherKennelMapLastUpdated + 1);
+    final DateTime hasherEventMapUpdatedAfter =
+        DateTime.fromMicrosecondsSinceEpoch(_hasherEventMapLastUpdated + 1);
+    final DateTime paymentsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
+      _paymentsLastUpdated + 1,
+    );
+
+    String userId = getStringPref(StringPrefsEnum.userId) ?? '';
+    if (userId.isEmpty) {
+      userId = GUID_EMPTY;
+    }
+
+    String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    String deviceSecret = (getStringPref(StringPrefsEnum.deviceSecret) ?? '')
+        .toUpperCase();
+
+    final Map<String, dynamic> params = <String, String>{
+      'queryType': 'syncKennelAdminData',
+      'deviceId': deviceId,
+      'kennelId': kennelId,
+      'hashersUpdatedAfter': (flags & EnumDataTables.hashers.flag) == 0
+          ? 'ignore'
+          : ('${hashersUpdatedAfter}000000').substring(0, 26),
+      'kennelsUpdatedAfter': (flags & EnumDataTables.kennels.flag) == 0
+          ? 'ignore'
+          : ('${kennelsUpdatedAfter}000000').substring(0, 26),
+      'hasherKennelMapUpdatedAfter':
+          (flags & EnumDataTables.hasherKennelMap.flag) == 0
+          ? 'ignore'
+          : ('${hasherKennelMapUpdatedAfter}000000').substring(0, 26),
+      'hasherEventMapUpdatedAfter':
+          (flags & EnumDataTables.hasherEventMap.flag) == 0
+          ? 'ignore'
+          : ('${hasherEventMapUpdatedAfter}000000').substring(0, 26),
+      'paymentsUpdatedAfter': (flags & EnumDataTables.payments.flag) == 0
+          ? 'ignore'
+          : ('${paymentsUpdatedAfter}000000').substring(0, 26),
+      'usePaging': usePaging ? '1' : '0',
+    };
+
+    if (targetHasherId != null) {
+      params['targetHasherId'] = targetHasherId;
+    }
+
+    final String responseBody = await ServiceCommon.sendHttpPost(() {
+      params['accessToken'] = Utilities.generateToken(
+        userId,
+        'hcapp_syncKennelAdminData',
+        paramString: deviceSecret,
       );
-      final DateTime hashersUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
-        _hashersLastUpdated + 1,
+      return jsonEncode(params);
+    });
+
+    if (!responseBody.startsWith(ERROR_PREFIX)) {
+      await updateSqlTablesWithResultsFromBackendApiCall(
+        // this replaces a nasty paragraph separator (x2029) that caused the mobile apps to crash
+        responseBody.replaceAll('\u2029', ''),
+        informUser: informUser,
       );
-      final DateTime hasherKennelMapUpdatedAfter =
-          DateTime.fromMicrosecondsSinceEpoch(_hasherKennelMapLastUpdated + 1);
-      final DateTime hasherEventMapUpdatedAfter =
-          DateTime.fromMicrosecondsSinceEpoch(_hasherEventMapLastUpdated + 1);
-      final DateTime paymentsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
-        _paymentsLastUpdated + 1,
-      );
-
-      String userId = getStringPref(StringPrefsEnum.userId) ?? '';
-      if (userId.isEmpty) {
-        userId = GUID_EMPTY;
-      }
-
-      String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-      String deviceSecret = (getStringPref(StringPrefsEnum.deviceSecret) ?? '')
-          .toUpperCase();
-
-      final Map<String, dynamic> params = <String, String>{
-        'queryType': 'syncKennelAdminData',
-        'deviceId': deviceId,
-        'kennelId': kennelId,
-        'hashersUpdatedAfter': (flags & EnumDataTables.hashers.flag) == 0
-            ? 'ignore'
-            : ('${hashersUpdatedAfter}000000').substring(0, 26),
-        'kennelsUpdatedAfter': (flags & EnumDataTables.kennels.flag) == 0
-            ? 'ignore'
-            : ('${kennelsUpdatedAfter}000000').substring(0, 26),
-        'hasherKennelMapUpdatedAfter':
-            (flags & EnumDataTables.hasherKennelMap.flag) == 0
-            ? 'ignore'
-            : ('${hasherKennelMapUpdatedAfter}000000').substring(0, 26),
-        'hasherEventMapUpdatedAfter':
-            (flags & EnumDataTables.hasherEventMap.flag) == 0
-            ? 'ignore'
-            : ('${hasherEventMapUpdatedAfter}000000').substring(0, 26),
-        'paymentsUpdatedAfter': (flags & EnumDataTables.payments.flag) == 0
-            ? 'ignore'
-            : ('${paymentsUpdatedAfter}000000').substring(0, 26),
-        'usePaging': usePaging ? '1' : '0',
-      };
-
-      if (targetHasherId != null) {
-        params['targetHasherId'] = targetHasherId;
-      }
-
-      final String responseBody = await ServiceCommon.sendHttpPost(() {
-        params['accessToken'] = Utilities.generateToken(
-          userId,
-          'hcapp_syncKennelAdminData',
-          paramString: deviceSecret,
-        );
-        return jsonEncode(params);
-      });
-
-      if (!responseBody.startsWith(ERROR_PREFIX)) {
-        await updateSqlTablesWithResultsFromBackendApiCall(
-          // this replaces a nasty paragraph separator (x2029) that caused the mobile apps to crash
-          responseBody.replaceAll('\u2029', ''),
-          informUser: informUser,
-        );
-      }
     }
     return true;
   }
