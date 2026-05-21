@@ -19,20 +19,25 @@ class KennelPhotoService {
     required String kennelId,
     required String kennelSlug,
     required int eventNumber,
-    int? perRunSharingOverride,
   }) async {
     // Run folder: "<kennelSlug>-<runNumber>" when there is a run number,
     // otherwise "other". Nested under the kennel slug in blob storage.
     final runFolder = eventNumber > 0 ? '$kennelSlug-$eventNumber' : 'other';
 
-    // 1. Pick and crop from camera
+    // 1. Pick and crop from camera (or simulator placeholder)
     final imageFile = await _pickAndCrop();
-    if (imageFile == null) return null; // user cancelled
+    if (imageFile == null) return null; // user cancelled or cropper dismissed
 
-    // 2. Client-side GUID — normalised to lowercase per project UUID rules
+    // 2. Ask the user what to do with the cropped photo.
+    //    Dismiss / Discard → abort. Save privately → 0. Save & Share → 1.
+    final intent = await _showShareSheet(imageFile);
+    if (intent == null || intent == _PhotoShareIntent.discard) return null;
+    final sharingOverride = intent == _PhotoShareIntent.saveAndShare ? 1 : 0;
+
+    // 3. Client-side GUID — normalised to lowercase per project UUID rules
     final photoGuid = const Uuid().v4().toLowerCase();
 
-    // 3. Request a short-lived SAS write token from the API
+    // 4. Request a short-lived SAS write token from the API
     final tokenResult = await _getUploadToken(
       kennelId: kennelId,
       kennelSlug: kennelSlug,
@@ -50,7 +55,7 @@ class KennelPhotoService {
       return null;
     }
 
-    // 4. Upload bytes directly to blob storage via the SAS URL
+    // 5. Upload bytes directly to blob storage via the SAS URL
     final uploaded = await _uploadToBlob(
       sasUrl: tokenResult['sasUrl']!,
       imageFile: imageFile,
@@ -68,13 +73,13 @@ class KennelPhotoService {
 
     final blobUrl = tokenResult['blobUrl']!;
 
-    // 5. Record the photo in the database
+    // 6. Record the photo in the database
     final recorded = await _addKennelPhoto(
       eventId: eventId,
       kennelId: kennelId,
       photoId: photoGuid,
       blobUrl: blobUrl,
-      perRunSharingOverride: perRunSharingOverride,
+      perRunSharingOverride: sharingOverride,
     );
     if (!recorded) {
       Get.snackbar(
@@ -89,7 +94,7 @@ class KennelPhotoService {
       return blobUrl;
     }
 
-    // 6. Enqueue a PHO marker into the GPS track feed
+    // 7. Enqueue a PHO marker into the GPS track feed
     _enqueuePhotoMarker(runFolder: runFolder, photoGuid: photoGuid);
 
     return blobUrl;
@@ -335,6 +340,168 @@ class KennelPhotoService {
         'photoId': photoId,
         'action': action,
       }),
+    );
+  }
+
+  // ── Share intent sheet ───────────────────────────────────────────────────
+
+  Future<_PhotoShareIntent?> _showShareSheet(File imageFile) {
+    return Get.bottomSheet<_PhotoShareIntent>(
+      _ShareSheet(imageFile: imageFile),
+      isScrollControlled: false,
+      backgroundColor: Colors.transparent,
+      isDismissible: true,
+      enableDrag: true,
+    );
+  }
+}
+
+// ── Share intent enum ────────────────────────────────────────────────────────
+
+enum _PhotoShareIntent { discard, savePrivate, saveAndShare }
+
+// ── Bottom sheet widget ───────────────────────────────────────────────────────
+
+class _ShareSheet extends StatelessWidget {
+  const _ShareSheet({required this.imageFile});
+
+  final File imageFile;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Drag handle
+            Padding(
+              padding: const EdgeInsets.only(top: 10, bottom: 6),
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+
+            // Photo preview
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 220),
+              child: Image.file(
+                imageFile,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+              child: Text(
+                'What would you like to do with this photo?',
+                style: ts_bodySmall.copyWith(
+                  color: Colors.black54,
+                  fontStyle: FontStyle.italic,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+
+            // Discard
+            _SheetButton(
+              icon: Icons.delete_outline,
+              label: 'Discard',
+              subtitle: 'Remove the photo',
+              color: hc_red,
+              onTap: () => Get.back(result: _PhotoShareIntent.discard),
+            ),
+
+            // Save privately
+            _SheetButton(
+              icon: Icons.lock_outline,
+              label: 'Save privately',
+              subtitle: 'Visible only to you',
+              color: Colors.grey.shade600,
+              onTap: () => Get.back(result: _PhotoShareIntent.savePrivate),
+            ),
+
+            // Save & share
+            _SheetButton(
+              icon: Icons.share_outlined,
+              label: 'Save and share',
+              subtitle: 'Forwards to Hash Flash for review',
+              color: Colors.green.shade700,
+              onTap: () => Get.back(result: _PhotoShareIntent.saveAndShare),
+            ),
+
+            const SizedBox(height: 12),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SheetButton extends StatelessWidget {
+  const _SheetButton({
+    required this.icon,
+    required this.label,
+    required this.subtitle,
+    required this.color,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final String subtitle;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: color,
+            foregroundColor: Colors.white,
+            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          onPressed: onTap,
+          child: Row(
+            children: [
+              Icon(icon, size: 22),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(label,
+                        style: ts_button.copyWith(fontSize: 15)),
+                    Text(subtitle,
+                        style: ts_bodySmall.copyWith(
+                            color: Colors.white70, fontSize: 12)),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right,
+                  size: 20, color: Colors.white60),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

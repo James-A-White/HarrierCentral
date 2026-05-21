@@ -1,5 +1,18 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.4.10+1116 (2026-05-21)
+
+### Enhancements
+
+- **KennelPhotos — post-crop sharing sheet**: After cropping a photo,
+  a bottom sheet now asks what to do with it:
+  - **Discard** — removes the photo, nothing is uploaded
+  - **Save privately** — uploads and stores for the taker only
+  - **Save and share** — uploads and forwards to the Hash Flash for review
+
+  Previously the sharing preference was inherited from the user's saved
+  setting. It is now always an explicit per-photo decision.
+
 ## 2.4.9+1115 (2026-05-21)
 
 ### Enhancements
