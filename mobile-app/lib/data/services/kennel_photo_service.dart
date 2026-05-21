@@ -98,22 +98,24 @@ class KennelPhotoService {
   // ── Photo capture ────────────────────────────────────────────────────────
 
   Future<File?> _pickAndCrop() async {
-    // iOS/Android simulators have no camera. Load a bundled JPEG so the full
-    // token → upload → record flow can be exercised without a physical device.
+    // Resolve source: camera on a real device, bundled placeholder on simulator.
+    final File? source;
     if (!deviceInfo.isPhysicalDevice) {
-      return _simulatorPlaceholder();
+      source = await _simulatorPlaceholder();
+    } else {
+      final picked = await ImagePicker().pickImage(
+        source: ImageSource.camera,
+        imageQuality: 70,
+        maxWidth: 1920,
+        maxHeight: 1920,
+      );
+      source = picked == null ? null : File(picked.path);
     }
+    if (source == null) return null;
 
-    final picked = await ImagePicker().pickImage(
-      source: ImageSource.camera,
-      imageQuality: 70,
-      maxWidth: 1920,
-      maxHeight: 1920,
-    );
-    if (picked == null) return null;
-
+    // Both paths go through the image editor.
     final cropped = await ImageCropper().cropImage(
-      sourcePath: picked.path,
+      sourcePath: source.path,
       compressFormat: ImageCompressFormat.jpg,
       compressQuality: 70,
     );
