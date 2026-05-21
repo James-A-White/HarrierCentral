@@ -71,7 +71,7 @@ dependencies:
   ive_flutter_core_mobile: 
     git:
       url: https://github.com/InnoVet-Europe/ive_flutter_core_mobile.git
-      ref: 25ad641f3bac2c0bc0df1a4a351ef7192304778d # Version 1.2.15
+      ref: e4e223bea4f54ecf48128b5a6c7e5b06944b6539 # Version 1.2.16
   json_annotation: ^4.9.0
   just_audio: ^0.10.4
   keyboard_actions: ^4.2.1

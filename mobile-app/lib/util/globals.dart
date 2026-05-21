@@ -149,8 +149,6 @@ Future<bool> setupDatabase(
       EnumDataTables.events.commonTableName,
     );
 
-    // print('******* > DB Setup step 10');
-
     if (_createIndexes) {
       await Tables.createIndexes(
         database,
@@ -158,9 +156,16 @@ Future<bool> setupDatabase(
         informUser,
         clientAppIdentifier,
       );
-      // print('******* > DB Setup step 10.1');
       await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
-      // print('******* > DB Setup step 10.2');
+    }
+  } catch (e, stack) {
+    // An unhandled exception inside the sync chain (e.g. malformed server data,
+    // SQLite error, network failure) must not permanently hang the boot screen.
+    // Log it and fall through — the app will open in offline mode with whatever
+    // data was already cached locally.
+    if (kDebugMode) {
+      debugPrint('setupDatabase error (continuing in offline mode): $e');
+      debugPrint(stack.toString());
     }
   } finally {
     client.close();
