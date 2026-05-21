@@ -24,15 +24,18 @@ class KennelPhotoService {
     // otherwise "other". Nested under the kennel slug in blob storage.
     final runFolder = eventNumber > 0 ? '$kennelSlug-$eventNumber' : 'other';
 
-    // 1. Pick and crop from camera (or simulator placeholder)
-    final imageFile = await _pickAndCrop();
-    if (imageFile == null) return null; // user cancelled or cropper dismissed
+    // 1. Pick from camera (simulator uses a bundled placeholder). No crop yet —
+    //    editing is optional and offered on the next screen.
+    final rawFile = await _pickImage();
+    if (rawFile == null) return null; // user cancelled
 
-    // 2. Ask the user what to do with the cropped photo.
-    //    Dismiss / Discard → abort. Save privately → 0. Save & Share → 1.
-    final intent = await _showShareSheet(imageFile);
-    if (intent == null || intent == _PhotoShareIntent.discard) return null;
-    final sharingOverride = intent == _PhotoShareIntent.saveAndShare ? 1 : 0;
+    // 2. Show review page: Discard / Edit / Save privately / Save and share.
+    //    "Edit" opens the cropper in-place and returns to the same page with
+    //    the Edit button hidden. Final result carries the chosen file + intent.
+    final result = await _showSharePage(rawFile);
+    if (result == null) return null;
+    final imageFile = result.file;
+    final sharingOverride = result.intent == _PhotoShareIntent.saveAndShare ? 1 : 0;
 
     // 3. Client-side GUID — normalised to lowercase per project UUID rules
     final photoGuid = const Uuid().v4().toLowerCase();
@@ -102,31 +105,19 @@ class KennelPhotoService {
 
   // ── Photo capture ────────────────────────────────────────────────────────
 
-  Future<File?> _pickAndCrop() async {
-    // Resolve source: camera on a real device, bundled placeholder on simulator.
-    final File? source;
+  /// Returns the raw captured file without cropping. Editing is optional and
+  /// offered on the review page that follows.
+  Future<File?> _pickImage() async {
     if (!deviceInfo.isPhysicalDevice) {
-      source = await _simulatorPlaceholder();
-    } else {
-      final picked = await ImagePicker().pickImage(
-        source: ImageSource.camera,
-        imageQuality: 70,
-        maxWidth: 1920,
-        maxHeight: 1920,
-      );
-      source = picked == null ? null : File(picked.path);
+      return _simulatorPlaceholder();
     }
-    if (source == null) return null;
-
-    // Both paths go through the image editor.
-    final cropped = await ImageCropper().cropImage(
-      sourcePath: source.path,
-      compressFormat: ImageCompressFormat.jpg,
-      compressQuality: 70,
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.camera,
+      imageQuality: 70,
+      maxWidth: 1920,
+      maxHeight: 1920,
     );
-    if (cropped == null) return null;
-
-    return File(cropped.path);
+    return picked == null ? null : File(picked.path);
   }
 
   /// Returns a temp File backed by the splash screen JPEG so tests on the
@@ -345,82 +336,149 @@ class KennelPhotoService {
 
   // ── Share intent page ────────────────────────────────────────────────────
 
-  Future<_PhotoShareIntent?> _showShareSheet(File imageFile) async {
-    return Get.to<_PhotoShareIntent>(
-      () => _PhotoSharePage(imageFile: imageFile),
+  Future<_PhotoShareResult?> _showSharePage(File imageFile) async {
+    return Get.to<_PhotoShareResult>(
+      () => _PhotoSharePage(initialFile: imageFile),
       transition: Transition.downToUp,
       duration: const Duration(milliseconds: 280),
     );
   }
 }
 
-// ── Share intent enum ────────────────────────────────────────────────────────
+// ── Supporting types ─────────────────────────────────────────────────────────
 
-enum _PhotoShareIntent { discard, savePrivate, saveAndShare }
+enum _PhotoShareIntent { savePrivate, saveAndShare }
 
-// ── Full-screen photo review + intent page ───────────────────────────────────
+/// Carries the final file (possibly edited) and the user's sharing intent.
+class _PhotoShareResult {
+  const _PhotoShareResult({required this.file, required this.intent});
+  final File file;
+  final _PhotoShareIntent intent;
+}
 
-class _PhotoSharePage extends StatelessWidget {
-  const _PhotoSharePage({required this.imageFile});
+// ── Photo review + intent page ───────────────────────────────────────────────
 
-  final File imageFile;
+class _PhotoSharePage extends StatefulWidget {
+  const _PhotoSharePage({required this.initialFile});
+  final File initialFile;
+
+  @override
+  State<_PhotoSharePage> createState() => _PhotoSharePageState();
+}
+
+class _PhotoSharePageState extends State<_PhotoSharePage> {
+  late File _currentFile;
+  bool _canEdit = true;
+  bool _isCropping = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentFile = widget.initialFile;
+  }
+
+  Future<void> _onEdit() async {
+    setState(() => _isCropping = true);
+    final cropped = await ImageCropper().cropImage(
+      sourcePath: _currentFile.path,
+      compressFormat: ImageCompressFormat.jpg,
+      compressQuality: 70,
+    );
+    if (cropped != null) {
+      setState(() {
+        _currentFile = File(cropped.path);
+        _canEdit = false; // Edit offered once only
+      });
+    }
+    setState(() => _isCropping = false);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Column(
+      body: Stack(
         children: [
-          // Photo fills all available space above the button panel
-          Expanded(
-            child: Image.file(
-              imageFile,
-              fit: BoxFit.contain,
-              width: double.infinity,
-            ),
+          Column(
+            children: [
+              // Photo fills all available space above the button panel
+              Expanded(
+                child: Image.file(
+                  _currentFile,
+                  fit: BoxFit.contain,
+                  width: double.infinity,
+                ),
+              ),
+
+              // Fixed button panel — safe-area padded, never overflows
+              Container(
+                color: Colors.black,
+                padding: EdgeInsets.only(
+                  left: 12,
+                  right: 12,
+                  top: 12,
+                  bottom: MediaQuery.of(context).padding.bottom + 12,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _IntentButton(
+                      icon: Icons.delete_outline,
+                      label: 'Discard',
+                      subtitle: 'Remove the photo',
+                      color: hc_red,
+                      onTap: () => Get.back<_PhotoShareResult>(),
+                    ),
+                    if (_canEdit) ...[
+                      const SizedBox(height: 8),
+                      _IntentButton(
+                        icon: Icons.edit_outlined,
+                        label: 'Edit',
+                        subtitle: 'Crop or adjust the photo',
+                        color: Colors.blueGrey.shade600,
+                        onTap: _onEdit,
+                      ),
+                    ],
+                    const SizedBox(height: 8),
+                    _IntentButton(
+                      icon: Icons.lock_outline,
+                      label: 'Save privately',
+                      subtitle: 'Visible only to you',
+                      color: Colors.grey.shade700,
+                      onTap: () => Get.back(
+                        result: _PhotoShareResult(
+                          file: _currentFile,
+                          intent: _PhotoShareIntent.savePrivate,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _IntentButton(
+                      icon: Icons.share_outlined,
+                      label: 'Save and share',
+                      subtitle: 'Forwards to Hash Flash for review',
+                      color: Colors.green.shade700,
+                      onTap: () => Get.back(
+                        result: _PhotoShareResult(
+                          file: _currentFile,
+                          intent: _PhotoShareIntent.saveAndShare,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
 
-          // Fixed bottom panel — never overflows
-          Container(
-            color: Colors.black,
-            padding: EdgeInsets.only(
-              left: 12,
-              right: 12,
-              top: 12,
-              bottom: MediaQuery.of(context).padding.bottom + 12,
+          // Cropping overlay — prevents tapping buttons while cropper is active
+          if (_isCropping)
+            const Positioned.fill(
+              child: ColoredBox(
+                color: Colors.black54,
+                child: Center(child: CircularProgressIndicator()),
+              ),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _IntentButton(
-                  icon: Icons.delete_outline,
-                  label: 'Discard',
-                  subtitle: 'Remove the photo',
-                  color: hc_red,
-                  onTap: () =>
-                      Get.back(result: _PhotoShareIntent.discard),
-                ),
-                const SizedBox(height: 8),
-                _IntentButton(
-                  icon: Icons.lock_outline,
-                  label: 'Save privately',
-                  subtitle: 'Visible only to you',
-                  color: Colors.grey.shade700,
-                  onTap: () =>
-                      Get.back(result: _PhotoShareIntent.savePrivate),
-                ),
-                const SizedBox(height: 8),
-                _IntentButton(
-                  icon: Icons.share_outlined,
-                  label: 'Save and share',
-                  subtitle: 'Forwards to Hash Flash for review',
-                  color: Colors.green.shade700,
-                  onTap: () =>
-                      Get.back(result: _PhotoShareIntent.saveAndShare),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );
