@@ -63,6 +63,7 @@ namespace HcWebApi.Endpoints
                 cmd.Parameters.AddWithValue("@photoGuid",   photoGuid);
 
                 using var reader = await cmd.ExecuteReaderAsync();
+                // Rowset 0: standard success envelope
                 if (await reader.ReadAsync())
                 {
                     bool success = Convert.ToBoolean(reader["success"]);
@@ -76,8 +77,11 @@ namespace HcWebApi.Endpoints
                         return new ObjectResult(new { success = false, errorCode, errorType, errorUserMessage = errorMsg })
                             { StatusCode = 403 };
                     }
+                }
+                // Rowset 1: business data — userId and authoritative kennel slug
+                if (await reader.NextResultAsync() && await reader.ReadAsync())
+                {
                     userId = reader["userId"]?.ToString();
-                    // SP returns the authoritative slug — prefer it over whatever the app sent
                     string? spSlug = reader["kennelSlug"]?.ToString();
                     if (!string.IsNullOrEmpty(spSlug)) kennelSlug = spSlug;
                 }
