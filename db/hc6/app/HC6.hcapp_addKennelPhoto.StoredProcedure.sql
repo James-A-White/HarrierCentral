@@ -114,24 +114,6 @@ BEGIN
     RETURN;
 END
 
--- Verify user is an active member of the kennel
-IF NOT EXISTS (
-    SELECT 1 FROM HC.HasherKennelMap
-    WHERE UserId = @userId AND KennelId = @kennelId AND Following = 1
-)
-BEGIN
-    SET @errorCode = 1331; SET @errorType = 13; SET @errorId = NEWID();
-    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Not a member',
-            'User is not an active member of the requested kennel', @procName, @userId);
-    SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
-    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
-           'Not a member' AS errorTitle,
-           'You are not a member of this kennel.' AS errorUserMessage,
-           @procName AS errorProc;
-    RETURN;
-END
-
 -- Verify event belongs to the stated kennel
 IF NOT EXISTS (
     SELECT 1 FROM HC.Event WHERE id = @eventId AND KennelId = @kennelId

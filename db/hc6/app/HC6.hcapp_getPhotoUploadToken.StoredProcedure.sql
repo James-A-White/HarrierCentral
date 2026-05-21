@@ -8,10 +8,11 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_getPhotoUploadToken]
 AS
 -- =====================================================================
 -- Procedure: HC6.hcapp_getPhotoUploadToken
--- Description: Validates auth and kennel membership, then returns the
---   userId so the calling Azure Function can construct a scoped SAS
---   write token for the kennel-photos blob container.
---   No side effects — pure auth and membership check.
+-- Description: Validates auth, then returns the userId and kennelSlug
+--   so the calling Azure Function can construct a scoped SAS write token
+--   for the trail-photos blob container. Any authenticated HC user on a
+--   run may take a photo — no kennel following/membership check required.
+--   No side effects — pure auth check.
 -- Parameters:
 --   @deviceId    - Registered device UUID
 --   @accessToken - Token validated against DeviceSecret
@@ -86,26 +87,6 @@ BEGIN
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Missing parameter' AS errorTitle,
            'A required parameter was missing. Please try again.' AS errorUserMessage,
-           @procName AS errorProc;
-    RETURN;
-END
-
--- Verify user is an active member of the kennel
-IF NOT EXISTS (
-    SELECT 1 FROM HC.HasherKennelMap
-    WHERE UserId = @userId
-      AND KennelId = @kennelId
-      AND Following = 1
-)
-BEGIN
-    SET @errorCode = 1330; SET @errorType = 13; SET @errorId = NEWID();
-    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Not a member',
-            'User is not an active member of the requested kennel', @procName, @userId);
-    SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
-    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
-           'Not a member' AS errorTitle,
-           'You are not a member of this kennel.' AS errorUserMessage,
            @procName AS errorProc;
     RETURN;
 END
