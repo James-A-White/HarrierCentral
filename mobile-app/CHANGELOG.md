@@ -1,5 +1,42 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.4.6+1112 (2026-05-21)
+
+### Bug fixes
+
+- **Boot hang — permanent loading screen**: Added try/catch to `onInitAsync()`
+  and `setupDatabase()`. Previously, any unhandled exception inside the boot
+  sync chain (malformed server data, SQLite error, network failure) was silently
+  swallowed by `unawaited()`, leaving the loading screen displayed permanently
+  until the app was force-killed. The app now falls through to offline mode
+  with cached data instead.
+
+- **Boot hang — `Ipify.ipv4()` timeout**: The IP-lookup call at login had no
+  timeout. A slow or unreachable `api.ipify.org` response could block the
+  entire login request indefinitely. Now capped at 4 seconds with a `0.0.0.0`
+  fallback.
+
+- **Photo upload — follower-only restriction removed**: Any authenticated
+  Harrier Central user on a live run can now take and upload photos. The
+  previous `Following = 1` check in `hcapp_getPhotoUploadToken` and
+  `hcapp_addKennelPhoto` has been removed.
+
+### Performance
+
+- **Boot sync — O(N) SQLite reads eliminated**: The sync engine previously
+  issued one `SELECT` per incoming record to check local existence (up to 2 500
+  reads for the Hashers table). This has been replaced with a single batched
+  `SELECT … IN (…)` query, chunked at 900 PKs per call. On a physical device
+  with NAND flash storage, Hashers sync time drops from ~30–60 s to ~1–2 s.
+  (Change is in the `ive_flutter_core_mobile` helper package v1.2.16.)
+
+### Other
+
+- **Sync debounce**: Raised from 5 s to 120 s. A 5-second window was
+  effectively zero — every app relaunch re-synced all tables. Quick restarts
+  (e.g. from Settings → Reload Data) now skip the expensive full sync while
+  normal relaunches (minutes apart) still fetch fresh data.
+
 ## 2.4.5+1111 (2026-05-21)
 
 ### Enhancements
