@@ -77,6 +77,9 @@ namespace HcWebApi.Endpoints
                             { StatusCode = 403 };
                     }
                     userId = reader["userId"]?.ToString();
+                    // SP returns the authoritative slug — prefer it over whatever the app sent
+                    string? spSlug = reader["kennelSlug"]?.ToString();
+                    if (!string.IsNullOrEmpty(spSlug)) kennelSlug = spSlug;
                 }
             }
             catch (Exception ex)
