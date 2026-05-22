@@ -11,8 +11,8 @@ import 'package:flutter/material.dart';
 ///   • width ≥ height → landscape frame  (camera_landscape.png)
 ///   • width <  height → portrait frame   (camera_portrait.png)
 ///
-/// While the image is loading, the landscape frame is shown as a placeholder.
-/// On network error the placeholder remains, preventing a blank marker.
+/// When [photoUrl] is null the widget shows the empty landscape camera frame
+/// as a placeholder — used for markers whose URL isn't yet resolvable.
 class CameraPhotoMarker extends StatefulWidget {
   const CameraPhotoMarker({
     super.key,
@@ -20,7 +20,8 @@ class CameraPhotoMarker extends StatefulWidget {
     required this.size,
   });
 
-  final String photoUrl;
+  /// Full HTTPS URL of the photo. Null shows the empty camera frame.
+  final String? photoUrl;
 
   /// The width and height of the square marker widget in logical pixels.
   final double size;
@@ -37,7 +38,7 @@ class _CameraPhotoMarkerState extends State<CameraPhotoMarker> {
   @override
   void initState() {
     super.initState();
-    _startDetection();
+    if (widget.photoUrl != null) _startDetection();
   }
 
   @override
@@ -46,7 +47,7 @@ class _CameraPhotoMarkerState extends State<CameraPhotoMarker> {
     if (old.photoUrl != widget.photoUrl) {
       _cancelDetection();
       setState(() => _isLandscape = null);
-      _startDetection();
+      if (widget.photoUrl != null) _startDetection();
     }
   }
 
@@ -58,7 +59,8 @@ class _CameraPhotoMarkerState extends State<CameraPhotoMarker> {
 
   void _startDetection() {
     _listener = ImageStreamListener(_onLoaded, onError: _onError);
-    _stream = NetworkImage(widget.photoUrl).resolve(ImageConfiguration.empty);
+    // photoUrl is guaranteed non-null here — only called from the null-guard above
+    _stream = NetworkImage(widget.photoUrl!).resolve(ImageConfiguration.empty);
     _stream!.addListener(_listener!);
   }
 
@@ -119,8 +121,10 @@ class _CameraPhotoMarkerState extends State<CameraPhotoMarker> {
             top: photoTop,
             width: photoW,
             height: photoH,
+            // photoUrl is non-null here — _isLandscape is only set after
+            // _startDetection() succeeds, which requires a non-null photoUrl
             child: Image.network(
-              widget.photoUrl,
+              widget.photoUrl!,
               width: photoW,
               height: photoH,
               fit: BoxFit.cover,

@@ -628,20 +628,17 @@ class RunTrackerMapController extends GetxController
     );
   }
 
-  Widget _buildPhotoMarker(String photoUrl) {
+  Widget _buildPhotoMarker(String? photoUrl) {
     final double scale = _markerScale();
     const double baseSize = 72.0;
     final double size = baseSize * scale;
 
-    if (photoUrl.isEmpty || !photoUrl.startsWith('http')) {
-      return Icon(
-        HashRunPointTypes.photo.iconData,
-        color: HashRunPointTypes.photo.color,
-        size: size * 0.8,
-      );
-    }
+    // Always show the camera frame. Pass null when the label isn't a valid
+    // URL so the widget shows the empty frame rather than a broken thumbnail.
+    final String? resolvedUrl =
+        (photoUrl != null && photoUrl.startsWith('http')) ? photoUrl : null;
 
-    return CameraPhotoMarker(photoUrl: photoUrl, size: size);
+    return CameraPhotoMarker(photoUrl: resolvedUrl, size: size);
   }
 
   double _markerScale() {
