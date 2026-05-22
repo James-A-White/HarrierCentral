@@ -200,16 +200,18 @@ class RunTrackerMapController extends GetxController
                   parsedType.type == HashRunPointTypes.caution);
 
           final double scale = _markerScale();
-          const double baseIconSize = 72.0; // 60% of the prior 120 size
+          const double baseIconSize = 72.0;
+          const double basePhotoSize = 144.0; // 2× icon size
           const double baseLabelWidth = 140.0;
           const double baseLabelHeight = 140.0;
 
+          final bool isPhoto = parsedType.type == HashRunPointTypes.photo;
           final double markerWidth = hasAttachedLabel
               ? baseLabelWidth * scale
-              : baseIconSize * scale;
+              : (isPhoto ? basePhotoSize : baseIconSize) * scale;
           final double markerHeight = hasAttachedLabel
               ? baseLabelHeight * scale
-              : baseIconSize * scale;
+              : (isPhoto ? basePhotoSize : baseIconSize) * scale;
 
           return Marker(
             width: markerWidth,
@@ -630,7 +632,7 @@ class RunTrackerMapController extends GetxController
 
   Widget _buildPhotoMarker(String? photoUrl) {
     final double scale = _markerScale();
-    const double baseSize = 72.0;
+    const double baseSize = 144.0; // 2× the standard icon base size
     final double size = baseSize * scale;
 
     // Always show the camera frame. Pass null when the label isn't a valid
