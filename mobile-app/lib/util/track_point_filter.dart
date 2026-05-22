@@ -69,6 +69,10 @@ class TrackPointFilter {
     for (int i = 0; i < points.length; i++) {
       final point = points[i];
 
+      // Typed points (hash markers, photo markers, etc.) are intentional user
+      // actions — never filter them regardless of accuracy or timing.
+      if (point.type != null && point.type!.isNotEmpty) continue;
+
       // Check 1: GPS accuracy
       if (point.acc > maxAccuracyMeters) {
         quality[i] = false;
@@ -91,19 +95,22 @@ class TrackPointFilter {
       }
     }
 
-    // Second pass: check velocity against last good point
+    // Second pass: check velocity against last good point.
+    // Typed points are skipped — they anchor to their GPS fix regardless of
+    // how far they appear from the previous good point.
     int? lastGoodIndex;
     for (int i = 0; i < points.length; i++) {
       if (!quality[i]) continue; // Skip already marked bad points
 
-      if (lastGoodIndex != null) {
+      final point = points[i];
+      final isTyped = point.type != null && point.type!.isNotEmpty;
+
+      if (!isTyped && lastGoodIndex != null) {
         final lastGoodPoint = points[lastGoodIndex];
-        final currentPoint = points[i];
-        final timeDeltaMs =
-            currentPoint.timestampMs - lastGoodPoint.timestampMs;
+        final timeDeltaMs = point.timestampMs - lastGoodPoint.timestampMs;
 
         if (timeDeltaMs > 0) {
-          final distance = _calculateDistance(lastGoodPoint, currentPoint);
+          final distance = _calculateDistance(lastGoodPoint, point);
           final timeDeltaSeconds = timeDeltaMs / 1000.0;
           final velocity = distance / timeDeltaSeconds;
 
