@@ -649,14 +649,18 @@ class RunTrackerMapController extends GetxController
     return scaled.clamp(0.10, 3.0);
   }
 
-  // Photo markers use a squared ratio so they shrink aggressively when zoomed
-  // out and grow noticeably when zoomed in — roughly 50% proportional scaling.
-  // e.g. at initialZoom=14: zoom 10 → 0.25× (36 px), zoom 14 → 0.5× (72 px),
-  //                          zoom 18 → 0.83× (119 px).
+  // Photo markers interpolate linearly between two pixel-size anchors:
+  //   initialZoom (full-run view) → 25 px
+  //   maxZoom     (closest zoom)  → 360 px  (≈ fills a phone screen horizontally)
+  // Clamped so zooming below initialZoom never shrinks below 25 px.
   double _photoMarkerScale() {
+    const double baseSize    = 144.0;
+    const double pxAtInitial =  25.0;
+    const double pxAtMax     = 360.0;
+    if (maxZoom <= initialZoom) return pxAtMax / baseSize;
     final double zoom = _mapReady ? mapController.camera.zoom : initialZoom;
-    final double ratio = zoom / initialZoom;
-    return ((ratio * ratio) / 2.0).clamp(0.15, 1.5);
+    final double t = ((zoom - initialZoom) / (maxZoom - initialZoom)).clamp(0.0, 1.0);
+    return (pxAtInitial + (pxAtMax - pxAtInitial) * t) / baseSize;
   }
 
   String _formatDistanceLabel() {
