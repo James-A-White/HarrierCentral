@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/util/track_point_filter.dart';
+import 'package:harrier_central/widgets/camera_photo_marker.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 
 // TODO(S4): This controller mixes UI layout state (map rendering, playback
@@ -553,6 +554,11 @@ class RunTrackerMapController extends GetxController
   }
 
   Widget _buildCheckpointMarker(HashRunPointTypes type, {String? customLabel}) {
+    // PHO markers: the customLabel is the blob sub-path, not a display label.
+    if (type == HashRunPointTypes.photo) {
+      return _buildPhotoMarker(customLabel ?? '');
+    }
+
     final bool showLabel =
         (type == HashRunPointTypes.customLabel ||
             type == HashRunPointTypes.caution) &&
@@ -619,6 +625,25 @@ class RunTrackerMapController extends GetxController
       fit: BoxFit.contain,
       errorBuilder: (_, _, _) =>
           Icon(type.iconData, color: type.color, size: size * 0.8),
+    );
+  }
+
+  Widget _buildPhotoMarker(String photoPath) {
+    final double scale = _markerScale();
+    const double baseSize = 72.0;
+    final double size = baseSize * scale;
+
+    if (photoPath.isEmpty) {
+      return Icon(
+        HashRunPointTypes.photo.iconData,
+        color: HashRunPointTypes.photo.color,
+        size: size * 0.8,
+      );
+    }
+
+    return CameraPhotoMarker(
+      photoUrl: BASE_TRAIL_PHOTOS_URL + photoPath,
+      size: size,
     );
   }
 

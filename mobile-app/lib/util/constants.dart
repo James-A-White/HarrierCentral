@@ -135,6 +135,8 @@ const String BASE_RECEIPTS_URL =
     'https://harriercentral.blob.core.windows.net/receipts/';
 const String BASE_NEW_VERSION_IMAGES_URL =
     'https://harriercentral.blob.core.windows.net/splash-sequences/';
+const String BASE_TRAIL_PHOTOS_URL =
+    'https://harriercentral.blob.core.windows.net/trail-photos/';
 
 // ── Storage / blob URLs ────────────────────────────────────────────────────
 

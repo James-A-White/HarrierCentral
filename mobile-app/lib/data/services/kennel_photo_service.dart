@@ -98,7 +98,11 @@ class KennelPhotoService {
     }
 
     // 7. Enqueue a PHO marker into the GPS track feed
-    _enqueuePhotoMarker(runFolder: runFolder, photoGuid: photoGuid);
+    _enqueuePhotoMarker(
+      kennelSlug: kennelSlug,
+      runFolder: runFolder,
+      photoGuid: photoGuid,
+    );
 
     return blobUrl;
   }
@@ -247,19 +251,20 @@ class KennelPhotoService {
   // ── GPS track marker ─────────────────────────────────────────────────────
 
   void _enqueuePhotoMarker({
+    required String kennelSlug,
     required String runFolder,
     required String photoGuid,
   }) {
     final locationService = Get.find<LocationService>();
     final userId = getStringPref(StringPrefsEnum.userId) ?? '';
-    // Label encodes the run folder and the full blob filename so the map
-    // renderer can locate the photo without a cache lookup.
-    // Format: "<runFolder>/<userId>-<photoGuid>.jpg"
-    // e.g.  "shhh-456/a3f1c9...-9d2e3b....jpg"
+    // Label is the full blob sub-path under trail-photos/, so the map
+    // renderer can construct the CDN URL directly without any lookup.
+    // Format: "<kennelSlug>/<runFolder>/<userId>-<photoGuid>.jpg"
+    // e.g.  "shhh/shhh-456/a3f1c9...-9d2e3b....jpg"
     unawaited(
       locationService.markPoint(
         HashRunPointTypes.photo,
-        label: '$runFolder/$userId-$photoGuid.jpg',
+        label: '$kennelSlug/$runFolder/$userId-$photoGuid.jpg',
       ),
     );
   }

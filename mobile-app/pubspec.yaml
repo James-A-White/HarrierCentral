@@ -182,6 +182,7 @@ flutter:
     - images/map_pins/red/
     - images/map_pins/teal/
     - images/map_pins/yellow/
+    - images/map_pins/other/
     - images/other/
     - images/run_count_icons/
     - images/tutorial/
