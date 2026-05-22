@@ -1,4 +1,10 @@
 
+1.0.8+6
+    • StorePositions: type field limit raised from 54 to 200 chars — enables
+      PHO map markers (full blob URL labels are ~165 chars)
+    • GetPhotoUploadToken: added runFolder parameter; blob path is now
+      trail-photos/{kennelSlug}/{runFolder}/{userId}-{photoGuid}.jpg
+
 1.0.7+5
     • GetPhotoUploadToken: new endpoint — validates auth + kennel membership via
       hcapp_getPhotoUploadToken SP, returns a 15-minute SAS write token for

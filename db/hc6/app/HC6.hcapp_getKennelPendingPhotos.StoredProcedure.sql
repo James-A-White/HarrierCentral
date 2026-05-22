@@ -8,8 +8,8 @@ AS
 -- =====================================================================
 -- Procedure: HC6.hcapp_getKennelPendingPhotos
 -- Description: Returns all photos with Status=1 (pending_review) for
---   a kennel, for the Hash Flash approval screen. Caller must hold the
---   mmRoleFlagHashFlash role (0x00000020) for the kennel.
+--   a kennel, for the photo review screen. Caller must hold one of the
+--   following roles: Hash Flash (0x20), GM (0x02), VGM (0x04), or RA (0x08).
 -- Parameters:
 --   @deviceId    - Registered device UUID
 --   @accessToken - Token validated against DeviceSecret
@@ -78,12 +78,13 @@ SELECT @mmRoleFlags = ISNULL(MismanagementRoleFlags, 0)
 FROM HC.HasherKennelMap
 WHERE UserId = @userId AND KennelId = @kennelId;
 
-IF (@mmRoleFlags & 0x00000020 = 0)
+-- Hash Flash (0x20) OR GM (0x02) OR VGM (0x04) OR RA (0x08) = 0x2E
+IF (@mmRoleFlags & 0x0000002E = 0)
 BEGIN
     SET @errorCode = 1334; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Not Hash Flash',
-            'Caller does not hold the Hash Flash role for this kennel', @procName, @userId);
+    VALUES (@errorId, '<unknown>', 'Not authorised to review photos',
+            'Caller does not hold Hash Flash, GM, VGM or RA role for this kennel', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Not authorised' AS errorTitle,

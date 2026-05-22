@@ -19,6 +19,11 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 /// Shorthand for the current user's ID from preferences.
 String? getUserId() => getStringPref(StringPrefsEnum.userId);
 
+/// Non-nullable userId — returns '' when no user is logged in.
+/// Use instead of getStringPref(StringPrefsEnum.userId)! to avoid crashes
+/// on first boot or after a credential wipe.
+String get currentUserId => getStringPref(StringPrefsEnum.userId) ?? '';
+
 /// Show a standardised Harrier Central snackbar via GetX.
 void showHcSnackbar(
   String message, {
@@ -149,8 +154,6 @@ Future<bool> setupDatabase(
       EnumDataTables.events.commonTableName,
     );
 
-    // print('******* > DB Setup step 10');
-
     if (_createIndexes) {
       await Tables.createIndexes(
         database,
@@ -158,9 +161,16 @@ Future<bool> setupDatabase(
         informUser,
         clientAppIdentifier,
       );
-      // print('******* > DB Setup step 10.1');
       await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
-      // print('******* > DB Setup step 10.2');
+    }
+  } catch (e, stack) {
+    // An unhandled exception inside the sync chain (e.g. malformed server data,
+    // SQLite error, network failure) must not permanently hang the boot screen.
+    // Log it and fall through — the app will open in offline mode with whatever
+    // data was already cached locally.
+    if (kDebugMode) {
+      debugPrint('setupDatabase error (continuing in offline mode): $e');
+      debugPrint(stack.toString());
     }
   } finally {
     client.close();

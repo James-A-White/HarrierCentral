@@ -41,7 +41,7 @@ class EventQrCodePageState extends State<EventQrCodePage>
   );
   late TabController _tabController;
 
-  final String userId = getStringPref(StringPrefsEnum.userId)!;
+  final String userId = currentUserId;
 
   GlobalKey<State<EventQrCodePage>> tabKey =
       GlobalKey<State<EventQrCodePage>>();

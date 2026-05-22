@@ -18,7 +18,7 @@ class ChatStripController extends GetxController {
 
   Future<void> _loadMessages() async {
     isLoading.value = true;
-    final userId = getStringPref(StringPrefsEnum.userId)!;
+    final userId = currentUserId;
     final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 

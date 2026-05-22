@@ -1,5 +1,219 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.5.0+1117 (2026-05-22)
+
+### New features
+
+- **KennelPhotos — photo markers on the live run map**: PHO track points
+  now render as camera-shaped map pin markers with the actual photo
+  thumbnail displayed inside the camera LCD frame. Landscape photos use
+  a wide camera frame; portrait photos use a tall frame — orientation is
+  detected automatically from the image dimensions.
+
+- **KennelPhotos — count-up loading indicator**: While a photo marker is
+  loading its thumbnail (0–9 seconds), a counter is shown inside the
+  camera frame so it is clear the image is in progress rather than
+  broken.
+
+- **KennelPhotos — zoom-responsive marker size**: Photo markers scale from
+  a minimal 25 px at full-run view to approximately screen width at
+  maximum zoom, making them easy to spot at a distance and large enough
+  to inspect up close.
+
+### Bug fixes
+
+- **KennelPhotos — photo markers silently dropped by GPS filter**: Typed
+  track points (PHO and all other marker types) were being removed by the
+  GPS accuracy and velocity filter if their GPS fix was poor or their
+  timestamp was within 1 second of the preceding point. Typed points now
+  bypass all quality checks — they are intentional user actions and must
+  always survive the filter.
+
+- **KennelPhotos — PHO GPS label truncated at 54 characters**: The
+  `StorePositions` API endpoint was silently dropping any `Type` field
+  longer than 54 characters. PHO labels (which embed the full blob URL)
+  are up to ~165 characters. Limit raised to 200.
+
+- **KennelPhotos — photo URL correctly sourced from API response**: The
+  full blob URL returned by `GetPhotoUploadToken` is now stored verbatim
+  in the GPS track label, eliminating a storage-account-name assumption
+  that could have broken thumbnail loading after an infrastructure change.
+
+### Stability (pre-3.0 hardening — Session 1)
+
+- **`isAtRunStart` throttle re-enabled**: The 2-minute rate-limit was
+  accidentally left disabled by a `TODO: Re-enable before next release`
+  comment. Without it, every screen unlock, boot, and 5 other call sites
+  fired an unthrottled network + DB call.
+
+- **GetX resource leaks — 8 controllers**: Added or completed `onClose()`
+  in `OtherPaymentPopupController`, `CheckInPackController`,
+  `KennelsListPageController`, `FutureRunListPageController`,
+  `LiveRunGeneralController`, `LocationService`, `KennelAdminController`,
+  and `MainNavigationPageController`. Resources leaked: `Worker` objects
+  from `debounce()`/`ever()`, `TextEditingController`, `FocusNode`,
+  `ScrollController`, `AnimationController`, `MapController`.
+
+- **Sync service crash on first install**: All three sync services called
+  `table.first['maxDate']` without an `isEmpty` guard. On a fresh install
+  the table is empty, causing a `RangeError` that could hang the boot.
+
+- **Email report HTTP calls had no timeout**: Four fire-and-forget email
+  endpoints (`SendKennelRunStatsReport`, `SendRunCountsReport`,
+  `SendPaymentReport`, `EmailInviteCode`) could hang indefinitely. Each
+  now has a 30-second timeout.
+
+### Stability (pre-3.0 hardening — Session 2)
+
+- **59× `userId` force-unwraps replaced**: All `getStringPref(userId)!`
+  force-unwraps across services, pages, and widgets have been replaced
+  with a new `currentUserId` getter that returns `''` instead of throwing.
+  This eliminates a class of crashes on first boot and after a credential
+  wipe.
+
+- **Mutations now use `noRetries: true`**: Payment, RSVP, attendance,
+  event, receipt, and user-edit calls were retrying up to 6 times on
+  network failure. This risked creating duplicate records in the database.
+  All 10 mutation call sites now pass `noRetries: true`.
+
+- **3× empty catch blocks**: Silent `catch (_) {}` blocks in
+  `KennelsListPageController`, `HashFlashApprovalPage`, and
+  `MainNavigationPageController` now log the error with `debugPrint`.
+
+- **4× `DateTime.parse()` crash risk**: Unguarded parses on DB-sourced
+  strings in `HashRunArtGalleryPage`, `RunLocationsController`,
+  `RunTabs`, and `RunListItem` replaced with `DateTime.tryParse()` +
+  safe fallbacks.
+
+- **Unguarded array access hardened**: COUNT query results in
+  `common_queries.dart`, double-nested JSON decode in
+  `utilities_null_safe.dart`, `result[1][0]` in
+  `authorize_device_service.dart`, and barcode scan `.barcodes.first`
+  in three scanner pages now all have proper guards.
+
+- **Photo upload token fields null-checked**: `sasUrl` and `blobUrl` are
+  now validated before use in `kennel_photo_service.dart`; a clear
+  snackbar is shown if either field is missing.
+
+- **`recordError()` timeout added**: The error-logging HTTP call had no
+  timeout and could block the app if the reporting endpoint was slow.
+  Now capped at 30 seconds.
+
+## 2.4.10+1116 (2026-05-21)
+
+### Enhancements
+
+- **KennelPhotos — post-crop sharing sheet**: After cropping a photo,
+  a bottom sheet now asks what to do with it:
+  - **Discard** — removes the photo, nothing is uploaded
+  - **Save privately** — uploads and stores for the taker only
+  - **Save and share** — uploads and forwards to the Hash Flash for review
+
+  Previously the sharing preference was inherited from the user's saved
+  setting. It is now always an explicit per-photo decision.
+
+## 2.4.9+1115 (2026-05-21)
+
+### Enhancements
+
+- **KennelPhotos — run-scoped storage path**: Photos are now stored under
+  `trail-photos/{kennelSlug}/{kennelSlug}-{runNumber}/{filename}` for
+  numbered runs (e.g. `shhh/shhh-456/…`), or `trail-photos/{kennelSlug}/other/{filename}`
+  when the run has no number. All photos from the same run land in the same
+  Azure Blob Storage subfolder, making manual browsing and future bulk
+  operations straightforward.
+
+- **KennelPhotos — enriched PHO GPS marker**: The PHO track-point label now
+  encodes the run folder and full blob filename
+  (`<runFolder>/<userId>-<photoGuid>.jpg`) so the map renderer can locate
+  the photo directly without a separate cache lookup.
+
+## 2.4.8+1114 (2026-05-21)
+
+### Developer experience
+
+- **KennelPhotos — simulator support**: Running on the iOS or Android
+  simulator no longer blocks at the camera step. When `isPhysicalDevice`
+  is false the app loads the bundled splash-screen JPEG as a placeholder,
+  then runs the full token → blob upload → database record flow as normal.
+  No user-visible change on physical devices.
+
+## 2.4.7+1113 (2026-05-21)
+
+### Code quality
+
+- **Sync services — dead code removal**: Removed a long-standing `if (true)`
+  dead-code wrapper from all three sync services (`SyncUserDataService`,
+  `SyncKennelAdminService`, `SyncEventAdminService`). The original cache-expiry
+  condition was commented out years ago and replaced with an unconditional
+  `if (true)` placeholder, leaving the entire method body unnecessarily
+  nested. No behaviour change.
+
+## 2.4.6+1112 (2026-05-21)
+
+### Bug fixes
+
+- **Boot hang — permanent loading screen**: Added try/catch to `onInitAsync()`
+  and `setupDatabase()`. Previously, any unhandled exception inside the boot
+  sync chain (malformed server data, SQLite error, network failure) was silently
+  swallowed by `unawaited()`, leaving the loading screen displayed permanently
+  until the app was force-killed. The app now falls through to offline mode
+  with cached data instead.
+
+- **Boot hang — `Ipify.ipv4()` timeout**: The IP-lookup call at login had no
+  timeout. A slow or unreachable `api.ipify.org` response could block the
+  entire login request indefinitely. Now capped at 4 seconds with a `0.0.0.0`
+  fallback.
+
+- **Photo upload — follower-only restriction removed**: Any authenticated
+  Harrier Central user on a live run can now take and upload photos. The
+  previous `Following = 1` check in `hcapp_getPhotoUploadToken` and
+  `hcapp_addKennelPhoto` has been removed.
+
+### Performance
+
+- **Boot sync — O(N) SQLite reads eliminated**: The sync engine previously
+  issued one `SELECT` per incoming record to check local existence (up to 2 500
+  reads for the Hashers table). This has been replaced with a single batched
+  `SELECT … IN (…)` query, chunked at 900 PKs per call. On a physical device
+  with NAND flash storage, Hashers sync time drops from ~30–60 s to ~1–2 s.
+  (Change is in the `ive_flutter_core_mobile` helper package v1.2.16.)
+
+### Other
+
+- **Sync debounce**: Raised from 5 s to 120 s. A 5-second window was
+  effectively zero — every app relaunch re-synced all tables. Quick restarts
+  (e.g. from Settings → Reload Data) now skip the expensive full sync while
+  normal relaunches (minutes apart) still fetch fresh data.
+
+## 2.4.5+1111 (2026-05-21)
+
+### Enhancements
+
+- **Photo review — 6-level approval scale**: The Hash Flash approval screen is
+  replaced by a full **Photo Review** screen with two rejection options (Keep
+  Private, Delete) and four escalating approval levels, each implying all
+  levels below it:
+  - **Share with Hash** — visible to all Harrier Central users on run maps
+  - **Run Gallery** — also appears in the run's photo gallery
+  - **Home Gallery** — also featured on the kennel home page
+  - **Event Cover** — also set as the run's cover photo (`HC.Event.EventCoverPhotoUrl`)
+
+- **Photo review — expanded reviewer roles**: The Review Photos button in the
+  kennel admin page is now visible to Hash Flash, Grand Master, Vice-GM, and RA
+  (previously Hash Flash only).
+
+- **Photo upload — kennel slug folder**: Photos now upload into
+  `trail-photos/{kennelSlug}/` in Azure Blob Storage rather than a UUID-named
+  folder. The slug is resolved server-side so no app rebuild was required for
+  the initial fix.
+
+### Bug fixes
+
+- **Photo upload — upload token error**: Fixed a 403 auth failure caused by the
+  SP checking `IsMember = 1` (defaults to 0); relaxed to `Following = 1` so any
+  kennel follower can take photos during a run.
+
 ## 2.4.4+1110 (2026-05-20)
 
 ### New features

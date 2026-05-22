@@ -188,7 +188,7 @@ class QueryKennels {
     }
 
     KennelListAggregate? kennel;
-    final String hasherId = getStringPref(StringPrefsEnum.userId)!;
+    final String hasherId = currentUserId;
     final List<Map<String, dynamic>> results = await QueryKennels.queryKennels(
       EnumKennelQueryType.singleKennel,
       EnumKennelQueryContext.user,

@@ -43,6 +43,9 @@ class EmailReportsService {
             Uri.parse(EMAIL_KENNEL_RUN_STATS_API_URL),
             headers: <String, String>{'content-type': 'application/json'},
             body: body,
+          ).timeout(
+            const Duration(seconds: 30),
+            onTimeout: () => Response('timeout', 408),
           ).catchError((dynamic error) {
             return Future<Response>.value(Response('error', 500));
           });

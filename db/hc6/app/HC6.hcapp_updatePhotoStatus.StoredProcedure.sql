@@ -4,31 +4,39 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_updatePhotoStatus]
     @accessToken NVARCHAR(1000),
     @photoId    UNIQUEIDENTIFIER,
     @action     TINYINT
-    -- Action values:
-    --   1 = approve    → status becomes 2 (public)
-    --   2 = keep private → status becomes 0 (private)
-    --   3 = delete     → row is hard-deleted
+    -- Action values (cumulative — higher levels imply all lower ones):
+    --   1 = delete         → hard-delete the row (inappropriate content)
+    --   2 = keep private   → status 0  (back to uploader-only)
+    --   3 = share          → status 2  (visible to all HC users on run maps)
+    --   4 = run gallery    → status 3  (+ appears in run photo gallery)
+    --   5 = home gallery   → status 4  (+ appears on kennel home page)
+    --   6 = event cover    → status 5  (+ set as run cover photo)
 
 AS
 -- =====================================================================
 -- Procedure: HC6.hcapp_updatePhotoStatus
--- Description: Allows a Hash Flash to action a photo that a member has
---   shared for review. The caller must hold the mmRoleFlagHashFlash role
---   (0x00000020) in MismanagementRoleFlags for the photo's kennel.
---   The photo must be in pending_review status (1) — the Hash Flash only
---   sees photos that members have chosen to share.
+-- Description: Allows an authorised reviewer to action a pending photo.
+--   Caller must hold one of the following roles in MismanagementRoleFlags
+--   for the photo's kennel: Hash Flash (0x20), GM (0x02), VGM (0x04),
+--   or RA (0x08). The photo must be in pending_review status (1).
+--   Actions 3–6 are cumulative approvals (each implies all lower levels).
+--   Actions 1–2 are rejections. Action 6 stubs the EventCoverPhotoUrl
+--   update — wire to HC.Event once the column is added.
 -- Parameters:
 --   @deviceId    - Registered device UUID
 --   @accessToken - Token validated against DeviceSecret
 --   @photoId     - UUID of the photo to action
---   @action      - 1=approve, 2=keep private, 3=delete
+--   @action      - 1=delete, 2=keep_private, 3=share, 4=gallery,
+--                  5=home_gallery, 6=event_cover
 -- Returns:
 --   On success (rowset 0): { success, errorCode, errorType }
---   On success (rowset 1): { photoId, newStatus } (absent for action=3)
+--   On success (rowset 1): { photoId, newStatus } (absent for action=1)
 --   On error  (rowset 0): { success, errorCode, errorType }
 --   On error  (rowset 1): standard HC6 error detail
 -- Author: Harrier Central
 -- Created: 2026-05-20
+-- Updated: 2026-05-21 — expanded actions (3→6), expanded roles
+--   (Hash Flash only → Hash Flash + GM + VGM + RA)
 -- HC5 Source: None — new for HC6 KennelPhotos
 -- =====================================================================
 SET NOCOUNT ON;
@@ -69,12 +77,12 @@ BEGIN
 END
 
 -- Validate action
-IF (@action NOT IN (1, 2, 3))
+IF (@action NOT IN (1, 2, 3, 4, 5, 6))
 BEGIN
     SET @errorCode = 1233; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Invalid action',
-            CONCAT('@action must be 1, 2, or 3; received: ', @action), @procName, @userId);
+            CONCAT('@action must be 1–6; received: ', @action), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Invalid action' AS errorTitle,
@@ -86,8 +94,13 @@ END
 -- Look up photo
 DECLARE @photoKennelId UNIQUEIDENTIFIER;
 DECLARE @photoStatus   TINYINT;
+DECLARE @photoEventId  UNIQUEIDENTIFIER;
+DECLARE @photoBlobUrl  NVARCHAR(500);
 
-SELECT @photoKennelId = KennelId, @photoStatus = Status
+SELECT @photoKennelId = KennelId,
+       @photoStatus   = Status,
+       @photoEventId  = EventId,
+       @photoBlobUrl  = BlobUrl
 FROM HC.KennelPhotos
 WHERE id = @photoId;
 
@@ -105,18 +118,19 @@ BEGIN
     RETURN;
 END
 
--- Verify caller is Hash Flash for this kennel (0x00000020)
+-- Verify caller holds an approval role for this kennel:
+-- Hash Flash (0x20) OR GM (0x02) OR VGM (0x04) OR RA (0x08) = 0x2E
 DECLARE @mmRoleFlags INT = 0;
 SELECT @mmRoleFlags = ISNULL(MismanagementRoleFlags, 0)
 FROM HC.HasherKennelMap
 WHERE UserId = @userId AND KennelId = @photoKennelId;
 
-IF (@mmRoleFlags & 0x00000020 = 0)
+IF (@mmRoleFlags & 0x0000002E = 0)
 BEGIN
     SET @errorCode = 1333; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Not Hash Flash',
-            'Caller does not hold the Hash Flash role for this kennel', @procName, @userId);
+    VALUES (@errorId, '<unknown>', 'Not authorised to review photos',
+            'Caller does not hold Hash Flash, GM, VGM or RA role for this kennel', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Not authorised' AS errorTitle,
@@ -125,13 +139,13 @@ BEGIN
     RETURN;
 END
 
--- Photo must be pending_review (status=1) for the Hash Flash to action it
+-- Photo must be pending_review (status=1) to be actioned
 IF (@photoStatus <> 1)
 BEGIN
     SET @errorCode = 1233; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Photo not pending review',
-            CONCAT('Photo status is ', @photoStatus, '; only pending_review (1) photos can be actioned'), @procName, @userId);
+            CONCAT('Photo status is ', @photoStatus, '; only status=1 photos can be actioned'), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Photo already reviewed' AS errorTitle,
@@ -140,29 +154,42 @@ BEGIN
     RETURN;
 END
 
+-- Map action → new status
+-- 1=delete, 2=keep_private(0), 3=share(2), 4=gallery(3), 5=home_gallery(4), 6=event_cover(5)
+DECLARE @newStatus TINYINT = CASE @action
+    WHEN 2 THEN 0
+    WHEN 3 THEN 2
+    WHEN 4 THEN 3
+    WHEN 5 THEN 4
+    WHEN 6 THEN 5
+    ELSE 0
+END;
+
 BEGIN TRY
     BEGIN TRANSACTION;
 
     IF (@action = 1)
     BEGIN
-        UPDATE HC.KennelPhotos SET Status = 2, UpdatedAt = GETUTCDATE() WHERE id = @photoId;
-        COMMIT TRANSACTION;
-        SELECT 1 AS success, NULL AS errorCode, NULL AS errorType;
-        SELECT @photoId AS photoId, 2 AS newStatus;
-    END
-    ELSE IF (@action = 2)
-    BEGIN
-        UPDATE HC.KennelPhotos SET Status = 0, UpdatedAt = GETUTCDATE() WHERE id = @photoId;
-        COMMIT TRANSACTION;
-        SELECT 1 AS success, NULL AS errorCode, NULL AS errorType;
-        SELECT @photoId AS photoId, 0 AS newStatus;
-    END
-    ELSE IF (@action = 3)
-    BEGIN
         DELETE FROM HC.KennelPhotos WHERE id = @photoId;
         COMMIT TRANSACTION;
         SELECT 1 AS success, NULL AS errorCode, NULL AS errorType;
-        -- No rowset 1 on delete — the photo no longer exists
+        -- No rowset 1 on delete
+    END
+    ELSE
+    BEGIN
+        UPDATE HC.KennelPhotos
+        SET Status    = @newStatus,
+            UpdatedAt = GETUTCDATE()
+        WHERE id = @photoId;
+
+        IF (@action = 6 AND @photoEventId IS NOT NULL)
+            UPDATE HC.Event
+            SET EventCoverPhotoUrl = @photoBlobUrl
+            WHERE id = @photoEventId;
+
+        COMMIT TRANSACTION;
+        SELECT 1 AS success, NULL AS errorCode, NULL AS errorType;
+        SELECT @photoId AS photoId, @newStatus AS newStatus;
     END
 
 END TRY

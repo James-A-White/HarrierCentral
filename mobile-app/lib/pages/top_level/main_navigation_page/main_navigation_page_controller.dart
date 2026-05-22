@@ -115,6 +115,25 @@ class MainNavigationController extends GetxController
   var reportSplashSequenceViewed = false;
 
   Future<void> onInitAsync() async {
+    try {
+      await _onInitAsyncBody();
+    } catch (e, stack) {
+      // Last-resort safety net: any unhandled exception in the boot sequence
+      // must not permanently hang the loading screen (this future is called
+      // with unawaited(), so uncaught exceptions are silently discarded by the
+      // Dart runtime and mainScreenContent never reaches appContent).
+      if (kDebugMode) {
+        debugPrint('onInitAsync unhandled error: $e');
+        debugPrint(stack.toString());
+      }
+      mainScreenReady.value = true;
+      mainScreenContent.value = MainPageContent.appContent;
+      isLoadingData = false;
+      update([UpdateIds.appScaffold]);
+    }
+  }
+
+  Future<void> _onInitAsyncBody() async {
     final stopwatch = Stopwatch()..start();
 
     if (Utilities.isConnected()) {
@@ -417,7 +436,9 @@ class MainNavigationController extends GetxController
           if (appModel.hasLocationPermissions) await _checkAreWeAtRunStart();
         }
       });
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('main_navigation_controller: screen state listener failed: $e');
+    }
   }
 
   Future<void> _checkAreWeAtRunStart() async {

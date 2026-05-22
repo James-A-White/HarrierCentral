@@ -106,7 +106,7 @@ class ChatPageController extends GetxController {
   }
 
   Future<String?> _getEventMessages(String eventId) async {
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = currentUserId;
     String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
@@ -304,7 +304,7 @@ class ChatPageController extends GetxController {
     addMessage(textMessage);
 
     //final hasherId = await box!.get(HIVE_HASHER_ID) as String;
-    final userId = getStringPref(StringPrefsEnum.userId)!;
+    final userId = currentUserId;
     String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 

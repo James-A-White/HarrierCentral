@@ -85,9 +85,14 @@ namespace HcWebApi.Endpoints
 
                 string? typeCode = pos.Type?.Trim();
                 bool hasValidType = !string.IsNullOrWhiteSpace(typeCode);
-                if (hasValidType && typeCode!.Length > 54)
+                // Type field format: "<KEY>" (3 chars) or "<KEY>::<label>"
+                // PHO markers embed the full run folder + filename in the label
+                // (e.g. "PHO::shhh-456/userId-photoGuid.jpg" ≈ 91 chars), so the
+                // limit must accommodate that. 200 is a safe ceiling that still
+                // guards against accidentally large payloads.
+                if (hasValidType && typeCode!.Length > 200)
                 {
-                    _log.LogWarning($"Ignoring type value '{typeCode}' for event {payload.EventId} and user {payload.UserId}. Expected no more than 3 characters.");
+                    _log.LogWarning($"Ignoring type value (length {typeCode!.Length}) for event {payload.EventId} / user {payload.UserId} — exceeds 200-char limit.");
                     hasValidType = false;
                 }
 

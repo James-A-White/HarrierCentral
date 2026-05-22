@@ -27,8 +27,7 @@ class SyncEventAdminService {
     final List<Map<String, dynamic>> table = await database.rawQuery(
       'SELECT MAX($colName) AS maxDate FROM $tableName',
     );
-    int? timeValue = table.first['maxDate'];
-    //print(timeValue.toString());
+    final int? timeValue = table.isNotEmpty ? table.first['maxDate'] : null;
     return timeValue ?? FORCE;
   }
 
@@ -100,112 +99,98 @@ class SyncEventAdminService {
       await setStringPref(StringPrefsEnum.adminEventId, eventId);
     }
 
-    // TODO(L2): forceRefresh parameter is accepted but the condition is always
-    // true (|| true). Remove forceRefresh from this method signature and all
-    // call sites when doing a broader cleanup pass.
-    if (true) // ignore: dead_code
-    // ((paymentsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - paymentsLastUpdate) > PaymentsTableHelper.forceRequeryInterval) ||
-    // ((receiptsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - receiptsLastUpdate) > ReceiptsTableHelper.forceRequeryInterval) ||
-    // ((hasherEventMapLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hasherEventMapLastUpdate) > HasherEventMapTableHelper.forceRequeryInterval) ||
-    // ((hasherKennelMapLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hasherKennelMapLastUpdate) > HasherKennelMapTableHelper.forceRequeryInterval) ||
-    // ((narrowEventsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - narrowEventsLastUpdate) > NarrowEventsTableHelper.forceRequeryInterval) ||
-    // ((hashersLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - hashersLastUpdate) > HasherEventMapTableHelper.forceRequeryInterval) ||
-    // ((kennelCreditsLastUpdate != null) && (DateTime.now().millisecondsSinceEpoch - kennelCreditsLastUpdate) > KennelCreditsTableHelper.forceRequeryInterval)
-    // )
-    {
-      // check to see if we need to clear the cache
-      //int lastCacheClear = getIntPref(CitiesTableHelper.lastCacheClearKey);
+    // check to see if we need to clear the cache
+    //int lastCacheClear = getIntPref(CitiesTableHelper.lastCacheClearKey);
 
-      // if (lastCacheClear == null) {
-      //   // if lastCacheClear is null that means we've never cleared the
-      //   // cache. This happens on startup. So, go ahead and set the lastCacheClear
-      //   // date to now and set lastCacheClear to now to prevent the
-      //   // cache from clearing immediatly upon startup
-      //   lastCacheClear = DateTime.now().millisecondsSinceEpoch;
-      //   setIntPref(CitiesTableHelper.lastCacheClearKey,
-      //       DateTime.now().millisecondsSinceEpoch);
-      // }
+    // if (lastCacheClear == null) {
+    //   // if lastCacheClear is null that means we've never cleared the
+    //   // cache. This happens on startup. So, go ahead and set the lastCacheClear
+    //   // date to now and set lastCacheClear to now to prevent the
+    //   // cache from clearing immediatly upon startup
+    //   lastCacheClear = DateTime.now().millisecondsSinceEpoch;
+    //   setIntPref(CitiesTableHelper.lastCacheClearKey,
+    //       DateTime.now().millisecondsSinceEpoch);
+    // }
 
-      // if (lastCacheClear + CitiesTableHelper.cacheDuration <
-      //     DateTime.now().millisecondsSinceEpoch) {
-      //   //print(
-      //       'clearing ${CitiesTableHelper.tableName} cache @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
-      //   await clearTable();
-      // }
+    // if (lastCacheClear + CitiesTableHelper.cacheDuration <
+    //     DateTime.now().millisecondsSinceEpoch) {
+    //   //print(
+    //       'clearing ${CitiesTableHelper.tableName} cache @ ${DateTime.now().millisecondsSinceEpoch.toString()}');
+    //   await clearTable();
+    // }
 
-      // get the last updated time of any of the records in
-      // the table and add one second to it
-      await _getLastUpdatedTimes(flags);
+    // get the last updated time of any of the records in
+    // the table and add one second to it
+    await _getLastUpdatedTimes(flags);
 
-      final DateTime hasherEventMapUpdatedAfter =
-          DateTime.fromMicrosecondsSinceEpoch(_hasherEventMapLastUpdated + 1);
-      final DateTime hasherKennelMapUpdatedAfter =
-          DateTime.fromMicrosecondsSinceEpoch(_hasherKennelMapLastUpdated + 1);
-      final DateTime narrowEventsUpdatedAfter =
-          DateTime.fromMicrosecondsSinceEpoch(_narrowEventsLastUpdated + 1);
-      final DateTime paymentsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
-        _paymentsLastUpdated + 1,
+    final DateTime hasherEventMapUpdatedAfter =
+        DateTime.fromMicrosecondsSinceEpoch(_hasherEventMapLastUpdated + 1);
+    final DateTime hasherKennelMapUpdatedAfter =
+        DateTime.fromMicrosecondsSinceEpoch(_hasherKennelMapLastUpdated + 1);
+    final DateTime narrowEventsUpdatedAfter =
+        DateTime.fromMicrosecondsSinceEpoch(_narrowEventsLastUpdated + 1);
+    final DateTime paymentsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
+      _paymentsLastUpdated + 1,
+    );
+    final DateTime receiptsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
+      _receiptsLastUpdated + 1,
+    );
+    final DateTime hashersUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
+      _hashersLastUpdated + 1,
+    );
+
+    String userId = getStringPref(StringPrefsEnum.userId) ?? '';
+    if (userId.isEmpty) {
+      userId = GUID_EMPTY;
+    }
+
+    String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    String deviceSecret = (getStringPref(StringPrefsEnum.deviceSecret) ?? '')
+        .toUpperCase();
+
+    final Map<String, String> syncBody = <String, String>{
+      'queryType': 'syncEventAdminData',
+      'deviceId': deviceId,
+      'eventId': eventId,
+      'hashersUpdatedAfter': (flags & EnumDataTables.hashers.flag) == 0
+          ? 'ignore'
+          : ('${hashersUpdatedAfter}000000').substring(0, 26),
+      'hasherEventMapUpdatedAfter':
+          (flags & EnumDataTables.hasherEventMap.flag) == 0
+          ? 'ignore'
+          : ('${hasherEventMapUpdatedAfter}000000').substring(0, 26),
+      'hasherKennelMapUpdatedAfter':
+          (flags & EnumDataTables.hasherKennelMap.flag) == 0
+          ? 'ignore'
+          : ('${hasherKennelMapUpdatedAfter}000000').substring(0, 26),
+      'narrowEventsUpdatedAfter': (flags & EnumDataTables.events.flag) == 0
+          ? 'ignore'
+          : ('${narrowEventsUpdatedAfter}000000').substring(0, 26),
+      'paymentsUpdatedAfter': (flags & EnumDataTables.payments.flag) == 0
+          ? 'ignore'
+          : ('${paymentsUpdatedAfter}000000').substring(0, 26),
+      'receiptsUpdatedAfter': (flags & EnumDataTables.receipts.flag) == 0
+          ? 'ignore'
+          : ('${receiptsUpdatedAfter}000000').substring(0, 26),
+      'usePaging': usePaging ? '1' : '0',
+    };
+
+    final String responseBody = await ServiceCommon.sendHttpPost(() {
+      syncBody['accessToken'] = Utilities.generateToken(
+        userId,
+        'hcapp_syncEventAdminData',
+        paramString: deviceSecret,
       );
-      final DateTime receiptsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
-        _receiptsLastUpdated + 1,
+      return jsonEncode(syncBody);
+    });
+
+    if (!responseBody.startsWith(ERROR_PREFIX)) {
+      await updateSqlTablesWithResultsFromBackendApiCall(
+        // this replaces a nasty paragraph separator (x2029) that caused the mobile apps to crash
+        // NOTE: x2028 also causes mobile apps to crash and we need to figure out a better way to filter for these.
+        responseBody.replaceAll('\u2029', '').replaceAll('\u2028', ''),
+        informUser: informUser,
       );
-      final DateTime hashersUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
-        _hashersLastUpdated + 1,
-      );
-
-      String userId = getStringPref(StringPrefsEnum.userId) ?? '';
-      if (userId.isEmpty) {
-        userId = GUID_EMPTY;
-      }
-
-      String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-      String deviceSecret = (getStringPref(StringPrefsEnum.deviceSecret) ?? '')
-          .toUpperCase();
-
-      final Map<String, String> syncBody = <String, String>{
-        'queryType': 'syncEventAdminData',
-        'deviceId': deviceId,
-        'eventId': eventId,
-        'hashersUpdatedAfter': (flags & EnumDataTables.hashers.flag) == 0
-            ? 'ignore'
-            : ('${hashersUpdatedAfter}000000').substring(0, 26),
-        'hasherEventMapUpdatedAfter':
-            (flags & EnumDataTables.hasherEventMap.flag) == 0
-            ? 'ignore'
-            : ('${hasherEventMapUpdatedAfter}000000').substring(0, 26),
-        'hasherKennelMapUpdatedAfter':
-            (flags & EnumDataTables.hasherKennelMap.flag) == 0
-            ? 'ignore'
-            : ('${hasherKennelMapUpdatedAfter}000000').substring(0, 26),
-        'narrowEventsUpdatedAfter': (flags & EnumDataTables.events.flag) == 0
-            ? 'ignore'
-            : ('${narrowEventsUpdatedAfter}000000').substring(0, 26),
-        'paymentsUpdatedAfter': (flags & EnumDataTables.payments.flag) == 0
-            ? 'ignore'
-            : ('${paymentsUpdatedAfter}000000').substring(0, 26),
-        'receiptsUpdatedAfter': (flags & EnumDataTables.receipts.flag) == 0
-            ? 'ignore'
-            : ('${receiptsUpdatedAfter}000000').substring(0, 26),
-        'usePaging': usePaging ? '1' : '0',
-      };
-
-      final String responseBody = await ServiceCommon.sendHttpPost(() {
-        syncBody['accessToken'] = Utilities.generateToken(
-          userId,
-          'hcapp_syncEventAdminData',
-          paramString: deviceSecret,
-        );
-        return jsonEncode(syncBody);
-      });
-
-      if (!responseBody.startsWith(ERROR_PREFIX)) {
-        await updateSqlTablesWithResultsFromBackendApiCall(
-          // this replaces a nasty paragraph separator (x2029) that caused the mobile apps to crash
-          // NOTE: x2028 also causes mobile apps to crash and we need to figure out a better way to filter for these.
-          responseBody.replaceAll('\u2029', '').replaceAll('\u2028', ''),
-          informUser: informUser,
-        );
-      }
     }
     return true;
   }

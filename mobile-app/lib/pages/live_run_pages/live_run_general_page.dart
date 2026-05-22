@@ -19,6 +19,8 @@ class LiveRunGeneralController extends GetxController {
 
   DateTime? _trackingStartedAt;
   Timer? _elapsedTicker;
+  Worker? _trackingWorker;
+  Worker? _positionWorker;
 
   @override
   void onInit() {
@@ -26,8 +28,8 @@ class LiveRunGeneralController extends GetxController {
     isTracking.value = _locationService.joinRunTracking.value;
     lastPosition.value = _locationService.lastKnownPosition.value;
 
-    ever<bool>(_locationService.joinRunTracking, _handleTrackingToggle);
-    ever<Position?>(_locationService.lastKnownPosition, _handlePosition);
+    _trackingWorker = ever<bool>(_locationService.joinRunTracking, _handleTrackingToggle);
+    _positionWorker = ever<Position?>(_locationService.lastKnownPosition, _handlePosition);
 
     if (isTracking.value) {
       _trackingStartedAt ??= DateTime.now();
@@ -37,6 +39,8 @@ class LiveRunGeneralController extends GetxController {
 
   @override
   void onClose() {
+    _trackingWorker?.dispose();
+    _positionWorker?.dispose();
     _stopElapsedTicker();
     super.onClose();
   }
@@ -84,6 +88,7 @@ class LiveRunGeneralController extends GetxController {
       eventId: run.event.eventId,
       kennelId: run.kennel.kennelId,
       kennelSlug: run.kennel.kennelUniqueShortName,
+      eventNumber: run.event.eventNumber,
     );
     if (blobUrl != null) {
       Get.snackbar(
@@ -139,7 +144,6 @@ class LiveRunGeneralController extends GetxController {
     final seconds = (totalSeconds % 60).toString().padLeft(2, '0');
     return '$hours:$minutes:$seconds';
   }
-
 }
 
 class LiveRunGeneralPage extends StatelessWidget {
@@ -147,7 +151,6 @@ class LiveRunGeneralPage extends StatelessWidget {
     : controller = Get.put(
         LiveRunGeneralController(run: run),
         tag: 'live-run-general-${run.event.eventId}',
-        // TODO: consider fenix:true if re-entry causes issues (L4)
       );
 
   final RunDetailsAggregate run;
@@ -236,15 +239,8 @@ class LiveRunGeneralPage extends StatelessWidget {
       // right button ends the run.
       final leftButton = paused
           ? ElevatedButton.icon(
-              icon: const Icon(
-                Icons.play_arrow,
-                size: 20,
-                color: Colors.white,
-              ),
-              label: Text(
-                'Resume',
-                style: ts_button.copyWith(fontSize: 18),
-              ),
+              icon: const Icon(Icons.play_arrow, size: 20, color: Colors.white),
+              label: Text('Resume', style: ts_button.copyWith(fontSize: 18)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green.shade700,
                 foregroundColor: Colors.white,
@@ -327,10 +323,7 @@ class LiveRunGeneralPage extends StatelessWidget {
                       width: 26,
                     ),
                     const SizedBox(width: 6),
-                    Text(
-                      'End Run',
-                      style: ts_button.copyWith(fontSize: 18),
-                    ),
+                    Text('End Run', style: ts_button.copyWith(fontSize: 18)),
                   ],
                 ),
               ),
@@ -388,9 +381,7 @@ class LiveRunGeneralPage extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           foregroundColor: Colors.white,
           side: const BorderSide(color: Colors.white54),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
         onPressed: () => Get.find<LiveRunShellController>().setTab(3),
       ),
@@ -581,4 +572,3 @@ class LiveRunGeneralPage extends StatelessWidget {
     );
   }
 }
-

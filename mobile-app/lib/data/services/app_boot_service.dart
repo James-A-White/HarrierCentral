@@ -417,6 +417,7 @@ class AppBootService {
 
     // HC6: rowset 0 is the write SP success envelope; login data is at rowset 1.
     if (responseJson.length < 2) return null;
+    if (responseJson[1] is! List) return null;
     final List<dynamic> loginRowset = responseJson[1] as List<dynamic>;
     if (loginRowset.isEmpty) return null;
 

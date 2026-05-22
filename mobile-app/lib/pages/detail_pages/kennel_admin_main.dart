@@ -429,8 +429,14 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
               ),
           ],
         ),
-        if (agg.hkm?.mismanagement.getMismanagementState(mmRoleFlagHashFlash) ??
-            false)
+        if ((agg.hkm?.mismanagement.getMismanagementState(mmRoleFlagHashFlash) ??
+                false) ||
+            (agg.hkm?.mismanagement.getMismanagementState(mmRoleFlagGm) ??
+                false) ||
+            (agg.hkm?.mismanagement.getMismanagementState(mmRoleFlagVgm) ??
+                false) ||
+            (agg.hkm?.mismanagement.getMismanagementState(mmRoleFlagRa) ??
+                false))
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -444,7 +450,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                     await Navigator.push<void>(
                       context,
                       MaterialPageRoute<void>(
-                        builder: (_) => HashFlashApprovalPage(
+                        builder: (_) => PhotoReviewPage(
                           kennelId: agg.kennel.kennelId,
                           kennelName: agg.kennel.kennelShortName,
                         ),
@@ -625,13 +631,14 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       final List<maps.AvailableMap>
                                       availableMaps =
                                           await maps.MapLauncher.installedMaps;
-                                      final maps.AvailableMap activeMap =
+                                      final maps.AvailableMap? activeMap =
                                           availableMaps
                                               .where(
                                                 (maps.AvailableMap map) =>
                                                     map.mapName == mapName,
                                               )
-                                              .first;
+                                              .firstOrNull;
+                                      if (activeMap == null) return;
                                       await activeMap.showMarker(
                                         coords: maps.Coords(
                                           agg.extensions.cityLat!.toDouble(),

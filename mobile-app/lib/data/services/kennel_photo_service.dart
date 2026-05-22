@@ -1,5 +1,14 @@
 import 'package:harrier_central/imports.dart';
 
+// Photo review action codes — match hcapp_updatePhotoStatus @action parameter.
+// Actions 3–6 are cumulative: each level implies all lower approval levels.
+const int photoActionDelete          = 1; // hard-delete (inappropriate content)
+const int photoActionKeepPrivate     = 2; // back to uploader-only (status 0)
+const int photoActionShare           = 3; // visible to all HC users on run maps (status 2)
+const int photoActionAddToGallery    = 4; // + appears in run photo gallery (status 3)
+const int photoActionAddToHomeGallery = 5; // + appears on kennel home page (status 4)
+const int photoActionMakeEventCover  = 6; // + set as run cover photo (status 5)
+
 class KennelPhotoService {
   /// Orchestrates the full capture → upload → record flow.
   ///
@@ -9,19 +18,33 @@ class KennelPhotoService {
     required String eventId,
     required String kennelId,
     required String kennelSlug,
-    int? perRunSharingOverride,
+    required int eventNumber,
   }) async {
-    // 1. Pick and crop from camera
-    final imageFile = await _pickAndCrop();
-    if (imageFile == null) return null; // user cancelled
+    // Run folder: "<kennelSlug>-<runNumber>" when there is a run number,
+    // otherwise "other". Nested under the kennel slug in blob storage.
+    final runFolder = eventNumber > 0 ? '$kennelSlug-$eventNumber' : 'other';
 
-    // 2. Client-side GUID — normalised to lowercase per project UUID rules
+    // 1. Pick from camera (simulator uses a bundled placeholder). No crop yet —
+    //    editing is optional and offered on the next screen.
+    final rawFile = await _pickImage();
+    if (rawFile == null) return null; // user cancelled
+
+    // 2. Show review page: Discard / Edit / Save privately / Save and share.
+    //    "Edit" opens the cropper in-place and returns to the same page with
+    //    the Edit button hidden. Final result carries the chosen file + intent.
+    final result = await _showSharePage(rawFile);
+    if (result == null) return null;
+    final imageFile = result.file;
+    final sharingOverride = result.intent == _PhotoShareIntent.saveAndShare ? 1 : 0;
+
+    // 3. Client-side GUID — normalised to lowercase per project UUID rules
     final photoGuid = const Uuid().v4().toLowerCase();
 
-    // 3. Request a short-lived SAS write token from the API
+    // 4. Request a short-lived SAS write token from the API
     final tokenResult = await _getUploadToken(
       kennelId: kennelId,
       kennelSlug: kennelSlug,
+      runFolder: runFolder,
       photoGuid: photoGuid,
     );
     if (tokenResult == null) {
@@ -35,11 +58,21 @@ class KennelPhotoService {
       return null;
     }
 
-    // 4. Upload bytes directly to blob storage via the SAS URL
-    final uploaded = await _uploadToBlob(
-      sasUrl: tokenResult['sasUrl']!,
-      imageFile: imageFile,
-    );
+    final sasUrl = tokenResult['sasUrl'];
+    final blobUrl = tokenResult['blobUrl'];
+    if (sasUrl == null || blobUrl == null) {
+      Get.snackbar(
+        'Upload failed',
+        'Upload token was missing required fields. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade700,
+        colorText: Colors.white,
+      );
+      return null;
+    }
+
+    // 5. Upload bytes directly to blob storage via the SAS URL
+    final uploaded = await _uploadToBlob(sasUrl: sasUrl, imageFile: imageFile);
     if (!uploaded) {
       Get.snackbar(
         'Upload failed',
@@ -51,15 +84,13 @@ class KennelPhotoService {
       return null;
     }
 
-    final blobUrl = tokenResult['blobUrl']!;
-
-    // 5. Record the photo in the database
+    // 6. Record the photo in the database
     final recorded = await _addKennelPhoto(
       eventId: eventId,
       kennelId: kennelId,
       photoId: photoGuid,
       blobUrl: blobUrl,
-      perRunSharingOverride: perRunSharingOverride,
+      perRunSharingOverride: sharingOverride,
     );
     if (!recorded) {
       Get.snackbar(
@@ -74,31 +105,42 @@ class KennelPhotoService {
       return blobUrl;
     }
 
-    // 6. Enqueue a PHO marker into the GPS track feed
-    _enqueuePhotoMarker(photoGuid: photoGuid);
+    // 7. Enqueue a PHO marker into the GPS track feed
+    _enqueuePhotoMarker(blobUrl: blobUrl);
 
     return blobUrl;
   }
 
   // ── Photo capture ────────────────────────────────────────────────────────
 
-  Future<File?> _pickAndCrop() async {
+  /// Returns the raw captured file without cropping. Editing is optional and
+  /// offered on the review page that follows.
+  Future<File?> _pickImage() async {
+    if (!deviceInfo.isPhysicalDevice) {
+      return _simulatorPlaceholder();
+    }
     final picked = await ImagePicker().pickImage(
       source: ImageSource.camera,
       imageQuality: 70,
       maxWidth: 1920,
       maxHeight: 1920,
     );
-    if (picked == null) return null;
+    return picked == null ? null : File(picked.path);
+  }
 
-    final cropped = await ImageCropper().cropImage(
-      sourcePath: picked.path,
-      compressFormat: ImageCompressFormat.jpg,
-      compressQuality: 70,
-    );
-    if (cropped == null) return null;
-
-    return File(cropped.path);
+  /// Returns a temp File backed by the splash screen JPEG so tests on the
+  /// simulator don't need to touch the camera at all.
+  Future<File?> _simulatorPlaceholder() async {
+    try {
+      final data = await rootBundle.load('images/init/splash_screen.jpg');
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/hc_simulator_photo.jpg');
+      await file.writeAsBytes(data.buffer.asUint8List());
+      return file;
+    } catch (e) {
+      debugPrint('KennelPhotoService: simulator placeholder failed: $e');
+      return null;
+    }
   }
 
   // ── SAS token request ────────────────────────────────────────────────────
@@ -106,9 +148,10 @@ class KennelPhotoService {
   Future<Map<String, String>?> _getUploadToken({
     required String kennelId,
     required String kennelSlug,
+    required String runFolder,
     required String photoGuid,
   }) async {
-    final userId = getStringPref(StringPrefsEnum.userId)!;
+    final userId = currentUserId;
     final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
@@ -125,16 +168,17 @@ class KennelPhotoService {
           ),
           'kennelId': kennelId,
           'kennelSlug': kennelSlug,
+          'runFolder': runFolder,
           'photoGuid': photoGuid,
         }),
       ).timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
-        return {
-          'sasUrl': data['sasUrl'] as String,
-          'blobUrl': data['blobUrl'] as String,
-        };
+        final sasUrl = data['sasUrl'] as String?;
+        final blobUrl = data['blobUrl'] as String?;
+        if (sasUrl == null || blobUrl == null) return null;
+        return {'sasUrl': sasUrl, 'blobUrl': blobUrl};
       }
       debugPrint(
         'GetPhotoUploadToken failed: HTTP ${response.statusCode} — ${response.body}',
@@ -177,7 +221,7 @@ class KennelPhotoService {
     final locationService = Get.find<LocationService>();
     final pos = locationService.lastKnownPosition.value;
 
-    final userId = getStringPref(StringPrefsEnum.userId)!;
+    final userId = currentUserId;
     final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
@@ -210,21 +254,20 @@ class KennelPhotoService {
 
   // ── GPS track marker ─────────────────────────────────────────────────────
 
-  void _enqueuePhotoMarker({required String photoGuid}) {
+  void _enqueuePhotoMarker({required String blobUrl}) {
     final locationService = Get.find<LocationService>();
-    final userId = getStringPref(StringPrefsEnum.userId) ?? '';
+    // The label IS the full CDN blob URL returned by the API. Using the
+    // authoritative URL avoids any storage-account-name assumption in the
+    // map renderer and survives future storage migrations.
     unawaited(
-      locationService.markPoint(
-        HashRunPointTypes.photo,
-        label: '$userId+$photoGuid',
-      ),
+      locationService.markPoint(HashRunPointTypes.photo, label: blobUrl),
     );
   }
 
   // ── Public query methods (called by Hash Flash screen + map) ─────────────
 
   Future<String> getKennelPendingPhotos({required String kennelId}) async {
-    final userId = getStringPref(StringPrefsEnum.userId)!;
+    final userId = currentUserId;
     final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
@@ -246,7 +289,7 @@ class KennelPhotoService {
     required String eventId,
     String? afterUpdatedAt,
   }) async {
-    final userId = getStringPref(StringPrefsEnum.userId)!;
+    final userId = currentUserId;
     final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
@@ -272,7 +315,7 @@ class KennelPhotoService {
     required String photoId,
     required int action,
   }) async {
-    final userId = getStringPref(StringPrefsEnum.userId)!;
+    final userId = currentUserId;
     final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
@@ -288,6 +331,211 @@ class KennelPhotoService {
         'photoId': photoId,
         'action': action,
       }),
+    );
+  }
+
+  // ── Share intent page ────────────────────────────────────────────────────
+
+  Future<_PhotoShareResult?> _showSharePage(File imageFile) async {
+    return Get.to<_PhotoShareResult>(
+      () => _PhotoSharePage(initialFile: imageFile),
+      transition: Transition.downToUp,
+      duration: const Duration(milliseconds: 280),
+    );
+  }
+}
+
+// ── Supporting types ─────────────────────────────────────────────────────────
+
+enum _PhotoShareIntent { savePrivate, saveAndShare }
+
+/// Carries the final file (possibly edited) and the user's sharing intent.
+class _PhotoShareResult {
+  const _PhotoShareResult({required this.file, required this.intent});
+  final File file;
+  final _PhotoShareIntent intent;
+}
+
+// ── Photo review + intent page ───────────────────────────────────────────────
+
+class _PhotoSharePage extends StatefulWidget {
+  const _PhotoSharePage({required this.initialFile});
+  final File initialFile;
+
+  @override
+  State<_PhotoSharePage> createState() => _PhotoSharePageState();
+}
+
+class _PhotoSharePageState extends State<_PhotoSharePage> {
+  late File _currentFile;
+  bool _canEdit = true;
+  bool _isCropping = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentFile = widget.initialFile;
+  }
+
+  Future<void> _onEdit() async {
+    setState(() => _isCropping = true);
+    final cropped = await ImageCropper().cropImage(
+      sourcePath: _currentFile.path,
+      compressFormat: ImageCompressFormat.jpg,
+      compressQuality: 70,
+    );
+    if (cropped != null) {
+      setState(() {
+        _currentFile = File(cropped.path);
+        _canEdit = false; // Edit offered once only
+      });
+    }
+    setState(() => _isCropping = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              // Photo fills all available space above the button panel
+              Expanded(
+                child: Image.file(
+                  _currentFile,
+                  fit: BoxFit.contain,
+                  width: double.infinity,
+                ),
+              ),
+
+              // Fixed button panel — safe-area padded, never overflows
+              Container(
+                color: Colors.black,
+                padding: EdgeInsets.only(
+                  left: 12,
+                  right: 12,
+                  top: 12,
+                  bottom: MediaQuery.of(context).padding.bottom + 12,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _IntentButton(
+                      icon: Icons.delete_outline,
+                      label: 'Discard',
+                      subtitle: 'Remove the photo',
+                      color: hc_red,
+                      onTap: () => Get.back<_PhotoShareResult>(),
+                    ),
+                    if (_canEdit) ...[
+                      const SizedBox(height: 8),
+                      _IntentButton(
+                        icon: Icons.edit_outlined,
+                        label: 'Edit',
+                        subtitle: 'Crop or adjust the photo',
+                        color: Colors.blueGrey.shade600,
+                        onTap: _onEdit,
+                      ),
+                    ],
+                    const SizedBox(height: 8),
+                    _IntentButton(
+                      icon: Icons.lock_outline,
+                      label: 'Save privately',
+                      subtitle: 'Visible only to you',
+                      color: Colors.grey.shade700,
+                      onTap: () => Get.back(
+                        result: _PhotoShareResult(
+                          file: _currentFile,
+                          intent: _PhotoShareIntent.savePrivate,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _IntentButton(
+                      icon: Icons.share_outlined,
+                      label: 'Save and share',
+                      subtitle: 'Forwards to Hash Flash for review',
+                      color: Colors.green.shade700,
+                      onTap: () => Get.back(
+                        result: _PhotoShareResult(
+                          file: _currentFile,
+                          intent: _PhotoShareIntent.saveAndShare,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          // Cropping overlay — prevents tapping buttons while cropper is active
+          if (_isCropping)
+            const Positioned.fill(
+              child: ColoredBox(
+                color: Colors.black54,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _IntentButton extends StatelessWidget {
+  const _IntentButton({
+    required this.icon,
+    required this.label,
+    required this.subtitle,
+    required this.color,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final String subtitle;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          foregroundColor: Colors.white,
+          alignment: Alignment.centerLeft,
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+        onPressed: onTap,
+        child: Row(
+          children: [
+            Icon(icon, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: ts_button.copyWith(fontSize: 15)),
+                  Text(
+                    subtitle,
+                    style: ts_bodySmall.copyWith(
+                        color: Colors.white70, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, size: 18, color: Colors.white60),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -455,7 +455,7 @@ class HasherListView extends StatelessWidget {
   }
 
   Future<String> _getKennelName(String kennelId) async {
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = currentUserId;
 
     final List<Map<String, dynamic>> results = await QueryKennels.queryKennels(
       EnumKennelQueryType.singleKennel,

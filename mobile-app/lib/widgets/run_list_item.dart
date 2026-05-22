@@ -161,12 +161,14 @@ class RunListItem extends StatelessWidget {
       debugPrint('Event Name: $eventName');
     }
 
-    final event = DateTime.parse(
-      futureRun.event.eventStartDatetime.toIso8601String().substring(0, 10),
-    );
-    final device = DateTime.parse(
-      DateTime.now().toLocal().toIso8601String().substring(0, 10),
-    );
+    final event = DateTime.tryParse(
+          futureRun.event.eventStartDatetime.toIso8601String().substring(0, 10),
+        ) ??
+        futureRun.event.eventStartDatetime;
+    final device = DateTime.tryParse(
+          DateTime.now().toLocal().toIso8601String().substring(0, 10),
+        ) ??
+        DateTime.now();
 
     num daysUntilEvent = event.difference(device).inDays;
 
@@ -1184,7 +1186,7 @@ class RunListItem extends StatelessWidget {
   Future<void> _setRsvpState(EnumRsvpState rsvpState) async {
     rliController.rsvpState.value = -1;
 
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = currentUserId;
     final List<dynamic> adHocData = await tableModel.hasherEventMapService
         .setEventRsvp(
           futureRun.event.eventId,
@@ -1195,9 +1197,7 @@ class RunListItem extends StatelessWidget {
               rliController.automaticallySetNotifiationPrefs.value,
         );
 
-    print(
-      '[_setRsvpState/rli] adHocData length: ${adHocData.length}, contents: $adHocData',
-    );
+    if (kDebugMode) debugPrint('[_setRsvpState/rli] adHocData length: ${adHocData.length}, contents: $adHocData');
     final int rsvpResult = adHocData[0]['rsvpState'];
     final int willHareResult = adHocData[0]['willHareState'];
     final String hares = adHocData[0]['hares'] ?? '';
@@ -1374,7 +1374,7 @@ class RunListItem extends StatelessWidget {
     if ((retVal == emailAlertsOn) ||
         (retVal == emailAlertsOff) ||
         (retVal == emailAlertsAuto)) {
-      final String userId = getStringPref(StringPrefsEnum.userId)!;
+      final String userId = currentUserId;
       final EnumEmailAlertState nState = retVal;
       rliController.setEmailState(-1);
 
@@ -1393,7 +1393,7 @@ class RunListItem extends StatelessWidget {
 
   Future<void> _setNotificationState(NotificationState retVal) async {
     if ((retVal != NotificationState.unchanged)) {
-      final String userId = getStringPref(StringPrefsEnum.userId)!;
+      final String userId = currentUserId;
       final NotificationState nState = retVal;
       rliController.setNotificationState(NotificationState.unchanged);
 

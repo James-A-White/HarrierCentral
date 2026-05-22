@@ -41,8 +41,8 @@ class KennelPendingPhoto {
 // Controller
 // ---------------------------------------------------------------------------
 
-class HashFlashApprovalController extends GetxController {
-  HashFlashApprovalController({required this.kennelId});
+class PhotoReviewController extends GetxController {
+  PhotoReviewController({required this.kennelId});
 
   final String kennelId;
 
@@ -73,7 +73,9 @@ class HashFlashApprovalController extends GetxController {
               .toList();
         }
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('hash_flash_approval_page: failed to load pending photos: $e');
+    }
     isLoading.value = false;
   }
 
@@ -82,7 +84,7 @@ class HashFlashApprovalController extends GetxController {
     required int action,
     required BuildContext context,
   }) async {
-    if (action == 3) {
+    if (action == photoActionDelete) {
       final confirmed = await showDialog<bool>(
         context: context,
         barrierDismissible: false,
@@ -139,16 +141,19 @@ class HashFlashApprovalController extends GetxController {
 // Page
 // ---------------------------------------------------------------------------
 
-class HashFlashApprovalPage extends StatelessWidget {
-  HashFlashApprovalPage({super.key, required this.kennelId, required this.kennelName})
-      : controller = Get.put(
-          HashFlashApprovalController(kennelId: kennelId),
-          tag: 'hash-flash-$kennelId',
+class PhotoReviewPage extends StatelessWidget {
+  PhotoReviewPage({
+    super.key,
+    required this.kennelId,
+    required this.kennelName,
+  }) : controller = Get.put(
+          PhotoReviewController(kennelId: kennelId),
+          tag: 'photo-review-$kennelId',
         );
 
   final String kennelId;
   final String kennelName;
-  final HashFlashApprovalController controller;
+  final PhotoReviewController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -164,7 +169,8 @@ class HashFlashApprovalPage extends StatelessWidget {
         child: Obx(() {
           if (controller.isLoading.value) {
             return const Center(
-              child: HcAppCircularProgressIndicator(key: Key('hf_loading')),
+              child: HcAppCircularProgressIndicator(
+                  key: Key('photo_review_loading')),
             );
           }
 
@@ -175,21 +181,14 @@ class HashFlashApprovalPage extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
-                      Icons.check_circle_outline,
-                      color: Colors.white54,
-                      size: 64,
-                    ),
+                    const Icon(Icons.check_circle_outline,
+                        color: Colors.white54, size: 64),
                     const SizedBox(height: 16),
-                    Text(
-                      'No photos awaiting review.',
-                      style: ts_bodyYellow,
-                      textAlign: TextAlign.center,
-                    ),
+                    Text('No photos awaiting review.',
+                        style: ts_bodyYellow, textAlign: TextAlign.center),
                     const SizedBox(height: 8),
                     Text(
-                      'Photos shared by members will appear here '
-                      'for you to approve, keep private, or delete.',
+                      'Photos shared by members will appear here.',
                       style: ts_bodySmall.copyWith(color: Colors.white70),
                       textAlign: TextAlign.center,
                     ),
@@ -202,7 +201,8 @@ class HashFlashApprovalPage extends StatelessWidget {
           return ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: controller.photos.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            separatorBuilder: (context, index) =>
+                const SizedBox(height: 16),
             itemBuilder: (context, index) {
               final photo = controller.photos[index];
               return _PhotoReviewCard(
@@ -222,14 +222,11 @@ class HashFlashApprovalPage extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Card widget
+// Card
 // ---------------------------------------------------------------------------
 
 class _PhotoReviewCard extends StatelessWidget {
-  const _PhotoReviewCard({
-    required this.photo,
-    required this.onAction,
-  });
+  const _PhotoReviewCard({required this.photo, required this.onAction});
 
   final KennelPendingPhoto photo;
   final void Function(int action) onAction;
@@ -249,95 +246,125 @@ class _PhotoReviewCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Photo thumbnail
+          // Photo
           if (photo.blobUrl.isNotEmpty)
             ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 260),
+              constraints: const BoxConstraints(maxHeight: 240),
               child: CachedNetworkImage(
                 imageUrl: photo.blobUrl,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => const Center(
                   child: Padding(
-                    padding: EdgeInsets.all(32),
-                    child: CircularProgressIndicator(),
-                  ),
+                      padding: EdgeInsets.all(32),
+                      child: CircularProgressIndicator()),
                 ),
                 errorWidget: (context, url, err) => const Center(
                   child: Padding(
-                    padding: EdgeInsets.all(32),
-                    child: Icon(Icons.broken_image, size: 48, color: Colors.grey),
-                  ),
+                      padding: EdgeInsets.all(32),
+                      child: Icon(Icons.broken_image,
+                          size: 48, color: Colors.grey)),
                 ),
               ),
             ),
-          // Meta row
+
+          // Meta
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 4),
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
             child: Row(
               children: [
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        photo.uploaderDisplayName,
-                        style: ts_mediumBlackBold,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        runLabel,
-                        style: ts_smallBlack,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      Text(photo.uploaderDisplayName,
+                          style: ts_mediumBlackBold,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
+                      Text(runLabel,
+                          style: ts_smallBlack,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
                       if ((photo.title ?? '').isNotEmpty)
-                        Text(
-                          photo.title!,
-                          style: ts_smallGrey,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        Text(photo.title!,
+                            style: ts_smallGrey,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis),
                     ],
                   ),
                 ),
-                Text(
-                  _formatDate(photo.createdAt),
-                  style: ts_smallGrey,
-                ),
+                Text(_formatDate(photo.createdAt), style: ts_smallGrey),
               ],
             ),
           ),
-          // Action buttons
+
+          const Divider(height: 1),
+
+          // Rejection row
           Padding(
-            padding: const EdgeInsets.fromLTRB(8, 4, 8, 10),
+            padding: const EdgeInsets.fromLTRB(10, 8, 10, 4),
             child: Row(
               children: [
-                Expanded(
-                  child: _ActionButton(
-                    icon: Icons.check_circle_outline,
-                    label: 'Approve',
-                    color: Colors.green.shade700,
-                    onTap: () => onAction(1),
-                  ),
-                ),
-                const SizedBox(width: 6),
                 Expanded(
                   child: _ActionButton(
                     icon: Icons.lock_outline,
                     label: 'Keep Private',
                     color: Colors.grey.shade600,
-                    onTap: () => onAction(2),
+                    onTap: () => onAction(photoActionKeepPrivate),
                   ),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 8),
                 Expanded(
                   child: _ActionButton(
                     icon: Icons.delete_outline,
                     label: 'Delete',
                     color: hc_red,
-                    onTap: () => onAction(3),
+                    onTap: () => onAction(photoActionDelete),
                   ),
+                ),
+              ],
+            ),
+          ),
+
+          // Approval section
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 2, 12, 4),
+            child: Text('Publish as…',
+                style: ts_smallGrey.copyWith(fontStyle: FontStyle.italic)),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+            child: Column(
+              children: [
+                _ApprovalOption(
+                  icon: Icons.people_outline,
+                  label: 'Share with Hash',
+                  subtitle: 'Visible to all on run maps',
+                  color: Colors.green.shade600,
+                  onTap: () => onAction(photoActionShare),
+                ),
+                const SizedBox(height: 6),
+                _ApprovalOption(
+                  icon: Icons.photo_library_outlined,
+                  label: 'Run Gallery',
+                  subtitle: 'Share + appears in run photo gallery',
+                  color: Colors.green.shade700,
+                  onTap: () => onAction(photoActionAddToGallery),
+                ),
+                const SizedBox(height: 6),
+                _ApprovalOption(
+                  icon: Icons.home_outlined,
+                  label: 'Home Gallery',
+                  subtitle: 'Run gallery + featured on kennel home page',
+                  color: Colors.teal.shade600,
+                  onTap: () => onAction(photoActionAddToHomeGallery),
+                ),
+                const SizedBox(height: 6),
+                _ApprovalOption(
+                  icon: Icons.star_outline,
+                  label: 'Event Cover',
+                  subtitle: 'Home gallery + set as this run\'s cover photo',
+                  color: Colors.teal.shade800,
+                  onTap: () => onAction(photoActionMakeEventCover),
                 ),
               ],
             ),
@@ -347,10 +374,13 @@ class _PhotoReviewCard extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime dt) {
-    return '${dt.day}/${dt.month}/${dt.year}';
-  }
+  String _formatDate(DateTime dt) =>
+      '${dt.day}/${dt.month}/${dt.year}';
 }
+
+// ---------------------------------------------------------------------------
+// Button widgets
+// ---------------------------------------------------------------------------
 
 class _ActionButton extends StatelessWidget {
   const _ActionButton({
@@ -377,6 +407,58 @@ class _ActionButton extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
       onPressed: onTap,
+    );
+  }
+}
+
+class _ApprovalOption extends StatelessWidget {
+  const _ApprovalOption({
+    required this.icon,
+    required this.label,
+    required this.subtitle,
+    required this.color,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final String subtitle;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          foregroundColor: Colors.white,
+          alignment: Alignment.centerLeft,
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+        onPressed: onTap,
+        child: Row(
+          children: [
+            Icon(icon, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: ts_button.copyWith(fontSize: 14)),
+                  Text(subtitle,
+                      style: ts_bodySmall.copyWith(
+                          color: Colors.white70, fontSize: 11)),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, size: 18, color: Colors.white70),
+          ],
+        ),
+      ),
     );
   }
 }

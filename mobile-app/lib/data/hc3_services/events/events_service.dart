@@ -244,7 +244,7 @@ class EventsService extends BaseService {
       //return false;
     }
 
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = currentUserId;
     String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     String deviceSecret = (getStringPref(StringPrefsEnum.deviceSecret) ?? '')
         .toUpperCase();
@@ -465,7 +465,7 @@ class EventsService extends BaseService {
   //   required String eventId,
   //   String emailBody = '',
   // }) async {
-  //   final String userId = getStringPref(StringPrefsEnum.userId)!;
+  //   final String userId = currentUserId;
   //   final String accessToken = Utilities.generateToken(
   //     userId,
   //     'rptApi_emailRunDetails',

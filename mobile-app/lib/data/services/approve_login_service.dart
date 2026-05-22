@@ -49,7 +49,10 @@ class ApproveLoginService {
     // Collect the device's public IP and coarse geo info for server-side analytics.
     String ipInfoJson;
     try {
-      final String ipv4 = await Ipify.ipv4();
+      final String ipv4 = await Ipify.ipv4().timeout(
+        const Duration(seconds: 4),
+        onTimeout: () => '0.0.0.0',
+      );
       final Response response =
           await get(
                 Uri.parse('https://ipinfo.io/$ipv4?token=$IPINFO_API_TOKEN'),

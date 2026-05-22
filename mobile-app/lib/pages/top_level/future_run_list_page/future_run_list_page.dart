@@ -1109,7 +1109,7 @@ class FutureRunsListPage extends StatelessWidget {
                 hasherPreferences & hasherPref_distanceForAutoDisplay;
 
             await srv.addEditUser(
-              targetUserId: getStringPref(StringPrefsEnum.userId)!,
+              targetUserId: currentUserId,
               preferences: distanceMeasuredIn + distance,
             );
 
@@ -1132,7 +1132,7 @@ class FutureRunsListPage extends StatelessWidget {
             //int _autoRunPreference = hasherPreferences & hasherPref_distanceForAutoDisplay;
 
             await srv.addEditUser(
-              targetUserId: getStringPref(StringPrefsEnum.userId)!,
+              targetUserId: currentUserId,
               preferences: distanceMeasuredIn + (retVal as int),
             );
 

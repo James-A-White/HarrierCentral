@@ -13,7 +13,7 @@ class CommonQueries {
           ''';
 
     final List<Map<String, dynamic>> results = await database.rawQuery(query);
-    return results[0]['Total'];
+    return results.isNotEmpty ? results[0]['Total'] : 0;
   }
 
   static Future<int> countRemovedRecords(String tableName) async {
@@ -25,7 +25,7 @@ class CommonQueries {
           ''';
 
     final List<Map<String, dynamic>> results = await database.rawQuery(query);
-    return results[0]['Total'];
+    return results.isNotEmpty ? results[0]['Total'] : 0;
   }
 
   static Future<void> deleteRemovedRecords(String tableName) async {

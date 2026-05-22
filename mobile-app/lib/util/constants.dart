@@ -27,8 +27,10 @@ const int DISPLAY_SPLASH_ON_LAUNCH = 10;
 const int SPLASH_SCREEN_DISPLAY_TIME = 3;
 
 // ── Sync / replication ────────────────────────────────────────────────────
-// we will not allow syncs happen less than 5 seconds apart. This prevents rapid repeated syncs during app startup.
-const int DEBOUNCE_SYNC_USER_DATA = 5;
+// Prevent a full re-sync within 120 seconds of a completed full sync. This means
+// quick app restarts (e.g. from settings) skip the expensive sync, but a normal
+// relaunch (minutes later) always gets fresh data.
+const int DEBOUNCE_SYNC_USER_DATA = 120;
 
 // ── Kennel membership states ──────────────────────────────────────────────
 const int KENNEL_IS_FOLLOWING = 1;
@@ -133,6 +135,8 @@ const String BASE_RECEIPTS_URL =
     'https://harriercentral.blob.core.windows.net/receipts/';
 const String BASE_NEW_VERSION_IMAGES_URL =
     'https://harriercentral.blob.core.windows.net/splash-sequences/';
+const String BASE_TRAIL_PHOTOS_URL =
+    'https://harriercentral.blob.core.windows.net/trail-photos/';
 
 // ── Storage / blob URLs ────────────────────────────────────────────────────
 

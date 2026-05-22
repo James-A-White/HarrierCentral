@@ -145,7 +145,7 @@ class PaymentsService {
       //return false;
     }
 
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = currentUserId;
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final String deviceSecret =
         getStringPref(StringPrefsEnum.deviceSecret) ?? '';
@@ -201,7 +201,7 @@ class PaymentsService {
         paramString: deviceSecret,
       );
       return jsonEncode(bulkPayBody);
-    });
+    }, noRetries: true);
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       results = await tableModel.syncEventAdminService
@@ -234,7 +234,7 @@ class PaymentsService {
       //return false;
     }
 
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = currentUserId;
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final String deviceSecret =
         getStringPref(StringPrefsEnum.deviceSecret) ?? '';
@@ -321,7 +321,7 @@ class PaymentsService {
         paramString: '$deviceSecret$hemId#${paymentAmount.toInt()}',
       );
       return jsonEncode(payBody);
-    });
+    }, noRetries: true);
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       if (appDomainType == AppDomainType.event) {
@@ -372,8 +372,9 @@ class PaymentsService {
             Uri.parse(EMAIL_PAYMENT_API_URL),
             headers: <String, String>{'content-type': 'application/json'},
             body: body,
-            // Send authorization headers to your backend
-            //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
+          ).timeout(
+            const Duration(seconds: 30),
+            onTimeout: () => Response('timeout', 408),
           ).catchError((dynamic error) {
             return Future<Response>.value(Response('', 500));
           });

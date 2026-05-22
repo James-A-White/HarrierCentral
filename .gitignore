@@ -11,3 +11,14 @@ node_modules/
 
 # Azure Functions local settings (contains credentials)
 api/local.settings.json
+
+# Flutter build outputs
+portal/build/
+mobile-app/build/
+public-web/.next/
+
+# Claude Code internal state
+.claude/worktrees/
+*.lscache
+extracted_lines.txt
+missing_imports.txt

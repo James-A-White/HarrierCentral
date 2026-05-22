@@ -44,8 +44,7 @@ class SyncUserDataService {
     final List<Map<String, dynamic>> table = await database.rawQuery(
       'SELECT MAX($colName) AS maxDate FROM $tableName',
     );
-    final int? timeValue = table.first['maxDate'];
-    //print(timeValue.toString());
+    final int? timeValue = table.isNotEmpty ? table.first['maxDate'] : null;
     return timeValue ?? FORCE;
   }
 
@@ -149,152 +148,145 @@ class SyncUserDataService {
       // final DateTime startTime = DateTime.now();
       // print('updateFromBackEnd started = 0');
 
-      // TODO(L2): forceRefresh parameter is accepted but the condition is always
-      // true (|| true). Remove forceRefresh from this method signature and all
-      // ~20 call sites when doing a broader cleanup pass.
-      if (true) {
-        // ignore: dead_code
-        await getLastUpdatedTimes(tablesToSync);
+      await getLastUpdatedTimes(tablesToSync);
 
-        final DateTime hashersUpdatedAfter =
-            DateTime.fromMicrosecondsSinceEpoch(_hashersLastUpdated + 1);
-        final DateTime citiesUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
-          _citiesLastUpdated + 1,
-        );
-        final DateTime regionsUpdatedAfter =
-            DateTime.fromMicrosecondsSinceEpoch(_regionsLastUpdated + 1);
-        final DateTime countriesUpdatedAfter =
-            DateTime.fromMicrosecondsSinceEpoch(_countriesLastUpdated + 1);
-        final DateTime songsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
-          _songsLastUpdated + 1,
-        );
-        final DateTime kennelsUpdatedAfter =
-            DateTime.fromMicrosecondsSinceEpoch(_kennelsLastUpdated + 1);
-        final DateTime paymentsUpdatedAfter =
-            DateTime.fromMicrosecondsSinceEpoch(_paymentsLastUpdated + 1);
-        final DateTime hasherKennelMapUpdatedAfter =
-            DateTime.fromMicrosecondsSinceEpoch(
-              _hasherKennelMapLastUpdated + 1,
-            );
-        final DateTime hasherEventMapUpdatedAfter =
-            DateTime.fromMicrosecondsSinceEpoch(_hasherEventMapLastUpdated + 1);
-        final DateTime narrowEventsUpdatedAfter =
-            DateTime.fromMicrosecondsSinceEpoch(_narrowEventsLastUpdated + 1);
+      final DateTime hashersUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
+        _hashersLastUpdated + 1,
+      );
+      final DateTime citiesUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
+        _citiesLastUpdated + 1,
+      );
+      final DateTime regionsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
+        _regionsLastUpdated + 1,
+      );
+      final DateTime countriesUpdatedAfter =
+          DateTime.fromMicrosecondsSinceEpoch(_countriesLastUpdated + 1);
+      final DateTime songsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
+        _songsLastUpdated + 1,
+      );
+      final DateTime kennelsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
+        _kennelsLastUpdated + 1,
+      );
+      final DateTime paymentsUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
+        _paymentsLastUpdated + 1,
+      );
+      final DateTime hasherKennelMapUpdatedAfter =
+          DateTime.fromMicrosecondsSinceEpoch(_hasherKennelMapLastUpdated + 1);
+      final DateTime hasherEventMapUpdatedAfter =
+          DateTime.fromMicrosecondsSinceEpoch(_hasherEventMapLastUpdated + 1);
+      final DateTime narrowEventsUpdatedAfter =
+          DateTime.fromMicrosecondsSinceEpoch(_narrowEventsLastUpdated + 1);
 
-        String userId = getStringPref(StringPrefsEnum.userId) ?? '';
-        if (userId.isEmpty) {
-          userId = GUID_EMPTY;
-        }
-
-        String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-        String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
-
-        final Map<String, dynamic> params = <String, dynamic>{
-          'queryType': 'syncUserData',
-          'deviceId': deviceId,
-          'citiesUpdatedAfter': (tablesToSync & EnumDataTables.cities.flag) == 0
-              ? 'ignore'
-              : ('${citiesUpdatedAfter}000000').substring(0, 26),
-          'regionsUpdatedAfter':
-              (tablesToSync & EnumDataTables.regions.flag) == 0
-              ? 'ignore'
-              : ('${regionsUpdatedAfter}000000').substring(0, 26),
-          'countriesUpdatedAfter':
-              (tablesToSync & EnumDataTables.countries.flag) == 0
-              ? 'ignore'
-              : ('${countriesUpdatedAfter}000000').substring(0, 26),
-          'songsUpdatedAfter': (tablesToSync & EnumDataTables.songs.flag) == 0
-              ? 'ignore'
-              : ('${songsUpdatedAfter}000000').substring(0, 26),
-          'hasherKennelMapUpdatedAfter':
-              (tablesToSync & EnumDataTables.hasherKennelMap.flag) == 0
-              ? 'ignore'
-              : ('${hasherKennelMapUpdatedAfter}000000').substring(0, 26),
-          'hasherEventMapUpdatedAfter':
-              (tablesToSync & EnumDataTables.hasherEventMap.flag) == 0
-              ? 'ignore'
-              : ('${hasherEventMapUpdatedAfter}000000').substring(0, 26),
-          'hashersUpdatedAfter':
-              (tablesToSync & EnumDataTables.hashers.flag) == 0
-              ? 'ignore'
-              : ('${hashersUpdatedAfter}000000').substring(0, 26),
-          'kennelsUpdatedAfter':
-              (tablesToSync & EnumDataTables.kennels.flag) == 0
-              ? 'ignore'
-              : ('${kennelsUpdatedAfter}000000').substring(0, 26),
-          'narrowEventsUpdatedAfter':
-              (tablesToSync & EnumDataTables.events.flag) == 0
-              ? 'ignore'
-              : ('${narrowEventsUpdatedAfter}000000').substring(0, 26),
-          'paymentsUpdatedAfter':
-              (tablesToSync & EnumDataTables.payments.flag) == 0
-              ? 'ignore'
-              : ('${paymentsUpdatedAfter}000000').substring(0, 26),
-          'forceReplicateAllRunsForKennel':
-              forceReplicateAllRunsForKennel ?? 'ignore',
-          'usePaging': usePaging ? '1' : '0',
-        };
-
-        if (kDebugMode) {
-          params['includeNulls'] = true;
-        }
-
-        final List<BaseTableHelper> tables = [
-          for (final t in EnumDataTables.values)
-            if (t.isSet(tablesToSync)) t.helperFrom(tableModel),
-        ];
-
-        //print('http request issued: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
-
-        final String responseBody = await ServiceCommon.sendHttpPost(() {
-          params['accessToken'] = Utilities.generateToken(
-            userId,
-            'hcapp_syncUserData',
-            paramString: deviceSecret,
-          );
-          return jsonEncode(params);
-        }, client: client);
-
-        //print('http response received: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
-
-        if (!responseBody.startsWith(ERROR_PREFIX)) {
-          // this replaces a nasty paragraph separator (x2029) that caused the mobile apps to crash
-          tablesToSync = await updateSqlTablesWithResultsFromApiWithPaging(
-            //responseBody.replaceAll('\u2029', '').replaceAll('\u2028', ''),
-            responseBody.replaceAll('\u2029', '').replaceAll('\u2028', ''),
-            informUser: informUser,
-            suppressDeletes: true,
-            batchText: '$batchText $batchNumber',
-            tables: tables.isEmpty ? null : tables,
-          );
-          //await setIntPref(IntPrefsEnum.lastSuccessfulUserDataSyncInMs, DateTime.now().millisecondsSinceEpoch);
-          await setDatePref(
-            DatePrefsEnum.lastSuccessfulUserDataSync,
-            DateTime.now(),
-          );
-
-          if (tablesToSync != 0) {
-            batchNumber++;
-          }
-        } else {
-          if (kDebugMode) {
-            // ignore: avoid_print
-            debugPrint(
-              'XXXXXXX Server error processing response in SyncUserDataService updateFromBackend XXXXXXXX',
-            );
-          }
-          // A server error means there are no results to page through.
-          // Without this break, tablesToSync stays non-zero and the while loop
-          // retries the same failing request forever — causing the app to hang.
-          break;
-        }
-
-        //print('http response processed: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
-
-        // if (DateTime.now().difference(startTime).inMilliseconds > 5000) {
-        //   int xxx = 0;
-        // }
+      String userId = getStringPref(StringPrefsEnum.userId) ?? '';
+      if (userId.isEmpty) {
+        userId = GUID_EMPTY;
       }
+
+      String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+      String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+      final Map<String, dynamic> params = <String, dynamic>{
+        'queryType': 'syncUserData',
+        'deviceId': deviceId,
+        'citiesUpdatedAfter': (tablesToSync & EnumDataTables.cities.flag) == 0
+            ? 'ignore'
+            : ('${citiesUpdatedAfter}000000').substring(0, 26),
+        'regionsUpdatedAfter': (tablesToSync & EnumDataTables.regions.flag) == 0
+            ? 'ignore'
+            : ('${regionsUpdatedAfter}000000').substring(0, 26),
+        'countriesUpdatedAfter':
+            (tablesToSync & EnumDataTables.countries.flag) == 0
+            ? 'ignore'
+            : ('${countriesUpdatedAfter}000000').substring(0, 26),
+        'songsUpdatedAfter': (tablesToSync & EnumDataTables.songs.flag) == 0
+            ? 'ignore'
+            : ('${songsUpdatedAfter}000000').substring(0, 26),
+        'hasherKennelMapUpdatedAfter':
+            (tablesToSync & EnumDataTables.hasherKennelMap.flag) == 0
+            ? 'ignore'
+            : ('${hasherKennelMapUpdatedAfter}000000').substring(0, 26),
+        'hasherEventMapUpdatedAfter':
+            (tablesToSync & EnumDataTables.hasherEventMap.flag) == 0
+            ? 'ignore'
+            : ('${hasherEventMapUpdatedAfter}000000').substring(0, 26),
+        'hashersUpdatedAfter': (tablesToSync & EnumDataTables.hashers.flag) == 0
+            ? 'ignore'
+            : ('${hashersUpdatedAfter}000000').substring(0, 26),
+        'kennelsUpdatedAfter': (tablesToSync & EnumDataTables.kennels.flag) == 0
+            ? 'ignore'
+            : ('${kennelsUpdatedAfter}000000').substring(0, 26),
+        'narrowEventsUpdatedAfter':
+            (tablesToSync & EnumDataTables.events.flag) == 0
+            ? 'ignore'
+            : ('${narrowEventsUpdatedAfter}000000').substring(0, 26),
+        'paymentsUpdatedAfter':
+            (tablesToSync & EnumDataTables.payments.flag) == 0
+            ? 'ignore'
+            : ('${paymentsUpdatedAfter}000000').substring(0, 26),
+        'forceReplicateAllRunsForKennel':
+            forceReplicateAllRunsForKennel ?? 'ignore',
+        'usePaging': usePaging ? '1' : '0',
+      };
+
+      if (kDebugMode) {
+        params['includeNulls'] = true;
+      }
+
+      final List<BaseTableHelper> tables = [
+        for (final t in EnumDataTables.values)
+          if (t.isSet(tablesToSync)) t.helperFrom(tableModel),
+      ];
+
+      //print('http request issued: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
+
+      final String responseBody = await ServiceCommon.sendHttpPost(() {
+        params['accessToken'] = Utilities.generateToken(
+          userId,
+          'hcapp_syncUserData',
+          paramString: deviceSecret,
+        );
+        return jsonEncode(params);
+      }, client: client);
+
+      //print('http response received: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
+
+      if (!responseBody.startsWith(ERROR_PREFIX)) {
+        // this replaces a nasty paragraph separator (x2029) that caused the mobile apps to crash
+        tablesToSync = await updateSqlTablesWithResultsFromApiWithPaging(
+          //responseBody.replaceAll('\u2029', '').replaceAll('\u2028', ''),
+          responseBody.replaceAll('\u2029', '').replaceAll('\u2028', ''),
+          informUser: informUser,
+          suppressDeletes: true,
+          batchText: '$batchText $batchNumber',
+          tables: tables.isEmpty ? null : tables,
+        );
+        //await setIntPref(IntPrefsEnum.lastSuccessfulUserDataSyncInMs, DateTime.now().millisecondsSinceEpoch);
+        await setDatePref(
+          DatePrefsEnum.lastSuccessfulUserDataSync,
+          DateTime.now(),
+        );
+
+        if (tablesToSync != 0) {
+          batchNumber++;
+        }
+      } else {
+        if (kDebugMode) {
+          // ignore: avoid_print
+          debugPrint(
+            'XXXXXXX Server error processing response in SyncUserDataService updateFromBackend XXXXXXXX',
+          );
+        }
+        // A server error means there are no results to page through.
+        // Without this break, tablesToSync stays non-zero and the while loop
+        // retries the same failing request forever — causing the app to hang.
+        break;
+      }
+
+      //print('http response processed: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
+
+      // if (DateTime.now().difference(startTime).inMilliseconds > 5000) {
+      //   int xxx = 0;
+      // }
     }
     return true;
   }

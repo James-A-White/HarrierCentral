@@ -788,7 +788,11 @@ class Utilities {
       ).timeout(hcServerTimeout, onTimeout: () => '${ERROR_PREFIX}Timeout');
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {
-        final result = jsonDecode(responseBody)[0][0]['result'];
+        final decoded = jsonDecode(responseBody);
+        if (decoded is! List || decoded.isEmpty) return false;
+        final row0 = decoded[0];
+        if (row0 is! List || row0.isEmpty) return false;
+        final result = (row0[0] as Map<String, dynamic>?)?['result'];
         if (result == 'Connected') {
           //appModel.connectionStatus = EnumConnectionStatus2.connected;
           //print('HC server check successful, connected');
@@ -1171,17 +1175,16 @@ class Utilities {
       lastRunStartCheck = DateTime(2000);
     }
 
-    ////// TODO: Re-enable this before next release
-    // if (DateTime.now().difference(lastRunStartCheck).inMinutes < 2) {
-    //   return;
-    // }
+    if (DateTime.now().difference(lastRunStartCheck).inMinutes < 2) {
+      return;
+    }
 
     await setDatePref(DatePrefsEnum.lastRunStartCheck, DateTime.now());
 
     final List<AreWeAtRunModel> resultList = await CommonQueries.isAtRunStart(
       eventId: eventId,
     );
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = currentUserId;
 
     if (resultList.length == 1) {
       final AreWeAtRunModel result = resultList[0];

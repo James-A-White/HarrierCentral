@@ -236,6 +236,7 @@ class HashersService extends BaseService {
         );
         return jsonEncode(addEditBody);
       },
+      noRetries: true,
       errorCallback: (DbErrorModel dbError) async {
         bool okButtonPressed = false;
         if (dbError.errorType == DB_ERROR_EMAIL_ALREADY_EXISTS) {
@@ -297,8 +298,9 @@ class HashersService extends BaseService {
           Uri.parse(EMAIL_INVITE_CODE_API_URL),
           headers: <String, String>{'content-type': 'application/json'},
           body: body,
-          // Send authorization headers to your backend
-          //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
+        ).timeout(
+          const Duration(seconds: 30),
+          onTimeout: () => Response('timeout', 408),
         ).catchError((dynamic error) {
           return Future<Response>.value(Response('', 500));
         });
@@ -326,7 +328,7 @@ class HashersService extends BaseService {
     final String hcVersion =
         getStringPref(StringPrefsEnum.harrierCentralVersionAndBuild) ??
         '<unknown version>';
-    String userId = getStringPref(StringPrefsEnum.userId)!;
+    String userId = currentUserId;
     if (userId.isEmpty) {
       userId = GUID_EMPTY;
     }
@@ -363,6 +365,7 @@ class HashersService extends BaseService {
         'historicalCountIsEstimate': '-1',
         'followKennelOnAddNewUser': null,
       }),
+      noRetries: true,
     );
 
     // I checked and the error condition is being properly handled by the caller
@@ -386,7 +389,7 @@ class HashersService extends BaseService {
     final String hcVersion =
         getStringPref(StringPrefsEnum.harrierCentralVersionAndBuild) ??
         '<unknown version>';
-    String userId = getStringPref(StringPrefsEnum.userId)!;
+    String userId = currentUserId;
 
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final String deviceSecret =

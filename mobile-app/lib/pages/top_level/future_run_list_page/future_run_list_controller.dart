@@ -39,8 +39,15 @@ class FutureRunListPageController extends GetxController {
 
   bool showRsvpInstructions = false;
 
+  Worker? _searchWorker;
+  Worker? _displayLoadingWorker;
+  Worker? _timeScopeLoadingWorker;
+
   @override
   void onClose() {
+    _searchWorker?.dispose();
+    _displayLoadingWorker?.dispose();
+    _timeScopeLoadingWorker?.dispose();
     _dataChangeSub?.cancel();
     scrollController.dispose();
     searchController.dispose();
@@ -52,29 +59,13 @@ class FutureRunListPageController extends GetxController {
   void onInit() {
     super.onInit();
 
-    // showOnlyEventsWithMessages.listen((bool value) async {
-    //   showChatBubbleLoading.value = true;
-    //   update(['main_nav_page']);
-    //   Future<void>.delayed(const Duration(seconds: 1)).then((value) {
-    //     showChatBubbleLoading.value = false;
-    //     update(['main_nav_page']);
-    //   });
-
-    //   // for some reason,we need to put this little delay in otherwise the
-    //   // update to the main_nav_page does not get fired before the filterRuns
-    //   // starts executing.
-    //   await Future<void>.delayed(const Duration(milliseconds: 100));
-    //   filterRuns(false);
-    // });
-
-    // 👇 Debounce: waits 400ms after last change before calling filterRuns
-    debounce<String>(
+    _searchWorker = debounce<String>(
       searchRunsText,
       (_) => filterRuns(true),
       time: const Duration(milliseconds: 1000),
     );
 
-    debounce<bool>(
+    _displayLoadingWorker = debounce<bool>(
       runsToDisplayLoading,
       (isLoading) async {
         if (isLoading) {
@@ -88,7 +79,7 @@ class FutureRunListPageController extends GetxController {
       time: const Duration(milliseconds: 0), // immediate trigger
     );
 
-    debounce<bool>(
+    _timeScopeLoadingWorker = debounce<bool>(
       runsTimeScopeLoading,
       (isLoading) async {
         if (isLoading) {

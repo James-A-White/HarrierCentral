@@ -109,11 +109,14 @@ class HashRunArtGalleryPage extends StatelessWidget {
                             padding: const EdgeInsets.only(top: 15.0),
                             child: Text(
                               DateFormat("E, MMM d, yyyy 'at' h:mm a").format(
-                                DateTime.parse(
+                                DateTime.tryParse(
                                   item[tableModel
-                                      .eventsTableHelper
-                                      .colEventStartDatetime],
-                                ),
+                                          .eventsTableHelper
+                                          .colEventStartDatetime]
+                                      ?.toString() ??
+                                      '',
+                                ) ??
+                                    DateTime.now(),
                               ),
                               style: ts_title.copyWith(
                                 color: Colors.grey.shade500,

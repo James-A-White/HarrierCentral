@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/util/track_point_filter.dart';
+import 'package:harrier_central/widgets/camera_photo_marker.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 
 // TODO(S4): This controller mixes UI layout state (map rendering, playback
@@ -198,17 +199,19 @@ class RunTrackerMapController extends GetxController
               (parsedType.type == HashRunPointTypes.customLabel ||
                   parsedType.type == HashRunPointTypes.caution);
 
-          final double scale = _markerScale();
-          const double baseIconSize = 72.0; // 60% of the prior 120 size
+          const double baseIconSize = 72.0;
+          const double basePhotoSize = 144.0;
           const double baseLabelWidth = 140.0;
           const double baseLabelHeight = 140.0;
 
+          final bool isPhoto = parsedType.type == HashRunPointTypes.photo;
+          final double scale = isPhoto ? _photoMarkerScale() : _markerScale();
           final double markerWidth = hasAttachedLabel
               ? baseLabelWidth * scale
-              : baseIconSize * scale;
+              : (isPhoto ? basePhotoSize : baseIconSize) * scale;
           final double markerHeight = hasAttachedLabel
               ? baseLabelHeight * scale
-              : baseIconSize * scale;
+              : (isPhoto ? basePhotoSize : baseIconSize) * scale;
 
           return Marker(
             width: markerWidth,
@@ -553,6 +556,11 @@ class RunTrackerMapController extends GetxController
   }
 
   Widget _buildCheckpointMarker(HashRunPointTypes type, {String? customLabel}) {
+    // PHO markers: the customLabel is the blob sub-path, not a display label.
+    if (type == HashRunPointTypes.photo) {
+      return _buildPhotoMarker(customLabel ?? '');
+    }
+
     final bool showLabel =
         (type == HashRunPointTypes.customLabel ||
             type == HashRunPointTypes.caution) &&
@@ -622,11 +630,37 @@ class RunTrackerMapController extends GetxController
     );
   }
 
+  Widget _buildPhotoMarker(String? photoUrl) {
+    const double baseSize = 144.0;
+    final double size = baseSize * _photoMarkerScale();
+
+    // Always show the camera frame. Pass null when the label isn't a valid
+    // URL so the widget shows the empty frame rather than a broken thumbnail.
+    final String? resolvedUrl =
+        (photoUrl != null && photoUrl.startsWith('http')) ? photoUrl : null;
+
+    return CameraPhotoMarker(photoUrl: resolvedUrl, size: size);
+  }
+
   double _markerScale() {
     final double zoom = _mapReady ? mapController.camera.zoom : initialZoom;
     final double ratio = zoom / initialZoom;
     final double scaled = ratio / 1.5; // reduce size by ~150% relative to zoom
     return scaled.clamp(0.10, 3.0);
+  }
+
+  // Photo markers interpolate linearly between two pixel-size anchors:
+  //   initialZoom (full-run view) → 25 px
+  //   maxZoom     (closest zoom)  → 360 px  (≈ fills a phone screen horizontally)
+  // Clamped so zooming below initialZoom never shrinks below 25 px.
+  double _photoMarkerScale() {
+    const double baseSize    = 144.0;
+    const double pxAtInitial =  25.0;
+    const double pxAtMax     = 360.0;
+    if (maxZoom <= initialZoom) return pxAtMax / baseSize;
+    final double zoom = _mapReady ? mapController.camera.zoom : initialZoom;
+    final double t = ((zoom - initialZoom) / (maxZoom - initialZoom)).clamp(0.0, 1.0);
+    return (pxAtInitial + (pxAtMax - pxAtInitial) * t) / baseSize;
   }
 
   String _formatDistanceLabel() {

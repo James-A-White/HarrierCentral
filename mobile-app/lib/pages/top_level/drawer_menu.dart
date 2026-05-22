@@ -27,7 +27,7 @@ class DrawerMenuState extends State<DrawerMenu> {
 
   final TextStyle _style = ts_large;
 
-  final String _userId = getStringPref(StringPrefsEnum.userId)!;
+  final String _userId = currentUserId;
 
   @override
   Widget build(BuildContext context) {

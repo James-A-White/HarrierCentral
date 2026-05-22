@@ -345,7 +345,7 @@ class RunAndKennelMapController extends GetxController {
         kennelId.toLowerCase() ==
         getStringPref(StringPrefsEnum.homeKennelId)?.toLowerCase();
 
-    final String hasherId = getStringPref(StringPrefsEnum.userId)!;
+    final String hasherId = currentUserId;
     final List<Map<String, dynamic>> results = await QueryKennels.queryKennels(
       EnumKennelQueryType.singleKennel,
       EnumKennelQueryContext.user,
@@ -401,7 +401,7 @@ class RunAndKennelMapController extends GetxController {
   // Load events from local DB
   // ---------------------------------------------------------------------------
   Future<void> _loadEvents() async {
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = currentUserId;
 
     String query =
         '''
@@ -447,9 +447,12 @@ class RunAndKennelMapController extends GetxController {
           if (lat != null && lon != null) {
             if (lat <= 90.0 && lat >= -90.0 && lon <= 180.0 && lon >= -180.0) {
               final EventModel em = EventModel.fromJson(results[i]);
-              final DateTime dt = DateTime.parse(
-                results[i]['eventStartDatetime'].substring(0, 19),
-              );
+              final DateTime dt = DateTime.tryParse(
+                    (results[i]['eventStartDatetime']?.toString() ?? '').length >= 19
+                        ? results[i]['eventStartDatetime'].toString().substring(0, 19)
+                        : '',
+                  ) ??
+                  DateTime.now();
               final diff = em.eventStartDatetimeGmt.difference(
                 DateTime.now().toUtc(),
               );

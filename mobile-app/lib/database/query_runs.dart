@@ -577,7 +577,7 @@ class QueryRuns {
         break;
     }
 
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = currentUserId;
 
     final offsetFromGmtToLocal = Utilities.getSqfliteTimeOffset();
 

@@ -116,7 +116,7 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
           );
         }
 
-        final String userId = getStringPref(StringPrefsEnum.userId)!;
+        final String userId = currentUserId;
 
         final ReceiptsModel item = ReceiptsModel(
           userId: userId,
