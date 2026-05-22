@@ -1,5 +1,24 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.5.0+1118 (2026-05-22)
+
+### Improvements
+
+- **KennelPhotos — photo fills camera frame**: The thumbnail now bleeds
+  slightly beyond the transparent cutout so no background pixel is visible
+  between the photo and the camera frame edge.
+
+- **KennelPhotos — marker size scaling**: Minimum photo marker size raised
+  from 25 px to 50 px. Markers now shrink on a quadratic curve as you zoom
+  out, so they reduce in size faster while still reaching full screen width
+  at maximum zoom.
+
+- **KennelPhotos — tap to view full image**: Tapping a photo marker on the
+  map opens the photo full-screen in the zoomable image viewer, with the
+  event name shown in the app bar.
+
+---
+
 ## 2.5.0+1117 (2026-05-22)
 
 ### New features

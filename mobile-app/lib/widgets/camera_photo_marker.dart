@@ -120,11 +120,15 @@ class _CameraPhotoMarkerState extends State<CameraPhotoMarker> {
     // ── Screen-area coordinates derived from pixel analysis of the 400×400 PNGs
     // Landscape: transparent cutout at x=27–286, y=71–270 in source coords.
     // Portrait : transparent cutout at x=117–283, y=87–301 in source coords.
+    // bleed expands the photo rect beyond the cutout edge on all sides so no
+    // background pixel shows between the photo and the frame's zero-alpha area.
     final bool landscape = _isLandscape ?? true; // default landscape while loading
-    final double photoLeft = landscape ? s * 0.0675 : s * 0.2925;
-    final double photoTop  = landscape ? s * 0.1775 : s * 0.2175;
-    final double photoW    = landscape ? s * 0.6475 : s * 0.4150;
-    final double photoH    = landscape ? s * 0.4975 : s * 0.5350;
+    const double bleedFactor = 0.015; // ~1.5 % of marker size per side
+    final double bleed = s * bleedFactor;
+    final double photoLeft = (landscape ? s * 0.0675 : s * 0.2925) - bleed;
+    final double photoTop  = (landscape ? s * 0.1775 : s * 0.2175) - bleed;
+    final double photoW    = (landscape ? s * 0.6475 : s * 0.4150) + bleed * 2;
+    final double photoH    = (landscape ? s * 0.4975 : s * 0.5350) + bleed * 2;
 
     // ── Content for the screen area ───────────────────────────────────────────
     Widget screenContent;
