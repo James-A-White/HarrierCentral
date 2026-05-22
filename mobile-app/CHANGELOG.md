@@ -1,5 +1,104 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.5.0+1117 (2026-05-22)
+
+### New features
+
+- **KennelPhotos — photo markers on the live run map**: PHO track points
+  now render as camera-shaped map pin markers with the actual photo
+  thumbnail displayed inside the camera LCD frame. Landscape photos use
+  a wide camera frame; portrait photos use a tall frame — orientation is
+  detected automatically from the image dimensions.
+
+- **KennelPhotos — count-up loading indicator**: While a photo marker is
+  loading its thumbnail (0–9 seconds), a counter is shown inside the
+  camera frame so it is clear the image is in progress rather than
+  broken.
+
+- **KennelPhotos — zoom-responsive marker size**: Photo markers scale from
+  a minimal 25 px at full-run view to approximately screen width at
+  maximum zoom, making them easy to spot at a distance and large enough
+  to inspect up close.
+
+### Bug fixes
+
+- **KennelPhotos — photo markers silently dropped by GPS filter**: Typed
+  track points (PHO and all other marker types) were being removed by the
+  GPS accuracy and velocity filter if their GPS fix was poor or their
+  timestamp was within 1 second of the preceding point. Typed points now
+  bypass all quality checks — they are intentional user actions and must
+  always survive the filter.
+
+- **KennelPhotos — PHO GPS label truncated at 54 characters**: The
+  `StorePositions` API endpoint was silently dropping any `Type` field
+  longer than 54 characters. PHO labels (which embed the full blob URL)
+  are up to ~165 characters. Limit raised to 200.
+
+- **KennelPhotos — photo URL correctly sourced from API response**: The
+  full blob URL returned by `GetPhotoUploadToken` is now stored verbatim
+  in the GPS track label, eliminating a storage-account-name assumption
+  that could have broken thumbnail loading after an infrastructure change.
+
+### Stability (pre-3.0 hardening — Session 1)
+
+- **`isAtRunStart` throttle re-enabled**: The 2-minute rate-limit was
+  accidentally left disabled by a `TODO: Re-enable before next release`
+  comment. Without it, every screen unlock, boot, and 5 other call sites
+  fired an unthrottled network + DB call.
+
+- **GetX resource leaks — 8 controllers**: Added or completed `onClose()`
+  in `OtherPaymentPopupController`, `CheckInPackController`,
+  `KennelsListPageController`, `FutureRunListPageController`,
+  `LiveRunGeneralController`, `LocationService`, `KennelAdminController`,
+  and `MainNavigationPageController`. Resources leaked: `Worker` objects
+  from `debounce()`/`ever()`, `TextEditingController`, `FocusNode`,
+  `ScrollController`, `AnimationController`, `MapController`.
+
+- **Sync service crash on first install**: All three sync services called
+  `table.first['maxDate']` without an `isEmpty` guard. On a fresh install
+  the table is empty, causing a `RangeError` that could hang the boot.
+
+- **Email report HTTP calls had no timeout**: Four fire-and-forget email
+  endpoints (`SendKennelRunStatsReport`, `SendRunCountsReport`,
+  `SendPaymentReport`, `EmailInviteCode`) could hang indefinitely. Each
+  now has a 30-second timeout.
+
+### Stability (pre-3.0 hardening — Session 2)
+
+- **59× `userId` force-unwraps replaced**: All `getStringPref(userId)!`
+  force-unwraps across services, pages, and widgets have been replaced
+  with a new `currentUserId` getter that returns `''` instead of throwing.
+  This eliminates a class of crashes on first boot and after a credential
+  wipe.
+
+- **Mutations now use `noRetries: true`**: Payment, RSVP, attendance,
+  event, receipt, and user-edit calls were retrying up to 6 times on
+  network failure. This risked creating duplicate records in the database.
+  All 10 mutation call sites now pass `noRetries: true`.
+
+- **3× empty catch blocks**: Silent `catch (_) {}` blocks in
+  `KennelsListPageController`, `HashFlashApprovalPage`, and
+  `MainNavigationPageController` now log the error with `debugPrint`.
+
+- **4× `DateTime.parse()` crash risk**: Unguarded parses on DB-sourced
+  strings in `HashRunArtGalleryPage`, `RunLocationsController`,
+  `RunTabs`, and `RunListItem` replaced with `DateTime.tryParse()` +
+  safe fallbacks.
+
+- **Unguarded array access hardened**: COUNT query results in
+  `common_queries.dart`, double-nested JSON decode in
+  `utilities_null_safe.dart`, `result[1][0]` in
+  `authorize_device_service.dart`, and barcode scan `.barcodes.first`
+  in three scanner pages now all have proper guards.
+
+- **Photo upload token fields null-checked**: `sasUrl` and `blobUrl` are
+  now validated before use in `kennel_photo_service.dart`; a clear
+  snackbar is shown if either field is missing.
+
+- **`recordError()` timeout added**: The error-logging HTTP call had no
+  timeout and could block the app if the reporting endpoint was slow.
+  Now capped at 30 seconds.
+
 ## 2.4.10+1116 (2026-05-21)
 
 ### Enhancements
