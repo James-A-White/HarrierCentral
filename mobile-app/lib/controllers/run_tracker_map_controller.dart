@@ -199,13 +199,13 @@ class RunTrackerMapController extends GetxController
               (parsedType.type == HashRunPointTypes.customLabel ||
                   parsedType.type == HashRunPointTypes.caution);
 
-          final double scale = _markerScale();
           const double baseIconSize = 72.0;
-          const double basePhotoSize = 144.0; // 2× icon size
+          const double basePhotoSize = 144.0;
           const double baseLabelWidth = 140.0;
           const double baseLabelHeight = 140.0;
 
           final bool isPhoto = parsedType.type == HashRunPointTypes.photo;
+          final double scale = isPhoto ? _photoMarkerScale() : _markerScale();
           final double markerWidth = hasAttachedLabel
               ? baseLabelWidth * scale
               : (isPhoto ? basePhotoSize : baseIconSize) * scale;
@@ -631,9 +631,8 @@ class RunTrackerMapController extends GetxController
   }
 
   Widget _buildPhotoMarker(String? photoUrl) {
-    final double scale = _markerScale();
-    const double baseSize = 144.0; // 2× the standard icon base size
-    final double size = baseSize * scale;
+    const double baseSize = 144.0;
+    final double size = baseSize * _photoMarkerScale();
 
     // Always show the camera frame. Pass null when the label isn't a valid
     // URL so the widget shows the empty frame rather than a broken thumbnail.
@@ -648,6 +647,16 @@ class RunTrackerMapController extends GetxController
     final double ratio = zoom / initialZoom;
     final double scaled = ratio / 1.5; // reduce size by ~150% relative to zoom
     return scaled.clamp(0.10, 3.0);
+  }
+
+  // Photo markers use a squared ratio so they shrink aggressively when zoomed
+  // out and grow noticeably when zoomed in — roughly 50% proportional scaling.
+  // e.g. at initialZoom=14: zoom 10 → 0.25× (36 px), zoom 14 → 0.5× (72 px),
+  //                          zoom 18 → 0.83× (119 px).
+  double _photoMarkerScale() {
+    final double zoom = _mapReady ? mapController.camera.zoom : initialZoom;
+    final double ratio = zoom / initialZoom;
+    return ((ratio * ratio) / 2.0).clamp(0.15, 1.5);
   }
 
   String _formatDistanceLabel() {
