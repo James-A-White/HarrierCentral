@@ -159,7 +159,7 @@ class HasherKennelMapService {
       //return false;
     }
 
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = currentUserId;
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final String deviceSecret =
         getStringPref(StringPrefsEnum.deviceSecret) ?? '';
@@ -246,7 +246,7 @@ class HasherKennelMapService {
       followingState = -1;
     }
 
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = currentUserId;
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final String deviceSecret =
         getStringPref(StringPrefsEnum.deviceSecret) ?? '';

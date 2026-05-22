@@ -233,7 +233,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
   //final GetPackService _getPackService = GetPackService();
 
-  final String _userId = getStringPref(StringPrefsEnum.userId)!;
+  final String _userId = currentUserId;
 
   //int _currentTabIndex = -1;
 
@@ -873,9 +873,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                         0,
                                         startTime.length - 1,
                                       );
-                                      DateTime localTime = DateTime.parse(
-                                        startTime,
-                                      );
+                                      DateTime localTime = DateTime.tryParse(startTime) ?? DateTime.now();
 
                                       String? oneLineLocForDesc = widget
                                           .futureRun
@@ -1457,9 +1455,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         );
 
     await _refreshHemTableFromBackend(false);
-    print(
-      '[_setRsvpState] adHocData length: ${adHocData.length}, contents: $adHocData',
-    );
+    if (kDebugMode) debugPrint('[_setRsvpState] adHocData length: ${adHocData.length}, contents: $adHocData');
     final String serverMessage = adHocData[0]['serverMessage'] ?? '';
 
     if (serverMessage.isNotEmpty) {
@@ -2520,9 +2516,10 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       } else {
         final List<maps.AvailableMap> availableMaps =
             await maps.MapLauncher.installedMaps;
-        final maps.AvailableMap activeMap = availableMaps
+        final maps.AvailableMap? activeMap = availableMaps
             .where((maps.AvailableMap map) => map.mapName == mapName)
-            .first;
+            .firstOrNull;
+        if (activeMap == null) return;
 
         // BUG in plugin - doesn't work when sending a title with Google maps
         await activeMap.showMarker(

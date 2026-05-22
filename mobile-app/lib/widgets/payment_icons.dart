@@ -465,7 +465,7 @@ class PaymentIcons extends StatelessWidget {
     double surcharge,
     String paymentProvider,
   ) async {
-    final String hasherId = getStringPref(StringPrefsEnum.userId)!;
+    final String hasherId = currentUserId;
     final PaymentsService paySrv = PaymentsService();
     return paySrv.payForEvent(
       event.eventId,

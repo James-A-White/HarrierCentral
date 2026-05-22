@@ -236,6 +236,7 @@ class HashersService extends BaseService {
         );
         return jsonEncode(addEditBody);
       },
+      noRetries: true,
       errorCallback: (DbErrorModel dbError) async {
         bool okButtonPressed = false;
         if (dbError.errorType == DB_ERROR_EMAIL_ALREADY_EXISTS) {
@@ -327,7 +328,7 @@ class HashersService extends BaseService {
     final String hcVersion =
         getStringPref(StringPrefsEnum.harrierCentralVersionAndBuild) ??
         '<unknown version>';
-    String userId = getStringPref(StringPrefsEnum.userId)!;
+    String userId = currentUserId;
     if (userId.isEmpty) {
       userId = GUID_EMPTY;
     }
@@ -364,6 +365,7 @@ class HashersService extends BaseService {
         'historicalCountIsEstimate': '-1',
         'followKennelOnAddNewUser': null,
       }),
+      noRetries: true,
     );
 
     // I checked and the error condition is being properly handled by the caller
@@ -387,7 +389,7 @@ class HashersService extends BaseService {
     final String hcVersion =
         getStringPref(StringPrefsEnum.harrierCentralVersionAndBuild) ??
         '<unknown version>';
-    String userId = getStringPref(StringPrefsEnum.userId)!;
+    String userId = currentUserId;
 
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final String deviceSecret =

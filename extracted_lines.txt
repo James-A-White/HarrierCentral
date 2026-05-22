@@ -1,0 +1,581 @@
+Note: The tool simplified the command to ` nl -ba mobile-app/lib/widgets/run_tab
+s.dart | sed -n '110,150p;450,860p;1470,1535p'` (terminal ID=f292895a-b7f2-4ff2-
+ada7-b1c15538014c). This is the output of running that command instead:
+   110    Future<void> _refreshHemTableFromBackend(bool showLoadingIndicator) as
+ync {
+   111      if (showLoadingIndicator) {
+   112        setState(() {
+   113          //_isLoading = true;
+   114        });
+   115      }
+   116
+   117      await tableModel.syncEventAdminService.updateFromBackend(
+   118        EnumDataTables.hasherEventMap.flag,
+   119        true,
+   120        widget.futureRun.event.eventId,
+   121      );
+   122      //final String resultStr = result ? 'successfully' : 'unsuccessfully
+';
+   123      //print('Pack member data synchronized $resultStr');
+   124
+   125      final Future<List<PackListAggregate>> packListFuture =
+   126          _refreshPackListFromTable();
+   127      _thePackList = packListFuture;
+   128      await packListFuture;
+   129      await _refreshPackCountFromTable(true);
+   130    }
+   131
+   132    int _thisUserIndex = -1;
+   133
+   134    Future<List<PackListAggregate>> _refreshPackListFromTable() async {
+   135      List<PackListAggregate> pla = <PackListAggregate>[];
+   136
+   137      final String query =
+   138          '''
+   139          SELECT  
+   140            hem.*,
+   141            h.*,
+   142            ken.${tableModel.kennelsTableHelper.colKennelName} as kennelNa
+me
+   143            FROM ${EnumDataTables.hasherEventMap.eventTableName} hem
+   144            LEFT OUTER JOIN ${EnumDataTables.hashers.commonTableName} h on
+ h.${tableModel.hashersTableHelper.colHasherId} = hem.${tableModel.hasherEventMa
+pTableHelper.colUserId}
+   145            LEFT OUTER JOIN ${EnumDataTables.kennels.commonTableName} ken 
+on h.${tableModel.hashersTableHelper.colHomeKennelId} = ken.${tableModel.kennels
+TableHelper.colKennelId}
+   146            WHERE hem.${tableModel.hasherEventMapTableHelper.colEventId} =
+ "${widget.futureRun.event.eventId}"
+   147            AND hem.${tableModel.hasherEventMapTableHelper.colRsvpState} >
+= 1 AND hem.${tableModel.hasherEventMapTableHelper.colRsvpState} <= 3
+   148            ''';
+   149
+   150      try {
+   450                                  _slideTopWidget = true;
+   451                                });
+   452                              },
+   453                              child: Padding(
+   454                                padding: EdgeInsets.only(
+   455                                  top: 15,
+   456                                  left: 20,
+   457                                  bottom: 0,
+   458                                ),
+   459                                child: Column(
+   460                                  children: [
+   461                                    Row(
+   462                                      children: [
+   463                                        KennelLogo(
+   464                                          kennelLogoUrl:
+   465                                              widget.futureRun.kennel.kenn
+elLogo,
+   466                                          kennelShortName: widget
+   467                                              .futureRun
+   468                                              .kennel
+   469                                              .kennelShortName,
+   470                                          logoHeight: 70,
+   471                                        ),
+   472                                        SizedBox(width: 30),
+   473                                        Expanded(
+   474                                          child: _getRunDetails(Colors.whi
+te),
+   475                                        ),
+   476                                        SizedBox(width: 20),
+   477                                      ],
+   478                                    ),
+   479                                    SizedBox(height: 25),
+   480                                    FancyDivider(
+   481                                      key: ValueKey('divider2342'),
+   482                                      innerColor: Colors.white,
+   483                                    ),
+   484                                  ],
+   485                                ),
+   486                              ),
+   487                            )
+   488                          : SizedBox(),
+   489                    ), // Collapses cleanly
+   490
+   491                    Padding(
+   492                      padding: const EdgeInsets.only(top: 15.0, bottom: 8.
+0),
+   493                      child: Row(
+   494                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+   495                        children: <Widget>[
+   496                          SizedBox(
+   497                            width: MediaQuery.sizeOf(context).width / 5.5,
+   498                            child: Column(
+   499                              children: <Widget>[
+   500                                Text('Going', style: rsvpTitlesView),
+   501                                Stack(
+   502                                  alignment: AlignmentDirectional.center,
+   503                                  children: <Widget>[
+   504                                    Positioned(
+   505                                      // top: 6.5,
+   506                                      // left: 6.5,
+   507                                      child: Container(
+   508                                        height: 36,
+   509                                        width: 36,
+   510                                        decoration: const BoxDecoration(
+   511                                          color: Colors.white,
+   512                                          shape: BoxShape.circle,
+   513                                        ),
+   514                                      ),
+   515                                    ),
+   516                                    IconButton(
+   517                                      icon: const Icon(FontAwesome.check_c
+ircle),
+   518                                      color: currentUser == null
+   519                                          ? Colors.grey
+   520                                          : currentUser.hem.rsvpState ==
+   521                                                rsvpYes.value
+   522                                          ? Colors.green
+   523                                          : (currentUser.hem.rsvpState == 
+-1 &&
+   524                                                _rsvpRequested == rsvpYes)
+   525                                          ? hc_blue
+   526                                          : Colors.grey,
+   527                                      //tooltip: 'Select to follow a Kenne
+l',
+   528                                      iconSize: 35.0,
+   529                                      alignment: Alignment.topCenter,
+   530                                      splashColor: Colors.greenAccent,
+   531                                      onPressed: () async {
+   532                                        await _setRsvpState(rsvpYes);
+   533                                      },
+   534                                      // ),
+   535                                      // Text(
+   536                                      //   widget.futureRun.attendingEvent
+ +
+   537                                      //               widget.futureRun.ha
+resCount >=
+   538                                      //           0
+   539                                      //       ? (widget.futureRun.attendi
+ngEvent +
+   540                                      //               widget.futureRun.ha
+resCount)
+   541                                      //           .toString()
+   542                                      //       : '',
+   543                                      //   style: const TextStyle(
+   544                                      //       fontFamily: 'AvenirNext',
+   545                                      //       fontStyle: FontStyle.normal
+,
+   546                                      //       fontSize: 20.0,
+   547                                      //       height: 0.85),
+   548                                    ),
+   549                                  ],
+   550                                ),
+   551                                Text(
+   552                                  (_packCount['rsvpYesCount'] ?? 0) >= 0
+   553                                      ? (_packCount['rsvpYesCount'] ?? 0)
+   554                                            .toString()
+   555                                      : '',
+   556                                  style: rsvpTitlesView,
+   557                                ),
+   558                              ],
+   559                            ),
+   560                          ),
+   561                          SizedBox(
+   562                            width: MediaQuery.sizeOf(context).width / 5.5,
+   563                            child: Column(
+   564                              children: <Widget>[
+   565                                Text(
+   566                                  //'Maybe: ' + (widget.futureRun.rsvpMayb
+eCount >= 0 ? widget.futureRun.rsvpMaybeCount.toString() : ''),
+   567                                  'Maybe',
+   568                                  style: rsvpTitlesView,
+   569                                ),
+   570                                Stack(
+   571                                  alignment: AlignmentDirectional.center,
+   572                                  children: <Widget>[
+   573                                    Positioned(
+   574                                      // top: 6.5,
+   575                                      // left: 6.5,
+   576                                      child: Container(
+   577                                        height: 36,
+   578                                        width: 36,
+   579                                        decoration: const BoxDecoration(
+   580                                          color: Colors.white,
+   581                                          shape: BoxShape.circle,
+   582                                        ),
+   583                                      ),
+   584                                    ),
+   585                                    IconButton(
+   586                                      icon: const Icon(
+   587                                        FontAwesome.question_circle,
+   588                                      ),
+   589                                      color: currentUser == null
+   590                                          ? Colors.grey
+   591                                          : currentUser.hem.rsvpState ==
+   592                                                rsvpMaybe.value
+   593                                          ? Colors.orange
+   594                                          : (currentUser.hem.rsvpState == 
+-1 &&
+   595                                                _rsvpRequested == rsvpMayb
+e)
+   596                                          ? hc_blue
+   597                                          : Colors.grey,
+   598                                      //tooltip: 'Select to follow a Kenne
+l',
+   599                                      iconSize: 35.0,
+   600                                      alignment: Alignment.topCenter,
+   601                                      splashColor: Colors.greenAccent,
+   602                                      onPressed: () async {
+   603                                        await _setRsvpState(rsvpMaybe);
+   604                                      },
+   605                                    ),
+   606                                  ],
+   607                                ),
+   608                                Text(
+   609                                  (_packCount['rsvpMaybeCount'] ?? 0) >= 0
+   610                                      ? (_packCount['rsvpMaybeCount'] ?? 0
+)
+   611                                            .toString()
+   612                                      : '',
+   613                                  style: rsvpTitlesView,
+   614                                ),
+   615                                // Text(
+   616                                //   widget.futureRun.maybeAttendingEvent 
+>= 0
+   617                                //       ? widget.futureRun.maybeAttending
+Event
+   618                                //           .toString()
+   619                                //       : '',
+   620                                //   style: const TextStyle(
+   621                                //       fontFamily: 'AvenirNext',
+   622                                //       fontStyle: FontStyle.normal,
+   623                                //       fontSize: 20.0,
+   624                                //       height: 0.85),
+   625                                // ),
+   626                              ],
+   627                            ),
+   628                          ),
+   629                          SizedBox(
+   630                            width: MediaQuery.sizeOf(context).width / 5.5,
+   631                            child: Column(
+   632                              mainAxisAlignment: MainAxisAlignment.start,
+   633                              children: <Widget>[
+   634                                Text(
+   635                                  //'Not go: ' + (widget.futureRun.rsvpNoC
+ount >= 0 ? widget.futureRun.rsvpNoCount.toString() : ''),
+   636                                  'Not go',
+   637                                  style: rsvpTitlesView,
+   638                                ),
+   639                                Stack(
+   640                                  alignment: AlignmentDirectional.center,
+   641                                  children: <Widget>[
+   642                                    Positioned(
+   643                                      // top: 6.5,
+   644                                      // left: 6.5,
+   645                                      child: Container(
+   646                                        height: 36,
+   647                                        width: 36,
+   648                                        decoration: const BoxDecoration(
+   649                                          color: Colors.white,
+   650                                          shape: BoxShape.circle,
+   651                                        ),
+   652                                      ),
+   653                                    ),
+   654                                    IconButton(
+   655                                      icon: const Icon(FontAwesome.times_c
+ircle),
+   656                                      color: currentUser == null
+   657                                          ? Colors.grey
+   658                                          : currentUser.hem.rsvpState ==
+   659                                                rsvpNo.value
+   660                                          ? hc_red
+   661                                          : (currentUser.hem.rsvpState == 
+-1 &&
+   662                                                _rsvpRequested == rsvpNo)
+   663                                          ? hc_blue
+   664                                          : Colors.grey,
+   665                                      //tooltip: 'Select to follow a Kenne
+l',
+   666                                      iconSize: 35.0,
+   667                                      alignment: Alignment.topCenter,
+   668                                      splashColor: Colors.greenAccent,
+   669                                      onPressed: () async {
+   670                                        await _setRsvpState(rsvpNo);
+   671                                      },
+   672                                    ),
+   673                                  ],
+   674                                ),
+   675                                Text(
+   676                                  (_packCount['rsvpNoCount'] ?? 0) >= 0
+   677                                      ? (_packCount['rsvpNoCount'] ?? 0)
+   678                                            .toString()
+   679                                      : '',
+   680                                  style: rsvpTitlesView,
+   681                                ),
+   682
+   683                                // Text(
+   684                                //   widget.futureRun.notAttendingEvent >=
+ 0
+   685                                //       ? widget.futureRun.notAttendingEv
+ent
+   686                                //           .toString()
+   687                                //       : '',
+   688                                //   style: const TextStyle(
+   689                                //       fontFamily: 'AvenirNext',
+   690                                //       fontStyle: FontStyle.normal,
+   691                                //       fontSize: 20.0,
+   692                                //       height: 0.85),
+   693                                // ),
+   694                              ],
+   695                            ),
+   696                          ),
+   697                          SizedBox(
+   698                            width: MediaQuery.sizeOf(context).width / 5.5,
+   699                            child: Column(
+   700                              children: <Widget>[
+   701                                Text(
+   702                                  // 'Hares: ' + (widget.futureRun.haresCo
+unt >= 0 ? widget.futureRun.haresCount.toString() : ''),
+   703                                  'Hares',
+   704                                  style: rsvpTitlesView,
+   705                                ),
+   706                                Stack(
+   707                                  alignment: AlignmentDirectional.center,
+   708                                  children: <Widget>[
+   709                                    Positioned(
+   710                                      child: Container(
+   711                                        height: 36,
+   712                                        width: 36,
+   713                                        decoration: const BoxDecoration(
+   714                                          color: Colors.white,
+   715                                          shape: BoxShape.circle,
+   716                                        ),
+   717                                      ),
+   718                                    ),
+   719                                    IconButton(
+   720                                      icon: const ImageIcon(
+   721                                        AssetImage('images/icons/hare_icon
+.png'),
+   722                                      ),
+   723                                      color: currentUser == null
+   724                                          ? Colors.grey
+   725                                          : currentUser.hem.isHare ==
+   726                                                isHareYes.value
+   727                                          ? Colors.deepPurple
+   728                                          : currentUser.hem.isHare == -1
+   729                                          ? hc_blue
+   730                                          : Colors.grey,
+   731                                      //tooltip: 'Select to follow a Kenne
+l',
+   732                                      iconSize: 30.0,
+   733                                      alignment: Alignment.center,
+   734                                      splashColor: Colors.greenAccent,
+   735                                      onPressed: () async {
+   736                                        //await _setRsvpHare();
+   737                                      },
+   738                                    ),
+   739                                  ],
+   740                                ),
+   741                                Text(
+   742                                  (_packCount['isHareCount'] ?? 0) >= 0
+   743                                      ? (_packCount['isHareCount'] ?? 0)
+   744                                            .toString()
+   745                                      : '',
+   746                                  style: rsvpTitlesView,
+   747                                ),
+   748                              ],
+   749                            ),
+   750                          ),
+   751                        ],
+   752                      ),
+   753                    ),
+   754                    Expanded(
+   755                      child: !snapshot.hasData
+   756                          ? const SizedBox(
+   757                              //color: Colors.grey[300],
+   758                              width: 70.0,
+   759                              height: 70.0,
+   760                              child: Padding(
+   761                                padding: EdgeInsets.all(5.0),
+   762                                child: Center(
+   763                                  child: HcAppCircularProgressIndicator(
+   764                                    key: Key('22030392'),
+   765                                  ),
+   766                                ),
+   767                              ),
+   768                            )
+   769                          : ((snapshot.data!.isEmpty) &&
+   770                                (widget.futureRun.event.eventStartDatetime
+   771                                    .isAfter(
+   772                                      DateTime.now().subtract(
+   773                                        const Duration(hours: 6),
+   774                                      ),
+   775                                    )))
+   776                          ? Column(
+   777                              children: <Widget>[
+   778                                const Expanded(flex: 40, child: SizedBox()
+),
+   779                                Text(
+   780                                  'Be the first to RSVP\r\nfor this run!',
+   781                                  style: ts_headingVeryLarge,
+   782                                  textAlign: TextAlign.center,
+   783                                ),
+   784                                if (currentUser == null) ..._getRsvpButton
+s(),
+   785                                if (currentUser == null) ...<Widget>[
+   786                                  const Expanded(flex: 40, child: SizedBox
+()),
+   787                                ],
+   788                              ],
+   789                            )
+   790                          : Column(
+   791                              children: <Widget>[
+   792                                if ((currentUser == null) &&
+   793                                    (widget.futureRun.event.eventStartDate
+time
+   794                                        .isAfter(
+   795                                          DateTime.now().subtract(
+   796                                            const Duration(hours: 6),
+   797                                          ),
+   798                                        )))
+   799                                  ..._getRsvpButtons(),
+   800                                if (currentUser == null) ...<Widget>[
+   801                                  const SizedBox(height: 10),
+   802                                ],
+   803                                if ((currentUser != null) &&
+   804                                    (currentUser.hem.rsvpState >=
+   805                                        rsvpMaybe.value)) ...<Widget>[
+   806                                  Padding(
+   807                                    padding: const EdgeInsets.only(bottom:
+ 8.0),
+   808                                    child: ElevatedButton(
+   809                                      child: SizedBox(
+   810                                        width: 230.0,
+   811                                        height: 40.0,
+   812                                        child: Row(
+   813                                          children: <Widget>[
+   814                                            Stack(
+   815                                              alignment:
+   816                                                  AlignmentDirectional.cen
+ter,
+   817                                              children: <Widget>[
+   818                                                Container(
+   819                                                  height: 24,
+   820                                                  width: 24,
+   821                                                  decoration: const BoxDec
+oration(
+   822                                                    color: Colors.white,
+   823                                                    shape: BoxShape.circle
+,
+   824                                                  ),
+   825                                                ),
+   826                                                const SizedBox(
+   827                                                  height: 22.0,
+   828                                                  width: 22.0,
+   829                                                  child: Icon(
+   830                                                    Icons.calendar_month,
+   831                                                    size: 22.0,
+   832                                                    color: Colors.black,
+   833                                                  ),
+   834                                                ),
+   835                                              ],
+   836                                            ),
+   837                                            const SizedBox(width: 15.0),
+   838                                            Text(
+   839                                              'Add to calendar',
+   840                                              style: ts_button,
+   841                                            ),
+   842                                          ],
+   843                                        ),
+   844                                      ),
+   845                                      onPressed: () async {
+   846                                        // THIS IS A H@CK: strip the "Z" t
+imezone character off of the time so it imports as local time and not GMT
+   847                                        String url =
+   848                                            '$BASE_HASHRUNS_DOT_ORG_URL${w
+idget.futureRun.kennel.kennelUniqueShortName}/${widget.futureRun.event.eventNumb
+er}';
+   849
+   850                                        String startTime = widget
+   851                                            .futureRun
+   852                                            .event
+   853                                            .eventStartDatetime
+   854                                            .toString();
+   855                                        startTime = startTime.substring(
+   856                                          0,
+   857                                          startTime.length - 1,
+   858                                        );
+   859                                        DateTime localTime = DateTime.pars
+e(
+   860                                          startTime,
+  1470                        child: Column(
+  1471                          children: [
+  1472                            Row(
+  1473                              children: [
+  1474                                KennelLogo(
+  1475                                  kennelLogoUrl:
+  1476                                      widget.futureRun.kennel.kennelLogo,
+  1477                                  kennelShortName:
+  1478                                      widget.futureRun.kennel.kennelShortN
+ame,
+  1479                                  logoHeight: 70,
+  1480                                ),
+  1481                                SizedBox(width: 30),
+  1482                                Expanded(
+  1483                                  child: _getRunDetails(themeAppBarBackgro
+und),
+  1484                                ),
+  1485                                SizedBox(width: 20),
+  1486                              ],
+  1487                            ),
+  1488                            // SizedBox(height: 20),
+  1489                            // FancyDivider(
+  1490                            //   key: ValueKey('divider2342'),
+  1491                            //   innerColor: Colors.black,
+  1492                            // ),
+  1493                          ],
+  1494                        ),
+  1495                      ),
+  1496                    )
+  1497                  : SizedBox(),
+  1498              //: SizedBox.expand(child: ColoredBox(color: Colors.white)),
+  1499            ), // Collapses cleanly
+  1500
+  1501            Expanded(
+  1502              child: Stack(
+  1503                children: [
+  1504                  ChatPage(
+  1505                    eventId: widget.futureRun.event.eventId,
+  1506                    publicEventId: widget.futureRun.event.publicEventId,
+  1507                  ),
+  1508                  BetaRibbon(
+  1509                    title: 'Trail Chat',
+  1510                    text:
+  1511                        'Trail Chat is a brand-new feature currently in be
+ta. Over the next few releases, we’ll be continuing to improve and expand it — f
+ixing any bugs and adding new functionality based on your feedback.\r\n\r\nYou m
+ay encounter occasional glitches as we refine the experience, but rest assured w
+e’re actively working on updates in each release.\r\n\r\nOnce Trail Chat reaches
+ full stability and feature completeness, this beta label will be removed.\r\n\r
+\nWe appreciate your patience and support as we make Trail Chat the best way to 
+stay connected on the trail!',
+  1512                  ),
+  1513                ],
+  1514              ),
+  1515            ),
+  1516          ],
+  1517        ),
+  1518      );
+  1519    }
+  1520
+  1521    Widget _buildMapView() {
+  1522      final List<double?> coords = Utilities.getLatLongFromString(<String>
+[
+  1523        widget.futureRun.event.locationOneLineDesc ?? '',
+  1524        widget.futureRun.event.eventDescription ?? '',
+  1525        widget.futureRun.event.eventName,
+  1526      ]);
+  1527
+  1528      final locService = Get.find<LocationService>();
+  1529
+  1530      return ConnectedWidget(
+  1531        refreshFunction: () {
+  1532          setState(() {});
+  1533        },
+  1534        showConnectButton: true,
+  1535        disconnectedChild: Padding(
+jawDev@Jamess-MacBook-Max HarrierCentral % %                                    
+jawDev@Jamess-MacBook-Max HarrierCentral % 

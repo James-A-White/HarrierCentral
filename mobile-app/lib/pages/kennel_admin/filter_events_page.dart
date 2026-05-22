@@ -543,7 +543,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
               final RunAdminAggregate? rda =
                   await CommonQueries.getEventAdminInfoFromLocalCache(
                     rawEvent.eventId,
-                    getStringPref(StringPrefsEnum.userId)!,
+                    currentUserId,
                   );
 
               if (rda != null) {
@@ -580,7 +580,7 @@ class AddEditEventsPageState extends State<AddEditEventsPage>
           onPressed: () async {
             final RunAdminAggregate? rda = await CommonQueries.getNewEvent(
               widget.kennel.kennel.kennelId,
-              getStringPref(StringPrefsEnum.userId)!,
+              currentUserId,
               selected,
             );
 

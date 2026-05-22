@@ -631,13 +631,14 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                       final List<maps.AvailableMap>
                                       availableMaps =
                                           await maps.MapLauncher.installedMaps;
-                                      final maps.AvailableMap activeMap =
+                                      final maps.AvailableMap? activeMap =
                                           availableMaps
                                               .where(
                                                 (maps.AvailableMap map) =>
                                                     map.mapName == mapName,
                                               )
-                                              .first;
+                                              .firstOrNull;
+                                      if (activeMap == null) return;
                                       await activeMap.showMarker(
                                         coords: maps.Coords(
                                           agg.extensions.cityLat!.toDouble(),

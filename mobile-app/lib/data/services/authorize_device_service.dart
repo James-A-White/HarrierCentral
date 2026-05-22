@@ -91,6 +91,13 @@ class AuthorizeDeviceService {
           };
         } else {
           // HC6: rowset 0 is the write SP success envelope; profile data is at rowset 1.
+          if (result.length < 2 || result[1] is! List || (result[1] as List).isEmpty) {
+            resultMap = <String, String>{
+              'result': 'failed',
+              'message': 'Server returned an unexpected response',
+            };
+            return resultMap;
+          }
           Map<String, dynamic> items = result[1][0];
           // Do not clear prefs, because then we clear the prefs that were set by authorize login upon app launch
           //await clearAllPrefs();

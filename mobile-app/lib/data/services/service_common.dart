@@ -36,8 +36,11 @@ class ServiceCommon {
       Uri.parse(BASE_AF_API_URL),
       headers: <String, String>{'content-type': 'application/json'},
       body: body,
+    ).timeout(
+      const Duration(seconds: 30),
+      onTimeout: () => Response('', 408),
     ).catchError((dynamic error) {
-      return Future<Response>.value(Response('', 500)); // CHECK
+      return Future<Response>.value(Response('', 500));
     });
 
     return;

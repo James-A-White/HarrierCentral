@@ -529,7 +529,7 @@ class QrScannerTabState extends State<QrScannerTab>
             ? attendenceAtHash.value
             : attendenceOnIn.value;
 
-        final String userId = getStringPref(StringPrefsEnum.userId)!;
+        final String userId = currentUserId;
 
         final List<dynamic> adHocData = await tableModel.hasherEventMapService
             .setEventAttendence(
@@ -589,7 +589,7 @@ class QrScannerTabState extends State<QrScannerTab>
                   'There is no event for this Kennel at this time';
             });
           } else {
-            final String userId = getStringPref(StringPrefsEnum.userId)!;
+            final String userId = currentUserId;
 
             final List<dynamic> adHocData = await tableModel
                 .hasherEventMapService
@@ -758,6 +758,7 @@ class QrScannerTabState extends State<QrScannerTab>
                     child: MobileScanner(
                       controller: _scannerController,
                       onDetect: (result) async {
+                        if (result.barcodes.isEmpty) return;
                         _result = result.barcodes.first.rawValue;
 
                         if ((_lastScan == null) ||

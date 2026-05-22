@@ -66,7 +66,7 @@ class KennelsListPageController extends GetxController {
         tableModel.globalKennelMainPageList!.clear();
       }
 
-      final String hasherId = getStringPref(StringPrefsEnum.userId)!;
+      final String hasherId = currentUserId;
       tableModel.globalKennelMainPageList = <KennelListAggregate>[];
 
       try {
@@ -363,7 +363,7 @@ class KennelsListPageController extends GetxController {
     item.extensions.notificationsRequested = state.value;
     filteredList.refresh();
 
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = currentUserId;
     final List<dynamic> results = await tableModel.hasherKennelMapService
         .setEmailAndNotificationPreferences(
           item.kennel.kennelId,
@@ -402,7 +402,7 @@ class KennelsListPageController extends GetxController {
     item.extensions.emailAlertRequested = retVal.value as int;
     filteredList.refresh();
 
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = currentUserId;
     final List<dynamic> results = await tableModel.hasherKennelMapService
         .setEmailAndNotificationPreferences(
           item.kennel.kennelId,
@@ -443,12 +443,16 @@ class KennelsListPageController extends GetxController {
     String query = 'DELETE FROM ${EnumDataTables.kennels.commonTableName}';
     try {
       await database.rawQuery(query);
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('kennel_list_controller: DELETE kennels failed: $e');
+    }
 
     query = 'DELETE FROM ${EnumDataTables.hasherKennelMap.commonTableName}';
     try {
       await database.rawQuery(query);
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('kennel_list_controller: DELETE hasherKennelMap failed: $e');
+    }
 
     await tableModel.syncUserDataService.updateFromBackend(
       EnumDataTables.kennels.flag | EnumDataTables.hasherKennelMap.flag,

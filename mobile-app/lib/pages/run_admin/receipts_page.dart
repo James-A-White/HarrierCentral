@@ -126,7 +126,7 @@ class ReceiptsListState extends State<ReceiptsList> {
     String receiptId,
     bool cancelReimbursement,
   ) async {
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = currentUserId;
 
     await database.transaction<dynamic>((Transaction txn) async {
       final String guidFlag = cancelReimbursement ? GUID_9 : GUID_8;
@@ -185,7 +185,7 @@ class ReceiptsListState extends State<ReceiptsList> {
 
     await refreshFromTable();
 
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = currentUserId;
 
     final ReceiptsModel item = ReceiptsModel(
       userId: userId,

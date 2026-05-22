@@ -73,7 +73,7 @@ class HistoryListPageState extends State<HistoryListPage>
 
   Future<void> queryCountryStats(bool forceRefresh) async {
     final offsetFromGmtToLocal = Utilities.getSqfliteTimeOffset();
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = currentUserId;
 
     final String hcRunsQuery =
         '''
@@ -173,7 +173,7 @@ class HistoryListPageState extends State<HistoryListPage>
   }
 
   Future<void> queryKennelStats(bool forceRefresh) async {
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = currentUserId;
 
     final String query =
         '''

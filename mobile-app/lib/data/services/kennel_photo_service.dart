@@ -58,11 +58,21 @@ class KennelPhotoService {
       return null;
     }
 
+    final sasUrl = tokenResult['sasUrl'];
+    final blobUrl = tokenResult['blobUrl'];
+    if (sasUrl == null || blobUrl == null) {
+      Get.snackbar(
+        'Upload failed',
+        'Upload token was missing required fields. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade700,
+        colorText: Colors.white,
+      );
+      return null;
+    }
+
     // 5. Upload bytes directly to blob storage via the SAS URL
-    final uploaded = await _uploadToBlob(
-      sasUrl: tokenResult['sasUrl']!,
-      imageFile: imageFile,
-    );
+    final uploaded = await _uploadToBlob(sasUrl: sasUrl, imageFile: imageFile);
     if (!uploaded) {
       Get.snackbar(
         'Upload failed',
@@ -73,8 +83,6 @@ class KennelPhotoService {
       );
       return null;
     }
-
-    final blobUrl = tokenResult['blobUrl']!;
 
     // 6. Record the photo in the database
     final recorded = await _addKennelPhoto(
@@ -143,7 +151,7 @@ class KennelPhotoService {
     required String runFolder,
     required String photoGuid,
   }) async {
-    final userId = getStringPref(StringPrefsEnum.userId)!;
+    final userId = currentUserId;
     final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
@@ -167,10 +175,10 @@ class KennelPhotoService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
-        return {
-          'sasUrl': data['sasUrl'] as String,
-          'blobUrl': data['blobUrl'] as String,
-        };
+        final sasUrl = data['sasUrl'] as String?;
+        final blobUrl = data['blobUrl'] as String?;
+        if (sasUrl == null || blobUrl == null) return null;
+        return {'sasUrl': sasUrl, 'blobUrl': blobUrl};
       }
       debugPrint(
         'GetPhotoUploadToken failed: HTTP ${response.statusCode} — ${response.body}',
@@ -213,7 +221,7 @@ class KennelPhotoService {
     final locationService = Get.find<LocationService>();
     final pos = locationService.lastKnownPosition.value;
 
-    final userId = getStringPref(StringPrefsEnum.userId)!;
+    final userId = currentUserId;
     final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
@@ -259,7 +267,7 @@ class KennelPhotoService {
   // ── Public query methods (called by Hash Flash screen + map) ─────────────
 
   Future<String> getKennelPendingPhotos({required String kennelId}) async {
-    final userId = getStringPref(StringPrefsEnum.userId)!;
+    final userId = currentUserId;
     final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
@@ -281,7 +289,7 @@ class KennelPhotoService {
     required String eventId,
     String? afterUpdatedAt,
   }) async {
-    final userId = getStringPref(StringPrefsEnum.userId)!;
+    final userId = currentUserId;
     final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
@@ -307,7 +315,7 @@ class KennelPhotoService {
     required String photoId,
     required int action,
   }) async {
-    final userId = getStringPref(StringPrefsEnum.userId)!;
+    final userId = currentUserId;
     final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 

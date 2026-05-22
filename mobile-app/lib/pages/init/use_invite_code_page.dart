@@ -302,6 +302,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                                 MobileScanner(
                                   controller: _scannerController,
                                   onDetect: (result) async {
+                                    if (result.barcodes.isEmpty) return;
                                     _result = result.barcodes.first.rawValue;
 
                                     if ((_lastScan == null) ||

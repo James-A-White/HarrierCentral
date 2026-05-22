@@ -151,6 +151,7 @@ class CheckInScannerPageState extends State<CheckInScannerPage> {
                                 child: MobileScanner(
                                   controller: controller.scannerController,
                                   onDetect: (BarcodeCapture result) {
+                                    if (result.barcodes.isEmpty) return;
                                     final String? rawValue =
                                         result.barcodes.first.rawValue;
                                     unawaited(

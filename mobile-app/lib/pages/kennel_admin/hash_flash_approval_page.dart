@@ -73,7 +73,9 @@ class PhotoReviewController extends GetxController {
               .toList();
         }
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('hash_flash_approval_page: failed to load pending photos: $e');
+    }
     isLoading.value = false;
   }
 

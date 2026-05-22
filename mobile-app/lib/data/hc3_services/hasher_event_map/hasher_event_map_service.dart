@@ -217,7 +217,7 @@ class HasherEventMapService {
       //return false;
     }
 
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = currentUserId;
 
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final String deviceSecret =
@@ -303,7 +303,7 @@ class HasherEventMapService {
     final String deviceSecret =
         getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = currentUserId;
 
     final int hasherEventMapLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(
@@ -353,7 +353,7 @@ class HasherEventMapService {
         paramString: deviceSecret,
       );
       return jsonEncode(rsvpBody);
-    });
+    }, noRetries: true);
 
     List<dynamic> adHocData = <dynamic>[];
 
@@ -389,7 +389,7 @@ class HasherEventMapService {
       return <dynamic>[];
     }
 
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = currentUserId;
     String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
@@ -430,7 +430,7 @@ class HasherEventMapService {
         paramString: deviceSecret,
       );
       return jsonEncode(bulkAttBody);
-    });
+    }, noRetries: true);
 
     List<dynamic> adHocData = <dynamic>[];
 
@@ -455,7 +455,7 @@ class HasherEventMapService {
       return <dynamic>[];
     }
 
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = currentUserId;
     String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
@@ -500,7 +500,7 @@ class HasherEventMapService {
         paramString: deviceSecret,
       );
       return jsonEncode(attBody);
-    });
+    }, noRetries: true);
 
     List<dynamic> adHocData = <dynamic>[];
 
@@ -534,7 +534,7 @@ class HasherEventMapService {
       //return false;
     }
 
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = currentUserId;
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final String deviceSecret =
         getStringPref(StringPrefsEnum.deviceSecret) ?? '';
@@ -603,7 +603,7 @@ class HasherEventMapService {
     final String deviceSecret =
         getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = currentUserId;
 
     final int hasherEventMapLastUpdated = await tableModel.baseService
         .getLastUpdatedTime(

@@ -12,7 +12,7 @@ class SnoozePromotionService {
       //return false;
     }
 
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = currentUserId;
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final String deviceSecret =
         getStringPref(StringPrefsEnum.deviceSecret) ?? '';

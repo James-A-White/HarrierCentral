@@ -19,6 +19,11 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 /// Shorthand for the current user's ID from preferences.
 String? getUserId() => getStringPref(StringPrefsEnum.userId);
 
+/// Non-nullable userId — returns '' when no user is logged in.
+/// Use instead of getStringPref(StringPrefsEnum.userId)! to avoid crashes
+/// on first boot or after a credential wipe.
+String get currentUserId => getStringPref(StringPrefsEnum.userId) ?? '';
+
 /// Show a standardised Harrier Central snackbar via GetX.
 void showHcSnackbar(
   String message, {

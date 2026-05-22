@@ -377,7 +377,7 @@ class ChooseProfileImageState extends State<ChooseProfileImage> {
       if (!mounted) return;
       Navigator.of(context).pop(profileImageUrl);
     } else {
-      final String userId = getStringPref(StringPrefsEnum.userId)!;
+      final String userId = currentUserId;
 
       final HashersService srv = HashersService();
 

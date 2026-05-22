@@ -436,7 +436,9 @@ class MainNavigationController extends GetxController
           if (appModel.hasLocationPermissions) await _checkAreWeAtRunStart();
         }
       });
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('main_navigation_controller: screen state listener failed: $e');
+    }
   }
 
   Future<void> _checkAreWeAtRunStart() async {

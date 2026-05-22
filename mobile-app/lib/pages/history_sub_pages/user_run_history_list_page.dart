@@ -38,7 +38,7 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_handleTabSelection);
-    userId = widget.hasherId ?? getStringPref(StringPrefsEnum.userId)!;
+    userId = widget.hasherId ?? currentUserId;
     unawaited(_refreshRunHistoryFromTable(true));
   }
 

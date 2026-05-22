@@ -124,7 +124,7 @@ class ReceiptsTableHelper extends BaseTableHelper<AppDomainType>
 
 class ReceiptsService {
   Future<String> uploadReceipt(ReceiptsModel item) async {
-    final String userId = getStringPref(StringPrefsEnum.userId)!;
+    final String userId = currentUserId;
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final String deviceSecret =
         getStringPref(StringPrefsEnum.deviceSecret) ?? '';
