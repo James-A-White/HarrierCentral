@@ -1589,7 +1589,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                                             context,
                                                                           ) {
                                                                             return UserRunHistoryListPage(
-                                                                              appDomain: AppDomainType.user,
+                                                                              appDomain: AppDomainType.values.byName(widget.dataContext.name),
                                                                               hashName: widget.hashNameFromSearch,
                                                                               hasherId: widget.hasherId,
                                                                               kennelInfo: runHistory[0],

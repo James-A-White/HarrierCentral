@@ -1,5 +1,17 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.5.0+1119 (2026-05-22)
+
+### Bug fixes
+
+- **Run History — empty list when viewing another member's history**: Tapping
+  "View Run History" on a kennel member's profile showed no runs. The sync
+  wrote the selected user's HEM data to the kennel-domain table, but the page
+  was querying the user-domain table. Fixed by deriving `AppDomainType` from
+  `dataContext` so the query always hits the same table the sync wrote to.
+
+---
+
 ## 2.5.0+1118 (2026-05-22)
 
 ### Improvements
