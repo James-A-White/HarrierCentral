@@ -19,6 +19,8 @@ class LiveRunGeneralController extends GetxController {
 
   DateTime? _trackingStartedAt;
   Timer? _elapsedTicker;
+  Worker? _trackingWorker;
+  Worker? _positionWorker;
 
   @override
   void onInit() {
@@ -26,8 +28,8 @@ class LiveRunGeneralController extends GetxController {
     isTracking.value = _locationService.joinRunTracking.value;
     lastPosition.value = _locationService.lastKnownPosition.value;
 
-    ever<bool>(_locationService.joinRunTracking, _handleTrackingToggle);
-    ever<Position?>(_locationService.lastKnownPosition, _handlePosition);
+    _trackingWorker = ever<bool>(_locationService.joinRunTracking, _handleTrackingToggle);
+    _positionWorker = ever<Position?>(_locationService.lastKnownPosition, _handlePosition);
 
     if (isTracking.value) {
       _trackingStartedAt ??= DateTime.now();
@@ -37,6 +39,8 @@ class LiveRunGeneralController extends GetxController {
 
   @override
   void onClose() {
+    _trackingWorker?.dispose();
+    _positionWorker?.dispose();
     _stopElapsedTicker();
     super.onClose();
   }

@@ -98,6 +98,15 @@ class CheckInPackController extends GetxController
     unawaited(initStateAsync());
   }
 
+  @override
+  void onClose() {
+    animationController.dispose();
+    scrollController.dispose();
+    searchController.dispose();
+    searchFocusNode.dispose();
+    super.onClose();
+  }
+
   Future<void> initStateAsync() async {
     await _getAllHashers();
     await refreshSqlTablesFromBackend(true);

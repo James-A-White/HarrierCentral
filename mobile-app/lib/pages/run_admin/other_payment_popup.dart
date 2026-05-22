@@ -56,6 +56,17 @@ class OtherPaymentPopupController extends GetxController {
     super.onInit();
   }
 
+  @override
+  void onClose() {
+    specialPriceTextController.dispose();
+    specialPriceReasonTextController.dispose();
+    topUpTextController.dispose();
+    specialPriceFocusNode.dispose();
+    specialPriceReasonFocusNode.dispose();
+    topUpFocusNode.dispose();
+    super.onClose();
+  }
+
   void resetUi(double price) {
     normalPrice = price;
     specialPriceTextController.text = price.toStringAsFixed(decimalDigits);

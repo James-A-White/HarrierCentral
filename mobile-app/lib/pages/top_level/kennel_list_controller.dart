@@ -23,12 +23,13 @@ class KennelsListPageController extends GetxController {
   );
 
   StreamSubscription<DataChangeEvent>? _dataChangeSub;
+  Worker? _searchWorker;
 
   @override
   void onInit() {
     super.onInit();
     searchController.text = '';
-    debounce<String>(
+    _searchWorker = debounce<String>(
       searchText,
       (_) => _filterResults(),
       time: const Duration(milliseconds: 400),
@@ -43,6 +44,7 @@ class KennelsListPageController extends GetxController {
 
   @override
   void onClose() {
+    _searchWorker?.dispose();
     searchController.dispose();
     searchFocusNode.dispose();
     scrollController.dispose();

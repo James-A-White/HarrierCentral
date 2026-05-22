@@ -47,6 +47,7 @@ class KennelAdminController extends GetxController {
 
   @override
   void onClose() {
+    mapController.dispose();
     _dataChangeSub?.cancel();
     super.onClose();
   }

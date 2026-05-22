@@ -189,6 +189,9 @@ class HasherEventMapService {
             Uri.parse(EMAIL_RUN_REPORT_API_URL),
             headers: <String, String>{'content-type': 'application/json'},
             body: body,
+          ).timeout(
+            const Duration(seconds: 30),
+            onTimeout: () => Response('timeout', 408),
           ).catchError((dynamic error) {
             return Future<Response>.value(Response('', 500));
           });
@@ -354,9 +357,9 @@ class HasherEventMapService {
 
     List<dynamic> adHocData = <dynamic>[];
 
-    print(
-      '[setEventRsvp] responseBody prefix: ${responseBody.length > 200 ? responseBody.substring(0, 200) : responseBody}',
-    );
+    if (kDebugMode) {
+      debugPrint('[setEventRsvp] responseBody prefix: ${responseBody.length > 200 ? responseBody.substring(0, 200) : responseBody}');
+    }
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       if (appDomainType == AppDomainType.event) {
@@ -370,9 +373,9 @@ class HasherEventMapService {
       }
     }
 
-    print(
-      '[setEventRsvp] adHocData length: ${adHocData.length}, contents: $adHocData',
-    );
+    if (kDebugMode) {
+      debugPrint('[setEventRsvp] adHocData length: ${adHocData.length}, contents: $adHocData');
+    }
 
     return adHocData;
   }

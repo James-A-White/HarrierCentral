@@ -23,8 +23,7 @@ class SyncKennelAdminService {
     final List<Map<String, dynamic>> table = await database.rawQuery(
       'SELECT MAX($colName) AS maxDate FROM $tableName',
     );
-    final int? timeValue = table.first['maxDate'];
-    //print(timeValue.toString());
+    final int? timeValue = table.isNotEmpty ? table.first['maxDate'] : null;
     return timeValue ?? FORCE;
   }
 

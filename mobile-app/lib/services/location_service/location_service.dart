@@ -41,6 +41,7 @@ class LocationService extends GetxService {
   // Prevents the ever(joinRunTracking) worker from resetting the session track
   // when transitioning from paused → tracking (vs. a fresh start).
   bool _isResumingFromPause = false;
+  Worker? _trackingWorker;
 
   /// Reactive property that is true if the location has been updated in the last 60 seconds.
   /// Note: To make this indicator automatically turn OFF after 60 seconds,
@@ -66,7 +67,7 @@ class LocationService extends GetxService {
     // Call the subscription logic on initialization
     unawaited(onInitAsync());
 
-    ever<bool>(joinRunTracking, (value) async {
+    _trackingWorker = ever<bool>(joinRunTracking, (value) async {
       if (value) {
         // Starting or resuming tracking. Only reset the session track on a
         // fresh start — resuming from pause continues the same session.
@@ -144,7 +145,7 @@ class LocationService extends GetxService {
 
   @override
   void onClose() {
-    // Cancel the stream subscription when the service is closed
+    _trackingWorker?.dispose();
     unawaited(_geoLocationStreamSubscription?.cancel());
     _runBuffer?.dispose();
     _runBuffer = null;

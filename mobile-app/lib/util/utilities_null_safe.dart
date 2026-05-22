@@ -1171,10 +1171,9 @@ class Utilities {
       lastRunStartCheck = DateTime(2000);
     }
 
-    ////// TODO: Re-enable this before next release
-    // if (DateTime.now().difference(lastRunStartCheck).inMinutes < 2) {
-    //   return;
-    // }
+    if (DateTime.now().difference(lastRunStartCheck).inMinutes < 2) {
+      return;
+    }
 
     await setDatePref(DatePrefsEnum.lastRunStartCheck, DateTime.now());
 
