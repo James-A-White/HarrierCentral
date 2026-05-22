@@ -628,12 +628,12 @@ class RunTrackerMapController extends GetxController
     );
   }
 
-  Widget _buildPhotoMarker(String photoPath) {
+  Widget _buildPhotoMarker(String photoUrl) {
     final double scale = _markerScale();
     const double baseSize = 72.0;
     final double size = baseSize * scale;
 
-    if (photoPath.isEmpty) {
+    if (photoUrl.isEmpty || !photoUrl.startsWith('http')) {
       return Icon(
         HashRunPointTypes.photo.iconData,
         color: HashRunPointTypes.photo.color,
@@ -641,10 +641,7 @@ class RunTrackerMapController extends GetxController
       );
     }
 
-    return CameraPhotoMarker(
-      photoUrl: BASE_TRAIL_PHOTOS_URL + photoPath,
-      size: size,
-    );
+    return CameraPhotoMarker(photoUrl: photoUrl, size: size);
   }
 
   double _markerScale() {

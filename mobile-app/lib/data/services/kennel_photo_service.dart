@@ -98,11 +98,7 @@ class KennelPhotoService {
     }
 
     // 7. Enqueue a PHO marker into the GPS track feed
-    _enqueuePhotoMarker(
-      kennelSlug: kennelSlug,
-      runFolder: runFolder,
-      photoGuid: photoGuid,
-    );
+    _enqueuePhotoMarker(blobUrl: blobUrl);
 
     return blobUrl;
   }
@@ -250,22 +246,13 @@ class KennelPhotoService {
 
   // ── GPS track marker ─────────────────────────────────────────────────────
 
-  void _enqueuePhotoMarker({
-    required String kennelSlug,
-    required String runFolder,
-    required String photoGuid,
-  }) {
+  void _enqueuePhotoMarker({required String blobUrl}) {
     final locationService = Get.find<LocationService>();
-    final userId = getStringPref(StringPrefsEnum.userId) ?? '';
-    // Label is the full blob sub-path under trail-photos/, so the map
-    // renderer can construct the CDN URL directly without any lookup.
-    // Format: "<kennelSlug>/<runFolder>/<userId>-<photoGuid>.jpg"
-    // e.g.  "shhh/shhh-456/a3f1c9...-9d2e3b....jpg"
+    // The label IS the full CDN blob URL returned by the API. Using the
+    // authoritative URL avoids any storage-account-name assumption in the
+    // map renderer and survives future storage migrations.
     unawaited(
-      locationService.markPoint(
-        HashRunPointTypes.photo,
-        label: '$kennelSlug/$runFolder/$userId-$photoGuid.jpg',
-      ),
+      locationService.markPoint(HashRunPointTypes.photo, label: blobUrl),
     );
   }
 
