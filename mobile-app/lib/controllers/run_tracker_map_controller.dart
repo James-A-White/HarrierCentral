@@ -330,8 +330,7 @@ class RunTrackerMapController extends GetxController
   // tick so newly-uploaded photos appear on the map within 15 seconds.
   Future<void> _loadPhotoCache() async {
     try {
-      final service = Get.find<KennelPhotoService>();
-      final raw = await service.getRunPhotos(eventId: event.eventId);
+      final raw = await KennelPhotoService().getRunPhotos(eventId: event.eventId);
       if (raw.startsWith(ERROR_PREFIX)) return;
       final outer = jsonDecode(raw) as List<dynamic>;
       // No envelope on success. rowset 0 = own photos, rowset 1 = public photos.
@@ -341,8 +340,7 @@ class RunTrackerMapController extends GetxController
         for (final row in outer[idx] as List<dynamic>) {
           if (row is! Map<String, dynamic>) continue;
           final id = (row['photoId'] as String?)?.toLowerCase();
-          final url =
-              (row['BlobUrl'] ?? row['blobUrl']) as String?;
+          final url = (row['BlobUrl'] ?? row['blobUrl']) as String?;
           if (id != null && id.isNotEmpty && url != null && url.isNotEmpty) {
             _photoUrlCache[id] = url;
             updated = true;
