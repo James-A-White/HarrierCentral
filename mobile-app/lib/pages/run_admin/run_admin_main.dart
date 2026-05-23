@@ -320,6 +320,48 @@ class RunAdminPage extends StatelessWidget {
       );
     }
 
+    if (aggregate.extensions.mismanagement.getMismanagementState(
+          mmRoleFlagHashFlash,
+        ) ||
+        aggregate.extensions.mismanagement.getMismanagementState(
+          mmRoleFlagGm,
+        ) ||
+        aggregate.extensions.mismanagement.getMismanagementState(
+          mmRoleFlagVgm,
+        ) ||
+        aggregate.extensions.mismanagement.getMismanagementState(
+          mmRoleFlagRa,
+        )) {
+      buttons.add(
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            _buildButton(
+              label: 'Review\r\nPhotos',
+              iconAsset: 'images/icons/android_camera.png',
+              onPressed: () async {
+                if (Utilities.isConnected(showDialog: true)) {
+                  await Navigator.push<void>(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (_) => PhotoReviewPage(
+                        kennelId: aggregate.kennel.kennelId,
+                        eventId: aggregate.event.eventId.asUuid,
+                        eventName: aggregate.event.eventName,
+                        eventNumber: aggregate.event.absoluteEventNumber,
+                        kennelLogoUrl: aggregate.kennel.kennelLogo,
+                        kennelShortName: aggregate.kennel.kennelShortName,
+                      ),
+                    ),
+                  );
+                }
+              },
+            ),
+          ],
+        ),
+      );
+    }
+
     return buttons;
   }
 

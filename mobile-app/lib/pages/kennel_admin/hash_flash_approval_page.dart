@@ -7,15 +7,21 @@ import 'package:harrier_central/imports.dart';
 class KennelPendingPhoto {
   const KennelPendingPhoto({
     required this.photoId,
+    required this.eventId,
+    required this.status,
     required this.blobUrl,
     required this.uploaderDisplayName,
     required this.eventName,
     required this.eventNumber,
     required this.createdAt,
+    this.deletedAt,
     this.title,
   });
 
   final String photoId;
+  final String eventId;
+  final int status;
+  final DateTime? deletedAt;
   final String blobUrl;
   final String uploaderDisplayName;
   final String eventName;
@@ -23,16 +29,91 @@ class KennelPendingPhoto {
   final DateTime createdAt;
   final String? title;
 
+  bool get isDeleted => deletedAt != null;
+  bool get isPending => status == 1 && !isDeleted;
+
   factory KennelPendingPhoto.fromJson(Map<String, dynamic> json) {
     return KennelPendingPhoto(
-      photoId: normalizeUuid(json['photoId']?.toString() ?? ''),
-      blobUrl: json['blobUrl']?.toString() ?? '',
-      uploaderDisplayName: json['uploaderDisplayName']?.toString() ?? 'Unknown',
+      photoId: normalizeUuid(
+        (json['photoId'] ?? json['PhotoId'])?.toString() ?? '',
+      ),
+      eventId: normalizeUuid(
+        (json['EventId'] ?? json['eventId'])?.toString() ?? '',
+      ),
+      status: (json['Status'] ?? json['status'] as num?)?.toInt() ?? 0,
+      deletedAt: () {
+        final raw =
+            (json['DeletedAt'] ?? json['deletedAt'])?.toString();
+        if (raw == null || raw.isEmpty) return null;
+        return DateTime.tryParse(raw);
+      }(),
+      blobUrl: (json['BlobUrl'] ?? json['blobUrl'])?.toString() ?? '',
+      uploaderDisplayName:
+          json['uploaderDisplayName']?.toString() ?? 'Unknown',
       eventName: json['eventName']?.toString() ?? '',
       eventNumber: (json['eventNumber'] as num?)?.toInt() ?? 0,
-      createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? '') ??
+      createdAt:
+          DateTime.tryParse(
+            (json['CreatedAt'] ?? json['createdAt'])?.toString() ?? '',
+          ) ??
           DateTime.now(),
-      title: json['title']?.toString(),
+      title: (json['Title'] ?? json['title'])?.toString(),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Status counts
+// ---------------------------------------------------------------------------
+
+class PhotoStatusCounts {
+  const PhotoStatusCounts({
+    this.pending = 0,
+    this.private = 0,
+    this.shared = 0,
+    this.runGallery = 0,
+    this.homeGallery = 0,
+    this.eventCover = 0,
+    this.deleted = 0,
+  });
+
+  final int pending;
+  final int private;
+  final int shared;
+  final int runGallery;
+  final int homeGallery;
+  final int eventCover;
+  final int deleted;
+
+  int get total =>
+      pending + private + shared + runGallery + homeGallery + eventCover +
+      deleted;
+
+  static PhotoStatusCounts from(List<KennelPendingPhoto> photos) {
+    int pending = 0, private = 0, shared = 0, runGallery = 0,
+        homeGallery = 0, eventCover = 0, deleted = 0;
+    for (final p in photos) {
+      if (p.isDeleted) {
+        deleted++;
+      } else {
+        switch (p.status) {
+          case 0: private++;
+          case 1: pending++;
+          case 2: shared++;
+          case 3: runGallery++;
+          case 4: homeGallery++;
+          case 5: eventCover++;
+        }
+      }
+    }
+    return PhotoStatusCounts(
+      pending: pending,
+      private: private,
+      shared: shared,
+      runGallery: runGallery,
+      homeGallery: homeGallery,
+      eventCover: eventCover,
+      deleted: deleted,
     );
   }
 }
@@ -41,42 +122,108 @@ class KennelPendingPhoto {
 // Controller
 // ---------------------------------------------------------------------------
 
+enum PhotoReviewTab { pending, reviewed }
+
 class PhotoReviewController extends GetxController {
-  PhotoReviewController({required this.kennelId});
+  PhotoReviewController({
+    required this.kennelId,
+    required this.eventId,
+  });
 
   final String kennelId;
+  final String eventId;
 
   final RxBool isLoading = true.obs;
-  final RxList<KennelPendingPhoto> photos = <KennelPendingPhoto>[].obs;
+  final RxList<KennelPendingPhoto> allPhotos = <KennelPendingPhoto>[].obs;
+  final RxString loadError = ''.obs;
+  final Rx<PhotoReviewTab> activeTab = PhotoReviewTab.pending.obs;
+  final RxInt currentIndex = 0.obs;
+  final RxMap<String, int> decisions = <String, int>{}.obs;
+
+  late final PageController pageController = PageController();
 
   final _service = KennelPhotoService();
+
+  // Derived lists — recomputed whenever allPhotos or activeTab change.
+  List<KennelPendingPhoto> get pendingPhotos =>
+      allPhotos.where((p) => p.isPending).toList();
+
+  List<KennelPendingPhoto> get reviewedPhotos =>
+      allPhotos.where((p) => !p.isPending).toList();
+
+  List<KennelPendingPhoto> get visiblePhotos =>
+      activeTab.value == PhotoReviewTab.pending
+          ? pendingPhotos
+          : reviewedPhotos;
+
+  PhotoStatusCounts get counts => PhotoStatusCounts.from(allPhotos);
 
   @override
   void onInit() {
     super.onInit();
-    unawaited(_loadPhotos());
+    unawaited(loadPhotos());
   }
 
-  Future<void> _loadPhotos() async {
-    isLoading.value = true;
-    try {
-      final result = await _service.getKennelPendingPhotos(kennelId: kennelId);
-      if (!result.startsWith(ERROR_PREFIX)) {
-        final outer = jsonDecode(result) as List<dynamic>;
-        final rows = outer[0] as List<dynamic>;
-        if (rows.isNotEmpty &&
-            rows[0] is Map &&
-            (rows[0] as Map).containsKey('photoId')) {
-          photos.value = rows
-              .map((r) =>
-                  KennelPendingPhoto.fromJson(r as Map<String, dynamic>))
-              .toList();
-        }
-      }
-    } catch (e) {
-      debugPrint('hash_flash_approval_page: failed to load pending photos: $e');
+  @override
+  void onClose() {
+    pageController.dispose();
+    super.onClose();
+  }
+
+  void onPageChanged(int index) => currentIndex.value = index;
+
+  void switchTab(PhotoReviewTab tab) {
+    if (activeTab.value == tab) return;
+    activeTab.value = tab;
+    currentIndex.value = 0;
+    if (pageController.hasClients) {
+      pageController.jumpToPage(0);
     }
-    isLoading.value = false;
+  }
+
+  int? decisionFor(String photoId) => decisions[photoId];
+
+  void _goToNext() {
+    final list = visiblePhotos;
+    if (currentIndex.value < list.length - 1) {
+      pageController.nextPage(
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  Future<void> loadPhotos() async {
+    isLoading.value = true;
+    loadError.value = '';
+    try {
+      final result = await _service.getRunAllPhotos(
+        kennelId: kennelId,
+        eventId: eventId,
+      );
+      if (result.startsWith(ERROR_PREFIX)) {
+        loadError.value =
+            'Could not load photos. Please check your connection and try again.';
+        allPhotos.clear();
+        return;
+      }
+      final outer = jsonDecode(result) as List<dynamic>;
+      if (outer.isEmpty || outer[0] is! List) {
+        allPhotos.clear();
+        return;
+      }
+      final rows = outer[0] as List<dynamic>;
+      allPhotos.value = rows
+          .whereType<Map<String, dynamic>>()
+          .map(KennelPendingPhoto.fromJson)
+          .toList();
+    } catch (e) {
+      loadError.value =
+          'Could not load photos. Please check your connection and try again.';
+      debugPrint('PhotoReviewController.loadPhotos error: $e');
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   Future<void> actionPhoto({
@@ -91,8 +238,8 @@ class PhotoReviewController extends GetxController {
         builder: (_) => AlertDialog(
           title: Text('Delete photo?', style: ts_alertDialogTitle),
           content: Text(
-            'This will permanently remove the photo. '
-            'Use this only when the photo violates content policies.',
+            'The photo will be hidden from the run. You can restore it '
+            'at any time from the Reviewed tab.',
             style: ts_alertDialogBody,
           ),
           actions: [
@@ -124,7 +271,24 @@ class PhotoReviewController extends GetxController {
     );
 
     if (!result.startsWith(ERROR_PREFIX)) {
-      photos.removeWhere((p) => p.photoId == photoId);
+      decisions[photoId] = action;
+      // Reload to reflect new status and counts from the server.
+      await loadPhotos();
+      // If the photo moved out of the current tab's list, stay at current
+      // index (clamped). Otherwise advance.
+      final list = visiblePhotos;
+      if (list.isNotEmpty) {
+        final clamped = currentIndex.value.clamp(0, list.length - 1);
+        if (clamped != currentIndex.value) {
+          currentIndex.value = clamped;
+          if (pageController.hasClients) {
+            pageController.jumpToPage(clamped);
+          }
+        } else {
+          await Future<void>.delayed(const Duration(milliseconds: 350));
+          _goToNext();
+        }
+      }
     } else {
       Get.snackbar(
         'Error',
@@ -145,15 +309,30 @@ class PhotoReviewPage extends StatelessWidget {
   PhotoReviewPage({
     super.key,
     required this.kennelId,
-    required this.kennelName,
-  }) : controller = Get.put(
-          PhotoReviewController(kennelId: kennelId),
-          tag: 'photo-review-$kennelId',
-        );
+    required this.eventId,
+    required this.eventName,
+    required this.eventNumber,
+    this.kennelLogoUrl,
+    this.kennelShortName,
+  }) : controller = _freshController(kennelId, eventId);
 
   final String kennelId;
-  final String kennelName;
+  final String eventId;
+  final String eventName;
+  final int? eventNumber;
+  final String? kennelLogoUrl;
+  final String? kennelShortName;
   final PhotoReviewController controller;
+
+  static PhotoReviewController _freshController(
+      String kennelId, String eventId) {
+    final tag = 'photo-review-$eventId';
+    Get.delete<PhotoReviewController>(tag: tag, force: true);
+    return Get.put(
+      PhotoReviewController(kennelId: kennelId, eventId: eventId),
+      tag: tag,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -163,6 +342,12 @@ class PhotoReviewPage extends StatelessWidget {
         backgroundColor: themeAppBarBackground,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text('Review Photos', style: ts_appBarTitle),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            onPressed: controller.loadPhotos,
+          ),
+        ],
       ),
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
@@ -173,47 +358,21 @@ class PhotoReviewPage extends StatelessWidget {
                   key: Key('photo_review_loading')),
             );
           }
-
-          if (controller.photos.isEmpty) {
+          if (controller.loadError.value.isNotEmpty) {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.check_circle_outline,
-                        color: Colors.white54, size: 64),
-                    const SizedBox(height: 16),
-                    Text('No photos awaiting review.',
-                        style: ts_bodyYellow, textAlign: TextAlign.center),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Photos shared by members will appear here.',
-                      style: ts_bodySmall.copyWith(color: Colors.white70),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
+                child: Text(controller.loadError.value,
+                    style: ts_bodyYellow, textAlign: TextAlign.center),
               ),
             );
           }
-
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: controller.photos.length,
-            separatorBuilder: (context, index) =>
-                const SizedBox(height: 16),
-            itemBuilder: (context, index) {
-              final photo = controller.photos[index];
-              return _PhotoReviewCard(
-                photo: photo,
-                onAction: (action) => controller.actionPhoto(
-                  photoId: photo.photoId,
-                  action: action,
-                  context: context,
-                ),
-              );
-            },
+          return Column(
+            children: [
+              _RunHeader(page: this),
+              _TabPills(controller: controller),
+              Expanded(child: _PhotoBody(page: this, context: context)),
+            ],
           );
         }),
       ),
@@ -222,94 +381,501 @@ class PhotoReviewPage extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Card
+// Run header — kennel logo + event + status counts
 // ---------------------------------------------------------------------------
 
-class _PhotoReviewCard extends StatelessWidget {
-  const _PhotoReviewCard({required this.photo, required this.onAction});
-
-  final KennelPendingPhoto photo;
-  final void Function(int action) onAction;
+class _RunHeader extends StatelessWidget {
+  const _RunHeader({required this.page});
+  final PhotoReviewPage page;
 
   @override
   Widget build(BuildContext context) {
-    final runLabel = photo.eventNumber > 0
-        ? 'Run #${photo.eventNumber}'
-        : photo.eventName.isNotEmpty
-            ? photo.eventName
-            : 'Unknown run';
+    final runLabel = page.eventNumber != null && page.eventNumber! > 0
+        ? 'Run #${page.eventNumber}'
+        : page.eventName;
 
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 4,
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Photo
-          if (photo.blobUrl.isNotEmpty)
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 240),
-              child: CachedNetworkImage(
-                imageUrl: photo.blobUrl,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => const Center(
-                  child: Padding(
-                      padding: EdgeInsets.all(32),
-                      child: CircularProgressIndicator()),
-                ),
-                errorWidget: (context, url, err) => const Center(
-                  child: Padding(
-                      padding: EdgeInsets.all(32),
-                      child: Icon(Icons.broken_image,
-                          size: 48, color: Colors.grey)),
-                ),
-              ),
+    return Obx(() {
+      final c = page.controller.counts;
+      return Container(
+        color: Colors.black54,
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            KennelLogo(
+              kennelId: page.kennelId,
+              kennelLogoUrl: page.kennelLogoUrl,
+              kennelShortName: page.kennelShortName ?? '',
+              logoHeight: 52,
+              leftPadding: 0,
             ),
-
-          // Meta
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    page.eventName,
+                    style: ts_bodySmall.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    runLabel,
+                    style: ts_bodySmall.copyWith(color: Colors.white60),
+                  ),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 5,
+                    runSpacing: 4,
                     children: [
-                      Text(photo.uploaderDisplayName,
-                          style: ts_mediumBlackBold,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis),
-                      Text(runLabel,
-                          style: ts_smallBlack,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis),
-                      if ((photo.title ?? '').isNotEmpty)
-                        Text(photo.title!,
-                            style: ts_smallGrey,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis),
+                      if (c.pending > 0)
+                        _CountChip(
+                            label: 'Pending',
+                            count: c.pending,
+                            color: Colors.orange.shade700),
+                      _CountChip(
+                          label: 'Private',
+                          count: c.private,
+                          color: Colors.grey.shade600),
+                      _CountChip(
+                          label: 'Shared',
+                          count: c.shared,
+                          color: Colors.green.shade600),
+                      _CountChip(
+                          label: 'Gallery',
+                          count: c.runGallery,
+                          color: Colors.green.shade700),
+                      _CountChip(
+                          label: 'Home',
+                          count: c.homeGallery,
+                          color: Colors.teal.shade600),
+                      _CountChip(
+                          label: 'Cover',
+                          count: c.eventCover,
+                          color: Colors.teal.shade800),
+                      if (c.deleted > 0)
+                        _CountChip(
+                            label: 'Deleted',
+                            count: c.deleted,
+                            color: hc_red),
                     ],
                   ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}
+
+class _CountChip extends StatelessWidget {
+  const _CountChip(
+      {required this.label, required this.count, required this.color});
+  final String label;
+  final int count;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        '$count $label',
+        style: const TextStyle(
+            color: Colors.white,
+            fontSize: 10,
+            fontWeight: FontWeight.w600),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Tab pills
+// ---------------------------------------------------------------------------
+
+class _TabPills extends StatelessWidget {
+  const _TabPills({required this.controller});
+  final PhotoReviewController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final active = controller.activeTab.value;
+      final pendingCount = controller.pendingPhotos.length;
+      final reviewedCount = controller.reviewedPhotos.length;
+
+      return Container(
+        color: Colors.black38,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _PillButton(
+              label: 'Pending ($pendingCount)',
+              isSelected: active == PhotoReviewTab.pending,
+              onTap: () => controller.switchTab(PhotoReviewTab.pending),
+            ),
+            const SizedBox(width: 12),
+            _PillButton(
+              label: 'Reviewed ($reviewedCount)',
+              isSelected: active == PhotoReviewTab.reviewed,
+              onTap: () => controller.switchTab(PhotoReviewTab.reviewed),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}
+
+class _PillButton extends StatelessWidget {
+  const _PillButton(
+      {required this.label,
+      required this.isSelected,
+      required this.onTap});
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
+        decoration: BoxDecoration(
+          color: isSelected ? hc_red : Colors.white24,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          label,
+          style: ts_bodySmall.copyWith(
+            color: Colors.white,
+            fontWeight:
+                isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Photo body — PageView + action panel, or empty state
+// ---------------------------------------------------------------------------
+
+class _PhotoBody extends StatelessWidget {
+  const _PhotoBody({required this.page, required this.context});
+  final PhotoReviewPage page;
+  final BuildContext context;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final photos = page.controller.visiblePhotos;
+      final tab = page.controller.activeTab.value;
+
+      if (photos.isEmpty) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  tab == PhotoReviewTab.pending
+                      ? Icons.check_circle_outline
+                      : Icons.photo_library_outlined,
+                  color: Colors.white54,
+                  size: 64,
                 ),
-                Text(_formatDate(photo.createdAt), style: ts_smallGrey),
+                const SizedBox(height: 16),
+                Text(
+                  tab == PhotoReviewTab.pending
+                      ? 'All photos reviewed for this run.'
+                      : 'No reviewed photos yet.',
+                  style: ts_bodyYellow,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  tab == PhotoReviewTab.pending
+                      ? 'Switch to Reviewed to see previously actioned photos.'
+                      : 'Photos you action will appear here.',
+                  style: ts_bodySmall.copyWith(color: Colors.white70),
+                  textAlign: TextAlign.center,
+                ),
               ],
             ),
           ),
+        );
+      }
 
-          const Divider(height: 1),
+      return Column(
+        children: [
+          _PhotoCounter(controller: page.controller),
+          Expanded(child: _PhotoPageView(controller: page.controller)),
+          _ActionPanel(controller: page.controller, context: context),
+        ],
+      );
+    });
+  }
+}
 
-          // Rejection row
-          Padding(
-            padding: const EdgeInsets.fromLTRB(10, 8, 10, 4),
-            child: Row(
+// ---------------------------------------------------------------------------
+// Counter strip
+// ---------------------------------------------------------------------------
+
+class _PhotoCounter extends StatelessWidget {
+  const _PhotoCounter({required this.controller});
+  final PhotoReviewController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final photos = controller.visiblePhotos;
+      if (photos.isEmpty) return const SizedBox.shrink();
+      final idx =
+          controller.currentIndex.value.clamp(0, photos.length - 1);
+      final photo = photos[idx];
+      final runLabel = photo.eventNumber > 0
+          ? 'Run #${photo.eventNumber}'
+          : photo.eventName;
+      final decided =
+          controller.decisionFor(photo.photoId) != null;
+
+      return Container(
+        color: Colors.black54,
+        padding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    photo.uploaderDisplayName,
+                    style: ts_bodySmall.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (runLabel.isNotEmpty)
+                    Text(runLabel,
+                        style: ts_bodySmall.copyWith(
+                            color: Colors.white60),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
+                ],
+              ),
+            ),
+            if (decided) ...[
+              const Icon(Icons.check_circle,
+                  color: Colors.greenAccent, size: 14),
+              const SizedBox(width: 4),
+            ],
+            Text(
+              '${idx + 1} / ${photos.length}',
+              style: ts_bodySmall.copyWith(color: Colors.white70),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Photo PageView
+// ---------------------------------------------------------------------------
+
+class _PhotoPageView extends StatelessWidget {
+  const _PhotoPageView({required this.controller});
+  final PhotoReviewController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final photos = controller.visiblePhotos;
+    return PageView.builder(
+      controller: controller.pageController,
+      onPageChanged: controller.onPageChanged,
+      itemCount: photos.length,
+      itemBuilder: (context, index) {
+        final photo = photos[index];
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            if (photo.blobUrl.isNotEmpty)
+              Image.network(
+                photo.blobUrl,
+                fit: BoxFit.contain,
+                loadingBuilder: (context, child, progress) =>
+                    progress == null
+                        ? child
+                        : const Center(
+                            child: CircularProgressIndicator(
+                                color: Colors.white54)),
+                errorBuilder: (context, err, stack) {
+                  debugPrint(
+                    'PhotoReviewPage: failed to load\n'
+                    '  url: ${photo.blobUrl}\n  err: $err',
+                  );
+                  return const Center(
+                    child: Icon(Icons.broken_image,
+                        color: Colors.white38, size: 64),
+                  );
+                },
+              )
+            else
+              const Center(
+                child: Icon(Icons.image_not_supported,
+                    color: Colors.white38, size: 64),
+              ),
+
+            // Soft-deleted overlay
+            Obx(() {
+              if (!photo.isDeleted) return const SizedBox.shrink();
+              return Positioned.fill(
+                child: ColoredBox(
+                  color: Colors.black.withValues(alpha: 0.45),
+                  child: const Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.delete_outline,
+                            color: Colors.white54, size: 48),
+                        SizedBox(height: 8),
+                        Text('Deleted',
+                            style: TextStyle(
+                                color: Colors.white54, fontSize: 16)),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }),
+
+            // Decision badge
+            Obx(() {
+              final action =
+                  controller.decisionFor(photo.photoId);
+              if (action == null) return const SizedBox.shrink();
+              return Positioned(
+                top: 10,
+                right: 10,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.black87,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                        color:
+                            Colors.greenAccent.withValues(alpha: 0.7),
+                        width: 1),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.check_circle,
+                          color: Colors.greenAccent, size: 13),
+                      const SizedBox(width: 5),
+                      Text(
+                        _actionLabel(action),
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ],
+        );
+      },
+    );
+  }
+
+  String _actionLabel(int action) => switch (action) {
+        photoActionKeepPrivate => 'Keep Private',
+        photoActionDelete => 'Deleted',
+        photoActionShare => 'Share with Hash',
+        photoActionAddToGallery => 'Run Gallery',
+        photoActionAddToHomeGallery => 'Home Gallery',
+        photoActionMakeEventCover => 'Event Cover',
+        _ => 'Actioned',
+      };
+}
+
+// ---------------------------------------------------------------------------
+// Action panel
+// ---------------------------------------------------------------------------
+
+class _ActionPanel extends StatelessWidget {
+  const _ActionPanel(
+      {required this.controller, required this.context});
+  final PhotoReviewController controller;
+  final BuildContext context;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final photos = controller.visiblePhotos;
+      if (photos.isEmpty) return const SizedBox.shrink();
+      final idx =
+          controller.currentIndex.value.clamp(0, photos.length - 1);
+      final photo = photos[idx];
+
+      // Selected action: delete if soft-deleted, otherwise current status
+      final int? selected = photo.isDeleted
+          ? photoActionDelete
+          : switch (photo.status) {
+              0 => photoActionKeepPrivate,
+              2 => photoActionShare,
+              3 => photoActionAddToGallery,
+              4 => photoActionAddToHomeGallery,
+              5 => photoActionMakeEventCover,
+              _ => null, // status=1 = pending, no button pre-selected
+            };
+
+      void act(int action) => controller.actionPhoto(
+            photoId: photo.photoId,
+            action: action,
+            context: context,
+          );
+
+      return Container(
+        color: Colors.black54,
+        padding: const EdgeInsets.fromLTRB(10, 8, 10, 14),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
               children: [
                 Expanded(
                   child: _ActionButton(
                     icon: Icons.lock_outline,
                     label: 'Keep Private',
                     color: Colors.grey.shade600,
-                    onTap: () => onAction(photoActionKeepPrivate),
+                    isSelected: selected == photoActionKeepPrivate,
+                    onTap: () => act(photoActionKeepPrivate),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -318,68 +884,87 @@ class _PhotoReviewCard extends StatelessWidget {
                     icon: Icons.delete_outline,
                     label: 'Delete',
                     color: hc_red,
-                    onTap: () => onAction(photoActionDelete),
+                    isSelected: selected == photoActionDelete,
+                    onTap: () => act(photoActionDelete),
                   ),
                 ),
               ],
             ),
-          ),
-
-          // Approval section
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 2, 12, 4),
-            child: Text('Publish as…',
-                style: ts_smallGrey.copyWith(fontStyle: FontStyle.italic)),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-            child: Column(
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 7),
+              child: Row(
+                children: [
+                  const Expanded(
+                      child: Divider(color: Colors.white24, height: 1)),
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10),
+                    child: Text('Publish as…',
+                        style: ts_bodySmall.copyWith(
+                            color: Colors.white54,
+                            fontStyle: FontStyle.italic)),
+                  ),
+                  const Expanded(
+                      child: Divider(color: Colors.white24, height: 1)),
+                ],
+              ),
+            ),
+            Row(
               children: [
-                _ApprovalOption(
-                  icon: Icons.people_outline,
-                  label: 'Share with Hash',
-                  subtitle: 'Visible to all on run maps',
-                  color: Colors.green.shade600,
-                  onTap: () => onAction(photoActionShare),
+                Expanded(
+                  child: _ActionButton(
+                    icon: Icons.people_outline,
+                    label: 'Share with Hash',
+                    color: Colors.green.shade600,
+                    isSelected: selected == photoActionShare,
+                    onTap: () => act(photoActionShare),
+                  ),
                 ),
-                const SizedBox(height: 6),
-                _ApprovalOption(
-                  icon: Icons.photo_library_outlined,
-                  label: 'Run Gallery',
-                  subtitle: 'Share + appears in run photo gallery',
-                  color: Colors.green.shade700,
-                  onTap: () => onAction(photoActionAddToGallery),
-                ),
-                const SizedBox(height: 6),
-                _ApprovalOption(
-                  icon: Icons.home_outlined,
-                  label: 'Home Gallery',
-                  subtitle: 'Run gallery + featured on kennel home page',
-                  color: Colors.teal.shade600,
-                  onTap: () => onAction(photoActionAddToHomeGallery),
-                ),
-                const SizedBox(height: 6),
-                _ApprovalOption(
-                  icon: Icons.star_outline,
-                  label: 'Event Cover',
-                  subtitle: 'Home gallery + set as this run\'s cover photo',
-                  color: Colors.teal.shade800,
-                  onTap: () => onAction(photoActionMakeEventCover),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _ActionButton(
+                    icon: Icons.photo_library_outlined,
+                    label: 'Run Gallery',
+                    color: Colors.green.shade700,
+                    isSelected: selected == photoActionAddToGallery,
+                    onTap: () => act(photoActionAddToGallery),
+                  ),
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Expanded(
+                  child: _ActionButton(
+                    icon: Icons.home_outlined,
+                    label: 'Home Gallery',
+                    color: Colors.teal.shade600,
+                    isSelected: selected == photoActionAddToHomeGallery,
+                    onTap: () => act(photoActionAddToHomeGallery),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _ActionButton(
+                    icon: Icons.star_outline,
+                    label: 'Event Cover',
+                    color: Colors.teal.shade800,
+                    isSelected: selected == photoActionMakeEventCover,
+                    onTap: () => act(photoActionMakeEventCover),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    });
   }
-
-  String _formatDate(DateTime dt) =>
-      '${dt.day}/${dt.month}/${dt.year}';
 }
 
 // ---------------------------------------------------------------------------
-// Button widgets
+// Action button widget
 // ---------------------------------------------------------------------------
 
 class _ActionButton extends StatelessWidget {
@@ -387,75 +972,53 @@ class _ActionButton extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.color,
+    required this.isSelected,
     required this.onTap,
   });
 
   final IconData icon;
   final String label;
   final Color color;
+  final bool isSelected;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton.icon(
-      icon: Icon(icon, size: 16),
-      label: Text(label, style: ts_bodySmall),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-      onPressed: onTap,
-    );
-  }
-}
-
-class _ApprovalOption extends StatelessWidget {
-  const _ApprovalOption({
-    required this.icon,
-    required this.label,
-    required this.subtitle,
-    required this.color,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final String subtitle;
-  final Color color;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          foregroundColor: Colors.white,
-          alignment: Alignment.centerLeft,
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding:
+            const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? color : color.withValues(alpha: 0.45),
+          borderRadius: BorderRadius.circular(10),
+          border: isSelected
+              ? Border.all(color: Colors.white, width: 2)
+              : null,
         ),
-        onPressed: onTap,
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 20),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(label, style: ts_button.copyWith(fontSize: 14)),
-                  Text(subtitle,
-                      style: ts_bodySmall.copyWith(
-                          color: Colors.white70, fontSize: 11)),
-                ],
+            Icon(
+              isSelected ? Icons.check_circle : icon,
+              size: 16,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                label,
+                style: ts_bodySmall.copyWith(
+                  color: Colors.white,
+                  fontWeight: isSelected
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ),
-            const Icon(Icons.chevron_right, size: 18, color: Colors.white70),
           ],
         ),
       ),

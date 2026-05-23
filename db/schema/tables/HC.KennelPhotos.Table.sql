@@ -12,6 +12,8 @@ CREATE TABLE [HC].[KennelPhotos] (
     [Description] NVARCHAR(MAX)    NULL,
     [CreatedAt]   DATETIME2        NOT NULL DEFAULT GETUTCDATE(),
     [UpdatedAt]   DATETIME2        NOT NULL DEFAULT GETUTCDATE(),
+    -- NULL = not deleted; non-NULL = soft-deleted (always recoverable)
+    [DeletedAt]   DATETIME2        NULL,
     CONSTRAINT [PK_KennelPhotos]        PRIMARY KEY ([id]),
     CONSTRAINT [FK_KennelPhotos_Event]  FOREIGN KEY ([EventId])  REFERENCES [HC].[Event]([id]),
     CONSTRAINT [FK_KennelPhotos_Kennel] FOREIGN KEY ([KennelId]) REFERENCES [HC].[Kennel]([id]),

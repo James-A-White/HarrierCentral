@@ -1,5 +1,29 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.5.0+1120 (2026-05-23)
+
+### New features
+
+- **KennelPhotos — full photo review redesign**: Review Photos is now
+  event-scoped (run admin only; removed from kennel admin). The screen
+  shows a persistent header with the kennel logo, event name, and a
+  colour-coded count chip for every status (Pending, Private, Shared,
+  Run Gallery, Home Gallery, Event Cover, Deleted). Pending and Reviewed
+  tabs let the Hash Flash switch between unactioned and already-actioned
+  photos. The same action buttons work on both tabs — any action
+  overwrites the existing status.
+
+- **KennelPhotos — soft delete**: Deleting a photo now sets a `DeletedAt`
+  timestamp instead of removing the row. Deleted photos appear in the
+  Reviewed tab with a dimmed overlay. Any other action (Keep Private,
+  Share, etc.) restores the photo and applies the new status.
+
+- **KennelPhotos — re-review**: Previously approved photos can be
+  re-actioned at any time from the Reviewed tab, overwriting the
+  existing status in the database.
+
+---
+
 ## 2.5.0+1119 (2026-05-22)
 
 ### Bug fixes

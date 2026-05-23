@@ -266,23 +266,52 @@ class KennelPhotoService {
 
   // ── Public query methods (called by Hash Flash screen + map) ─────────────
 
-  Future<String> getKennelPendingPhotos({required String kennelId}) async {
+  Future<String> getRunAllPhotos({
+    required String kennelId,
+    required String eventId,
+  }) async {
     final userId = currentUserId;
     final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
     return ServiceCommon.sendHttpPost(
       () => jsonEncode(<String, String>{
-        'queryType': 'getKennelPendingPhotos',
+        'queryType': 'getRunAllPhotos',
         'deviceId': deviceId,
         'accessToken': Utilities.generateToken(
           userId,
-          'hcapp_getKennelPendingPhotos',
+          'hcapp_getRunAllPhotos',
           paramString: deviceSecret,
         ),
         'kennelId': kennelId,
+        'eventId': eventId,
       }),
     );
+  }
+
+  Future<String> getKennelPendingPhotos({
+    required String kennelId,
+    String? eventId,
+  }) async {
+    final userId = currentUserId;
+    final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    final body = <String, String>{
+      'queryType': 'getKennelPendingPhotos',
+      'deviceId': deviceId,
+      'accessToken': Utilities.generateToken(
+        userId,
+        'hcapp_getKennelPendingPhotos',
+        paramString: deviceSecret,
+      ),
+      'kennelId': kennelId,
+    };
+    if (eventId != null && eventId.isNotEmpty) {
+      body['eventId'] = eventId;
+    }
+
+    return ServiceCommon.sendHttpPost(() => jsonEncode(body));
   }
 
   Future<String> getRunPhotos({

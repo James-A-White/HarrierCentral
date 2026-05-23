@@ -1,0 +1,117 @@
+CREATE OR ALTER PROCEDURE [HC6].[hcapp_getRunAllPhotos]
+
+    @deviceId   UNIQUEIDENTIFIER,
+    @accessToken NVARCHAR(1000),
+    @kennelId   UNIQUEIDENTIFIER,
+    @eventId    UNIQUEIDENTIFIER
+
+AS
+-- =====================================================================
+-- Procedure: HC6.hcapp_getRunAllPhotos
+-- Description: Returns every photo for a specific event regardless of
+--   status — pending, approved at any level, private, and soft-deleted.
+--   Used to power the photo review screen (both Pending and Reviewed tabs)
+--   and the persistent status-count header. Caller must hold one of the
+--   following roles: Hash Flash (0x20), GM (0x02), VGM (0x04), or RA (0x08).
+-- Parameters:
+--   @deviceId    - Registered device UUID
+--   @accessToken - Token validated against DeviceSecret
+--   @kennelId    - Kennel the event belongs to (used for auth check)
+--   @eventId     - Event to fetch photos for
+-- Returns:
+--   On success (rowset 0): all photo rows ordered newest-first
+--   On error  (rowset 0): { success, errorCode, errorType }
+--   On error  (rowset 1): standard HC6 error detail
+-- Author: Harrier Central
+-- Created: 2026-05-23
+-- HC5 Source: None — new for HC6 KennelPhotos
+-- =====================================================================
+SET NOCOUNT ON;
+
+DECLARE @procName  NVARCHAR(128) = OBJECT_NAME(@@PROCID);
+DECLARE @errorId   UNIQUEIDENTIFIER;
+DECLARE @errorCode INT;
+DECLARE @errorType INT;
+DECLARE @errorTitle NVARCHAR(500);
+DECLARE @errorMsg   NVARCHAR(MAX);
+
+DECLARE @userId       UNIQUEIDENTIFIER;
+DECLARE @deviceSecret NVARCHAR(150);
+DECLARE @timeWindow   INT;
+
+EXEC HC6.ValidateAppAuth
+    @deviceId     = @deviceId,
+    @accessToken  = @accessToken,
+    @procName     = @procName,
+    @spNumber     = 36,
+    @param        = NULL,
+    @userId       = @userId       OUTPUT,
+    @deviceSecret = @deviceSecret OUTPUT,
+    @timeWindow   = @timeWindow   OUTPUT,
+    @errorCode    = @errorCode    OUTPUT,
+    @errorType    = @errorType    OUTPUT,
+    @errorId      = @errorId      OUTPUT,
+    @errorTitle   = @errorTitle   OUTPUT,
+    @errorMsg     = @errorMsg     OUTPUT;
+
+IF (@errorCode IS NOT NULL)
+BEGIN
+    SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+           @errorTitle AS errorTitle, @errorMsg AS errorUserMessage, @procName AS errorProc;
+    RETURN;
+END
+
+IF (@kennelId IS NULL OR @kennelId = '00000000-0000-0000-0000-000000000000'
+ OR @eventId  IS NULL OR @eventId  = '00000000-0000-0000-0000-000000000000')
+BEGIN
+    SET @errorCode = 1234; SET @errorType = 12; SET @errorId = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, '<unknown>', 'Missing parameter',
+            '@kennelId and @eventId are both required', @procName, @userId);
+    SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+           'Missing parameter' AS errorTitle,
+           'A required parameter was missing. Please try again.' AS errorUserMessage,
+           @procName AS errorProc;
+    RETURN;
+END
+
+-- Verify caller holds an approval role for this kennel:
+-- Hash Flash (0x20) OR GM (0x02) OR VGM (0x04) OR RA (0x08) = 0x2E
+DECLARE @mmRoleFlags INT = 0;
+SELECT @mmRoleFlags = ISNULL(MismanagementRoleFlags, 0)
+FROM HC.HasherKennelMap
+WHERE UserId = @userId AND KennelId = @kennelId;
+
+IF (@mmRoleFlags & 0x0000002E = 0)
+BEGIN
+    SET @errorCode = 1334; SET @errorType = 13; SET @errorId = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, '<unknown>', 'Not authorised to review photos',
+            'Caller does not hold Hash Flash, GM, VGM or RA role for this kennel', @procName, @userId);
+    SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+           'Not authorised' AS errorTitle,
+           'You are not authorised to review photos for this kennel.' AS errorUserMessage,
+           @procName AS errorProc;
+    RETURN;
+END
+
+SELECT
+    kp.id                   AS photoId,
+    kp.EventId,
+    kp.Status,
+    kp.DeletedAt,
+    kp.BlobUrl,
+    kp.Title,
+    kp.CreatedAt,
+    h.DisplayName           AS uploaderDisplayName,
+    e.EventName             AS eventName,
+    e.AbsoluteEventNumber   AS eventNumber
+FROM HC.KennelPhotos kp
+INNER JOIN HC.Hasher h ON h.id  = kp.UserId
+INNER JOIN HC.Event  e ON e.id  = kp.EventId
+WHERE kp.KennelId = @kennelId
+  AND kp.EventId  = @eventId
+ORDER BY kp.CreatedAt DESC;
