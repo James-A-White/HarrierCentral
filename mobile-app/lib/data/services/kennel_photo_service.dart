@@ -106,7 +106,7 @@ class KennelPhotoService {
     }
 
     // 7. Enqueue a PHO marker into the GPS track feed
-    _enqueuePhotoMarker(blobUrl: blobUrl);
+    _enqueuePhotoMarker(photoId: photoGuid);
 
     return blobUrl;
   }
@@ -254,13 +254,13 @@ class KennelPhotoService {
 
   // ── GPS track marker ─────────────────────────────────────────────────────
 
-  void _enqueuePhotoMarker({required String blobUrl}) {
+  void _enqueuePhotoMarker({required String photoId}) {
     final locationService = Get.find<LocationService>();
-    // The label IS the full CDN blob URL returned by the API. Using the
-    // authoritative URL avoids any storage-account-name assumption in the
-    // map renderer and survives future storage migrations.
+    // Label is the photoId (UUID) only — the map controller resolves the
+    // blob URL via hcapp_getRunPhotos so the URL is never stored in the
+    // GPS track, preventing unauthenticated blob access from the label alone.
     unawaited(
-      locationService.markPoint(HashRunPointTypes.photo, label: blobUrl),
+      locationService.markPoint(HashRunPointTypes.photo, label: photoId),
     );
   }
 

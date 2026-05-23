@@ -76,6 +76,10 @@ class RunTrackerMapController extends GetxController
   // Reused across loadPositions() calls to avoid creating a new http.Client each time.
   final GetPositionsApi _positionsApi = GetPositionsApi();
 
+  // photoId (lowercase UUID) → blob URL, populated from hcapp_getRunPhotos.
+  // Refreshed on every live-run auto-update tick so newly-taken photos appear.
+  final Map<String, String> _photoUrlCache = {};
+
   Worker? _timelineWorker;
   Worker? _selectionWorker;
   StreamSubscription<MapEvent>? _mapEventsSub;
@@ -275,6 +279,7 @@ class RunTrackerMapController extends GetxController
     _lastMarkerZoom = initialZoom;
     _startAutoUpdateTimer();
     unawaited(loadPositions());
+    unawaited(_loadPhotoCache());
   }
 
   @override
@@ -318,6 +323,36 @@ class RunTrackerMapController extends GetxController
       );
     }
     timelineCarouselIndex.value = index;
+  }
+
+  // Fetches the authorised photo URL list for this event and populates
+  // _photoUrlCache (photoId → blobUrl). Called on init and every auto-update
+  // tick so newly-uploaded photos appear on the map within 15 seconds.
+  Future<void> _loadPhotoCache() async {
+    try {
+      final service = Get.find<KennelPhotoService>();
+      final raw = await service.getRunPhotos(eventId: event.eventId);
+      if (raw.startsWith(ERROR_PREFIX)) return;
+      final outer = jsonDecode(raw) as List<dynamic>;
+      // rowset 0 = envelope; rowsets 1 & 2 = own + public photos
+      bool updated = false;
+      for (final idx in [1, 2]) {
+        if (outer.length <= idx || outer[idx] is! List) continue;
+        for (final row in outer[idx] as List<dynamic>) {
+          if (row is! Map<String, dynamic>) continue;
+          final id = (row['photoId'] as String?)?.toLowerCase();
+          final url =
+              (row['BlobUrl'] ?? row['blobUrl']) as String?;
+          if (id != null && id.isNotEmpty && url != null && url.isNotEmpty) {
+            _photoUrlCache[id] = url;
+            updated = true;
+          }
+        }
+      }
+      if (updated) update();
+    } catch (e) {
+      debugPrint('_loadPhotoCache error: $e');
+    }
   }
 
   Future<void> loadPositions({bool reset = false}) async {
@@ -389,6 +424,7 @@ class RunTrackerMapController extends GetxController
       }
       if (_isVisible && !_isPlaybackActive) {
         unawaited(loadPositions());
+        unawaited(_loadPhotoCache());
       }
     });
   }
@@ -630,14 +666,21 @@ class RunTrackerMapController extends GetxController
     );
   }
 
-  Widget _buildPhotoMarker(String? photoUrl) {
+  Widget _buildPhotoMarker(String? label) {
     const double baseSize = 144.0;
     final double size = baseSize * _photoMarkerScale();
 
-    // Always show the camera frame. Pass null when the label isn't a valid
-    // URL so the widget shows the empty frame rather than a broken thumbnail.
-    final String? resolvedUrl =
-        (photoUrl != null && photoUrl.startsWith('http')) ? photoUrl : null;
+    // New format: label is a photoId UUID → look up blobUrl in the cache.
+    // Legacy format: label is a full blob URL (markers stored before this
+    // change) → use directly so old runs continue to display correctly.
+    final String? resolvedUrl;
+    if (label == null || label.isEmpty) {
+      resolvedUrl = null;
+    } else if (label.startsWith('http')) {
+      resolvedUrl = label;
+    } else {
+      resolvedUrl = _photoUrlCache[label.toLowerCase()];
+    }
 
     final marker = CameraPhotoMarker(photoUrl: resolvedUrl, size: size);
 
