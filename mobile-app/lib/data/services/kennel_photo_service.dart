@@ -286,7 +286,7 @@ class KennelPhotoService {
           paramString: deviceSecret,
         ),
         'kennelId': kennelId,
-        'updates': updates,
+        'updates': jsonEncode(updates),
       }),
       noRetries: true,
     );

@@ -309,7 +309,7 @@ class HasherKennelMapService {
         paramString: deviceSecret,
       );
       return jsonEncode(joinBody);
-    });
+    }, noRetries: true);
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
       if (responseBody.isNotEmpty) {

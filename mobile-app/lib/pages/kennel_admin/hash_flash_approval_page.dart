@@ -318,6 +318,8 @@ class PhotoReviewController extends GetxController {
       }
     }
 
+    if (isSaving.value) return;
+
     _enqueue(photoId: photoId, action: action);
     _applyOptimisticUpdate(photoId: photoId, action: action);
     decisions[photoId] = action;
@@ -326,7 +328,17 @@ class PhotoReviewController extends GetxController {
     await Future<void>.delayed(const Duration(milliseconds: 250));
     _goToNext();
 
-    _resetDebounce();
+    // If no pending photos remain, flush immediately rather than waiting for
+    // the debounce — every photo has been reviewed, so there is nothing left
+    // to do and the user expects an immediate save.
+    final bool noPendingRemaining =
+        allPhotos.every((p) => !p.isPending);
+    if (noPendingRemaining && _queue.isNotEmpty) {
+      _cancelDebounce();
+      unawaited(_flushQueue());
+    } else {
+      _resetDebounce();
+    }
   }
 
   // ── Queue helpers ─────────────────────────────────────────────────────────

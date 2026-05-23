@@ -1220,17 +1220,25 @@ class Utilities {
             result.eventId,
           );
         } else if (retVal == enumCheckInOption_Yes) {
-          await tableModel.hasherEventMapService.setEventAttendence(
+          final adHoc = await tableModel.hasherEventMapService.setEventAttendence(
             result.eventId,
             userId,
             AppDomainType.user,
             attendenceAtHash.value,
           );
 
-          if (Get.isRegistered<FutureRunListPageController>()) {
-            await Get.find<FutureRunListPageController>().refreshFromTable(
-              true,
+          if (adHoc.isEmpty) {
+            showHcSnackbar(
+              'Check-in failed — please check your connection and try again.',
+              isError: true,
             );
+          } else {
+            showHcSnackbar('Checked in to ${result.eventName}!');
+            if (Get.isRegistered<FutureRunListPageController>()) {
+              await Get.find<FutureRunListPageController>().refreshFromTable(
+                true,
+              );
+            }
           }
         } else if ((retVal == enumCheckInOption_YesAndPayByCredit) ||
             (retVal == enumCheckInOption_YesAndPayByBankXfer)) {

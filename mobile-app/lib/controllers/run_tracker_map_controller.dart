@@ -680,9 +680,11 @@ class RunTrackerMapController extends GetxController
       resolvedUrl = _photoUrlCache[label.toLowerCase()];
     }
 
-    final marker = CameraPhotoMarker(photoUrl: resolvedUrl, size: size);
+    // No URL resolved → photo not yet approved for this viewer. Hide the
+    // marker entirely rather than showing an empty camera frame.
+    if (resolvedUrl == null) return const SizedBox.shrink();
 
-    if (resolvedUrl == null) return marker;
+    final marker = CameraPhotoMarker(photoUrl: resolvedUrl, size: size);
 
     return GestureDetector(
       onTap: () => Navigator.of(navigatorKey.currentContext!).push(
@@ -690,6 +692,7 @@ class RunTrackerMapController extends GetxController
           builder: (_) => ZoomableImagePage2(
             pageTitle: event.eventName,
             imageUrl: resolvedUrl,
+            background: Backgrounds.defaultHcBackground(),
           ),
         ),
       ),

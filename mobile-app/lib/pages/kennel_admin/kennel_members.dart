@@ -1083,7 +1083,7 @@ class KennelMemberListState extends State<KennelMembersList>
       );
     });
 
-    await srv.updateHasherKennelStatus(
+    final result = await srv.updateHasherKennelStatus(
       widget.kennelListAggregate.kennel.kennelId,
       AppDomainType.kennel,
       targetUserId: snapshot.data![index].hasherId,
@@ -1098,6 +1098,24 @@ class KennelMemberListState extends State<KennelMembersList>
         memberInfoBeingUpdated: false,
       );
     });
+
+    if (mismanagementRoles != -1) {
+      showHcSnackbar(
+        result.isNotEmpty
+            ? 'Mismanagement role updated.'
+            : 'Could not save role — check your connection.',
+        isError: result.isEmpty,
+      );
+    }
+    if (appAccessFlags != -1) {
+      showHcSnackbar(
+        result.isNotEmpty
+            ? 'App access updated.'
+            : 'Could not save access — check your connection.',
+        isError: result.isEmpty,
+      );
+    }
+
     await _refreshCounters(true);
   }
 

@@ -1,5 +1,46 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.5.0+1124 (2026-05-23)
+
+### Bug fixes
+
+- **Check-in popup — silent failure**: `setEventAttendence` returning an empty
+  list (connectivity guard triggered, or SP error) was silently swallowed. The
+  caller now shows a "Check-in failed" snackbar when the response is empty and
+  a "Checked in!" confirmation when it succeeds, so the user always gets
+  actionable feedback.
+
+- **Mismanagement roles — no confirmation and silent save**: `updateHasherKennelStatus`
+  was a mutation without `noRetries: true`, risking duplicate writes on retry.
+  Added `noRetries: true`. After saving a mismanagement role or app-access
+  change, a snackbar now confirms success or reports failure so the user knows
+  the outcome without guessing.
+
+- **Photo review — batch save error**: `updates` was sent as a JSON array in
+  the HTTP body (`"updates":[...]`). The API shim passes this directly to the
+  SP's `@updates NVARCHAR(MAX)` parameter, which expects a JSON *string*. Fixed
+  by serialising to `jsonEncode(updates)` before including in the body so the
+  SP receives a parseable JSON string.
+
+- **Photo review — immediate save on last pending photo**: Previously the 5-second
+  debounce always fired after every action. When the last pending photo is
+  actioned and no pending photos remain, the queue now flushes immediately
+  without waiting for the debounce. Actions are also blocked while a save is
+  in progress.
+
+- **KennelPhotos map — empty camera icon shown for private/unapproved photos**:
+  Returning an empty camera-frame marker for photos that have no resolved URL
+  (not yet approved for this viewer, or private) was confusing. The marker is
+  now completely hidden (`SizedBox.shrink()`) when the URL cannot be resolved,
+  so only photos the user is permitted to see appear on the map.
+
+- **KennelPhotos map — zoomable photo page has black background**: Tapping a
+  photo marker opened `ZoomableImagePage2` without a background, so
+  `photo_view` defaulted to black. Now passes `Backgrounds.defaultHcBackground()`
+  so the jungle theme is shown consistently.
+
+---
+
 ## 2.5.0+1123 (2026-05-23)
 
 ### Stability
