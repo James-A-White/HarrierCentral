@@ -47,6 +47,15 @@ class LoginPageState extends State<ThirdPartyLogin> {
   }
 
   @override
+  void dispose() {
+    _hashNameTextController.dispose();
+    _hashNameFocusNode.dispose();
+    _emailTextController.dispose();
+    _emailFocusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AppScaffold(
       appBar: AppBar(

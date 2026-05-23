@@ -249,6 +249,14 @@ class KennelMemberListState extends State<KennelMembersList>
   }
 
   @override
+  void dispose() {
+    _animationController.dispose();
+    _searchFocusNode.dispose();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AppScaffold(
       appBar: _appBar,

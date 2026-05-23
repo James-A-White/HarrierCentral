@@ -91,6 +91,13 @@ class FindHasherPageState extends State<FindHasherPage> {
   // }
 
   @override
+  void dispose() {
+    searchFocusNode.dispose();
+    searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AppScaffold(
       appBar: AppBar(

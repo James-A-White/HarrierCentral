@@ -31,6 +31,13 @@ class MultipleChoicePopupStateHc extends State<MultipleChoicePopupHc> {
       TextEditingController();
 
   @override
+  void dispose() {
+    myFocusNodeFirstName.dispose();
+    followKennelAmountTextController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(widget.title, style: ts_alertDialogTitle),

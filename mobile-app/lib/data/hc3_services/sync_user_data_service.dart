@@ -141,8 +141,21 @@ class SyncUserDataService {
     }
 
     int batchNumber = 1;
+    // Guard against an infinite paging loop. If the base-service bitmask
+    // logic fails to clear a table's bit when the SP returns 0 rows, the
+    // while condition never reaches 0. 100 pages is far more than any real
+    // sync would need; anything beyond that is a stuck loop.
+    const int maxBatches = 100;
 
     while (tablesToSync != 0) {
+      if (batchNumber > maxBatches) {
+        debugPrint(
+          'SyncUserDataService: paging loop exceeded $maxBatches batches '
+          '(tablesToSync=0x${tablesToSync.toRadixString(16)}). '
+          'Breaking to prevent hang.',
+        );
+        break;
+      }
       // print('***** ===== >' + debugText);
 
       // final DateTime startTime = DateTime.now();

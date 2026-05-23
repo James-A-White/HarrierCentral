@@ -1,5 +1,40 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.5.0+1123 (2026-05-23)
+
+### Stability
+
+- **Boot hang — infinite sync paging loop**: `SyncUserDataService` uses a
+  `while (tablesToSync != 0)` paging loop. If the base-service bitmask logic
+  fails to clear a table bit when the SP returns 0 updated rows, the loop
+  retries the same request forever, leaving the app stuck on the "Filling Your
+  Mug" loading screen. Added a 100-iteration guard with a diagnostic log; the
+  break covers both this scenario and any future edge case where the paging
+  token is not correctly zeroed.
+
+### Memory leaks — StatefulWidget disposal
+
+Added `dispose()` to 12 State classes that were creating `TextEditingController`
+and `FocusNode` instances without ever calling `.dispose()`. Each popup or page
+shown and dismissed leaks one or more native text engine objects. Fixed:
+
+- `widgets/multiple_choice_popup.dart` — FocusNode + TextEditingController
+- `widgets/add_virgin_visitor_popup.dart` — FocusNode + 3× TextEditingController
+- `widgets/email_popup.dart` — FocusNode + TextEditingController
+- `widgets/confirm_auto_checkin_popup.dart` — FocusNode + TextEditingController
+- `pages/init/third_party_login.dart` — 2× FocusNode + 2× TextEditingController
+- `pages/init/create_new_account.dart` — FocusNode
+- `pages/run_admin/create_new_event_popup.dart` — FocusNode + TextEditingController
+- `pages/kennel_admin/run_number_popup.dart` — FocusNode + TextEditingController
+- `pages/kennel_admin/kennel_members.dart` — AnimationController + FocusNode + TextEditingController
+- `pages/run_admin/find_hasher_page.dart` — FocusNode + TextEditingController
+- `pages/menu_pages/hasher_profile_page.dart` — 6× TextEditingController
+- `pages/menu_pages/get_reset_code_popup.dart` — FocusNode + TextEditingController
+
+All 25 GetX controllers were audited and confirmed clean.
+
+---
+
 ## 2.5.0+1122 (2026-05-23)
 
 ### Security

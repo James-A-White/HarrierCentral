@@ -15,6 +15,15 @@ class AddVisitorVirginPopupState extends State<AddVisitorVirginPopup> {
   TextEditingController phoneTextController = TextEditingController();
 
   @override
+  void dispose() {
+    myFocusNodeFirstName.dispose();
+    nameTextController.dispose();
+    emailTextController.dispose();
+    phoneTextController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return TextScaleFactorClamper(
       textScaleFactor: deviceInfo.textClamp25,

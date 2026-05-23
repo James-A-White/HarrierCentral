@@ -26,6 +26,13 @@ class ConfirmAutoCheckinPopupState extends State<ConfirmAutoCheckinPopup> {
       TextEditingController();
 
   @override
+  void dispose() {
+    myFocusNodeFirstName.dispose();
+    followKennelAmountTextController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     double eventPrice =
         0.0 +

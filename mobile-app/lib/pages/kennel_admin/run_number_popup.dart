@@ -22,6 +22,13 @@ class RunNumberPopupState extends State<RunNumberPopup> {
   }
 
   @override
+  void dispose() {
+    myFocusNodeFirstName.dispose();
+    _runNumberAmountTextController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text('Set run number', style: ts_alertDialogTitle),

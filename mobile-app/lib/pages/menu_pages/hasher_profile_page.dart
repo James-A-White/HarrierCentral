@@ -662,6 +662,17 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   }
 
   @override
+  void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _emailController.dispose();
+    _hashNameController.dispose();
+    _previousRunCountController.dispose();
+    _previousHaringCountController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (_isReloading) {
       return SizedBox.shrink();

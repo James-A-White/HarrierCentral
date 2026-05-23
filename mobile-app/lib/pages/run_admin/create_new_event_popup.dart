@@ -14,6 +14,13 @@ class CreateNewEventPopupState extends State<CreateNewEventPopup> {
   TextEditingController eventNameAmountTextController = TextEditingController();
 
   @override
+  void dispose() {
+    myFocusNodeFirstName.dispose();
+    eventNameAmountTextController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(widget.title, style: ts_alertDialogTitle),

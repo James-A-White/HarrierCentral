@@ -12,6 +12,13 @@ class GetResetCodePopupState extends State<GetResetCodePopup> {
   TextEditingController getResetCodeTextController = TextEditingController();
 
   @override
+  void dispose() {
+    myFocusNodeFirstName.dispose();
+    getResetCodeTextController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text('Get Invite Code', style: ts_alertDialogTitle),

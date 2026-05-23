@@ -20,6 +20,13 @@ class EmailPopupState extends State<EmailPopup> {
   }
 
   @override
+  void dispose() {
+    myFocusNodeFirstName.dispose();
+    emailTextController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text('Enter email address', style: ts_alertDialogTitle),
