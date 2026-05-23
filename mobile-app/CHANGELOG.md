@@ -1,5 +1,38 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.5.0+1122 (2026-05-23)
+
+### Security
+
+- **KennelPhotos — photo URLs no longer stored in GPS track**: Previously the
+  full Azure Blob Storage URL was embedded in every PHO GPS marker label,
+  meaning anyone who could read the GPS track data could access photos directly
+  and bypass status-based access control (private, deleted). The label now
+  stores only the photoId UUID. The map controller fetches authorised URLs via
+  `hcapp_getRunPhotos` on load and every 15-second auto-update tick, so only
+  photos the caller is permitted to see resolve to a URL — private and
+  soft-deleted photos show as empty camera frames.
+
+### Bug fixes
+
+- **KennelPhotos — map photos not loading after security fix**: The photo URL
+  cache was reading rowsets at the wrong indices (`[1, 2]` instead of `[0, 1]`)
+  because `hcapp_getRunPhotos` returns data as rowset 0 on success with no
+  envelope. All six photos now load correctly.
+
+- **KennelPhotos — map photo cache never populated**: `KennelPhotoService` is
+  instantiated directly throughout the app and is not registered with GetX.
+  `Get.find<KennelPhotoService>()` was throwing silently, leaving the cache
+  empty. Fixed to use `KennelPhotoService()` directly, consistent with all
+  other call sites.
+
+- **KennelPhotos — soft-deleted photos visible on others' maps**: Photos with
+  `Status ≥ 2` but a non-null `DeletedAt` were still returned to other users
+  by `hcapp_getRunPhotos`. Added `DeletedAt IS NULL` filter to the others'
+  public photos rowset.
+
+---
+
 ## 2.5.0+1121 (2026-05-23)
 
 ### Improvements
