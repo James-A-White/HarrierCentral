@@ -2,7 +2,8 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_getKennelPendingPhotos]
 
     @deviceId   UNIQUEIDENTIFIER,
     @accessToken NVARCHAR(1000),
-    @kennelId   UNIQUEIDENTIFIER
+    @kennelId   UNIQUEIDENTIFIER,
+    @eventId    UNIQUEIDENTIFIER = NULL  -- optional: restrict to a single event
 
 AS
 -- =====================================================================
@@ -14,6 +15,7 @@ AS
 --   @deviceId    - Registered device UUID
 --   @accessToken - Token validated against DeviceSecret
 --   @kennelId    - Kennel to fetch pending photos for
+--   @eventId     - (optional) Restrict results to a single event
 -- Returns:
 --   On success (rowset 0): pending photo rows ordered newest-first
 --   On error  (rowset 0): { success, errorCode, errorType }
@@ -112,4 +114,5 @@ INNER JOIN HC.Hasher h ON h.id  = kp.UserId
 INNER JOIN HC.Event  e ON e.id  = kp.EventId
 WHERE kp.KennelId = @kennelId
   AND kp.Status   = 1
+  AND (@eventId IS NULL OR kp.EventId = @eventId)
 ORDER BY kp.CreatedAt DESC;

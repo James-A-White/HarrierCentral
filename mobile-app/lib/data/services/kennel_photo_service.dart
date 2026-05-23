@@ -266,6 +266,32 @@ class KennelPhotoService {
 
   // ── Public query methods (called by Hash Flash screen + map) ─────────────
 
+  /// Sends a batch of {photoId, action} pairs in one SP call.
+  /// Returns the raw response string for the caller to inspect.
+  Future<String> batchUpdatePhotoStatus({
+    required String kennelId,
+    required List<Map<String, dynamic>> updates,
+  }) async {
+    final userId = currentUserId;
+    final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    return ServiceCommon.sendHttpPost(
+      () => jsonEncode(<String, dynamic>{
+        'queryType': 'batchUpdatePhotoStatus',
+        'deviceId': deviceId,
+        'accessToken': Utilities.generateToken(
+          userId,
+          'hcapp_batchUpdatePhotoStatus',
+          paramString: deviceSecret,
+        ),
+        'kennelId': kennelId,
+        'updates': updates,
+      }),
+      noRetries: true,
+    );
+  }
+
   Future<String> getRunAllPhotos({
     required String kennelId,
     required String eventId,

@@ -1,5 +1,27 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.5.0+1121 (2026-05-23)
+
+### Improvements
+
+- **KennelPhotos — instant review with queued batch upload**: Actions in the
+  photo review screen now apply immediately to the UI with no network wait.
+  Changes are queued locally and flushed to the server in a single batch call
+  after a 5-second pause in activity. Navigating away triggers an immediate
+  flush with a "Saving…" progress indicator in the app bar.
+
+- **KennelPhotos — batch failure handling**: If the batch upload fails, all
+  optimistically-applied changes are reverted to their previous statuses and a
+  dismissable error dialog is shown. If a partial failure occurs (some photos
+  not found or from a different kennel), the successful updates are kept and a
+  warning is shown with the failure count.
+
+- **KennelPhotos — delete confirmation pauses debounce timer**: The 5-second
+  debounce timer is paused while the delete confirmation dialog is visible so
+  the batch does not flush mid-dialog.
+
+---
+
 ## 2.5.0+1120 (2026-05-23)
 
 ### New features

@@ -118,6 +118,7 @@ export 'package:harrier_central/pages/init/third_party_login.dart';
 export 'package:harrier_central/pages/init/use_invite_code_page.dart';
 export 'package:harrier_central/pages/kennel_admin/app_access_page.dart';
 export 'package:harrier_central/pages/kennel_admin/filter_events_page.dart';
+export 'package:harrier_central/pages/kennel_admin/hash_flash_approval_page.dart';
 export 'package:harrier_central/pages/kennel_admin/kennel_members.dart';
 export 'package:harrier_central/pages/kennel_admin/mismanagement_roles_page.dart';
 export 'package:harrier_central/pages/kennel_admin/run_number_popup.dart';

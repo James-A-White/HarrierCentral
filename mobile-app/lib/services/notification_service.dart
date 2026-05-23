@@ -501,20 +501,13 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       // Decode the JSON string into a Dart object (likely a List of Lists or a List of Maps)
       final decodedBody = json.decode(responseBody);
 
-      // Check if the decoded object is a List and is NOT empty
-      if (decodedBody is List && decodedBody.isNotEmpty) {
-        // Access the element (assuming the structure is List<List<Map<String, dynamic>>>)
-        // The previous code was decoding the responseBody multiple times, which is inefficient and wrong.
-        badgeCount = decodedBody[0][0][BADGE_COUNT_JSON_KEY];
-
-        // NOTE: The previous code using .forEach() was also incorrect if you
-        // only wanted the first item's badgeCount. The line above is a direct
-        // access that is much more efficient.
-      } else {
-        // Handle the case where the array is empty or the structure is unexpected
-        badgeCount = 0; // Or whatever default value is appropriate
-        if (kDebugMode) {
-          debugPrint('Warning: Decoded body is empty or not a List.');
+      if (decodedBody is List &&
+          decodedBody.isNotEmpty &&
+          decodedBody[0] is List &&
+          (decodedBody[0] as List).isNotEmpty) {
+        final row = (decodedBody[0] as List)[0];
+        if (row is Map) {
+          badgeCount = (row[BADGE_COUNT_JSON_KEY] as num?)?.toInt() ?? 0;
         }
       }
     }

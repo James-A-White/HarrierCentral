@@ -119,6 +119,21 @@ class PhotoStatusCounts {
 }
 
 // ---------------------------------------------------------------------------
+// Queue entry — holds the pending action and the pre-action state for rollback
+// ---------------------------------------------------------------------------
+
+class _QueuedAction {
+  _QueuedAction({
+    required this.action,
+    required this.previousStatus,
+    this.previousDeletedAt,
+  });
+  int action; // mutable — user may change mind before flush
+  final int previousStatus;
+  final DateTime? previousDeletedAt;
+}
+
+// ---------------------------------------------------------------------------
 // Controller
 // ---------------------------------------------------------------------------
 
@@ -134,17 +149,24 @@ class PhotoReviewController extends GetxController {
   final String eventId;
 
   final RxBool isLoading = true.obs;
+  final RxBool isSaving = false.obs;
   final RxList<KennelPendingPhoto> allPhotos = <KennelPendingPhoto>[].obs;
   final RxString loadError = ''.obs;
   final Rx<PhotoReviewTab> activeTab = PhotoReviewTab.pending.obs;
   final RxInt currentIndex = 0.obs;
   final RxMap<String, int> decisions = <String, int>{}.obs;
 
-  late final PageController pageController = PageController();
+  // Pending writes: photoId → queued action + previous state for rollback
+  final Map<String, _QueuedAction> _queue = {};
 
+  Timer? _debounceTimer;
+  static const _debounceDuration = Duration(seconds: 5);
+
+  late final PageController pageController = PageController();
   final _service = KennelPhotoService();
 
-  // Derived lists — recomputed whenever allPhotos or activeTab change.
+  // ── Derived ──────────────────────────────────────────────────────────────
+
   List<KennelPendingPhoto> get pendingPhotos =>
       allPhotos.where((p) => p.isPending).toList();
 
@@ -158,6 +180,10 @@ class PhotoReviewController extends GetxController {
 
   PhotoStatusCounts get counts => PhotoStatusCounts.from(allPhotos);
 
+  bool get hasQueuedChanges => _queue.isNotEmpty;
+
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
+
   @override
   void onInit() {
     super.onInit();
@@ -166,9 +192,12 @@ class PhotoReviewController extends GetxController {
 
   @override
   void onClose() {
+    _debounceTimer?.cancel();
     pageController.dispose();
     super.onClose();
   }
+
+  // ── Navigation ────────────────────────────────────────────────────────────
 
   void onPageChanged(int index) => currentIndex.value = index;
 
@@ -187,11 +216,25 @@ class PhotoReviewController extends GetxController {
     final list = visiblePhotos;
     if (currentIndex.value < list.length - 1) {
       pageController.nextPage(
-        duration: const Duration(milliseconds: 350),
+        duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
     }
   }
+
+  // ── Debounce ─────────────────────────────────────────────────────────────
+
+  void _resetDebounce() {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(_debounceDuration, () => unawaited(_flushQueue()));
+  }
+
+  void _cancelDebounce() {
+    _debounceTimer?.cancel();
+    _debounceTimer = null;
+  }
+
+  // ── Load ─────────────────────────────────────────────────────────────────
 
   Future<void> loadPhotos() async {
     isLoading.value = true;
@@ -226,12 +269,17 @@ class PhotoReviewController extends GetxController {
     }
   }
 
+  // ── Action (instant, queued) ──────────────────────────────────────────────
+
   Future<void> actionPhoto({
     required String photoId,
     required int action,
     required BuildContext context,
   }) async {
     if (action == photoActionDelete) {
+      // Pause the debounce while the confirmation dialog is visible
+      _cancelDebounce();
+
       final confirmed = await showDialog<bool>(
         context: context,
         barrierDismissible: false,
@@ -262,42 +310,212 @@ class PhotoReviewController extends GetxController {
           ],
         ),
       );
-      if (confirmed != true) return;
+
+      if (confirmed != true) {
+        // Resume debounce if something is still queued
+        if (_queue.isNotEmpty) _resetDebounce();
+        return;
+      }
     }
 
-    final result = await _service.updatePhotoStatus(
-      photoId: photoId,
-      action: action,
-    );
+    _enqueue(photoId: photoId, action: action);
+    _applyOptimisticUpdate(photoId: photoId, action: action);
+    decisions[photoId] = action;
 
-    if (!result.startsWith(ERROR_PREFIX)) {
-      decisions[photoId] = action;
-      // Reload to reflect new status and counts from the server.
-      await loadPhotos();
-      // If the photo moved out of the current tab's list, stay at current
-      // index (clamped). Otherwise advance.
-      final list = visiblePhotos;
-      if (list.isNotEmpty) {
-        final clamped = currentIndex.value.clamp(0, list.length - 1);
-        if (clamped != currentIndex.value) {
-          currentIndex.value = clamped;
-          if (pageController.hasClients) {
-            pageController.jumpToPage(clamped);
-          }
-        } else {
-          await Future<void>.delayed(const Duration(milliseconds: 350));
-          _goToNext();
-        }
-      }
+    // Brief pause so the button highlight is visible before advancing
+    await Future<void>.delayed(const Duration(milliseconds: 250));
+    _goToNext();
+
+    _resetDebounce();
+  }
+
+  // ── Queue helpers ─────────────────────────────────────────────────────────
+
+  void _enqueue({required String photoId, required int action}) {
+    if (_queue.containsKey(photoId)) {
+      // Photo already queued — update action but preserve the original state
+      _queue[photoId]!.action = action;
     } else {
-      Get.snackbar(
-        'Error',
-        'Could not update the photo. Please try again.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: hc_red,
-        colorText: Colors.white,
+      final photo = allPhotos.firstWhereOrNull((p) => p.photoId == photoId);
+      _queue[photoId] = _QueuedAction(
+        action: action,
+        previousStatus: photo?.status ?? 1,
+        previousDeletedAt: photo?.deletedAt,
       );
     }
+  }
+
+  void _applyOptimisticUpdate(
+      {required String photoId, required int action}) {
+    final idx = allPhotos.indexWhere((p) => p.photoId == photoId);
+    if (idx == -1) return;
+    final p = allPhotos[idx];
+
+    final DateTime? newDeletedAt =
+        action == photoActionDelete ? DateTime.now() : null;
+    final int newStatus = action == photoActionDelete
+        ? p.status
+        : switch (action) {
+            photoActionKeepPrivate      => 0,
+            photoActionShare            => 2,
+            photoActionAddToGallery     => 3,
+            photoActionAddToHomeGallery => 4,
+            photoActionMakeEventCover   => 5,
+            _ => p.status,
+          };
+
+    allPhotos[idx] = KennelPendingPhoto(
+      photoId: p.photoId,
+      eventId: p.eventId,
+      status: newStatus,
+      deletedAt: newDeletedAt,
+      blobUrl: p.blobUrl,
+      uploaderDisplayName: p.uploaderDisplayName,
+      eventName: p.eventName,
+      eventNumber: p.eventNumber,
+      createdAt: p.createdAt,
+      title: p.title,
+    );
+  }
+
+  void _revertOptimisticUpdates() {
+    for (final entry in _queue.entries) {
+      final idx = allPhotos.indexWhere((p) => p.photoId == entry.key);
+      if (idx == -1) continue;
+      final p = allPhotos[idx];
+      allPhotos[idx] = KennelPendingPhoto(
+        photoId: p.photoId,
+        eventId: p.eventId,
+        status: entry.value.previousStatus,
+        deletedAt: entry.value.previousDeletedAt,
+        blobUrl: p.blobUrl,
+        uploaderDisplayName: p.uploaderDisplayName,
+        eventName: p.eventName,
+        eventNumber: p.eventNumber,
+        createdAt: p.createdAt,
+        title: p.title,
+      );
+    }
+    _queue.clear();
+    decisions.clear();
+  }
+
+  // ── Flush ─────────────────────────────────────────────────────────────────
+
+  // All dialogs in _flushQueue use navigatorKey — no BuildContext parameter
+  // needed, which avoids context-across-async-gap lint warnings.
+  Future<void> _flushQueue() async {
+    if (_queue.isEmpty) return;
+    _cancelDebounce();
+
+    final updates = _queue.entries
+        .map((e) => <String, dynamic>{
+              'photoId': e.key,
+              'action': e.value.action,
+            })
+        .toList();
+
+    isSaving.value = true;
+    try {
+      final result = await _service.batchUpdatePhotoStatus(
+        kennelId: kennelId,
+        updates: updates,
+      );
+
+      if (result.startsWith(ERROR_PREFIX)) {
+        _revertOptimisticUpdates();
+        _showFailureDialog();
+        return;
+      }
+
+      final outer = jsonDecode(result) as List<dynamic>;
+      final row = (outer.isNotEmpty && outer[0] is List &&
+              (outer[0] as List).isNotEmpty)
+          ? (outer[0] as List)[0] as Map<String, dynamic>?
+          : null;
+
+      if (row?['success'] != 1 && row?['success'] != true) {
+        _revertOptimisticUpdates();
+        _showFailureDialog();
+        return;
+      }
+
+      final failureCount =
+          (row?['failureCount'] as num?)?.toInt() ?? 0;
+      _queue.clear();
+      decisions.clear();
+      await loadPhotos();
+
+      if (failureCount > 0) _showPartialFailureDialog(failureCount);
+    } catch (e) {
+      debugPrint('PhotoReviewController._flushQueue error: $e');
+      _revertOptimisticUpdates();
+      _showFailureDialog();
+    } finally {
+      isSaving.value = false;
+    }
+  }
+
+  /// Called by PopScope — flushes pending queue then pops the route.
+  Future<void> flushAndPop() async {
+    if (_queue.isNotEmpty) await _flushQueue();
+    Get.back();
+  }
+
+  // ── Dialogs ───────────────────────────────────────────────────────────────
+
+  void _showFailureDialog() {
+    final ctx = navigatorKey.currentContext;
+    if (ctx == null || !ctx.mounted) return;
+    showDialog<void>(
+      context: ctx,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        title: Text('Update failed', style: ts_alertDialogTitle),
+        content: Text(
+          'Your photo selections could not be saved — please check your '
+          'connection and try again. All selections have been reverted.',
+          style: ts_alertDialogBody,
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: hc_red,
+              foregroundColor: Colors.white,
+            ),
+            child: Text('OK', style: ts_button),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPartialFailureDialog(int failureCount) {
+    final ctx = navigatorKey.currentContext;
+    if (ctx == null || !ctx.mounted) return;
+    showDialog<void>(
+      context: ctx,
+      builder: (_) => AlertDialog(
+        title: Text('Some photos not updated', style: ts_alertDialogTitle),
+        content: Text(
+          '$failureCount photo${failureCount == 1 ? '' : 's'} could not '
+          'be updated — they may have been removed by another user. All '
+          'other changes were saved successfully.',
+          style: ts_alertDialogBody,
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: hc_red,
+              foregroundColor: Colors.white,
+            ),
+            child: Text('OK', style: ts_button),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -336,22 +554,38 @@ class PhotoReviewPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        backgroundColor: themeAppBarBackground,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: Text('Review Photos', style: ts_appBarTitle),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
-            onPressed: controller.loadPhotos,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) unawaited(controller.flushAndPop());
+      },
+      child: AppScaffold(
+        appBar: AppBar(
+          centerTitle: true,
+          backgroundColor: themeAppBarBackground,
+          iconTheme: const IconThemeData(color: Colors.white),
+          title: Text('Review Photos', style: ts_appBarTitle),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              onPressed: controller.loadPhotos,
+            ),
+          ],
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(2),
+            child: Obx(() => controller.isSaving.value
+                ? const LinearProgressIndicator(
+                    minHeight: 2,
+                    backgroundColor: Colors.transparent,
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Colors.white70),
+                  )
+                : const SizedBox.shrink()),
           ),
-        ],
-      ),
-      body: Container(
-        decoration: Backgrounds.defaultHcBackground(),
-        child: Obx(() {
+        ),
+        body: Container(
+          decoration: Backgrounds.defaultHcBackground(),
+          child: Obx(() {
           if (controller.isLoading.value) {
             return const Center(
               child: HcAppCircularProgressIndicator(
@@ -376,7 +610,7 @@ class PhotoReviewPage extends StatelessWidget {
           );
         }),
       ),
-    );
+    ));
   }
 }
 
@@ -747,10 +981,11 @@ class _PhotoPageView extends StatelessWidget {
                     color: Colors.white38, size: 64),
               ),
 
-            // Soft-deleted overlay
-            Obx(() {
-              if (!photo.isDeleted) return const SizedBox.shrink();
-              return Positioned.fill(
+            // Soft-deleted overlay — plain conditional, no Obx needed:
+            // photo.isDeleted is not reactive; parent _PhotoBody Obx rebuilds
+            // the whole PageView whenever allPhotos changes.
+            if (photo.isDeleted)
+              Positioned.fill(
                 child: ColoredBox(
                   color: Colors.black.withValues(alpha: 0.45),
                   child: const Center(
@@ -767,8 +1002,7 @@ class _PhotoPageView extends StatelessWidget {
                     ),
                   ),
                 ),
-              );
-            }),
+              ),
 
             // Decision badge
             Obx(() {
@@ -816,10 +1050,10 @@ class _PhotoPageView extends StatelessWidget {
   String _actionLabel(int action) => switch (action) {
         photoActionKeepPrivate => 'Keep Private',
         photoActionDelete => 'Deleted',
-        photoActionShare => 'Share with Hash',
+        photoActionShare => 'Share on Maps',
         photoActionAddToGallery => 'Run Gallery',
-        photoActionAddToHomeGallery => 'Home Gallery',
-        photoActionMakeEventCover => 'Event Cover',
+        photoActionAddToHomeGallery => 'Home Page Gallery',
+        photoActionMakeEventCover => 'Event Cover Photo',
         _ => 'Actioned',
       };
 }
@@ -914,7 +1148,7 @@ class _ActionPanel extends StatelessWidget {
                 Expanded(
                   child: _ActionButton(
                     icon: Icons.people_outline,
-                    label: 'Share with Hash',
+                    label: 'Share on Maps',
                     color: Colors.green.shade600,
                     isSelected: selected == photoActionShare,
                     onTap: () => act(photoActionShare),
@@ -938,7 +1172,7 @@ class _ActionPanel extends StatelessWidget {
                 Expanded(
                   child: _ActionButton(
                     icon: Icons.home_outlined,
-                    label: 'Home Gallery',
+                    label: 'Home Page Gallery',
                     color: Colors.teal.shade600,
                     isSelected: selected == photoActionAddToHomeGallery,
                     onTap: () => act(photoActionAddToHomeGallery),
@@ -948,7 +1182,7 @@ class _ActionPanel extends StatelessWidget {
                 Expanded(
                   child: _ActionButton(
                     icon: Icons.star_outline,
-                    label: 'Event Cover',
+                    label: 'Event Cover Photo',
                     color: Colors.teal.shade800,
                     isSelected: selected == photoActionMakeEventCover,
                     onTap: () => act(photoActionMakeEventCover),
