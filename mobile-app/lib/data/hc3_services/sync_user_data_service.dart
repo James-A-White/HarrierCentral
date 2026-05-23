@@ -129,16 +129,18 @@ class SyncUserDataService {
       return false;
     }
 
-    // we might be able to remove this, I'm not sure it's ever actuall triggered
-    final lastFullSync =
-        getDatePref(DatePrefsEnum.lastSuccessfulUserDataFullSync) ??
-        DateTime(2000);
+    // final lastFullSync =
+    //     getDatePref(DatePrefsEnum.lastSuccessfulUserDataFullSync) ??
+    //     DateTime(2000);
 
-    if (lastFullSync.isAfter(
-      DateTime.now().subtract(const Duration(seconds: DEBOUNCE_SYNC_USER_DATA)),
-    )) {
-      return true;
-    }
+    // if (!forceRefresh &&
+    //     lastFullSync.isAfter(
+    //       DateTime.now().subtract(
+    //         const Duration(seconds: DEBOUNCE_SYNC_USER_DATA),
+    //       ),
+    //     )) {
+    //   return true;
+    // }
 
     int batchNumber = 1;
     // Guard against an infinite paging loop. If the base-service bitmask

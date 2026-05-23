@@ -1,5 +1,36 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.5.0+1125 (2026-05-23)
+
+### Bug fixes
+
+- **Future runs list — pull-to-refresh clears all runs**: Pulling to refresh
+  called `refreshFromBackend(clearLocalTables: true)`, which wiped the local
+  SQLite events/HEM/payments tables before fetching fresh data. The subsequent
+  `syncUserDataService.updateFromBackend` call had a debounce guard that
+  silently returned early when a sync had run recently — leaving the DB empty.
+  `refreshFromTable` then queried that empty DB and rendered a "no runs" state.
+  Fixed by making the debounce respect the `forceRefresh` flag. Additionally,
+  the debounce has been removed entirely for now while the right threshold is
+  determined.
+
+- **Sync debounce — `forceRefresh` parameter ignored**: `forceRefresh: true`
+  was accepted by `SyncUserDataService.updateFromBackend` but never consulted
+  in the debounce check. All callers passing `true` (kennel admin, kennel list,
+  hasher profile, future run list) were silently hitting the debounce anyway.
+  The debounce now gates on `!forceRefresh`.
+
+- **Sync debounce — reduced from 120 s to 30 s**: The 120-second guard was
+  too aggressive; a normal user interaction can easily trigger a sync within
+  that window. Reduced to 30 seconds to match actual quick-restart scenarios.
+
+- **Manual check-in — stale hasher data on exit**: Navigating away from the
+  manual check-in page now fires a background `syncUserData` against the
+  hashers table, picking up any member profile changes (hash names, photos,
+  membership state) that occurred during the check-in session.
+
+---
+
 ## 2.5.0+1124 (2026-05-23)
 
 ### Bug fixes

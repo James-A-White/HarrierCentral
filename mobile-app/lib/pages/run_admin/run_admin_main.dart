@@ -199,6 +199,13 @@ class RunAdminPage extends StatelessWidget {
                   );
                 }),
               );
+              unawaited(
+                tableModel.syncUserDataService.updateFromBackend(
+                  EnumDataTables.hashers.flag,
+                  false,
+                  debugText: 'RunAdmin: sync hashers on check-in page exit',
+                ),
+              );
             },
           ),
           _buildButton(

@@ -27,10 +27,10 @@ const int DISPLAY_SPLASH_ON_LAUNCH = 10;
 const int SPLASH_SCREEN_DISPLAY_TIME = 3;
 
 // ── Sync / replication ────────────────────────────────────────────────────
-// Prevent a full re-sync within 120 seconds of a completed full sync. This means
+// Prevent a full re-sync within 30 seconds of a completed full sync. This means
 // quick app restarts (e.g. from settings) skip the expensive sync, but a normal
 // relaunch (minutes later) always gets fresh data.
-const int DEBOUNCE_SYNC_USER_DATA = 120;
+const int DEBOUNCE_SYNC_USER_DATA = 30;
 
 // ── Kennel membership states ──────────────────────────────────────────────
 const int KENNEL_IS_FOLLOWING = 1;
