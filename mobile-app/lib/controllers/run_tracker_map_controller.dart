@@ -334,9 +334,9 @@ class RunTrackerMapController extends GetxController
       final raw = await service.getRunPhotos(eventId: event.eventId);
       if (raw.startsWith(ERROR_PREFIX)) return;
       final outer = jsonDecode(raw) as List<dynamic>;
-      // rowset 0 = envelope; rowsets 1 & 2 = own + public photos
+      // No envelope on success. rowset 0 = own photos, rowset 1 = public photos.
       bool updated = false;
-      for (final idx in [1, 2]) {
+      for (final idx in [0, 1]) {
         if (outer.length <= idx || outer[idx] is! List) continue;
         for (final row in outer[idx] as List<dynamic>) {
           if (row is! Map<String, dynamic>) continue;

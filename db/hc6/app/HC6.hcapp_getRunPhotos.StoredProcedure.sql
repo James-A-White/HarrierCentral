@@ -118,4 +118,5 @@ INNER JOIN HC.Hasher h ON h.id = kp.UserId
 WHERE kp.EventId  = @eventId
   AND kp.UserId  <> @userId
   AND kp.Status   >= 2
+  AND kp.DeletedAt IS NULL
   AND (@afterUpdatedAt IS NULL OR kp.UpdatedAt > @afterUpdatedAt);
