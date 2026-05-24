@@ -182,8 +182,8 @@ class AppBootService {
     final existing = getStringPref(StringPrefsEnum.lastSessionErrorLog) ?? '';
     final separator = existing.isEmpty ? '' : '\n===\n';
     var updated = '$existing$separator$entry';
-    if (updated.length > 20000) {
-      updated = updated.substring(updated.length - 20000);
+    if (updated.length > 100000) {
+      updated = updated.substring(updated.length - 100000);
     }
     unawaited(setStringPref(StringPrefsEnum.lastSessionErrorLog, updated));
   }
