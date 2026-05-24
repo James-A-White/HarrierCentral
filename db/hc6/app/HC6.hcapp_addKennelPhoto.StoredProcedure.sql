@@ -10,6 +10,10 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_addKennelPhoto]
     @longitude            DECIMAL(9,6),
     @title                NVARCHAR(250)  = NULL,
     @description          NVARCHAR(MAX)  = NULL,
+    @assetId              NVARCHAR(500)  = NULL,
+    -- Device-library identifier (iOS PHAsset.localIdentifier / Android MediaStore URI).
+    -- NULL when the user had "save to camera roll" disabled or permission denied.
+    -- Device-specific — only meaningful on the device that uploaded the photo.
     @perRunSharingOverride INT            = NULL
     -- NULL = resolve from saved per-kennel / global preferences.
     -- 0 = keep private regardless of saved preference.
@@ -34,6 +38,7 @@ AS
 --   @longitude            - Where the photo was taken
 --   @title                - Optional short title
 --   @description          - Optional longer description
+--   @assetId              - Optional device-library ID (iOS/Android) for local-first display
 --   @perRunSharingOverride - Per-run preference (NULL=use saved, 0=private, 1=share)
 -- Returns:
 --   On success (rowset 0): { success, errorCode, errorType }
@@ -191,10 +196,10 @@ BEGIN TRY
     BEGIN TRANSACTION;
 
     INSERT INTO [HC].[KennelPhotos]
-        (id, EventId, KennelId, UserId, BlobUrl, Latitude, Longitude, Status, Title, Description)
+        (id, EventId, KennelId, UserId, BlobUrl, AssetId, Latitude, Longitude, Status, Title, Description)
     VALUES
         (@photoId, @eventId, @kennelId, @userId, @blobUrl,
-         @latitude, @longitude, @status, @title, @description);
+         @assetId, @latitude, @longitude, @status, @title, @description);
 
     COMMIT TRANSACTION;
 
