@@ -1,5 +1,40 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.5.2+1129 (2026-05-24)
+
+### Bug fixes
+
+- **Run admin button layout**: Restored the run admin menu to its correct
+  appearance — buttons are fixed 110×110 tiles spaced evenly across the row,
+  rather than expanding to fill the full column width.
+
+- **Boot hang — isAtRunStart deferred**: `isAtRunStart` (which performs a GPS
+  poll on run day) is now initialised after the app content is rendered,
+  preventing it from blocking the boot sequence. GPS wait is also capped at
+  30 seconds to avoid an indefinite hang on devices where location is slow
+  to resolve.
+
+### Improvements
+
+- **Geocoding country fallback**: When the country field is blank in the run
+  address form, the geocoder now looks up the kennel's registered country from
+  the local database and uses it automatically. Prevents geocoding failures for
+  kennels where no country has been typed in.
+
+- **Auto-locate dialog after address save**: After saving an address in the run
+  editor, a dialog now prompts "Would you like me to try to automatically find
+  the map pin for the new address?" with "Not now" and "Auto-locate" options,
+  replacing the previous snackbar action. Only shown when there is enough
+  address data to attempt geocoding (postcode, or street + city).
+
+- **Styled confirm dialogs**: The "Delete image" and address-save confirmation
+  dialogs now use ElevatedButton widgets (teal for cancel/not-now, red for
+  destructive actions) for clearer visual affordance.
+
+- **[BOOT] instrumentation extended**: Boot timing markers now extend through
+  to the point where app content is visible, giving a complete picture of the
+  full startup sequence in the diagnostic log.
+
 ## 2.5.1+1128 (2026-05-24)
 
 ### New features
