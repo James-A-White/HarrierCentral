@@ -317,7 +317,7 @@ class ChatPageController extends GetxController {
     String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-    await ServiceCommon.sendHttpPost(
+    final result = await ServiceCommon.sendHttpPost(
       () => jsonEncode(<String, dynamic>{
         'queryType': 'sendEventMessage',
         'deviceId': deviceId,
@@ -333,12 +333,15 @@ class ChatPageController extends GetxController {
       }),
     );
 
-    // print(result);
-    // await sendNotification(
-    //   'fSH1Tfm2jEo_p_XsWxExsl:APA91bHIspRWUqleOS5OxtXz2dqjuQdswjpM8IPb0WeV0LuVx-dmaVboDKBgqJr9LTB2BX3BsylF7ygZpEjWNE3ZN9oGv8o4aQwiI24C7t8KBw2RY4jFo5U',
-    //   'Run Start Changed',
-    //   textMessage.text,
-    // );
+    final isError = result.startsWith(ERROR_PREFIX);
+    final index = messages.indexWhere((m) => m.id == uuid);
+    if (index != -1) {
+      final updated = (messages[index] as types.TextMessage).copyWith(
+        status: isError ? types.Status.error : types.Status.sent,
+      );
+      messages[index] = updated;
+      update([UpdateIds.chatMessages]);
+    }
   }
 
   List<Map<String, dynamic>> preprocessMessages(List<dynamic> messageList) {
