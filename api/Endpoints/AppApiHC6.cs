@@ -281,7 +281,7 @@ namespace HcWebApi.Endpoints
         private static readonly HttpClient _httpClient = new HttpClient();
         private const string FcmUrl = "https://fcm.googleapis.com/v1/projects/harrier-central-mobile/messages:send";
 
-        public static async Task SendNotificationAsync(
+        private static async Task SendNotificationAsync(
             string fcmToken,
             EventMessageHc6 eventMessage,
             string? accessToken,
