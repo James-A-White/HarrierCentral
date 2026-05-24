@@ -4,6 +4,10 @@ CREATE TABLE [HC].[KennelPhotos] (
     [KennelId]    UNIQUEIDENTIFIER NOT NULL,
     [UserId]      UNIQUEIDENTIFIER NOT NULL,
     [BlobUrl]     NVARCHAR(500)    NOT NULL,
+    [AssetId]     NVARCHAR(500)    NULL,
+    -- Device-library identifier (iOS PHAsset.localIdentifier / Android MediaStore URI).
+    -- Populated only when the uploader had "save to camera roll" enabled.
+    -- Device-specific: only valid on the device that took the photo.
     [Latitude]    DECIMAL(9,6)     NOT NULL,
     [Longitude]   DECIMAL(9,6)     NOT NULL,
     [Status]      TINYINT          NOT NULL DEFAULT 0,
