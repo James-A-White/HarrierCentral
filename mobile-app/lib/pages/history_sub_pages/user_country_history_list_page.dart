@@ -173,11 +173,12 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
             results[i],
           );
           _runCountsList.add(hlrItem);
-        } catch (e) {
+        } catch (e, s) {
           parseFailures++;
           if (kDebugMode) {
             debugPrint('user_country_history: skipping unparseable row $i: $e');
           }
+          BootLogger.logError('[UserCountryHistoryListPage] row $i parse error userId=$userId countryId=${widget.countryId}', e, s);
         }
       }
 
@@ -186,10 +187,11 @@ class UserCountryHistoryPageState extends State<UserCountryHistoryListPage>
           'user_country_history: parsed=${_runCountsList.length} parseFailures=$parseFailures',
         );
       }
-    } catch (e) {
+    } catch (e, s) {
       if (kDebugMode) {
         debugPrint('user_country_history: query failed: $e');
       }
+      BootLogger.logError('[UserCountryHistoryListPage] query failed userId=$userId countryId=${widget.countryId}', e, s);
     }
 
     if (forceRefresh && mounted) {

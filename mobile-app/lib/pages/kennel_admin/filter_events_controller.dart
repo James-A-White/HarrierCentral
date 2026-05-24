@@ -118,8 +118,8 @@ class FilterEventsController extends GetxController {
           AND date(datetime(evt.eventStartDatetime)) $dateComparer date(datetime('now','$offsetFromGmtToLocal'))
           ''';
       publishedRunCountSqlResult.value = await database.rawQuery(sql);
-    } catch (e) {
-      // swallow
+    } catch (e, s) {
+      BootLogger.logError('[FilterEventsController.loadData] publishedRunCount kennelId=${kennel.kennel.kennelId}', e, s);
     }
 
     try {
@@ -164,8 +164,8 @@ class FilterEventsController extends GetxController {
       }
 
       isLoading.value = false;
-    } catch (e) {
-      // swallow
+    } catch (e, s) {
+      BootLogger.logError('[FilterEventsController.loadData] calendarEvents kennelId=${kennel.kennel.kennelId}', e, s);
     }
   }
 

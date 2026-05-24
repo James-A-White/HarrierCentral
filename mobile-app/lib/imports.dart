@@ -91,6 +91,7 @@ export 'package:harrier_central/data/services/email_reports_service.dart';
 export 'package:harrier_central/data/services/get_reset_code_service.dart';
 export 'package:harrier_central/data/services/kennel_photo_service.dart';
 export 'package:harrier_central/data/services/service_common.dart';
+export 'package:harrier_central/util/boot_logger.dart';
 export 'package:harrier_central/data/services/snooze_promotion_service.dart';
 export 'package:harrier_central/database/common_queries.dart';
 export 'package:harrier_central/database/query_constants.dart';

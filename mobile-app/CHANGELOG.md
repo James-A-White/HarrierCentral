@@ -1,5 +1,51 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.6.0+1132 (2026-05-24)
+
+### New features
+
+- **QR codes — kennel website tab**: The QR code sheet now includes a dedicated
+  "Website" tab when the kennel has a website URL configured. Scan to open the
+  kennel's hashruns.org page directly. Available from both the run admin QR
+  sheet and the kennel admin QR sheet.
+
+### Improvements
+
+- **Live run page — "Share Runs" button promoted**: The QR code button is now
+  permanently visible in the right-hand column alongside "Take Photo", replacing
+  the previous smaller outlined button below the marker grid. Makes the action
+  easier to reach mid-run.
+
+- **Live run page — consistent corner radii**: All interactive elements on the
+  live run general tab (buttons, stat cards, photo button, chat strip) now share
+  a uniform 12px corner radius.
+
+- **Live run page — chat strip alignment**: The chat strip card now aligns its
+  left and right edges with the rest of the page content, matching the Auto Pause
+  and End Run buttons above it.
+
+- **My Profile — "Camera Behavior" section**: The camera roll setting is now
+  presented under a clear "Camera Behavior" heading with a descriptive subtitle,
+  and the Switch has been restyled to match the page's existing layout pattern
+  rather than using a highlighted SwitchListTile.
+
+- **Error logging — BootLogger rollout**: `BootLogger.logError` now covers 25+
+  previously silent catch blocks across services, database queries, admin pages,
+  and the live run flow. Errors from these paths will appear in the diagnostic
+  harvest log. Includes Apple sign-in exceptions, kennel photo upload failures,
+  common query errors, and notification dispatch failures.
+
+- **Boot logger — session start marker**: Each new session writes a `[STARTUP]`
+  timestamp into the error log at the moment persistence begins, making it easy
+  to identify session boundaries in harvested logs.
+
+- **Boot logger — await previous session flush**: The previous session's error
+  log is now awaited before starting the new session, ensuring clean hand-off
+  between session logs.
+
+- **Boot logger — global export**: `boot_logger.dart` is now re-exported from
+  `imports.dart`, removing the need for individual imports across files.
+
 ## 2.5.4+1131 (2026-05-24)
 
 ### Bug fixes

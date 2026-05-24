@@ -123,12 +123,14 @@ class KennelsListPageController extends GetxController {
                 isHomeKennel: isHomeKennel,
               ),
             );
-          } catch (e) {
+          } catch (e, s) {
             if (kDebugMode) print(e);
+            BootLogger.logError('[KennelListController._buildList] row parse error', e, s);
           }
         }
-      } catch (e) {
+      } catch (e, s) {
         if (kDebugMode) print(e);
+        BootLogger.logError('[KennelListController._buildList] query error', e, s);
       }
     }
     _filterResults();
@@ -443,15 +445,17 @@ class KennelsListPageController extends GetxController {
     String query = 'DELETE FROM ${EnumDataTables.kennels.commonTableName}';
     try {
       await database.rawQuery(query);
-    } catch (e) {
+    } catch (e, s) {
       debugPrint('kennel_list_controller: DELETE kennels failed: $e');
+      BootLogger.logError('[KennelListController.leaveKennel] DELETE kennels', e, s);
     }
 
     query = 'DELETE FROM ${EnumDataTables.hasherKennelMap.commonTableName}';
     try {
       await database.rawQuery(query);
-    } catch (e) {
+    } catch (e, s) {
       debugPrint('kennel_list_controller: DELETE hasherKennelMap failed: $e');
+      BootLogger.logError('[KennelListController.leaveKennel] DELETE hasherKennelMap', e, s);
     }
 
     await tableModel.syncUserDataService.updateFromBackend(

@@ -245,6 +245,7 @@ class PhotoReviewController extends GetxController {
       if (result.startsWith(ERROR_PREFIX)) {
         loadError.value =
             'Could not load photos. Please check your connection and try again.';
+        BootLogger.logError('[PhotoReviewController.loadPhotos] server error kennelId=$kennelId eventId=$eventId', result, null);
         allPhotos.clear();
         return;
       }
@@ -259,10 +260,11 @@ class PhotoReviewController extends GetxController {
           .map(KennelPendingPhoto.fromJson)
           .toList();
       _preloadAhead(0);
-    } catch (e) {
+    } catch (e, s) {
       loadError.value =
           'Could not load photos. Please check your connection and try again.';
       debugPrint('PhotoReviewController.loadPhotos error: $e');
+      BootLogger.logError('[PhotoReviewController.loadPhotos] kennelId=$kennelId eventId=$eventId', e, s);
     } finally {
       isLoading.value = false;
     }
@@ -381,8 +383,9 @@ class PhotoReviewController extends GetxController {
       await loadPhotos();
 
       if (failureCount > 0) _showPartialFailureDialog(failureCount);
-    } catch (e) {
+    } catch (e, s) {
       debugPrint('PhotoReviewController._flushQueue error: $e');
+      BootLogger.logError('[PhotoReviewController._flushQueue] kennelId=$kennelId eventId=$eventId queueSize=${_queue.length}', e, s);
       _revertOptimisticUpdates();
       _showFailureDialog();
     } finally {

@@ -1318,25 +1318,45 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                         topMargin: 20.0,
                                         bottomMargin: 10.0,
                                       ),
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          color: Colors.yellow[100],
-                                          borderRadius: BorderRadius.circular(
-                                            5.0,
-                                          ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(
+                                          'Camera Behavior',
+                                          style: ts_headingLarge,
+                                          textAlign: TextAlign.center,
                                         ),
-                                        margin: const EdgeInsets.only(
-                                          bottom: 20,
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 8.0,
+                                          right: 8.0,
+                                          bottom: 12.0,
                                         ),
-                                        child: SwitchListTile(
-                                          title: const Text(
-                                            'Save run photos to camera roll',
-                                          ),
-                                          subtitle: const Text(
-                                            'A copy of each run photo will be saved to your device\'s photo library.',
-                                          ),
-                                          value: _savePhotosToCameraRoll,
-                                          onChanged: (bool value) async {
+                                        child: Text(
+                                          'Controls how images are saved when using the Trail Photos feature.',
+                                          style: ts_body,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          bottom: 20.0,
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: <Widget>[
+                                            const Text(
+                                              'Save photos to phone',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontFamily: 'AvenirNextRegular',
+                                                fontSize: 20.0,
+                                              ),
+                                            ),
+                                            Switch(
+                                              value: _savePhotosToCameraRoll,
+                                              onChanged: (bool value) async {
                                             setState(
                                               () =>
                                                   _savePhotosToCameraRoll =
@@ -1382,7 +1402,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                 );
                                               }
                                             }
-                                          },
+                                              },
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ],

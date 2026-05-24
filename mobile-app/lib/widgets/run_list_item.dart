@@ -105,8 +105,9 @@ class RunListItemController extends GetxController {
       liveRunButtonStatus.value = atStart
           ? LiveRunButtonStatus.eligible
           : LiveRunButtonStatus.hidden;
-    } catch (e) {
+    } catch (e, s) {
       debugPrint('Live run button check failed: $e');
+      BootLogger.logError('[RunListItem._checkLiveRunEligibility] eventId=${futureRun.event.eventId}', e, s);
       liveRunButtonStatus.value = LiveRunButtonStatus.hidden;
     } finally {
       liveRunButtonLoading.value = false;

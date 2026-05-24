@@ -362,8 +362,9 @@ class RunTrackerMapController extends GetxController
         }
       }
       if (updated) update();
-    } catch (e) {
+    } catch (e, s) {
       debugPrint('_loadPhotoCache error: $e');
+      BootLogger.logError('[RunTrackerMapController._loadPhotoCache] eventId=${event.eventId}', e, s);
     }
   }
 
@@ -409,8 +410,9 @@ class RunTrackerMapController extends GetxController
       _initializeTimelineBounds();
       _ensureSelection();
       syncRunnerPickerToSelection(onlyIfMismatch: true, animated: false);
-    } catch (error) {
+    } catch (error, s) {
       debugPrint('Error fetching positions: $error');
+      BootLogger.logError('[RunTrackerMapController.loadPositions] eventId=${event.eventId}', error, s);
     }
   }
 

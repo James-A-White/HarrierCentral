@@ -176,8 +176,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         );
         //}
       }
-    } catch (e) {
-      //print(e);
+    } catch (e, s) {
+      BootLogger.logError('[RunTabs._refreshPackListFromTable] eventId=${widget.futureRun.event.eventId}', e, s);
     }
 
     pla.sort(
@@ -222,8 +222,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       if (callSetState) {
         _safeSetState(() {});
       }
-    } catch (e) {
-      //print(e);
+    } catch (e, s) {
+      BootLogger.logError('[RunTabs._refreshPackCountFromTable] eventId=${widget.futureRun.event.eventId}', e, s);
     }
   }
 
@@ -1834,7 +1834,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         track: track,
         trackName: trackName,
       );
-    } catch (error) {
+    } catch (error, s) {
+      BootLogger.logError('[RunTabs._exportTrack] trackName=${widget.futureRun.event.eventName} eventId=${widget.futureRun.event.eventId}', error, s);
       _showExportMessage('Export failed: $error');
     } finally {
       if (mounted) {
@@ -2639,8 +2640,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       _liveRunStatus = atStart
           ? LiveRunButtonStatus.eligible
           : LiveRunButtonStatus.hidden;
-    } catch (e) {
+    } catch (e, s) {
       debugPrint('Live run button check failed: $e');
+      BootLogger.logError('[RunTabs._checkLiveRunStatus] eventId=${widget.futureRun.event.eventId}', e, s);
       _liveRunStatus = LiveRunButtonStatus.hidden;
     } finally {
       _safeSetState(() => _liveRunLoading = false);

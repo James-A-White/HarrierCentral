@@ -179,9 +179,9 @@ class CheckInPackController extends GetxController
       final List<Map<String, dynamic>> results = await database.rawQuery(sql);
 
       allHashers.addAll(results.map((row) => CheckInPackModel.fromMap(row)));
-    } catch (e) {
-      // Optionally log or handle error
+    } catch (e, s) {
       debugPrint('Error in _getAllHashers: $e');
+      BootLogger.logError('[CheckInPackController._getAllHashers]', e, s);
     }
   }
 
@@ -259,8 +259,9 @@ class CheckInPackController extends GetxController
       }).toList();
 
       drinkCount.value = specialRunNumbers.length;
-    } catch (e) {
+    } catch (e, s) {
       debugPrint('Error in _refreshCounters: $e');
+      BootLogger.logError('[CheckInPackController._refreshCounters]', e, s);
     } finally {
       if (forceRefresh) {
         isLoading = false;
@@ -490,8 +491,9 @@ class CheckInPackController extends GetxController
       if (forceShowAllHashers.value) {
         await _getAllHashers();
       }
-    } catch (e) {
+    } catch (e, s) {
       debugPrint('Error refreshing pack list: $e');
+      BootLogger.logError('[CheckInPackController.refreshPackList]', e, s);
     }
   }
 

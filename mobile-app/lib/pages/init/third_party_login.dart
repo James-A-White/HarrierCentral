@@ -192,25 +192,17 @@ class LoginPageState extends State<ThirdPartyLogin> {
 
       _onLoginStatusChanged(true, loginData: d);
 
-      // ignore: unused_catch_clause
-    } on UnknownSignInWithAppleException catch (e) {
-      //print('UnknownSignInWithAppleException');
-      //print(e.message);
+    } on UnknownSignInWithAppleException catch (e, s) {
+      BootLogger.logError('[ThirdPartyLogin] UnknownSignInWithAppleException', e, s);
       _onLoginStatusChanged(false);
-      // ignore: unused_catch_clause
-    } on SignInWithAppleCredentialsException catch (e) {
-      //print('SignInWithAppleCredentialsException');
-      //print(e.message);
+    } on SignInWithAppleCredentialsException catch (e, s) {
+      BootLogger.logError('[ThirdPartyLogin] SignInWithAppleCredentialsException', e, s);
       _onLoginStatusChanged(false);
-      // ignore: unused_catch_clause
-    } on SignInWithAppleAuthorizationException catch (e) {
-      //print('SignInWithAppleCredentialsException');
-      //print(e.message);
+    } on SignInWithAppleAuthorizationException catch (e, s) {
+      BootLogger.logError('[ThirdPartyLogin] SignInWithAppleAuthorizationException', e, s);
       _onLoginStatusChanged(false);
-      // ignore: unused_catch_clause
-    } on SignInWithAppleNotSupportedException catch (e) {
-      //print('SignInWithAppleCredentialsException');
-      //print(e.message);
+    } on SignInWithAppleNotSupportedException catch (e, s) {
+      BootLogger.logError('[ThirdPartyLogin] SignInWithAppleNotSupportedException', e, s);
       _onLoginStatusChanged(false);
     }
 

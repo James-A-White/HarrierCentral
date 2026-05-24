@@ -168,10 +168,11 @@ class DrinksListState extends State<DrinksList>
           _awards.add(hlrItem);
         }
       }
-    } catch (e) {
+    } catch (e, s) {
       if (kDebugMode) {
-        debugPrint('');
+        debugPrint('[DrinksList._buildAwardsList] error: $e');
       }
+      BootLogger.logError('[DrinksList._buildAwardsList] eventId=${widget.eventAggregate.event.eventId}', e, s);
     }
   }
 

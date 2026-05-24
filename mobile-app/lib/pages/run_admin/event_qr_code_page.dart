@@ -13,6 +13,7 @@ class EventQrCodePage extends StatefulWidget {
     required this.runLink,
     required this.showRunLink,
     this.eventStartDatetime,
+    this.kennelWebsiteUrl,
   });
 
   final String kennelShortName;
@@ -23,6 +24,7 @@ class EventQrCodePage extends StatefulWidget {
   final String runLink;
   final DateTime? eventStartDatetime;
   final bool showRunLink;
+  final String? kennelWebsiteUrl;
 
   @override
   EventQrCodePageState createState() => EventQrCodePageState();
@@ -168,6 +170,20 @@ class EventQrCodePageState extends State<EventQrCodePage>
                         instructions:
                             'This QR code can be scanned by anyone to access this run\'s information on the Web.\r\n\r\nThis QR code will not work if the Kennel has not opted-in to have their runs published on www.hashruns.org.',
                       ),
+                    if ((widget.kennelWebsiteUrl ?? '').isNotEmpty)
+                      QrTab(
+                        isRunStart: false,
+                        qrPrefix: widget.kennelWebsiteUrl!,
+                        qrContent: '',
+                        title: widget.kennelShortName,
+                        helpText:
+                            'Share a link to the ${widget.kennelShortName} website',
+                        subtitle: 'Kennel website',
+                        eventStartDatetime: widget.eventStartDatetime,
+                        instructionTitle: 'Kennel Website QR Code',
+                        instructions:
+                            'This QR code can be scanned by anyone to open the ${widget.kennelShortName} website.',
+                      ),
                   ],
                 ),
               ),
@@ -235,6 +251,9 @@ class EventQrCodePageState extends State<EventQrCodePage>
       _tabs.add(const Tab(text: 'Run End'));
       if (widget.showRunLink) {
         _tabs.add(const Tab(text: 'Run Link'));
+      }
+      if ((widget.kennelWebsiteUrl ?? '').isNotEmpty) {
+        _tabs.add(const Tab(text: 'Website'));
       }
     }
   }

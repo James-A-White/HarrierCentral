@@ -151,8 +151,9 @@ class KennelPhotoService {
       final file = File('${dir.path}/hc_simulator_photo.jpg');
       await file.writeAsBytes(data.buffer.asUint8List());
       return file;
-    } catch (e) {
+    } catch (e, s) {
       debugPrint('KennelPhotoService: simulator placeholder failed: $e');
+      BootLogger.logError('[KennelPhotoService._simulatorPlaceholder]', e, s);
       return null;
     }
   }
@@ -172,8 +173,9 @@ class KennelPhotoService {
         desc: '',
       );
       return entity.id;
-    } catch (e) {
+    } catch (e, s) {
       debugPrint('KennelPhotoService: camera roll save failed: $e');
+      BootLogger.logError('[KennelPhotoService._saveToDeviceLibrary] path=${imageFile.path}', e, s);
       return null;
     }
   }
@@ -196,8 +198,9 @@ class KennelPhotoService {
         format: CompressFormat.jpeg,
       );
       return result == null ? null : File(result.path);
-    } catch (e) {
+    } catch (e, s) {
       debugPrint('KennelPhotoService: compress failed, using original: $e');
+      BootLogger.logError('[KennelPhotoService._compressForUpload] path=${imageFile.path}', e, s);
       return null;
     }
   }
@@ -242,8 +245,9 @@ class KennelPhotoService {
       debugPrint(
         'GetPhotoUploadToken failed: HTTP ${response.statusCode} — ${response.body}',
       );
-    } catch (e) {
+    } catch (e, s) {
       debugPrint('GetPhotoUploadToken exception: $e');
+      BootLogger.logError('[KennelPhotoService._getUploadToken] kennelId=$kennelId kennelSlug=$kennelSlug runFolder=$runFolder', e, s);
     }
     return null;
   }
@@ -263,7 +267,8 @@ class KennelPhotoService {
           .send()
           .timeout(const Duration(seconds: 60));
       return response.statusCode == 201;
-    } catch (_) {
+    } catch (e, s) {
+      BootLogger.logError('[KennelPhotoService._uploadToBlob]', e, s);
       return false;
     }
   }

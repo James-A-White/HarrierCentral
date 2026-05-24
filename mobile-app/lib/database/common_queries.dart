@@ -78,8 +78,9 @@ class CommonQueries {
           }
         }
       }
-    } catch (e) {
+    } catch (e, s) {
       debugPrint('[CommonQueries.isAtRunNow] error: $e');
+      BootLogger.logError('[CommonQueries.isAtRunNow]', e, s);
     }
     return result;
   }
@@ -262,10 +263,11 @@ class CommonQueries {
           resultList.add(result);
         }
       }
-    } catch (e) {
+    } catch (e, s) {
       if (kDebugMode) {
         debugPrint('[BOOT] CommonQueries.isAtRunStart: exception: $e');
       }
+      BootLogger.logError('[CommonQueries.isAtRunStart] eventId=$eventId', e, s);
     }
     debugPrint('[BOOT] CommonQueries.isAtRunStart: returning ${resultList.length} result(s): ${DateTime.now().millisecondsSinceEpoch}ms');
     return resultList;
@@ -289,8 +291,9 @@ class CommonQueries {
       if (results.isNotEmpty) {
         result = results[0]['hasherId'];
       }
-    } catch (e) {
+    } catch (e, s) {
       debugPrint('[CommonQueries.getUserIdFromUqr] error: $e');
+      BootLogger.logError('[CommonQueries.getUserIdFromUqr] uqr=$uqr', e, s);
     }
     return result;
   }
@@ -391,8 +394,9 @@ class CommonQueries {
           kennel: kennel,
         );
       }
-    } catch (e) {
+    } catch (e, s) {
       debugPrint('[CommonQueries.getNewEvent] error: $e');
+      BootLogger.logError('[CommonQueries.getNewEvent] kennelId=$kennelId userId=$userId eventStart=$eventStart', e, s);
     }
 
     return runDetailAggregate;
@@ -492,15 +496,17 @@ class CommonQueries {
             kennel: kennel,
           );
         }
-      } catch (e) {
+      } catch (e, s) {
         if (kDebugMode) {
-          debugPrint('');
+          debugPrint('[CommonQueries.getEventAdminInfoFromLocalCache] inner error: $e');
         }
+        BootLogger.logError('[CommonQueries.getEventAdminInfoFromLocalCache] inner eventId=$eventId userId=$userId', e, s);
       }
-    } catch (e) {
+    } catch (e, s) {
       if (kDebugMode) {
-        debugPrint('');
+        debugPrint('[CommonQueries.getEventAdminInfoFromLocalCache] outer error: $e');
       }
+      BootLogger.logError('[CommonQueries.getEventAdminInfoFromLocalCache] outer eventId=$eventId userId=$userId', e, s);
     }
 
     return runAdminAggregate;

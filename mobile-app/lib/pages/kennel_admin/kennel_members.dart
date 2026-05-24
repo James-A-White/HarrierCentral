@@ -189,8 +189,8 @@ class KennelMemberListState extends State<KennelMembersList>
           setStateIfMounted(() {});
         }
       }
-    } catch (e) {
-      //print(e);
+    } catch (e, s) {
+      BootLogger.logError('[KennelMembers._refreshKennelMembersFromTable] kennelId=${widget.kennelListAggregate.kennel.kennelId}', e, s);
     }
   }
 
@@ -243,8 +243,8 @@ class KennelMemberListState extends State<KennelMembersList>
       if (forceRefresh) {
         setStateIfMounted(() {});
       }
-    } catch (e) {
-      //print(e);
+    } catch (e, s) {
+      BootLogger.logError('[KennelMembers._refreshCounters] kennelId=${widget.kennelListAggregate.kennel.kennelId}', e, s);
     }
   }
 
@@ -348,12 +348,10 @@ class KennelMemberListState extends State<KennelMembersList>
                 setStateIfMounted(() {
                   // _isLoading = false;
                 });
-              } catch (e) {
+              } catch (e, s) {
+                BootLogger.logError('[KennelMembers.SpeedDial.updateStatus] kennelId=${widget.kennelListAggregate.kennel.kennelId}', e, s);
                 if (!mounted) return;
-                setStateIfMounted(() {
-                  // _isLoading = false;
-                });
-                // optionally log / show snackbar
+                setStateIfMounted(() {});
               }
             },
           ),
@@ -1092,8 +1090,9 @@ class KennelMemberListState extends State<KennelMembersList>
         appAccessFlags: appAccessFlags,
         mismanagementRoles: mismanagementRoles,
       );
-    } catch (e) {
+    } catch (e, s) {
       debugPrint('_setUserProperties: updateHasherKennelStatus error: $e');
+      BootLogger.logError('[KennelMembers._setUserProperties] kennelId=${widget.kennelListAggregate.kennel.kennelId} appAccessFlags=$appAccessFlags mismanagementRoles=$mismanagementRoles', e, s);
     } finally {
       await _refreshKennelMembersFromTable(true);
       if (mounted) {

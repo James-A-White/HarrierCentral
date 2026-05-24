@@ -177,10 +177,11 @@ class UserRunHistoryPageState extends State<UserRunHistoryListPage>
           });
         }
       }
-    } catch (e) {
+    } catch (e, s) {
       if (kDebugMode) {
-        debugPrint('');
+        debugPrint('[UserRunHistoryListPage] query error: $e');
       }
+      BootLogger.logError('[UserRunHistoryListPage._refreshFromTable] userId=$userId', e, s);
     }
   }
 

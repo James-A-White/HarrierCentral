@@ -197,10 +197,11 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
               return jsonEncode(params);
             });
             await setBoolPref(BoolPrefsEnum.fcmTokenSavedToServer, true);
-          } catch (e) {
+          } catch (e, s) {
             if (kDebugMode) {
               debugPrint('Connection error: ${e.toString()}');
             }
+            BootLogger.logError('[NotificationService] FCM token save failed', e, s);
           }
         }
 
@@ -321,10 +322,11 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
           if (kDebugMode) {
             debugPrint('Handling chat message: ${message.data}');
           }
-        } catch (e) {
+        } catch (e, s) {
           if (kDebugMode) {
             debugPrint("ChatController not found: $e");
           }
+          BootLogger.logError('[NotificationService] chat message dispatch failed', e, s);
         }
         break;
 

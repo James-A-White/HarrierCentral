@@ -275,6 +275,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                         runLink: '',
                         showRunLink: false,
                         title: 'Any ${agg.kennel.kennelShortName} run',
+                        kennelWebsiteUrl: agg.kennel.kennelWebsiteUrl,
                       ),
                     ),
                   );

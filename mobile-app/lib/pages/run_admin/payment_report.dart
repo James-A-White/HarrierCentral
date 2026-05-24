@@ -227,8 +227,8 @@ SELECT
           }
         }
       });
-    } catch (e) {
-      //print(e);
+    } catch (e, s) {
+      BootLogger.logError('[PaymentReport._getTransactionCount] eventId=${widget.eventAggregate.event.eventId}', e, s);
     }
   }
 

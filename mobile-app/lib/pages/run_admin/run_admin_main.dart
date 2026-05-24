@@ -307,6 +307,7 @@ class RunAdminPage extends StatelessWidget {
                   runLink: QR_PREFIX_HASHRUNS_DOT_ORG_RUN_LINK,
                   showRunLink: true,
                   eventStartDatetime: aggregate.event.eventStartDatetime,
+                  kennelWebsiteUrl: aggregate.kennel.kennelWebsiteUrl,
                 ),
               ),
             );

@@ -1,6 +1,5 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
-import 'package:harrier_central/util/boot_logger.dart';
 
 /// Owns all app startup logic — previously embedded in AppEntryPageState._handleStartup.
 ///
@@ -49,9 +48,10 @@ class AppBootService {
     await initPrefs();
     debugPrint('[BOOT] initPrefs done: ${DateTime.now().millisecondsSinceEpoch}ms');
 
-    // Send the previous session's error log to the server, then start
-    // persisting this session's errors to the pref.
-    unawaited(_sendPreviousSessionErrors());
+    // Send the previous session's error log to the server (awaited only for the
+    // pref clear — the server call itself is fire-and-forget), then seed the
+    // new session log and start persisting errors to the pref.
+    await _sendPreviousSessionErrors();
     _startErrorPersistence();
 
     if (getStringPref(StringPrefsEnum.bootType) == BOOT_TYPE_RELOAD_DATA) {
@@ -171,6 +171,7 @@ class AppBootService {
       return;
     }
     BootLogger.onErrorPersist = _persistErrorEntry;
+    _persistErrorEntry('[${DateTime.now().toIso8601String()}] [STARTUP]');
     for (final entry in BootLogger.pendingErrorEntries) {
       _persistErrorEntry(entry);
     }

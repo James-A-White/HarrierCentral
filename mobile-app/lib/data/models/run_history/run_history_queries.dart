@@ -46,8 +46,9 @@ class RunHistoryQueries {
       for (var item in results) {
         runHistoryList.add(RunHistoryModel.fromMap(item));
       }
-    } catch (e) {
+    } catch (e, s) {
       debugPrint('[RunHistoryQueries.getRunHistory] error: $e');
+      BootLogger.logError('[RunHistoryQueries.getRunHistory] userId=$userId kennelId=$kennelId', e, s);
     }
 
     return runHistoryList;

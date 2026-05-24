@@ -363,6 +363,7 @@ class Tables {
       ''',
       appliedAtInt: 0,
     ),
+
   ];
 
   static Future<void> createTables(

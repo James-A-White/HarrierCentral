@@ -36,8 +36,9 @@ class ReceiptsListState extends State<ReceiptsList> {
       receiptsList = await database.query(
         EnumDataTables.receipts.eventTableName,
       );
-    } catch (e) {
+    } catch (e, s) {
       debugPrint(e.toString());
+      BootLogger.logError('[ReceiptsPage.refreshFromTable]', e, s);
     }
 
     setStateIfMounted(() {});

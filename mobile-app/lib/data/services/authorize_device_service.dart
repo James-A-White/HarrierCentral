@@ -184,7 +184,8 @@ class AuthorizeDeviceService {
           'message': 'Error calling authorize device',
         };
       }
-    } catch (e) {
+    } catch (e, s) {
+      BootLogger.logError('[AuthorizeDeviceService.authorizeDevice] deviceId=$deviceId userId=$userId scanText=$scanText', e, s);
       resultMap = <String, String>{
         'result': 'failed',
         'message': 'Error reading server data. Check your QR code',

@@ -118,6 +118,9 @@ PODS:
     - Flutter
   - permission_handler_apple (9.3.0):
     - Flutter
+  - photo_manager (3.9.0):
+    - Flutter
+    - FlutterMacOS
   - PromisesObjC (2.4.0)
   - screen_state (5.0.0):
     - Flutter
@@ -162,6 +165,7 @@ DEPENDENCIES:
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - pdfx (from `.symlinks/plugins/pdfx/ios`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+  - photo_manager (from `.symlinks/plugins/photo_manager/darwin`)
   - screen_state (from `.symlinks/plugins/screen_state/ios`)
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
@@ -225,6 +229,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/pdfx/ios"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
+  photo_manager:
+    :path: ".symlinks/plugins/photo_manager/darwin"
   screen_state:
     :path: ".symlinks/plugins/screen_state/ios"
   share_plus:
@@ -268,6 +274,7 @@ SPEC CHECKSUMS:
   package_info_plus: c0502532a26c7662a62a356cebe2692ec5fe4ec4
   pdfx: 7b876b09de8b7a0bf444a4f82b439ffcff4ee1ec
   permission_handler_apple: 9878588469a2b0d0fc1e048d9f43605f92e6cec2
+  photo_manager: d8a1055c2d3ee24fc300461c66e0defdec58b3d6
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   screen_state: 913e28f419fcef3899ce8f0d3f8d4627ffbe6082
   SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
