@@ -1,5 +1,10 @@
-import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:harrier_central/imports.dart';
+
+final class ChatStripMessage {
+  const ChatStripMessage({required this.authorName, required this.text});
+  final String authorName;
+  final String text;
+}
 
 class ChatStripController extends GetxController {
   ChatStripController({required this.eventId, required this.publicEventId});
@@ -8,7 +13,7 @@ class ChatStripController extends GetxController {
   final String publicEventId;
 
   final RxBool isLoading = true.obs;
-  final RxList<types.Message> messages = <types.Message>[].obs;
+  final RxList<ChatStripMessage> messages = <ChatStripMessage>[].obs;
 
   @override
   void onInit() {
@@ -38,8 +43,7 @@ class ChatStripController extends GetxController {
 
       if (!jsonResult.startsWith(ERROR_PREFIX)) {
         final outerItem = jsonDecode(jsonResult) as List<dynamic>;
-        final rawMessages = outerItem[0] as List<dynamic>;
-        messages.value = _parseMessages(rawMessages);
+        messages.value = _parseMessages(outerItem[0] as List<dynamic>);
       } else {
         debugPrint('ChatStripController: getEventMessages error: $jsonResult');
       }
@@ -50,24 +54,25 @@ class ChatStripController extends GetxController {
     }
   }
 
-  List<types.Message> _parseMessages(List<dynamic> rawMessages) {
+  List<ChatStripMessage> _parseMessages(List<dynamic> rawMessages) {
     return rawMessages.map((item) {
       final msg = Map<String, dynamic>.from(item as Map<String, dynamic>);
+
+      String authorName;
       if (msg['author'] is String) {
-        msg['author'] = jsonDecode(msg['author'].toString());
+        final author = jsonDecode(msg['author'].toString()) as Map<String, dynamic>;
+        authorName = (author['firstName'] as String?) ?? 'Unknown';
       } else if (msg.containsKey('authorId')) {
-        msg['author'] = <String, dynamic>{
-          'id': msg['authorId'],
-          'firstName': msg['authorFirstName'],
-          'imageUrl': msg['authorImageUrl'],
-          'type': 'user',
-        };
-        msg.remove('authorId');
-        msg.remove('authorFirstName');
-        msg.remove('authorImageUrl');
+        authorName = (msg['authorFirstName'] as String?) ?? 'Unknown';
+      } else if (msg['author'] is Map) {
+        final author = msg['author'] as Map<String, dynamic>;
+        authorName = (author['firstName'] as String?) ?? 'Unknown';
+      } else {
+        authorName = 'Unknown';
       }
-      msg['showStatus'] = true;
-      return types.Message.fromJson(msg);
+
+      final text = (msg['text'] as String?) ?? '📎 Attachment';
+      return ChatStripMessage(authorName: authorName, text: text);
     }).toList();
   }
 }
@@ -197,33 +202,22 @@ class ChatStripWidget extends StatelessWidget {
 class _MessageRow extends StatelessWidget {
   const _MessageRow({required this.message});
 
-  final types.Message message;
+  final ChatStripMessage message;
 
   @override
   Widget build(BuildContext context) {
-    final authorName = message.author.firstName ?? 'Unknown';
-
-    final String text;
-    if (message is types.TextMessage) {
-      text = (message as types.TextMessage).text;
-    } else if (message is types.ImageMessage) {
-      text = '📷 Image';
-    } else {
-      text = '📎 Attachment';
-    }
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 3, 12, 3),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '$authorName: ',
+            '${message.authorName}: ',
             style: ts_bodySmall.copyWith(fontWeight: FontWeight.bold),
           ),
           Expanded(
             child: Text(
-              text,
+              message.text,
               style: ts_bodySmall,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
