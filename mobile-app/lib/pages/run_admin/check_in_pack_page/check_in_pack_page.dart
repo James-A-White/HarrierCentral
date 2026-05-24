@@ -888,6 +888,23 @@ class CheckInPackPage extends StatelessWidget {
                     ),
                   ),
 
+                if (hasher.credit > 0)
+                  Positioned.fill(
+                    left: LIST_ITEM_LEFT_MARGIN + 3.0,
+                    top: hasher.homeKennelName != null ? 47.0 : 27.0,
+                    child: Text(
+                      '${IveCoreUtilities.getFormattedMoney(hasher.credit, controller.eventAggregate.extensions.digAfterDec, controller.eventAggregate.extensions.curSym)} Hash Credit',
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style: TextStyle(
+                        fontFamily: 'AvenirNextCondensedMedium',
+                        fontSize: 15.0,
+                        height: 1.0,
+                        color: Colors.green.shade700,
+                      ),
+                    ),
+                  ),
+
                 // RSVP Icon
                 Positioned(
                   left: LIST_ITEM_LEFT_MARGIN,
