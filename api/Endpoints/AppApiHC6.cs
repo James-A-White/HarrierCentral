@@ -177,6 +177,9 @@ namespace HcWebApi.Endpoints
                     case "sendEventMessage":
                         await SendNotifications(multipleResults, log, includeNulls);
                         break;
+                    case "markEventChatRead":
+                        await SendReadSyncAsync(multipleResults, log);
+                        break;
                 }
 
                 // Return compressed JSON (Brotli preferred, Gzip fallback, plain if unsupported)
@@ -464,6 +467,84 @@ namespace HcWebApi.Endpoints
             public required string MessageContent { get; set; }
             public required int MessageReleasabilityFlags { get; set; }
             public required int MessageType { get; set; }
+        }
+
+        private async Task SendReadSyncAsync(
+            List<List<Dictionary<string, object?>>> multipleResults,
+            ILogger logger)
+        {
+            try
+            {
+                if (multipleResults.Count < 2 || multipleResults[1].Count == 0)
+                {
+                    logger.LogInformation("markEventChatRead: no other devices to fan-out read sync to.");
+                    return;
+                }
+
+                string? accessToken = await GetFirebaseAccessTokenAsync();
+
+                foreach (var row in multipleResults[1])
+                {
+                    if (!row.TryGetValue("FcmToken", out var tokenObj)) continue;
+                    var token = tokenObj?.ToString();
+                    if (string.IsNullOrEmpty(token)) continue;
+                    await SendReadSyncMessageAsync(token, accessToken, logger);
+                }
+
+                logger.LogInformation("Read sync sent to {Count} device(s).", multipleResults[1].Count);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Error sending read sync notifications: {Message}", ex.Message);
+            }
+        }
+
+        private static async Task SendReadSyncMessageAsync(
+            string fcmToken, string? accessToken, ILogger log)
+        {
+            try
+            {
+                var messageBody = new
+                {
+                    message = new
+                    {
+                        token = fcmToken,
+                        data = new { Type = "read_sync" },
+                        android = new { priority = "normal" },
+                        apns = new
+                        {
+                            headers = new Dictionary<string, string> { ["apns-priority"] = "5" },
+                            payload = new
+                            {
+                                aps = new Dictionary<string, object> { ["content-available"] = (object)1 }
+                            }
+                        }
+                    }
+                };
+
+                var jsonPayload = System.Text.Json.JsonSerializer.Serialize(messageBody);
+                var stringContent = new StringContent(jsonPayload, Encoding.UTF8);
+                stringContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+                var request = new HttpRequestMessage(HttpMethod.Post, FcmUrl)
+                {
+                    Headers = { { "Authorization", $"Bearer {accessToken}" } },
+                    Content = stringContent
+                };
+
+                var response = await _httpClient.SendAsync(request);
+                if (!response.IsSuccessStatusCode)
+                {
+                    string errorJson = await response.Content.ReadAsStringAsync();
+                    log.LogError("Error sending read sync FCM: {ErrorJson}", errorJson);
+                    if (errorJson.Contains("BadDeviceToken") || errorJson.Contains("not a valid FCM registration token"))
+                        await DeleteFcmToken(fcmToken, log);
+                }
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Exception while sending read sync FCM.");
+            }
         }
 
         static async Task UpdateGoogleCalendar(ILogger log)
