@@ -18,29 +18,36 @@ class ChatStripController extends GetxController {
 
   Future<void> _loadMessages() async {
     isLoading.value = true;
-    final userId = currentUserId;
-    final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-    final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+    try {
+      final userId = currentUserId;
+      final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+      final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-    final jsonResult = await ServiceCommon.sendHttpPost(
-      () => jsonEncode(<String, String>{
-        'queryType': 'getEventMessages',
-        'deviceId': deviceId,
-        'accessToken': Utilities.generateToken(
-          userId,
-          'hcapp_getEventMessages',
-          paramString: deviceSecret,
-        ),
-        'eventId': eventId,
-      }),
-    );
+      final jsonResult = await ServiceCommon.sendHttpPost(
+        () => jsonEncode(<String, String>{
+          'queryType': 'getEventMessages',
+          'deviceId': deviceId,
+          'accessToken': Utilities.generateToken(
+            userId,
+            'hcapp_getEventMessages',
+            paramString: deviceSecret,
+          ),
+          'eventId': eventId,
+        }),
+      );
 
-    if (!jsonResult.startsWith(ERROR_PREFIX)) {
-      final outerItem = jsonDecode(jsonResult) as List<dynamic>;
-      final rawMessages = outerItem[0] as List<dynamic>;
-      messages.value = _parseMessages(rawMessages);
+      if (!jsonResult.startsWith(ERROR_PREFIX)) {
+        final outerItem = jsonDecode(jsonResult) as List<dynamic>;
+        final rawMessages = outerItem[0] as List<dynamic>;
+        messages.value = _parseMessages(rawMessages);
+      } else {
+        debugPrint('ChatStripController: getEventMessages error: $jsonResult');
+      }
+    } catch (e) {
+      debugPrint('ChatStripController: load error: $e');
+    } finally {
+      isLoading.value = false;
     }
-    isLoading.value = false;
   }
 
   List<types.Message> _parseMessages(List<dynamic> rawMessages) {
