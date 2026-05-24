@@ -3,6 +3,7 @@
 import 'package:harrier_central/data/services/gdpr_delete_service.dart';
 import 'package:harrier_central/data/services/get_invite_code_service.dart';
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/util/boot_logger.dart';
 
 enum EnumMyProfilePageType { myProfile, anyHasherProfile, newHasherProfile }
 
@@ -41,6 +42,7 @@ class HasherProfilePage extends StatefulWidget {
   //static const int flagUiElement_logOutOfFacebook = 0x00000100;
   static const int flagUiElement_logOutButton = 0x00000200;
   static const int flagUiElement_getUserRunHistory = 0x00000400;
+  static const int flagUiElement_copyBootLog = 0x00000800;
 
   @override
   HasherProfilePageState createState() => HasherProfilePageState();
@@ -63,6 +65,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   bool? _historicalCountIsEstimateWidget;
 
   bool _isReloading = false;
+  bool _bootLogCopied = false;
 
   String? _email = getStringPref(StringPrefsEnum.email);
   int _hasherPreferences = getIntPref(IntPrefsEnum.hasherPreferences) ?? 0;
@@ -2128,6 +2131,75 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                         ],
                                       ),
                                     ],
+                                    if (widget.uiElementsToDisplay &
+                                            HasherProfilePage
+                                                .flagUiElement_copyBootLog !=
+                                        0) ...<Widget>[
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        children: <Widget>[
+                                          const FancyDivider(
+                                            key: Key('912344022'),
+                                            innerColor: Colors.white,
+                                            topMargin: 30.0,
+                                            bottomMargin: 20.0,
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              'Diagnostic Logs',
+                                              style: ts_headingLarge,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              'Copy the app\'s startup log to the clipboard for diagnostic purposes.',
+                                              style: ts_body,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 15.0,
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceAround,
+                                              children: <Widget>[
+                                                ElevatedButton.icon(
+                                                  style: ElevatedButton.styleFrom(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          vertical: 8.0,
+                                                          horizontal: 15.0,
+                                                        ),
+                                                  ),
+                                                  onPressed: BootLogger
+                                                              .lines.isEmpty
+                                                      ? null
+                                                      : _copyBootLogToClipboard,
+                                                  icon: Icon(
+                                                    _bootLogCopied
+                                                        ? Icons.check
+                                                        : Icons.copy,
+                                                    size: 16,
+                                                  ),
+                                                  label: Text(
+                                                    _bootLogCopied
+                                                        ? 'Copied!'
+                                                        : 'Copy log to clipboard',
+                                                    style: ts_button,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ],
                                 ),
                               ),
@@ -2187,6 +2259,16 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   //   // GetIt.I.registerSingleton<DeviceInfo>(DeviceInfo());
   //   // Register other dependencies here
   // }
+
+  Future<void> _copyBootLogToClipboard() async {
+    final text = BootLogger.lines.join('\n');
+    await Clipboard.setData(ClipboardData(text: text));
+    if (!mounted) return;
+    setState(() => _bootLogCopied = true);
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) setState(() => _bootLogCopied = false);
+    });
+  }
 
   Future<void> _reloadData() async {
     await setStringPref(StringPrefsEnum.bootType, BOOT_TYPE_RELOAD_DATA);

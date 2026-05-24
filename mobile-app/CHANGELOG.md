@@ -1,5 +1,17 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.5.1+1128 (2026-05-24)
+
+### New features
+
+- **Copy boot log from My Profile**: A "Diagnostic Logs" section is now shown at
+  the bottom of the My Profile page (accessible via the drawer menu). It contains
+  a "Copy log to clipboard" button that captures the same `BootLogger` startup
+  output as the boot-screen overlay, allowing the log to be retrieved after the
+  app has fully loaded without needing to reproduce the boot sequence. The button
+  is disabled if no log lines have been captured yet, and shows "Copied!" for two
+  seconds after a successful copy.
+
 ## 2.5.0+1127 (2026-05-24)
 
 ### New features
