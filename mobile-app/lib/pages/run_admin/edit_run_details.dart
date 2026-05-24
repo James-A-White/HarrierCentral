@@ -658,12 +658,28 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
   }
 
   Future<void> _geocodeAndNavigateToMap() async {
+    String country = _locationCountryController.text.trim();
+    if (country.isEmpty) {
+      final List<Map<String, dynamic>> rows = await database.rawQuery(
+        'SELECT ${tableModel.countriesTableHelper.colCountryName} '
+        'FROM ${EnumDataTables.countries.commonTableName} '
+        'WHERE ${tableModel.countriesTableHelper.colCountryId} = ? LIMIT 1',
+        <String>[_eventAggregate.kennel.countryId],
+      );
+      if (rows.isNotEmpty) {
+        country =
+            (rows[0][tableModel.countriesTableHelper.colCountryName]
+                    as String?) ??
+            '';
+      }
+    }
+
     final List<String> parts = <String>[
       _locationStreetController.text.trim(),
       _locationCityController.text.trim(),
       _locationRegionController.text.trim(),
       _locationPostCodeController.text.trim(),
-      _locationCountryController.text.trim(),
+      country,
     ].where((String s) => s.isNotEmpty).toList();
 
     if (parts.isEmpty) return;
@@ -856,23 +872,69 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                   // to function properly
                                   _tabController.animateTo(_currentTab.next);
                                 } else {
-                                  if (!mounted) return;
-                                  ScaffoldMessenger.of(
-                                    navigatorKey.currentContext!,
-                                  ).showSnackBar(
-                                    SnackBar(
-                                      duration: const Duration(seconds: 6),
-                                      content: const Text(
-                                        'Address saved — update the map pin?',
-                                      ),
-                                      backgroundColor: hc_blue,
-                                      action: SnackBarAction(
-                                        label: 'Locate pin',
-                                        textColor: Colors.white,
-                                        onPressed: _geocodeAndNavigateToMap,
-                                      ),
-                                    ),
-                                  );
+                                  final bool hasEnoughAddress =
+                                      _locationPostCodeController.text
+                                          .trim()
+                                          .isNotEmpty ||
+                                      (_locationStreetController.text
+                                              .trim()
+                                              .isNotEmpty &&
+                                          _locationCityController.text
+                                              .trim()
+                                              .isNotEmpty);
+                                  if (hasEnoughAddress) {
+                                    if (!mounted) return;
+                                    final bool? locate =
+                                        await showDialog<bool>(
+                                          context:
+                                              navigatorKey.currentContext!,
+                                          builder:
+                                              (BuildContext ctx) =>
+                                                  AlertDialog(
+                                                    title: const Text(
+                                                      'Address saved',
+                                                    ),
+                                                    content: const Text(
+                                                      'Would you like me to try to automatically find the map pin for the new address?',
+                                                    ),
+                                                    actions: <Widget>[
+                                                      ElevatedButton(
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor:
+                                                              Colors.teal,
+                                                          foregroundColor:
+                                                              Colors.white,
+                                                        ),
+                                                        onPressed: () =>
+                                                            Navigator.of(
+                                                              ctx,
+                                                            ).pop(false),
+                                                        child: const Text(
+                                                          'Not now',
+                                                        ),
+                                                      ),
+                                                      ElevatedButton(
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor:
+                                                              hc_blue,
+                                                          foregroundColor:
+                                                              Colors.white,
+                                                        ),
+                                                        onPressed: () =>
+                                                            Navigator.of(
+                                                              ctx,
+                                                            ).pop(true),
+                                                        child: const Text(
+                                                          'Auto-locate',
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                        );
+                                    if (locate == true) {
+                                      await _geocodeAndNavigateToMap();
+                                    }
+                                  }
                                 }
                                 await Future<void>.delayed(
                                   const Duration(milliseconds: 500),
@@ -1540,7 +1602,11 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                                           'Remove the image from this run? This cannot be undone.',
                                                         ),
                                                         actions: <Widget>[
-                                                          TextButton(
+                                                          ElevatedButton(
+                                                            style: ElevatedButton.styleFrom(
+                                                              backgroundColor: Colors.teal,
+                                                              foregroundColor: Colors.white,
+                                                            ),
                                                             onPressed: () =>
                                                                 Navigator.of(
                                                                   ctx,
@@ -1549,17 +1615,17 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                                               'Cancel',
                                                             ),
                                                           ),
-                                                          TextButton(
+                                                          ElevatedButton(
+                                                            style: ElevatedButton.styleFrom(
+                                                              backgroundColor: Colors.red[700],
+                                                              foregroundColor: Colors.white,
+                                                            ),
                                                             onPressed: () =>
                                                                 Navigator.of(
                                                                   ctx,
                                                                 ).pop(true),
                                                             child: const Text(
                                                               'Delete',
-                                                              style: TextStyle(
-                                                                color:
-                                                                    Colors.red,
-                                                              ),
                                                             ),
                                                           ),
                                                         ],
