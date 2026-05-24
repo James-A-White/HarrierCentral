@@ -98,13 +98,20 @@ class ChatPageController extends GetxController {
 
   Future<void> onAppResumed() async {
     messagesLoading.value = true;
-    var result = await _getEventMessages(eventId);
-    if (result != null) {
-      final outerItem = jsonDecode(result) as List<dynamic>;
-      messages = loadMessages(outerItem[0] as List<dynamic>);
+    final result = await _getEventMessages(eventId);
+    if (result == null) {
       messagesLoading.value = false;
-      update([UpdateIds.chatMessages]);
+      return;
     }
+    if (result.startsWith(ERROR_PREFIX)) {
+      debugPrint('ChatPageController: getEventMessages error: $result');
+      messagesLoading.value = false;
+      return;
+    }
+    final outerItem = jsonDecode(result) as List<dynamic>;
+    messages = loadMessages(outerItem[0] as List<dynamic>);
+    messagesLoading.value = false;
+    update([UpdateIds.chatMessages]);
   }
 
   Future<String?> _getEventMessages(String eventId) async {
