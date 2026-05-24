@@ -1333,7 +1333,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                           bottom: 12.0,
                                         ),
                                         child: Text(
-                                          'Controls how images are saved when using the Trail Photos feature.',
+                                          'Harrier Central saves your trail photos to our backend server where they are available to be shared. You can also save these photos directly to your phone with the setting below.',
                                           style: ts_body,
                                           textAlign: TextAlign.center,
                                         ),
@@ -1344,8 +1344,21 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                         ),
                                         child: Row(
                                           mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
+                                              MainAxisAlignment.start,
                                           children: <Widget>[
+                                            Transform.scale(
+                                              scale: 1.4,
+                                              child: Switch(
+                                                value: _savePhotosToCameraRoll,
+                                                onChanged: (bool value) {
+                                                  setState(
+                                                    () => _savePhotosToCameraRoll = value,
+                                                  );
+                                                  _checkDirty();
+                                                },
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
                                             const Text(
                                               'Save photos to phone',
                                               style: TextStyle(
@@ -1353,56 +1366,6 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                 fontFamily: 'AvenirNextRegular',
                                                 fontSize: 20.0,
                                               ),
-                                            ),
-                                            Switch(
-                                              value: _savePhotosToCameraRoll,
-                                              onChanged: (bool value) async {
-                                            setState(
-                                              () =>
-                                                  _savePhotosToCameraRoll =
-                                                      value,
-                                            );
-                                            final int newPrefs =
-                                                _distancePreference +
-                                                _autoRunPreference +
-                                                (value
-                                                    ? 0
-                                                    : hasherPref_cameraRollSaveDisabled);
-                                            final srv = HashersService();
-                                            final response =
-                                                await srv.addEditUser(
-                                              targetUserId: _hasher.hasherId,
-                                              firstName:
-                                                  _hasher.firstName ?? '',
-                                              lastName: _hasher.lastName ?? '',
-                                              email: _emailController.text,
-                                              hashName: _hasher.hashName ?? '',
-                                              photo: _hasher.photo ?? '',
-                                              eventId: GUID_EMPTY,
-                                              kennelId: GUID_EMPTY,
-                                              historicalTotalRunCount: '-1',
-                                              historicalHaringCount: '-1',
-                                              historicalCountIsEstimate:
-                                                  _historicalCountIsEstimate ??
-                                                  false,
-                                              preferences: newPrefs,
-                                              nameDisplayPreference: -1,
-                                            );
-                                            if (!response.startsWith(
-                                              ERROR_PREFIX,
-                                            )) {
-                                              await setIntPref(
-                                                IntPrefsEnum.hasherPreferences,
-                                                newPrefs,
-                                              );
-                                              if (mounted) {
-                                                setState(
-                                                  () => _hasherPreferences =
-                                                      newPrefs,
-                                                );
-                                              }
-                                            }
-                                              },
                                             ),
                                           ],
                                         ),
