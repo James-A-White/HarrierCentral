@@ -23,9 +23,6 @@ class CheckInPackPage extends StatelessWidget {
   static const double LIST_ITEM_HEIGHT = 84.0;
 
   // ignore: constant_identifier_names
-  static const double LIST_ITEM_HEIGHT_WITH_CREDIT = 100.0;
-
-  // ignore: constant_identifier_names
   static const double LIST_ITEM_LEFT_MARGIN = 88.0;
 
   @override
@@ -814,12 +811,8 @@ class CheckInPackPage extends StatelessWidget {
               children: [
                 // Avatar photo
                 Container(
-                  width: hasher.credit > 0
-                      ? LIST_ITEM_HEIGHT_WITH_CREDIT
-                      : LIST_ITEM_HEIGHT,
-                  height: hasher.credit > 0
-                      ? LIST_ITEM_HEIGHT_WITH_CREDIT
-                      : LIST_ITEM_HEIGHT,
+                  width: LIST_ITEM_HEIGHT,
+                  height: LIST_ITEM_HEIGHT,
                   decoration: BoxDecoration(
                     color: Colors.grey.shade200,
                     image: DecorationImage(
@@ -895,23 +888,6 @@ class CheckInPackPage extends StatelessWidget {
                     ),
                   ),
 
-                if (hasher.credit > 0)
-                  Positioned.fill(
-                    left: LIST_ITEM_LEFT_MARGIN + 3.0,
-                    top: hasher.homeKennelName != null ? 47.0 : 27.0,
-                    child: Text(
-                      '${IveCoreUtilities.getFormattedMoney(hasher.credit, controller.eventAggregate.extensions.digAfterDec, controller.eventAggregate.extensions.curSym)} Hash Credit',
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                      style: TextStyle(
-                        fontFamily: 'AvenirNextCondensedMedium',
-                        fontSize: 15.0,
-                        height: 1.0,
-                        color: Colors.green.shade700,
-                      ),
-                    ),
-                  ),
-
                 // RSVP Icon
                 Positioned(
                   left: LIST_ITEM_LEFT_MARGIN,
@@ -947,6 +923,23 @@ class CheckInPackPage extends StatelessWidget {
                     hasher,
                   ),
                 ),
+                // Credit label
+                if (hasher.credit != 0)
+                  Positioned(
+                    left: LIST_ITEM_LEFT_MARGIN + 112.0,
+                    bottom: 8,
+                    child: Text(
+                      '${IveCoreUtilities.getFormattedMoney(hasher.credit.abs(), controller.eventAggregate.extensions.digAfterDec, controller.eventAggregate.extensions.curSym)} ${hasher.credit > 0 ? 'Credit available' : 'Credit owed'}',
+                      style: TextStyle(
+                        fontFamily: 'AvenirNextCondensedMedium',
+                        fontSize: 13.0,
+                        height: 1.0,
+                        color: hasher.credit > 0
+                            ? Colors.green.shade700
+                            : Colors.red.shade700,
+                      ),
+                    ),
+                  ),
                 // Special Run Icon
                 if (controller.shouldShowDrinkIcon(hasher))
                   Positioned(
