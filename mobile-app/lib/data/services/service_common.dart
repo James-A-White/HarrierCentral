@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/util/boot_logger.dart';
 
 //int httpCounter = 1000;
 
@@ -16,20 +17,17 @@ class ServiceCommon {
   // while still preventing the infinite-boot-hang on partially-connected networks.
   static const Duration _requestTimeout = Duration(seconds: 30);
 
-  static Future<void> recordError(
-    String httpBody,
-    String error, {
-    String? extraData,
-  }) async {
-    String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+  /// Sends a session-level error log to HC.ClientErrorLog on the server.
+  /// Token validation is skipped server-side so this can be called even when
+  /// the device secret is unavailable.
+  static Future<void> recordClientErrorLog(String errorLog) async {
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
 
     final String body = jsonEncode(<String, String>{
-      'queryType': 'logAppError',
+      'queryType': 'logClientErrors',
       'deviceId': deviceId,
       'accessToken': '<not required>',
-      'httpBody': httpBody,
-      'errorText': error,
-      'extraData': extraData ?? '',
+      'errorLog': errorLog,
     });
 
     await post(
@@ -42,8 +40,6 @@ class ServiceCommon {
     ).catchError((dynamic error) {
       return Future<Response>.value(Response('', 500));
     });
-
-    return;
   }
 
   // [bodyFactory] is called once per attempt so the access token embedded in
@@ -132,12 +128,10 @@ class ServiceCommon {
         );
       }
 
-      unawaited(
-        recordError(
-          requestBody,
-          'Retry $attempt failed: status ${response.statusCode}',
-          extraData: response.body,
-        ),
+      BootLogger.logError(
+        '[ERROR][HTTP]',
+        'Retry $attempt failed: ${response.statusCode} → $BASE_AF_API_URL\nBody: $requestBody\nResponse: ${response.body}',
+        null,
       );
 
       if (attempt == 3) {
@@ -175,7 +169,7 @@ class ServiceCommon {
             onTimeout: () => Response('', 0),
           )
           .catchError((dynamic error) {
-            unawaited(recordError(requestBody, error.toString()));
+            BootLogger.logError('[ERROR][HTTP]', 'network error → $BASE_AF_API_URL: ${error.toString()}\nBody: $requestBody', null);
             return Future<Response>.value(Response('', 500));
           });
     }
@@ -188,7 +182,7 @@ class ServiceCommon {
         )
         .timeout(_requestTimeout, onTimeout: () => Response('', 0))
         .catchError((dynamic error) {
-          unawaited(recordError(requestBody, error.toString()));
+          BootLogger.logError('[ERROR][HTTP]', 'network error → $BASE_AF_API_URL: ${error.toString()}\nBody: $requestBody', null);
           return Future<Response>.value(Response('', 500));
         });
   }
@@ -297,12 +291,10 @@ class ServiceCommon {
           'The Harrier Central server is temporarily offline for maintenance.\r\n\r\nYou may continue using the app in Offline Mode with cached data. Press the \'Offline Mode\' ribbon to find out when the last time the data was updated.',
           'Use Offline',
         );
-        unawaited(
-          recordError(
-            requestBody,
-            response.reasonPhrase ?? '<null reason>',
-            extraData: response.body,
-          ),
+        BootLogger.logError(
+          '[ERROR][HTTP]',
+          'Site Disabled: ${response.statusCode} ${response.reasonPhrase ?? ""} → $BASE_AF_API_URL\nBody: $requestBody\nResponse: ${response.body}',
+          null,
         );
         // appModel.connectionStatus = EnumConnectionStatus2.notConnected;
       } else {
@@ -314,12 +306,10 @@ class ServiceCommon {
           performHcServerCheck: false,
         );
         if (Utilities.isConnected()) {
-          unawaited(
-            recordError(
-              requestBody,
-              response.reasonPhrase ?? '<null reason>',
-              extraData: response.body,
-            ),
+          BootLogger.logError(
+            '[ERROR][HTTP]',
+            '${response.statusCode} ${response.reasonPhrase ?? ""} → $BASE_AF_API_URL\nBody: $requestBody\nResponse: ${response.body}',
+            null,
           );
 
           _showSnackbarSafely(
@@ -335,12 +325,10 @@ class ServiceCommon {
         // appModel.connectionStatus = EnumConnectionStatus2.notConnected;
       }
     } else if (response.body.contains('"errorId"')) {
-      unawaited(
-        recordError(
-          requestBody,
-          response.reasonPhrase ?? '<null reason>',
-          extraData: response.body,
-        ),
+      BootLogger.logError(
+        '[ERROR][HTTP]',
+        'DB error ${response.statusCode} → $BASE_AF_API_URL\nBody: $requestBody\nResponse: ${response.body}',
+        null,
       );
       returnValue = ERROR_UNKNOWN_REMOTE_DB_ERROR;
       // Response body is [[{...}]] — outer array is rowsets, inner array is rows.

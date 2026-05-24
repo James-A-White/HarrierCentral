@@ -38,8 +38,20 @@ class AppLifecycleController extends SuperController<void> {
 }
 
 Future<void> main() async {
-  BootLogger.install();
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Capture Flutter framework errors (widget build failures, assertion errors, etc.)
+  final FlutterExceptionHandler? originalFlutterError = FlutterError.onError;
+  FlutterError.onError = (FlutterErrorDetails details) {
+    BootLogger.logError('[ERROR][FLUTTER]', details.exception, details.stack);
+    originalFlutterError?.call(details);
+  };
+
+  // Capture uncaught async/platform errors that escape the Flutter framework
+  PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
+    BootLogger.logError('[ERROR][ASYNC]', error, stack);
+    return false; // let the platform continue its default handling
+  };
 
   // One-time platform/bootstrap
   await SystemChrome.setPreferredOrientations(<DeviceOrientation>[

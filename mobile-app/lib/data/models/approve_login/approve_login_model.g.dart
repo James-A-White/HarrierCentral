@@ -29,6 +29,7 @@ _ApproveLoginModel _$ApproveLoginModelFromJson(Map<String, dynamic> json) =>
       splashSequenceRootName: json['splashSequenceRootName'] as String?,
       splashSequenceType: (json['splashSequenceType'] as num?)?.toInt(),
       betaFeaturesEnabled: json['betaFeaturesEnabled'] as String?,
+      hasherPreferences: (json['hasherPreferences'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$ApproveLoginModelToJson(_ApproveLoginModel instance) =>
@@ -51,4 +52,5 @@ Map<String, dynamic> _$ApproveLoginModelToJson(_ApproveLoginModel instance) =>
       'splashSequenceRootName': instance.splashSequenceRootName,
       'splashSequenceType': instance.splashSequenceType,
       'betaFeaturesEnabled': instance.betaFeaturesEnabled,
+      'hasherPreferences': instance.hasherPreferences,
     };

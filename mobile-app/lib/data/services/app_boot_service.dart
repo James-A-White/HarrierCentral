@@ -1,5 +1,6 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/util/boot_logger.dart';
 
 /// Owns all app startup logic — previously embedded in AppEntryPageState._handleStartup.
 ///
@@ -47,6 +48,11 @@ class AppBootService {
     debugPrint('[BOOT] boot() start: ${DateTime.now().millisecondsSinceEpoch}ms');
     await initPrefs();
     debugPrint('[BOOT] initPrefs done: ${DateTime.now().millisecondsSinceEpoch}ms');
+
+    // Send the previous session's error log to the server, then start
+    // persisting this session's errors to the pref.
+    unawaited(_sendPreviousSessionErrors());
+    _startErrorPersistence();
 
     if (getStringPref(StringPrefsEnum.bootType) == BOOT_TYPE_RELOAD_DATA) {
       await _handleReloadData();
@@ -141,6 +147,45 @@ class AppBootService {
     debugPrint('[BOOT] _routeAfterLogin start: ${DateTime.now().millisecondsSinceEpoch}ms');
     await _routeAfterLogin(userId, loginResult);
     debugPrint('[BOOT] _routeAfterLogin done: ${DateTime.now().millisecondsSinceEpoch}ms');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Error log persistence
+  // ---------------------------------------------------------------------------
+
+  /// Reads the previous session's error log, sends it to the server, then
+  /// clears the pref so it doesn't repeat on the next boot.
+  static Future<void> _sendPreviousSessionErrors() async {
+    final log = getStringPref(StringPrefsEnum.lastSessionErrorLog);
+    if (log == null || log.isEmpty) return;
+    await setStringPref(StringPrefsEnum.lastSessionErrorLog, null);
+    unawaited(ServiceCommon.recordClientErrorLog(log));
+  }
+
+  /// Wires BootLogger to start persisting errors to the pref if the debug
+  /// harvest flag (set on the previous boot) is enabled. Discards the buffer
+  /// if harvesting is not enabled for this device.
+  static void _startErrorPersistence() {
+    if (getBoolPref(BoolPrefsEnum.debugHarvestEnabled) != true) {
+      BootLogger.clearErrorBuffer();
+      return;
+    }
+    BootLogger.onErrorPersist = _persistErrorEntry;
+    for (final entry in BootLogger.pendingErrorEntries) {
+      _persistErrorEntry(entry);
+    }
+    BootLogger.clearErrorBuffer();
+  }
+
+  /// Appends a single error entry to the pref, capped at 20 000 chars.
+  static void _persistErrorEntry(String entry) {
+    final existing = getStringPref(StringPrefsEnum.lastSessionErrorLog) ?? '';
+    final separator = existing.isEmpty ? '' : '\n===\n';
+    var updated = '$existing$separator$entry';
+    if (updated.length > 20000) {
+      updated = updated.substring(updated.length - 20000);
+    }
+    unawaited(setStringPref(StringPrefsEnum.lastSessionErrorLog, updated));
   }
 
   // ---------------------------------------------------------------------------
@@ -479,6 +524,11 @@ class AppBootService {
     await setStringPref(
       StringPrefsEnum.homeKennelId,
       login.homeKennelId?.toLowerCase() ?? '',
+    );
+    final int prefs = login.hasherPreferences ?? 0;
+    await setBoolPref(
+      BoolPrefsEnum.debugHarvestEnabled,
+      (prefs & hasherPref_debugHarvestEnabled) != 0,
     );
   }
 

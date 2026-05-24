@@ -3,7 +3,6 @@ import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
-import 'package:harrier_central/util/boot_logger.dart';
 
 class MainNavigationPage extends StatelessWidget {
   const MainNavigationPage({super.key});
@@ -702,13 +701,6 @@ class MainNavigationPage extends StatelessWidget {
               ],
             ),
           ),
-        ),
-        const Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: 50,
-          child: BootLogOverlay(),
         ),
       ],
     );

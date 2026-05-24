@@ -101,6 +101,7 @@ DECLARE @homeKennelId          UNIQUEIDENTIFIER;
 DECLARE @thirdPartyForceTokenRefresh DATETIMEOFFSET(7);
 DECLARE @removed               INT;
 DECLARE @betaFeaturesEnabled   NVARCHAR(1000);
+DECLARE @hasherPreferences     INT;
 
 SELECT
     @userName                    = h.DisplayName,
@@ -109,7 +110,8 @@ SELECT
     @homeKennelId                = h.HomeKennelId,
     @thirdPartyForceTokenRefresh = h.ThirdPartyForceTokenRefresh,
     @removed                     = h.Removed,
-    @betaFeaturesEnabled         = h.BetaFeaturesEnabled
+    @betaFeaturesEnabled         = h.BetaFeaturesEnabled,
+    @hasherPreferences           = h.Preferences
 FROM HC.Hasher h
 WHERE h.id = @userId;
 
@@ -270,7 +272,8 @@ BEGIN TRY
         @thirdPartyForceTokenRefresh AS thirdPartyForceTokenRefresh,
         @splashSequenceRootNameOut AS splashSequenceRootName,
         @splashSequenceType        AS splashSequenceType,
-        @betaFeaturesEnabled    AS betaFeaturesEnabled
+        @betaFeaturesEnabled    AS betaFeaturesEnabled,
+        @hasherPreferences      AS hasherPreferences
     FROM HC.ServerStatus svr
     ORDER BY svr.CreatedDate DESC;
 

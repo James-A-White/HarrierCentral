@@ -36,6 +36,7 @@ enum StringPrefsEnum {
   imageRootUrl,
   iosDownloadLink,
   lastName,
+  lastSessionErrorLog,
   leaderboardJson,
   mapPreference,
   paymentTerminalAccountKey,
@@ -70,6 +71,7 @@ enum BoolPrefsEnum {
   automaticallySetNotifiationPrefs,
   fcmTokenSavedToServer,
   notificationPreferencesRequested,
+  debugHarvestEnabled,
 }
 
 enum IntPrefsEnum {

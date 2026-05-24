@@ -23,6 +23,7 @@ abstract class ApproveLoginModel with _$ApproveLoginModel implements BaseModel {
     String? splashSequenceRootName,
     int? splashSequenceType,
     String? betaFeaturesEnabled,
+    int? hasherPreferences,
   }) = _ApproveLoginModel;
 
   factory ApproveLoginModel.fromJson(Map<String, dynamic> json) =>

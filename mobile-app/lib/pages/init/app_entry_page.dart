@@ -1,5 +1,4 @@
 import 'package:harrier_central/imports.dart';
-import 'package:harrier_central/util/boot_logger.dart';
 
 class AppEntryPage extends StatefulWidget {
   const AppEntryPage({super.key});
@@ -44,18 +43,6 @@ class AppEntryPageState extends State<AppEntryPage>
         ? 'images/init/splash_screen.jpg'
         : 'images/init/launcher_background.png';
 
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        Image.asset(imagePath, fit: BoxFit.cover),
-        const Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: 50,
-          child: BootLogOverlay(),
-        ),
-      ],
-    );
+    return Image.asset(imagePath, fit: BoxFit.cover);
   }
 }

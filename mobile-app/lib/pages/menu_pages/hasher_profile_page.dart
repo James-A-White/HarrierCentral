@@ -3,7 +3,6 @@
 import 'package:harrier_central/data/services/gdpr_delete_service.dart';
 import 'package:harrier_central/data/services/get_invite_code_service.dart';
 import 'package:harrier_central/imports.dart';
-import 'package:harrier_central/util/boot_logger.dart';
 
 enum EnumMyProfilePageType { myProfile, anyHasherProfile, newHasherProfile }
 
@@ -2264,8 +2263,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                           horizontal: 15.0,
                                                         ),
                                                   ),
-                                                  onPressed: BootLogger
-                                                              .lines.isEmpty
+                                                  onPressed: (getStringPref(StringPrefsEnum.lastSessionErrorLog) ?? '').isEmpty
                                                       ? null
                                                       : _copyBootLogToClipboard,
                                                   icon: Icon(
@@ -2348,7 +2346,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   // }
 
   Future<void> _copyBootLogToClipboard() async {
-    final text = BootLogger.lines.join('\n');
+    final text = getStringPref(StringPrefsEnum.lastSessionErrorLog) ?? 'No error log.';
     await Clipboard.setData(ClipboardData(text: text));
     if (!mounted) return;
     setState(() => _bootLogCopied = true);
