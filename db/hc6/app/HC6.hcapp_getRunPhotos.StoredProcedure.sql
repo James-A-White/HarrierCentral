@@ -80,13 +80,16 @@ BEGIN
     RETURN;
 END
 
--- Rowset 1: own photos (all statuses — always fully returned, no watermark)
+-- Rowset 1: own photos (all statuses — always fully returned, no watermark).
+-- Includes AssetId so the app can load the photo from device storage first
+-- and only fall back to BlobUrl if the asset is missing or stale.
 SELECT
     kp.id           AS photoId,
     kp.EventId,
     kp.KennelId,
     kp.UserId,
     kp.BlobUrl,
+    kp.AssetId,
     kp.Latitude,
     kp.Longitude,
     kp.Status,
