@@ -40,7 +40,6 @@ class BootLogOverlay extends StatefulWidget {
 }
 
 class _BootLogOverlayState extends State<BootLogOverlay> {
-  final ScrollController _scroll = ScrollController();
   late final StreamSubscription<int> _sub;
   bool _copied = false;
 
@@ -50,18 +49,12 @@ class _BootLogOverlayState extends State<BootLogOverlay> {
     _sub = BootLogger.onChanged.listen((_) {
       if (!mounted) return;
       setState(() {});
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_scroll.hasClients) {
-          _scroll.jumpTo(_scroll.position.maxScrollExtent);
-        }
-      });
     });
   }
 
   @override
   void dispose() {
     _sub.cancel();
-    _scroll.dispose();
     super.dispose();
   }
 
@@ -79,54 +72,27 @@ class _BootLogOverlayState extends State<BootLogOverlay> {
   Widget build(BuildContext context) {
     final lines = BootLogger.lines;
     return Container(
-      color: const Color.fromRGBO(0, 0, 0, 0.80),
-      padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
-      child: Column(
-        children: [
-          Expanded(
-            child: lines.isEmpty
-                ? const Center(
-                    child: Text(
-                      'Waiting for boot log…',
-                      style: TextStyle(color: Color(0xFF888888), fontSize: 11),
-                    ),
-                  )
-                : ListView.builder(
-                    controller: _scroll,
-                    itemCount: lines.length,
-                    itemBuilder: (context, i) => Text(
-                      lines[i],
-                      style: const TextStyle(
-                        color: Color(0xFF88FF88),
-                        fontSize: 10,
-                        fontFamily: 'Courier',
-                        height: 1.4,
-                      ),
-                    ),
-                  ),
+      color: const Color.fromRGBO(0, 0, 0, 0.60),
+      child: SizedBox(
+        width: double.infinity,
+        child: TextButton.icon(
+          onPressed: lines.isEmpty ? null : _copyToClipboard,
+          icon: Icon(
+            _copied ? Icons.check : Icons.copy,
+            size: 14,
+            color: _copied ? Colors.greenAccent : Colors.white70,
           ),
-          SizedBox(
-            width: double.infinity,
-            child: TextButton.icon(
-              onPressed: lines.isEmpty ? null : _copyToClipboard,
-              icon: Icon(
-                _copied ? Icons.check : Icons.copy,
-                size: 14,
-                color: _copied ? Colors.greenAccent : Colors.white70,
-              ),
-              label: Text(
-                _copied ? 'Copied!' : 'Copy log to clipboard',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: _copied ? Colors.greenAccent : Colors.white70,
-                ),
-              ),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-              ),
+          label: Text(
+            _copied ? 'Copied!' : 'Copy log to clipboard',
+            style: TextStyle(
+              fontSize: 12,
+              color: _copied ? Colors.greenAccent : Colors.white70,
             ),
           ),
-        ],
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+          ),
+        ),
       ),
     );
   }

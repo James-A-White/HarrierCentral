@@ -707,7 +707,7 @@ class MainNavigationPage extends StatelessWidget {
           left: 0,
           right: 0,
           bottom: 0,
-          height: 320,
+          height: 50,
           child: BootLogOverlay(),
         ),
       ],

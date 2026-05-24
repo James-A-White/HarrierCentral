@@ -150,12 +150,10 @@ class CommonQueries {
 
         bool hasValidPosition = false;
 
-        // start a 6-minute loop where we look for an updated position,
-        // but only if we don't have an eventId. EventId will
-        // be populated when the user clicks on a notification.
-        // In this case, we want to always allow checkin regardless
-        // of where they are located.
-        while ((escape < 120) && !hasValidPosition && (eventId == null)) {
+        // Poll up to 30 seconds for a fresh GPS position (10 × 3s).
+        // EventId is set when the user taps a notification — in that case
+        // skip location check and allow check-in regardless of position.
+        while ((escape < 10) && !hasValidPosition && (eventId == null)) {
           final DateTime? lastLocationUpdate = getDatePref(
             DatePrefsEnum.lastLocationUpdate,
           );

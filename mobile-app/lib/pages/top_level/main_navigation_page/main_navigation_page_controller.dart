@@ -229,9 +229,6 @@ class MainNavigationController extends GetxController
     isLoadingData = false;
 
     final hasLoc = await _checkLocationPermissions();
-    if (hasLoc) {
-      await _checkAreWeAtRunStart();
-    }
     _startScreenListening();
 
     // Calculate remaining time to reach 1500ms
@@ -245,6 +242,12 @@ class MainNavigationController extends GetxController
     }
 
     update([UpdateIds.appScaffold]);
+
+    // Fire after app content is visible so the GPS wait loop (and any dialog)
+    // never blocks the loading screen from clearing.
+    if (hasLoc) {
+      unawaited(_checkAreWeAtRunStart());
+    }
 
     // don't configure notifications until here because
     // when a notification is clicked and the app launches,
