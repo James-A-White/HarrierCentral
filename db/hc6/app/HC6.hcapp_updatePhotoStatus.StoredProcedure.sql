@@ -118,7 +118,7 @@ END
 
 -- Verify caller holds an approval role for this kennel
 DECLARE @mmRoleFlags INT = 0;
-SELECT @mmRoleFlags = ISNULL(MismanagementRoleFlags, 0)
+SELECT @mmRoleFlags = ISNULL(MismanagementRoles, 0)
 FROM HC.HasherKennelMap
 WHERE UserId = @userId AND KennelId = @photoKennelId;
 

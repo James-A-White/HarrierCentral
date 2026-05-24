@@ -21,6 +21,8 @@ class CameraPhotoMarker extends StatefulWidget {
     super.key,
     required this.photoUrl,
     required this.size,
+    this.cachedOrientation,
+    this.onOrientationDetected,
   });
 
   /// Full HTTPS URL of the photo. Null shows the static empty camera frame.
@@ -28,6 +30,14 @@ class CameraPhotoMarker extends StatefulWidget {
 
   /// The width and height of the square marker widget in logical pixels.
   final double size;
+
+  /// Pre-resolved orientation from the controller cache. When non-null the
+  /// widget skips detection and renders immediately without a loading state.
+  final bool? cachedOrientation;
+
+  /// Called the first time orientation is detected so the controller can
+  /// cache it and skip detection on subsequent rebuilds.
+  final void Function(String url, bool isLandscape)? onOrientationDetected;
 
   @override
   State<CameraPhotoMarker> createState() => _CameraPhotoMarkerState();
@@ -43,7 +53,11 @@ class _CameraPhotoMarkerState extends State<CameraPhotoMarker> {
   @override
   void initState() {
     super.initState();
-    if (widget.photoUrl != null) _startDetection();
+    if (widget.cachedOrientation != null) {
+      _isLandscape = widget.cachedOrientation;
+    } else if (widget.photoUrl != null) {
+      _startDetection();
+    }
   }
 
   @override
@@ -51,11 +65,18 @@ class _CameraPhotoMarkerState extends State<CameraPhotoMarker> {
     super.didUpdateWidget(old);
     if (old.photoUrl != widget.photoUrl) {
       _cancelDetection();
-      setState(() {
-        _isLandscape = null;
-        _loadingCount = 0;
-      });
-      if (widget.photoUrl != null) _startDetection();
+      if (widget.cachedOrientation != null) {
+        setState(() {
+          _isLandscape = widget.cachedOrientation;
+          _loadingCount = 0;
+        });
+      } else {
+        setState(() {
+          _isLandscape = null;
+          _loadingCount = 0;
+        });
+        if (widget.photoUrl != null) _startDetection();
+      }
     }
   }
 
@@ -94,7 +115,11 @@ class _CameraPhotoMarkerState extends State<CameraPhotoMarker> {
   void _onLoaded(ImageInfo info, bool _) {
     _cancelDetection();
     if (mounted) {
-      setState(() => _isLandscape = info.image.width >= info.image.height);
+      final bool isLandscape = info.image.width >= info.image.height;
+      setState(() => _isLandscape = isLandscape);
+      if (widget.photoUrl != null) {
+        widget.onOrientationDetected?.call(widget.photoUrl!, isLandscape);
+      }
     }
   }
 

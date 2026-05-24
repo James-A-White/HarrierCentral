@@ -76,7 +76,7 @@ END
 
 -- Verify caller is Hash Flash for this kennel (0x00000020)
 DECLARE @mmRoleFlags INT = 0;
-SELECT @mmRoleFlags = ISNULL(MismanagementRoleFlags, 0)
+SELECT @mmRoleFlags = ISNULL(MismanagementRoles, 0)
 FROM HC.HasherKennelMap
 WHERE UserId = @userId AND KennelId = @kennelId;
 

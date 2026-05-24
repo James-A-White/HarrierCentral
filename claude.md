@@ -5,7 +5,7 @@ on the Harrier Central codebase. Read this before making any changes.
 
 ---
 
-## Session Start — TODO Review
+## Session Start — TODO Review and Skills
 
 At the start of every session, read the TODO file for the active component and
 display its contents to James before doing anything else.
@@ -19,6 +19,26 @@ display its contents to James before doing anything else.
 
 If the session spans multiple components, show all relevant TODO files.
 If a TODO item is completed during the session, mark it `[x]` in the file.
+
+### Mobile app — required skills
+
+**When working in `mobile-app/`, you MUST invoke these skills before writing
+or reviewing any code.** These are non-negotiable — do not skip them even for
+"small" fixes.
+
+#### Always load at session start
+
+| Skill | Why it's mandatory |
+|---|---|
+| `/hc-sync-domains` | Defines which tables exist in which local DB domain (common/kennel/event). Domain mistakes are completely silent — no compile error, no exception, just missing or wrongly-scoped data. Skipping this caused a bug where kennel data was silently dropped because `KennelsTableHelper.getTableName` was called with the wrong domain type. |
+| `/hc-access-tokens` | Defines how access tokens are generated and validated for every SP call. Token mistakes (wrong format, wrong compound suffix) produce auth failures with no indication of the root cause. |
+
+#### Load when the work requires it
+
+| Skill | Load when… |
+|---|---|
+| `/hc6-adhoc-data` | Working with SP responses that return non-sync data (e.g. a generated ID after an insert, status flags). Required any time you design or consume the `adHocDataId` pattern. |
+| `/packtrack` | Working on any part of the live run tracking feature (GPS sending, map display, position retrieval). |
 
 ---
 

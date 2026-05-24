@@ -44,7 +44,9 @@ class AppBootService {
   // ---------------------------------------------------------------------------
 
   Future<void> boot() async {
+    debugPrint('[BOOT] boot() start: ${DateTime.now().millisecondsSinceEpoch}ms');
     await initPrefs();
+    debugPrint('[BOOT] initPrefs done: ${DateTime.now().millisecondsSinceEpoch}ms');
 
     if (getStringPref(StringPrefsEnum.bootType) == BOOT_TYPE_RELOAD_DATA) {
       await _handleReloadData();
@@ -54,8 +56,11 @@ class AppBootService {
     final String? userId = await _resolveUserId();
     final String? deviceId = getStringPref(StringPrefsEnum.deviceId);
     final String? deviceSecret = getStringPref(StringPrefsEnum.deviceSecret);
+    debugPrint('[BOOT] userId resolved: ${userId != null ? "present" : "null"}, deviceId: ${deviceId != null ? "present" : "null"}');
 
+    debugPrint('[BOOT] checkForInternetConnection start: ${DateTime.now().millisecondsSinceEpoch}ms');
     await Utilities.checkForInternetConnection(false);
+    debugPrint('[BOOT] checkForInternetConnection done: ${DateTime.now().millisecondsSinceEpoch}ms');
 
     // 1.x → 2.x migration: userId exists in legacy prefs but no deviceId yet.
     if (userId != null && deviceId == null) {
@@ -92,9 +97,12 @@ class AppBootService {
       return;
     }
 
+    debugPrint('[BOOT] _prepareDeviceContext start: ${DateTime.now().millisecondsSinceEpoch}ms');
     await _prepareDeviceContext();
+    debugPrint('[BOOT] _prepareDeviceContext done: ${DateTime.now().millisecondsSinceEpoch}ms');
 
     bool reauthorizationHandled = false;
+    debugPrint('[BOOT] _fetchLoginResult start: ${DateTime.now().millisecondsSinceEpoch}ms');
     final ApproveLoginModel? loginResult = await _fetchLoginResult(
       errorCallback: (DbErrorModel error) async {
         if (_isReauthorizationError(error)) {
@@ -114,16 +122,25 @@ class AppBootService {
       },
     );
 
+    debugPrint('[BOOT] _fetchLoginResult done: ${DateTime.now().millisecondsSinceEpoch}ms — result=${loginResult != null ? "present" : "null"}, reauthorizationHandled=$reauthorizationHandled');
+
     if (reauthorizationHandled) return;
 
     if (loginResult == null) {
+      debugPrint('[BOOT] loginResult null — handling no connection');
       await _handleNoConnection(userId);
       return;
     }
 
+    debugPrint('[BOOT] _storeLoginPrefs start: ${DateTime.now().millisecondsSinceEpoch}ms');
     await _storeLoginPrefs(loginResult);
+    debugPrint('[BOOT] _storeLoginPrefs done: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint('[BOOT] _showLoginMessage start: ${DateTime.now().millisecondsSinceEpoch}ms');
     await _showLoginMessage(loginResult);
+    debugPrint('[BOOT] _showLoginMessage done: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint('[BOOT] _routeAfterLogin start: ${DateTime.now().millisecondsSinceEpoch}ms');
     await _routeAfterLogin(userId, loginResult);
+    debugPrint('[BOOT] _routeAfterLogin done: ${DateTime.now().millisecondsSinceEpoch}ms');
   }
 
   // ---------------------------------------------------------------------------
@@ -206,6 +223,7 @@ class AppBootService {
     String? userId,
     ApproveLoginModel loginResult,
   ) async {
+    debugPrint('[BOOT] _routeAfterLogin: serverStatusCode=${loginResult.serverStatusCode}, approvalCode=${loginResult.approvalCode}');
     if (loginResult.serverStatusCode == serverStatusDownForMaintenance.value) {
       await Utilities.showAlert(
         'Down for Maintenance',
@@ -240,13 +258,17 @@ class AppBootService {
       return;
     }
 
+    debugPrint('[BOOT] _handleExistingUser start: ${DateTime.now().millisecondsSinceEpoch}ms');
     await _handleExistingUser();
+    debugPrint('[BOOT] _handleExistingUser done: ${DateTime.now().millisecondsSinceEpoch}ms');
   }
 
   /// Normal boot for a returning user: check DB version and upgrade if needed.
   Future<void> _handleExistingUser() async {
+    debugPrint('[BOOT] _handleExistingUser: checking DB version');
     final int installedDbVersion =
         getIntPref(IntPrefsEnum.databaseVersion) ?? 0;
+    debugPrint('[BOOT] _handleExistingUser: installedDbVersion=$installedDbVersion, DB_VERSION=$DB_VERSION');
     final bool dbTooFarBehind =
         installedDbVersion != DB_VERSION &&
         (installedDbVersion + 9) < DB_VERSION;
@@ -257,7 +279,9 @@ class AppBootService {
     }
 
     await setStringPref(StringPrefsEnum.bootType, BOOT_TYPE_NORMAL);
+    debugPrint('[BOOT] Get.off(MainNavigationPage) start: ${DateTime.now().millisecondsSinceEpoch}ms');
     await Get.off(() => MainNavigationPage(), routeName: '/main');
+    debugPrint('[BOOT] Get.off(MainNavigationPage) done: ${DateTime.now().millisecondsSinceEpoch}ms');
   }
 
   /// DB version is too far behind — delete local DB and re-authorise to pull a
@@ -372,7 +396,9 @@ class AppBootService {
   /// Store app version in prefs and collect location — everything ApproveLoginService
   /// needs that isn't already populated by initServices().
   Future<void> _prepareDeviceContext() async {
+    debugPrint('[BOOT] _prepareDeviceContext: PackageInfo.fromPlatform start: ${DateTime.now().millisecondsSinceEpoch}ms');
     final PackageInfo p = await PackageInfo.fromPlatform();
+    debugPrint('[BOOT] _prepareDeviceContext: PackageInfo done: ${DateTime.now().millisecondsSinceEpoch}ms — v${p.version}+${p.buildNumber}');
     await setStringPref(
       StringPrefsEnum.harrierCentralVersionAndBuild,
       'HC Ver: ${p.version}, Bld: ${p.buildNumber}',
@@ -380,11 +406,15 @@ class AppBootService {
     await setStringPref(StringPrefsEnum.harrierCentralVersion, p.version);
 
     appModel.appStartTime = DateTime.now();
+    debugPrint('[BOOT] _prepareDeviceContext: Permission.location.isGranted check: ${DateTime.now().millisecondsSinceEpoch}ms');
     appModel.hasLocationPermissions = await Permission.location.isGranted;
+    debugPrint('[BOOT] _prepareDeviceContext: hasLocationPermissions=${appModel.hasLocationPermissions}: ${DateTime.now().millisecondsSinceEpoch}ms');
 
     if (appModel.hasLocationPermissions) {
       Get.put(LocationService());
+      debugPrint('[BOOT] _prepareDeviceContext: Geolocator.getLastKnownPosition start: ${DateTime.now().millisecondsSinceEpoch}ms');
       final Position? position = await Geolocator.getLastKnownPosition();
+      debugPrint('[BOOT] _prepareDeviceContext: getLastKnownPosition done: ${DateTime.now().millisecondsSinceEpoch}ms — lat=${position?.latitude}');
       deviceInfo.deviceLat = position?.latitude.toDouble();
       deviceInfo.deviceLon = position?.longitude.toDouble();
     }
@@ -394,12 +424,15 @@ class AppBootService {
   Future<ApproveLoginModel?> _fetchLoginResult({
     Function? errorCallback,
   }) async {
+    debugPrint('[BOOT] _fetchLoginResult: isConnected=${Utilities.isConnected()}: ${DateTime.now().millisecondsSinceEpoch}ms');
     if (!Utilities.isConnected()) return null;
 
     final ApproveLoginService svc = ApproveLoginService();
+    debugPrint('[BOOT] _fetchLoginResult: approveLogin HTTP call start: ${DateTime.now().millisecondsSinceEpoch}ms');
     final String responseBody = await svc.approveLogin(
       errorCallback: errorCallback,
     );
+    debugPrint('[BOOT] _fetchLoginResult: approveLogin HTTP call done: ${DateTime.now().millisecondsSinceEpoch}ms — responseLen=${responseBody.length}');
 
     // approveLogin shows an error dialog and returns ERROR_KEY_OK_BTN_PRESSED
     // when the server returns a hard error the user acknowledged.

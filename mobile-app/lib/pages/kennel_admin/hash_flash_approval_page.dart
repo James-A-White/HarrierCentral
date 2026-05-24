@@ -199,7 +199,10 @@ class PhotoReviewController extends GetxController {
 
   // ── Navigation ────────────────────────────────────────────────────────────
 
-  void onPageChanged(int index) => currentIndex.value = index;
+  void onPageChanged(int index) {
+    currentIndex.value = index;
+    _preloadAhead(index + 1);
+  }
 
   void switchTab(PhotoReviewTab tab) {
     if (activeTab.value == tab) return;
@@ -207,6 +210,23 @@ class PhotoReviewController extends GetxController {
     currentIndex.value = 0;
     if (pageController.hasClients) {
       pageController.jumpToPage(0);
+    }
+    _preloadAhead(0);
+  }
+
+  // Precache the next [_preloadCount] photos from [fromIndex] so they are
+  // already in Flutter's image cache when the user swipes to them.
+  static const int _preloadCount = 3;
+  void _preloadAhead(int fromIndex) {
+    final ctx = navigatorKey.currentContext;
+    if (ctx == null) return;
+    final photos = visiblePhotos;
+    final end = (fromIndex + _preloadCount).clamp(0, photos.length);
+    for (int i = fromIndex.clamp(0, photos.length); i < end; i++) {
+      final url = photos[i].blobUrl;
+      if (url.isNotEmpty) {
+        precacheImage(NetworkImage(url), ctx);
+      }
     }
   }
 
@@ -260,6 +280,7 @@ class PhotoReviewController extends GetxController {
           .whereType<Map<String, dynamic>>()
           .map(KennelPendingPhoto.fromJson)
           .toList();
+      _preloadAhead(0);
     } catch (e) {
       loadError.value =
           'Could not load photos. Please check your connection and try again.';

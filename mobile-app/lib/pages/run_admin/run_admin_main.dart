@@ -180,149 +180,137 @@ class RunAdminPage extends StatelessWidget {
   ) {
     final List<Widget> buttons = <Widget>[];
 
-    // Row 1: Manual check-in + Scan to check-in (always shown)
     buttons.add(
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: <Widget>[
-          _buildButton(
-            label: 'Manual check in',
-            iconAsset: 'images/icons/check_in_pack_icon.png',
-            onPressed: () async {
-              await Get.to(
-                () => CheckInPackPage(controllerTag: aggregate.event.eventId),
-                binding: BindingsBuilder(() {
-                  Get.put(
-                    CheckInPackController(aggregate),
-                    tag: aggregate.event.eventId,
-                    permanent: false,
-                  );
-                }),
+      _buildButton(
+        label: 'Manual check in',
+        iconAsset: 'images/icons/check_in_pack_icon.png',
+        onPressed: () async {
+          await Get.to(
+            () => CheckInPackPage(controllerTag: aggregate.event.eventId),
+            binding: BindingsBuilder(() {
+              Get.put(
+                CheckInPackController(aggregate),
+                tag: aggregate.event.eventId,
+                permanent: false,
               );
-              unawaited(
-                tableModel.syncUserDataService.updateFromBackend(
-                  EnumDataTables.hashers.flag,
-                  false,
-                  debugText: 'RunAdmin: sync hashers on check-in page exit',
-                ),
-              );
-            },
-          ),
-          _buildButton(
-            label: 'Scan to check in',
-            iconAsset: 'images/icons/qr_scanner_phone_icon.png',
-            onPressed: () async {
-              await Navigator.push<dynamic>(
-                context,
-                MaterialPageRoute<dynamic>(
-                  builder: (BuildContext context) =>
-                      CheckInScannerPage(eventAggregate: aggregate),
-                ),
-              );
-            },
-          ),
-        ],
+            }),
+          );
+          unawaited(
+            tableModel.syncUserDataService.updateFromBackend(
+              EnumDataTables.hashers.flag,
+              false,
+              debugText: 'RunAdmin: sync hashers on check-in page exit',
+            ),
+          );
+        },
+      ),
+    );
+
+    buttons.add(
+      _buildButton(
+        label: 'Scan to check in',
+        iconAsset: 'images/icons/qr_scanner_phone_icon.png',
+        onPressed: () async {
+          await Navigator.push<dynamic>(
+            context,
+            MaterialPageRoute<dynamic>(
+              builder: (BuildContext context) =>
+                  CheckInScannerPage(eventAggregate: aggregate),
+            ),
+          );
+        },
       ),
     );
 
     if (aggregate.extensions.appAccess.canManageHashCash) {
       buttons.add(
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: <Widget>[
-            _buildButton(
-              label: 'Hash\r\ncash',
-              iconAsset: 'images/icons/hash_cash_icon.png',
-              onPressed: () async {
-                await Navigator.push<dynamic>(
-                  context,
-                  MaterialPageRoute<dynamic>(
-                    builder: (BuildContext context) =>
-                        PaymentReportPage(eventAggregate: aggregate),
-                  ),
-                );
-              },
-            ),
-            _buildButton(
-              label: 'Manage receipts',
-              iconAsset: 'images/icons/receipt_icon.png',
-              onPressed: () async {
-                await Navigator.push<dynamic>(
-                  context,
-                  MaterialPageRoute<dynamic>(
-                    builder: (BuildContext context) =>
-                        ReceiptsList(eventAggregate: aggregate),
-                  ),
-                );
-              },
-            ),
-          ],
+        _buildButton(
+          label: 'Hash\r\ncash',
+          iconAsset: 'images/icons/hash_cash_icon.png',
+          onPressed: () async {
+            await Navigator.push<dynamic>(
+              context,
+              MaterialPageRoute<dynamic>(
+                builder: (BuildContext context) =>
+                    PaymentReportPage(eventAggregate: aggregate),
+              ),
+            );
+          },
+        ),
+      );
+      buttons.add(
+        _buildButton(
+          label: 'Manage receipts',
+          iconAsset: 'images/icons/receipt_icon.png',
+          onPressed: () async {
+            await Navigator.push<dynamic>(
+              context,
+              MaterialPageRoute<dynamic>(
+                builder: (BuildContext context) =>
+                    ReceiptsList(eventAggregate: aggregate),
+              ),
+            );
+          },
         ),
       );
     }
 
     if (aggregate.extensions.appAccess.canManageRuns) {
       buttons.add(
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: <Widget>[
-            _buildButton(
-              label: 'Edit run details',
-              iconAsset: 'images/icons/edit_run_icon.png',
-              onPressed: () async {
-                await Navigator.push<dynamic>(
-                  context,
-                  MaterialPageRoute<dynamic>(
-                    builder: (BuildContext context) =>
-                        EditRunDetailsPage(false, aggregate),
-                  ),
-                );
-              },
-            ),
-            if (aggregate.extensions.appAccess.canManageAwards)
-              _buildButton(
-                label: 'Award\r\nlist',
-                iconAsset: 'images/icons/run_awards.png',
-                onPressed: () async {
-                  await Navigator.push<dynamic>(
-                    context,
-                    MaterialPageRoute<dynamic>(
-                      builder: (BuildContext context) =>
-                          DrinksList(eventAggregate: aggregate),
-                    ),
-                  );
-                },
+        _buildButton(
+          label: 'Edit run details',
+          iconAsset: 'images/icons/edit_run_icon.png',
+          onPressed: () async {
+            await Navigator.push<dynamic>(
+              context,
+              MaterialPageRoute<dynamic>(
+                builder: (BuildContext context) =>
+                    EditRunDetailsPage(false, aggregate),
               ),
-          ],
+            );
+          },
         ),
       );
 
+      if (aggregate.extensions.appAccess.canManageAwards) {
+        buttons.add(
+          _buildButton(
+            label: 'Award\r\nlist',
+            iconAsset: 'images/icons/run_awards.png',
+            onPressed: () async {
+              await Navigator.push<dynamic>(
+                context,
+                MaterialPageRoute<dynamic>(
+                  builder: (BuildContext context) =>
+                      DrinksList(eventAggregate: aggregate),
+                ),
+              );
+            },
+          ),
+        );
+      }
+
       buttons.add(
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: <Widget>[
-            _buildButton(
-              label: 'Print QR codes',
-              iconAsset: 'images/icons/print_qr_icon.png',
-              onPressed: () async {
-                await Navigator.push<dynamic>(
-                  context,
-                  MaterialPageRoute<dynamic>(
-                    builder: (BuildContext context) => EventQrCodePage(
-                      kennelShortName: aggregate.kennel.kennelShortName,
-                      qrContent: aggregate.event.publicEventId,
-                      title: aggregate.event.eventName,
-                      runStartPrefix: QR_PREFIX_SPECIFIC_RUN_START,
-                      runEndPrefix: QR_PREFIX_SPECIFIC_RUN_END,
-                      runLink: QR_PREFIX_HASHRUNS_DOT_ORG_RUN_LINK,
-                      showRunLink: true,
-                      eventStartDatetime: aggregate.event.eventStartDatetime,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ],
+        _buildButton(
+          label: 'Print QR codes',
+          iconAsset: 'images/icons/print_qr_icon.png',
+          onPressed: () async {
+            await Navigator.push<dynamic>(
+              context,
+              MaterialPageRoute<dynamic>(
+                builder: (BuildContext context) => EventQrCodePage(
+                  kennelShortName: aggregate.kennel.kennelShortName,
+                  qrContent: aggregate.event.publicEventId,
+                  title: aggregate.event.eventName,
+                  runStartPrefix: QR_PREFIX_SPECIFIC_RUN_START,
+                  runEndPrefix: QR_PREFIX_SPECIFIC_RUN_END,
+                  runLink: QR_PREFIX_HASHRUNS_DOT_ORG_RUN_LINK,
+                  showRunLink: true,
+                  eventStartDatetime: aggregate.event.eventStartDatetime,
+                ),
+              ),
+            );
+          },
         ),
       );
     }
@@ -340,36 +328,51 @@ class RunAdminPage extends StatelessWidget {
           mmRoleFlagRa,
         )) {
       buttons.add(
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: <Widget>[
-            _buildButton(
-              label: 'Review\r\nPhotos',
-              iconAsset: 'images/icons/android_camera.png',
-              onPressed: () async {
-                if (Utilities.isConnected(showDialog: true)) {
-                  await Navigator.push<void>(
-                    context,
-                    MaterialPageRoute<void>(
-                      builder: (_) => PhotoReviewPage(
-                        kennelId: aggregate.kennel.kennelId,
-                        eventId: aggregate.event.eventId.asUuid,
-                        eventName: aggregate.event.eventName,
-                        eventNumber: aggregate.event.absoluteEventNumber,
-                        kennelLogoUrl: aggregate.kennel.kennelLogo,
-                        kennelShortName: aggregate.kennel.kennelShortName,
-                      ),
-                    ),
-                  );
-                }
-              },
-            ),
-          ],
+        _buildButton(
+          label: 'Review\r\nPhotos',
+          iconAsset: 'images/icons/android_camera.png',
+          onPressed: () async {
+            if (Utilities.isConnected(showDialog: true)) {
+              await Navigator.push<void>(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (_) => PhotoReviewPage(
+                    kennelId: aggregate.kennel.kennelId,
+                    eventId: aggregate.event.eventId.asUuid,
+                    eventName: aggregate.event.eventName,
+                    eventNumber: aggregate.event.absoluteEventNumber,
+                    kennelLogoUrl: aggregate.kennel.kennelLogo,
+                    kennelShortName: aggregate.kennel.kennelShortName,
+                  ),
+                ),
+              );
+            }
+          },
         ),
       );
     }
 
-    return buttons;
+    return [
+      LayoutBuilder(
+        builder: (context, constraints) {
+          const double spacing = 12.0;
+          const double minButtonW = 120.0;
+          final int perRow = ((constraints.maxWidth + spacing) /
+                  (minButtonW + spacing))
+              .floor()
+              .clamp(1, buttons.length);
+          final double buttonW =
+              (constraints.maxWidth - spacing * (perRow - 1)) / perRow;
+          return Wrap(
+            spacing: spacing,
+            runSpacing: 0,
+            children: buttons
+                .map((b) => SizedBox(width: buttonW, child: b))
+                .toList(),
+          );
+        },
+      ),
+    ];
   }
 
   Widget _buildButton({
@@ -380,7 +383,6 @@ class RunAdminPage extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 15, bottom: 15),
       child: SizedBox(
-        width: 110,
         height: 110,
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(

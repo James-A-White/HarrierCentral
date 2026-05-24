@@ -402,6 +402,7 @@ class QueryRuns {
 
     //final Geolocator locator = Geolocator();
 
+    debugPrint('[BOOT] getRunDetailsAggregates: start: ${DateTime.now().millisecondsSinceEpoch}ms');
     IveCoreUtilities.logTiming('Run query start', appModel.appStartTime);
     final List<Map<String, dynamic>> results = await QueryRuns.queryRuns(
       queryType,
@@ -413,6 +414,8 @@ class QueryRuns {
     );
 
     IveCoreUtilities.logTiming('Run query end', appModel.appStartTime);
+    debugPrint('[BOOT] getRunDetailsAggregates: SQL query returned ${results.length} rows: ${DateTime.now().millisecondsSinceEpoch}ms');
+    debugPrint('[BOOT] getRunDetailsAggregates: Dart post-processing loop start: ${DateTime.now().millisecondsSinceEpoch}ms');
 
     for (int i = 0; i < results.length; i++) {
       final EventModel eventItem = tableModel.eventsTableHelper.fromMap(
@@ -539,6 +542,7 @@ class QueryRuns {
         runs.add(item);
       }
     }
+    debugPrint('[BOOT] getRunDetailsAggregates: Dart post-processing done: ${DateTime.now().millisecondsSinceEpoch}ms — ${runs.length} runs kept from ${results.length} rows');
     return runs;
   }
 
@@ -727,7 +731,10 @@ class QueryRuns {
       assert(false);
     }
 
-    return database.rawQuery(query);
+    debugPrint('[BOOT] queryRuns: rawQuery start: ${DateTime.now().millisecondsSinceEpoch}ms');
+    final result = await database.rawQuery(query);
+    debugPrint('[BOOT] queryRuns: rawQuery done: ${DateTime.now().millisecondsSinceEpoch}ms — ${result.length} rows');
+    return result;
   }
 
   static Future<List<Map<String, dynamic>>> queryPreviousRun(

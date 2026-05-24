@@ -1083,21 +1083,29 @@ class KennelMemberListState extends State<KennelMembersList>
       );
     });
 
-    final result = await srv.updateHasherKennelStatus(
-      widget.kennelListAggregate.kennel.kennelId,
-      AppDomainType.kennel,
-      targetUserId: snapshot.data![index].hasherId,
-      appAccessFlags: appAccessFlags,
-      mismanagementRoles: mismanagementRoles,
-    );
-
-    await _refreshKennelMembersFromTable(true);
-    if (!mounted) return;
-    setStateIfMounted(() {
-      snapshot.data![index] = snapshot.data![index].copyWith(
-        memberInfoBeingUpdated: false,
+    List<dynamic> result = [];
+    try {
+      result = await srv.updateHasherKennelStatus(
+        widget.kennelListAggregate.kennel.kennelId,
+        AppDomainType.kennel,
+        targetUserId: snapshot.data![index].hasherId,
+        appAccessFlags: appAccessFlags,
+        mismanagementRoles: mismanagementRoles,
       );
-    });
+    } catch (e) {
+      debugPrint('_setUserProperties: updateHasherKennelStatus error: $e');
+    } finally {
+      await _refreshKennelMembersFromTable(true);
+      if (mounted) {
+        setStateIfMounted(() {
+          snapshot.data![index] = snapshot.data![index].copyWith(
+            memberInfoBeingUpdated: false,
+          );
+        });
+      }
+    }
+
+    if (!mounted) return;
 
     if (mismanagementRoles != -1) {
       showHcSnackbar(

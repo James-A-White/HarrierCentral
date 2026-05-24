@@ -80,6 +80,10 @@ class RunTrackerMapController extends GetxController
   // Refreshed on every live-run auto-update tick so newly-taken photos appear.
   final Map<String, String> _photoUrlCache = {};
 
+  // blobUrl → isLandscape, populated on first render of each photo marker.
+  // Survives map zoom/pan rebuilds so markers skip the loading animation.
+  final Map<String, bool> _photoOrientationCache = {};
+
   Worker? _timelineWorker;
   Worker? _selectionWorker;
   StreamSubscription<MapEvent>? _mapEventsSub;
@@ -684,7 +688,13 @@ class RunTrackerMapController extends GetxController
     // marker entirely rather than showing an empty camera frame.
     if (resolvedUrl == null) return const SizedBox.shrink();
 
-    final marker = CameraPhotoMarker(photoUrl: resolvedUrl, size: size);
+    final marker = CameraPhotoMarker(
+      photoUrl: resolvedUrl,
+      size: size,
+      cachedOrientation: _photoOrientationCache[resolvedUrl],
+      onOrientationDetected: (url, isLandscape) =>
+          _photoOrientationCache[url] = isLandscape,
+    );
 
     return GestureDetector(
       onTap: () => Navigator.of(navigatorKey.currentContext!).push(

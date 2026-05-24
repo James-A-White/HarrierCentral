@@ -80,7 +80,7 @@ END
 -- Verify caller holds an approval role for this kennel:
 -- Hash Flash (0x20) OR GM (0x02) OR VGM (0x04) OR RA (0x08) = 0x2E
 DECLARE @mmRoleFlags INT = 0;
-SELECT @mmRoleFlags = ISNULL(MismanagementRoleFlags, 0)
+SELECT @mmRoleFlags = ISNULL(MismanagementRoles, 0)
 FROM HC.HasherKennelMap
 WHERE UserId = @userId AND KennelId = @kennelId;
 
