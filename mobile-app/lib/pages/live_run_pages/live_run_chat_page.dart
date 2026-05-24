@@ -1,25 +1,13 @@
 import 'package:harrier_central/imports.dart';
 
-class LiveRunChatController extends GetxController {
-  LiveRunChatController({required this.run}) {
-    LiveRunService.ensure();
-  }
-
-  final RunDetailsAggregate run;
-}
-
 class LiveRunChatPage extends StatelessWidget {
-  LiveRunChatPage({super.key, required this.run})
-    : controller = Get.put(
-        LiveRunChatController(run: run),
-        tag: 'live-run-chat-${run.event.eventId}',
-      );
+  const LiveRunChatPage({super.key, required this.run});
 
   final RunDetailsAggregate run;
-  final LiveRunChatController controller;
 
   @override
   Widget build(BuildContext context) {
+    LiveRunService.ensure();
     return Container(
       decoration: Backgrounds.defaultHcBackground(),
       child: ChatPage(

@@ -315,10 +315,6 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
             );
           }
 
-          if (Get.isRegistered<ChatPageController>()) {
-            Get.find<ChatPageController>().notificationReceived(message);
-          }
-
           if (kDebugMode) {
             debugPrint('Handling chat message: ${message.data}');
           }

@@ -1,26 +1,24 @@
-import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
+import 'package:flutter_chat_core/flutter_chat_core.dart' as core;
 import 'package:harrier_central/imports.dart';
 
+const int kChatReleasabilityAll = 63;
+
 class ChatPageController extends GetxController {
-  ChatPageController({required this.eventId, required this.publicEventId}) {
-    // Initialize controllers with initial data if available
-  }
-  String eventId;
-  String publicEventId;
+  ChatPageController({required this.eventId, required this.publicEventId});
 
-  RxDouble width = 0.0.obs;
-  RxDouble height = 0.0.obs;
+  final String eventId;
+  final String publicEventId;
 
-  double visibility = 0.0;
+  final chatController = core.InMemoryChatController();
+  final _userCache = <String, core.User>{};
 
-  RxBool messagesLoading = true.obs;
-
-  List<types.Message> messages = <types.Message>[];
+  late core.User currentUser;
+  StreamSubscription<RemoteMessage>? _fcmSubscription;
 
   @override
   void onClose() {
-    // No explicit resources to dispose here (messages is a plain List;
-    // onAppResumed is a one-shot async call with no ongoing subscription).
+    unawaited(_fcmSubscription?.cancel());
+    chatController.dispose();
     super.onClose();
   }
 
@@ -31,7 +29,7 @@ class ChatPageController extends GetxController {
     final String? publicHasherId = getStringPref(StringPrefsEnum.publicHasherId);
     if (publicHasherId == null || publicHasherId.isEmpty) {
       debugPrint('ChatPageController: publicHasherId not available, cannot open chat');
-      user = const types.User(id: '');
+      currentUser = const core.User(id: '');
       WidgetsBinding.instance.addPostFrameCallback((_) => Get.back<void>());
       return;
     }
@@ -42,86 +40,102 @@ class ChatPageController extends GetxController {
         '';
     final String photo = getStringPref(StringPrefsEnum.profilePhotoUrl) ?? '';
 
-    user = types.User(
-      id: publicHasherId.toUpperCase(),
-      firstName: hashName,
-      imageUrl: photo,
+    currentUser = core.User(
+      id: publicHasherId.asUuid,
+      name: hashName,
+      imageSource: photo.isEmpty ? null : photo,
     );
+    _userCache[currentUser.id] = currentUser;
 
-    unawaited(onAppResumed());
+    unawaited(onInitAsync());
   }
 
-  void notificationReceived(RemoteMessage message) {
-    // EventId = eventId,
-    // Title = title,
-    // UserId = userId,
-    // UserDisplayName = userDisplayName,
-    // UserPhoto = userPhoto,
-    // Message = messageContent,
-    // MessageId = messageId,
-    // MessageRelesabilityFlags = messageRelesabilityFlags
-
-    if (eventId.toUpperCase() ==
-        message.data['EventId'].toString().toUpperCase()) {
-      final msgUser = types.User(
-        id: message.data['UserId'].toString().toUpperCase(),
-        firstName: message.data['UserDisplayName'],
-        imageUrl: message.data['UserPhoto'],
-      );
-
-      final textMessage = types.TextMessage(
-        author: msgUser,
-        createdAt: DateTime.now().millisecondsSinceEpoch,
-        id: message.data['MessageId'].toString().toUpperCase(),
-        text: message.data['Message'],
-      );
-
-      final index = messages.indexWhere(
-        (element) =>
-            element.id.toUpperCase() ==
-            message.data['MessageId'].toString().toUpperCase(),
-      );
-
-      if (index == -1) {
-        final updatedMessage = textMessage.copyWith(status: types.Status.sent);
-        addMessage(updatedMessage);
-      } else {
-        final updatedMessage = (messages[index] as types.TextMessage).copyWith(
-          status: types.Status.sent,
-        );
-
-        messages[index] = updatedMessage;
-        update([UpdateIds.chatMessages]);
-      }
-    }
+  Future<core.User?> resolveUser(String userId) async {
+    return _userCache[userId.asUuid];
   }
 
   Future<void> onAppResumed() async {
-    messagesLoading.value = true;
     final result = await _getEventMessages(eventId);
-    if (result == null) {
-      messagesLoading.value = false;
-      return;
-    }
-    if (result.startsWith(ERROR_PREFIX)) {
-      debugPrint('ChatPageController: getEventMessages error: $result');
-      messagesLoading.value = false;
-      return;
-    }
+    if (result == null || result.startsWith(ERROR_PREFIX)) return;
     final outerItem = jsonDecode(result) as List<dynamic>;
-    messages = loadMessages(outerItem[0] as List<dynamic>);
-    messagesLoading.value = false;
-    update([UpdateIds.chatMessages]);
+    final messages = _parseMessages(outerItem[0] as List<dynamic>);
+    await chatController.setMessages(messages);
+  }
+
+  Future<void> onInitAsync() async {
+    await onAppResumed();
+
+    unawaited(_markEventChatRead());
+
+    _fcmSubscription = FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      final incomingEventId = message.data['EventId'] as String?;
+      if (incomingEventId != null &&
+          eventId.asUuid == incomingEventId.asUuid) {
+        final userId = message.data['UserId'].toString().asUuid;
+        _userCache[userId] = core.User(
+          id: userId,
+          name: message.data['UserDisplayName'] as String?,
+          imageSource: message.data['UserPhoto'] as String?,
+        );
+
+        final messageId = message.data['MessageId'].toString().asUuid;
+        final existing = chatController.messages
+            .where((m) => m.id == messageId)
+            .firstOrNull;
+
+        if (existing == null) {
+          final newMsg = core.Message.text(
+            id: messageId,
+            authorId: userId,
+            text: message.data['Message'] as String,
+            createdAt: DateTime.now(),
+            status: core.MessageStatus.sent,
+          );
+          unawaited(chatController.insertMessage(newMsg));
+        } else {
+          if (existing is core.TextMessage) {
+            unawaited(chatController.updateMessage(
+              existing,
+              existing.copyWith(
+                status: core.MessageStatus.sent,
+                sentAt: DateTime.now(),
+              ),
+            ));
+          }
+        }
+      }
+    });
+  }
+
+  Future<void> _markEventChatRead() async {
+    final userId = currentUserId;
+    final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    final result = await ServiceCommon.sendHttpPost(
+      () => jsonEncode(<String, dynamic>{
+        'queryType': 'markEventChatRead',
+        'deviceId': deviceId,
+        'accessToken': Utilities.generateToken(
+          userId,
+          'hcapp_markEventChatRead',
+          paramString: deviceSecret,
+        ),
+        'eventId': eventId,
+      }),
+    );
+
+    debugPrint(result.startsWith(ERROR_PREFIX)
+        ? 'SP [markEventChatRead] called — FAILED'
+        : 'SP [markEventChatRead] called — success');
   }
 
   Future<String?> _getEventMessages(String eventId) async {
     final String userId = currentUserId;
-    String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-    String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-    //print('Get Event Messages called at ${DateTime.now().toIso8601String()}');
-
-    final jsonResult = await ServiceCommon.sendHttpPost(
+    return ServiceCommon.sendHttpPost(
       () => jsonEncode(<String, String>{
         'queryType': 'getEventMessages',
         'deviceId': deviceId,
@@ -133,35 +147,39 @@ class ChatPageController extends GetxController {
         'eventId': eventId,
       }),
     );
-
-    return jsonResult;
   }
 
-  late final types.User user;
+  List<core.Message> _parseMessages(List<dynamic> messageList) {
+    final result = <core.Message>[];
+    for (final item in messageList) {
+      final msg = item as Map<String, dynamic>;
 
-  void updateSizeWithDebounce(double newWidth, double newHeight) {
-    if (width.value != newWidth) {
-      width.value = newWidth;
+      dynamic authorRaw = msg['author'];
+      if (authorRaw is String) {
+        authorRaw = jsonDecode(authorRaw);
+      }
+      final author = authorRaw as Map<String, dynamic>;
+      final authorId = (author['id'] as String).asUuid;
+
+      _userCache[authorId] = core.User(
+        id: authorId,
+        name: author['firstName'] as String?,
+        imageSource: author['imageUrl'] as String?,
+      );
+
+      final createdAtMs = msg['createdAt'];
+      result.add(core.Message.text(
+        id: (msg['id'] as String).asUuid,
+        authorId: authorId,
+        text: msg['text'] as String,
+        createdAt: createdAtMs is int
+            ? DateTime.fromMillisecondsSinceEpoch(createdAtMs)
+            : null,
+        status: core.MessageStatus.sent,
+      ));
     }
-    if (height.value != newHeight) {
-      height.value = newHeight;
-    }
-  }
-
-  void addMessage(types.Message message) {
-    messages.insert(0, message);
-
-    // if (visibility > .1) {
-    //   final chatsCounts = getMapIntPref(MapPrefsEnum.unusedChatCounts);
-    //   //print('Add message chat message length = ${messages.length}');
-
-    //   chatsCounts[publicEventId] = messages.length;
-
-    //   // it's fine to call this async method unawaited
-    //   setMapIntPref(MapPrefsEnum.unusedChatCounts, chatsCounts);
-    // }
-
-    update([UpdateIds.chatMessages]);
+    // SP returns newest-first; 2.x chat displays index 0 at top, so reverse.
+    return result.reversed.toList();
   }
 
   void handleAttachmentPressed() {
@@ -169,13 +187,13 @@ class ChatPageController extends GetxController {
       Get.bottomSheet<void>(
         SafeArea(
           child: SizedBox(
-            height: 144,
+            height: 96,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 TextButton(
                   onPressed: () async {
-                    Get.back<void>(); // Close the bottom sheet
+                    Get.back<void>();
                     await handleImageSelection();
                   },
                   child: const Align(
@@ -183,18 +201,8 @@ class ChatPageController extends GetxController {
                     child: Text('Photo'),
                   ),
                 ),
-                // TextButton(
-                //   onPressed: () {
-                //     Get.back<void>(); // Close the bottom sheet
-                //     handleFileSelection();
-                //   },
-                //   child: const Align(
-                //     alignment: AlignmentDirectional.centerStart,
-                //     child: Text('File'),
-                //   ),
-                // ),
                 TextButton(
-                  onPressed: () => Get.back<void>(), // Close the bottom sheet
+                  onPressed: () => Get.back<void>(),
                   child: const Align(
                     alignment: AlignmentDirectional.centerStart,
                     child: Text('Cancel'),
@@ -204,32 +212,10 @@ class ChatPageController extends GetxController {
             ),
           ),
         ),
-        barrierColor: Colors.black54, // Optional: Background dimming
-        // isDismissible: true,          // Optional: Allows dismissing by tapping outside
-        // enableDrag: true,             // Optional: Allows dragging to close
+        barrierColor: Colors.black54,
       ),
     );
   }
-
-  // Future<void> handleFileSelection() async {
-  //   final result = await FilePicker.platform.pickFiles(
-  //       //type: FileType.any,
-  //       );
-
-  //   if (result != null && result.files.single.path != null) {
-  //     final message = types.FileMessage(
-  //       author: user,
-  //       createdAt: DateTime.now().millisecondsSinceEpoch,
-  //       id: const Uuid().v4(),
-  //       mimeType: lookupMimeType(result.files.single.path!),
-  //       name: result.files.single.name,
-  //       size: result.files.single.size,
-  //       uri: result.files.single.path!,
-  //     );
-
-  //     addMessage(message);
-  //   }
-  // }
 
   Future<void> handleImageSelection() async {
     final result = await ImagePicker().pickImage(
@@ -242,80 +228,33 @@ class ChatPageController extends GetxController {
       final bytes = await result.readAsBytes();
       final image = await decodeImageFromList(bytes);
 
-      final message = types.ImageMessage(
-        author: user,
-        createdAt: DateTime.now().millisecondsSinceEpoch,
-        height: image.height.toDouble(),
+      final message = core.Message.image(
         id: const Uuid().v4(),
-        name: result.name,
-        size: bytes.length,
-        uri: result.path,
+        authorId: currentUser.id,
+        source: result.path,
         width: image.width.toDouble(),
+        height: image.height.toDouble(),
+        size: bytes.length,
       );
-
-      addMessage(message);
+      unawaited(chatController.insertMessage(message));
     }
   }
 
-  Future<void> handleMessageTap(BuildContext _, types.Message message) async {
-    if (message is types.FileMessage) {
-      //var localPath = message.uri;
-
-      if (message.uri.startsWith('http')) {
-        try {
-          final index = messages.indexWhere(
-            (element) => element.id == message.id,
-          );
-          final updatedMessage = (messages[index] as types.FileMessage)
-              .copyWith(isLoading: true);
-
-          messages[index] = updatedMessage;
-        } finally {
-          final index = messages.indexWhere(
-            (element) => element.id == message.id,
-          );
-          final updatedMessage = (messages[index] as types.FileMessage)
-              .copyWith(
-                //isLoading: null,
-              );
-
-          messages[index] = updatedMessage;
-        }
-      }
-
-      //await OpenFilex.open(localPath);
-    }
-  }
-
-  void handlePreviewDataFetched(
-    types.TextMessage message,
-    types.PreviewData previewData,
-  ) {
-    final index = messages.indexWhere((element) => element.id == message.id);
-    final updatedMessage = (messages[index] as types.TextMessage).copyWith(
-      previewData: previewData,
-    );
-
-    messages[index] = updatedMessage;
-  }
-
-  Future<void> handleSendPressed(types.PartialText message) async {
-    String uuid = const Uuid().v4();
-    final textMessage = types.TextMessage(
-      author: user,
-      createdAt: DateTime.now().millisecondsSinceEpoch,
+  Future<void> handleSendPressed(String text) async {
+    final uuid = const Uuid().v4();
+    final newMsg = core.Message.text(
       id: uuid,
-      text: message.text,
-      showStatus: true,
-      status: types.Status.sending,
+      authorId: currentUser.id,
+      text: text,
+      createdAt: DateTime.now(),
+      status: core.MessageStatus.sending,
     );
 
-    addMessage(textMessage);
+    unawaited(chatController.insertMessage(newMsg));
 
-    //final hasherId = await box!.get(HIVE_HASHER_ID) as String;
     final userId = currentUserId;
-    String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-    String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
     final result = await ServiceCommon.sendHttpPost(
       () => jsonEncode(<String, dynamic>{
@@ -328,69 +267,21 @@ class ChatPageController extends GetxController {
         ),
         'eventId': eventId,
         'messageId': uuid,
-        'messageContent': textMessage.text,
-        'messageReleasabilityFlags': 63,
+        'messageContent': text,
+        'messageReleasabilityFlags': kChatReleasabilityAll,
       }),
     );
 
-    final isError = result.startsWith(ERROR_PREFIX);
-    final index = messages.indexWhere((m) => m.id == uuid);
-    if (index != -1) {
-      final updated = (messages[index] as types.TextMessage).copyWith(
-        status: isError ? types.Status.error : types.Status.sent,
-      );
-      messages[index] = updated;
-      update([UpdateIds.chatMessages]);
+    final failed = result.startsWith(ERROR_PREFIX);
+    final sent = chatController.messages.where((m) => m.id == uuid).firstOrNull;
+    if (sent is core.TextMessage) {
+      unawaited(chatController.updateMessage(
+        sent,
+        sent.copyWith(
+          status: failed ? core.MessageStatus.error : core.MessageStatus.sent,
+          sentAt: failed ? null : DateTime.now(),
+        ),
+      ));
     }
-  }
-
-  List<Map<String, dynamic>> preprocessMessages(List<dynamic> messageList) {
-    return messageList.map((item) {
-      final Map<String, dynamic> message = Map<String, dynamic>.from(
-        item as Map<String, dynamic>,
-      );
-
-      // HC5: author was a serialised JSON string stored in the DB.
-      if (message['author'] is String) {
-        message['author'] = jsonDecode(message['author'].toString());
-      }
-      // HC6: author is flat columns — reconstruct the object expected by flutter_chat_types.
-      else if (message.containsKey('authorId')) {
-        message['author'] = <String, dynamic>{
-          'id': message['authorId'],
-          'firstName': message['authorFirstName'],
-          'imageUrl': message['authorImageUrl'],
-          'type': 'user',
-        };
-        message.remove('authorId');
-        message.remove('authorFirstName');
-        message.remove('authorImageUrl');
-      }
-
-      message['showStatus'] = true;
-
-      return message;
-    }).toList();
-  }
-
-  List<types.Message> loadMessages(List<dynamic> messageList) {
-    final mList = preprocessMessages(messageList);
-    final msgs = mList.map(types.Message.fromJson).toList();
-
-    final updatedMsgs = msgs
-        .map((msg) => msg.copyWith(status: types.Status.sent))
-        .toList();
-
-    // // if (visibility > .1) {
-    // final chatsCounts = getMapIntPref(MapPrefsEnum.unusedChatCounts);
-    // //print('Load messages chat message length = ${updatedMsgs.length}');
-
-    // chatsCounts[publicEventId] = updatedMsgs.length;
-
-    // // it's fine to call this async method unawaited
-    // setMapIntPref(MapPrefsEnum.unusedChatCounts, chatsCounts);
-    // //  }
-
-    return updatedMsgs;
   }
 }
