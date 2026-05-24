@@ -306,11 +306,17 @@ namespace HcWebApi.Endpoints
                             MessageType = eventMessage.MessageType.ToString(),
                         },
                         android = isNotification ? new { priority = "high", notification = new { sound = "default" } } : null,
-                        apns = new
-                        {
-                            headers = new Dictionary<string, string> { ["apns-priority"] = "10" },
-                            payload = new { aps = new { sound = "default" } }
-                        }
+                        apns = isNotification
+                            ? new
+                            {
+                                headers = new Dictionary<string, string> { ["apns-priority"] = "10" },
+                                payload = new { aps = new Dictionary<string, object> { ["sound"] = "default" } }
+                            }
+                            : new
+                            {
+                                headers = new Dictionary<string, string> { ["apns-priority"] = "5" },
+                                payload = new { aps = new Dictionary<string, object> { ["content-available"] = (object)1 } }
+                            }
                     },
                 };
 
