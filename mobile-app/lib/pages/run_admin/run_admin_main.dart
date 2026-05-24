@@ -353,24 +353,10 @@ class RunAdminPage extends StatelessWidget {
     }
 
     return [
-      LayoutBuilder(
-        builder: (context, constraints) {
-          const double spacing = 12.0;
-          const double minButtonW = 120.0;
-          final int perRow = ((constraints.maxWidth + spacing) /
-                  (minButtonW + spacing))
-              .floor()
-              .clamp(1, buttons.length);
-          final double buttonW =
-              (constraints.maxWidth - spacing * (perRow - 1)) / perRow;
-          return Wrap(
-            spacing: spacing,
-            runSpacing: 0,
-            children: buttons
-                .map((b) => SizedBox(width: buttonW, child: b))
-                .toList(),
-          );
-        },
+      Wrap(
+        alignment: WrapAlignment.spaceAround,
+        runSpacing: 0,
+        children: buttons,
       ),
     ];
   }
@@ -383,6 +369,7 @@ class RunAdminPage extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 15, bottom: 15),
       child: SizedBox(
+        width: 110,
         height: 110,
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
