@@ -13,6 +13,11 @@ providing a cleaner file for apps that don't need social media integration.
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <!-- photo_manager: read device photos (API 33+) -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <!-- photo_manager: write to media store (API < 29) -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28"/>
 
     <!--
     The <queries> tag is necessary for Android 11+ to declare which other apps

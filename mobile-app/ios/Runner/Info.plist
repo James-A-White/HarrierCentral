@@ -45,6 +45,12 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Harrier Central saves run photos to your camera roll.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Harrier Central needs access to your photo library to display run photos saved on this device.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Harrier Central uses your camera to capture run photos.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>This app requires access to your location to display local content and services.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
