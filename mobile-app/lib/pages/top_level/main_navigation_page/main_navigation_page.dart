@@ -3,6 +3,7 @@ import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/top_level/drawer_menu.dart';
+import 'package:harrier_central/util/boot_logger.dart';
 
 class MainNavigationPage extends StatelessWidget {
   const MainNavigationPage({super.key});
@@ -663,44 +664,53 @@ class MainNavigationPage extends StatelessWidget {
     );
   }
 
-  Container _getGenericLoadingScreen(MainNavigationController controller) {
-    return Container(
-      decoration: Backgrounds.defaultHcBackground(),
-      height: Get.height,
-      width: Get.width,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            AvifImage.asset('images/init/on_on_in_a_sec.avif', height: 140),
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Text(
-                'Filling Your Mug',
-                style: ts_headingLarge,
-                textAlign: TextAlign.center,
-              ),
+  Widget _getGenericLoadingScreen(MainNavigationController controller) {
+    return Stack(
+      children: [
+        Container(
+          decoration: Backgrounds.defaultHcBackground(),
+          height: Get.height,
+          width: Get.width,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                AvifImage.asset('images/init/on_on_in_a_sec.avif', height: 140),
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Text(
+                    'Filling Your Mug',
+                    style: ts_headingLarge,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Image.asset(
+                    'images/other/beer_pour.gif',
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Text(
+                    controller.initializationMessage.value,
+                    style: ts_headingLarge,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Image.asset(
-                'images/other/beer_pour.gif',
-                // height: 250,
-                // width: 250,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Text(
-                controller.initializationMessage.value,
-                style: ts_headingLarge,
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ],
+          ),
         ),
-      ),
+        const Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: 320,
+          child: BootLogOverlay(),
+        ),
+      ],
     );
   }
 }

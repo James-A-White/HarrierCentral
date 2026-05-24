@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/util/boot_logger.dart';
 
 class AppEntryPage extends StatefulWidget {
   const AppEntryPage({super.key});
@@ -9,9 +10,6 @@ class AppEntryPage extends StatefulWidget {
 
 class AppEntryPageState extends State<AppEntryPage>
     with SingleTickerProviderStateMixin {
-  // late AnimationController _iconAnimationController;
-  // late CurvedAnimation _iconAnimation;
-
   var _launchCount = 0;
 
   /// Show the splash screen on every Nth launch, then hand off to AppBootService.
@@ -22,12 +20,6 @@ class AppEntryPageState extends State<AppEntryPage>
       );
     }
     await AppBootService().boot();
-  }
-
-  @override
-  void dispose() {
-    // _iconAnimationController.dispose();
-    super.dispose();
   }
 
   @override
@@ -48,9 +40,22 @@ class AppEntryPageState extends State<AppEntryPage>
 
   @override
   Widget build(BuildContext context) {
-    if (_launchCount % DISPLAY_SPLASH_ON_LAUNCH == 0) {
-      return Image.asset('images/init/splash_screen.jpg');
-    }
-    return Image.asset('images/init/launcher_background.png');
+    final String imagePath = (_launchCount % DISPLAY_SPLASH_ON_LAUNCH == 0)
+        ? 'images/init/splash_screen.jpg'
+        : 'images/init/launcher_background.png';
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Image.asset(imagePath, fit: BoxFit.cover),
+        const Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: 320,
+          child: BootLogOverlay(),
+        ),
+      ],
+    );
   }
 }

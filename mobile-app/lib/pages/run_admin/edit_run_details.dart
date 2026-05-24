@@ -657,6 +657,75 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
     }
   }
 
+  Future<void> _geocodeAndNavigateToMap() async {
+    final List<String> parts = <String>[
+      _locationStreetController.text.trim(),
+      _locationCityController.text.trim(),
+      _locationRegionController.text.trim(),
+      _locationPostCodeController.text.trim(),
+      _locationCountryController.text.trim(),
+    ].where((String s) => s.isNotEmpty).toList();
+
+    if (parts.isEmpty) return;
+
+    setStateIfMounted(() {
+      _isUpdating = true;
+    });
+
+    final Uri uri = Uri.https(
+      'nominatim.openstreetmap.org',
+      '/search',
+      <String, String>{'q': parts.join(', '), 'format': 'json', 'limit': '1'},
+    );
+
+    try {
+      final Response response = await get(
+        uri,
+        headers: <String, String>{
+          'User-Agent': 'HarrierCentral/2.5 (harrier-central-app)',
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> results =
+            jsonDecode(response.body) as List<dynamic>;
+        if (results.isNotEmpty) {
+          final double? lat = double.tryParse(
+            (results[0]['lat'] as String?) ?? '',
+          );
+          final double? lon = double.tryParse(
+            (results[0]['lon'] as String?) ?? '',
+          );
+          if (lat != null && lon != null) {
+            setStateIfMounted(() {
+              _mapCenter = latlng.LatLng(lat, lon);
+              _isUpdating = false;
+            });
+            _tabController.animateTo(EditingTabEnum.map.value);
+            return;
+          }
+        }
+      }
+    } catch (_) {}
+
+    setStateIfMounted(() {
+      _isUpdating = false;
+    });
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
+      SnackBar(
+        duration: const Duration(seconds: 4),
+        content: Text(
+          "Couldn't locate that address — set the pin manually on the Map tab",
+          textAlign: TextAlign.center,
+          style: ts_titleCondensed,
+        ),
+        backgroundColor: Colors.orange.shade700,
+      ),
+    );
+  }
+
   KeyboardActionsConfig _buildConfig(BuildContext context) {
     return KeyboardActionsConfig(
       keyboardActionsPlatform: KeyboardActionsPlatform.ALL,
@@ -787,20 +856,23 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                   // to function properly
                                   _tabController.animateTo(_currentTab.next);
                                 } else {
-                                  final SnackBar snackBar = SnackBar(
-                                    duration: const Duration(seconds: 3),
-                                    content: Text(
-                                      'Address has been saved',
-                                      textAlign: TextAlign.center,
-                                      style: ts_titleCondensed,
-                                    ),
-                                    backgroundColor: hc_blue,
-                                  );
-
                                   if (!mounted) return;
                                   ScaffoldMessenger.of(
                                     navigatorKey.currentContext!,
-                                  ).showSnackBar(snackBar);
+                                  ).showSnackBar(
+                                    SnackBar(
+                                      duration: const Duration(seconds: 6),
+                                      content: const Text(
+                                        'Address saved — update the map pin?',
+                                      ),
+                                      backgroundColor: hc_blue,
+                                      action: SnackBarAction(
+                                        label: 'Locate pin',
+                                        textColor: Colors.white,
+                                        onPressed: _geocodeAndNavigateToMap,
+                                      ),
+                                    ),
+                                  );
                                 }
                                 await Future<void>.delayed(
                                   const Duration(milliseconds: 500),
@@ -1437,6 +1509,100 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                       },
                                     ),
                                   ),
+                                  const SizedBox(height: 10),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20.0,
+                                    ),
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        minimumSize: const Size(
+                                          double.infinity,
+                                          40,
+                                        ),
+                                        backgroundColor: Colors.red.shade700,
+                                      ),
+                                      child: Text(
+                                        'Delete image',
+                                        style: ts_button,
+                                      ),
+                                      onPressed: () async {
+                                        final bool? confirmed =
+                                            await showDialog<bool>(
+                                              context: context,
+                                              builder:
+                                                  (BuildContext ctx) =>
+                                                      AlertDialog(
+                                                        title: const Text(
+                                                          'Delete image',
+                                                        ),
+                                                        content: const Text(
+                                                          'Remove the image from this run? This cannot be undone.',
+                                                        ),
+                                                        actions: <Widget>[
+                                                          TextButton(
+                                                            onPressed: () =>
+                                                                Navigator.of(
+                                                                  ctx,
+                                                                ).pop(false),
+                                                            child: const Text(
+                                                              'Cancel',
+                                                            ),
+                                                          ),
+                                                          TextButton(
+                                                            onPressed: () =>
+                                                                Navigator.of(
+                                                                  ctx,
+                                                                ).pop(true),
+                                                            child: const Text(
+                                                              'Delete',
+                                                              style: TextStyle(
+                                                                color:
+                                                                    Colors.red,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                            );
+                                        if (confirmed != true) return;
+                                        setStateIfMounted(() {
+                                          _isUpdating = true;
+                                        });
+                                        final EventsService nSvc =
+                                            EventsService();
+                                        final String eventId =
+                                            await nSvc.addEditEvent(
+                                              eventId:
+                                                  _eventAggregate.event.eventId,
+                                              kennelId:
+                                                  _eventAggregate
+                                                      .event
+                                                      .kennelId,
+                                              deleteEventImage: true,
+                                            );
+                                        await _refreshAfterSave(eventId);
+                                        setStateIfMounted(() {
+                                          _isUpdating = false;
+                                          final SnackBar snackBar = SnackBar(
+                                            duration: const Duration(
+                                              seconds: 3,
+                                            ),
+                                            content: Text(
+                                              'Image has been removed',
+                                              textAlign: TextAlign.center,
+                                              style: ts_titleCondensed,
+                                            ),
+                                            backgroundColor: hc_blue,
+                                          );
+                                          if (!mounted) return;
+                                          ScaffoldMessenger.of(
+                                            navigatorKey.currentContext!,
+                                          ).showSnackBar(snackBar);
+                                        });
+                                      },
+                                    ),
+                                  ),
                                   if ((_eventAggregate.event.eventFacebookId !=
                                           null) &&
                                       (!_isUpdating)) ...<Widget>[
@@ -1816,7 +1982,12 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                 });
                               },
                             ),
-                            const SizedBox(width: 20.0),
+                            const SizedBox(width: 10.0),
+                            ElevatedButton(
+                              onPressed: _geocodeAndNavigateToMap,
+                              child: Text('Auto-locate', style: ts_button),
+                            ),
+                            const SizedBox(width: 10.0),
                           ],
                           ElevatedButton(
                             child: Text(

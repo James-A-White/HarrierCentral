@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/util/boot_logger.dart';
 
 // this prevents exceptions being thrown on iOS when
 // the app is in the background and location services
@@ -37,6 +38,7 @@ class AppLifecycleController extends SuperController<void> {
 }
 
 Future<void> main() async {
+  BootLogger.install();
   WidgetsFlutterBinding.ensureInitialized();
 
   // One-time platform/bootstrap

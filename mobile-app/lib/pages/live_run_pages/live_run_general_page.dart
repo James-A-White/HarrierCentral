@@ -1,5 +1,6 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
+import 'package:intl/intl.dart';
 
 class LiveRunGeneralController extends GetxController {
   LiveRunGeneralController({required this.run}) {
@@ -17,8 +18,12 @@ class LiveRunGeneralController extends GetxController {
   // Exposes LocationService.isPaused directly so the UI Obx can observe it.
   RxBool get isPaused => _locationService.isPaused;
 
+  // True once the event is within 5 minutes of starting (or already started).
+  late final RxBool canStartTracking;
+
   DateTime? _trackingStartedAt;
   Timer? _elapsedTicker;
+  Timer? _preRunTimer;
   Worker? _trackingWorker;
   Worker? _positionWorker;
 
@@ -27,6 +32,17 @@ class LiveRunGeneralController extends GetxController {
     super.onInit();
     isTracking.value = _locationService.joinRunTracking.value;
     lastPosition.value = _locationService.lastKnownPosition.value;
+
+    canStartTracking = _checkCanStart().obs;
+    if (!canStartTracking.value) {
+      _preRunTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+        if (_checkCanStart()) {
+          canStartTracking.value = true;
+          _preRunTimer?.cancel();
+          _preRunTimer = null;
+        }
+      });
+    }
 
     _trackingWorker = ever<bool>(_locationService.joinRunTracking, _handleTrackingToggle);
     _positionWorker = ever<Position?>(_locationService.lastKnownPosition, _handlePosition);
@@ -39,10 +55,25 @@ class LiveRunGeneralController extends GetxController {
 
   @override
   void onClose() {
+    _preRunTimer?.cancel();
     _trackingWorker?.dispose();
     _positionWorker?.dispose();
     _stopElapsedTicker();
     super.onClose();
+  }
+
+  bool _checkCanStart() {
+    return DateTime.now().toUtc().isAfter(
+      run.event.eventStartDatetimeGmt.toUtc().subtract(const Duration(minutes: 5)),
+    );
+  }
+
+  // Local-time label shown on the disabled start button.
+  String get trackingOpensAt {
+    final opensAt = run.event.eventStartDatetimeGmt
+        .toLocal()
+        .subtract(const Duration(minutes: 5));
+    return DateFormat('h:mm a').format(opensAt);
   }
 
   void toggleTracking() {
@@ -51,6 +82,8 @@ class LiveRunGeneralController extends GetxController {
     _locationService.userId = getStringPref(StringPrefsEnum.userId);
 
     if (newValue) {
+      _preRunTimer?.cancel();
+      _preRunTimer = null;
       _trackingStartedAt = DateTime.now();
       distanceKm.value = 0.0;
       elapsed.value = Duration.zero;
@@ -214,23 +247,28 @@ class LiveRunGeneralPage extends StatelessWidget {
       final paused = controller.isPaused.value;
 
       if (!tracking && !paused) {
-        // Not running — full-width start button.
+        // Not running — full-width start button. Disabled until 5 min before start.
+        final canStart = controller.canStartTracking.value;
         return SizedBox(
           height: 45,
           width: double.infinity,
           child: ElevatedButton.icon(
-            icon: const Icon(Icons.play_arrow, size: 20, color: Colors.white),
+            icon: const Icon(Icons.play_arrow, size: 20),
             label: Text(
-              'Start Run Tracking',
-              style: ts_button.copyWith(fontSize: 18),
+              canStart
+                  ? 'Start Run Tracking'
+                  : 'Tracking opens at ${controller.trackingOpensAt}',
+              style: ts_button.copyWith(fontSize: canStart ? 18 : 15),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green.shade700,
+              disabledBackgroundColor: Colors.grey.shade700,
               foregroundColor: Colors.white,
+              disabledForegroundColor: Colors.white60,
               padding: buttonPadding,
               shape: buttonShape,
             ),
-            onPressed: controller.toggleTracking,
+            onPressed: canStart ? controller.toggleTracking : null,
           ),
         );
       }

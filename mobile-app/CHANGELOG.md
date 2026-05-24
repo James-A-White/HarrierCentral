@@ -1,5 +1,44 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.5.0+1127 (2026-05-24)
+
+### New features
+
+- **Address-to-pin geocoding in run editor**: Addresses and map pins can now be
+  kept in sync with one tap. In edit-run mode the address-saved confirmation
+  snackbar includes a "Locate pin" action — tapping it calls the Nominatim
+  (OpenStreetMap) geocoding API with the saved address fields and, if a match is
+  found, jumps to the Map tab with the pin pre-positioned at the geocoded
+  location. In new-run mode an "Auto-locate" button has been added to the Map
+  tab's button row, so the user can position the pin from the address they just
+  entered before confirming with "Set Location". A loading spinner shows during
+  the geocoding call; a fallback snackbar is shown if the address cannot be
+  located. No API key required.
+
+- **Live run tracking — timing gate**: The "Start Run Tracking" button is now
+  disabled until five minutes before the run's scheduled start time. When
+  outside this window the button displays "Tracking opens at [time]" and is
+  greyed out. A background timer polls every 30 seconds and enables the button
+  automatically when the window opens, without requiring the user to leave and
+  re-enter the screen.
+
+- **Boot hang diagnostic — BootLogger overlay**: Added a temporary `BootLogger`
+  utility that intercepts all `debugPrint` output from the moment `main()`
+  starts. A scrolling overlay panel is shown on the splash screen and on the
+  "Filling Your Mug" loading screen during boot, with a "Copy log to clipboard"
+  button for capturing the sequence of startup events. This tool will be removed
+  once the reported boot hang is diagnosed.
+
+### Bug fixes
+
+- **Delete event image — SP + service layer**: The "Delete image" button in the
+  run image editor previously sent no instruction to the server, leaving the
+  existing image URL in place. `hcapp_addEditEvent` now accepts a
+  `@deleteEventImage BIT` parameter; when set, `EventImage` is explicitly
+  cleared to `NULL` rather than left unchanged by the `COALESCE` fallback. The
+  Flutter service layer passes `deleteEventImage: '1'` in the request body when
+  the user confirms deletion.
+
 ## 2.5.0+1126 (2026-05-24)
 
 ### Bug fixes

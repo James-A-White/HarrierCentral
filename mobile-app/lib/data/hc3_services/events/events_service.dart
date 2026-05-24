@@ -229,6 +229,7 @@ class EventsService extends BaseService {
     String? extrasDescription,
     String? locationOneLineDesc,
     String? eventImageUrl,
+    bool deleteEventImage = false,
     String? hares,
 
     String? locationPostCode,
@@ -297,6 +298,10 @@ class EventsService extends BaseService {
 
     if (eventImageUrl != null) {
       bodyMap.addAll(<String, String>{'coverPhotoUrl': eventImageUrl});
+    }
+
+    if (deleteEventImage) {
+      bodyMap.addAll(<String, String>{'deleteEventImage': '1'});
     }
 
     if (absoluteEventNumber != null) {
