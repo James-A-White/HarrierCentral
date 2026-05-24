@@ -30,8 +30,8 @@ AS
 --     authorId, authorFirstName, authorImageUrl.
 --   HC5 v2 separate SP removed — same endpoint now returns both styles
 --     in one flat rowset.
---   Token compound param: passes CAST(@eventId AS NVARCHAR(50)) to
---     ValidateAppAuth (unchanged from HC5 token formula).
+--   Token uses DeviceSecret only (@param = NULL to ValidateAppAuth) —
+--     the HC5 intent to bind token to eventId was never implemented.
 --   DATALENGTH checks replaced with NULL checks.
 -- =====================================================================
 SET NOCOUNT ON;
@@ -92,4 +92,6 @@ SELECT
 FROM HC.EventMessage msg
 INNER JOIN HC.Hasher h ON msg.UserId = h.id
 WHERE msg.EventId = @eventId
+  AND msg.Removed = 0
+  AND h.Removed = 0
 ORDER BY msg.createdAt DESC;
