@@ -1,5 +1,39 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.6.2+1134 (2026-05-24)
+
+### Features
+
+- **Chat — unread tracking**: Opening event chat now marks all messages as read
+  server-side and fans out a silent `read_sync` FCM push to the user's other
+  devices, zeroing badge counts immediately.
+
+### Improvements
+
+- **Chat — 2.x UI framework**: Migrated from `flutter_chat_ui` 1.x to 2.x
+  (`flutter_chat_ui ^2.11.1` + `flutter_chat_core ^2.9.0`). Chat messages are
+  now managed via `InMemoryChatController`; group avatars and sender names are
+  rendered using the 2.x custom builder API matching the portal's chat UI.
+
+- **Chat — FCM subscription moved to controller**: Incoming FCM chat messages
+  are now handled directly by `ChatPageController` via its own subscription
+  rather than being routed through `NotificationService`.
+
+- **Chat — UUID normalisation**: Author and message IDs are now normalised to
+  lowercase via `.asUuid` (was `.toUpperCase()`), consistent with project
+  conventions.
+
+- **Chat — named constant for releasability flags**: `messageReleasabilityFlags`
+  value replaced with `kChatReleasabilityAll` constant.
+
+- **Chat strip — decoupled from chat package**: `ChatStripWidget` no longer
+  depends on `flutter_chat_types`; uses a lightweight internal model for the
+  summary display.
+
+- **Dead code removed**: `LiveRunChatController` stub class removed (was an
+  empty wrapper around `LiveRunChatPage`). `visibility_detector` dependency
+  removed.
+
 ## 2.6.1+1133 (2026-05-24)
 
 ### Bug fixes

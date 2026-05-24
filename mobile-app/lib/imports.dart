@@ -261,6 +261,4 @@ export 'package:table_calendar/table_calendar.dart';
 export 'package:url_launcher/url_launcher.dart';
 export 'package:uuid/uuid.dart';
 //export 'package:video_player/video_player.dart';
-export 'package:visibility_detector/visibility_detector.dart';
-
 // export 'package:sumup/sumup.dart';
