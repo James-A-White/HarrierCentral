@@ -11,17 +11,10 @@ class KennelsTableHelper extends BaseTableHelper<AppDomainType>
 
   @override
   String getTableName(AppDomainType appDomainType) {
-    String tableName;
-    switch (appDomainType) {
-      case AppDomainType.user:
-        tableName = EnumDataTables.kennels.commonTableName;
-        break;
-      default:
-        throw Exception(
-          'EnumDataTables.${EnumDataTables.kennels.name} does not have a table associated with it.',
-        );
-    }
-    return tableName;
+    // Kennels are stored in a single shared table across all domain types.
+    // The kennel admin sync (AppDomainType.kennel) writes to the same table
+    // as the user sync, so we always return commonTableName.
+    return EnumDataTables.kennels.commonTableName;
   }
 
   final String colKennelId = 'kennelId';

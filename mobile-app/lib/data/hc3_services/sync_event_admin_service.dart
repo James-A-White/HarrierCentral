@@ -211,9 +211,11 @@ class SyncEventAdminService {
     String jsonResults, {
     Function? informUser,
   }) async {
+    final String stripped = ServiceCommon.stripSuccessEnvelope(jsonResults);
+
     List<dynamic> results = await tableModel.baseService
         .updateSqlTablesFromJsonWithAdHocData(
-          jsonResults,
+          stripped,
           _commonTables,
           database,
           AppDomainType.user,
@@ -221,7 +223,7 @@ class SyncEventAdminService {
 
     results.addAll(
       await tableModel.baseService.updateSqlTablesFromJsonWithAdHocData(
-        jsonResults,
+        stripped,
         _eventTables,
         database,
         AppDomainType.event,

@@ -244,6 +244,28 @@ class ServiceCommon {
     });
   }
 
+  /// Removes the write-SP success envelope (rowset 0) from a response before
+  /// it reaches the data ingestion engine.
+  ///
+  /// Write SPs return [[{"success":1,...}], [data…], …].  The base ingestion
+  /// engine does not recognise the success envelope and logs debug warnings for
+  /// it.  Read SPs return [[{data}],…] with no envelope — those are returned
+  /// unchanged.
+  static String stripSuccessEnvelope(String responseBody) {
+    if (!responseBody.startsWith('[[{"success"') &&
+        !responseBody.startsWith('[[{"Success"')) {
+      return responseBody;
+    }
+    try {
+      final List<dynamic> rowsets = jsonDecode(responseBody) as List<dynamic>;
+      if (rowsets.length <= 1) return responseBody;
+      rowsets.removeAt(0);
+      return jsonEncode(rowsets);
+    } catch (_) {
+      return responseBody;
+    }
+  }
+
   // ── Migration note ────────────────────────────────────────────────────────
   // [checkHttpPostResponse] predates [ServiceResult] and returns raw String
   // sentinel values (ERROR_UNKNOWN_HTTP_ERROR, ERROR_HANDLED, etc.). Existing

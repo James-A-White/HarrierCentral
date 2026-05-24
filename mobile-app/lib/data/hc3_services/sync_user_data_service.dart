@@ -142,6 +142,7 @@ class SyncUserDataService {
     //   return true;
     // }
 
+    debugPrint('[BOOT] SyncUserData.updateFromBackend: start, flags=0x${tablesToSync.toRadixString(16)}, debugText=$debugText: ${DateTime.now().millisecondsSinceEpoch}ms');
     int batchNumber = 1;
     // Guard against an infinite paging loop. If the base-service bitmask
     // logic fails to clear a table's bit when the SP returns 0 rows, the
@@ -158,12 +159,11 @@ class SyncUserDataService {
         );
         break;
       }
-      // print('***** ===== >' + debugText);
+      debugPrint('[BOOT] SyncUserData.updateFromBackend: batch $batchNumber start, tablesToSync=0x${tablesToSync.toRadixString(16)}: ${DateTime.now().millisecondsSinceEpoch}ms');
 
-      // final DateTime startTime = DateTime.now();
-      // print('updateFromBackEnd started = 0');
-
+      debugPrint('[BOOT] SyncUserData.updateFromBackend: getLastUpdatedTimes start: ${DateTime.now().millisecondsSinceEpoch}ms');
       await getLastUpdatedTimes(tablesToSync);
+      debugPrint('[BOOT] SyncUserData.updateFromBackend: getLastUpdatedTimes done: ${DateTime.now().millisecondsSinceEpoch}ms');
 
       final DateTime hashersUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(
         _hashersLastUpdated + 1,
@@ -254,6 +254,7 @@ class SyncUserDataService {
 
       //print('http request issued: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
 
+      debugPrint('[BOOT] SyncUserData.updateFromBackend: HTTP POST start (batch $batchNumber): ${DateTime.now().millisecondsSinceEpoch}ms');
       final String responseBody = await ServiceCommon.sendHttpPost(() {
         params['accessToken'] = Utilities.generateToken(
           userId,
@@ -262,11 +263,11 @@ class SyncUserDataService {
         );
         return jsonEncode(params);
       }, client: client);
-
-      //print('http response received: ${DateTime.now().difference(startTime).inMilliseconds.toString()}');
+      debugPrint('[BOOT] SyncUserData.updateFromBackend: HTTP POST done (batch $batchNumber): ${DateTime.now().millisecondsSinceEpoch}ms — responseLen=${responseBody.length}, isError=${responseBody.startsWith(ERROR_PREFIX)}');
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {
         // this replaces a nasty paragraph separator (x2029) that caused the mobile apps to crash
+        debugPrint('[BOOT] SyncUserData.updateFromBackend: updateSqlTables start (batch $batchNumber): ${DateTime.now().millisecondsSinceEpoch}ms');
         tablesToSync = await updateSqlTablesWithResultsFromApiWithPaging(
           //responseBody.replaceAll('\u2029', '').replaceAll('\u2028', ''),
           responseBody.replaceAll('\u2029', '').replaceAll('\u2028', ''),
@@ -276,6 +277,7 @@ class SyncUserDataService {
           tables: tables.isEmpty ? null : tables,
         );
         //await setIntPref(IntPrefsEnum.lastSuccessfulUserDataSyncInMs, DateTime.now().millisecondsSinceEpoch);
+        debugPrint('[BOOT] SyncUserData.updateFromBackend: updateSqlTables done (batch $batchNumber): ${DateTime.now().millisecondsSinceEpoch}ms — remaining=0x${tablesToSync.toRadixString(16)}');
         await setDatePref(
           DatePrefsEnum.lastSuccessfulUserDataSync,
           DateTime.now(),
@@ -303,6 +305,7 @@ class SyncUserDataService {
       //   int xxx = 0;
       // }
     }
+    debugPrint('[BOOT] SyncUserData.updateFromBackend: COMPLETE after $batchNumber batches: ${DateTime.now().millisecondsSinceEpoch}ms');
     return true;
   }
 
@@ -327,7 +330,7 @@ class SyncUserDataService {
     List<BaseTableHelper>? tables,
   }) async {
     return tableModel.baseService.updateSqlTablesFromJsonWithAdHocData(
-      jsonResults,
+      ServiceCommon.stripSuccessEnvelope(jsonResults),
       tables ?? _userTables,
       database,
       AppDomainType.user,

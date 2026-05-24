@@ -214,7 +214,7 @@ class SyncKennelAdminService {
     Function? informUser,
   }) async {
     return tableModel.baseService.updateSqlTablesFromJsonWithAdHocData(
-      jsonResults,
+      ServiceCommon.stripSuccessEnvelope(jsonResults),
       kennelTables,
       database,
       AppDomainType.kennel,

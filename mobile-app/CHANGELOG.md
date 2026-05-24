@@ -1,5 +1,33 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.5.0+1126 (2026-05-24)
+
+### Bug fixes
+
+- **Edit mismanagement roles / HC App permissions — silent failure**: Saving
+  either of these fields called `hcapp_joinKennel`, which (when editing another
+  user) delegates to `hcapp_syncKennelAdminData`. That SP updates `HC.Kennel`
+  when roles change, which bumps the kennel's `updatedAt`. The subsequent sync
+  returned a kennel row, and the ingestion engine matched it to
+  `KennelsTableHelper` — but `KennelsTableHelper.getTableName(AppDomainType.kennel)`
+  threw an exception because it only handled `AppDomainType.user`. The exception
+  was caught in `_setUserProperties`, so the app didn't crash, but the save
+  appeared to fail ("Could not save — check your connection") and kennel data
+  was not written to the local DB. Fixed by making `KennelsTableHelper.getTableName`
+  return `commonTableName` for all domain types — kennels are stored in a single
+  shared table regardless of which sync domain is writing to them.
+
+- **Success envelope printed as unrecognised data**: Write SPs (including
+  `hcapp_joinKennel`) return a `[{"success":1,...}]` envelope at rowset 0
+  before the sync data. The base ingestion engine (`updateSqlTablesFromJsonWithAdHocData`)
+  did not recognise this as a known pattern, so it printed debug warnings for
+  every write operation and the `adHocData` return value was lost (causing the
+  wrong snackbar message even when the save succeeded). Fixed by adding
+  `ServiceCommon.stripSuccessEnvelope()`, which removes rowset 0 when it is a
+  success envelope before handing the response to the ingestion engine. Applied
+  in all three sync service adapters: `SyncKennelAdminService`,
+  `SyncUserDataService`, and `SyncEventAdminService`.
+
 ## 2.5.0+1125 (2026-05-23)
 
 ### Bug fixes
