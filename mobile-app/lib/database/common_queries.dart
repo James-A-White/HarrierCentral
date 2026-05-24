@@ -85,6 +85,7 @@ class CommonQueries {
   }
 
   static Future<List<AreWeAtRunModel>> isAtRunStart({String? eventId}) async {
+    debugPrint('[BOOT] CommonQueries.isAtRunStart: start, eventId=${eventId ?? "null"}: ${DateTime.now().millisecondsSinceEpoch}ms');
     final List<AreWeAtRunModel> resultList = <AreWeAtRunModel>[];
 
     try {
@@ -144,6 +145,7 @@ class CommonQueries {
       final List<Map<String, dynamic>> queryResults = await database.rawQuery(
         sql,
       );
+      debugPrint('[BOOT] CommonQueries.isAtRunStart: SQL returned ${queryResults.length} row(s): ${DateTime.now().millisecondsSinceEpoch}ms');
 
       if (queryResults.isNotEmpty) {
         int escape = 0;
@@ -153,10 +155,15 @@ class CommonQueries {
         // Poll up to 30 seconds for a fresh GPS position (10 × 3s).
         // EventId is set when the user taps a notification — in that case
         // skip location check and allow check-in regardless of position.
+        debugPrint('[BOOT] CommonQueries.isAtRunStart: entering GPS position wait loop (max 10 × 3s), eventId=${eventId ?? "null"}: ${DateTime.now().millisecondsSinceEpoch}ms');
         while ((escape < 10) && !hasValidPosition && (eventId == null)) {
           final DateTime? lastLocationUpdate = getDatePref(
             DatePrefsEnum.lastLocationUpdate,
           );
+          final String lastUpdateStr = lastLocationUpdate == null
+              ? 'null'
+              : '${DateTime.now().difference(lastLocationUpdate).inSeconds}s ago';
+          debugPrint('[BOOT] CommonQueries.isAtRunStart: GPS loop escape=$escape, lastLocationUpdate=$lastUpdateStr: ${DateTime.now().millisecondsSinceEpoch}ms');
           if ((lastLocationUpdate != null) &&
               (DateTime.now().difference(lastLocationUpdate).inMinutes.abs() <
                   15)) {
@@ -166,6 +173,7 @@ class CommonQueries {
           escape++;
           await Future<dynamic>.delayed(const Duration(seconds: 3));
         }
+        debugPrint('[BOOT] CommonQueries.isAtRunStart: GPS loop done, hasValidPosition=$hasValidPosition, escape=$escape: ${DateTime.now().millisecondsSinceEpoch}ms');
 
         for (int i = 0; i < queryResults.length; i++) {
           double? dist;
@@ -256,9 +264,10 @@ class CommonQueries {
       }
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('');
+        debugPrint('[BOOT] CommonQueries.isAtRunStart: exception: $e');
       }
     }
+    debugPrint('[BOOT] CommonQueries.isAtRunStart: returning ${resultList.length} result(s): ${DateTime.now().millisecondsSinceEpoch}ms');
     return resultList;
   }
 

@@ -1167,6 +1167,7 @@ class Utilities {
   }
 
   static Future<void> isAtRunStart({String? eventId}) async {
+    debugPrint('[BOOT] Utilities.isAtRunStart: start, eventId=${eventId ?? "null"}: ${DateTime.now().millisecondsSinceEpoch}ms');
     //final Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.lowest);
 
     var lastRunStartCheck = getDatePref(DatePrefsEnum.lastRunStartCheck);
@@ -1175,15 +1176,19 @@ class Utilities {
       lastRunStartCheck = DateTime(2000);
     }
 
-    if (DateTime.now().difference(lastRunStartCheck).inMinutes < 2) {
+    final minutesSinceLastCheck = DateTime.now().difference(lastRunStartCheck).inMinutes;
+    if (minutesSinceLastCheck < 2) {
+      debugPrint('[BOOT] Utilities.isAtRunStart: throttled (${minutesSinceLastCheck}min since last check): ${DateTime.now().millisecondsSinceEpoch}ms');
       return;
     }
+    debugPrint('[BOOT] Utilities.isAtRunStart: throttle passed (${minutesSinceLastCheck}min), querying: ${DateTime.now().millisecondsSinceEpoch}ms');
 
     await setDatePref(DatePrefsEnum.lastRunStartCheck, DateTime.now());
 
     final List<AreWeAtRunModel> resultList = await CommonQueries.isAtRunStart(
       eventId: eventId,
     );
+    debugPrint('[BOOT] Utilities.isAtRunStart: query returned ${resultList.length} candidate run(s): ${DateTime.now().millisecondsSinceEpoch}ms');
     final String userId = currentUserId;
 
     if (resultList.length == 1) {
@@ -1193,11 +1198,13 @@ class Utilities {
           getStringPref(StringPrefsEnum.blockAutoCheckinForThisEventId) ?? '';
 
       if (blockAutoCheckinForThisEventId == result.eventId) {
+        debugPrint('[BOOT] Utilities.isAtRunStart: auto check-in blocked for this event, returning: ${DateTime.now().millisecondsSinceEpoch}ms');
         // user has previously declined auto check-in for this event
         return;
       }
 
       if (result.eventId != EMPTY_RESULT) {
+        debugPrint('[BOOT] Utilities.isAtRunStart: showing check-in dialog for "${result.eventName}": ${DateTime.now().millisecondsSinceEpoch}ms');
         final ConfirmAutoCheckinPopup popup = ConfirmAutoCheckinPopup(
           title: 'Check-in to Run',
           areWeAtRunData: result,
@@ -1212,6 +1219,7 @@ class Utilities {
             return popup;
           },
         );
+        debugPrint('[BOOT] Utilities.isAtRunStart: dialog dismissed, retVal=$retVal: ${DateTime.now().millisecondsSinceEpoch}ms');
 
         if (retVal == enumCheckInOption_Cancel) {
           // user decided not to check in automatically. Let's take note of this so we don't show the popup again.

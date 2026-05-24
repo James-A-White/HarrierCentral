@@ -135,6 +135,7 @@ class MainNavigationController extends GetxController
 
   Future<void> _onInitAsyncBody() async {
     final stopwatch = Stopwatch()..start();
+    debugPrint('[BOOT] MainNavController: _onInitAsyncBody start: ${DateTime.now().millisecondsSinceEpoch}ms');
 
     if (Utilities.isConnected()) {
       hcCurrentVersion = _trimToMinorVersionString(
@@ -155,7 +156,10 @@ class MainNavigationController extends GetxController
 
       // always display version change splash sequences if they exist on the server
       if (hcCurrentVersion != hcPreviousVersion) {
-        if (await _preloadImages('version_$hcCurrentVersion') == 0) {
+        debugPrint('[BOOT] MainNavController: version changed $hcPreviousVersion→$hcCurrentVersion, preloading images: ${DateTime.now().millisecondsSinceEpoch}ms');
+        final imgCount = await _preloadImages('version_$hcCurrentVersion');
+        debugPrint('[BOOT] MainNavController: preloadImages done, imgCount=$imgCount: ${DateTime.now().millisecondsSinceEpoch}ms');
+        if (imgCount == 0) {
           // don't show any splah images if none have been loaded
           mainScreenContent.value = MainPageContent.loading;
         } else {
@@ -170,7 +174,10 @@ class MainNavigationController extends GetxController
         // only show a splash screen if enough time has elapsed
         // since the last time a splash screen was displayed
         if (timeSinceLastView.inHours > splashType.delayInHours) {
-          if (await _preloadImages(splashSequenceRootName) == 0) {
+          debugPrint('[BOOT] MainNavController: splashSequence preloading ($splashSequenceRootName): ${DateTime.now().millisecondsSinceEpoch}ms');
+          final imgCount = await _preloadImages(splashSequenceRootName);
+          debugPrint('[BOOT] MainNavController: preloadImages done, imgCount=$imgCount: ${DateTime.now().millisecondsSinceEpoch}ms');
+          if (imgCount == 0) {
             // don't show any splah images if none have been loaded
             mainScreenContent.value = MainPageContent.appContent;
           } else {
@@ -204,6 +211,7 @@ class MainNavigationController extends GetxController
     } else {
       mainScreenContent.value = MainPageContent.appContent;
     }
+    debugPrint('[BOOT] MainNavController: mainScreenContent=${mainScreenContent.value.name}: ${DateTime.now().millisecondsSinceEpoch}ms');
 
     appBarText.value = tabTitles[0];
 
@@ -212,40 +220,51 @@ class MainNavigationController extends GetxController
     assert(DB_VERSION == Tables.migrationList.last.dbVersion);
 
     // Setup database
+    debugPrint('[BOOT] MainNavController: setupDatabase start: ${DateTime.now().millisecondsSinceEpoch}ms');
     await setupDatabase(informUser, 'PRO_APP');
+    debugPrint('[BOOT] MainNavController: setupDatabase done: ${DateTime.now().millisecondsSinceEpoch}ms');
 
     // Create pages
+    debugPrint('[BOOT] MainNavController: creating pages: ${DateTime.now().millisecondsSinceEpoch}ms');
     futureRunsListPage = FutureRunsListPage();
 
     mainScreenReady.value = true;
 
     update([UpdateIds.appScaffold]);
+    debugPrint('[BOOT] MainNavController: mainScreenReady=true, scaffold updated: ${DateTime.now().millisecondsSinceEpoch}ms');
 
     kennelsListPage = KennelsListPage(key: kennelLocationsPageKey);
     historyListPage = HistoryListPage();
     runAndKennelMapPage = RunAndKennelMapPage(key: runAndKennelMapPageKey);
     songsPage = SongsPage();
+    debugPrint('[BOOT] MainNavController: all pages created: ${DateTime.now().millisecondsSinceEpoch}ms');
 
     isLoadingData = false;
 
     final hasLoc = await _checkLocationPermissions();
+    debugPrint('[BOOT] MainNavController: hasLoc=$hasLoc: ${DateTime.now().millisecondsSinceEpoch}ms');
     _startScreenListening();
 
     // Calculate remaining time to reach 1500ms
-    final remaining = 1500 - stopwatch.elapsedMilliseconds;
+    final elapsed = stopwatch.elapsedMilliseconds;
+    final remaining = 1500 - elapsed;
+    debugPrint('[BOOT] MainNavController: elapsed=${elapsed}ms, waiting ${remaining > 0 ? remaining : 0}ms to 1500ms gate: ${DateTime.now().millisecondsSinceEpoch}ms');
     if (remaining > 0) {
       await Future.delayed(Duration(milliseconds: remaining));
     }
+    debugPrint('[BOOT] MainNavController: 1500ms gate passed: ${DateTime.now().millisecondsSinceEpoch}ms');
 
     if (mainScreenContent.value != MainPageContent.splashSequence) {
       mainScreenContent.value = MainPageContent.appContent;
     }
 
     update([UpdateIds.appScaffold]);
+    debugPrint('[BOOT] MainNavController: appContent shown: ${DateTime.now().millisecondsSinceEpoch}ms');
 
     // Fire after app content is visible so the GPS wait loop (and any dialog)
     // never blocks the loading screen from clearing.
     if (hasLoc) {
+      debugPrint('[BOOT] MainNavController: firing _checkAreWeAtRunStart (unawaited): ${DateTime.now().millisecondsSinceEpoch}ms');
       unawaited(_checkAreWeAtRunStart());
     }
 
@@ -255,12 +274,16 @@ class MainNavigationController extends GetxController
     bool? notificationsConfigured = getBoolPref(
       BoolPrefsEnum.notificationPreferencesRequested,
     );
+    debugPrint('[BOOT] MainNavController: notificationsConfigured=$notificationsConfigured: ${DateTime.now().millisecondsSinceEpoch}ms');
 
     if (notificationsConfigured != null && notificationsConfigured) {
+      debugPrint('[BOOT] MainNavController: NotificationService.init start: ${DateTime.now().millisecondsSinceEpoch}ms');
       await Get.putAsync(
         () => NotificationService().init(),
       ); // Initialize and wait for the notification service
+      debugPrint('[BOOT] MainNavController: NotificationService.init done: ${DateTime.now().millisecondsSinceEpoch}ms');
     }
+    debugPrint('[BOOT] MainNavController: _onInitAsyncBody COMPLETE: ${DateTime.now().millisecondsSinceEpoch}ms');
   }
 
   String _trimToMinorVersionString(String version) {
@@ -445,7 +468,9 @@ class MainNavigationController extends GetxController
   }
 
   Future<void> _checkAreWeAtRunStart() async {
+    debugPrint('[BOOT] _checkAreWeAtRunStart: start: ${DateTime.now().millisecondsSinceEpoch}ms');
     await Utilities.isAtRunStart();
+    debugPrint('[BOOT] _checkAreWeAtRunStart: done: ${DateTime.now().millisecondsSinceEpoch}ms');
   }
 
   @override
