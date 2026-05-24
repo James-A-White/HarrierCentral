@@ -1,5 +1,46 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.6.1+1133 (2026-05-24)
+
+### Bug fixes
+
+- **Chat — message load crash**: `ChatPageController.onInit` no longer
+  force-unwraps `publicHasherId` and `profilePhotoUrl`. If `publicHasherId`
+  is absent the chat screen exits cleanly instead of crashing.
+
+- **Chat — permanent loading spinner on server error**: An `HC_ERROR_` response
+  no longer reaches `jsonDecode`, which would throw and leave `messagesLoading`
+  stuck at true permanently.
+
+- **Chat strip — permanent loading spinner on exception**: `ChatStripController`
+  now wraps the load path in try/catch/finally, ensuring `isLoading` clears
+  on any error path.
+
+- **Chat — message status stuck at sending**: Sent messages now correctly
+  update to `sent` (or `error` on failure) after the API call completes.
+
+- **Chat — soft-deleted messages excluded**: Messages and authors marked as
+  removed are now filtered from event chat results (HC6 SP).
+
+- **Chat — send atomicity**: The message INSERT and badge-count MERGE are now
+  wrapped in an explicit transaction; a partial-write state on badge failure is
+  no longer possible (HC6 SP).
+
+- **Chat — data-only push notifications now silent on iOS**: In-app chat
+  messages no longer play a notification sound. APNS priority was incorrectly
+  set to 10 for all FCM messages; data-only messages now use priority 5 with
+  content-available (HC6 API).
+
+- **Chat — releasability flags value in push**: `MessageReleasabilityFlags` was
+  silently deserialising to 0 in the HC6 send path due to an HC5/HC6 column
+  name mismatch; push notifications now carry the correct value (HC6 API).
+
+- **Chat — SP errors now surfaced to caller**: HC6 error envelopes are detected
+  before notification side-effects run; previously swallowed silently (HC6 API).
+
+- **Chat — stale FCM token cleanup**: Removing a stale token no longer calls an
+  HC5 internal SP; replaced with a direct UPDATE HC.Device (HC6 API).
+
 ## 2.6.0+1132 (2026-05-24)
 
 ### New features
