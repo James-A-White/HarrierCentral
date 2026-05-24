@@ -165,7 +165,7 @@ namespace HcWebApi.Endpoints
                 {
                     var errorRow = multipleResults[0][0];
                     errorRow.TryGetValue("errorUserMessage", out var errMsg);
-                    log.LogWarning("AppApiHC6 SP error [{QueryType}]: {Message}", data.queryType, errMsg);
+                    log.LogWarning("AppApiHC6 SP error [{QueryType}]: {Message}", (string)data.queryType, errMsg?.ToString());
                     return new BadRequestObjectResult(errorRow);
                 }
 
