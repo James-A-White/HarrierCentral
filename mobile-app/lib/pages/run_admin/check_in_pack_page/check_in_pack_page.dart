@@ -23,6 +23,9 @@ class CheckInPackPage extends StatelessWidget {
   static const double LIST_ITEM_HEIGHT = 84.0;
 
   // ignore: constant_identifier_names
+  static const double LIST_ITEM_HEIGHT_WITH_CREDIT = 100.0;
+
+  // ignore: constant_identifier_names
   static const double LIST_ITEM_LEFT_MARGIN = 88.0;
 
   @override
@@ -811,8 +814,12 @@ class CheckInPackPage extends StatelessWidget {
               children: [
                 // Avatar photo
                 Container(
-                  width: LIST_ITEM_HEIGHT,
-                  height: LIST_ITEM_HEIGHT,
+                  width: hasher.credit > 0
+                      ? LIST_ITEM_HEIGHT_WITH_CREDIT
+                      : LIST_ITEM_HEIGHT,
+                  height: hasher.credit > 0
+                      ? LIST_ITEM_HEIGHT_WITH_CREDIT
+                      : LIST_ITEM_HEIGHT,
                   decoration: BoxDecoration(
                     color: Colors.grey.shade200,
                     image: DecorationImage(
