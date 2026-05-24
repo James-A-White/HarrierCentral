@@ -28,16 +28,19 @@ class ChatPageController extends GetxController {
   void onInit() {
     super.onInit();
 
-    final String publicHasherId = getStringPref(
-      StringPrefsEnum.publicHasherId,
-    )!;
+    final String? publicHasherId = getStringPref(StringPrefsEnum.publicHasherId);
+    if (publicHasherId == null || publicHasherId.isEmpty) {
+      debugPrint('ChatPageController: publicHasherId not available, cannot open chat');
+      user = const types.User(id: '');
+      WidgetsBinding.instance.addPostFrameCallback((_) => Get.back<void>());
+      return;
+    }
 
-    //final String publicHasherId = getStringPref(StringPrefsEnum.pu)!;
     final String hashName =
         getStringPref(StringPrefsEnum.displayName) ??
         getStringPref(StringPrefsEnum.firstName) ??
         '';
-    final String photo = getStringPref(StringPrefsEnum.profilePhotoUrl)!;
+    final String photo = getStringPref(StringPrefsEnum.profilePhotoUrl) ?? '';
 
     user = types.User(
       id: publicHasherId.toUpperCase(),
@@ -45,7 +48,6 @@ class ChatPageController extends GetxController {
       imageUrl: photo,
     );
 
-    // it's safe to call this async method synchronously here
     unawaited(onAppResumed());
   }
 
