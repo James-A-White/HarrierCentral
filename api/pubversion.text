@@ -1,4 +1,8 @@
 
+1.0.10+8
+    • markEventChatRead (HC6 app): new endpoint — upserts HC.EventMessageBadgeCounts,
+      fans out silent read_sync FCM push to user's other devices
+
 1.0.9+7
     • Chat (HC6): fix MessageReleasabilityFlags deserialization — always-zero due to HC5/HC6 spelling mismatch
     • Chat (HC6): APNS priority 5 + content-available for data-only in-app messages (app + portal shims)
