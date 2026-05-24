@@ -80,6 +80,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   bool _isDirty = false;
   bool _addAsKennelFollower = false;
   bool _userRunHistoryLoading = false;
+  bool _savePhotosToCameraRoll =
+      getBoolPref(BoolPrefsEnum.savePhotosToCameraRoll) ?? true;
   String _photoPrefix = '';
   String _newPhoto = 'bundle://avatar-${Random.secure().nextInt(49) + 1}';
   late HashersModel _hasher;
@@ -1300,6 +1302,47 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                         ),
                                       ),
                                     ),
+                                    if (widget.pageType ==
+                                        EnumMyProfilePageType.myProfile) ...[
+                                      const FancyDivider(
+                                        key: Key('camera_roll_divider'),
+                                        innerColor: Colors.white,
+                                        topMargin: 20.0,
+                                        bottomMargin: 10.0,
+                                      ),
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.yellow[100],
+                                          borderRadius: BorderRadius.circular(
+                                            5.0,
+                                          ),
+                                        ),
+                                        margin: const EdgeInsets.only(
+                                          bottom: 20,
+                                        ),
+                                        child: SwitchListTile(
+                                          title: const Text(
+                                            'Save run photos to camera roll',
+                                          ),
+                                          subtitle: const Text(
+                                            'A copy of each run photo will be saved to your device\'s photo library.',
+                                          ),
+                                          value: _savePhotosToCameraRoll,
+                                          onChanged: (bool value) async {
+                                            setState(
+                                              () =>
+                                                  _savePhotosToCameraRoll =
+                                                      value,
+                                            );
+                                            await setBoolPref(
+                                              BoolPrefsEnum
+                                                  .savePhotosToCameraRoll,
+                                              value,
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ],
                                     (widget.uiElementsToDisplay &
                                                 HasherProfilePage
                                                     .flagUiElement_followKennel ==
