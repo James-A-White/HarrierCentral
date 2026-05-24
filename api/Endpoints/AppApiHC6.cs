@@ -343,19 +343,19 @@ namespace HcWebApi.Endpoints
                 var response = await _httpClient.SendAsync(request);
                 if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine("FCM message sent successfully!");
+                    log.LogInformation("FCM push sent successfully.");
                 }
                 else
                 {
                     string errorJson = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Error sending FCM message: {errorJson}");
+                    log.LogWarning("FCM push failed: {Error}", errorJson);
                     if (errorJson.Contains("BadDeviceToken") || errorJson.Contains("not a valid FCM registration token"))
                         await DeleteFcmToken(fcmToken, log);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Exception while sending FCM message: {ex.Message}");
+                log.LogError(ex, "Exception while sending FCM push.");
             }
         }
 
@@ -383,7 +383,7 @@ namespace HcWebApi.Endpoints
                         }
                     }
 
-                    Console.WriteLine("Token expired. Generating a new one.");
+                    log.LogInformation("Firebase access token expired, refreshing.");
                 }
 
                 // Generate new token from Firebase service account
@@ -392,7 +392,7 @@ namespace HcWebApi.Endpoints
 
                 if (!httpResponse.IsSuccessStatusCode)
                 {
-                    Console.WriteLine("Error: Failed to retrieve service account JSON from Azure Blob Storage.");
+                    log.LogError("Failed to retrieve Firebase service account JSON from Azure Blob Storage.");
                     return null;
                 }
 
@@ -419,7 +419,7 @@ namespace HcWebApi.Endpoints
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error retrieving Firebase access token: {ex.Message}");
+                log.LogError(ex, "Failed to retrieve Firebase access token.");
                 return null;
             }
         }
