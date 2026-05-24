@@ -101,28 +101,36 @@ BEGIN
     DECLARE @messageSequenceCount INT;
     DECLARE @eventId              UNIQUEIDENTIFIER;
 
-    SELECT
-        @messageSequenceCount = MAX(em.MessageSequenceCount),
-        @eventId              = em.EventId
+    -- Resolve eventId from HC.Event directly (robust even when no messages
+    -- exist yet — resolving from HC.EventMessage leaves @eventId NULL for
+    -- empty chats, causing the NOT NULL constraint to fire on INSERT).
+    SELECT @eventId = id FROM HC.Event WHERE PublicEventId = @publicEventId;
+
+    IF @eventId IS NULL
+    BEGIN
+        SELECT 0 AS BadgeCount, @publicEventId AS PublicEventId;
+        RETURN;
+    END
+
+    SELECT @messageSequenceCount = MAX(em.MessageSequenceCount)
     FROM HC.EventMessage em
-    WHERE em.PublicEventId = @publicEventId
-    GROUP BY em.EventId;
+    WHERE em.EventId = @eventId;
 
     IF (@resetBadgeCount != 0)
     BEGIN
         MERGE INTO HC.EventMessageBadgeCounts AS Target
-        USING (VALUES (@userId, @eventId, @messageSequenceCount)) AS Source (UserId, EventId, LastSequenceCount)
+        USING (VALUES (@userId, @eventId, COALESCE(@messageSequenceCount, 0))) AS Source (UserId, EventId, LastSequenceCount)
         ON (Target.UserId = Source.UserId AND Target.EventId = Source.EventId)
         WHEN MATCHED THEN
             UPDATE SET Target.LastSequenceCount = Source.LastSequenceCount
         WHEN NOT MATCHED BY TARGET THEN
-            INSERT (UserId, EventId, LastSequenceCount)
-            VALUES (Source.UserId, Source.EventId, Source.LastSequenceCount);
+            INSERT (id, UserId, EventId, LastSequenceCount)
+            VALUES (NEWID(), Source.UserId, Source.EventId, Source.LastSequenceCount);
     END
 
     SELECT
-        COALESCE(@messageSequenceCount, 0) - embc.LastSequenceCount AS BadgeCount,
-        @publicEventId                                               AS PublicEventId
+        COALESCE(@messageSequenceCount, 0) - COALESCE(embc.LastSequenceCount, 0) AS BadgeCount,
+        @publicEventId                                                             AS PublicEventId
     FROM HC.EventMessageBadgeCounts embc
     WHERE embc.EventId = @eventId AND embc.UserId = @userId;
 
