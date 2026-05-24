@@ -47,6 +47,7 @@ AS
 --   @eventId changed NVARCHAR(250) → UNIQUEIDENTIFIER.
 --   DATALENGTH checks replaced with NULL/LEN checks.
 --   HC5's @isError flag pattern replaced with early RETURN on each error.
+--   INSERT + MERGE wrapped in explicit transaction with TRY/CATCH.
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -148,29 +149,34 @@ DECLARE @isWithinWindow SMALLINT =
     CASE WHEN ABS(DATEDIFF(MINUTE, GETDATE(), @eventStartDateTimeUtc)) <= (@timeLimitHours * 60) THEN 1 ELSE 0 END;
 
 -- ---------------------------------------------------------------
--- Insert message
+-- Write path: INSERT + badge MERGE wrapped in a transaction so
+-- both succeed or both roll back atomically.
 -- ---------------------------------------------------------------
-INSERT INTO HC.EventMessage
-    ([id], [EventId], [PublicEventId], [UserId], [PublicHasherId],
-     [MessageTitle], [MessageContent], [MessageReleasabilityFlags])
-VALUES
-    (@messageId, @eventId, @publicEventId, @userId, @publicHasherId,
-     @messageTitle, @messageContent, @messageReleasabilityFlags);
-
 DECLARE @messageSequenceCount INT;
-SELECT @messageSequenceCount = em.MessageSequenceCount FROM HC.EventMessage em WHERE em.id = @messageId;
 
--- ---------------------------------------------------------------
--- Update sender's own badge count (sender never sees their own message as unread)
--- ---------------------------------------------------------------
-MERGE INTO HC.EventMessageBadgeCounts AS Target
-USING (VALUES (@userId, @eventId, @messageSequenceCount)) AS Source (UserId, EventId, LastSequenceCount)
-ON (Target.UserId = Source.UserId AND Target.EventId = Source.EventId)
-WHEN MATCHED THEN
-    UPDATE SET Target.LastSequenceCount = Source.LastSequenceCount
-WHEN NOT MATCHED BY TARGET THEN
-    INSERT (UserId, EventId, LastSequenceCount)
-    VALUES (Source.UserId, Source.EventId, Source.LastSequenceCount);
+BEGIN TRY
+    BEGIN TRANSACTION;
+
+    INSERT INTO HC.EventMessage
+        ([id], [EventId], [PublicEventId], [UserId], [PublicHasherId],
+         [MessageTitle], [MessageContent], [MessageReleasabilityFlags])
+    VALUES
+        (@messageId, @eventId, @publicEventId, @userId, @publicHasherId,
+         @messageTitle, @messageContent, @messageReleasabilityFlags);
+
+    SELECT @messageSequenceCount = em.MessageSequenceCount FROM HC.EventMessage em WHERE em.id = @messageId;
+
+    -- Update sender's own badge count (sender never sees their own message as unread)
+    MERGE INTO HC.EventMessageBadgeCounts AS Target
+    USING (VALUES (@userId, @eventId, @messageSequenceCount)) AS Source (UserId, EventId, LastSequenceCount)
+    ON (Target.UserId = Source.UserId AND Target.EventId = Source.EventId)
+    WHEN MATCHED THEN
+        UPDATE SET Target.LastSequenceCount = Source.LastSequenceCount
+    WHEN NOT MATCHED BY TARGET THEN
+        INSERT (UserId, EventId, LastSequenceCount)
+        VALUES (Source.UserId, Source.EventId, Source.LastSequenceCount);
+
+    COMMIT TRANSACTION;
 
 -- ---------------------------------------------------------------
 -- Rowset 0: message detail
@@ -257,3 +263,15 @@ WHERE hkm.KennelId = @kennelId
          OR (@sendToHares         != 0 AND hem2.IsHare    != 0 AND COALESCE(hem2.EventNotificationPreference, 1) != 0)
         )
   );
+
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    SET @errorId = NEWID(); SET @errorType = 5; SET @errorCode = 9999;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, '<unknown>', 'Runtime error in hcapp_sendEventMessage', ERROR_MESSAGE(), @procName, @userId);
+    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+           'Message send failed' AS errorTitle,
+           'Your message could not be sent. Please try again.' AS errorUserMessage,
+           @procName AS errorProc;
+END CATCH
