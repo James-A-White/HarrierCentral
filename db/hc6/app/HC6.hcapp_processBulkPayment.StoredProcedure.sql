@@ -185,6 +185,29 @@ BEGIN TRY
         -- ---------------------------------------------------------------
         IF (@paymentType >= 2 AND @paymentType <= 8)
         BEGIN
+            -- paymentType = 6 (hash credit): auto-create follower HKM records for
+            -- hashers who don't have one yet so credit can be accumulated and spent
+            -- by non-members and visitors.
+            IF (@paymentType = 6)
+            BEGIN
+                INSERT HC.HasherKennelMap (
+                    UserId, KennelId, Following, IsKennelFollowing, IsMember,
+                    CanEditRunAttendence, MemberSince, updatedAtBias
+                )
+                SELECT
+                    TRY_CAST(s.value AS UNIQUEIDENTIFIER), @kennelId, 1, 1, 0, 0, NULL,
+                    CONVERT(INT, ABS(CONVERT(BIGINT, CONVERT(VARBINARY(8), NEWID(), 1)) / 40020.2323 % 999999))
+                FROM STRING_SPLIT(@userIdsWhoPaid, ',') s
+                WHERE TRY_CAST(s.value AS UNIQUEIDENTIFIER) IS NOT NULL
+                  AND EXISTS (SELECT 1 FROM HC.Hasher WHERE id = TRY_CAST(s.value AS UNIQUEIDENTIFIER))
+                  AND NOT EXISTS (
+                      SELECT 1 FROM HC.HasherKennelMap hkm
+                      WHERE hkm.UserId = TRY_CAST(s.value AS UNIQUEIDENTIFIER)
+                        AND hkm.KennelId = @kennelId
+                        AND hkm.removed = 0
+                  );
+            END
+
             ;WITH ParsedGuids AS (
                 SELECT TRY_CAST(value AS UNIQUEIDENTIFIER) AS UserId
                 FROM STRING_SPLIT(@userIdsWhoPaid, ',')

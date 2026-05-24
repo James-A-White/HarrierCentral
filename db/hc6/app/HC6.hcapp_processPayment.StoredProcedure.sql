@@ -298,6 +298,29 @@ BEGIN TRY
             UPDATE HC.Event SET DoTrackHashCash = 1
             WHERE id = @eventId AND DoTrackHashCash != 1;
 
+            -- paymentType = 6 (hash credit): auto-create a follower HKM record for
+            -- hashers who don't have one yet so credit can be accumulated and spent
+            -- by non-members and visitors.
+            IF (@paymentType = 6 AND @payer_userIdGuid IS NOT NULL)
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM HC.HasherKennelMap
+                    WHERE UserId = @payer_userIdGuid AND KennelId = @kennelId AND removed = 0
+                )
+                AND EXISTS (SELECT 1 FROM HC.Hasher WHERE id = @payer_userIdGuid)
+                BEGIN
+                    INSERT HC.HasherKennelMap (
+                        UserId, KennelId, Following, IsKennelFollowing, IsMember,
+                        CanEditRunAttendence, MemberSince, updatedAtBias
+                    )
+                    VALUES (
+                        @payer_userIdGuid, @kennelId, 1, 1, 0,
+                        0, NULL,
+                        CONVERT(INT, ABS(CONVERT(BIGINT, CONVERT(VARBINARY(8), NEWID(), 1)) / 40020.2323 % 999999))
+                    );
+                END
+            END
+
             -- Generate unique payment reference
             DECLARE @refCount INT = 1;
             IF (@paymentReference IS NULL)

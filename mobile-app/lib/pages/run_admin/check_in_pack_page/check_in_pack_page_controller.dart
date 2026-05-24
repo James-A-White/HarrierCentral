@@ -376,7 +376,7 @@ class CheckInPackController extends GetxController
           COALESCE(hem2.attendenceState, 0) AS attendenceState,
           hem2.updatedAt AS hemUpdatedAt,
           pay2.updatedAt AS payUpdatedAt,
-          0 AS credit,
+          COALESCE(hkm_v.${tableModel.hasherKennelMapTableHelper.colKennelCredit}, 0) AS credit,
           0 AS ${tableModel.hasherKennelMapTableHelper.colDiscountAmount},
           0 AS ${tableModel.hasherKennelMapTableHelper.colDiscountPercent},
           NULL AS ${tableModel.hasherKennelMapTableHelper.colHcTotalRunCount},
@@ -389,7 +389,8 @@ class CheckInPackController extends GetxController
       INNER JOIN ${EnumDataTables.hashers.commonTableName} h2 ON h2.hasherId = hem2.userId
       LEFT OUTER JOIN ${EnumDataTables.payments.eventTableName} pay2 ON pay2.hemId = hem2.hemId AND pay2.cancelledBy IS NULL
       LEFT OUTER JOIN ${EnumDataTables.kennels.commonTableName} ken2 on h2.${tableModel.hashersTableHelper.colHomeKennelId} = ken2.${tableModel.kennelsTableHelper.colKennelId}
-      WHERE hem2.eventId = "${eventAggregate.event.eventId}" 
+      LEFT OUTER JOIN ${EnumDataTables.hasherKennelMap.eventTableName} hkm_v ON hkm_v.userId = hem2.userId AND hkm_v.kennelId = "${eventAggregate.event.kennelId}"
+      WHERE hem2.eventId = "${eventAggregate.event.eventId}"
         AND hem2.virginVisitorType != 0
 
       UNION
@@ -425,7 +426,7 @@ class CheckInPackController extends GetxController
           COALESCE(hem3.attendenceState, 0) AS attendenceState,
           hem3.updatedAt AS hemUpdatedAt,
           pay3.updatedAt AS payUpdatedAt,
-          hkm4.${tableModel.hasherKennelMapTableHelper.colKennelCredit} AS credit,
+          COALESCE(hkm4.${tableModel.hasherKennelMapTableHelper.colKennelCredit}, 0) AS credit,
           COALESCE(hkm4.${tableModel.hasherKennelMapTableHelper.colDiscountAmount}, 0) AS discountAmount,
           COALESCE(hkm4.${tableModel.hasherKennelMapTableHelper.colDiscountPercent}, 0) AS discountPercent,
           hkm4.${tableModel.hasherKennelMapTableHelper.colHcTotalRunCount},
