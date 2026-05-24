@@ -80,6 +80,10 @@ class RunTrackerMapController extends GetxController
   // Refreshed on every live-run auto-update tick so newly-taken photos appear.
   final Map<String, String> _photoUrlCache = {};
 
+  // photoId → device-library asset ID for own photos (null for others').
+  // Used to attempt local-first image loading in CameraPhotoMarker.
+  final Map<String, String> _photoAssetIdCache = {};
+
   // blobUrl → isLandscape, populated on first render of each photo marker.
   // Survives map zoom/pan rebuilds so markers skip the loading animation.
   final Map<String, bool> _photoOrientationCache = {};
@@ -330,8 +334,8 @@ class RunTrackerMapController extends GetxController
   }
 
   // Fetches the authorised photo URL list for this event and populates
-  // _photoUrlCache (photoId → blobUrl). Called on init and every auto-update
-  // tick so newly-uploaded photos appear on the map within 15 seconds.
+  // _photoUrlCache (photoId → blobUrl) and _photoAssetIdCache (photoId → assetId).
+  // Called on init and every auto-update tick so newly-taken photos appear.
   Future<void> _loadPhotoCache() async {
     try {
       final raw = await KennelPhotoService().getRunPhotos(eventId: event.eventId);
@@ -347,6 +351,12 @@ class RunTrackerMapController extends GetxController
           final url = (row['BlobUrl'] ?? row['blobUrl']) as String?;
           if (id != null && id.isNotEmpty && url != null && url.isNotEmpty) {
             _photoUrlCache[id] = url;
+            // AssetId is only present in rowset 0 (own photos). Store it so
+            // CameraPhotoMarker can attempt local device loading first.
+            final assetId = (row['AssetId'] ?? row['assetId']) as String?;
+            if (assetId != null && assetId.isNotEmpty) {
+              _photoAssetIdCache[id] = assetId;
+            }
             updated = true;
           }
         }
@@ -688,9 +698,15 @@ class RunTrackerMapController extends GetxController
     // marker entirely rather than showing an empty camera frame.
     if (resolvedUrl == null) return const SizedBox.shrink();
 
+    final String? resolvedLabel = label?.toLowerCase();
+    final String? assetId =
+        resolvedLabel != null ? _photoAssetIdCache[resolvedLabel] : null;
+
     final marker = CameraPhotoMarker(
       photoUrl: resolvedUrl,
       size: size,
+      assetId: assetId,
+      isOwnPhoto: assetId != null && _currentUserId != null,
       cachedOrientation: _photoOrientationCache[resolvedUrl],
       onOrientationDetected: (url, isLandscape) =>
           _photoOrientationCache[url] = isLandscape,

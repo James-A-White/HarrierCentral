@@ -21,6 +21,8 @@ export 'package:flutter_avif/flutter_avif.dart';
 export 'package:flutter_cache_manager/flutter_cache_manager.dart';
 export 'package:flutter_chat_ui/flutter_chat_ui.dart';
 export 'package:flutter_image_compress/flutter_image_compress.dart';
+// photo_manager is NOT globally re-exported — it collides with get's NotifyManager.
+// Import it directly in files that need it.
 export 'package:flutter_linkify/flutter_linkify.dart';
 //export 'package:flutter_localization/flutter_localization.dart';
 export 'package:flutter_map_marker_cluster_plus/flutter_map_marker_cluster_plus.dart';

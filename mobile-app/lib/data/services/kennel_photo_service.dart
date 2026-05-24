@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 // Photo review action codes — match hcapp_updatePhotoStatus @action parameter.
 // Actions 3–6 are cumulative: each level implies all lower approval levels.
@@ -24,23 +25,38 @@ class KennelPhotoService {
     // otherwise "other". Nested under the kennel slug in blob storage.
     final runFolder = eventNumber > 0 ? '$kennelSlug-$eventNumber' : 'other';
 
-    // 1. Pick from camera (simulator uses a bundled placeholder). No crop yet —
-    //    editing is optional and offered on the next screen.
+    // 1. Pick from camera at full quality (no compression at capture time).
+    //    Compression for blob upload happens separately in step 5.
+    //    Simulator uses a bundled placeholder.
     final rawFile = await _pickImage();
     if (rawFile == null) return null; // user cancelled
 
     // 2. Show review page: Discard / Edit / Save privately / Save and share.
-    //    "Edit" opens the cropper in-place and returns to the same page with
-    //    the Edit button hidden. Final result carries the chosen file + intent.
+    //    Edit opens the cropper at full quality; result carries the final file + intent.
     final result = await _showSharePage(rawFile);
     if (result == null) return null;
-    final imageFile = result.file;
+    final imageFile = result.file; // full-quality, possibly cropped
     final sharingOverride = result.intent == _PhotoShareIntent.saveAndShare ? 1 : 0;
 
     // 3. Client-side GUID — normalised to lowercase per project UUID rules
     final photoGuid = const Uuid().v4().toLowerCase();
 
-    // 4. Request a short-lived SAS write token from the API
+    // 4. Optionally save a full-quality copy to the device camera roll.
+    //    The returned assetId lets the app reload this photo locally rather
+    //    than fetching the blob. Silent on failure (perm denied, etc.).
+    //    hasherPref_cameraRollSaveDisabled uses inverted semantics: bit NOT set
+    //    means enabled, so existing users (bit = 0) get camera roll ON by default.
+    String? assetId;
+    final int prefs = getIntPref(IntPrefsEnum.hasherPreferences) ?? 0;
+    if ((prefs & hasherPref_cameraRollSaveDisabled) == 0) {
+      assetId = await _saveToDeviceLibrary(imageFile);
+    }
+
+    // 5. Compress the image for blob upload (quality 70, capped at 1920px).
+    //    Camera roll already received the full-quality copy in step 4.
+    final uploadFile = await _compressForUpload(imageFile) ?? imageFile;
+
+    // 6. Request a short-lived SAS write token from the API
     final tokenResult = await _getUploadToken(
       kennelId: kennelId,
       kennelSlug: kennelSlug,
@@ -71,8 +87,8 @@ class KennelPhotoService {
       return null;
     }
 
-    // 5. Upload bytes directly to blob storage via the SAS URL
-    final uploaded = await _uploadToBlob(sasUrl: sasUrl, imageFile: imageFile);
+    // 7. Upload compressed bytes directly to blob storage via the SAS URL
+    final uploaded = await _uploadToBlob(sasUrl: sasUrl, imageFile: uploadFile);
     if (!uploaded) {
       Get.snackbar(
         'Upload failed',
@@ -84,12 +100,13 @@ class KennelPhotoService {
       return null;
     }
 
-    // 6. Record the photo in the database
+    // 8. Record the photo in the database
     final recorded = await _addKennelPhoto(
       eventId: eventId,
       kennelId: kennelId,
       photoId: photoGuid,
       blobUrl: blobUrl,
+      assetId: assetId,
       perRunSharingOverride: sharingOverride,
     );
     if (!recorded) {
@@ -105,7 +122,7 @@ class KennelPhotoService {
       return blobUrl;
     }
 
-    // 7. Enqueue a PHO marker into the GPS track feed
+    // 9. Enqueue a PHO marker into the GPS track feed
     _enqueuePhotoMarker(photoId: photoGuid);
 
     return blobUrl;
@@ -113,17 +130,14 @@ class KennelPhotoService {
 
   // ── Photo capture ────────────────────────────────────────────────────────
 
-  /// Returns the raw captured file without cropping. Editing is optional and
-  /// offered on the review page that follows.
+  /// Captures at full camera quality — no compression at this stage.
+  /// Compression for blob upload happens via [_compressForUpload] later.
   Future<File?> _pickImage() async {
     if (!deviceInfo.isPhysicalDevice) {
       return _simulatorPlaceholder();
     }
     final picked = await ImagePicker().pickImage(
       source: ImageSource.camera,
-      imageQuality: 70,
-      maxWidth: 1920,
-      maxHeight: 1920,
     );
     return picked == null ? null : File(picked.path);
   }
@@ -139,6 +153,51 @@ class KennelPhotoService {
       return file;
     } catch (e) {
       debugPrint('KennelPhotoService: simulator placeholder failed: $e');
+      return null;
+    }
+  }
+
+  // ── Camera roll save ─────────────────────────────────────────────────────
+
+  /// Saves [imageFile] to the device photo library and returns the asset ID.
+  /// Returns null if permission is denied or the save fails.
+  Future<String?> _saveToDeviceLibrary(File imageFile) async {
+    try {
+      final permission = await PhotoManager.requestPermissionExtend();
+      if (!permission.isAuth) return null;
+      final bytes = await imageFile.readAsBytes();
+      final entity = await PhotoManager.editor.saveImage(
+        bytes,
+        filename: 'hc_${DateTime.now().millisecondsSinceEpoch}.jpg',
+        desc: '',
+      );
+      return entity.id;
+    } catch (e) {
+      debugPrint('KennelPhotoService: camera roll save failed: $e');
+      return null;
+    }
+  }
+
+  // ── Blob upload compression ──────────────────────────────────────────────
+
+  /// Compresses [imageFile] for blob upload (quality 70, max 1920px on longest edge).
+  /// Returns null on failure — callers should fall back to the original file.
+  Future<File?> _compressForUpload(File imageFile) async {
+    try {
+      final dir = await getTemporaryDirectory();
+      final targetPath =
+          '${dir.path}/hc_upload_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final result = await FlutterImageCompress.compressAndGetFile(
+        imageFile.absolute.path,
+        targetPath,
+        quality: 70,
+        minWidth: 1920,
+        minHeight: 1920,
+        format: CompressFormat.jpeg,
+      );
+      return result == null ? null : File(result.path);
+    } catch (e) {
+      debugPrint('KennelPhotoService: compress failed, using original: $e');
       return null;
     }
   }
@@ -216,6 +275,7 @@ class KennelPhotoService {
     required String kennelId,
     required String photoId,
     required String blobUrl,
+    String? assetId,
     int? perRunSharingOverride,
   }) async {
     final locationService = Get.find<LocationService>();
@@ -241,6 +301,9 @@ class KennelPhotoService {
       'longitude': pos?.longitude ?? 0.0,
     };
 
+    if (assetId != null && assetId.isNotEmpty) {
+      body['assetId'] = assetId;
+    }
     if (perRunSharingOverride != null) {
       body['perRunSharingOverride'] = perRunSharingOverride;
     }
@@ -434,10 +497,11 @@ class _PhotoSharePageState extends State<_PhotoSharePage> {
 
   Future<void> _onEdit() async {
     setState(() => _isCropping = true);
+    // Crop at full quality — compression for blob upload happens later.
     final cropped = await ImageCropper().cropImage(
       sourcePath: _currentFile.path,
       compressFormat: ImageCompressFormat.jpg,
-      compressQuality: 70,
+      compressQuality: 100,
     );
     if (cropped != null) {
       setState(() {

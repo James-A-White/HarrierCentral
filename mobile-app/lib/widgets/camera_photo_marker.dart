@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 /// A map marker widget that renders a photo thumbnail inside a camera-shaped
 /// map-pin frame.
@@ -13,6 +15,11 @@ import 'package:flutter/material.dart';
 ///   • width ≥ height → landscape frame  (camera_landscape.png)
 ///   • width <  height → portrait frame   (camera_portrait.png)
 ///
+/// **Local-first loading:** when [isOwnPhoto] is true and [assetId] is
+/// non-null, the widget first tries to load the thumbnail from the device
+/// photo library (fast, no network). If the asset is missing (deleted from
+/// library, or a different device), it falls back to [photoUrl] silently.
+///
 /// While loading, a count-up number (0–9, 1 second per tick) is shown inside
 /// the screen area so the user can see that loading is in progress.
 /// When [photoUrl] is null the widget shows the static empty camera frame.
@@ -21,6 +28,8 @@ class CameraPhotoMarker extends StatefulWidget {
     super.key,
     required this.photoUrl,
     required this.size,
+    this.assetId,
+    this.isOwnPhoto = false,
     this.cachedOrientation,
     this.onOrientationDetected,
   });
@@ -30,6 +39,15 @@ class CameraPhotoMarker extends StatefulWidget {
 
   /// The width and height of the square marker widget in logical pixels.
   final double size;
+
+  /// Device-library asset ID (iOS PHAsset.localIdentifier / Android MediaStore
+  /// URI). When non-null and [isOwnPhoto] is true, attempted first before
+  /// falling back to [photoUrl].
+  final String? assetId;
+
+  /// True when this photo was taken by the current app user on this device.
+  /// Only attempt local asset loading when this is true.
+  final bool isOwnPhoto;
 
   /// Pre-resolved orientation from the controller cache. When non-null the
   /// widget skips detection and renders immediately without a loading state.
@@ -50,32 +68,34 @@ class _CameraPhotoMarkerState extends State<CameraPhotoMarker> {
   Timer? _countTimer;
   int _loadingCount = 0;
 
+  // Non-null when the photo was loaded from the device library.
+  // Null means the network URL should be used.
+  Uint8List? _localBytes;
+
   @override
   void initState() {
     super.initState();
     if (widget.cachedOrientation != null) {
       _isLandscape = widget.cachedOrientation;
     } else if (widget.photoUrl != null) {
-      _startDetection();
+      _startLoading();
     }
   }
 
   @override
   void didUpdateWidget(CameraPhotoMarker old) {
     super.didUpdateWidget(old);
-    if (old.photoUrl != widget.photoUrl) {
+    if (old.photoUrl != widget.photoUrl || old.assetId != widget.assetId) {
       _cancelDetection();
+      setState(() {
+        _isLandscape = null;
+        _loadingCount = 0;
+        _localBytes = null;
+      });
       if (widget.cachedOrientation != null) {
-        setState(() {
-          _isLandscape = widget.cachedOrientation;
-          _loadingCount = 0;
-        });
-      } else {
-        setState(() {
-          _isLandscape = null;
-          _loadingCount = 0;
-        });
-        if (widget.photoUrl != null) _startDetection();
+        setState(() => _isLandscape = widget.cachedOrientation);
+      } else if (widget.photoUrl != null) {
+        _startLoading();
       }
     }
   }
@@ -86,12 +106,55 @@ class _CameraPhotoMarkerState extends State<CameraPhotoMarker> {
     super.dispose();
   }
 
-  void _startDetection() {
-    _listener = ImageStreamListener(_onLoaded, onError: _onError);
-    // photoUrl is guaranteed non-null — only called from the null-guard above
+  void _startLoading() {
+    _startCountTimer();
+    if (widget.isOwnPhoto && widget.assetId != null) {
+      _tryLocalAsset();
+    } else {
+      _startNetworkDetection();
+    }
+  }
+
+  Future<void> _tryLocalAsset() async {
+    try {
+      final entity = await AssetEntity.fromId(widget.assetId!);
+      if (entity == null) {
+        _startNetworkDetection();
+        return;
+      }
+      final bytes = await entity.thumbnailDataWithSize(
+        const ThumbnailSize(400, 400),
+      );
+      if (bytes == null) {
+        _startNetworkDetection();
+        return;
+      }
+      if (!mounted) return;
+      // Use the asset's stored dimensions to determine orientation — no codec
+      // decode needed, and it reflects the original capture, not the thumbnail.
+      final bool isLandscape = entity.width >= entity.height;
+      _cancelDetection();
+      setState(() {
+        _localBytes = bytes;
+        _isLandscape = isLandscape;
+      });
+      if (widget.photoUrl != null) {
+        widget.onOrientationDetected?.call(widget.photoUrl!, isLandscape);
+      }
+    } catch (_) {
+      // Asset gone (deleted from library, different device) — fall back.
+      if (mounted) _startNetworkDetection();
+    }
+  }
+
+  void _startNetworkDetection() {
+    if (widget.photoUrl == null) return;
+    _listener = ImageStreamListener(_onNetworkLoaded, onError: _onNetworkError);
     _stream = NetworkImage(widget.photoUrl!).resolve(ImageConfiguration.empty);
     _stream!.addListener(_listener!);
+  }
 
+  void _startCountTimer() {
     _countTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) return;
       if (_loadingCount >= 9) {
@@ -112,7 +175,7 @@ class _CameraPhotoMarkerState extends State<CameraPhotoMarker> {
     _countTimer = null;
   }
 
-  void _onLoaded(ImageInfo info, bool _) {
+  void _onNetworkLoaded(ImageInfo info, bool _) {
     _cancelDetection();
     if (mounted) {
       final bool isLandscape = info.image.width >= info.image.height;
@@ -123,7 +186,7 @@ class _CameraPhotoMarkerState extends State<CameraPhotoMarker> {
     }
   }
 
-  void _onError(Object error, StackTrace? stack) {
+  void _onNetworkError(Object error, StackTrace? stack) {
     _cancelDetection();
     if (mounted) setState(() => _isLandscape = true); // fallback: landscape frame
   }
@@ -173,10 +236,20 @@ class _CameraPhotoMarkerState extends State<CameraPhotoMarker> {
           ),
         ),
       );
+    } else if (_localBytes != null) {
+      // Loaded from device library
+      screenContent = Image.memory(
+        _localBytes!,
+        width: photoW,
+        height: photoH,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stack) =>
+            ColoredBox(color: Colors.grey.shade400),
+      );
     } else {
-      // Loaded: photo thumbnail (or grey box on network error)
+      // Loaded (or loading) from network
       // photoUrl is non-null here — _isLandscape is only set after
-      // _startDetection() fires, which requires a non-null photoUrl
+      // _startNetworkDetection() fires, which requires a non-null photoUrl
       screenContent = Image.network(
         widget.photoUrl!,
         width: photoW,

@@ -185,6 +185,9 @@ const String LAST_CACHE_CLEAR_KEY = 'lastCacheClear_';
 //const int dividerCodeForMultipleChoicePopup = -2;
 const int hasherPref_distanceMeasuredIn = 0x00000003;
 const int hasherPref_distanceForAutoDisplay = 0x0000003C;
+// Bit 7: set = camera roll save DISABLED. Zero for all existing users, so the
+// default behaviour (bit not set) is camera roll ENABLED — no migration needed.
+const int hasherPref_cameraRollSaveDisabled = 0x00000080;
 
 const int hasherPref_0 = 0 * 4;
 const int hasherPref_10 = 1 * 4;

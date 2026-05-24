@@ -70,7 +70,6 @@ enum BoolPrefsEnum {
   automaticallySetNotifiationPrefs,
   fcmTokenSavedToServer,
   notificationPreferencesRequested,
-  savePhotosToCameraRoll,
 }
 
 enum IntPrefsEnum {

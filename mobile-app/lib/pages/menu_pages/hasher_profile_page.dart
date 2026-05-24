@@ -81,7 +81,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   bool _addAsKennelFollower = false;
   bool _userRunHistoryLoading = false;
   bool _savePhotosToCameraRoll =
-      getBoolPref(BoolPrefsEnum.savePhotosToCameraRoll) ?? true;
+      ((getIntPref(IntPrefsEnum.hasherPreferences) ?? 0) &
+              hasherPref_cameraRollSaveDisabled) ==
+          0;
   String _photoPrefix = '';
   String _newPhoto = 'bundle://avatar-${Random.secure().nextInt(49) + 1}';
   late HashersModel _hasher;
@@ -195,6 +197,8 @@ class HasherProfilePageState extends State<HasherProfilePage> {
               _hasherPreferences & hasherPref_distanceMeasuredIn;
           _autoRunPreference =
               _hasherPreferences & hasherPref_distanceForAutoDisplay;
+          _savePhotosToCameraRoll =
+              (_hasherPreferences & hasherPref_cameraRollSaveDisabled) == 0;
         }
       }
 
@@ -333,7 +337,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       isDirty = true;
     }
 
-    if (_hasherPreferences != (_distancePreference + _autoRunPreference)) {
+    if (_hasherPreferences !=
+        (_distancePreference +
+            _autoRunPreference +
+            (_savePhotosToCameraRoll ? 0 : hasherPref_cameraRollSaveDisabled))) {
       isDirty = true;
     }
 
@@ -388,19 +395,21 @@ class HasherProfilePageState extends State<HasherProfilePage> {
         historicalTotalRunCount: _previousRunCountController.text,
         historicalHaringCount: _previousHaringCountController.text,
         historicalCountIsEstimate: _historicalCountIsEstimateWidget,
-        preferences: _distancePreference + _autoRunPreference,
+        preferences: _distancePreference +
+            _autoRunPreference +
+            (_savePhotosToCameraRoll ? 0 : hasherPref_cameraRollSaveDisabled),
         followKennelOnAddNewUser: _addAsKennelFollower ? 1 : 0,
         nameDisplayPreference: _nameDisplayPreference,
       );
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {
         if (widget.pageType == EnumMyProfilePageType.myProfile) {
+          final int savedPrefs = _distancePreference +
+              _autoRunPreference +
+              (_savePhotosToCameraRoll ? 0 : hasherPref_cameraRollSaveDisabled);
           await setStringPref(StringPrefsEnum.email, _emailController.text);
-          await setIntPref(
-            IntPrefsEnum.hasherPreferences,
-            _distancePreference + _autoRunPreference,
-          );
-          _hasherPreferences = _distancePreference + _autoRunPreference;
+          await setIntPref(IntPrefsEnum.hasherPreferences, savedPrefs);
+          _hasherPreferences = savedPrefs;
         }
 
         HashersModel? h;
@@ -629,6 +638,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       _isDistanceUpdating = true;
     });
     final HashersService srv = HashersService();
+    final int newPrefs = _distancePreference +
+        _autoRunPreference +
+        (_savePhotosToCameraRoll ? 0 : hasherPref_cameraRollSaveDisabled);
     final String responseBody = await srv.addEditUser(
       targetUserId: _hasher.hasherId,
       firstName: _hasher.firstName ?? '',
@@ -641,15 +653,12 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       historicalTotalRunCount: '-1',
       historicalHaringCount: '-1',
       historicalCountIsEstimate: _historicalCountIsEstimate ?? false,
-      preferences: _distancePreference + _autoRunPreference,
+      preferences: newPrefs,
       nameDisplayPreference: -1,
     );
     if (!responseBody.startsWith(ERROR_PREFIX)) {
-      await setIntPref(
-        IntPrefsEnum.hasherPreferences,
-        _distancePreference + _autoRunPreference,
-      );
-      _hasherPreferences = _distancePreference + _autoRunPreference;
+      await setIntPref(IntPrefsEnum.hasherPreferences, newPrefs);
+      _hasherPreferences = newPrefs;
     }
     if (mounted) {
       setStateIfMounted(() {
@@ -1334,11 +1343,46 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                   _savePhotosToCameraRoll =
                                                       value,
                                             );
-                                            await setBoolPref(
-                                              BoolPrefsEnum
-                                                  .savePhotosToCameraRoll,
-                                              value,
+                                            final int newPrefs =
+                                                _distancePreference +
+                                                _autoRunPreference +
+                                                (value
+                                                    ? 0
+                                                    : hasherPref_cameraRollSaveDisabled);
+                                            final srv = HashersService();
+                                            final response =
+                                                await srv.addEditUser(
+                                              targetUserId: _hasher.hasherId,
+                                              firstName:
+                                                  _hasher.firstName ?? '',
+                                              lastName: _hasher.lastName ?? '',
+                                              email: _emailController.text,
+                                              hashName: _hasher.hashName ?? '',
+                                              photo: _hasher.photo ?? '',
+                                              eventId: GUID_EMPTY,
+                                              kennelId: GUID_EMPTY,
+                                              historicalTotalRunCount: '-1',
+                                              historicalHaringCount: '-1',
+                                              historicalCountIsEstimate:
+                                                  _historicalCountIsEstimate ??
+                                                  false,
+                                              preferences: newPrefs,
+                                              nameDisplayPreference: -1,
                                             );
+                                            if (!response.startsWith(
+                                              ERROR_PREFIX,
+                                            )) {
+                                              await setIntPref(
+                                                IntPrefsEnum.hasherPreferences,
+                                                newPrefs,
+                                              );
+                                              if (mounted) {
+                                                setState(
+                                                  () => _hasherPreferences =
+                                                      newPrefs,
+                                                );
+                                              }
+                                            }
                                           },
                                         ),
                                       ),
