@@ -156,13 +156,18 @@ namespace HcWebApi.Endpoints
                     }
                 }
 
-                // handle any additoinal tasks after the SQL has been updated.
-                // ideally these should not take a long time to complete. If they
-                // do, we should use a message queue to handle the long-running functions
-
-                // handle any additoinal tasks after the SQL has been updated.
-                // ideally these should not take a long time to complete. If they
-                // do, we should use a message queue to handle the long-running functions
+                // Detect HC6 app error envelope: single rowset, single row, contains errorType.
+                // SP auth failures and validation errors return this shape rather than the
+                // expected multi-rowset success response.
+                if (multipleResults.Count > 0
+                    && multipleResults[0].Count == 1
+                    && multipleResults[0][0].ContainsKey("errorType"))
+                {
+                    var errorRow = multipleResults[0][0];
+                    errorRow.TryGetValue("errorUserMessage", out var errMsg);
+                    log.LogWarning("AppApiHC6 SP error [{QueryType}]: {Message}", data.queryType, errMsg);
+                    return new BadRequestObjectResult(errorRow);
+                }
 
                 switch ((string)data.queryType)
                 {
