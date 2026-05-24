@@ -926,8 +926,8 @@ class CheckInPackPage extends StatelessWidget {
                 // Credit label
                 if (hasher.credit != 0)
                   Positioned(
-                    left: LIST_ITEM_LEFT_MARGIN + 112.0,
-                    bottom: 8,
+                    right: 4,
+                    bottom: hasher.totalRunsThisKennel > 0 ? 17.0 : 1.0,
                     child: Text(
                       '${IveCoreUtilities.getFormattedMoney(hasher.credit.abs(), controller.eventAggregate.extensions.digAfterDec, controller.eventAggregate.extensions.curSym)} ${hasher.credit > 0 ? 'Credit available' : 'Credit owed'}',
                       style: TextStyle(
