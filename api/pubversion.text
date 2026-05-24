@@ -1,4 +1,11 @@
 
+1.0.9+7
+    • Chat (HC6): fix MessageReleasabilityFlags deserialization — always-zero due to HC5/HC6 spelling mismatch
+    • Chat (HC6): APNS priority 5 + content-available for data-only in-app messages (app + portal shims)
+    • Chat (HC6): replace HC5 SP call in DeleteFcmToken with direct UPDATE HC.Device
+    • Chat (HC6): detect HC6 error envelope before post-SP switch — errors now surfaced to caller
+    • Chat (HC6): replace Console.WriteLine with structured logging in AppApiHC6
+
 1.0.8+6
     • StorePositions: type field limit raised from 54 to 200 chars — enables
       PHO map markers (full blob URL labels are ~165 chars)
