@@ -149,7 +149,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                                   HasherProfilePage.flagUiElement_logOutButton |
                                   HasherProfilePage
                                       .flagUiElement_gdprDeleteAccount |
-                                  (_userId == '0CDBB109-215E-4B5F-A405-F6C9FBCB18EC'
+                                  (_userId == '0cdbb109-215e-4b5f-a405-f6c9fbcb18ec'
                                       ? HasherProfilePage
                                             .flagUiElement_copyBootLog
                                       : 0),

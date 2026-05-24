@@ -119,18 +119,12 @@ class PhotoStatusCounts {
 }
 
 // ---------------------------------------------------------------------------
-// Queue entry — holds the pending action and the pre-action state for rollback
+// Queue entry — holds the pending action (mutable so user can change mind)
 // ---------------------------------------------------------------------------
 
 class _QueuedAction {
-  _QueuedAction({
-    required this.action,
-    required this.previousStatus,
-    this.previousDeletedAt,
-  });
-  int action; // mutable — user may change mind before flush
-  final int previousStatus;
-  final DateTime? previousDeletedAt;
+  _QueuedAction({required this.action});
+  int action;
 }
 
 // ---------------------------------------------------------------------------
@@ -156,11 +150,8 @@ class PhotoReviewController extends GetxController {
   final RxInt currentIndex = 0.obs;
   final RxMap<String, int> decisions = <String, int>{}.obs;
 
-  // Pending writes: photoId → queued action + previous state for rollback
+  // Pending writes: photoId → queued action
   final Map<String, _QueuedAction> _queue = {};
-
-  Timer? _debounceTimer;
-  static const _debounceDuration = Duration(seconds: 5);
 
   late final PageController pageController = PageController();
   final _service = KennelPhotoService();
@@ -192,7 +183,6 @@ class PhotoReviewController extends GetxController {
 
   @override
   void onClose() {
-    _debounceTimer?.cancel();
     pageController.dispose();
     super.onClose();
   }
@@ -242,18 +232,6 @@ class PhotoReviewController extends GetxController {
     }
   }
 
-  // ── Debounce ─────────────────────────────────────────────────────────────
-
-  void _resetDebounce() {
-    _debounceTimer?.cancel();
-    _debounceTimer = Timer(_debounceDuration, () => unawaited(_flushQueue()));
-  }
-
-  void _cancelDebounce() {
-    _debounceTimer?.cancel();
-    _debounceTimer = null;
-  }
-
   // ── Load ─────────────────────────────────────────────────────────────────
 
   Future<void> loadPhotos() async {
@@ -298,9 +276,6 @@ class PhotoReviewController extends GetxController {
     required BuildContext context,
   }) async {
     if (action == photoActionDelete) {
-      // Pause the debounce while the confirmation dialog is visible
-      _cancelDebounce();
-
       final confirmed = await showDialog<bool>(
         context: context,
         barrierDismissible: false,
@@ -332,103 +307,30 @@ class PhotoReviewController extends GetxController {
         ),
       );
 
-      if (confirmed != true) {
-        // Resume debounce if something is still queued
-        if (_queue.isNotEmpty) _resetDebounce();
-        return;
-      }
+      if (confirmed != true) return;
     }
 
     if (isSaving.value) return;
 
     _enqueue(photoId: photoId, action: action);
-    _applyOptimisticUpdate(photoId: photoId, action: action);
     decisions[photoId] = action;
 
-    // Brief pause so the button highlight is visible before advancing
+    // Brief pause so the button highlight is visible before advancing.
     await Future<void>.delayed(const Duration(milliseconds: 250));
     _goToNext();
-
-    // If no pending photos remain, flush immediately rather than waiting for
-    // the debounce — every photo has been reviewed, so there is nothing left
-    // to do and the user expects an immediate save.
-    final bool noPendingRemaining =
-        allPhotos.every((p) => !p.isPending);
-    if (noPendingRemaining && _queue.isNotEmpty) {
-      _cancelDebounce();
-      unawaited(_flushQueue());
-    } else {
-      _resetDebounce();
-    }
   }
 
   // ── Queue helpers ─────────────────────────────────────────────────────────
 
   void _enqueue({required String photoId, required int action}) {
     if (_queue.containsKey(photoId)) {
-      // Photo already queued — update action but preserve the original state
       _queue[photoId]!.action = action;
     } else {
-      final photo = allPhotos.firstWhereOrNull((p) => p.photoId == photoId);
-      _queue[photoId] = _QueuedAction(
-        action: action,
-        previousStatus: photo?.status ?? 1,
-        previousDeletedAt: photo?.deletedAt,
-      );
+      _queue[photoId] = _QueuedAction(action: action);
     }
-  }
-
-  void _applyOptimisticUpdate(
-      {required String photoId, required int action}) {
-    final idx = allPhotos.indexWhere((p) => p.photoId == photoId);
-    if (idx == -1) return;
-    final p = allPhotos[idx];
-
-    final DateTime? newDeletedAt =
-        action == photoActionDelete ? DateTime.now() : null;
-    final int newStatus = action == photoActionDelete
-        ? p.status
-        : switch (action) {
-            photoActionKeepPrivate      => 0,
-            photoActionShare            => 2,
-            photoActionAddToGallery     => 3,
-            photoActionAddToHomeGallery => 4,
-            photoActionMakeEventCover   => 5,
-            _ => p.status,
-          };
-
-    allPhotos[idx] = KennelPendingPhoto(
-      photoId: p.photoId,
-      eventId: p.eventId,
-      status: newStatus,
-      deletedAt: newDeletedAt,
-      blobUrl: p.blobUrl,
-      uploaderDisplayName: p.uploaderDisplayName,
-      eventName: p.eventName,
-      eventNumber: p.eventNumber,
-      createdAt: p.createdAt,
-      title: p.title,
-    );
   }
 
   void _revertOptimisticUpdates() {
-    for (final entry in _queue.entries) {
-      final idx = allPhotos.indexWhere((p) => p.photoId == entry.key);
-      if (idx == -1) continue;
-      final p = allPhotos[idx];
-      allPhotos[idx] = KennelPendingPhoto(
-        photoId: p.photoId,
-        eventId: p.eventId,
-        status: entry.value.previousStatus,
-        deletedAt: entry.value.previousDeletedAt,
-        blobUrl: p.blobUrl,
-        uploaderDisplayName: p.uploaderDisplayName,
-        eventName: p.eventName,
-        eventNumber: p.eventNumber,
-        createdAt: p.createdAt,
-        title: p.title,
-      );
-    }
     _queue.clear();
     decisions.clear();
   }
@@ -439,7 +341,6 @@ class PhotoReviewController extends GetxController {
   // needed, which avoids context-across-async-gap lint warnings.
   Future<void> _flushQueue() async {
     if (_queue.isEmpty) return;
-    _cancelDebounce();
 
     final updates = _queue.entries
         .map((e) => <String, dynamic>{
@@ -1110,17 +1011,18 @@ class _ActionPanel extends StatelessWidget {
           controller.currentIndex.value.clamp(0, photos.length - 1);
       final photo = photos[idx];
 
-      // Selected action: delete if soft-deleted, otherwise current status
-      final int? selected = photo.isDeleted
-          ? photoActionDelete
-          : switch (photo.status) {
-              0 => photoActionKeepPrivate,
-              2 => photoActionShare,
-              3 => photoActionAddToGallery,
-              4 => photoActionAddToHomeGallery,
-              5 => photoActionMakeEventCover,
-              _ => null, // status=1 = pending, no button pre-selected
-            };
+      // Queued decision takes priority; fall back to committed status.
+      final int? selected = controller.decisionFor(photo.photoId) ??
+          (photo.isDeleted
+              ? photoActionDelete
+              : switch (photo.status) {
+                  0 => photoActionKeepPrivate,
+                  2 => photoActionShare,
+                  3 => photoActionAddToGallery,
+                  4 => photoActionAddToHomeGallery,
+                  5 => photoActionMakeEventCover,
+                  _ => null,
+                });
 
       void act(int action) => controller.actionPhoto(
             photoId: photo.photoId,

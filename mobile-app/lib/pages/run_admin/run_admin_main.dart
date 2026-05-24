@@ -355,6 +355,7 @@ class RunAdminPage extends StatelessWidget {
     return [
       Wrap(
         alignment: WrapAlignment.spaceAround,
+        spacing: 20,
         runSpacing: 0,
         children: buttons,
       ),

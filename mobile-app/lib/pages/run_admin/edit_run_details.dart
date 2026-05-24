@@ -934,6 +934,41 @@ class EditRunDetailsPageState extends State<EditRunDetailsPage>
                                     if (locate == true) {
                                       await _geocodeAndNavigateToMap();
                                     }
+                                  } else {
+                                    if (!mounted) return;
+                                    await showDialog<void>(
+                                      context: navigatorKey.currentContext!,
+                                      builder: (BuildContext ctx) => AlertDialog(
+                                        title: const Text('Pin location needed'),
+                                        content: const Text(
+                                          "The address isn't specific enough for automatic location — you'll need to set the pin manually on the Map tab.",
+                                        ),
+                                        actions: <Widget>[
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.teal,
+                                              foregroundColor: Colors.white,
+                                            ),
+                                            onPressed: () =>
+                                                Navigator.of(ctx).pop(),
+                                            child: const Text('Dismiss'),
+                                          ),
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: hc_blue,
+                                              foregroundColor: Colors.white,
+                                            ),
+                                            onPressed: () {
+                                              Navigator.of(ctx).pop();
+                                              _tabController.animateTo(
+                                                EditingTabEnum.map.value,
+                                              );
+                                            },
+                                            child: const Text('Go to Map'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
                                   }
                                 }
                                 await Future<void>.delayed(

@@ -1,5 +1,47 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.5.4+1131 (2026-05-24)
+
+### Bug fixes
+
+- **Hash Flash — review flow rework**: Tapping an action button now records
+  the decision and highlights the button without navigating away from the
+  current photo. Swipe left/right (or the auto-advance after a tap) is now
+  the only mechanism that moves between photos. This fixes two bugs: an
+  instant photo-jump followed by a slide animation on the pending tab, and
+  no-advance on the reviewed tab. Both were caused by the optimistic status
+  update mutating the `allPhotos` list mid-flight, which rebuilt the
+  `PageView` before `nextPage()` fired.
+
+- **Hash Flash — save on exit only**: Removed the 5-second debounce
+  auto-save. All decisions are now written as a single batch when the user
+  leaves the page. Eliminates mid-session saves that were disrupting the
+  `PageView` with a full reload at unpredictable moments.
+
+- **Hash Flash — reviewed tab re-tag highlighting**: Tapping a different
+  action on an already-reviewed photo now immediately highlights the new
+  button. Previously the panel derived `selected` from the committed status
+  only; it now checks the queued decision first.
+
+- **UUID case fix — boot log flag**: The developer-only boot log flag in
+  the drawer menu now compares against a lowercase UUID, consistent with the
+  project-wide UUID normalisation convention. Fixes the flag never activating
+  after `UuidValue` normalisation was rolled out.
+
+### Improvements
+
+- **Geocoding — "Pin location needed" dialog**: When auto-locate cannot
+  find a specific enough location for an address, a dialog now appears
+  explaining why and offering a direct "Go to Map" button to jump to the
+  Map tab for manual pinning. Previously the flow failed silently.
+
+- **Run admin button spacing**: Added horizontal spacing between action
+  buttons in the run admin Wrap layout to prevent them from touching on
+  narrow screens.
+
+- **Migration archived**: `add_AssetId_to_KennelPhotos.sql` moved to
+  `db/hc6/app/archive/` after having been run against the database.
+
 ## 2.5.2+1129 (2026-05-24)
 
 ### Bug fixes
