@@ -230,8 +230,10 @@ namespace HcWebApi.Endpoints
                     return;
                 }
 
-                // Extract the event details (first array)
-                var eventDetailsList = System.Text.Json.JsonSerializer.Deserialize<List<EventMessage>>(System.Text.Json.JsonSerializer.Serialize(parsedJson[0]));
+                // Extract the event details (first array).
+                // EventMessageHc6 uses the correctly-spelled HC6 column name; the shared
+                // EventMessage class retains the HC5 typo for backward compat with HC5 paths.
+                var eventDetailsList = System.Text.Json.JsonSerializer.Deserialize<List<EventMessageHc6>>(System.Text.Json.JsonSerializer.Serialize(parsedJson[0]));
 
                 // Extract the recipients who should get a visible push notification (second array)
                 var notificationList = System.Text.Json.JsonSerializer.Deserialize<List<Recipient>>(System.Text.Json.JsonSerializer.Serialize(parsedJson[1]));
@@ -241,7 +243,7 @@ namespace HcWebApi.Endpoints
 
                 if (eventDetailsList == null || notificationList == null || inAppMessageList == null)
                 {
-                    logger.LogError("Failed to deserialize JSON into objects.");
+                    logger.LogError("Failed to deserialize notification payload into objects.");
                     return;
                 }
 
@@ -250,15 +252,7 @@ namespace HcWebApi.Endpoints
                     foreach (var recipient in notificationList)
                     {
                         if (!string.IsNullOrEmpty(recipient.FcmToken))
-                        {
-                            await SendNotificationAsync(
-                                recipient.FcmToken,
-                                eventMessage,
-                                accessToken,
-                                true,
-                                includeNulls,
-                                logger);
-                        }
+                            await SendNotificationAsync(recipient.FcmToken, eventMessage, accessToken, true, logger);
                     }
                 }
 
@@ -267,15 +261,7 @@ namespace HcWebApi.Endpoints
                     foreach (var recipient in inAppMessageList)
                     {
                         if (!string.IsNullOrEmpty(recipient.FcmToken))
-                        {
-                            await SendNotificationAsync(
-                                recipient.FcmToken,
-                                eventMessage,
-                                accessToken,
-                                false,
-                                includeNulls,
-                                logger);
-                        }
+                            await SendNotificationAsync(recipient.FcmToken, eventMessage, accessToken, false, logger);
                     }
                 }
 
@@ -292,22 +278,18 @@ namespace HcWebApi.Endpoints
 
         public static async Task SendNotificationAsync(
             string fcmToken,
-            EventMessage eventMessage,
+            EventMessageHc6 eventMessage,
             string? accessToken,
             bool isNotification,
-            bool includeNulls,
             ILogger log)
         {
-
-            Console.WriteLine($"FCM token = {fcmToken}");
-
             try
             {
                 var messageBody = new
                 {
                     message = new
                     {
-                        token = fcmToken, // Correct way to send multiple tokens
+                        token = fcmToken,
                         notification = isNotification ? new { title = eventMessage.MessageTitle, body = eventMessage.MessageContent } : null,
                         data = new
                         {
@@ -319,7 +301,9 @@ namespace HcWebApi.Endpoints
                             eventMessage.UserPhoto,
                             Message = eventMessage.MessageContent,
                             eventMessage.MessageId,
-                            MessageRelesabilityFlags = eventMessage.MessageRelesabilityFlags.ToString(),
+                            // FCM key preserves the HC5 typo — Flutter client reads this key by name.
+                            // Rename to MessageReleasabilityFlags in Track 2 alongside the 2.x migration.
+                            MessageRelesabilityFlags = eventMessage.MessageReleasabilityFlags.ToString(),
                             MessageType = eventMessage.MessageType.ToString(),
                         },
                         android = isNotification ? new { priority = "high", notification = new { sound = "default" } } : null,
@@ -504,6 +488,24 @@ namespace HcWebApi.Endpoints
         }
 
 
+
+        // HC6 corrected the spelling of MessageReleasabilityFlags in the SP column name.
+        // The shared EventMessage class (PortalApi.cs) retains the old HC5 typo for
+        // backward compat with HC5 paths. This local class is used only in the HC6
+        // sendEventMessage notification path.
+        private sealed class EventMessageHc6
+        {
+            public required string MessageId { get; set; }
+            public required string EventId { get; set; }
+            public required string PublicEventId { get; set; }
+            public required string UserId { get; set; }
+            public required string UserDisplayName { get; set; }
+            public required string UserPhoto { get; set; }
+            public required string MessageTitle { get; set; }
+            public required string MessageContent { get; set; }
+            public required int MessageReleasabilityFlags { get; set; }
+            public required int MessageType { get; set; }
+        }
 
         static async Task UpdateGoogleCalendar(ILogger log)
         {
