@@ -100,8 +100,12 @@ class ChatPageController extends GetxController {
       } else {
         // Delta: _parseMessages returns oldest-first; insertMessage appends
         // at the newest end, so iterating oldest→newest is correct.
+        // Guard against re-inserting optimistically-added sent messages whose
+        // sequence count the sender never received back from the server.
         for (final msg in messages) {
-          await chatController.insertMessage(msg);
+          if (!chatController.messages.any((m) => m.id == msg.id)) {
+            await chatController.insertMessage(msg);
+          }
         }
       }
     } finally {
