@@ -14,9 +14,14 @@ class ChatPageController extends GetxController {
 
   late core.User currentUser;
   StreamSubscription<RemoteMessage>? _fcmSubscription;
+  Timer? _pollingTimer;
+
+  int? _lastKnownSequenceCount;
+  bool _isFetching = false;
 
   @override
   void onClose() {
+    _pollingTimer?.cancel();
     unawaited(_fcmSubscription?.cancel());
     chatController.dispose();
     super.onClose();
@@ -55,56 +60,64 @@ class ChatPageController extends GetxController {
   }
 
   Future<void> onAppResumed() async {
-    final result = await _getEventMessages(eventId);
-    if (result == null || result.startsWith(ERROR_PREFIX)) return;
-    final outerItem = jsonDecode(result) as List<dynamic>;
-    final messages = _parseMessages(outerItem[0] as List<dynamic>);
-    await chatController.setMessages(messages);
+    await _fetchDelta();
   }
 
   Future<void> onInitAsync() async {
-    await onAppResumed();
+    await _fetchDelta();
 
     unawaited(_markEventChatRead());
 
     _fcmSubscription = FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       final incomingEventId = message.data['EventId'] as String?;
-      if (incomingEventId != null &&
-          eventId.asUuid == incomingEventId.asUuid) {
-        final userId = message.data['UserId'].toString().asUuid;
-        _userCache[userId] = core.User(
-          id: userId,
-          name: message.data['UserDisplayName'] as String?,
-          imageSource: message.data['UserPhoto'] as String?,
-        );
-
-        final messageId = message.data['MessageId'].toString().asUuid;
-        final existing = chatController.messages
-            .where((m) => m.id == messageId)
-            .firstOrNull;
-
-        if (existing == null) {
-          final newMsg = core.Message.text(
-            id: messageId,
-            authorId: userId,
-            text: message.data['Message'] as String,
-            createdAt: DateTime.now(),
-            status: core.MessageStatus.sent,
-          );
-          unawaited(chatController.insertMessage(newMsg));
-        } else {
-          if (existing is core.TextMessage) {
-            unawaited(chatController.updateMessage(
-              existing,
-              existing.copyWith(
-                status: core.MessageStatus.sent,
-                sentAt: DateTime.now(),
-              ),
-            ));
-          }
-        }
+      if (incomingEventId != null && eventId.asUuid == incomingEventId.asUuid) {
+        unawaited(_fetchDelta());
       }
     });
+
+    _pollingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      unawaited(_fetchDelta());
+    });
+  }
+
+  Future<void> _fetchDelta() async {
+    if (_isFetching) return;
+    _isFetching = true;
+    try {
+      final sinceSeq = _lastKnownSequenceCount;
+      final result = await _getEventMessages(sinceSequenceCount: sinceSeq);
+      if (result == null || result.startsWith(ERROR_PREFIX)) return;
+      final outerItem = jsonDecode(result) as List<dynamic>;
+      final rawMessages = outerItem[0] as List<dynamic>;
+      if (rawMessages.isEmpty) return;
+
+      final newSeq = _extractMaxSequenceCount(rawMessages);
+      if (newSeq != null) _lastKnownSequenceCount = newSeq;
+
+      final messages = _parseMessages(rawMessages);
+      if (sinceSeq == null) {
+        await chatController.setMessages(messages);
+      } else {
+        // Delta: _parseMessages returns oldest-first; insertMessage appends
+        // at the newest end, so iterating oldest→newest is correct.
+        for (final msg in messages) {
+          await chatController.insertMessage(msg);
+        }
+      }
+    } finally {
+      _isFetching = false;
+    }
+  }
+
+  int? _extractMaxSequenceCount(List<dynamic> rawMessages) {
+    int? max;
+    for (final item in rawMessages) {
+      final msg = item as Map<String, dynamic>;
+      final seq = msg['sequenceCount'];
+      final seqInt = seq is int ? seq : (seq as num?)?.toInt();
+      if (seqInt != null && (max == null || seqInt > max)) max = seqInt;
+    }
+    return max;
   }
 
   Future<void> _markEventChatRead() async {
@@ -130,23 +143,26 @@ class ChatPageController extends GetxController {
         : 'SP [markEventChatRead] called — success');
   }
 
-  Future<String?> _getEventMessages(String eventId) async {
+  Future<String?> _getEventMessages({int? sinceSequenceCount}) async {
     final String userId = currentUserId;
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
-    return ServiceCommon.sendHttpPost(
-      () => jsonEncode(<String, String>{
-        'queryType': 'getEventMessages',
-        'deviceId': deviceId,
-        'accessToken': Utilities.generateToken(
-          userId,
-          'hcapp_getEventMessages',
-          paramString: deviceSecret,
-        ),
-        'eventId': eventId,
-      }),
-    );
+    final body = <String, dynamic>{
+      'queryType': 'getEventMessages',
+      'deviceId': deviceId,
+      'accessToken': Utilities.generateToken(
+        userId,
+        'hcapp_getEventMessages',
+        paramString: deviceSecret,
+      ),
+      'eventId': eventId,
+    };
+    if (sinceSequenceCount != null) {
+      body['sinceSequenceCount'] = sinceSequenceCount;
+    }
+
+    return ServiceCommon.sendHttpPost(() => jsonEncode(body));
   }
 
   List<core.Message> _parseMessages(List<dynamic> messageList) {
@@ -154,31 +170,47 @@ class ChatPageController extends GetxController {
     for (final item in messageList) {
       final msg = item as Map<String, dynamic>;
 
-      dynamic authorRaw = msg['author'];
-      if (authorRaw is String) {
-        authorRaw = jsonDecode(authorRaw);
+      final String authorId;
+      final String? authorName;
+      final String? authorImageUrl;
+
+      if (msg.containsKey('authorId')) {
+        // HC6 app SP: flat columns
+        authorId = (msg['authorId'] as String).asUuid;
+        authorName = msg['authorFirstName'] as String?;
+        authorImageUrl = msg['authorImageUrl'] as String?;
+      } else {
+        // HC5 legacy: nested author object (string or map)
+        dynamic authorRaw = msg['author'];
+        if (authorRaw is String) authorRaw = jsonDecode(authorRaw);
+        final author =
+            (authorRaw as Map<String, dynamic>?) ?? <String, dynamic>{};
+        authorId = ((author['id'] as String?) ?? '').asUuid;
+        authorName = author['firstName'] as String?;
+        authorImageUrl = author['imageUrl'] as String?;
       }
-      final author = authorRaw as Map<String, dynamic>;
-      final authorId = (author['id'] as String).asUuid;
 
       _userCache[authorId] = core.User(
         id: authorId,
-        name: author['firstName'] as String?,
-        imageSource: author['imageUrl'] as String?,
+        name: authorName,
+        imageSource: authorImageUrl,
       );
 
       final createdAtMs = msg['createdAt'];
       result.add(core.Message.text(
         id: (msg['id'] as String).asUuid,
         authorId: authorId,
-        text: msg['text'] as String,
+        text: (msg['text'] as String?) ?? '',
         createdAt: createdAtMs is int
             ? DateTime.fromMillisecondsSinceEpoch(createdAtMs)
-            : null,
+            : (createdAtMs is num)
+                ? DateTime.fromMillisecondsSinceEpoch(createdAtMs.toInt())
+                : null,
         status: core.MessageStatus.sent,
       ));
     }
-    // SP returns newest-first; 2.x chat displays index 0 at top, so reverse.
+    // SP returns newest-first; reverse to oldest-first for display and
+    // for oldest→newest insertMessage ordering on delta loads.
     return result.reversed.toList();
   }
 
