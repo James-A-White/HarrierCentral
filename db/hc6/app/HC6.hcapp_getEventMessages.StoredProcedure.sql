@@ -1,8 +1,9 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcapp_getEventMessages]
 
-    @deviceId    UNIQUEIDENTIFIER = NULL,
-    @accessToken NVARCHAR(1000)   = NULL,
-    @eventId     UNIQUEIDENTIFIER = NULL
+    @deviceId           UNIQUEIDENTIFIER = NULL,
+    @accessToken        NVARCHAR(1000)   = NULL,
+    @eventId            UNIQUEIDENTIFIER = NULL,
+    @sinceSequenceCount INT              = NULL
 
 AS
 -- =====================================================================
@@ -15,11 +16,15 @@ AS
 -- Parameters:
 --   @deviceId    - Registered device UUID
 --   @accessToken - Compound token: DeviceSecret + eventId (as NVARCHAR)
---   @eventId     - Event to retrieve messages for
+--   @eventId            - Event to retrieve messages for
+--   @sinceSequenceCount - If provided, return only messages with
+--                         MessageSequenceCount > this value (delta fetch).
+--                         NULL = return all messages (initial load).
 -- Returns:
 --   Read SP (no success envelope).
 --   On success (rowset 0): { id, type, text, roomId, createdAt,
---                             authorId, authorFirstName, authorImageUrl }
+--                             authorId, authorFirstName, authorImageUrl,
+--                             sequenceCount }
 --   On error (rowset 0): standard HC6 error detail
 -- Author: Harrier Central
 -- Created: 2026-05-10
@@ -88,10 +93,12 @@ SELECT
     DATEDIFF_BIG(MILLISECOND, '1970-01-01 00:00:00', msg.createdAt)            AS createdAt,
     UPPER(h.PublicHasherId)                                                     AS authorId,
     h.DisplayName                                                               AS authorFirstName,
-    h.Photo                                                                     AS authorImageUrl
+    h.Photo                                                                     AS authorImageUrl,
+    msg.MessageSequenceCount                                                    AS sequenceCount
 FROM HC.EventMessage msg
 INNER JOIN HC.Hasher h ON msg.UserId = h.id
 WHERE msg.EventId = @eventId
   AND msg.Removed = 0
   AND h.Removed = 0
+  AND (@sinceSequenceCount IS NULL OR msg.MessageSequenceCount > @sinceSequenceCount)
 ORDER BY msg.createdAt DESC;
