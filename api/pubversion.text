@@ -1,4 +1,8 @@
 
+1.0.12+10
+    • Chat (HC6 portal): fire FCM notifications in background — unblocks HTTP response to sender immediately
+    • Chat (HC6 portal): parallelize all FCM sends with Task.WhenAll (was sequential per-recipient loop)
+
 1.0.11+9
     • Chat (HC6 app): fire FCM notifications in background — unblocks HTTP response to sender immediately
     • Chat (HC6 app): parallelize all FCM sends with Task.WhenAll (was sequential per-recipient loop)

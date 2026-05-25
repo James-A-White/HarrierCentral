@@ -145,7 +145,7 @@ namespace HcWebApi.Endpoints
                         await UpdateGoogleCalendar(log);
                         break;
                     case "sendEventMessage":
-                        await SendNotifications(multipleResults, log);
+                        _ = SendNotifications(multipleResults, log);
                         break;
                     case "markEventChatRead":
                         await SendReadSyncAsync(multipleResults, (string)data.publicEventId, log);
@@ -261,15 +261,18 @@ namespace HcWebApi.Endpoints
                     return;
                 }
 
-                foreach (var eventMessage in eventDetailsList)
-                    foreach (var recipient in notificationList)
-                        if (!string.IsNullOrEmpty(recipient.FcmToken))
-                            await SendNotificationAsync(recipient.FcmToken, eventMessage, accessToken, true, logger);
+                var tasks = eventDetailsList.SelectMany(eventMessage =>
+                    notificationList
+                        .Where(r => !string.IsNullOrEmpty(r.FcmToken))
+                        .Select(r => SendNotificationAsync(r.FcmToken!, eventMessage, accessToken, true, logger))
+                        .Concat(
+                            inAppMessageList
+                                .Where(r => !string.IsNullOrEmpty(r.FcmToken))
+                                .Select(r => SendNotificationAsync(r.FcmToken!, eventMessage, accessToken, false, logger))
+                        )
+                );
 
-                foreach (var eventMessage in eventDetailsList)
-                    foreach (var recipient in inAppMessageList)
-                        if (!string.IsNullOrEmpty(recipient.FcmToken))
-                            await SendNotificationAsync(recipient.FcmToken, eventMessage, accessToken, false, logger);
+                await Task.WhenAll(tasks);
 
                 logger.LogInformation("All notifications sent successfully.");
             }
