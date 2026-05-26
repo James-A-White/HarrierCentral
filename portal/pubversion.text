@@ -1,4 +1,8 @@
 
+1.4.10+620
+    • Chat — FCM now triggers a delta-fetch from the DB (sinceSequenceCount)
+      rather than inserting directly from the FCM payload
+
 1.4.9+619
     • Fix location lookup dialog crash — pass controller as constructor param
       instead of Get.find() to avoid "not found" error during close animation
