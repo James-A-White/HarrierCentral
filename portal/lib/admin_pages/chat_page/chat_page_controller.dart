@@ -20,14 +20,8 @@ class ChatSheetController extends GetxController {
   StreamSubscription<RemoteMessage>? _fcmSubscription;
   final Rx<DateTime?> lastFcmEchoAt = Rx<DateTime?>(null);
 
-  bool _isRefreshing = false;
-  Timer? _pollTimer;
-  Timer? _followUpTimer;
-
   @override
   void onClose() {
-    _pollTimer?.cancel();
-    _followUpTimer?.cancel();
     unawaited(_fcmSubscription?.cancel());
     chatController.dispose();
     super.onClose();
@@ -74,12 +68,6 @@ class ChatSheetController extends GetxController {
     // devices so their badges are zeroed immediately.
     unawaited(_markEventChatRead(publicEventId));
 
-    // Poll every 30 s as a safety net for missed FCM deliveries.
-    _pollTimer = Timer.periodic(
-      const Duration(seconds: 30),
-      (_) => unawaited(_refreshMessages()),
-    );
-
     _fcmSubscription =
         FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       final incomingEventId = message.data['PublicEventId'] as String?;
@@ -117,34 +105,8 @@ class ChatSheetController extends GetxController {
             unawaited(chatController.updateMessage(existing, updated));
           }
         }
-
-        // Follow-up refresh 5 s after the last FCM hit to catch any messages
-        // that arrived during the FCM delivery window or that missed FCM entirely.
-        _followUpTimer?.cancel();
-        _followUpTimer = Timer(
-          const Duration(seconds: 5),
-          () => unawaited(_refreshMessages()),
-        );
       }
     });
-  }
-
-  Future<void> _refreshMessages() async {
-    if (_isRefreshing) return;
-    _isRefreshing = true;
-    try {
-      final result = await _getEventMessages(publicEventId);
-      if (result == null || result.startsWith(ERROR_PREFIX)) return;
-      final outerItem = jsonDecode(result) as List<dynamic>;
-      final messages = _parseMessages(outerItem[0] as List<dynamic>);
-      for (final msg in messages) {
-        if (!chatController.messages.any((m) => m.id == msg.id)) {
-          await chatController.insertMessage(msg);
-        }
-      }
-    } finally {
-      _isRefreshing = false;
-    }
   }
 
   Future<void> _markEventChatRead(String publicEventId) async {

@@ -14,17 +14,13 @@ class ChatPageController extends GetxController {
 
   late core.User currentUser;
   StreamSubscription<RemoteMessage>? _fcmSubscription;
-  Timer? _pollingTimer;
 
   int? _lastKnownSequenceCount;
   bool _isFetching = false;
   bool _pendingFetch = false;
-  Timer? _followUpTimer;
 
   @override
   void onClose() {
-    _pollingTimer?.cancel();
-    _followUpTimer?.cancel();
     unawaited(_fcmSubscription?.cancel());
     chatController.dispose();
     super.onClose();
@@ -76,21 +72,8 @@ class ChatPageController extends GetxController {
       BootLogger.logError('[ChatPage FCM] received', 'incomingEventId=$incomingEventId localEventId=$eventId data=${message.data}', null);
       if (incomingEventId != null && eventId.asUuid == incomingEventId.asUuid) {
         unawaited(_fetchDelta());
-        // Schedule a follow-up fetch 5 s after the last FCM hit to catch any
-        // messages that arrived during the initial fetch window or where the
-        // server hadn't finished persisting when the FCM fired.
-        _followUpTimer?.cancel();
-        _followUpTimer = Timer(
-          const Duration(seconds: 5),
-          () => unawaited(_fetchDelta()),
-        );
       }
     });
-
-    // Polling disabled — relying solely on FCM triggers for delta-fetch.
-    // _pollingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
-    //   unawaited(_fetchDelta());
-    // });
   }
 
   Future<void> _fetchDelta() async {
