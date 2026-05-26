@@ -1,5 +1,16 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.6.4+1136 (2026-05-26)
+
+### Improvements
+
+- **Chat — FCM-only delivery**: Chat updates are driven exclusively by FCM
+  triggers. Removed the background polling timer that was previously running
+  while the chat page was open.
+
+- **Chat — pending fetch queue**: If an FCM arrives while a delta-fetch is
+  already in flight, a follow-up fetch is queued rather than dropped.
+
 ## 2.6.3+1135 (2026-05-26)
 
 ### Improvements
