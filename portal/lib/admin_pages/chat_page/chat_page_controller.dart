@@ -20,6 +20,8 @@ class ChatSheetController extends GetxController {
   StreamSubscription<RemoteMessage>? _fcmSubscription;
   final Rx<DateTime?> lastFcmEchoAt = Rx<DateTime?>(null);
 
+  bool _isRefreshing = false;
+
   @override
   void onClose() {
     unawaited(_fcmSubscription?.cancel());
@@ -73,40 +75,28 @@ class ChatSheetController extends GetxController {
       final incomingEventId = message.data['PublicEventId'] as String?;
       if (incomingEventId != null &&
           publicEventId == incomingEventId.asUuid) {
-        final userId = message.data['UserId'].toString().asUuid;
-        _userCache[userId] = core.User(
-          id: userId,
-          name: message.data['UserDisplayName'] as String?,
-          imageSource: message.data['UserPhoto'] as String?,
-        );
-
-        final messageId = message.data['MessageId'].toString().asUuid;
-        final existing = chatController.messages
-            .where((m) => m.id == messageId)
-            .firstOrNull;
-
         lastFcmEchoAt.value = DateTime.now();
-
-        if (existing == null) {
-          final newMsg = core.Message.text(
-            id: messageId,
-            authorId: userId,
-            text: message.data['Message'] as String,
-            createdAt: DateTime.now(),
-            status: core.MessageStatus.sent,
-          );
-          unawaited(chatController.insertMessage(newMsg));
-        } else {
-          if (existing is core.TextMessage) {
-            final updated = existing.copyWith(
-              status: core.MessageStatus.sent,
-              sentAt: DateTime.now(),
-            );
-            unawaited(chatController.updateMessage(existing, updated));
-          }
-        }
+        unawaited(_refreshMessages());
       }
     });
+  }
+
+  Future<void> _refreshMessages() async {
+    if (_isRefreshing) return;
+    _isRefreshing = true;
+    try {
+      final result = await _getEventMessages(publicEventId);
+      if (result == null || result.startsWith(ERROR_PREFIX)) return;
+      final outerItem = jsonDecode(result) as List<dynamic>;
+      final messages = _parseMessages(outerItem[0] as List<dynamic>);
+      for (final msg in messages) {
+        if (!chatController.messages.any((m) => m.id == msg.id)) {
+          await chatController.insertMessage(msg);
+        }
+      }
+    } finally {
+      _isRefreshing = false;
+    }
   }
 
   Future<void> _markEventChatRead(String publicEventId) async {
