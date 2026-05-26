@@ -13,7 +13,6 @@ node_modules/
 api/local.settings.json
 
 # Flutter build outputs
-portal/build/
 mobile-app/build/
 public-web/.next/
 
