@@ -196,10 +196,11 @@ END
 
     -- Rowset 1: FullPushNotificationRecipients
     -- Notification preference flags:
+    --   0 = Auto (default — treat as always on)
     --   1 = Always On
     --   2 = Off
+    --   3 = On but muted (in-app only)
     --   4 = On 6 hours before run
-    --   3 = On but muted
     SELECT
         hkm.UserId as UserId,
         device.FcmToken as FcmToken
@@ -211,7 +212,7 @@ END
     LEFT OUTER JOIN HC.HasherEventMap hem ON hem.EventId = evt.id AND hem.UserId = h.id
     WHERE
     (
-        (COALESCE(hem.EventNotificationPreference, hkm.KennelNotificationPreference) = 1) -- always send notifications
+        (COALESCE(hem.EventNotificationPreference, hkm.KennelNotificationPreference) IN (0, 1)) -- auto/default and always-on
         OR
         (
             -- only send full notifications when within the time window
@@ -242,6 +243,7 @@ END
     LEFT OUTER JOIN #tempMessageOn t ON hkm.UserId = t.UserId
     WHERE hkm.KennelId = @kennelId AND (hkm.Following != 0 OR hkm.MembershipExpirationDate > GETDATE())
     AND device.FcmToken IS NOT NULL
+    AND hkm.KennelNotificationPreference != 2
     AND t.UserId IS NULL;
 
     DROP TABLE #tempMessageOn;
