@@ -20,6 +20,7 @@ class ChatSheetController extends GetxController {
   StreamSubscription<RemoteMessage>? _fcmSubscription;
   final Rx<DateTime?> lastFcmEchoAt = Rx<DateTime?>(null);
 
+  int? _lastKnownSequenceCount;
   bool _isRefreshing = false;
 
   @override
@@ -57,7 +58,12 @@ class ChatSheetController extends GetxController {
     final result = await _getEventMessages(publicEventId);
     if (result != null) {
       final outerItem = jsonDecode(result) as List<dynamic>;
-      final messages = _parseMessages(outerItem[0] as List<dynamic>);
+      final rawMessages = outerItem[0] as List<dynamic>;
+
+      final newSeq = _extractMaxSequenceCount(rawMessages);
+      if (newSeq != null) _lastKnownSequenceCount = newSeq;
+
+      final messages = _parseMessages(rawMessages);
       await chatController.setMessages(messages);
 
       final chatsCounts =
@@ -85,10 +91,17 @@ class ChatSheetController extends GetxController {
     if (_isRefreshing) return;
     _isRefreshing = true;
     try {
-      final result = await _getEventMessages(publicEventId);
+      final sinceSeq = _lastKnownSequenceCount;
+      final result = await _getEventMessages(publicEventId, sinceSequenceCount: sinceSeq);
       if (result == null || result.startsWith(ERROR_PREFIX)) return;
       final outerItem = jsonDecode(result) as List<dynamic>;
-      final messages = _parseMessages(outerItem[0] as List<dynamic>);
+      final rawMessages = outerItem[0] as List<dynamic>;
+      if (rawMessages.isEmpty) return;
+
+      final newSeq = _extractMaxSequenceCount(rawMessages);
+      if (newSeq != null) _lastKnownSequenceCount = newSeq;
+
+      final messages = _parseMessages(rawMessages);
       for (final msg in messages) {
         if (!chatController.messages.any((m) => m.id == msg.id)) {
           await chatController.insertMessage(msg);
@@ -97,6 +110,17 @@ class ChatSheetController extends GetxController {
     } finally {
       _isRefreshing = false;
     }
+  }
+
+  int? _extractMaxSequenceCount(List<dynamic> rawMessages) {
+    int? max;
+    for (final item in rawMessages) {
+      final msg = item as Map<String, dynamic>;
+      final seq = msg['sequenceCount'];
+      final seqInt = seq is int ? seq : (seq as num?)?.toInt();
+      if (seqInt != null && (max == null || seqInt > max)) max = seqInt;
+    }
+    return max;
   }
 
   Future<void> _markEventChatRead(String publicEventId) async {
@@ -119,7 +143,7 @@ class ChatSheetController extends GetxController {
         : 'SP [markEventChatRead] called — success');
   }
 
-  Future<String?> _getEventMessages(String publicEventId) async {
+  Future<String?> _getEventMessages(String publicEventId, {int? sinceSequenceCount}) async {
     final deviceId = box.get(HIVE_DEVICE_ID) as String;
     final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
     final accessToken = Utilities.generateToken(
@@ -134,6 +158,9 @@ class ChatSheetController extends GetxController {
       'accessToken': accessToken,
       'publicEventId': publicEventId,
     };
+    if (sinceSequenceCount != null) {
+      body['sinceSequenceCount'] = sinceSequenceCount;
+    }
 
     final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
     debugPrint(jsonResult.startsWith(ERROR_PREFIX)

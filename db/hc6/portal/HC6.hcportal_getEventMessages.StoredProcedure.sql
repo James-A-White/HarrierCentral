@@ -3,18 +3,23 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_getEventMessages]
 	-- required parameters
 	@deviceId UNIQUEIDENTIFIER = NULL,
 	@accessToken NVARCHAR(1000) = NULL,
-	@publicEventId UNIQUEIDENTIFIER = NULL
+	@publicEventId UNIQUEIDENTIFIER = NULL,
+	@sinceSequenceCount INT = NULL
 
 AS
 -- =====================================================================
 -- Procedure: HC6.hcportal_getEventMessages
--- Description: Retrieves all non-deleted event messages for a specific
+-- Description: Retrieves non-deleted event messages for a specific
 --              event, returning message content with author information
 --              formatted for a chat-like interface. Messages are
 --              ordered by creation time descending (newest first).
+--              Pass @sinceSequenceCount for delta fetches — only messages
+--              with MessageSequenceCount > that value are returned.
 -- Parameters: @deviceId, @accessToken (auth),
---             @publicEventId (event filter)
--- Returns: Single rowset: id, type, text, roomId, createdAt, author
+--             @publicEventId (event filter),
+--             @sinceSequenceCount (optional delta filter)
+-- Returns: Single rowset: id, type, text, roomId, createdAt, author,
+--          sequenceCount
 -- Author: Harrier Central
 -- Created: 2026-03-15
 -- HC5 Source: HC5.hcportal_getEventMessages
@@ -80,6 +85,7 @@ BEGIN TRY
 		msg.MessageContent AS [text],
 		@publicEventId AS roomId,
 		DATEDIFF_BIG(MILLISECOND, '1970-01-01 00:00:00', msg.createdAt) AS [createdAt],
+		msg.MessageSequenceCount AS sequenceCount,
 
 		JSON_QUERY(
 			CASE
@@ -100,6 +106,7 @@ BEGIN TRY
 	WHERE msg.EventId = @eventId
 	  AND msg.removed = 0
 	  AND h.Removed = 0
+	  AND (@sinceSequenceCount IS NULL OR msg.MessageSequenceCount > @sinceSequenceCount)
 	ORDER BY createdAt DESC
 
 END TRY
