@@ -18,6 +18,7 @@ class ChatPageController extends GetxController {
 
   int? _lastKnownSequenceCount;
   bool _isFetching = false;
+  bool _pendingFetch = false;
 
   @override
   void onClose() {
@@ -70,18 +71,23 @@ class ChatPageController extends GetxController {
 
     _fcmSubscription = FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       final incomingEventId = message.data['EventId'] as String?;
+      BootLogger.logError('[ChatPage FCM] received', 'incomingEventId=$incomingEventId localEventId=$eventId data=${message.data}', null);
       if (incomingEventId != null && eventId.asUuid == incomingEventId.asUuid) {
         unawaited(_fetchDelta());
       }
     });
 
-    _pollingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
-      unawaited(_fetchDelta());
-    });
+    // Polling disabled — relying solely on FCM triggers for delta-fetch.
+    // _pollingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+    //   unawaited(_fetchDelta());
+    // });
   }
 
   Future<void> _fetchDelta() async {
-    if (_isFetching) return;
+    if (_isFetching) {
+      _pendingFetch = true;
+      return;
+    }
     _isFetching = true;
     try {
       final sinceSeq = _lastKnownSequenceCount;
@@ -110,6 +116,10 @@ class ChatPageController extends GetxController {
       }
     } finally {
       _isFetching = false;
+      if (_pendingFetch) {
+        _pendingFetch = false;
+        unawaited(_fetchDelta());
+      }
     }
   }
 

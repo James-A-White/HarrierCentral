@@ -1,5 +1,22 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.6.3+1135 (2026-05-26)
+
+### Improvements
+
+- **Chat — FCM-only delta-fetch**: Polling timer disabled; chat message updates
+  are now triggered exclusively by incoming FCM pushes, reducing unnecessary
+  background network activity.
+
+- **Chat — pending fetch queue**: If a delta-fetch is already in flight when an
+  FCM message arrives, the request is queued rather than dropped, ensuring no
+  update is missed during rapid message sequences.
+
+### Bug fixes
+
+- **Profile — camera behavior switch**: Fixed UX issues with the camera behavior
+  toggle control.
+
 ## 2.6.2+1134 (2026-05-24)
 
 ### Features
