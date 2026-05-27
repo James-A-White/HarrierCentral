@@ -1,5 +1,28 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.6.5+1137 (2026-05-27)
+
+### Features
+
+- **Kennel screen — status filter**: Defunct and Inactive-Hidden kennels are
+  now hidden from the Kennel list. Run history is unaffected — all runs remain
+  visible regardless of kennel status.
+
+### Improvements
+
+- **PackTrack — spiderfy overlapping markers**: Co-located trail markers on the
+  live run map are now fanned out so each is individually tappable.
+
+- **PackTrack — background flush timer restored**: The GPS point upload buffer
+  now correctly flushes on a 60-second background timer. HTTP timeout and
+  Android position interval were also corrected.
+
+### Bug fixes
+
+- **Run details — stale controller reuse**: `RunDetailsController` is now
+  tagged by `eventId`, preventing a cached instance for a previous run from
+  being served when navigating to a different run.
+
 ## 2.6.4+1136 (2026-05-26)
 
 ### Improvements
