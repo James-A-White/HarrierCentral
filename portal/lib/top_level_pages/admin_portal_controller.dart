@@ -106,6 +106,7 @@ class AdminPortalController extends GetxController {
         publicHasherId = box.get(HIVE_HASHER_ID) as String;
 
         await _getHasherKennels();
+        await _fetchPlatformAdminPrivileges();
       } else {
         final deviceId = const Uuid().v4();
 
@@ -190,6 +191,7 @@ class AdminPortalController extends GetxController {
               update();
 
               await _getHasherKennels();
+              await _fetchPlatformAdminPrivileges();
 
               break;
             }
@@ -383,5 +385,37 @@ class AdminPortalController extends GetxController {
 
     filteredKennels.addAll(allKennels);
     update();
+  }
+
+  Future<void> _fetchPlatformAdminPrivileges() async {
+    final deviceId = (box.get(HIVE_DEVICE_ID) as String?) ?? '';
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
+
+    final accessToken = Utilities.generateToken(
+      deviceId,
+      'hcportal_getHcAdminPrivileges',
+      paramString: deviceSecret,
+    );
+
+    final body = <String, String?>{
+      'queryType': 'getHcAdminPrivileges',
+      'deviceId': deviceId,
+      'accessToken': accessToken,
+    };
+
+    final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+    debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+        ? 'SP [getHcAdminPrivileges] called — FAILED'
+        : 'SP [getHcAdminPrivileges] called — success');
+
+    if (!jsonResult.startsWith(ERROR_PREFIX) && jsonResult.length > 10) {
+      final row = ((json.decode(jsonResult) as List<dynamic>)[0]
+          as List<dynamic>)[0] as Map<String, dynamic>;
+
+      await box.put(HIVE_PLATFORM_ADMIN_CAN_VIEW_MONITOR,
+          (row['CanViewMonitor'] as int? ?? 0) != 0);
+      await box.put(HIVE_PLATFORM_ADMIN_CAN_MANAGE_NEWSFLASH,
+          (row['CanManageNewsflash'] as int? ?? 0) != 0);
+    }
   }
 }

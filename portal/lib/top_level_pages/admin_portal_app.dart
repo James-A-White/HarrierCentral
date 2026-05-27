@@ -29,7 +29,6 @@ class AdminPortalApp extends StatelessWidget {
                 () => RunListPage(
                   firstKennel,
                   allKennels: c.allKennels,
-                  publicHasherId: c.publicHasherId,
                 ),
               ),
             );
