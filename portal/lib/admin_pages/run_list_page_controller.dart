@@ -84,45 +84,49 @@ class RunListPageController extends GetxController
   }
 
   Future<void> onInitAsync() async {
-    _fcmSubscription =
-        FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      final publicEventId =
-          normalizeUuid(message.data['PublicEventId'] as String?);
-      if (publicEventId.isEmpty) return;
+    _fcmSubscription = FirebaseMessaging.onMessage.listen((
+      RemoteMessage message,
+    ) {
+      try {
+        final publicEventId = normalizeUuid(
+          message.data['PublicEventId']?.toString(),
+        );
+        if (publicEventId.isEmpty) return;
 
-      final type = message.data['Type'] as String?;
-      if (type == 'read_sync') {
-        // Another device has read this chat — zero the badge immediately.
-        thisEventChatCount[publicEventId] = 0;
-      } else {
-        thisEventChatCount[publicEventId] =
-            (thisEventChatCount[publicEventId] ?? 0) + 1;
+        final type = message.data['Type']?.toString();
+        if (type == 'read_sync') {
+          // Another device has read this chat — zero the badge immediately.
+          thisEventChatCount[publicEventId] = 0;
+        } else {
+          thisEventChatCount[publicEventId] =
+              (thisEventChatCount[publicEventId] ?? 0) + 1;
+        }
+        update(['chatCountBadge']);
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('RunListPageController onMessage error: $e');
+        }
       }
-      update(['chatCountBadge']);
     });
 
-    _worker = debounce(
-      width,
-      (_) async {
-        if (_isDebounceRunning) return;
-        _isDebounceRunning = true;
-        try {
-          final narrow = Get.mediaQuery.size.width < NARROW_SCREEN_WIDTH;
-          if (firstLoad || (isNarrowScreen.value != narrow)) {
-            await _getEvents(getAllEventDetails: narrow);
-            firstLoad = false;
-          }
-          isNarrowScreen.value = narrow;
-        } catch (e) {
-          if (kDebugMode) {
-            debugPrint('RunListPageController debounce error: $e');
-          }
-        } finally {
-          _isDebounceRunning = false;
+    _worker = debounce(width, (_) async {
+      if (_isDebounceRunning) return;
+      _isDebounceRunning = true;
+      try {
+        final narrow = Get.mediaQuery.size.width < NARROW_SCREEN_WIDTH;
+        if (firstLoad || (isNarrowScreen.value != narrow)) {
+          await _getEvents(getAllEventDetails: narrow);
+          firstLoad = false;
         }
-      },
-      time: const Duration(milliseconds: 50),
-    );
+        isNarrowScreen.value = narrow;
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('RunListPageController debounce error: $e');
+        }
+      } finally {
+        _isDebounceRunning = false;
+      }
+    }, time: const Duration(milliseconds: 50));
   }
 
   @override
@@ -240,14 +244,16 @@ class RunListPageController extends GetxController
       'pastOrFuture': displayRuns == EDisplayRuns.future
           ? 'future'
           : displayRuns == EDisplayRuns.past
-              ? 'past'
-              : 'all',
+          ? 'past'
+          : 'all',
     };
 
     final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    debugPrint(jsonResult.startsWith(ERROR_PREFIX)
-        ? 'SP 10 [getEvents] called — FAILED'
-        : 'SP 10 [getEvents] called — success');
+    debugPrint(
+      jsonResult.startsWith(ERROR_PREFIX)
+          ? 'SP 10 [getEvents] called — FAILED'
+          : 'SP 10 [getEvents] called — success',
+    );
     eventForSingleEventDetailsView = EventDetailsResult.empty().obs;
     displayedEvents.clear();
     allEvents.clear();
@@ -298,8 +304,9 @@ class RunListPageController extends GetxController
 
         // Auto-select the first displayed event so the detail panel is populated.
         if (displayedEvents.isNotEmpty) {
-          eventForSingleEventDetailsView.value =
-              await querySingleEvent(displayedEvents.first.publicEventId);
+          eventForSingleEventDetailsView.value = await querySingleEvent(
+            displayedEvents.first.publicEventId,
+          );
         }
       }
     }
@@ -324,8 +331,8 @@ class RunListPageController extends GetxController
   void _prepareBadgeCounts(String? publicEventId, int? eventChatMessageCount) {
     if (publicEventId == null) return;
     final total = eventChatMessageCount ?? 0;
-    final chatsCounts =
-        (box.get(HIVE_CHATS_COUNT) as Map?)?.cast<String, int>();
+    final chatsCounts = (box.get(HIVE_CHATS_COUNT) as Map?)
+        ?.cast<String, int>();
     final seen = chatsCounts?[publicEventId.asUuid] ?? 0;
     thisEventChatCount[publicEventId.asUuid] = total - seen;
   }
@@ -348,20 +355,20 @@ class RunListPageController extends GetxController
       };
 
       final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-      debugPrint(jsonResult.startsWith(ERROR_PREFIX)
-          ? 'SP 5 [deleteEvent] called — FAILED'
-          : 'SP 5 [deleteEvent] called — success');
+      debugPrint(
+        jsonResult.startsWith(ERROR_PREFIX)
+            ? 'SP 5 [deleteEvent] called — FAILED'
+            : 'SP 5 [deleteEvent] called — success',
+      );
 
       if (!jsonResult.startsWith(ERROR_PREFIX)) {
         final jsonItems = json.decode(jsonResult) as List<dynamic>;
-        final result = ((jsonItems[0] as List<dynamic>)[0]
-            as Map<String, dynamic>)['Result'] as String;
+        final result =
+            ((jsonItems[0] as List<dynamic>)[0]
+                    as Map<String, dynamic>)['Result']
+                as String;
 
-        await CoreUtilities.showAlert(
-          'Delete result',
-          result,
-          'OK',
-        );
+        await CoreUtilities.showAlert('Delete result', result, 'OK');
 
         eventForSingleEventDetailsView = EventDetailsResult.empty().obs;
 
@@ -385,40 +392,46 @@ class RunListPageController extends GetxController
       displayedEventsDetails
         ..addAll(
           // ignore: avoid_dynamic_calls
-          doRunsFilter(searchRunsText, allEventsDetails)
-              .where((EventDetailsResult element) {
-            // converge the "all" and "future" cases for display purposes
-            if ((displayRuns != EDisplayRuns.past) &&
-                (element.runDetails.eventStartDatetime
-                    .isAfter(getTodayAsDateOnly()))) {
-              return true;
-            } else if ((displayRuns == EDisplayRuns.past) &&
-                (element.runDetails.eventStartDatetime
-                    .isBefore(getTodayAsDateOnly()))) {
-              return true;
-            }
-            return false;
-          }) as Iterable<EventDetailsResult>,
+          doRunsFilter(searchRunsText, allEventsDetails).where((
+                EventDetailsResult element,
+              ) {
+                // converge the "all" and "future" cases for display purposes
+                if ((displayRuns != EDisplayRuns.past) &&
+                    (element.runDetails.eventStartDatetime.isAfter(
+                      getTodayAsDateOnly(),
+                    ))) {
+                  return true;
+                } else if ((displayRuns == EDisplayRuns.past) &&
+                    (element.runDetails.eventStartDatetime.isBefore(
+                      getTodayAsDateOnly(),
+                    ))) {
+                  return true;
+                }
+                return false;
+              })
+              as Iterable<EventDetailsResult>,
         )
         ..sort(
           (EventDetailsResult a, EventDetailsResult b) =>
-              (a.runDetails.eventStartDatetime)
-                  .compareTo(b.runDetails.eventStartDatetime),
+              (a.runDetails.eventStartDatetime).compareTo(
+                b.runDetails.eventStartDatetime,
+              ),
         );
     } else {
       displayedEvents.addAll(
         // ignore: avoid_dynamic_calls
         doRunsFilter(searchRunsText, allEvents).where((RunListModel element) {
-          // converge the "all" and "future" cases for display purposes
-          if ((displayRuns != EDisplayRuns.past) &&
-              (element.eventStartDatetime.isAfter(getTodayAsDateOnly()))) {
-            return true;
-          } else if ((displayRuns == EDisplayRuns.past) &&
-              (element.eventStartDatetime.isBefore(getTodayAsDateOnly()))) {
-            return true;
-          }
-          return false;
-        }) as Iterable<RunListModel>,
+              // converge the "all" and "future" cases for display purposes
+              if ((displayRuns != EDisplayRuns.past) &&
+                  (element.eventStartDatetime.isAfter(getTodayAsDateOnly()))) {
+                return true;
+              } else if ((displayRuns == EDisplayRuns.past) &&
+                  (element.eventStartDatetime.isBefore(getTodayAsDateOnly()))) {
+                return true;
+              }
+              return false;
+            })
+            as Iterable<RunListModel>,
       );
 
       if (displayRuns != EDisplayRuns.past) {
@@ -441,8 +454,9 @@ class RunListPageController extends GetxController
     if (searchRunsText.isEmpty) {
       return allRuns;
     } else {
-      dynamic filteredRuns =
-          (isNarrowScreen.value) ? <EventDetailsResult>[] : <RunListModel>[];
+      dynamic filteredRuns = (isNarrowScreen.value)
+          ? <EventDetailsResult>[]
+          : <RunListModel>[];
 
       // allow for comma separated search lists that act to narrow search results (i.e. logical AND)
       if (searchRunsText.isEmpty) {
@@ -495,7 +509,8 @@ class RunListPageController extends GetxController
   Future<void> refreshEvents() async {
     isNarrowScreen.value = Get.mediaQuery.size.width < NARROW_SCREEN_WIDTH;
     await _getEvents(
-      getAllEventDetails: isNarrowScreen.value ||
+      getAllEventDetails:
+          isNarrowScreen.value ||
           displayType.toLowerCase() == RUN_DISPLAY_TYPE_DETAIL_ONLY,
     );
 

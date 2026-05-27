@@ -37,7 +37,8 @@ class ChatSheetController extends GetxController {
     publicEventId = normalizeUuid(publicEventId);
 
     final publicHasherId = box.get(HIVE_HASHER_ID) as String;
-    final hashName = box.get(HIVE_DISPLAY_NAME) as String? ??
+    final hashName =
+        box.get(HIVE_DISPLAY_NAME) as String? ??
         box.get(HIVE_HASH_NAME) as String;
     final photo = box.get(HIVE_HASHER_PHOTO) as String? ?? '';
 
@@ -80,14 +81,26 @@ class ChatSheetController extends GetxController {
     }
 
     // FCM subscription always registered, even if initial load failed.
-    _fcmSubscription =
-        FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      final incomingEventId = message.data['PublicEventId'] as String?;
-      if (incomingEventId != null &&
-          publicEventId == incomingEventId.asUuid) {
+    _fcmSubscription = FirebaseMessaging.onMessage.listen((
+      RemoteMessage message,
+    ) {
+      try {
+        final incomingEventId = normalizeUuid(
+          message.data['PublicEventId']?.toString(),
+        );
+        if (incomingEventId.isEmpty || publicEventId != incomingEventId) {
+          return;
+        }
+
         lastFcmEchoAt.value = DateTime.now();
         _upgradeOwnMessagesToDelivered();
-        unawaited(_refreshMessages());
+        unawaited(
+          _refreshMessages().catchError((Object e, StackTrace st) {
+            debugPrint('[ChatSheetController] _refreshMessages error: $e');
+          }),
+        );
+      } catch (e) {
+        debugPrint('[ChatSheetController] onMessage handler error: $e');
       }
     });
   }
@@ -104,7 +117,8 @@ class ChatSheetController extends GetxController {
       } else if (msg is core.FileMessage) {
         updated = msg.copyWith(status: core.MessageStatus.delivered);
       }
-      if (updated != null) unawaited(chatController.updateMessage(msg, updated));
+      if (updated != null)
+        unawaited(chatController.updateMessage(msg, updated));
     }
   }
 
@@ -116,7 +130,10 @@ class ChatSheetController extends GetxController {
     _isRefreshing = true;
     try {
       final sinceSeq = _lastKnownSequenceCount;
-      final result = await _getEventMessages(publicEventId, sinceSequenceCount: sinceSeq);
+      final result = await _getEventMessages(
+        publicEventId,
+        sinceSequenceCount: sinceSeq,
+      );
       if (result == null || result.startsWith(ERROR_PREFIX)) return;
       final outerItem = jsonDecode(result) as List<dynamic>;
       final rawMessages = outerItem[0] as List<dynamic>;
@@ -166,12 +183,17 @@ class ChatSheetController extends GetxController {
       'publicEventId': publicEventId,
     };
     final result = await ServiceCommon.sendHttpPostToHC6Api(body);
-    debugPrint(result.startsWith(ERROR_PREFIX)
-        ? 'SP [markEventChatRead] called — FAILED'
-        : 'SP [markEventChatRead] called — success');
+    debugPrint(
+      result.startsWith(ERROR_PREFIX)
+          ? 'SP [markEventChatRead] called — FAILED'
+          : 'SP [markEventChatRead] called — success',
+    );
   }
 
-  Future<String?> _getEventMessages(String publicEventId, {int? sinceSequenceCount}) async {
+  Future<String?> _getEventMessages(
+    String publicEventId, {
+    int? sinceSequenceCount,
+  }) async {
     final deviceId = box.get(HIVE_DEVICE_ID) as String;
     final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
     final accessToken = Utilities.generateToken(
@@ -191,9 +213,11 @@ class ChatSheetController extends GetxController {
     }
 
     final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    debugPrint(jsonResult.startsWith(ERROR_PREFIX)
-        ? 'SP 9 [getEventMessages] called — FAILED'
-        : 'SP 9 [getEventMessages] called — success');
+    debugPrint(
+      jsonResult.startsWith(ERROR_PREFIX)
+          ? 'SP 9 [getEventMessages] called — FAILED'
+          : 'SP 9 [getEventMessages] called — success',
+    );
     return jsonResult;
   }
 
@@ -216,15 +240,17 @@ class ChatSheetController extends GetxController {
       );
 
       final createdAtMs = msg['createdAt'];
-      result.add(core.Message.text(
-        id: (msg['id'] as String).asUuid,
-        authorId: authorId,
-        text: msg['text'] as String,
-        createdAt: createdAtMs is int
-            ? DateTime.fromMillisecondsSinceEpoch(createdAtMs)
-            : null,
-        status: core.MessageStatus.sent,
-      ));
+      result.add(
+        core.Message.text(
+          id: (msg['id'] as String).asUuid,
+          authorId: authorId,
+          text: msg['text'] as String,
+          createdAt: createdAtMs is int
+              ? DateTime.fromMillisecondsSinceEpoch(createdAtMs)
+              : null,
+          status: core.MessageStatus.sent,
+        ),
+      );
     }
     // SP returns newest-first (ORDER BY createdAt DESC); v2 chat displays
     // index 0 at top, so reverse to oldest-first for correct display order.
@@ -356,9 +382,11 @@ class ChatSheetController extends GetxController {
 
     final sendResult = await ServiceCommon.sendHttpPostToHC6Api(body);
     final failed = sendResult.startsWith(ERROR_PREFIX);
-    debugPrint(failed
-        ? 'SP 17 [sendEventMessage] called — FAILED'
-        : 'SP 17 [sendEventMessage] called — success');
+    debugPrint(
+      failed
+          ? 'SP 17 [sendEventMessage] called — FAILED'
+          : 'SP 17 [sendEventMessage] called — success',
+    );
 
     // Update message status immediately from the API response rather than
     // waiting for the FCM echo (which never arrives if notifications are off).
@@ -401,63 +429,80 @@ class ChatSheetController extends GetxController {
       }
 
       final fullPush = _group(rowsets[1] as List<dynamic>);
-      final inApp    = _group(rowsets[2] as List<dynamic>);
+      final inApp = _group(rowsets[2] as List<dynamic>);
 
       Widget _section(String heading, Map<String, Map<String, dynamic>> users) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(heading,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+            Text(
+              heading,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
             const SizedBox(height: 4),
             if (users.isEmpty)
-              const Text('None', style: TextStyle(color: Colors.grey, fontSize: 13))
+              const Text(
+                'None',
+                style: TextStyle(color: Colors.grey, fontSize: 13),
+              )
             else
               ...users.values.map(
                 (r) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 3),
-                  child: Row(children: [
-                    Expanded(
-                      child: Text(r['name'] as String,
-                          style: const TextStyle(fontSize: 13)),
-                    ),
-                    Text(
-                      '${r['devices']} device${(r['devices'] as int) == 1 ? '' : 's'}',
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                  ]),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          r['name'] as String,
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                      ),
+                      Text(
+                        '${r['devices']} device${(r['devices'] as int) == 1 ? '' : 's'}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
           ],
         );
       }
 
-      unawaited(Get.dialog<void>(
-        AlertDialog(
-          title: const Text('Debug — Chat Recipients'),
-          content: SizedBox(
-            width: 420,
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _section('Full push — ${fullPush.length} user(s)', fullPush),
-                  const SizedBox(height: 16),
-                  _section('In-app only — ${inApp.length} user(s)', inApp),
-                ],
+      unawaited(
+        Get.dialog<void>(
+          AlertDialog(
+            title: const Text('Debug — Chat Recipients'),
+            content: SizedBox(
+              width: 420,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _section(
+                      'Full push — ${fullPush.length} user(s)',
+                      fullPush,
+                    ),
+                    const SizedBox(height: 16),
+                    _section('In-app only — ${inApp.length} user(s)', inApp),
+                  ],
+                ),
               ),
             ),
+            actions: [
+              TextButton(
+                onPressed: () => Get.back<void>(),
+                child: const Text('Close'),
+              ),
+            ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Get.back<void>(),
-              child: const Text('Close'),
-            ),
-          ],
         ),
-      ));
+      );
     } catch (_) {}
   }
 }
