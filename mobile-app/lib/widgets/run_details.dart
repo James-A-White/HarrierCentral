@@ -84,7 +84,7 @@ class RunDetails extends StatelessWidget {
   // Initialize the controller with the provided arguments
   late final RunDetailsController runDetailsController = Get.put(
     RunDetailsController(event: event, kennel: kennel),
-    // permanent: true,
+    tag: event.eventId,
   );
 
   @override
