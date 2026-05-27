@@ -361,5 +361,26 @@ class ChatSheetController extends GetxController {
         ),
       ));
     }
+
+    // DEBUG — remove once chat delivery is confirmed stable.
+    if (!failed) _showRecipientCountToast(sendResult);
+  }
+
+  // DEBUG — remove once chat delivery is confirmed stable.
+  void _showRecipientCountToast(String jsonResult) {
+    try {
+      final rowsets = jsonDecode(jsonResult) as List<dynamic>;
+      final fullPush = (rowsets[1] as List<dynamic>).length;
+      final inApp   = (rowsets[2] as List<dynamic>).length;
+      Get.snackbar(
+        'Debug — recipients',
+        'Full push: $fullPush  •  In-app only: $inApp  •  Total: ${fullPush + inApp}',
+        duration: const Duration(seconds: 6),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.amber.shade100,
+        colorText: Colors.black87,
+        margin: const EdgeInsets.all(12),
+      );
+    } catch (_) {}
   }
 }
