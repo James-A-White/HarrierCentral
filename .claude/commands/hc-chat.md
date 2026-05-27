@@ -108,12 +108,10 @@ Users who receive a data-only FCM to trigger an app refresh. Qualifies when ALL 
 - `KennelNotificationPreference != 2` (not globally opted out)
 - User is NOT already in Rowset 1
 
-**Known gap (Bug 2 — deferred):** Rowset 2 does not check `EventNotificationPreference`
-for `ignore(2)`. A user who has set event-level preference to `ignore` but has
-kennel-level `mute(3)` will still appear in Rowset 2. This has no visible user
-impact (silent FCMs show no banner), but it is semantically incorrect. Fix when
-next modifying either send SP — apply the NULLIF/COALESCE pattern to the
-Rowset 2 gate and add a `hem` LEFT JOIN to the Rowset 2 query in the app SP.
+Rowset 2 gates on the full effective preference (same NULLIF/COALESCE pattern as
+Rowset 1), so a user with event-level `ignore(2)` is correctly excluded even if
+their kennel preference is not `ignore`. Both SPs add a `hem` LEFT JOIN to Rowset 2
+and use `COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference) != 2`.
 
 ---
 
@@ -180,8 +178,7 @@ already known) or the optimistic insert will deduplicate it.
 
 | Severity | Issue | Location |
 |----------|-------|---------|
-| Medium | Rowset 2 does not respect `EventNotificationPreference = ignore(2)` — user still gets silent FCM | Both send SPs |
-| Low | RSVP/Hare releasability guard uses `COALESCE(..., 1) != 0` which incorrectly excludes `auto(0)` and includes `ignore(2)` | Both send SPs, Rowset 1 |
+| Low | RSVP/Hare releasability guard uses `COALESCE(hem.EventNotificationPreference, 1) != 0` which incorrectly excludes `auto(0)` users and includes `ignore(2)` users from RSVP/hare audience check. In practice harmless when `@sendToEveryone` is set (app always sends 63), but incorrect for targeted portal sends. | Both send SPs, Rowset 1 |
 
 ---
 

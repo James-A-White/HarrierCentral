@@ -239,10 +239,11 @@ SELECT
     device.FcmToken
 FROM HC.HasherKennelMap hkm
 INNER JOIN HC.Device device ON hkm.UserId = device.UserId
+LEFT OUTER JOIN HC.HasherEventMap hem ON hem.EventId = @eventId AND hem.UserId = hkm.UserId
 WHERE hkm.KennelId = @kennelId
   AND (hkm.Following != 0 OR hkm.MembershipExpirationDate > GETDATE())
   AND device.FcmToken IS NOT NULL
-  AND hkm.KennelNotificationPreference != 2
+  AND COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference) != 2
   AND hkm.UserId NOT IN (
       SELECT hkm2.UserId
       FROM HC.HasherKennelMap hkm2
