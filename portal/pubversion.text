@@ -1,4 +1,12 @@
 
+1.4.13+623
+    • Chat — fix double-tick race: await chatController.updateMessage so message
+      reaches 'sent' status before FCM echo arrives and upgrades it to 'delivered'
+    • Chat — FCM subscription now always registered even if initial message load
+      throws an exception (was silently lost on load error)
+    • Chat — portal now queues a pending refresh when FCM arrives during an
+      in-progress fetch, matching mobile behaviour (was silently dropped)
+
 1.4.12+622
     • Chat — delivery receipts: single tick on server confirm, double tick
       when FCM echo arrives back at the sender

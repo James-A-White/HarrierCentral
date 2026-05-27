@@ -22,6 +22,7 @@ class ChatSheetController extends GetxController {
 
   int? _lastKnownSequenceCount;
   bool _isRefreshing = false;
+  bool _pendingRefresh = false;
 
   @override
   void onClose() {
@@ -55,27 +56,30 @@ class ChatSheetController extends GetxController {
   }
 
   Future<void> onInitAsync() async {
-    final result = await _getEventMessages(publicEventId);
-    if (result != null) {
-      final outerItem = jsonDecode(result) as List<dynamic>;
-      final rawMessages = outerItem[0] as List<dynamic>;
+    try {
+      final result = await _getEventMessages(publicEventId);
+      if (result != null && !result.startsWith(ERROR_PREFIX)) {
+        final outerItem = jsonDecode(result) as List<dynamic>;
+        final rawMessages = outerItem[0] as List<dynamic>;
 
-      final newSeq = _extractMaxSequenceCount(rawMessages);
-      if (newSeq != null) _lastKnownSequenceCount = newSeq;
+        final newSeq = _extractMaxSequenceCount(rawMessages);
+        if (newSeq != null) _lastKnownSequenceCount = newSeq;
 
-      final messages = _parseMessages(rawMessages);
-      await chatController.setMessages(messages);
+        final messages = _parseMessages(rawMessages);
+        await chatController.setMessages(messages);
 
-      final chatsCounts =
-          (box.get(HIVE_CHATS_COUNT) as Map?)?.cast<String, int>() ?? {};
-      chatsCounts[publicEventId] = messages.length;
-      await box.put(HIVE_CHATS_COUNT, chatsCounts);
+        final chatsCounts =
+            (box.get(HIVE_CHATS_COUNT) as Map?)?.cast<String, int>() ?? {};
+        chatsCounts[publicEventId] = messages.length;
+        await box.put(HIVE_CHATS_COUNT, chatsCounts);
+      }
+
+      unawaited(_markEventChatRead(publicEventId));
+    } catch (e) {
+      debugPrint('[ChatSheetController] onInitAsync load error: $e');
     }
 
-    // Mark as read server-side and fan-out a silent read_sync to other
-    // devices so their badges are zeroed immediately.
-    unawaited(_markEventChatRead(publicEventId));
-
+    // FCM subscription always registered, even if initial load failed.
     _fcmSubscription =
         FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       final incomingEventId = message.data['PublicEventId'] as String?;
@@ -105,7 +109,10 @@ class ChatSheetController extends GetxController {
   }
 
   Future<void> _refreshMessages() async {
-    if (_isRefreshing) return;
+    if (_isRefreshing) {
+      _pendingRefresh = true;
+      return;
+    }
     _isRefreshing = true;
     try {
       final sinceSeq = _lastKnownSequenceCount;
@@ -126,6 +133,10 @@ class ChatSheetController extends GetxController {
       }
     } finally {
       _isRefreshing = false;
+      if (_pendingRefresh) {
+        _pendingRefresh = false;
+        unawaited(_refreshMessages());
+      }
     }
   }
 
@@ -353,13 +364,13 @@ class ChatSheetController extends GetxController {
     // waiting for the FCM echo (which never arrives if notifications are off).
     final sent = chatController.messages.where((m) => m.id == uuid).firstOrNull;
     if (sent is core.TextMessage) {
-      unawaited(chatController.updateMessage(
+      await chatController.updateMessage(
         sent,
         sent.copyWith(
           status: failed ? core.MessageStatus.error : core.MessageStatus.sent,
           sentAt: failed ? null : DateTime.now(),
         ),
-      ));
+      );
     }
 
     // DEBUG — remove once chat delivery is confirmed stable.
@@ -422,7 +433,7 @@ class ChatSheetController extends GetxController {
         );
       }
 
-      Get.dialog(
+      unawaited(Get.dialog<void>(
         AlertDialog(
           title: const Text('Debug — Chat Recipients'),
           content: SizedBox(
@@ -446,7 +457,7 @@ class ChatSheetController extends GetxController {
             ),
           ],
         ),
-      );
+      ));
     } catch (_) {}
   }
 }
