@@ -189,7 +189,10 @@ class RunTrackerMapController extends GetxController
 
   Color runnerColor(String userId) => _colorForUser(userId);
 
-  List<Marker> get checkpointMarkers {
+  List<Marker> get checkpointMarkers => _buildCheckpointMarkers(photosOnly: false);
+  List<Marker> get photoCheckpointMarkers => _buildCheckpointMarkers(photosOnly: true);
+
+  List<Marker> _buildCheckpointMarkers({required bool photosOnly}) {
     if (userPositions.isEmpty) return const [];
     final cutoff = timelineAvailable ? currentTimestampMs.value : null;
 
@@ -206,6 +209,9 @@ class RunTrackerMapController extends GetxController
           final parsedType = _parseCheckpointType(point.type);
           if (parsedType == null) return null;
 
+          final bool isPhoto = parsedType.type == HashRunPointTypes.photo;
+          if (photosOnly != isPhoto) return null;
+
           final bool hasAttachedLabel =
               (parsedType.customLabel?.isNotEmpty ?? false) &&
               (parsedType.type == HashRunPointTypes.customLabel ||
@@ -216,7 +222,6 @@ class RunTrackerMapController extends GetxController
           const double baseLabelWidth = 140.0;
           const double baseLabelHeight = 140.0;
 
-          final bool isPhoto = parsedType.type == HashRunPointTypes.photo;
           final double scale = isPhoto ? _photoMarkerScale() : _markerScale();
           final double markerWidth = hasAttachedLabel
               ? baseLabelWidth * scale

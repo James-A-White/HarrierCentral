@@ -196,10 +196,13 @@ END
 
     -- Rowset 1: FullPushNotificationRecipients
     -- Notification preference flags:
+    --   0 = Auto (event level: falls back to kennel preference; kennel level: treated as always on)
     --   1 = Always On
     --   2 = Off
+    --   3 = On but muted (in-app only)
     --   4 = On 6 hours before run
-    --   3 = On but muted
+    -- NULLIF converts event-level 0 (auto) to NULL so COALESCE correctly falls back to
+    -- the kennel preference rather than treating it as an explicit "always on" value.
     SELECT
         hkm.UserId as UserId,
         device.FcmToken as FcmToken
@@ -211,11 +214,11 @@ END
     LEFT OUTER JOIN HC.HasherEventMap hem ON hem.EventId = evt.id AND hem.UserId = h.id
     WHERE
     (
-        (COALESCE(hem.EventNotificationPreference, hkm.KennelNotificationPreference) = 1) -- always send notifications
+        (COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference) IN (0, 1)) -- auto/default and always-on
         OR
         (
             -- only send full notifications when within the time window
-            (COALESCE(hem.EventNotificationPreference, hkm.KennelNotificationPreference) = 4) AND (@isEventWithinTimeLimitForNotifications = 1)
+            (COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference) = 4) AND (@isEventWithinTimeLimitForNotifications = 1)
         )
     )
     AND hkm.KennelId = @kennelId
@@ -240,8 +243,10 @@ END
     FROM HC.HasherKennelMap hkm
     INNER JOIN HC.Device device ON hkm.UserId = device.UserId
     LEFT OUTER JOIN #tempMessageOn t ON hkm.UserId = t.UserId
+    LEFT OUTER JOIN HC.HasherEventMap hem ON hem.EventId = @eventId AND hem.UserId = hkm.UserId
     WHERE hkm.KennelId = @kennelId AND (hkm.Following != 0 OR hkm.MembershipExpirationDate > GETDATE())
     AND device.FcmToken IS NOT NULL
+    AND COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference) != 2
     AND t.UserId IS NULL;
 
     DROP TABLE #tempMessageOn;

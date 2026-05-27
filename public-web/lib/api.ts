@@ -50,6 +50,9 @@ export interface KennelLandingData {
   // Routing
   CustomDomain: string | null;
   WebsiteEnabled: boolean | null;
+  // 1=Active, 2=Inactive-Visible, 3=Defunct, 4=Inactive-Hidden
+  // Status 3 and 4 show the logo-only holding page, same as WebsiteEnabled=false.
+  KennelStatus: number | null;
 
   // Style tokens — text + surface (#RRGGBBAA; null = use frontend default)
   TitleTextColor: string | null;

@@ -12,6 +12,9 @@ class RunPointBuffer {
     http.Client? httpClient,
   }) : _http = httpClient ?? http.Client();
 
+  static const Duration _flushInterval = Duration(seconds: 30);
+  static const Duration _sendTimeout = Duration(seconds: 15);
+
   final String apiUrl;
   final String eventId;
   final String userId;
@@ -19,10 +22,15 @@ class RunPointBuffer {
 
   final ListQueue<UserEventLocation> _q = ListQueue();
   bool _uploading = false;
+  Timer? _flushTimer;
 
   void enqueue(UserEventLocation p) {
     _q.addLast(p);
-    //_ensureTimer();
+    _ensureTimer();
+  }
+
+  void _ensureTimer() {
+    _flushTimer ??= Timer.periodic(_flushInterval, (_) => unawaited(flush()));
   }
 
   Future<void> flush() async {
@@ -57,6 +65,8 @@ class RunPointBuffer {
 
   /// Release the underlying HTTP client. Call this before discarding the buffer.
   void dispose() {
+    _flushTimer?.cancel();
+    _flushTimer = null;
     _http.close();
   }
 
@@ -74,11 +84,13 @@ class RunPointBuffer {
     var attempt = 0;
     while (true) {
       try {
-        final resp = await _http.post(
-          Uri.parse(apiUrl),
-          headers: <String, String>{'content-type': 'application/json'},
-          body: body,
-        );
+        final resp = await _http
+            .post(
+              Uri.parse(apiUrl),
+              headers: <String, String>{'content-type': 'application/json'},
+              body: body,
+            )
+            .timeout(_sendTimeout);
         if (resp.statusCode >= 200 && resp.statusCode < 300) {
           if (kDebugMode) {
             debugPrint(resp.body);

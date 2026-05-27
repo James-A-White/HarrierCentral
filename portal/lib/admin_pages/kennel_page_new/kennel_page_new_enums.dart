@@ -31,6 +31,7 @@ enum KennelTabType {
     isTabLockable: true,
     hasCustomTabStatusFunction: false,
     showTabInSubmitSummary: true,
+    isPlatformAdminOnly: false,
   ),
 
   /// Kennel location details (city, region, country, coordinates).
@@ -44,6 +45,7 @@ enum KennelTabType {
     isTabLockable: true,
     hasCustomTabStatusFunction: false,
     showTabInSubmitSummary: true,
+    isPlatformAdminOnly: false,
   ),
 
   /// Experience and category tags.
@@ -57,6 +59,7 @@ enum KennelTabType {
     isTabLockable: true,
     hasCustomTabStatusFunction: false,
     showTabInSubmitSummary: true,
+    isPlatformAdminOnly: false,
   ),
 
   /// Other settings (sharing, integrations, preferences).
@@ -70,6 +73,7 @@ enum KennelTabType {
     isTabLockable: true,
     hasCustomTabStatusFunction: false,
     showTabInSubmitSummary: true,
+    isPlatformAdminOnly: false,
   ),
 
   /// Developer tools and API access.
@@ -84,6 +88,7 @@ enum KennelTabType {
     isTabLockable: true,
     hasCustomTabStatusFunction: true,
     showTabInSubmitSummary: false,
+    isPlatformAdminOnly: false,
   ),
 
   /// Hash cash and payment settings.
@@ -97,6 +102,7 @@ enum KennelTabType {
     isTabLockable: true,
     hasCustomTabStatusFunction: false,
     showTabInSubmitSummary: true,
+    isPlatformAdminOnly: false,
   ),
 
   /// Songs management — select and add songs for this kennel.
@@ -110,6 +116,7 @@ enum KennelTabType {
     isTabLockable: false,
     hasCustomTabStatusFunction: true,
     showTabInSubmitSummary: false,
+    isPlatformAdminOnly: false,
   ),
 
   /// Kennel logo upload.
@@ -123,6 +130,21 @@ enum KennelTabType {
     isTabLockable: true,
     hasCustomTabStatusFunction: false,
     showTabInSubmitSummary: true,
+    isPlatformAdminOnly: false,
+  ),
+
+  /// Platform-level admin settings (kennel status). Only visible to users
+  /// with the CanEditKennel platform-admin privilege.
+  platformAdmin(
+    key: 'platformAdmin',
+    title: 'Platform Admin',
+    description: 'Platform-level administration settings for this kennel.\n\n'
+        'Only accessible to Harrier Central platform administrators.',
+    icon: MaterialCommunityIcons.shield_account,
+    isTabLockable: false,
+    hasCustomTabStatusFunction: false,
+    showTabInSubmitSummary: false,
+    isPlatformAdminOnly: true,
   );
 
   const KennelTabType({
@@ -133,6 +155,7 @@ enum KennelTabType {
     required this.isTabLockable,
     required this.hasCustomTabStatusFunction,
     required this.showTabInSubmitSummary,
+    required this.isPlatformAdminOnly,
   });
 
   /// Unique identifier for this tab (used in control keys).
@@ -155,6 +178,9 @@ enum KennelTabType {
 
   /// Whether this tab appears in the submit summary.
   final bool showTabInSubmitSummary;
+
+  /// Whether this tab is restricted to platform admins with CanEditKennel.
+  final bool isPlatformAdminOnly;
 }
 
 // ---------------------------------------------------------------------------

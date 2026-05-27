@@ -29,7 +29,6 @@ class RunListPage extends StatelessWidget {
   RunListPage(
     this.kennel, {
     this.allKennels = const [],
-    this.publicHasherId = '',
     this.backgroundColor,
     this.textTheme,
     super.key,
@@ -44,7 +43,6 @@ class RunListPage extends StatelessWidget {
   final String? textTheme;
   final HasherKennelsModel kennel;
   final List<HasherKennelsModel> allKennels;
-  final String publicHasherId;
 
   final RunListPageController formController;
 
@@ -187,6 +185,8 @@ class RunListPage extends StatelessWidget {
                                           key: UniqueKey(),
                                           kennelData: kennel,
                                           appAccessFlags: k.appAccessFlags,
+                                          canEditKennelStatus:
+                                              formController.canEditKennel,
                                         ),
                                       );
                                       await Get.delete<
@@ -256,16 +256,18 @@ class RunListPage extends StatelessWidget {
                                 const SizedBox(width: 8),
                               ],
                             ],
-                            if ((publicHasherId.toUpperCase() ==
-                                    HC_PORTAL_ADMIN_OPEE) ||
-                                (publicHasherId.toUpperCase() ==
-                                    HC_PORTAL_ADMIN_TUNA)) ...[
+                            if (formController.hasAnyPlatformAdminPrivilege) ...[
                               _appBarBtn(
                                 'HC Admin Tools',
                                 onPressed: () async {
                                   await Get.to<HcAdminToolsPage>(
                                     () => HcAdminToolsPage(
-                                        allKennels: allKennels),
+                                      allKennels: allKennels,
+                                      canViewMonitor:
+                                          formController.canViewMonitor,
+                                      canManageNewsflash:
+                                          formController.canManageNewsflash,
+                                    ),
                                   );
                                 },
                               ),
@@ -713,6 +715,7 @@ class RunListPage extends StatelessWidget {
                       key: UniqueKey(),
                       kennelData: kennel,
                       appAccessFlags: formController.kennel.appAccessFlags,
+                      canEditKennelStatus: formController.canEditKennel,
                     ),
                   );
                   await Get.delete<KennelPageFormController>(

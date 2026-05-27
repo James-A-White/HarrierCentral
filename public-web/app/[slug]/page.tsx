@@ -58,8 +58,10 @@ export default async function KennelPage({ params }: PageProps) {
 
   if (!kennelData) notFound();
 
-  // ── Website disabled — show holding screen ────────────────────────────────
-  if (kennelData.WebsiteEnabled === false) {
+  // ── Website disabled / defunct / inactive-hidden — show holding screen ─────
+  // KennelStatus: 2=Active, 1=Inactive-Visible, 4=Inactive-Hidden, -1=Defunct
+  const kennelStatus = kennelData.KennelStatus ?? 2;
+  if (kennelData.WebsiteEnabled === false || kennelStatus === -1 || kennelStatus === 4) {
     const bgUrl = kennelData.WebsiteBackgroundImage?.startsWith("https://")
       ? kennelData.WebsiteBackgroundImage
       : "/images/jungle_background.jpg";

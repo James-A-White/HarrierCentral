@@ -1,16 +1,16 @@
 import 'package:hcportal/imports.dart';
 
-// ---------------------------------------------------------------------------
-// HC Admin Tools Hub Page
-//
-// Gate: hard-coded to HC_PORTAL_ADMIN_OPEE and HC_PORTAL_ADMIN_TUNA,
-// same as the Monitor feature it replaces.
-// ---------------------------------------------------------------------------
-
 class HcAdminToolsPage extends StatelessWidget {
-  const HcAdminToolsPage({super.key, this.allKennels = const []});
+  const HcAdminToolsPage({
+    super.key,
+    this.allKennels = const [],
+    this.canViewMonitor = false,
+    this.canManageNewsflash = false,
+  });
 
   final List<HasherKennelsModel> allKennels;
+  final bool canViewMonitor;
+  final bool canManageNewsflash;
 
   @override
   Widget build(BuildContext context) {
@@ -31,21 +31,24 @@ class HcAdminToolsPage extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
             children: [
-              _ToolCard(
-                title: 'Monitor',
-                subtitle: 'Portal usage data and integration stats',
-                icon: MaterialCommunityIcons.chart_bar,
-                onTap: () => Get.to<UsageDataPage>(UsageDataPage.new),
-              ),
-              const SizedBox(height: 16),
-              _ToolCard(
-                title: 'Newsflash',
-                subtitle: 'Create and manage portal newsflashes',
-                icon: MaterialCommunityIcons.bell_alert,
-                onTap: () => Get.to<NewsflashManagementPage>(
-                  () => NewsflashManagementPage(allKennels: allKennels),
+              if (canViewMonitor) ...[
+                _ToolCard(
+                  title: 'Monitor',
+                  subtitle: 'Portal usage data and integration stats',
+                  icon: MaterialCommunityIcons.chart_bar,
+                  onTap: () => Get.to<UsageDataPage>(UsageDataPage.new),
                 ),
-              ),
+                const SizedBox(height: 16),
+              ],
+              if (canManageNewsflash)
+                _ToolCard(
+                  title: 'Newsflash',
+                  subtitle: 'Create and manage portal newsflashes',
+                  icon: MaterialCommunityIcons.bell_alert,
+                  onTap: () => Get.to<NewsflashManagementPage>(
+                    () => NewsflashManagementPage(allKennels: allKennels),
+                  ),
+                ),
             ],
           ),
         ),

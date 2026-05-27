@@ -122,9 +122,40 @@ class RunTrackerMap extends StatelessWidget {
                       ],
 
                       ...controller.checkpointMarkers,
-                      ...controller.runnerMarkers,
                     ],
                   ),
+                  MarkerClusterLayerWidget(
+                    options: MarkerClusterLayerOptions(
+                      maxClusterRadius: 40,
+                      size: const Size(52, 52),
+                      spiderfyCircleRadius: 90,
+                      markers: controller.photoCheckpointMarkers,
+                      builder: (context, markers) => Container(
+                        width: 52,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          color: Colors.black87,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.photo_camera, color: Colors.white, size: 18),
+                            Text(
+                              '${markers.length}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  MarkerLayer(markers: controller.runnerMarkers),
                 ],
               ),
               _buildTimelineSlider(context, controller),
