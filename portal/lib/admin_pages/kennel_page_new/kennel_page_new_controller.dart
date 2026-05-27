@@ -168,9 +168,9 @@ class KennelPageFormController extends TabUiController
   // State - Platform Admin Tab Settings
   // ---------------------------------------------------------------------------
 
-  /// Kennel status: 1=Active, 2=Inactive, 3=Defunct
-  /// (maps to DomainValues.KennelStatusEnum).
-  final RxInt kennelStatus = 1.obs;
+  /// Kennel status (maps to DomainValues.KennelStatusEnum):
+  ///   2=Active, 1=Inactive-Visible, 4=Inactive-Hidden, -1=Defunct
+  final RxInt kennelStatus = 2.obs;
 
   // ---------------------------------------------------------------------------
   // State - Hash Cash Tab Settings

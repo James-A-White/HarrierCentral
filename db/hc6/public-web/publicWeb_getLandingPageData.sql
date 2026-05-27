@@ -34,6 +34,9 @@ AS
 --             2026-05-03 — Added HC6 style tokens: TitleTextColor,
 --                           BodyTextColor (activated from HC5 legacy),
 --                           TextMutedColor, CardBackgroundColor (new).
+--             2026-05-27 — Added k.KennelStatus to support showing the
+--                           logo-only holding page for status 3 (Defunct)
+--                           and status 4 (Inactive - Hidden) on hashruns.org.
 -- HC5 Source:  None — new for HC6 public web
 -- Breaking Changes: None
 -- =====================================================================
@@ -93,6 +96,7 @@ BEGIN TRY
         -- ── Routing ───────────────────────────────────────────────────────────
         kw.CustomDomain,
         kw.Enabled                                                  AS WebsiteEnabled,
+        k.KennelStatus,
 
         -- ── Style tokens (text + surface) ────────────────────────────────────
         kw.TitleTextColor,

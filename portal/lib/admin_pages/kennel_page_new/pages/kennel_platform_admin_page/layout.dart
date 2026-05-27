@@ -1,13 +1,15 @@
 part of '../../kennel_page_new_ui.dart';
 
 // Kennel Status enum values (from DomainValues.KennelStatusEnum):
-//   1 = Active (default)
-//   2 = Inactive
-//   3 = Defunct
+//   2  = Active (default for new kennels)
+//   1  = Inactive - Visible (visible in Kennel screen, inactive)
+//   4  = Inactive - Hidden  (hidden from Kennel screen, inactive)
+//  -1  = Defunct            (hidden from Kennel screen, permanently closed)
 const Map<int, String> _kennelStatusLabels = {
-  1: 'Active',
-  2: 'Inactive',
-  3: 'Defunct',
+  2: 'Active',
+  1: 'Inactive - Visible',
+  4: 'Inactive - Hidden',
+  -1: 'Defunct',
 };
 
 class KennelPlatformAdminTabContent extends StatelessWidget {
@@ -28,7 +30,7 @@ class KennelPlatformAdminTabContent extends StatelessWidget {
             return DropdownButtonFormField<int>(
               initialValue: _kennelStatusLabels.containsKey(controller.kennelStatus.value)
                   ? controller.kennelStatus.value
-                  : 1,
+                  : 2,
               decoration: const InputDecoration(
                 labelText: 'Status',
                 border: OutlineInputBorder(),
@@ -50,9 +52,11 @@ class KennelPlatformAdminTabContent extends StatelessWidget {
           }),
           const SizedBox(height: 16),
           Text(
-            'Active kennels appear in the Harrier Central app and on hashruns.org.\n'
-            'Inactive kennels are hidden from discovery but remain accessible to admins.\n'
-            'Defunct kennels are permanently closed.',
+            'Active: kennel appears in the Harrier Central app and on hashruns.org.\n'
+            'Inactive - Visible: kennel is inactive but still listed in the Kennel screen.\n'
+            'Inactive - Hidden: kennel is inactive and hidden from the Kennel screen.\n'
+            'Defunct: permanently closed; hidden from the Kennel screen.\n'
+            'Run history is always visible regardless of kennel status.',
             style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
           ),
         ],
