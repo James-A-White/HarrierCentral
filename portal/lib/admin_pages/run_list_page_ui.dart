@@ -185,6 +185,8 @@ class RunListPage extends StatelessWidget {
                                           key: UniqueKey(),
                                           kennelData: kennel,
                                           appAccessFlags: k.appAccessFlags,
+                                          canEditKennelStatus:
+                                              formController.canEditKennel,
                                         ),
                                       );
                                       await Get.delete<
@@ -713,6 +715,7 @@ class RunListPage extends StatelessWidget {
                       key: UniqueKey(),
                       kennelData: kennel,
                       appAccessFlags: formController.kennel.appAccessFlags,
+                      canEditKennelStatus: formController.canEditKennel,
                     ),
                   );
                   await Get.delete<KennelPageFormController>(

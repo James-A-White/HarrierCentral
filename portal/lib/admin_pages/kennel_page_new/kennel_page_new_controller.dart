@@ -40,7 +40,11 @@ class KennelPageFormController extends TabUiController
   // Constructor
   // ---------------------------------------------------------------------------
 
-  KennelPageFormController(this._initialData, {required this.appAccessFlags}) {
+  KennelPageFormController(
+    this._initialData, {
+    required this.appAccessFlags,
+    this.canEditKennelStatus = false,
+  }) {
     originalData = _initialData;
     setScreenSize();
   }
@@ -161,6 +165,14 @@ class KennelPageFormController extends TabUiController
   final RxBool googleCalendarAddressesValid = true.obs;
 
   // ---------------------------------------------------------------------------
+  // State - Platform Admin Tab Settings
+  // ---------------------------------------------------------------------------
+
+  /// Kennel status: 1=Active, 2=Inactive, 3=Defunct
+  /// (maps to DomainValues.KennelStatusEnum).
+  final RxInt kennelStatus = 1.obs;
+
+  // ---------------------------------------------------------------------------
   // State - Hash Cash Tab Settings
   // ---------------------------------------------------------------------------
 
@@ -183,6 +195,15 @@ class KennelPageFormController extends TabUiController
   /// AppAccessFlags for the current user against this kennel.
   /// Passed directly from the call site where HasherKennelsModel is available.
   final int appAccessFlags;
+
+  /// Whether the calling user has the CanEditKennel platform-admin privilege.
+  final bool canEditKennelStatus;
+
+  /// The tabs visible to this user (platform admin tab shown only for
+  /// users with [canEditKennelStatus]).
+  List<KennelTabType> get visibleTabs => KennelTabType.values
+      .where((t) => !t.isPlatformAdminOnly || canEditKennelStatus)
+      .toList();
 
   /// Whether the current user may add or edit songs.
   bool get canManageSongs =>
@@ -291,7 +312,7 @@ class KennelPageFormController extends TabUiController
     initTabs(
       vsync: this,
       tabs: _buildTabDefinitions(),
-      tabKeyBuilder: (index) => KennelTabType.values[index].key,
+      tabKeyBuilder: (index) => visibleTabs[index].key,
       onTabIndexChanging: checkUiControlValidationStates,
       tabIndexChangingUpdateIds: const ['tabIcons', 'submissionTab'],
     );
@@ -304,6 +325,8 @@ class KennelPageFormController extends TabUiController
 
   /// Initializes tab state bundle (status, locks, validation).
   void _initializeTabStates() {
+    // Always allocate for all possible tabs so tabStatus[tab.index] is safe
+    // regardless of whether the platform admin tab is visible.
     initTabStateBundle(
       length: KennelTabType.values.length,
       initiallyEmptyIndex: 0,
@@ -318,6 +341,9 @@ class KennelPageFormController extends TabUiController
     // Initialize location preferences from original data
     distancePreference.value = originalData.distancePreference ?? -1;
     kennelPinColor.value = originalData.kennelPinColor;
+
+    // Initialize platform admin tab state
+    kennelStatus.value = originalData.kennelStatus;
 
     // Initialize Other tab settings from original data
     _initializeOtherTabSettings();
@@ -926,12 +952,22 @@ class KennelPageFormController extends TabUiController
   }
 
   // ---------------------------------------------------------------------------
+  // Platform Admin Tab Management
+  // ---------------------------------------------------------------------------
+
+  void updateKennelStatus(int status) {
+    kennelStatus.value = status;
+    editedData.value = editedData.value.copyWith(kennelStatus: status);
+    checkIfFormIsDirty();
+  }
+
+  // ---------------------------------------------------------------------------
   // Tab Configuration
   // ---------------------------------------------------------------------------
 
-  /// Builds tab definitions from the [KennelTabType] enum.
+  /// Builds tab definitions from the visible tabs for this user.
   List<TabDefinitionData> _buildTabDefinitions() {
-    return KennelTabType.values.map((tab) {
+    return visibleTabs.map((tab) {
       return TabDefinitionData(
         key: tab.key,
         title: tab.title,

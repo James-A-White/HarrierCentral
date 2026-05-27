@@ -23,6 +23,7 @@ part 'pages/kennel_developer_page/layout.dart';
 part 'pages/kennel_hash_cash_page/layout.dart';
 part 'pages/kennel_songs_page/layout.dart';
 part 'pages/kennel_logo_page/layout.dart';
+part 'pages/kennel_platform_admin_page/layout.dart';
 part 'pages/kennel_page_new_widgets.dart';
 
 // ---------------------------------------------------------------------------
@@ -38,6 +39,7 @@ class KennelEditPage extends GetView<KennelPageFormController> {
   const KennelEditPage({
     required this.kennelData,
     required this.appAccessFlags,
+    this.canEditKennelStatus = false,
     super.key,
   });
 
@@ -46,6 +48,9 @@ class KennelEditPage extends GetView<KennelPageFormController> {
 
   /// AppAccessFlags for the current user against this kennel.
   final int appAccessFlags;
+
+  /// Whether the calling user has the CanEditKennel platform-admin privilege.
+  final bool canEditKennelStatus;
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +67,11 @@ class KennelEditPage extends GetView<KennelPageFormController> {
   void _ensureControllerInitialized() {
     if (!Get.isRegistered<KennelPageFormController>()) {
       Get.put(
-        KennelPageFormController(kennelData, appAccessFlags: appAccessFlags),
+        KennelPageFormController(
+          kennelData,
+          appAccessFlags: appAccessFlags,
+          canEditKennelStatus: canEditKennelStatus,
+        ),
         permanent: true,
       );
     }
@@ -111,7 +120,7 @@ class _KennelFormScaffold extends StatelessWidget {
   /// Builds the main body with tab bar and tab views.
   Widget _buildBody() {
     return DefaultTabController(
-      length: KennelTabType.values.length,
+      length: controller.visibleTabs.length,
       child: Column(
         children: [
           _KennelTabBar(controller: controller),
@@ -251,7 +260,7 @@ class _KennelTabBarView extends StatelessWidget {
 
   /// Generates tab body widgets wrapped in standard layout.
   List<Widget> _buildTabBodies() {
-    return KennelTabType.values.map((tab) {
+    return controller.visibleTabs.map((tab) {
       final isKennelInfoTab = tab == KennelTabType.kennelInfo;
       return TabPageStandardLayout(
         title: tab.title,
@@ -285,6 +294,8 @@ class _KennelTabBarView extends StatelessWidget {
         return KennelSongsTabContent(controller: controller);
       case KennelTabType.kennelLogo:
         return KennelLogoTabContent(controller: controller);
+      case KennelTabType.platformAdmin:
+        return KennelPlatformAdminTabContent(controller: controller);
     }
   }
 }

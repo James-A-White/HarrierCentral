@@ -26,6 +26,7 @@ const String HIVE_CHATS_COUNT = 'chatsCount';
 
 const String HIVE_PLATFORM_ADMIN_CAN_VIEW_MONITOR     = 'platformAdminCanViewMonitor';
 const String HIVE_PLATFORM_ADMIN_CAN_MANAGE_NEWSFLASH = 'platformAdminCanManageNewsflash';
+const String HIVE_PLATFORM_ADMIN_CAN_EDIT_KENNEL      = 'platformAdminCanEditKennel';
 
 const String HIVE_PAGE_HEIGHT = 'pageFormat';
 

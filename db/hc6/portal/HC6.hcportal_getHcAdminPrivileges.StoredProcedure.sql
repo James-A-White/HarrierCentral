@@ -13,7 +13,8 @@ AS
 -- Returns:
 --   On error: HC6 standard envelope (Success, ErrorMessage).
 --   On success: single row { CanViewMonitor SMALLINT,
---                             CanManageNewsflash SMALLINT }.
+--                             CanManageNewsflash SMALLINT,
+--                             CanEditKennel SMALLINT }.
 -- Author: Harrier Central
 -- Created: 2026-05-27
 -- =====================================================================
@@ -42,7 +43,8 @@ END
 
 SELECT
     COALESCE(pa.CanViewMonitor,    0) AS CanViewMonitor,
-    COALESCE(pa.CanManageNewsflash, 0) AS CanManageNewsflash
+    COALESCE(pa.CanManageNewsflash, 0) AS CanManageNewsflash,
+    COALESCE(pa.CanEditKennel,     0) AS CanEditKennel
 FROM (SELECT 1 AS Dummy) AS base
 LEFT OUTER JOIN HC.PlatformAdmin pa
     ON pa.UserId = @hasherId AND pa.removed = 0;

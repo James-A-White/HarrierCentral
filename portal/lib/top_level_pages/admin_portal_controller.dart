@@ -416,6 +416,8 @@ class AdminPortalController extends GetxController {
           (row['CanViewMonitor'] as int? ?? 0) != 0);
       await box.put(HIVE_PLATFORM_ADMIN_CAN_MANAGE_NEWSFLASH,
           (row['CanManageNewsflash'] as int? ?? 0) != 0);
+      await box.put(HIVE_PLATFORM_ADMIN_CAN_EDIT_KENNEL,
+          (row['CanEditKennel'] as int? ?? 0) != 0);
     }
   }
 }

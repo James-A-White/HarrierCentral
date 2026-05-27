@@ -49,7 +49,10 @@ class RunListPageController extends GetxController
       (box.get(HIVE_PLATFORM_ADMIN_CAN_VIEW_MONITOR) as bool?) ?? false;
   bool get canManageNewsflash =>
       (box.get(HIVE_PLATFORM_ADMIN_CAN_MANAGE_NEWSFLASH) as bool?) ?? false;
-  bool get hasAnyPlatformAdminPrivilege => canViewMonitor || canManageNewsflash;
+  bool get canEditKennel =>
+      (box.get(HIVE_PLATFORM_ADMIN_CAN_EDIT_KENNEL) as bool?) ?? false;
+  bool get hasAnyPlatformAdminPrivilege =>
+      canViewMonitor || canManageNewsflash || canEditKennel;
 
   Worker? _worker;
   bool firstLoad = true;
