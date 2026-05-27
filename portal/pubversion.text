@@ -1,4 +1,11 @@
 
+1.4.11+621
+    • Platform Admin tab in kennel editor — platform admins (CanEditKennel) can
+      now set kennel operational status (Active / Inactive-Visible /
+      Inactive-Hidden / Defunct)
+    • Replaced hardcoded platform admin IDs with HC.PlatformAdmin DB table
+    • Kennel status dropdown labels updated to reflect new four-way split
+
 1.4.10+620
     • Chat — FCM now triggers a delta-fetch from the DB (sinceSequenceCount)
       rather than inserting directly from the FCM payload
