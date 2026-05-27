@@ -82,9 +82,26 @@ class ChatSheetController extends GetxController {
       if (incomingEventId != null &&
           publicEventId == incomingEventId.asUuid) {
         lastFcmEchoAt.value = DateTime.now();
+        _upgradeOwnMessagesToDelivered();
         unawaited(_refreshMessages());
       }
     });
+  }
+
+  void _upgradeOwnMessagesToDelivered() {
+    for (final msg in List.of(chatController.messages)) {
+      if (msg.authorId != currentUser.id) continue;
+      if (msg.status != core.MessageStatus.sent) continue;
+      core.Message? updated;
+      if (msg is core.TextMessage) {
+        updated = msg.copyWith(status: core.MessageStatus.delivered);
+      } else if (msg is core.ImageMessage) {
+        updated = msg.copyWith(status: core.MessageStatus.delivered);
+      } else if (msg is core.FileMessage) {
+        updated = msg.copyWith(status: core.MessageStatus.delivered);
+      }
+      if (updated != null) unawaited(chatController.updateMessage(msg, updated));
+    }
   }
 
   Future<void> _refreshMessages() async {
