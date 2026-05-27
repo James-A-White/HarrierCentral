@@ -1,4 +1,10 @@
 
+1.4.12+622
+    • Chat — delivery receipts: single tick on server confirm, double tick
+      when FCM echo arrives back at the sender
+    • Chat — DEBUG: dialog after each send shows full-push and in-app-only
+      recipients by name with per-user device count
+
 1.4.11+621
     • Platform Admin tab in kennel editor — platform admins (CanEditKennel) can
       now set kennel operational status (Active / Inactive-Visible /
