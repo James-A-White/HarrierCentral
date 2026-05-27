@@ -222,10 +222,16 @@ class LocationService extends GetxService {
   ) {
     final LocationSettings locationSettings;
     if (defaultTargetPlatform == TargetPlatform.android) {
+      // Use a short interval for active tracking (distanceFilter ≤ 20m) so Android
+      // doesn't suppress sub-minute callbacks when the device is moving slowly.
+      // Idle and pause modes keep the 15-minute power-saving interval.
+      final androidInterval = distanceFilter <= 20
+          ? const Duration(seconds: 15)
+          : const Duration(minutes: 15);
       locationSettings = AndroidSettings(
         accuracy: accuracy,
         distanceFilter: distanceFilter,
-        intervalDuration: Duration(minutes: 15),
+        intervalDuration: androidInterval,
         forceLocationManager: false,
         foregroundNotificationConfig: ForegroundNotificationConfig(
           notificationTitle: 'Harrier Central',
