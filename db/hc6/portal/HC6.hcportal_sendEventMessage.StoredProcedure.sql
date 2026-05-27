@@ -205,6 +205,7 @@ END
     -- the kennel preference rather than treating it as an explicit "always on" value.
     SELECT
         hkm.UserId as UserId,
+        h.DisplayName as DisplayName,
         device.FcmToken as FcmToken
         INTO #tempMessageOn
     FROM HC.HasherKennelMap hkm
@@ -239,8 +240,10 @@ END
     -- They will receive an in-app notification so they can see the chat updating in realtime.
     SELECT
         hkm.UserId,
+        h.DisplayName,
         device.FcmToken
     FROM HC.HasherKennelMap hkm
+    INNER JOIN HC.Hasher h ON hkm.UserId = h.id
     INNER JOIN HC.Device device ON hkm.UserId = device.UserId
     LEFT OUTER JOIN #tempMessageOn t ON hkm.UserId = t.UserId
     LEFT OUTER JOIN HC.HasherEventMap hem ON hem.EventId = @eventId AND hem.UserId = hkm.UserId

@@ -71,9 +71,26 @@ class ChatPageController extends GetxController {
       final incomingEventId = message.data['EventId'] as String?;
       BootLogger.logError('[ChatPage FCM] received', 'incomingEventId=$incomingEventId localEventId=$eventId data=${message.data}', null);
       if (incomingEventId != null && eventId.asUuid == incomingEventId.asUuid) {
+        _upgradeOwnMessagesToDelivered();
         unawaited(_fetchDelta());
       }
     });
+  }
+
+  void _upgradeOwnMessagesToDelivered() {
+    for (final msg in List.of(chatController.messages)) {
+      if (msg.authorId != currentUser.id) continue;
+      if (msg.status != core.MessageStatus.sent) continue;
+      core.Message? updated;
+      if (msg is core.TextMessage) {
+        updated = msg.copyWith(status: core.MessageStatus.delivered);
+      } else if (msg is core.ImageMessage) {
+        updated = msg.copyWith(status: core.MessageStatus.delivered);
+      } else if (msg is core.FileMessage) {
+        updated = msg.copyWith(status: core.MessageStatus.delivered);
+      }
+      if (updated != null) unawaited(chatController.updateMessage(msg, updated));
+    }
   }
 
   Future<void> _fetchDelta() async {
