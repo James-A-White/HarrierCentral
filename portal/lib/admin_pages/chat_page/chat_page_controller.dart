@@ -363,23 +363,89 @@ class ChatSheetController extends GetxController {
     }
 
     // DEBUG — remove once chat delivery is confirmed stable.
-    if (!failed) _showRecipientCountToast(sendResult);
+    if (!failed) _showRecipientDialog(sendResult);
   }
 
   // DEBUG — remove once chat delivery is confirmed stable.
-  void _showRecipientCountToast(String jsonResult) {
+  void _showRecipientDialog(String jsonResult) {
     try {
       final rowsets = jsonDecode(jsonResult) as List<dynamic>;
-      final fullPush = (rowsets[1] as List<dynamic>).length;
-      final inApp   = (rowsets[2] as List<dynamic>).length;
-      Get.snackbar(
-        'Debug — recipients',
-        'Full push: $fullPush  •  In-app only: $inApp  •  Total: ${fullPush + inApp}',
-        duration: const Duration(seconds: 6),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.amber.shade100,
-        colorText: Colors.black87,
-        margin: const EdgeInsets.all(12),
+
+      // Group flat device rows by UserId → {name, deviceCount}.
+      Map<String, Map<String, dynamic>> _group(List<dynamic> rows) {
+        final map = <String, Map<String, dynamic>>{};
+        for (final row in rows) {
+          final m = row as Map<String, dynamic>;
+          final id = (m['UserId'] as String?) ?? '';
+          if (map.containsKey(id)) {
+            map[id]!['devices'] = (map[id]!['devices'] as int) + 1;
+          } else {
+            map[id] = {
+              'name': (m['DisplayName'] as String?) ?? id,
+              'devices': 1,
+            };
+          }
+        }
+        return map;
+      }
+
+      final fullPush = _group(rowsets[1] as List<dynamic>);
+      final inApp    = _group(rowsets[2] as List<dynamic>);
+
+      Widget _section(String heading, Map<String, Map<String, dynamic>> users) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(heading,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+            const SizedBox(height: 4),
+            if (users.isEmpty)
+              const Text('None', style: TextStyle(color: Colors.grey, fontSize: 13))
+            else
+              ...users.values.map(
+                (r) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 3),
+                  child: Row(children: [
+                    Expanded(
+                      child: Text(r['name'] as String,
+                          style: const TextStyle(fontSize: 13)),
+                    ),
+                    Text(
+                      '${r['devices']} device${(r['devices'] as int) == 1 ? '' : 's'}',
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ]),
+                ),
+              ),
+          ],
+        );
+      }
+
+      Get.dialog(
+        AlertDialog(
+          title: const Text('Debug — Chat Recipients'),
+          content: SizedBox(
+            width: 420,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _section('Full push — ${fullPush.length} user(s)', fullPush),
+                  const SizedBox(height: 16),
+                  _section('In-app only — ${inApp.length} user(s)', inApp),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back<void>(),
+              child: const Text('Close'),
+            ),
+          ],
+        ),
       );
     } catch (_) {}
   }
