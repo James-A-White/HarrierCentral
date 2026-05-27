@@ -23,6 +23,7 @@ class ChatSheetController extends GetxController {
   int? _lastKnownSequenceCount;
   bool _isRefreshing = false;
   bool _pendingRefresh = false;
+  int _fcmMsgCount = 0;
 
   @override
   void onClose() {
@@ -81,28 +82,49 @@ class ChatSheetController extends GetxController {
     }
 
     // FCM subscription always registered, even if initial load failed.
-    _fcmSubscription = FirebaseMessaging.onMessage.listen((
-      RemoteMessage message,
-    ) {
-      try {
-        final incomingEventId = normalizeUuid(
-          message.data['PublicEventId']?.toString(),
-        );
-        if (incomingEventId.isEmpty || publicEventId != incomingEventId) {
-          return;
-        }
+    _subscribeFcm();
+  }
 
-        lastFcmEchoAt.value = DateTime.now();
-        _upgradeOwnMessagesToDelivered();
-        unawaited(
-          _refreshMessages().catchError((Object e, StackTrace st) {
-            debugPrint('[ChatSheetController] _refreshMessages error: $e');
-          }),
+  void _subscribeFcm() {
+    unawaited(_fcmSubscription?.cancel());
+    _fcmSubscription = FirebaseMessaging.onMessage.listen(
+      (RemoteMessage message) {
+        try {
+          final incomingEventId = normalizeUuid(
+            message.data['PublicEventId']?.toString(),
+          );
+          if (incomingEventId.isEmpty || publicEventId != incomingEventId) {
+            return;
+          }
+
+          _fcmMsgCount++;
+          debugPrint(
+            '[ChatFCM #$_fcmMsgCount] received for event $publicEventId',
+          );
+
+          lastFcmEchoAt.value = DateTime.now();
+          _upgradeOwnMessagesToDelivered();
+          unawaited(
+            _refreshMessages().catchError((Object e, StackTrace st) {
+              debugPrint('[ChatFCM #$_fcmMsgCount] _refreshMessages error: $e');
+            }),
+          );
+        } catch (e) {
+          debugPrint('[ChatFCM] onMessage handler error: $e');
+        }
+      },
+      onError: (Object e, StackTrace st) {
+        debugPrint('[ChatFCM] stream ERROR after $_fcmMsgCount messages: $e');
+      },
+      onDone: () {
+        debugPrint(
+          '[ChatFCM] stream CLOSED after $_fcmMsgCount messages — resubscribing',
         );
-      } catch (e) {
-        debugPrint('[ChatSheetController] onMessage handler error: $e');
-      }
-    });
+        _subscribeFcm();
+      },
+      cancelOnError: false,
+    );
+    debugPrint('[ChatFCM] subscribed (resubscription #${_fcmMsgCount > 0 ? "re" : "initial"})');
   }
 
   void _upgradeOwnMessagesToDelivered() {
@@ -124,19 +146,27 @@ class ChatSheetController extends GetxController {
 
   Future<void> _refreshMessages() async {
     if (_isRefreshing) {
+      debugPrint('[ChatFCM] _refreshMessages: already refreshing — queuing pending');
       _pendingRefresh = true;
       return;
     }
     _isRefreshing = true;
+    debugPrint(
+      '[ChatFCM] _refreshMessages: start (sinceSeq=$_lastKnownSequenceCount, fcmCount=$_fcmMsgCount)',
+    );
     try {
       final sinceSeq = _lastKnownSequenceCount;
       final result = await _getEventMessages(
         publicEventId,
         sinceSequenceCount: sinceSeq,
       );
-      if (result == null || result.startsWith(ERROR_PREFIX)) return;
+      if (result == null || result.startsWith(ERROR_PREFIX)) {
+        debugPrint('[ChatFCM] _refreshMessages: SP returned error/null');
+        return;
+      }
       final outerItem = jsonDecode(result) as List<dynamic>;
       final rawMessages = outerItem[0] as List<dynamic>;
+      debugPrint('[ChatFCM] _refreshMessages: SP returned ${rawMessages.length} messages');
       if (rawMessages.isEmpty) return;
 
       final newSeq = _extractMaxSequenceCount(rawMessages);
@@ -148,10 +178,13 @@ class ChatSheetController extends GetxController {
           await chatController.insertMessage(msg);
         }
       }
+    } catch (e, st) {
+      debugPrint('[ChatFCM] _refreshMessages: EXCEPTION $e\n$st');
     } finally {
       _isRefreshing = false;
       if (_pendingRefresh) {
         _pendingRefresh = false;
+        debugPrint('[ChatFCM] _refreshMessages: firing pending refresh');
         unawaited(_refreshMessages());
       }
     }
