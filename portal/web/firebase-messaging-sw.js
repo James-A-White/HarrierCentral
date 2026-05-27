@@ -18,9 +18,16 @@ const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(function(payload) {
   console.log('Received background message ', payload);
+
+  // Data-only payloads (used for in-app sync) do not include
+  // payload.notification and must not try to show a browser notification.
+  if (!payload || !payload.notification || !payload.notification.title) {
+    return;
+  }
+
   const notificationTitle = payload.notification.title;
   const notificationOptions = {
-    body: payload.notification.body,
+    body: payload.notification.body || '',
   };
 
   self.registration.showNotification(notificationTitle, notificationOptions);

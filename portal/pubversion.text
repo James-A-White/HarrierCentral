@@ -1,4 +1,13 @@
 
+1.5.0+624
+    • Chat — service worker: guard data-only payloads in onBackgroundMessage —
+      null dereference on payload.notification.title was crashing the SW when
+      in-app-only (data-only) push messages arrived while the tab was unfocused
+    • Chat — portal FCM listener: try/catch + null-safe payload parsing +
+      catchError on _refreshMessages so a malformed payload can't silently
+      kill live updates for the session
+    • Run list — badge FCM listener: same defensive hardening as chat listener
+
 1.4.13+623
     • Chat — fix double-tick race: await chatController.updateMessage so message
       reaches 'sent' status before FCM echo arrives and upgrades it to 'delivered'
