@@ -196,11 +196,13 @@ END
 
     -- Rowset 1: FullPushNotificationRecipients
     -- Notification preference flags:
-    --   0 = Auto (default — treat as always on)
+    --   0 = Auto (event level: falls back to kennel preference; kennel level: treated as always on)
     --   1 = Always On
     --   2 = Off
     --   3 = On but muted (in-app only)
     --   4 = On 6 hours before run
+    -- NULLIF converts event-level 0 (auto) to NULL so COALESCE correctly falls back to
+    -- the kennel preference rather than treating it as an explicit "always on" value.
     SELECT
         hkm.UserId as UserId,
         device.FcmToken as FcmToken
@@ -212,11 +214,11 @@ END
     LEFT OUTER JOIN HC.HasherEventMap hem ON hem.EventId = evt.id AND hem.UserId = h.id
     WHERE
     (
-        (COALESCE(hem.EventNotificationPreference, hkm.KennelNotificationPreference) IN (0, 1)) -- auto/default and always-on
+        (COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference) IN (0, 1)) -- auto/default and always-on
         OR
         (
             -- only send full notifications when within the time window
-            (COALESCE(hem.EventNotificationPreference, hkm.KennelNotificationPreference) = 4) AND (@isEventWithinTimeLimitForNotifications = 1)
+            (COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference) = 4) AND (@isEventWithinTimeLimitForNotifications = 1)
         )
     )
     AND hkm.KennelId = @kennelId

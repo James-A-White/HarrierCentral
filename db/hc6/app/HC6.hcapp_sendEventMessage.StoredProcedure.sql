@@ -219,8 +219,8 @@ WHERE evt.id = @eventId
   AND hkm.KennelId = @kennelId
   AND device.FcmToken IS NOT NULL
   AND (
-      COALESCE(hem.EventNotificationPreference, hkm.KennelNotificationPreference) IN (0, 1)
-      OR (COALESCE(hem.EventNotificationPreference, hkm.KennelNotificationPreference) = 4 AND @isWithinWindow = 1)
+      COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference) IN (0, 1)
+      OR (COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference) = 4 AND @isWithinWindow = 1)
   )
   AND (
       @sendToEveryone      != 0
@@ -252,8 +252,8 @@ WHERE hkm.KennelId = @kennelId
       LEFT OUTER JOIN HC.HasherEventMap hem2 ON hem2.EventId = evt2.id AND hem2.UserId = h2.id
       WHERE evt2.id = @eventId AND hkm2.KennelId = @kennelId AND dev2.FcmToken IS NOT NULL
         AND (
-            COALESCE(hem2.EventNotificationPreference, hkm2.KennelNotificationPreference) IN (0, 1)
-            OR (COALESCE(hem2.EventNotificationPreference, hkm2.KennelNotificationPreference) = 4 AND @isWithinWindow = 1)
+            COALESCE(NULLIF(hem2.EventNotificationPreference, 0), hkm2.KennelNotificationPreference) IN (0, 1)
+            OR (COALESCE(NULLIF(hem2.EventNotificationPreference, 0), hkm2.KennelNotificationPreference) = 4 AND @isWithinWindow = 1)
         )
         AND (
             @sendToEveryone      != 0
