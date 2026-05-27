@@ -1,4 +1,12 @@
 
+1.5.1+625
+    • Chat — FCM: diagnostic logging added (message counter, onDone/onError
+      stream lifecycle hooks, _refreshMessages tracing) to both ChatSheetController
+      and RunListPageController — browser console will show exactly where the
+      "stops after 3 messages" failure occurs
+    • Chat — FCM: both subscriptions now auto-resubscribe if the onMessage
+      stream closes unexpectedly
+
 1.5.0+624
     • Chat — service worker: guard data-only payloads in onBackgroundMessage —
       null dereference on payload.notification.title was crashing the SW when

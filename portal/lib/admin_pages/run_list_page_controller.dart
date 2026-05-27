@@ -63,6 +63,7 @@ class RunListPageController extends GetxController
 
   late StreamSubscription<RemoteMessage> _fcmSubscription;
   Map<String, int> thisEventChatCount = {};
+  int _fcmMsgCount = 0;
 
   final FocusNode searchFocusNode = FocusNode();
   final TextEditingController searchController = TextEditingController();
@@ -84,30 +85,7 @@ class RunListPageController extends GetxController
   }
 
   Future<void> onInitAsync() async {
-    _fcmSubscription = FirebaseMessaging.onMessage.listen((
-      RemoteMessage message,
-    ) {
-      try {
-        final publicEventId = normalizeUuid(
-          message.data['PublicEventId']?.toString(),
-        );
-        if (publicEventId.isEmpty) return;
-
-        final type = message.data['Type']?.toString();
-        if (type == 'read_sync') {
-          // Another device has read this chat — zero the badge immediately.
-          thisEventChatCount[publicEventId] = 0;
-        } else {
-          thisEventChatCount[publicEventId] =
-              (thisEventChatCount[publicEventId] ?? 0) + 1;
-        }
-        update(['chatCountBadge']);
-      } catch (e) {
-        if (kDebugMode) {
-          debugPrint('RunListPageController onMessage error: $e');
-        }
-      }
-    });
+    _subscribeRunListFcm();
 
     _worker = debounce(width, (_) async {
       if (_isDebounceRunning) return;
@@ -145,6 +123,44 @@ class RunListPageController extends GetxController
 
   RxDouble width = 0.0.obs;
   RxDouble height = 0.0.obs;
+
+  void _subscribeRunListFcm() {
+    _fcmSubscription = FirebaseMessaging.onMessage.listen(
+      (RemoteMessage message) {
+        try {
+          final publicEventId = normalizeUuid(
+            message.data['PublicEventId']?.toString(),
+          );
+          if (publicEventId.isEmpty) return;
+
+          _fcmMsgCount++;
+          debugPrint('[RunListFCM #$_fcmMsgCount] received, eventId=$publicEventId');
+
+          final type = message.data['Type']?.toString();
+          if (type == 'read_sync') {
+            thisEventChatCount[publicEventId] = 0;
+          } else {
+            thisEventChatCount[publicEventId] =
+                (thisEventChatCount[publicEventId] ?? 0) + 1;
+          }
+          update(['chatCountBadge']);
+        } catch (e) {
+          debugPrint('[RunListFCM] onMessage error: $e');
+        }
+      },
+      onError: (Object e, StackTrace st) {
+        debugPrint('[RunListFCM] stream ERROR after $_fcmMsgCount messages: $e');
+      },
+      onDone: () {
+        debugPrint(
+          '[RunListFCM] stream CLOSED after $_fcmMsgCount messages — resubscribing',
+        );
+        _subscribeRunListFcm();
+      },
+      cancelOnError: false,
+    );
+    debugPrint('[RunListFCM] subscribed');
+  }
 
   void _onKennelPickerScroll() {
     if (!kennelPickerScrollController.hasClients) return;
