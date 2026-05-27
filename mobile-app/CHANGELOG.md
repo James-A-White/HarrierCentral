@@ -19,6 +19,15 @@
 
 ### Bug fixes
 
+- **Chat — fix double-tick race**: `chatController.updateMessage` in
+  `handleSendPressed` is now awaited, so the message reaches `sent` status
+  before any FCM echo arrives and tries to upgrade it to `delivered`.
+
+- **Boot — device no longer registered**: When `hcapp_approveLogin` returns
+  an auth error for a deleted device, the app now shows a friendly dialog
+  and silently re-registers using the stored reset code rather than
+  displaying a toast and freezing on the splash screen.
+
 - **Run details — stale controller reuse**: `RunDetailsController` is now
   tagged by `eventId`, preventing a cached instance for a previous run from
   being served when navigating to a different run.

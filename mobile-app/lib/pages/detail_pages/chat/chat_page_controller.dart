@@ -331,13 +331,13 @@ class ChatPageController extends GetxController {
     final failed = result.startsWith(ERROR_PREFIX);
     final sent = chatController.messages.where((m) => m.id == uuid).firstOrNull;
     if (sent is core.TextMessage) {
-      unawaited(chatController.updateMessage(
+      await chatController.updateMessage(
         sent,
         sent.copyWith(
           status: failed ? core.MessageStatus.error : core.MessageStatus.sent,
           sentAt: failed ? null : DateTime.now(),
         ),
-      ));
+      );
     }
   }
 }
