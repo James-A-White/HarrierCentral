@@ -113,15 +113,7 @@ class AppBootService {
       errorCallback: (DbErrorModel error) async {
         if (_isReauthorizationError(error)) {
           reauthorizationHandled = true;
-          await _clearStaleDeviceAuthPrefs();
-          await Utilities.showAlert(
-            'Re-authorization Required',
-            'Your device authorization has expired or become invalid.\r\n\r\nPlease scan your QR code or enter your Reset Code to restore access.',
-            'Continue',
-          );
-          await Navigator.of(
-            navigatorKey.currentContext!,
-          ).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
+          await _handleDeviceNoLongerRegistered();
           return true;
         }
         return false;
@@ -581,6 +573,46 @@ class AppBootService {
         debug.contains('expired');
 
     return tokenMentioned && invalidOrExpired;
+  }
+
+  Future<void> _handleDeviceNoLongerRegistered() async {
+    await Utilities.showAlert(
+      'Device No Longer Registered',
+      'This device is no longer registered with Harrier Central.\n\nTap Reload to reconnect automatically.',
+      'Reload',
+    );
+
+    final String resetCode = getStringPref(StringPrefsEnum.resetCode) ?? '';
+    await _clearStaleDeviceAuthPrefs();
+
+    if (resetCode.isEmpty) {
+      await Navigator.of(
+        navigatorKey.currentContext!,
+      ).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
+      return;
+    }
+
+    await DBProvider.deleteDb(DB_NAME);
+    appModel.dbStatus = EdbStatus.uninitialized;
+
+    final AuthorizeDeviceService srv = AuthorizeDeviceService();
+    final Map<String, String> result = await srv.authorizeDevice(
+      scanText: resetCode.toUpperCase(),
+    );
+
+    if (result['result'] != 'success') {
+      await Utilities.showAlert(
+        'Reconnection Failed',
+        'Unable to reconnect this device automatically. Please restart the app and use your QR code or reset code to log in.',
+        'Continue',
+      );
+      await Navigator.of(
+        navigatorKey.currentContext!,
+      ).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
+      return;
+    }
+
+    restartKey.currentState?.restartApp();
   }
 
   Future<void> _clearStaleDeviceAuthPrefs() async {
