@@ -1,4 +1,7 @@
 
+1.5.7+631
+    • Fix photo review auth: pass publicKennelId to getRunAllPhotos and batchUpdatePhotoStatus SPs
+
 1.5.6+630
     • Security: server-side SAS generation for blob uploads — hardcoded storage tokens removed from source
     • Security: debugPrint calls guarded by kDebugMode across all admin pages

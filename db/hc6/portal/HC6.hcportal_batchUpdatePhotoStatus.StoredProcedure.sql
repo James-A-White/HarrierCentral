@@ -1,9 +1,9 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcportal_batchUpdatePhotoStatus]
 
-    @deviceId    UNIQUEIDENTIFIER = NULL,
-    @accessToken NVARCHAR(1000)   = NULL,
-    @kennelId    UNIQUEIDENTIFIER = NULL,
-    @updates     NVARCHAR(MAX)    = NULL
+    @deviceId       UNIQUEIDENTIFIER = NULL,
+    @accessToken    NVARCHAR(1000)   = NULL,
+    @publicKennelId UNIQUEIDENTIFIER = NULL,
+    @updates        NVARCHAR(MAX)    = NULL
     -- @updates: JSON array  [{"photoId":"<uuid>","action":<1-6>}, ...]
     -- Actions: 1=soft-delete  2=private(0)  3=share(2)  4=gallery(3)
     --          5=home_gallery(4)  6=event_cover(5)
@@ -21,10 +21,10 @@ AS
 --   or authIsSuperAdmin (0x40000000) in
 --   HC.HasherKennelMap.AppAccessFlags for the kennel.
 -- Parameters:
---   @deviceId    - Registered portal device UUID
---   @accessToken - Short-lived token validated against device secret
---   @kennelId    - Kennel that owns all photos in the batch
---   @updates     - JSON array: [{"photoId":"...","action":N}, ...]
+--   @deviceId       - Registered portal device UUID
+--   @accessToken    - Short-lived token validated against device secret
+--   @publicKennelId - Public-facing kennel UUID (resolved to internal id)
+--   @updates        - JSON array: [{"photoId":"...","action":N}, ...]
 -- Returns:
 --   On error   (rowset 0): { Success=0, ErrorMessage }
 --   On success (rowset 0): { Success=1, successCount, failureCount }
@@ -42,6 +42,7 @@ BEGIN TRY
     DECLARE @hasherId   UNIQUEIDENTIFIER;
     DECLARE @callerType INT;
     DECLARE @procName   NVARCHAR(128) = OBJECT_NAME(@@PROCID);
+    DECLARE @kennelId   UNIQUEIDENTIFIER;
 
     EXEC HC6.ValidatePortalAuth
         @deviceId, @accessToken, @procName, NULL,
@@ -53,9 +54,17 @@ BEGIN TRY
         RETURN;
     END
 
-    IF @kennelId IS NULL OR @kennelId = '00000000-0000-0000-0000-000000000000'
+    IF @publicKennelId IS NULL OR @publicKennelId = '00000000-0000-0000-0000-000000000000'
     BEGIN
-        SELECT 0 AS Success, 'kennelId is required' AS ErrorMessage;
+        SELECT 0 AS Success, 'publicKennelId is required' AS ErrorMessage;
+        RETURN;
+    END
+
+    SELECT @kennelId = id FROM HC.Kennel WHERE PublicKennelId = @publicKennelId;
+
+    IF @kennelId IS NULL
+    BEGIN
+        SELECT 0 AS Success, 'Kennel not found.' AS ErrorMessage;
         RETURN;
     END
 

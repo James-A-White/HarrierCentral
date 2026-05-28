@@ -65,9 +65,9 @@ class _Photo {
 // ── Controller ───────────────────────────────────────────────────────────────
 
 class PhotoReviewController extends GetxController {
-  PhotoReviewController({required this.kennelId, required this.eventId});
+  PhotoReviewController({required this.publicKennelId, required this.eventId});
 
-  final String kennelId;
+  final String publicKennelId;
   final String eventId;
 
   final photos = <_Photo>[].obs;
@@ -123,7 +123,7 @@ class PhotoReviewController extends GetxController {
         'queryType': 'getRunAllPhotos',
         'deviceId': deviceId,
         'accessToken': accessToken,
-        'kennelId': kennelId,
+        'publicKennelId': publicKennelId,
         'eventId': eventId,
       };
       final result = await ServiceCommon.sendHttpPostToHC6Api(body);
@@ -163,7 +163,7 @@ class PhotoReviewController extends GetxController {
         'queryType': 'batchUpdatePhotoStatus',
         'deviceId': deviceId,
         'accessToken': accessToken,
-        'kennelId': kennelId,
+        'publicKennelId': publicKennelId,
         'updates': updates,
       };
       final result = await ServiceCommon.sendHttpPostToHC6Api(body);
@@ -196,7 +196,7 @@ class PhotoReviewController extends GetxController {
 
 class PhotoReviewPage extends StatelessWidget {
   PhotoReviewPage({
-    required this.kennelId,
+    required this.publicKennelId,
     required this.eventId,
     required this.eventName,
     required this.kennelShortName,
@@ -205,7 +205,7 @@ class PhotoReviewPage extends StatelessWidget {
     super.key,
   });
 
-  final String kennelId;
+  final String publicKennelId;
   final String eventId;
   final String eventName;
   final String kennelShortName;
@@ -220,7 +220,7 @@ class PhotoReviewPage extends StatelessWidget {
       unawaited(Get.delete<PhotoReviewController>(tag: tag, force: true));
     }
     return Get.put(
-      PhotoReviewController(kennelId: kennelId, eventId: eventId),
+      PhotoReviewController(publicKennelId: publicKennelId, eventId: eventId),
       tag: tag,
     );
   }

@@ -142139,7 +142139,7 @@ l=A.Z($.aE.ad().b1(0,"deviceId"))
 d=A.O($.aE.ad().b1(0,"deviceSecret"))
 k=d==null?"":d
 j=A.eB(l,"hcportal_getRunAllPhotos",k)
-i=A.a4(["queryType","getRunAllPhotos","deviceId",l,"accessToken",j,"kennelId",m.ax,"eventId",m.ay],t.N,t.z)
+i=A.a4(["queryType","getRunAllPhotos","deviceId",l,"accessToken",j,"publicKennelId",m.ax,"eventId",m.ay],t.N,t.z)
 s=7
 return A.e(A.eh(i),$async$HF)
 case 7:h=a2
@@ -142183,7 +142183,7 @@ j=d==null?"":d
 i=A.eB(k,"hcportal_batchUpdatePhotoStatus",j)
 c=t.N
 h=B.am.wS(A.b([A.a4(["photoId",a1.a,"action",a2],c,t.K)],t.Mq),null)
-g=A.a4(["queryType","batchUpdatePhotoStatus","deviceId",k,"accessToken",i,"kennelId",m.ax,"updates",h],c,t.z)
+g=A.a4(["queryType","batchUpdatePhotoStatus","deviceId",k,"accessToken",i,"publicKennelId",m.ax,"updates",h],c,t.z)
 s=7
 return A.e(A.eh(g),$async$rl)
 case 7:f=a4

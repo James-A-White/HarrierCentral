@@ -1,9 +1,9 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcportal_getRunAllPhotos]
 
-    @deviceId    UNIQUEIDENTIFIER = NULL,
-    @accessToken NVARCHAR(1000)   = NULL,
-    @kennelId    UNIQUEIDENTIFIER = NULL,
-    @eventId     UNIQUEIDENTIFIER = NULL
+    @deviceId        UNIQUEIDENTIFIER = NULL,
+    @accessToken     NVARCHAR(1000)   = NULL,
+    @publicKennelId  UNIQUEIDENTIFIER = NULL,
+    @eventId         UNIQUEIDENTIFIER = NULL
 
 AS
 -- =====================================================================
@@ -15,10 +15,10 @@ AS
 --   or authIsSuperAdmin (0x40000000) in
 --   HC.HasherKennelMap.AppAccessFlags for the kennel.
 -- Parameters:
---   @deviceId    - Registered portal device UUID
---   @accessToken - Short-lived token validated against device secret
---   @kennelId    - Kennel the event belongs to (used for auth check)
---   @eventId     - Event to fetch photos for
+--   @deviceId        - Registered portal device UUID
+--   @accessToken     - Short-lived token validated against device secret
+--   @publicKennelId  - Public-facing kennel UUID (resolved to internal id)
+--   @eventId         - Event to fetch photos for
 -- Returns:
 --   On error   (rowset 0): { Success=0, ErrorMessage }
 --   On success (rowset 0): photo rows ordered newest-first
@@ -36,6 +36,7 @@ BEGIN TRY
     DECLARE @hasherId   UNIQUEIDENTIFIER;
     DECLARE @callerType INT;
     DECLARE @procName   NVARCHAR(128) = OBJECT_NAME(@@PROCID);
+    DECLARE @kennelId   UNIQUEIDENTIFIER;
 
     EXEC HC6.ValidatePortalAuth
         @deviceId, @accessToken, @procName, NULL,
@@ -47,9 +48,17 @@ BEGIN TRY
         RETURN;
     END
 
-    IF @kennelId IS NULL OR @kennelId = '00000000-0000-0000-0000-000000000000'
+    IF @publicKennelId IS NULL OR @publicKennelId = '00000000-0000-0000-0000-000000000000'
     BEGIN
-        SELECT 0 AS Success, 'kennelId is required' AS ErrorMessage;
+        SELECT 0 AS Success, 'publicKennelId is required' AS ErrorMessage;
+        RETURN;
+    END
+
+    SELECT @kennelId = id FROM HC.Kennel WHERE PublicKennelId = @publicKennelId;
+
+    IF @kennelId IS NULL
+    BEGIN
+        SELECT 0 AS Success, 'Kennel not found.' AS ErrorMessage;
         RETURN;
     END
 

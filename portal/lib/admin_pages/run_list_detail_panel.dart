@@ -747,7 +747,7 @@ class RunListDetailPanel extends StatelessWidget {
                 if (rdm.publicEventId == null) return;
                 await Get.to<PhotoReviewPage>(
                   () => PhotoReviewPage(
-                    kennelId: controller.kennel.publicKennelId,
+                    publicKennelId: controller.kennel.publicKennelId,
                     eventId: rdm.publicEventId!,
                     eventName: rdm.eventName,
                     kennelShortName: controller.kennel.kennelShortName,
