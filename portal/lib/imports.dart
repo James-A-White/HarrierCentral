@@ -27,6 +27,7 @@ export 'package:hcportal/admin_pages/chat_page/chat_page_ui.dart';
 export 'package:hcportal/admin_pages/checkin_sheet/checkin_sheet_controller.dart';
 export 'package:hcportal/admin_pages/email_page/email_ui.dart';
 export 'package:hcportal/admin_pages/function_selection_page.dart';
+export 'package:hcportal/admin_pages/photo_review/photo_review_page.dart';
 export 'package:hcportal/admin_pages/kennel_form/kennel_form_controller.dart';
 export 'package:hcportal/admin_pages/kennel_form/kennel_form_ui.dart';
 export 'package:hcportal/admin_pages/kennel_hashers_page.dart';

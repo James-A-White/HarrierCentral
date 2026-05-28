@@ -738,6 +738,27 @@ class RunListDetailPanel extends StatelessWidget {
             onPressed: () async => Get.to<EmailModel>(EmailPage.new),
           ),
           if (controller.kennel.canManageRuns ||
+              controller.kennel.isAdmin) ...[
+            const SizedBox(width: 8),
+            _btn(
+              'Review Photos',
+              Icons.photo_library_outlined,
+              onPressed: () async {
+                if (rdm.publicEventId == null) return;
+                await Get.to<PhotoReviewPage>(
+                  () => PhotoReviewPage(
+                    kennelId: controller.kennel.publicKennelId,
+                    eventId: rdm.publicEventId!,
+                    eventName: rdm.eventName,
+                    kennelShortName: controller.kennel.kennelShortName,
+                    eventNumber: rdm.absoluteEventNumber ?? rdm.eventNumber,
+                    kennelLogo: controller.kennel.kennelLogo,
+                  ),
+                );
+              },
+            ),
+          ],
+          if (controller.kennel.canManageRuns ||
               controller.kennel.canManageHashCash) ...[
             const SizedBox(width: 8),
             _btn(
