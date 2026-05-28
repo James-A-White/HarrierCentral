@@ -1,4 +1,9 @@
 
+1.5.6+630
+    • Security: server-side SAS generation for blob uploads — hardcoded storage tokens removed from source
+    • Security: debugPrint calls guarded by kDebugMode across all admin pages
+    • Security: URL scheme restricted to http/https in rich-text link launchers
+
 1.5.5+629
     • New permission: authCanManagePublicWebContent (0x0080) — added to constants,
       HasherKennelsModel getter, and AppAccessPage checkbox in mobile app
