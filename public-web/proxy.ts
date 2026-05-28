@@ -11,10 +11,35 @@ function isSystemHost(hostname: string) {
 
 // In-process cache — persists across requests on self-hosted Node.js.
 // Maps hostname → slug (or null when the domain isn't registered).
-const slugCache = new Map<string, string | null>();
+// Entries expire after 10 minutes and the cache is capped at 500 entries to
+// prevent unbounded growth from hostile requests with forged Host headers.
+const SLUG_CACHE_TTL_MS = 10 * 60 * 1000;
+const SLUG_CACHE_MAX    = 500;
+
+interface CacheEntry { slug: string | null; expiresAt: number }
+const slugCache = new Map<string, CacheEntry>();
+
+function getCachedSlug(hostname: string): string | null | undefined {
+  const entry = slugCache.get(hostname);
+  if (!entry) return undefined;
+  if (entry.expiresAt < Date.now()) {
+    slugCache.delete(hostname);
+    return undefined;
+  }
+  return entry.slug;
+}
+
+function setCachedSlug(hostname: string, slug: string | null): void {
+  if (slugCache.size >= SLUG_CACHE_MAX) {
+    const firstKey = slugCache.keys().next().value;
+    if (firstKey) slugCache.delete(firstKey);
+  }
+  slugCache.set(hostname, { slug, expiresAt: Date.now() + SLUG_CACHE_TTL_MS });
+}
 
 async function resolveCustomDomain(hostname: string): Promise<string | null> {
-  if (slugCache.has(hostname)) return slugCache.get(hostname) ?? null;
+  const cached = getCachedSlug(hostname);
+  if (cached !== undefined) return cached;
 
   const apiUrl = process.env.HC_API_URL;
   if (!apiUrl) return null;
@@ -27,7 +52,7 @@ async function resolveCustomDomain(hostname: string): Promise<string | null> {
     const slug: string | null = res.ok
       ? ((await res.json())?.[0]?.[0]?.KennelSlug ?? null)
       : null;
-    slugCache.set(hostname, slug);
+    setCachedSlug(hostname, slug);
     return slug;
   } catch {
     // Don't cache transient errors — let the next request retry.

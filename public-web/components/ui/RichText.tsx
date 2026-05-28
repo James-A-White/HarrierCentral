@@ -3,6 +3,7 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 
 interface RichTextProps {
   content: string;
@@ -25,7 +26,7 @@ export function RichText({ content, color, align = "left" }: RichTextProps) {
     <div className="min-w-0 w-full" style={{ color: textColor, textAlign }}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeRaw]}
+        rehypePlugins={[rehypeRaw, [rehypeSanitize, defaultSchema]]}
         components={{
           h1: ({ children }) => (
             <h1 className="text-4xl font-black mt-8 mb-3 first:mt-0" style={{ color: headingColor }}>

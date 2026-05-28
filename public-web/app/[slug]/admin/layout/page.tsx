@@ -26,12 +26,9 @@ export default async function AdminLayoutPage({ params, searchParams }: PageProp
     if (token) {
       redirect(`/api/admin/auth?token=${encodeURIComponent(token)}&slug=${encodeURIComponent(slug)}`);
     }
-    return (
-      <html lang="en">
-        <body style={{ margin: 0, display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", fontFamily: "system-ui, sans-serif", background: "#0f0f0f", color: "#666" }}>
-          <p>Access denied. Open this page from the Harrier Central portal app.</p>
-        </body>
-      </html>
+    return new Response(
+      "Access denied. Open this page from the Harrier Central portal app.",
+      { status: 401, headers: { "Content-Type": "text/plain" } }
     );
   }
 

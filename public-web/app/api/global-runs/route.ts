@@ -72,6 +72,14 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+  if (!DATE_RE.test(minEventDate)) {
+    return NextResponse.json({ error: "Invalid minEventDate format" }, { status: 400 });
+  }
+  if (!DATE_RE.test(maxEventDate)) {
+    return NextResponse.json({ error: "Invalid maxEventDate format" }, { status: 400 });
+  }
+
   const revalidate = getRevalidateSeconds(minEventDate, maxEventDate);
   const result = await getGlobalRuns(
     { isFuture: false, minEventDate, maxEventDate, pageSize: 5000 },
