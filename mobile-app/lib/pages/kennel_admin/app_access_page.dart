@@ -87,6 +87,13 @@ class AppAccessPageState extends State<AppAccessPage> {
                       },
                     ),
                     getOption(
+                      'Manage Songs',
+                      appAccess.getAppAccess(authCanManageSongs),
+                      (bool value) {
+                        appAccess.setAppAccess(authCanManageSongs, value);
+                      },
+                    ),
+                    getOption(
                       'Manage Public Web Content',
                       appAccess.getAppAccess(authCanManagePublicWebContent),
                       (bool value) {
