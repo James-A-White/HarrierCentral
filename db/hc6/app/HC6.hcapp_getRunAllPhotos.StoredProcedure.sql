@@ -105,6 +105,7 @@ SELECT
     kp.DeletedAt,
     kp.BlobUrl,
     kp.Title,
+    kp.Description,
     kp.CreatedAt,
     h.DisplayName           AS uploaderDisplayName,
     e.EventName             AS eventName,

@@ -1,5 +1,17 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.6.6+1138 (2026-05-28)
+
+### Features
+
+- **Photo captions**: Users can now add an optional caption (up to 200 words)
+  when capturing a run photo. The caption is stored in the DB and displayed as
+  an overlay at the bottom of the photo in the Hash Flash review screen. A live
+  word counter is shown beneath the caption field; text is trimmed to 200 words
+  on save if the limit is exceeded.
+
+---
+
 ## 2.6.5+1137 (2026-05-27)
 
 ### Features

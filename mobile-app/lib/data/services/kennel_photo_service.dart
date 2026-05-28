@@ -37,6 +37,7 @@ class KennelPhotoService {
     if (result == null) return null;
     final imageFile = result.file; // full-quality, possibly cropped
     final sharingOverride = result.intent == _PhotoShareIntent.saveAndShare ? 1 : 0;
+    final caption = result.caption;
 
     // 3. Client-side GUID — normalised to lowercase per project UUID rules
     final photoGuid = const Uuid().v4().toLowerCase();
@@ -108,6 +109,7 @@ class KennelPhotoService {
       blobUrl: blobUrl,
       assetId: assetId,
       perRunSharingOverride: sharingOverride,
+      caption: caption,
     );
     if (!recorded) {
       Get.snackbar(
@@ -282,6 +284,7 @@ class KennelPhotoService {
     required String blobUrl,
     String? assetId,
     int? perRunSharingOverride,
+    String? caption,
   }) async {
     final locationService = Get.find<LocationService>();
     final pos = locationService.lastKnownPosition.value;
@@ -311,6 +314,9 @@ class KennelPhotoService {
     }
     if (perRunSharingOverride != null) {
       body['perRunSharingOverride'] = perRunSharingOverride;
+    }
+    if (caption != null && caption.isNotEmpty) {
+      body['description'] = caption;
     }
 
     final result = await ServiceCommon.sendHttpPost(
@@ -472,11 +478,12 @@ class KennelPhotoService {
 
 enum _PhotoShareIntent { savePrivate, saveAndShare }
 
-/// Carries the final file (possibly edited) and the user's sharing intent.
+/// Carries the final file (possibly edited), the user's sharing intent, and optional caption.
 class _PhotoShareResult {
-  const _PhotoShareResult({required this.file, required this.intent});
+  const _PhotoShareResult({required this.file, required this.intent, this.caption});
   final File file;
   final _PhotoShareIntent intent;
+  final String? caption;
 }
 
 // ── Photo review + intent page ───────────────────────────────────────────────
@@ -493,11 +500,37 @@ class _PhotoSharePageState extends State<_PhotoSharePage> {
   late File _currentFile;
   bool _canEdit = true;
   bool _isCropping = false;
+  final TextEditingController _captionController = TextEditingController();
+  int _wordCount = 0;
+
+  static int _countWords(String text) {
+    final t = text.trim();
+    if (t.isEmpty) return 0;
+    return t.split(RegExp(r'\s+')).length;
+  }
+
+  // Returns caption trimmed to 200 words, or null if empty.
+  String? _captionText() {
+    final t = _captionController.text.trim();
+    if (t.isEmpty) return null;
+    if (_wordCount <= 200) return t;
+    return t.split(RegExp(r'\s+')).take(200).join(' ');
+  }
 
   @override
   void initState() {
     super.initState();
     _currentFile = widget.initialFile;
+    _captionController.addListener(() {
+      final count = _countWords(_captionController.text);
+      if (count != _wordCount) setState(() => _wordCount = count);
+    });
+  }
+
+  @override
+  void dispose() {
+    _captionController.dispose();
+    super.dispose();
   }
 
   Future<void> _onEdit() async {
@@ -546,6 +579,39 @@ class _PhotoSharePageState extends State<_PhotoSharePage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    TextField(
+                      controller: _captionController,
+                      maxLines: 3,
+                      minLines: 1,
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                      decoration: InputDecoration(
+                        hintText: 'Add a caption… (optional)',
+                        hintStyle: const TextStyle(
+                            color: Colors.white38, fontSize: 14),
+                        filled: true,
+                        fillColor: Colors.white10,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        '$_wordCount / 200 words',
+                        style: TextStyle(
+                          color: _wordCount > 200
+                              ? Colors.redAccent
+                              : Colors.white38,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
                     _IntentButton(
                       icon: Icons.delete_outline,
                       label: 'Discard',
@@ -573,6 +639,7 @@ class _PhotoSharePageState extends State<_PhotoSharePage> {
                         result: _PhotoShareResult(
                           file: _currentFile,
                           intent: _PhotoShareIntent.savePrivate,
+                          caption: _captionText(),
                         ),
                       ),
                     ),
@@ -586,6 +653,7 @@ class _PhotoSharePageState extends State<_PhotoSharePage> {
                         result: _PhotoShareResult(
                           file: _currentFile,
                           intent: _PhotoShareIntent.saveAndShare,
+                          caption: _captionText(),
                         ),
                       ),
                     ),
