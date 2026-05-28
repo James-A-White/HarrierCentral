@@ -78,18 +78,18 @@ BEGIN
 END
 
 -- Verify caller holds an approval role for this kennel:
--- Hash Flash (0x20) OR GM (0x02) OR VGM (0x04) OR RA (0x08) = 0x2E
+-- Hash Flash (0x0020) | GM (0x0002) | VGM (0x0004) | RA (0x0008) | WebMeister (0x1000) = 0x102E
 DECLARE @mmRoleFlags INT = 0;
 SELECT @mmRoleFlags = ISNULL(MismanagementRoles, 0)
 FROM HC.HasherKennelMap
 WHERE UserId = @userId AND KennelId = @kennelId;
 
-IF (@mmRoleFlags & 0x0000002E = 0)
+IF (@mmRoleFlags & 0x0000102E = 0)
 BEGIN
     SET @errorCode = 1334; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Not authorised to review photos',
-            'Caller does not hold Hash Flash, GM, VGM or RA role for this kennel', @procName, @userId);
+            'Caller does not hold Hash Flash, GM, VGM, RA or WebMeister role for this kennel', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Not authorised' AS errorTitle,
