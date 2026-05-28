@@ -1,4 +1,12 @@
 
+1.5.5+629
+    • New permission: authCanManagePublicWebContent (0x0080) — added to constants,
+      HasherKennelsModel getter, and AppAccessPage checkbox in mobile app
+    • Portal: Edit Website + Design Website + Review Photos buttons now gated on
+      canManagePublicWebContent || isAdmin (was canManageKennel / canManageRuns)
+    • DB: hcportal_getRunAllPhotos, hcportal_batchUpdatePhotoStatus,
+      hcportal_generateWebAdminToken — auth masks updated to 0x40000081
+
 1.5.4+628
     • DB: hcportal_getRunAllPhotos + hcportal_batchUpdatePhotoStatus — new portal
       SPs for photo review; auth via AppAccessFlags (admin | canManageRuns | superAdmin)
