@@ -70,21 +70,80 @@ class ServiceCommon {
         fileTypeName == DocumentType.kennelWebsiteBanner.name ||
         fileTypeName == DocumentType.kennelWebsiteBackground.name ||
         fileTypeName == DocumentType.kennelWebsiteOgImage.name;
-    var fileName = (isKennelLogo || isNewsflashImage || isKennelWebsiteImage)
+
+    final String fileName = (isKennelLogo || isNewsflashImage || isKennelWebsiteImage)
         ? '$prefix$datetime.$fileExtension'
         : '$prefix${publicEventId}_${fileTypeName}_$datetime.$fileExtension';
-    final uri = Uri.parse(
-      isKennelLogo || isKennelWebsiteImage
-          ? '$BASE_KENNEL_WEBSITE_IMAGES_URL$fileName$KENNEL_WEBSITE_UPLOAD_SAS'
-          : isNewsflashImage
-              ? '$BASE_NEWSFLASH_IMAGE_URL$fileName$NEWSFLASH_IMAGE_UPLOAD_SAS'
-              : 'https://harriercentral.blob.core.windows.net/event-images/$fileName?sv=2020-04-08&st=2021-09-15T14%3A03%3A04Z&se=2100-09-16T14%3A03%3A00Z&sr=c&sp=racwdxlt&sig=q%2BVTH8wcrKOlSZK1FH7cUoaoYFPtjGpblCAVUqA4WFY%3D',
+
+    final String container = isNewsflashImage
+        ? 'newsflash'
+        : (isKennelLogo || isKennelWebsiteImage)
+            ? 'harrier'
+            : 'event-images';
+
+    // Get portal credentials from Hive (box is already open at app start)
+    final box = Hive.box(HIVE_NAME);
+    final deviceId = (box.get(HIVE_DEVICE_ID) as String?) ?? '';
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
+    final accessToken = Utilities.generateToken(
+      deviceId,
+      'hcportal_getPortalUploadSas',
+      paramString: deviceSecret,
     );
+
+    // Request a short-lived SAS token from the server
+    http.Response sasResponse;
+    try {
+      sasResponse = await http
+          .post(
+            Uri.parse(BASE_GET_PORTAL_UPLOAD_SAS_URL),
+            headers: {'content-type': 'application/json'},
+            body: jsonEncode({
+              'deviceId': deviceId,
+              'accessToken': accessToken,
+              'container': container,
+              'filename': fileName,
+            }),
+          )
+          .timeout(const Duration(seconds: DEFAULT_HTTP_TIMEOUT));
+    } on Exception catch (error) {
+      if (foundation.kDebugMode) {
+        debugPrint('GetPortalUploadSas request error: $error');
+      }
+      await CoreUtilities.showAlert(
+        'Upload failed',
+        'The file was unable to be uploaded at this time. Please try again later.',
+        'OK',
+      );
+      return '';
+    }
+
+    if (sasResponse.statusCode < 200 || sasResponse.statusCode >= 300) {
+      await CoreUtilities.showAlert(
+        'Upload failed',
+        'The file was unable to be uploaded at this time. Please try again later.',
+        'OK',
+      );
+      return '';
+    }
+
+    final String sasUrl;
+    try {
+      final sasJson = jsonDecode(sasResponse.body) as Map<String, dynamic>;
+      sasUrl = sasJson['sasUrl'] as String;
+    } on Exception {
+      await CoreUtilities.showAlert(
+        'Upload failed',
+        'The file was unable to be uploaded at this time. Please try again later.',
+        'OK',
+      );
+      return '';
+    }
 
     http.Response response;
     try {
       response = await http.put(
-        uri,
+        Uri.parse(sasUrl),
         headers: headers,
         body: Uint8List.fromList(bytes),
       );
@@ -100,13 +159,13 @@ class ServiceCommon {
       return '';
     }
 
-    if (((response.statusCode) < 200) || ((response.statusCode) >= 300)) {
+    if (response.statusCode < 200 || response.statusCode >= 300) {
       await CoreUtilities.showAlert(
         'Upload failed',
         'The file was unable to be uploaded at this time. Please try again later.',
         'OK',
       );
-      fileName = '';
+      return '';
     }
 
     return fileName;
