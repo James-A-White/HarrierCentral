@@ -1,6 +1,10 @@
-import { createHmac } from "crypto";
+import { createHmac, timingSafeEqual } from "crypto";
 
-const SECRET = process.env.HC_ADMIN_SESSION_SECRET ?? "dev-only-secret-change-in-production";
+const raw = process.env.HC_ADMIN_SESSION_SECRET;
+if (!raw) {
+  throw new Error("HC_ADMIN_SESSION_SECRET environment variable is not set.");
+}
+const SECRET = raw;
 
 interface AdminSession {
   kennelSlug: string;
@@ -24,7 +28,10 @@ export function verifySession(cookie: string | undefined): AdminSession | null {
   const payload = cookie.slice(0, dot);
   const sig = cookie.slice(dot + 1);
   const expected = createHmac("sha256", SECRET).update(payload).digest("hex");
-  if (sig !== expected) return null;
+  const sigBuf      = Buffer.from(sig,      "hex");
+  const expectedBuf = Buffer.from(expected, "hex");
+  if (sigBuf.length !== expectedBuf.length) return null;
+  if (!timingSafeEqual(sigBuf, expectedBuf)) return null;
   try {
     const session = JSON.parse(Buffer.from(payload, "base64url").toString()) as AdminSession;
     if (session.exp < Math.floor(Date.now() / 1000)) return null;

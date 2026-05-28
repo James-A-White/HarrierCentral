@@ -301,6 +301,7 @@ extension ApplicationProposal on TestFormPage {
   void _launchUrl(String? url) async {
     if (url == null) return;
     final uri = Uri.parse(url);
+    if (uri.scheme != 'http' && uri.scheme != 'https') return;
     final canLaunch = await canLaunchUrl(uri);
     if (canLaunch) {
       await launchUrl(uri);

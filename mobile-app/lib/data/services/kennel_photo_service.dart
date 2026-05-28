@@ -88,6 +88,19 @@ class KennelPhotoService {
       return null;
     }
 
+    final sasUri = Uri.tryParse(sasUrl as String);
+    if (sasUri == null ||
+        sasUri.host != 'harriercentral.blob.core.windows.net') {
+      Get.snackbar(
+        'Upload failed',
+        'Invalid upload token. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade700,
+        colorText: Colors.white,
+      );
+      return null;
+    }
+
     // 7. Upload compressed bytes directly to blob storage via the SAS URL
     final uploaded = await _uploadToBlob(sasUrl: sasUrl, imageFile: uploadFile);
     if (!uploaded) {
