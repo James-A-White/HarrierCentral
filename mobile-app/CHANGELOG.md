@@ -1,5 +1,31 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.6.7+1139 (2026-05-28)
+
+### Improvements
+
+- **Permissions — Manage Songs**: The "Manage Songs" permission (`authCanManageSongs`)
+  is now available in the HC permissions popup, allowing it to be granted or
+  revoked per member.
+
+### Fixes
+
+- **UUID comparisons**: Three kennel/event UUID comparisons now normalise both
+  sides to lowercase before comparing. SQL Server returns UUIDs in uppercase;
+  comparing without normalisation silently returned false, causing kennel
+  matching and event lookups to fail intermittently.
+
+- **Photo upload — domain validation**: The SAS token URL returned by the API
+  is now validated against `harriercentral.blob.core.windows.net` before any
+  upload is attempted. An invalid or tampered URL shows an error instead of
+  uploading to an unintended destination.
+
+- **Auth — device secret guard**: The device secret is now checked for null/empty
+  before building an auth token in the login approval flow. Previously a missing
+  secret would silently produce a token built from the sentinel value `'<none>'`.
+
+---
+
 ## 2.6.6+1138 (2026-05-28)
 
 ### Features
