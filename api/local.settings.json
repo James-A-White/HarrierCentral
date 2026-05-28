@@ -15,7 +15,8 @@
     "AzureMapsSubscriptionKey":"kTv-hbcehDKyCUljAaqcbE5IIycrVkcG30RkqHZqgkw",
     "HC_INTERNAL_SECRET": "set-me-to-a-strong-random-secret-matching-public-web-env",
     "HC_GEOCODE_LOGIC_APP_URL": "https://prod-53.northeurope.logic.azure.com:443/workflows/e36d1f4ba09348b79c6fe5dc959a51aa/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=ZmWyRgOKgt_ZsT6AMRD74LudI8XndBHVzmDcUeMCNKc",
-    "HC_REVERSE_GEOCODE_URL": "https://hcazurefunctions7.azurewebsites.net/api/HcPortalReverseGeocode"
+    "HC_REVERSE_GEOCODE_URL": "https://hcazurefunctions7.azurewebsites.net/api/HcPortalReverseGeocode",
+    "IPINFO_API_TOKEN": "1c7e5ada20ad08"
   },
   "Host": {
     "CORS": "*",
