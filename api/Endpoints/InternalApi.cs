@@ -157,8 +157,8 @@ namespace HcWebApi.Endpoints
             }
             catch (Exception ex)
             {
-                log.LogError("InternalApi SP error: {Message}", ex.Message);
-                return new StatusCodeResult(500);
+                log.LogError($"Error executing stored procedure: {ex.Message}");
+                return new BadRequestObjectResult($"Error executing stored procedure: {ex.Message}");
             }
         }
 
@@ -174,6 +174,7 @@ namespace HcWebApi.Endpoints
             // The URL you want to call
             string gCalTriggerApi = Environment.GetEnvironmentVariable("GoogleCalendarTriggerApi") ?? throw new InvalidOperationException("HcDbConnectionString is not set in the environment.");
 
+            //string requestUrl = "https://prod-19.northeurope.logic.azure.com:443/workflows/0108404b9b8f4b0b9ca2873491a3ad03/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=I72oSYlBHUFE240337h2ysIDu3JQmhuKiabRdjC2ojg";
 
             try
             {

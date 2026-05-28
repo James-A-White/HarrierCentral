@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 
 namespace HcWebApi.Endpoints
 {
-    public static class GenericJsonQuery
+    public static class GenericJsonQueryHC6
     {
         // In-process caches — persist across timer invocations for the lifetime of the host.
         private static Dictionary<string, string>       _jsonResultHashValues            = new();
@@ -398,19 +398,16 @@ namespace HcWebApi.Endpoints
                     log.LogInformation("Processing inbound integration started at {Date} {Time}",
                         DateTime.Now.ToShortDateString(), DateTime.Now.ToShortTimeString());
 
-                    // WARNING: The two SP calls below use string interpolation — SQL-injection risk
-                    // inherited from HC5. Do not expand this pattern; refactor to parameterised calls
-                    // before this integration handles untrusted kennel data.
-
                     using (SqlConnection conn3 = new(connectionStr))
                     {
                         result = result.Replace("\t", "");
                         log.LogInformation("JSON length = {Length}", result.Length);
 
-                        string writeCmd = $"EXEC HC.nonApi_writeInboundIntegrationJsonToDb " +
-                                          $"@integrationId='{integrationId}', @sourceJson=N'{result}', @localJson=N''";
-
-                        using SqlCommand cmd3 = new(writeCmd, conn3);
+                        using SqlCommand cmd3 = new("HC.nonApi_writeInboundIntegrationJsonToDb", conn3);
+                        cmd3.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmd3.Parameters.AddWithValue("@integrationId", integrationId);
+                        cmd3.Parameters.AddWithValue("@sourceJson",    result);
+                        cmd3.Parameters.AddWithValue("@localJson",     "");
                         await conn3.OpenAsync();
 
                         try
@@ -429,9 +426,9 @@ namespace HcWebApi.Endpoints
 
                     using (SqlConnection conn4 = new(connectionStr))
                     {
-                        string processCmd = $"EXEC [HC].[nonApi_processInboundJson] @integrationId='{integrationId}'";
-
-                        using SqlCommand cmd4 = new(processCmd, conn4);
+                        using SqlCommand cmd4 = new("[HC].[nonApi_processInboundJson]", conn4);
+                        cmd4.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmd4.Parameters.AddWithValue("@integrationId", integrationId);
                         await conn4.OpenAsync();
 
                         try
@@ -472,12 +469,12 @@ namespace HcWebApi.Endpoints
             catch (Exception ex)
             {
                 errorCount++;
-                log.LogError("GenericJsonQuery.ImportEvents failed at {Date} {Time}: {Message}",
+                log.LogError("GenericJsonQueryHC6.ImportEvents failed at {Date} {Time}: {Message}",
                     DateTime.Now.ToShortDateString(), DateTime.Now.ToShortTimeString(), ex.Message);
 
                 RecordErrorInDB(log, connectionStr, ex.Message,
-                    "GenericJsonQuery.ImportEvents query failed",
-                    "GenericJsonQuery.ImportEvents", query, 43920);
+                    "GenericJsonQueryHC6.ImportEvents query failed",
+                    "GenericJsonQueryHC6.ImportEvents", query, 43920);
             }
 
             return new object[] { recordsRead, recordsWritten, "", "", errorCount, "", 0, "", 0, "" };
@@ -581,14 +578,17 @@ namespace HcWebApi.Endpoints
             string  string3   = "",
             string  string4   = "")
         {
-            string sql = $"EXEC HC.nonApi_logError " +
-                         $"@errorType=N'{errorType}', @message=N'{message}', " +
-                         $"@location=N'{method}', @inputText=N'{inputText}', " +
-                         $"@errorCode={errorCode}, @string_2=N'{string2}', " +
-                         $"@string_3=N'{string3}', @string_4=N'{string4}'";
-
             using SqlConnection conn = new(connectionStr);
-            using SqlCommand    cmd  = new(sql, conn);
+            using SqlCommand    cmd  = new("HC.nonApi_logError", conn);
+            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@errorType",  errorType);
+            cmd.Parameters.AddWithValue("@message",    message);
+            cmd.Parameters.AddWithValue("@location",   method);
+            cmd.Parameters.AddWithValue("@inputText",  inputText);
+            cmd.Parameters.AddWithValue("@errorCode",  errorCode);
+            cmd.Parameters.AddWithValue("@string_2",   string2);
+            cmd.Parameters.AddWithValue("@string_3",   string3);
+            cmd.Parameters.AddWithValue("@string_4",   string4);
             conn.Open();
 
             try

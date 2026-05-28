@@ -106,7 +106,7 @@ namespace HcWebApi.Endpoints
                                 log.LogInformation(
                                     "Calling GenericJsonQuery for {Name} at {Time}",
                                     integrationName, baseTime.ToShortTimeString());
-                                metrics = await GenericJsonQuery.ImportEvents(
+                                metrics = await GenericJsonQueryHC6.ImportEvents(
                                     connectionString, log, customUrl, integrationId,
                                     integrationName, baseTime, maxLat, minLat, maxLon, minLon);
                                 log.LogInformation(

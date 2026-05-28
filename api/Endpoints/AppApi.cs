@@ -199,8 +199,8 @@ namespace HcWebApi.Endpoints
             }
             catch (Exception ex)
             {
-                log.LogError("AppApi SP error: {Message}", ex.Message);
-                return new StatusCodeResult(500);
+                log.LogError($"Error executing stored procedure: {ex.Message}");
+                return new BadRequestObjectResult($"Error executing stored procedure: {ex.Message}");
             }
         }
 
@@ -293,6 +293,8 @@ namespace HcWebApi.Endpoints
             ILogger log)
         {
 
+            Console.WriteLine($"FCM token = {fcmToken}");
+
             try
             {
                 var messageBody = new
@@ -341,10 +343,14 @@ namespace HcWebApi.Endpoints
 
 
                 var response = await _httpClient.SendAsync(request);
-                if (!response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("FCM message sent successfully!");
+                }
+                else
                 {
                     string errorJson = await response.Content.ReadAsStringAsync();
-                    log.LogError("FCM send failed for token: {Error}", errorJson);
+                    Console.WriteLine($"Error sending FCM message: {errorJson}");
                     if (errorJson.Contains("BadDeviceToken") || errorJson.Contains("not a valid FCM registration token"))
                     {
                         await DeleteFcmToken(fcmToken, log, includeNulls);
@@ -353,7 +359,7 @@ namespace HcWebApi.Endpoints
             }
             catch (Exception ex)
             {
-                log.LogError("FCM send exception: {Message}", ex.Message);
+                Console.WriteLine($"Exception while sending FCM message: {ex.Message}");
             }
         }
 
@@ -381,7 +387,7 @@ namespace HcWebApi.Endpoints
                         }
                     }
 
-                    log.LogInformation("FCM token expired. Generating a new one.");
+                    Console.WriteLine("Token expired. Generating a new one.");
                 }
 
                 // Generate new token from Firebase service account
@@ -390,7 +396,7 @@ namespace HcWebApi.Endpoints
 
                 if (!httpResponse.IsSuccessStatusCode)
                 {
-                    log.LogError("Failed to retrieve Firebase credentials from blob storage.");
+                    Console.WriteLine("Error: Failed to retrieve service account JSON from Azure Blob Storage.");
                     return null;
                 }
 
@@ -417,7 +423,7 @@ namespace HcWebApi.Endpoints
             }
             catch (Exception ex)
             {
-                log.LogError("Error retrieving Firebase access token: {Message}", ex.Message);
+                Console.WriteLine($"Error retrieving Firebase access token: {ex.Message}");
                 return null;
             }
         }
@@ -503,6 +509,7 @@ namespace HcWebApi.Endpoints
             // The URL you want to call
             string gCalTriggerApi = Environment.GetEnvironmentVariable("GoogleCalendarTriggerApi") ?? throw new InvalidOperationException("HcDbConnectionString is not set in the environment.");
 
+            //string requestUrl = "https://prod-19.northeurope.logic.azure.com:443/workflows/0108404b9b8f4b0b9ca2873491a3ad03/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=I72oSYlBHUFE240337h2ysIDu3JQmhuKiabRdjC2ojg";
 
             try
             {
