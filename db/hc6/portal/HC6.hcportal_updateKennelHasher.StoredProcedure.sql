@@ -90,7 +90,7 @@ BEGIN TRY
         SELECT @appAccessFlags = hkm.AppAccessFlags
         FROM HC.HasherKennelMap hkm
         INNER JOIN HC.Kennel k ON k.id = hkm.KennelId
-        WHERE hkm.HasherId = @hasherId
+        WHERE hkm.UserId = @hasherId
           AND k.PublicKennelId = @publicKennelId;
 
         IF @appAccessFlags IS NULL OR (@appAccessFlags & 0x40000012) = 0
