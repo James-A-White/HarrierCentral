@@ -1,4 +1,11 @@
 
+1.0.13+11
+    • Security: new GetPortalUploadSas endpoint — server-side SAS generation for portal blob uploads (replaces hardcoded tokens)
+    • Security: AppApiHC6 catch blocks return generic 500 instead of leaking SP exception details
+    • Security: GenericJsonQueryHC6 — parameterised SP calls replacing string-interpolated EXEC in ImportEvents and RecordErrorInDB
+    • HcExternalDataIntegration now uses GenericJsonQueryHC6
+    • HC5 API files (AppApi, PortalApi, InternalApi, GenericJsonQuery) reverted to pre-audit state — HC5 remains frozen
+
 1.0.12+10
     • Chat (HC6 portal): fire FCM notifications in background — unblocks HTTP response to sender immediately
     • Chat (HC6 portal): parallelize all FCM sends with Task.WhenAll (was sequential per-recipient loop)
