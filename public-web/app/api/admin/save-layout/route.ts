@@ -23,10 +23,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
+  const internalSecret = process.env.HC_INTERNAL_SECRET ?? "";
+
   try {
     const res = await fetch(`${API_BASE}/api/PublicWebAdminApi`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "X-Internal-Secret": internalSecret,
+      },
       body: JSON.stringify({
         queryType: "savePageLayout",
         KennelSlug: slug,
