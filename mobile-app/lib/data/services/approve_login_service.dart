@@ -81,8 +81,11 @@ class ApproveLoginService {
     }
 
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
-    final String deviceSecret =
-        getStringPref(StringPrefsEnum.deviceSecret) ?? '<none>';
+    final String? deviceSecretRaw = getStringPref(StringPrefsEnum.deviceSecret);
+    if (deviceSecretRaw == null || deviceSecretRaw.isEmpty) {
+      return '';
+    }
+    final String deviceSecret = deviceSecretRaw;
 
     final String accessToken = Utilities.generateToken(
       userId,

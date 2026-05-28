@@ -139,6 +139,8 @@ END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     SET @errorId = NEWID(); SET @errorCode = 9999; SET @errorType = 5;
+    INSERT INTO HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, createdAt, updatedAt)
+    VALUES (@errorId, 6, 'UnhandledError', ERROR_MESSAGE(), @procName, GETUTCDATE(), GETUTCDATE());
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
-           'Database error' AS errorTitle, ERROR_MESSAGE() AS errorUserMessage, @procName AS errorProc;
+           'Database error' AS errorTitle, 'An unexpected error occurred.' AS errorUserMessage, @procName AS errorProc;
 END CATCH

@@ -37,8 +37,9 @@ export async function POST(req: NextRequest) {
 
     if (!res.ok) {
       const text = await res.text().catch(() => "");
+      console.error(`save-layout: upstream error ${res.status} — ${text}`);
       return NextResponse.json(
-        { error: `Admin API error: ${res.status}`, detail: text },
+        { error: "Failed to save layout." },
         { status: res.status >= 500 ? 502 : res.status }
       );
     }
@@ -46,6 +47,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: "Failed to reach admin API.", detail: message }, { status: 502 });
+    console.error(`save-layout: fetch error — ${message}`);
+    return NextResponse.json({ error: "Failed to save layout." }, { status: 502 });
   }
 }
