@@ -248,7 +248,7 @@ class FutureRunListPageController extends GetxController {
     );
     if ((eventId != null) && (allRuns != null)) {
       dynamic runs = allRuns!
-          .where((dynamic a) => a.event?.eventId?.toUpperCase() == eventId)
+          .where((dynamic a) => normalizeUuid(a.event?.eventId as String?) == normalizeUuid(eventId))
           .toList();
 
       if ((runs != null) && (runs.length > 0)) {

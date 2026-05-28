@@ -342,8 +342,8 @@ class RunAndKennelMapController extends GetxController {
   // ---------------------------------------------------------------------------
   Future<void> onKennelMarkerTap(String kennelId) async {
     final bool isHomeKennel =
-        kennelId.toLowerCase() ==
-        getStringPref(StringPrefsEnum.homeKennelId)?.toLowerCase();
+        normalizeUuid(kennelId) ==
+        normalizeUuid(getStringPref(StringPrefsEnum.homeKennelId));
 
     final String hasherId = currentUserId;
     final List<Map<String, dynamic>> results = await QueryKennels.queryKennels(

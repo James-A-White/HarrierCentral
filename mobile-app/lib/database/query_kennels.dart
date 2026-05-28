@@ -182,8 +182,8 @@ class QueryKennels {
 
   static Future<KennelListAggregate?> getSingleKennel(String kennelId) async {
     bool isHomeKennel = false;
-    if (kennelId.toLowerCase() ==
-        getStringPref(StringPrefsEnum.homeKennelId)?.toLowerCase()) {
+    if (normalizeUuid(kennelId) ==
+        normalizeUuid(getStringPref(StringPrefsEnum.homeKennelId))) {
       isHomeKennel = true;
     }
 
