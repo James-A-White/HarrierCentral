@@ -1,3 +1,7 @@
+0.21.5
+    • Security: admin session HMAC comparison now timing-safe; startup throws if HC_ADMIN_SESSION_SECRET is not set
+    • Security: save-layout route no longer returns database error details to the browser
+
 0.21.4
     • Calendar view: day separator line moved above the date header so date and its runs are visually grouped together
 
