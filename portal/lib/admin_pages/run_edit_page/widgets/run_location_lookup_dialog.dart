@@ -286,23 +286,17 @@ class RunLocationLookupController extends GetxController
     gazetteerSelectedIndex.value = null;
 
     try {
-      final body = <String, dynamic>{
-        'placeName': searchText,
-        'lat': kennelLat,
-        'lon': kennelLon,
-        'radius': 160934, // 100 miles
-        'countrySet': kennelCountryCodes,
-      };
-
-      final url = Uri.parse(PORTAL_GEOCODE_PLACE_TO_ADDRESS_API_URL);
-      final response = await http.post(
+      final url = Uri.parse(PORTAL_GEOCODE_PLACE_TO_ADDRESS_API_URL).replace(
+        queryParameters: {
+          'q': searchText,
+          'type': 'fuzzy',
+        },
+      );
+      final response = await http.get(
         url,
         headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
           'Accept': '*/*',
         },
-        body: jsonEncode(body),
       );
 
       if (response.statusCode >= 200 && response.statusCode < 300) {

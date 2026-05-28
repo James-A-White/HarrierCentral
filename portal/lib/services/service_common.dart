@@ -273,8 +273,11 @@ class ServiceCommon {
         if (response.body.isNotEmpty) {
           try {
             final errorJson = jsonDecode(response.body) as Map<String, dynamic>;
+            // Prefer HC6 StandardErrorResult errorUserMessage (safe, user-facing).
+            // Never show raw HC5-style errorMessage — it may contain internal detail.
             final errorMessage =
-                errorJson['errorMessage'] as String? ?? 'An error occurred';
+                errorJson['errorUserMessage'] as String? ??
+                'An error occurred. Please try again.';
             await IveCoreUtilities.showAlert(
               navigatorKey.currentContext!,
               'Error',

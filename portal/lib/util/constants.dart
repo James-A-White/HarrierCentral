@@ -59,13 +59,10 @@ const String BASE_GET_PORTAL_UPLOAD_SAS_URL =
 // const String BASE_AF_API_URL = 'http://localhost:7071/api/PortalApi/';
 
 const String PORTAL_REVERSE_GEOCODE_API_URL =
-    'https://hcazurefunctions7.azurewebsites.net/api/HcPortalReverseGeocode';
-
-// const String PORTAL_GEOCODE_PLACE_TO_ADDRESS_API_URL =
-//     'https://hcazurefunctions7.azurewebsites.net/api/HcPortalGeocodePlaceToAddress';
+    'https://harriercentralpublicapi.azurewebsites.net/api/ProxyReverseGeocode';
 
 const String PORTAL_GEOCODE_PLACE_TO_ADDRESS_API_URL =
-    'https://prod-53.northeurope.logic.azure.com:443/workflows/e36d1f4ba09348b79c6fe5dc959a51aa/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=ZmWyRgOKgt_ZsT6AMRD74LudI8XndBHVzmDcUeMCNKc';
+    'https://harriercentralpublicapi.azurewebsites.net/api/ProxyGeocode';
 
 const String ERROR_PREFIX = 'HC_ERROR_';
 const String ERROR_KEY_OK_BTN_PRESSED = '${ERROR_PREFIX}OK';
