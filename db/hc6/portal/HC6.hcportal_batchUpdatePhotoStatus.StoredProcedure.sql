@@ -65,13 +65,13 @@ BEGIN TRY
         RETURN;
     END
 
-    -- Permission: authIsAdmin (0x0001) | authCanManageRuns (0x0004) | authIsSuperAdmin (0x40000000)
+    -- Permission: authIsAdmin (0x0001) | authCanManagePublicWebContent (0x0080) | authIsSuperAdmin (0x40000000)
     DECLARE @appAccessFlags INT = 0;
     SELECT @appAccessFlags = ISNULL(hkm.AppAccessFlags, 0)
     FROM HC.HasherKennelMap hkm
     WHERE hkm.UserId = @hasherId AND hkm.KennelId = @kennelId;
 
-    IF (@appAccessFlags & 0x40000005) = 0
+    IF (@appAccessFlags & 0x40000081) = 0
     BEGIN
         SELECT 0 AS Success,
                'You are not authorised to review photos for this kennel.' AS ErrorMessage;

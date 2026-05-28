@@ -55,9 +55,9 @@ BEGIN TRY
         RETURN;
     END
 
-    -- Require AppAccessFlags bit 0 (portal admin) for the requesting hasher
+    -- Require authIsAdmin (0x0001) | authCanManagePublicWebContent (0x0080) | authIsSuperAdmin (0x40000000)
     DECLARE @HasAdminRights BIT = 0;
-    SELECT @HasAdminRights = CASE WHEN (hkm.AppAccessFlags & 0x00000001) <> 0 THEN 1 ELSE 0 END
+    SELECT @HasAdminRights = CASE WHEN (hkm.AppAccessFlags & 0x40000081) <> 0 THEN 1 ELSE 0 END
     FROM   HC.HasherKennelMap hkm
     WHERE  hkm.UserId   = @saHasherId
       AND  hkm.KennelId = @KennelId
