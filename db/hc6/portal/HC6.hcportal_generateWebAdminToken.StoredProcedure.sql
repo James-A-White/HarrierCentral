@@ -69,6 +69,8 @@ BEGIN TRY
         RETURN;
     END
 
+    BEGIN TRANSACTION;
+
     -- Purge stale tokens to keep the table small
     DELETE FROM HC.PublicWebAdminToken WHERE ExpiresAt < SYSDATETIMEOFFSET();
 
@@ -77,6 +79,8 @@ BEGIN TRY
     INSERT INTO HC.PublicWebAdminToken (Id, HasherId, KennelSlug, ExpiresAt)
     VALUES (@Token, @saHasherId, @kennelSlug,
             DATEADD(MINUTE, 10, SYSDATETIMEOFFSET()));
+
+    COMMIT TRANSACTION;
 
     -- Return lowercase UUID — Next.js compares with LOWER()
     SELECT LOWER(CAST(@Token AS NVARCHAR(36))) AS Token;

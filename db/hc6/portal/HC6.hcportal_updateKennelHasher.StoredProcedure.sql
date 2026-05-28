@@ -82,6 +82,24 @@ BEGIN TRY
         RETURN;
     END
 
+    -- Permission check: caller must be a member manager, kennel manager, or super-admin
+    -- (canManageMembers=0x10, canManageKennel=0x02, superAdmin=0x40000001)
+    IF @callerType = 0  -- regular portal user (not service account)
+    BEGIN
+        DECLARE @appAccessFlags INT;
+        SELECT @appAccessFlags = hkm.AppAccessFlags
+        FROM HC.HasherKennelMap hkm
+        INNER JOIN HC.Kennel k ON k.id = hkm.KennelId
+        WHERE hkm.HasherId = @hasherId
+          AND k.PublicKennelId = @publicKennelId;
+
+        IF @appAccessFlags IS NULL OR (@appAccessFlags & 0x40000012) = 0
+        BEGIN
+            SELECT 0 AS Success, 'You do not have permission to manage members for this kennel.' AS ErrorMessage;
+            RETURN;
+        END
+    END
+
     -- Validation: hasherBeingEditedPublicId must not be NULL
     IF (@hasherBeingEditedPublicId IS NULL)
     BEGIN
