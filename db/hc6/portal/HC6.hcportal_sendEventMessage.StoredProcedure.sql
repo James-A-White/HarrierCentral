@@ -50,6 +50,10 @@ AS
 --     already handles it; second query was dead code).
 --   Removed redundant WHERE evt.id = @eventId in temp table query (already
 --     enforced by the INNER JOIN condition).
+--   Sender excluded from Rowset 1 (full push) — sender should not receive
+--     a visible banner for their own message. Sender now falls into Rowset 2
+--     (silent data-only FCM) so the portal can use the echo to confirm
+--     double-tick delivery.
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -223,6 +227,7 @@ END
         )
     )
     AND hkm.KennelId = @kennelId
+    AND hkm.UserId != @hasherId -- sender receives silent echo via Rowset 2, not a visible push for their own message
     AND device.FcmToken IS NOT NULL
         AND
           (@sendToEveryone != 0
