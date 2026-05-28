@@ -16,6 +16,7 @@ class KennelPendingPhoto {
     required this.createdAt,
     this.deletedAt,
     this.title,
+    this.description,
   });
 
   final String photoId;
@@ -28,6 +29,7 @@ class KennelPendingPhoto {
   final int eventNumber;
   final DateTime createdAt;
   final String? title;
+  final String? description;
 
   bool get isDeleted => deletedAt != null;
   bool get isPending => status == 1 && !isDeleted;
@@ -58,6 +60,7 @@ class KennelPendingPhoto {
           ) ??
           DateTime.now(),
       title: (json['Title'] ?? json['title'])?.toString(),
+      description: (json['Description'] ?? json['description'])?.toString(),
     );
   }
 }
@@ -916,6 +919,25 @@ class _PhotoPageView extends StatelessWidget {
               const Center(
                 child: Icon(Icons.image_not_supported,
                     color: Colors.white38, size: 64),
+              ),
+
+            // Caption overlay — shown when the photo has a description
+            if (photo.description != null && photo.description!.isNotEmpty)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
+                  color: Colors.black.withValues(alpha: 0.65),
+                  child: Text(
+                    photo.description!,
+                    style: const TextStyle(
+                        color: Colors.white, fontSize: 13, height: 1.4),
+                    maxLines: 4,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ),
 
             // Soft-deleted overlay — plain conditional, no Obx needed:

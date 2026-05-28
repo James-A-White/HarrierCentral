@@ -66,18 +66,18 @@ BEGIN
     RETURN;
 END
 
--- Auth: caller must hold Hash Flash / GM / VGM / RA for this kennel
+-- Auth: caller must hold Hash Flash / GM / VGM / RA / WebMeister for this kennel
 DECLARE @mmRoleFlags INT = 0;
 SELECT @mmRoleFlags = ISNULL(MismanagementRoles, 0)
 FROM HC.HasherKennelMap
 WHERE UserId = @userId AND KennelId = @kennelId;
 
-IF (@mmRoleFlags & 0x0000002E = 0)
+IF (@mmRoleFlags & 0x0000102E = 0)
 BEGIN
     SET @errorCode = 1334; SET @errorType = 13; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Not authorised',
-            'Caller lacks Hash Flash / GM / VGM / RA role', @procName, @userId);
+            'Caller lacks Hash Flash / GM / VGM / RA / WebMeister role', @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Not authorised' AS errorTitle,

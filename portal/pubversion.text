@@ -1,4 +1,12 @@
 
+1.5.4+628
+    • DB: hcportal_getRunAllPhotos + hcportal_batchUpdatePhotoStatus — new portal
+      SPs for photo review; auth via AppAccessFlags (admin | canManageRuns | superAdmin)
+    • Portal: photo review page — split-pane UI (photo left, actions right on wide;
+      stacked on narrow); Pending / Reviewed tabs; Delete, Keep Private, Approve,
+      Gallery, Home Gallery, Event Cover actions
+    • Portal: "Review Photos" button added to run detail action bar (canManageRuns or isAdmin)
+
 1.5.3+627
     • DB: hcportal_sendEventMessage — sender now excluded from Rowset 1
       (full push) and falls into Rowset 2 (silent FCM echo), so the portal
