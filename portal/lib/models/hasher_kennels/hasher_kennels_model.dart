@@ -72,6 +72,10 @@ abstract class HasherKennelsModel with _$HasherKennelsModel {
   bool get canManageSongs => (((appAccessFlags & authCanManageSongs) != 0) ||
       ((appAccessFlags & authIsSuperAdmin) != 0));
 
+  bool get canManagePublicWebContent =>
+      (((appAccessFlags & authCanManagePublicWebContent) != 0) ||
+          ((appAccessFlags & authIsSuperAdmin) != 0));
+
   bool get isSuperAdmin => (((appAccessFlags & authIsSuperAdmin) != 0) ||
       ((appAccessFlags & authIsSuperAdmin) != 0));
 }

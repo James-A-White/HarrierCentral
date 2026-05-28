@@ -737,7 +737,7 @@ class RunListDetailPanel extends StatelessWidget {
             Icons.email_outlined,
             onPressed: () async => Get.to<EmailModel>(EmailPage.new),
           ),
-          if (controller.kennel.canManageRuns ||
+          if (controller.kennel.canManagePublicWebContent ||
               controller.kennel.isAdmin) ...[
             const SizedBox(width: 8),
             _btn(

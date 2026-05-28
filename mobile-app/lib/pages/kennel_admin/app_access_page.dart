@@ -86,6 +86,16 @@ class AppAccessPageState extends State<AppAccessPage> {
                         appAccess.setAppAccess(authCanManageAwards, value);
                       },
                     ),
+                    getOption(
+                      'Manage Public Web Content',
+                      appAccess.getAppAccess(authCanManagePublicWebContent),
+                      (bool value) {
+                        appAccess.setAppAccess(
+                          authCanManagePublicWebContent,
+                          value,
+                        );
+                      },
+                    ),
 
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(backgroundColor: hc_red),

@@ -217,8 +217,10 @@ const int authCanManageRuns = 0x00000004;
 const int authCanManageHashCash = 0x00000008;
 const int authCanManageMembers = 0x00000010;
 const int authCanManageAwards = 0x00000020;
+const int authCanManageSongs = 0x00000040;
+const int authCanManagePublicWebContent = 0x00000080;
 const int authIsSuperAdmin = 0x40000000;
-const int authAllFlags = 0x0000003f;
+const int authAllFlags = 0x000000ff;
 
 const int selfPaymentNone = 0x00000000;
 const int selfPaymentAutoPayAfterBankTransfer = 0x00000001;

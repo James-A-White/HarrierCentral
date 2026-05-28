@@ -197,6 +197,8 @@ class RunListPage extends StatelessWidget {
                                   },
                                 ),
                                 const SizedBox(width: 8),
+                              ],
+                              if (k.canManagePublicWebContent || k.isAdmin) ...[
                                 _appBarBtn(
                                   'Edit Website',
                                   onPressed: () async {
@@ -725,6 +727,9 @@ class RunListPage extends StatelessWidget {
               },
             ),
             const SizedBox(height: 16),
+          ],
+          if (formController.kennel.canManagePublicWebContent ||
+              formController.kennel.isAdmin) ...[
             _appBarBtn(
               'Edit Website',
               onPressed: () async {
