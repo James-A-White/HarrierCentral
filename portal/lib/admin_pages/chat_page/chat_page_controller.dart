@@ -25,6 +25,19 @@ class ChatSheetController extends GetxController {
   bool _isRefreshing = false;
   bool _pendingRefresh = false;
 
+  // Message IDs sent by this user whose FCM echo arrived before the SP
+  // response returned. When the SP then sets status to `sent`, we check
+  // this set and immediately upgrade to `delivered` rather than waiting
+  // for a second FCM event that will never come.
+  final _pendingDeliveryIds = <String>{};
+
+  bool get _isSafari {
+    final ua = web.window.navigator.userAgent.toLowerCase();
+    return ua.contains('safari') &&
+        !ua.contains('chrome') &&
+        !ua.contains('chromium');
+  }
+
   @override
   void onClose() {
     _pollTimer?.cancel();
@@ -120,11 +133,7 @@ class ChatSheetController extends GetxController {
 
   void _startPollTimer() {
     // Only needed on Safari — Chrome/Firefox get reliable FCM delivery.
-    final ua = web.window.navigator.userAgent.toLowerCase();
-    final isSafari =
-        ua.contains('safari') && !ua.contains('chrome') && !ua.contains('chromium');
-    if (!isSafari) return;
-
+    if (!_isSafari) return;
     _pollTimer = Timer.periodic(const Duration(seconds: 15), (_) {
       unawaited(
         _refreshMessages().catchError((Object e, StackTrace st) {
@@ -156,8 +165,20 @@ class ChatSheetController extends GetxController {
 
       final messages = _parseMessages(rawMessages);
       for (final msg in messages) {
-        if (!chatController.messages.any((m) => m.id == msg.id)) {
+        final existing =
+            chatController.messages.firstWhereOrNull((m) => m.id == msg.id);
+        if (existing == null) {
           await chatController.insertMessage(msg);
+        } else if (existing.authorId == currentUser.id) {
+          // Our own message appeared in the DB delta — the SP confirmed it.
+          if (existing.status == core.MessageStatus.sent) {
+            // Normal path: SP returned before FCM, upgrade to delivered now.
+            _upgradeToDelivered(existing);
+          } else if (existing.status == core.MessageStatus.sending) {
+            // Race: FCM/poll beat the SP response. Defer the upgrade until
+            // handleSendPressed sets the status to `sent`.
+            _pendingDeliveryIds.add(existing.id);
+          }
         }
       }
     } catch (e, st) {
@@ -169,6 +190,18 @@ class ChatSheetController extends GetxController {
         unawaited(_refreshMessages());
       }
     }
+  }
+
+  void _upgradeToDelivered(core.Message msg) {
+    core.Message? updated;
+    if (msg is core.TextMessage) {
+      updated = msg.copyWith(status: core.MessageStatus.delivered);
+    } else if (msg is core.ImageMessage) {
+      updated = msg.copyWith(status: core.MessageStatus.delivered);
+    } else if (msg is core.FileMessage) {
+      updated = msg.copyWith(status: core.MessageStatus.delivered);
+    }
+    if (updated != null) unawaited(chatController.updateMessage(msg, updated));
   }
 
   int? _extractMaxSequenceCount(List<dynamic> rawMessages) {
@@ -402,18 +435,55 @@ class ChatSheetController extends GetxController {
           : 'SP 17 [sendEventMessage] called — success',
     );
 
-    // SP confirmation is the definitive delivery signal — the portal sender
-    // is excluded from their own FCM dispatch, so we go directly to
-    // 'delivered' (double tick) rather than waiting for an echo that won't arrive.
-    final sent = chatController.messages.where((m) => m.id == uuid).firstOrNull;
-    if (sent is core.TextMessage) {
+    final sent =
+        chatController.messages.firstWhereOrNull((m) => m.id == uuid);
+    if (sent is! core.TextMessage) return;
+
+    if (failed) {
+      await chatController.updateMessage(
+        sent,
+        sent.copyWith(status: core.MessageStatus.error),
+      );
+      _pendingDeliveryIds.remove(uuid);
+      return;
+    }
+
+    if (_isSafari) {
+      // Safari FCM delivery is unreliable after the browser's silent push
+      // quota (~3 messages). Go directly to delivered so the sender always
+      // gets confirmation without waiting up to 15 seconds for the poll.
       await chatController.updateMessage(
         sent,
         sent.copyWith(
-          status: failed ? core.MessageStatus.error : core.MessageStatus.delivered,
-          sentAt: failed ? null : DateTime.now(),
+          status: core.MessageStatus.delivered,
+          sentAt: DateTime.now(),
         ),
       );
+    } else {
+      // Chrome/Firefox: SP confirm → single tick. The sender's FCM echo
+      // (from Rowset 2 of hcportal_sendEventMessage) will trigger the
+      // delta fetch that upgrades to double tick.
+      await chatController.updateMessage(
+        sent,
+        sent.copyWith(
+          status: core.MessageStatus.sent,
+          sentAt: DateTime.now(),
+        ),
+      );
+
+      // Handle race: if the FCM echo arrived and ran _refreshMessages()
+      // before the SP response returned, the message was still in `sending`
+      // state and the upgrade was deferred into _pendingDeliveryIds.
+      if (_pendingDeliveryIds.remove(uuid)) {
+        final updated =
+            chatController.messages.firstWhereOrNull((m) => m.id == uuid);
+        if (updated is core.TextMessage) {
+          await chatController.updateMessage(
+            updated,
+            updated.copyWith(status: core.MessageStatus.delivered),
+          );
+        }
+      }
     }
   }
 }

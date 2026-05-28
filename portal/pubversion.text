@@ -1,4 +1,17 @@
 
+1.5.3+627
+    • DB: hcportal_sendEventMessage — sender now excluded from Rowset 1
+      (full push) and falls into Rowset 2 (silent FCM echo), so the portal
+      receives its own message back as confirmation
+    • Chat — double checkmark: Chrome/Firefox now show single tick on SP
+      confirm, double tick when the sender's FCM echo arrives (delta fetch
+      finds own message in DB and upgrades status to delivered)
+    • Chat — double checkmark race: if FCM echo arrives before the SP HTTP
+      response, the upgrade is deferred via _pendingDeliveryIds and fires
+      immediately when handleSendPressed sets the status to sent
+    • Chat — Safari: still goes directly to delivered on SP confirm (FCM
+      unreliable after push quota; poll fallback handles subsequent messages)
+
 1.5.2+626
     • Chat — remove debug code: recipient dialog, FCM echo signal indicator,
       message counters
