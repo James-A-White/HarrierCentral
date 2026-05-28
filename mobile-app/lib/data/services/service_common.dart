@@ -6,6 +6,25 @@ class ServiceCommon {
   // the variable below is there to suppress a warning about defining classes with only static members
   int? unusedVariableToSuppressWarning;
 
+  /// Redacts sensitive fields from a JSON request body before it is written to
+  /// BootLogger. Prevents accessToken, deviceId, and deviceSecret from being
+  /// persisted in plain-text log storage on the device.
+  static String _redactBody(String body) {
+    return body
+        .replaceAll(
+          RegExp(r'"accessToken":"[^"]*"'),
+          '"accessToken":"[REDACTED]"',
+        )
+        .replaceAll(
+          RegExp(r'"deviceId":"[^"]*"'),
+          '"deviceId":"[REDACTED]"',
+        )
+        .replaceAll(
+          RegExp(r'"deviceSecret":"[^"]*"'),
+          '"deviceSecret":"[REDACTED]"',
+        );
+  }
+
   static const int _maxRetryAttempts = 6;
   static const int _baseBackoffMs = 500;
   static final Random _retryRandom = Random();
@@ -129,7 +148,7 @@ class ServiceCommon {
 
       BootLogger.logError(
         '[ERROR][HTTP]',
-        'Retry $attempt failed: ${response.statusCode} → $BASE_AF_API_URL\nBody: $requestBody\nResponse: ${response.body}',
+        'Retry $attempt failed: ${response.statusCode} → $BASE_AF_API_URL\nBody: ${_redactBody(requestBody)}\nResponse: ${response.body}',
         null,
       );
 
@@ -168,7 +187,7 @@ class ServiceCommon {
             onTimeout: () => Response('', 0),
           )
           .catchError((dynamic error) {
-            BootLogger.logError('[ERROR][HTTP]', 'network error → $BASE_AF_API_URL: ${error.toString()}\nBody: $requestBody', null);
+            BootLogger.logError('[ERROR][HTTP]', 'network error → $BASE_AF_API_URL: ${error.toString()}\nBody: ${_redactBody(requestBody)}', null);
             return Future<Response>.value(Response('', 500));
           });
     }
@@ -181,7 +200,7 @@ class ServiceCommon {
         )
         .timeout(_requestTimeout, onTimeout: () => Response('', 0))
         .catchError((dynamic error) {
-          BootLogger.logError('[ERROR][HTTP]', 'network error → $BASE_AF_API_URL: ${error.toString()}\nBody: $requestBody', null);
+          BootLogger.logError('[ERROR][HTTP]', 'network error → $BASE_AF_API_URL: ${error.toString()}\nBody: ${_redactBody(requestBody)}', null);
           return Future<Response>.value(Response('', 500));
         });
   }
@@ -292,7 +311,7 @@ class ServiceCommon {
         );
         BootLogger.logError(
           '[ERROR][HTTP]',
-          'Site Disabled: ${response.statusCode} ${response.reasonPhrase ?? ""} → $BASE_AF_API_URL\nBody: $requestBody\nResponse: ${response.body}',
+          'Site Disabled: ${response.statusCode} ${response.reasonPhrase ?? ""} → $BASE_AF_API_URL\nBody: ${_redactBody(requestBody)}\nResponse: ${response.body}',
           null,
         );
         // appModel.connectionStatus = EnumConnectionStatus2.notConnected;
@@ -307,7 +326,7 @@ class ServiceCommon {
         if (Utilities.isConnected()) {
           BootLogger.logError(
             '[ERROR][HTTP]',
-            '${response.statusCode} ${response.reasonPhrase ?? ""} → $BASE_AF_API_URL\nBody: $requestBody\nResponse: ${response.body}',
+            '${response.statusCode} ${response.reasonPhrase ?? ""} → $BASE_AF_API_URL\nBody: ${_redactBody(requestBody)}\nResponse: ${response.body}',
             null,
           );
 
@@ -326,7 +345,7 @@ class ServiceCommon {
     } else if (response.body.contains('"errorId"')) {
       BootLogger.logError(
         '[ERROR][HTTP]',
-        'DB error ${response.statusCode} → $BASE_AF_API_URL\nBody: $requestBody\nResponse: ${response.body}',
+        'DB error ${response.statusCode} → $BASE_AF_API_URL\nBody: ${_redactBody(requestBody)}\nResponse: ${response.body}',
         null,
       );
       returnValue = ERROR_UNKNOWN_REMOTE_DB_ERROR;

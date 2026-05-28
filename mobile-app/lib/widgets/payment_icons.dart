@@ -209,7 +209,7 @@ class PaymentIcons extends StatelessWidget {
       return null;
     }
 
-    if (!url.toLowerCase().startsWith('http')) {
+    if (!url.toLowerCase().startsWith('https://')) {
       return null;
     }
 

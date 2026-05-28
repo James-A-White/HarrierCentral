@@ -238,7 +238,7 @@ class Utilities {
       return false;
     }
     final Uri? uri = Uri.tryParse(url!);
-    return uri != null && uri.hasAbsolutePath && uri.scheme.startsWith('http');
+    return uri != null && uri.hasAbsolutePath && uri.scheme == 'https';
   }
 
   // static Future<bool?> promptForHare(BuildContext context, String? hareList) async {

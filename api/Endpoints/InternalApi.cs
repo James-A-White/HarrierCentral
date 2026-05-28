@@ -157,8 +157,8 @@ namespace HcWebApi.Endpoints
             }
             catch (Exception ex)
             {
-                log.LogError($"Error executing stored procedure: {ex.Message}");
-                return new BadRequestObjectResult($"Error executing stored procedure: {ex.Message}");
+                log.LogError("InternalApi error: {Message}", ex.Message);
+                return new ObjectResult(new { success = false, message = "An unexpected error occurred." }) { StatusCode = 500 };
             }
         }
 

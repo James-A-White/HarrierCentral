@@ -46,23 +46,25 @@ namespace HcWebApi.Endpoints
             dynamic data = JsonConvert.DeserializeObject(requestBody)
      ?? throw new InvalidOperationException("Failed to deserialize the request body.");
 
-
-            // checkConnection is an unauthenticated ping — no deviceId/accessToken required.
-            bool isCheckConnection = (string?)data.queryType == "checkConnection";
-
-            // Validate required parameters
-            if (!isCheckConnection && (data.deviceId == null || data.accessToken == null))
-            {
-                log.LogInformation("Missing required parameters: deviceId or accessToken.");
-                return new BadRequestObjectResult("Missing required parameters: hasherId or accessToken.");
-            }
-
-            // Validate required parameters
+            // Validate queryType first — required for all calls including checkConnection
             if (data.queryType == null)
             {
                 log.LogInformation("Missing query type.");
                 return new BadRequestObjectResult("Missing query type.");
+            }
 
+            // checkConnection is an unauthenticated ping — return immediately without
+            // touching the SP dispatcher or opening a DB connection.
+            if ((string?)data.queryType == "checkConnection")
+            {
+                return new OkObjectResult(new { connected = true });
+            }
+
+            // Validate required parameters for all other calls
+            if (data.deviceId == null || data.accessToken == null)
+            {
+                log.LogInformation("Missing required parameters: deviceId or accessToken.");
+                return new BadRequestObjectResult("Missing required parameters: hasherId or accessToken.");
             }
 
             bool includeNulls = data.includeNulls != null && (bool)data.includeNulls;
@@ -165,8 +167,19 @@ namespace HcWebApi.Endpoints
                 {
                     var errorRow = multipleResults[0][0];
                     errorRow.TryGetValue("errorUserMessage", out var errMsg);
-                    log.LogWarning("AppApiHC6 SP error [{QueryType}]: {Message}", (string)data.queryType, errMsg?.ToString());
-                    return new BadRequestObjectResult(errorRow);
+                    errorRow.TryGetValue("errorType", out var errType);
+                    errorRow.TryGetValue("errorId", out var errId);
+                    // Log full error row (including debugMessage and errorProc) server-side only.
+                    log.LogWarning("AppApiHC6 SP error [{QueryType}]: errorType={ErrorType} message={Message} row={Row}",
+                        (string)data.queryType, errType?.ToString(), errMsg?.ToString(),
+                        Newtonsoft.Json.JsonConvert.SerializeObject(errorRow));
+                    // Return only safe fields to the caller — never expose debugMessage or errorProc.
+                    return new BadRequestObjectResult(new
+                    {
+                        errorType        = errType,
+                        errorUserMessage = errMsg?.ToString(),
+                        errorId          = errId?.ToString()
+                    });
                 }
 
                 switch ((string)data.queryType)
@@ -386,7 +399,8 @@ namespace HcWebApi.Endpoints
 
                 // Generate new token from Firebase service account
                 string jsonUrl = "https://harriercentral.blob.core.windows.net/credentials/firebase_credentials.json";
-                var httpResponse = await _httpClient.GetAsync(jsonUrl);
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                var httpResponse = await _httpClient.GetAsync(jsonUrl, cts.Token);
 
                 if (!httpResponse.IsSuccessStatusCode)
                 {

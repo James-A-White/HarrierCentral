@@ -169,8 +169,8 @@ namespace HcWebApi.Endpoints
             }
             catch (Exception ex)
             {
-                log.LogError($"Error executing stored procedure: {ex.Message}");
-                return new BadRequestObjectResult($"Error executing stored procedure: {ex.Message}");
+                log.LogError("PortalApi error: {Message}", ex.Message);
+                return new ObjectResult(new { success = false, message = "An unexpected error occurred." }) { StatusCode = 500 };
             }
         }
 
@@ -359,7 +359,8 @@ namespace HcWebApi.Endpoints
 
                 // Generate new token from Firebase service account
                 string jsonUrl = "https://harriercentral.blob.core.windows.net/credentials/firebase_credentials.json";
-                var httpResponse = await _httpClient.GetAsync(jsonUrl);
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                var httpResponse = await _httpClient.GetAsync(jsonUrl, cts.Token);
 
                 if (!httpResponse.IsSuccessStatusCode)
                 {

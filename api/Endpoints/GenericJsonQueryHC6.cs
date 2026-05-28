@@ -494,14 +494,14 @@ namespace HcWebApi.Endpoints
         {
             var ll = new Dictionary<string, dynamic>();
 
-            // md5 is hex-only (A-F 0-9) so inline interpolation is safe here
-            string sql = $@"
+            const string sql = @"
                 SELECT PinLat, PinLon, MapCenterLat, MapCenterLon, Address
                 FROM [EXT].[ImmutableGeoLink]
-                WHERE [ImmutableGeoLinkId] = '{md5}'";
+                WHERE [ImmutableGeoLinkId] = @md5";
 
             using SqlConnection conn = new(connectionStr);
             using SqlCommand    cmd  = new(sql, conn);
+            cmd.Parameters.AddWithValue("@md5", md5);
             conn.Open();
 
             try
@@ -534,23 +534,19 @@ namespace HcWebApi.Endpoints
 
         private static void SaveImmutableGeoUrl(ILogger log, string connectionStr, ParsedResult pr)
         {
-            // Replace("'","''") is used as escaping here — acceptable because these values
-            // come from geocoding API responses, not direct user input.
-            string sql = $@"
-                EXEC EXT.InsertImmutableGeoLink
-                    @ImmutableGeoLinkId = N'{pr.originalUrlMD5}',
-                    @OriginalUrl        = N'{pr.originalUrl}',
-                    @PinLat             = {pr.pinLat},
-                    @PinLon             = {pr.pinLon},
-                    @MapCenterLat       = {pr.mapCenterLat},
-                    @MapCenterLon       = {pr.mapCenterLon},
-                    @HtmlFragment       = '<none>',
-                    @PlaceName          = N'{(pr.location ?? "").Replace("'", "''")}',
-                    @Address            = N'{(pr.address  ?? "").Replace("'", "''")}',
-                    @GeoJson            = N'{(pr.geoJson  ?? "").Replace("'", "''")}'";
-
             using SqlConnection conn = new(connectionStr);
-            using SqlCommand    cmd  = new(sql, conn);
+            using SqlCommand    cmd  = new("EXT.InsertImmutableGeoLink", conn);
+            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@ImmutableGeoLinkId", (object?)pr.originalUrlMD5 ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@OriginalUrl",        (object?)pr.originalUrl    ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@PinLat",             pr.pinLat);
+            cmd.Parameters.AddWithValue("@PinLon",             pr.pinLon);
+            cmd.Parameters.AddWithValue("@MapCenterLat",       pr.mapCenterLat);
+            cmd.Parameters.AddWithValue("@MapCenterLon",       pr.mapCenterLon);
+            cmd.Parameters.AddWithValue("@HtmlFragment",       "<none>");
+            cmd.Parameters.AddWithValue("@PlaceName",          (object?)(pr.location ?? "") ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@Address",            (object?)(pr.address  ?? "") ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@GeoJson",            (object?)(pr.geoJson  ?? "") ?? DBNull.Value);
             conn.Open();
 
             try

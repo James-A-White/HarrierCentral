@@ -1,4 +1,3 @@
-import 'package:dart_ipify/dart_ipify.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -47,16 +46,11 @@ class ApproveLoginService {
     }
 
     // Collect the device's public IP and coarse geo info for server-side analytics.
+    // IP lookup is performed server-side via the HC API shim — no API token on the client.
     String ipInfoJson;
     try {
-      final String ipv4 = await Ipify.ipv4().timeout(
-        const Duration(seconds: 4),
-        onTimeout: () => '0.0.0.0',
-      );
       final Response response =
-          await get(
-                Uri.parse('https://ipinfo.io/$ipv4?token=$IPINFO_API_TOKEN'),
-              )
+          await get(Uri.parse(IP_GEO_INFO_URL))
               .catchError((dynamic error) {
                 if (kDebugMode) print(error.toString());
                 return Response('<no ip information available>', 500);
@@ -69,7 +63,7 @@ class ApproveLoginService {
     } on Exception catch (_) {
       ipInfoJson = '''{
   "ip": "0.0.0.0",
-  "hostname": "Ipify error",
+  "hostname": "lookup error",
   "city": "none",
   "region": "none",
   "country": "XX",

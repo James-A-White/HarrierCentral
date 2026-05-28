@@ -37,6 +37,16 @@ namespace HcWebApi.Endpoints
             _log = logger;
         }
 
+        // HC_INTERNAL_SECRET must be set identically in both the Azure Function App Service settings
+        // and the Next.js public-web environment variables (NEXT_PUBLIC_* is NOT appropriate here —
+        // use a server-side env var). It guards savePageLayout and getPageLayout against
+        // unauthenticated calls. redeemAdminToken is intentionally exempt (it is the public OTP flow).
+        private static readonly HashSet<string> SecretRequiredActions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "savePageLayout",
+            "getPageLayout",
+        };
+
         [Function("PublicWebAdminApi")]
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
@@ -64,6 +74,20 @@ namespace HcWebApi.Endpoints
             {
                 _log.LogWarning("PublicWebAdminApi: disallowed queryType '{QueryType}'", queryType);
                 return new BadRequestObjectResult("Unknown queryType.");
+            }
+
+            // Shared secret check for admin-mutating actions (not redeemAdminToken)
+            if (SecretRequiredActions.Contains(queryType))
+            {
+                string? expectedSecret = Environment.GetEnvironmentVariable("HC_INTERNAL_SECRET");
+                string? providedSecret = req.Headers.TryGetValue("X-Internal-Secret", out var secretHeader)
+                    ? secretHeader.ToString()
+                    : null;
+                if (string.IsNullOrEmpty(expectedSecret) || providedSecret != expectedSecret)
+                {
+                    _log.LogWarning("PublicWebAdminApi: missing or invalid X-Internal-Secret for '{QueryType}'", queryType);
+                    return new UnauthorizedObjectResult("Unauthorized");
+                }
             }
 
             _log.LogInformation("PublicWebAdminApi called: queryType = {QueryType}", queryType);

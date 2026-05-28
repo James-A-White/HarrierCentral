@@ -54,7 +54,7 @@ namespace HcWebApi.Endpoints
                     using (SqlCommand cmd = new SqlCommand(procedureName, conn))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@apiKey", "npsXZr6xtEPv9iaA7LAEfjRZhCuGbpbwC8BSlLpwbwkGzZdRdNndXWNfvKr8p4l9hdBWE5acK8q");
+                        cmd.Parameters.AddWithValue("@apiKey", Environment.GetEnvironmentVariable("ApiKey") ?? string.Empty);
 
                         // Execute the stored procedure and retrieve multiple result sets
                         using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
@@ -278,7 +278,8 @@ namespace HcWebApi.Endpoints
 
                 // Generate new token from Firebase service account
                 string jsonUrl = "https://harriercentral.blob.core.windows.net/credentials/firebase_credentials.json";
-                var httpResponse = await _httpClient.GetAsync(jsonUrl);
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                var httpResponse = await _httpClient.GetAsync(jsonUrl, cts.Token);
 
                 if (!httpResponse.IsSuccessStatusCode)
                 {

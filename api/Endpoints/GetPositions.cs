@@ -30,6 +30,16 @@ namespace HcWebApi.Endpoints
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequest req)
         {
+            // API key check — accept key in header or query param
+            string? expectedKey = Environment.GetEnvironmentVariable("ApiKey");
+            string? providedKey = req.Headers.TryGetValue("X-Api-Key", out var headerVal)
+                ? headerVal.ToString()
+                : req.Query["apiKey"].ToString();
+            if (string.IsNullOrEmpty(expectedKey) || providedKey != expectedKey)
+            {
+                return new UnauthorizedObjectResult("Unauthorized");
+            }
+
             var request = await BuildRequestAsync(req);
             if (request == null || string.IsNullOrWhiteSpace(request.EventId))
             {
@@ -76,10 +86,10 @@ namespace HcWebApi.Endpoints
                     latestServerTimestamp = serverTimestamp;
                 }
 
-                // if (afterTimestampBoundary.HasValue && timestampMs <= afterTimestampBoundary.Value)
-                // {
-                //     continue;
-                // }
+                if (afterTimestampBoundary.HasValue && timestampMs <= afterTimestampBoundary.Value)
+                {
+                    continue;
+                }
 
                 if (!userLookup.TryGetValue(userId, out var positions))
                 {

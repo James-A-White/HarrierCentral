@@ -43,6 +43,13 @@ class LocationService extends GetxService {
   bool _isResumingFromPause = false;
   Worker? _trackingWorker;
 
+  // Last-known GPS coordinates held in memory only — not persisted to disk.
+  // Used as a fallback position before the first live GPS fix is received.
+  // Storing coordinates in plain GetStorage (unencrypted) is unnecessary as
+  // the OS already provides getLastKnownPosition() at cold start.
+  double? _cachedLat;
+  double? _cachedLon;
+
   /// Reactive property that is true if the location has been updated in the last 60 seconds.
   /// Note: To make this indicator automatically turn OFF after 60 seconds,
   /// the consuming widget must be inside a timed mechanism (e.g., a periodic GetX worker)
@@ -155,11 +162,11 @@ class LocationService extends GetxService {
   // --- Location Logic ---
 
   Future<void> subscribeToGeoLocationStream() async {
-    // 1. Load saved location as fallback
-    final storedLat =
-        getNumPref(NumPrefsEnum.currentDeviceLat) ?? DEFAULT_LATITUDE;
-    final storedLon =
-        getNumPref(NumPrefsEnum.currentDeviceLon) ?? DEFAULT_LONGITUDE;
+    // 1. Load in-memory cached location as fallback (or default if not yet set).
+    // GPS coordinates are no longer persisted to disk — the OS provides
+    // getLastKnownPosition() at cold start, making persistent storage redundant.
+    final storedLat = _cachedLat ?? DEFAULT_LATITUDE;
+    final storedLon = _cachedLon ?? DEFAULT_LONGITUDE;
 
     // 2. Update the shared DeviceInfoService immediately
     deviceInfo.deviceLat = storedLat.toDouble();
@@ -338,10 +345,11 @@ class LocationService extends GetxService {
     lastKnownPosition.value = position;
     lastKnownPositionRead.value = DateTime.now();
 
-    // 2. Update the persistent storage
-    await setNumPref(NumPrefsEnum.currentDeviceLat, lat);
-    await setNumPref(NumPrefsEnum.currentDeviceLon, lon);
-    await setNumPref(NumPrefsEnum.currentDeviceAltitude, altitude);
+    // 2. Cache the coordinates in memory (not persisted to disk).
+    // The OS provides getLastKnownPosition() at cold start, so writing
+    // GPS coordinates to plain unencrypted GetStorage is unnecessary.
+    _cachedLat = lat;
+    _cachedLon = lon;
     await setDatePref(DatePrefsEnum.lastLocationUpdate, DateTime.now());
 
     // 3. Update the shared state in DeviceInfoService

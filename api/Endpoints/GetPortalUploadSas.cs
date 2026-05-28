@@ -63,7 +63,10 @@ namespace HcWebApi.Endpoints
                 cmd.Parameters.AddWithValue("@deviceId",          deviceId);
                 cmd.Parameters.AddWithValue("@accessToken",       accessToken);
                 cmd.Parameters.AddWithValue("@callerProcName",    "hcportal_getPortalUploadSas");
-                cmd.Parameters.AddWithValue("@callerParamString", DBNull.Value);
+                // Bind the SAS token to the specific container and filename so the auth
+                // record is auditable and cannot be replayed for a different upload target.
+                string paramString = $"{container}:{filename}";
+                cmd.Parameters.AddWithValue("@callerParamString", paramString);
 
                 var errorMsgParam = new SqlParameter("@errorMessage", SqlDbType.NVarChar, 255)
                     { Direction = ParameterDirection.Output };

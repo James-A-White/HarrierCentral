@@ -450,9 +450,13 @@ class AppBootService {
 
     if (appModel.hasLocationPermissions) {
       Get.put(LocationService());
-      debugPrint('[BOOT] _prepareDeviceContext: Geolocator.getLastKnownPosition start: ${DateTime.now().millisecondsSinceEpoch}ms');
+      if (kDebugMode) {
+        debugPrint('[BOOT] _prepareDeviceContext: Geolocator.getLastKnownPosition start: ${DateTime.now().millisecondsSinceEpoch}ms');
+      }
       final Position? position = await Geolocator.getLastKnownPosition();
-      debugPrint('[BOOT] _prepareDeviceContext: getLastKnownPosition done: ${DateTime.now().millisecondsSinceEpoch}ms — lat=${position?.latitude}');
+      if (kDebugMode) {
+        debugPrint('[BOOT] _prepareDeviceContext: getLastKnownPosition done: ${DateTime.now().millisecondsSinceEpoch}ms — lat=${position?.latitude}');
+      }
       deviceInfo.deviceLat = position?.latitude.toDouble();
       deviceInfo.deviceLon = position?.longitude.toDouble();
     }

@@ -56,7 +56,7 @@ class KennelMemberListItem extends StatelessWidget {
           // kennelMember.dispName = result.dispName;
           // kennelMember.photo = result.photo;
 
-          if (result.hasherId == getStringPref(StringPrefsEnum.userId)) {
+          if (result.hasherId.equalsUuid(getStringPref(StringPrefsEnum.userId) ?? '')) {
             refreshThisUserData = true;
           }
 

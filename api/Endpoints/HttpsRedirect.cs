@@ -17,29 +17,9 @@ namespace HcWebApi.Endpoints // Replace with your actual namespace
         [Function("Proxy")]
         public HttpResponseData Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData req)
         {
-            _logger.LogInformation("C# HTTP trigger function processed a request.");
-
-            string? code = req.Query["code"];
-            string? status = req.Query["status"];
-
-            string redirectUrl = $"http://localhost:5000?";
-            if (!string.IsNullOrEmpty(code))
-            {
-                redirectUrl += $"code={code}";
-            }
-
-            if (!string.IsNullOrEmpty(status))
-            {
-                if (!redirectUrl.EndsWith("?"))
-                {
-                    redirectUrl += "&";
-                }
-                redirectUrl += $"status={status}";
-            }
-
-            var response = req.CreateResponse(HttpStatusCode.Found);
-            response.Headers.Add("Location", redirectUrl);
-
+            // Endpoint disabled — was routing to localhost:5000 in production.
+            _logger.LogWarning("Proxy endpoint called but is disabled.");
+            var response = req.CreateResponse(HttpStatusCode.Gone);
             return response;
         }
     }

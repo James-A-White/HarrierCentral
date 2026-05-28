@@ -140,8 +140,9 @@ const String BASE_TRAIL_PHOTOS_URL =
 
 // ── Storage / blob URLs ────────────────────────────────────────────────────
 
-const String IPINFO_API_TOKEN = '1c7e5ada20ad08';
-const String GOOGLE_API_KEY = 'AIzaSyAiJXV8P99FwXq2FtYby7To80e9SBTrV2c';
+// IP geolocation is performed server-side via the HC API shim.
+// The client calls GetIpGeoInfo — no token required on the client.
+const String IP_GEO_INFO_URL = 'https://harriercentralpublicapi.azurewebsites.net/api/GetIpGeoInfo';
 
 const String NOTIFICATION_PREFIX_EVENT_UPDATE = 'evtUpdate_';
 

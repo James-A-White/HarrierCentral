@@ -62,16 +62,16 @@ namespace HcWebApi.Endpoints
                 }
 
 
-                string updateText2 = $"EXEC HC.nonApi_getUserInviteCode @email=N'{email}'";
                 string inviteCode = "No code found";
                 bool success = false;
 
 
                 using (SqlConnection conn4 = new SqlConnection(connectionStr))
                 {
-
-                    using (SqlCommand updateCmd2 = new SqlCommand(updateText2, conn4))
+                    using (SqlCommand updateCmd2 = new SqlCommand("HC.nonApi_getUserInviteCode", conn4))
                     {
+                        updateCmd2.CommandType = System.Data.CommandType.StoredProcedure;
+                        updateCmd2.Parameters.AddWithValue("@email", email);
                         conn4.Open();
 
                         try
@@ -83,7 +83,7 @@ namespace HcWebApi.Endpoints
 
                                 while (updateRows2.Read())
                                 {
-                                    log.LogInformation(updateText2);
+                                    log.LogInformation("HC.nonApi_getUserInviteCode executed");
                                     log.LogInformation(updateRows2.GetValue(0).ToString() + " Invite Code generated");
                                     inviteCode = updateRows2.GetValue(0).ToString()?.Replace("URC:", "") ?? inviteCode;
                                     if (inviteCode.Length == 6)
@@ -105,9 +105,8 @@ namespace HcWebApi.Endpoints
                         {
                             log.LogInformation("----- Add remove HC App SQL query failed --- " + ex.Message);
                             log.LogInformation("----- " + ex.GetType().Name);
-                            log.LogInformation("----- " + updateText2);
 
-                            RecordErrorInDB(log, connectionStr, ex.GetType().Name, ex.Message, "Add remove HC App SQL query failed", updateText2);
+                            RecordErrorInDB(log, connectionStr, ex.GetType().Name, ex.Message, "Add remove HC App SQL query failed", "HC.nonApi_getUserInviteCode");
                         }
                     }
                 }
@@ -140,7 +139,8 @@ namespace HcWebApi.Endpoints
 
             catch (System.Exception ex)
             {
-                return new BadRequestObjectResult($"Error processing email invite code request: {ex.ToString()}, {ex.Message}");
+                log.LogError("Error processing email invite code request: {Message}", ex.Message);
+                return new ObjectResult(new { success = false, message = "An unexpected error occurred." }) { StatusCode = 500 };
             }
 
             return new OkObjectResult(userMessage);
@@ -150,10 +150,13 @@ namespace HcWebApi.Endpoints
         {
             using (SqlConnection conn3 = new SqlConnection(connectionStr))
             {
-                string renumberCommand = $"EXEC HC.nonApi_logError @errorType='{errorType}',@message=N'{message}', @location=N'{method}', @inputText=N'{inputText}'";
-
-                using (SqlCommand updateCmd = new SqlCommand(renumberCommand, conn3))
+                using (SqlCommand updateCmd = new SqlCommand("HC.nonApi_logError", conn3))
                 {
+                    updateCmd.CommandType = System.Data.CommandType.StoredProcedure;
+                    updateCmd.Parameters.AddWithValue("@errorType", errorType);
+                    updateCmd.Parameters.AddWithValue("@message", message);
+                    updateCmd.Parameters.AddWithValue("@location", method);
+                    updateCmd.Parameters.AddWithValue("@inputText", inputText);
                     conn3.Open();
 
                     try
@@ -161,8 +164,6 @@ namespace HcWebApi.Endpoints
                         //Execute the command and log the # rows affected.
                         using (SqlDataReader updateRows = updateCmd.ExecuteReader())
                         {
-                            //log.LogInformation(updateText);
-
                             while (updateRows.Read())
                             {
                                 log.LogInformation(updateRows.GetValue(0).ToString());
