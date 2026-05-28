@@ -3,6 +3,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_chat_core/flutter_chat_core.dart' as core;
 import 'package:hcportal/imports.dart';
+import 'package:web/web.dart' as web;
 
 class ChatSheetController extends GetxController {
   ChatSheetController({
@@ -18,15 +19,15 @@ class ChatSheetController extends GetxController {
 
   late core.User currentUser;
   StreamSubscription<RemoteMessage>? _fcmSubscription;
-  final Rx<DateTime?> lastFcmEchoAt = Rx<DateTime?>(null);
+  Timer? _pollTimer;
 
   int? _lastKnownSequenceCount;
   bool _isRefreshing = false;
   bool _pendingRefresh = false;
-  int _fcmMsgCount = 0;
 
   @override
   void onClose() {
+    _pollTimer?.cancel();
     unawaited(_fcmSubscription?.cancel());
     chatController.dispose();
     super.onClose();
@@ -83,6 +84,10 @@ class ChatSheetController extends GetxController {
 
     // FCM subscription always registered, even if initial load failed.
     _subscribeFcm();
+
+    // Safari enforces a silent push quota (~3 messages) before stopping
+    // service-worker-to-page delivery. Poll as a reliable fallback.
+    _startPollTimer();
   }
 
   void _subscribeFcm() {
@@ -96,77 +101,54 @@ class ChatSheetController extends GetxController {
           if (incomingEventId.isEmpty || publicEventId != incomingEventId) {
             return;
           }
-
-          _fcmMsgCount++;
-          debugPrint(
-            '[ChatFCM #$_fcmMsgCount] received for event $publicEventId',
-          );
-
-          lastFcmEchoAt.value = DateTime.now();
-          _upgradeOwnMessagesToDelivered();
           unawaited(
             _refreshMessages().catchError((Object e, StackTrace st) {
-              debugPrint('[ChatFCM #$_fcmMsgCount] _refreshMessages error: $e');
+              debugPrint('[ChatSheetController] _refreshMessages error: $e');
             }),
           );
         } catch (e) {
-          debugPrint('[ChatFCM] onMessage handler error: $e');
+          debugPrint('[ChatSheetController] onMessage handler error: $e');
         }
       },
       onError: (Object e, StackTrace st) {
-        debugPrint('[ChatFCM] stream ERROR after $_fcmMsgCount messages: $e');
+        debugPrint('[ChatSheetController] FCM stream error: $e');
       },
-      onDone: () {
-        debugPrint(
-          '[ChatFCM] stream CLOSED after $_fcmMsgCount messages — resubscribing',
-        );
-        _subscribeFcm();
-      },
+      onDone: _subscribeFcm,
       cancelOnError: false,
     );
-    debugPrint('[ChatFCM] subscribed (resubscription #${_fcmMsgCount > 0 ? "re" : "initial"})');
   }
 
-  void _upgradeOwnMessagesToDelivered() {
-    for (final msg in List.of(chatController.messages)) {
-      if (msg.authorId != currentUser.id) continue;
-      if (msg.status != core.MessageStatus.sent) continue;
-      core.Message? updated;
-      if (msg is core.TextMessage) {
-        updated = msg.copyWith(status: core.MessageStatus.delivered);
-      } else if (msg is core.ImageMessage) {
-        updated = msg.copyWith(status: core.MessageStatus.delivered);
-      } else if (msg is core.FileMessage) {
-        updated = msg.copyWith(status: core.MessageStatus.delivered);
-      }
-      if (updated != null)
-        unawaited(chatController.updateMessage(msg, updated));
-    }
+  void _startPollTimer() {
+    // Only needed on Safari — Chrome/Firefox get reliable FCM delivery.
+    final ua = web.window.navigator.userAgent.toLowerCase();
+    final isSafari =
+        ua.contains('safari') && !ua.contains('chrome') && !ua.contains('chromium');
+    if (!isSafari) return;
+
+    _pollTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+      unawaited(
+        _refreshMessages().catchError((Object e, StackTrace st) {
+          debugPrint('[ChatSheetController] poll error: $e');
+        }),
+      );
+    });
   }
 
   Future<void> _refreshMessages() async {
     if (_isRefreshing) {
-      debugPrint('[ChatFCM] _refreshMessages: already refreshing — queuing pending');
       _pendingRefresh = true;
       return;
     }
     _isRefreshing = true;
-    debugPrint(
-      '[ChatFCM] _refreshMessages: start (sinceSeq=$_lastKnownSequenceCount, fcmCount=$_fcmMsgCount)',
-    );
     try {
       final sinceSeq = _lastKnownSequenceCount;
       final result = await _getEventMessages(
         publicEventId,
         sinceSequenceCount: sinceSeq,
       );
-      if (result == null || result.startsWith(ERROR_PREFIX)) {
-        debugPrint('[ChatFCM] _refreshMessages: SP returned error/null');
-        return;
-      }
+      if (result == null || result.startsWith(ERROR_PREFIX)) return;
       final outerItem = jsonDecode(result) as List<dynamic>;
       final rawMessages = outerItem[0] as List<dynamic>;
-      debugPrint('[ChatFCM] _refreshMessages: SP returned ${rawMessages.length} messages');
       if (rawMessages.isEmpty) return;
 
       final newSeq = _extractMaxSequenceCount(rawMessages);
@@ -179,12 +161,11 @@ class ChatSheetController extends GetxController {
         }
       }
     } catch (e, st) {
-      debugPrint('[ChatFCM] _refreshMessages: EXCEPTION $e\n$st');
+      debugPrint('[ChatSheetController] _refreshMessages exception: $e\n$st');
     } finally {
       _isRefreshing = false;
       if (_pendingRefresh) {
         _pendingRefresh = false;
-        debugPrint('[ChatFCM] _refreshMessages: firing pending refresh');
         unawaited(_refreshMessages());
       }
     }
@@ -421,121 +402,18 @@ class ChatSheetController extends GetxController {
           : 'SP 17 [sendEventMessage] called — success',
     );
 
-    // Update message status immediately from the API response rather than
-    // waiting for the FCM echo (which never arrives if notifications are off).
+    // SP confirmation is the definitive delivery signal — the portal sender
+    // is excluded from their own FCM dispatch, so we go directly to
+    // 'delivered' (double tick) rather than waiting for an echo that won't arrive.
     final sent = chatController.messages.where((m) => m.id == uuid).firstOrNull;
     if (sent is core.TextMessage) {
       await chatController.updateMessage(
         sent,
         sent.copyWith(
-          status: failed ? core.MessageStatus.error : core.MessageStatus.sent,
+          status: failed ? core.MessageStatus.error : core.MessageStatus.delivered,
           sentAt: failed ? null : DateTime.now(),
         ),
       );
     }
-
-    // DEBUG — remove once chat delivery is confirmed stable.
-    if (!failed) _showRecipientDialog(sendResult);
-  }
-
-  // DEBUG — remove once chat delivery is confirmed stable.
-  void _showRecipientDialog(String jsonResult) {
-    try {
-      final rowsets = jsonDecode(jsonResult) as List<dynamic>;
-
-      // Group flat device rows by UserId → {name, deviceCount}.
-      Map<String, Map<String, dynamic>> _group(List<dynamic> rows) {
-        final map = <String, Map<String, dynamic>>{};
-        for (final row in rows) {
-          final m = row as Map<String, dynamic>;
-          final id = (m['UserId'] as String?) ?? '';
-          if (map.containsKey(id)) {
-            map[id]!['devices'] = (map[id]!['devices'] as int) + 1;
-          } else {
-            map[id] = {
-              'name': (m['DisplayName'] as String?) ?? id,
-              'devices': 1,
-            };
-          }
-        }
-        return map;
-      }
-
-      final fullPush = _group(rowsets[1] as List<dynamic>);
-      final inApp = _group(rowsets[2] as List<dynamic>);
-
-      Widget _section(String heading, Map<String, Map<String, dynamic>> users) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              heading,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-            ),
-            const SizedBox(height: 4),
-            if (users.isEmpty)
-              const Text(
-                'None',
-                style: TextStyle(color: Colors.grey, fontSize: 13),
-              )
-            else
-              ...users.values.map(
-                (r) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 3),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          r['name'] as String,
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                      ),
-                      Text(
-                        '${r['devices']} device${(r['devices'] as int) == 1 ? '' : 's'}',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
-        );
-      }
-
-      unawaited(
-        Get.dialog<void>(
-          AlertDialog(
-            title: const Text('Debug — Chat Recipients'),
-            content: SizedBox(
-              width: 420,
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _section(
-                      'Full push — ${fullPush.length} user(s)',
-                      fullPush,
-                    ),
-                    const SizedBox(height: 16),
-                    _section('In-app only — ${inApp.length} user(s)', inApp),
-                  ],
-                ),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Get.back<void>(),
-                child: const Text('Close'),
-              ),
-            ],
-          ),
-        ),
-      );
-    } catch (_) {}
   }
 }

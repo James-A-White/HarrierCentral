@@ -56,25 +56,7 @@ class ChatSheetPage extends StatelessWidget {
             color: Colors.black,
           ),
         ),
-        actions: [
-          Obx(() {
-            final lastEcho = chatSheetController.lastFcmEchoAt.value;
-            final label = lastEcho == null
-                ? 'Awaiting FCM echo...'
-                : 'FCM echo: ${lastEcho.hour.toString().padLeft(2, '0')}:${lastEcho.minute.toString().padLeft(2, '0')}:${lastEcho.second.toString().padLeft(2, '0')}';
-            return Tooltip(
-              message: label,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: Icon(
-                  MaterialCommunityIcons.signal,
-                  color:
-                      lastEcho == null ? Colors.grey.shade400 : Colors.green,
-                ),
-              ),
-            );
-          }),
-        ],
+        actions: const [],
       ),
       body: Chat(
         currentUserId: chatSheetController.currentUser.id,
