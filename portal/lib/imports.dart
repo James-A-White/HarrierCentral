@@ -52,7 +52,6 @@ export 'package:hcportal/admin_pages/usage_data_page/usage_data_page_controller.
 export 'package:hcportal/admin_pages/usage_data_page/usage_data_page_ui.dart';
 export 'package:hcportal/admin_pages/usage_data_page/category_detail_dialog.dart';
 export 'package:hcportal/config/enums.dart';
-export 'package:hcportal/data.dart';
 export 'package:hcportal/hive_keys.dart';
 export 'package:hcportal/main.dart';
 export 'package:hcportal/models/application_model/application_model.dart';

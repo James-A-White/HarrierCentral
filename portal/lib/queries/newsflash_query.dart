@@ -25,7 +25,7 @@ Future<List<NewsflashModel>> queryPendingNewsflashes() async {
   };
 
   final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-  debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+  if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
       ? 'SP [getPendingNewsflashes] — FAILED'
       : 'SP [getPendingNewsflashes] — success');
 
@@ -65,7 +65,7 @@ Future<bool> respondToNewsflash(
   };
 
   final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-  debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+  if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
       ? 'SP [respondToNewsflash] — FAILED'
       : 'SP [respondToNewsflash] — success');
 
@@ -96,7 +96,7 @@ Future<List<NewsflashAdminModel>> queryNewsflashList() async {
   };
 
   final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-  debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+  if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
       ? 'SP [getNewsflashList] — FAILED'
       : 'SP [getNewsflashList] — success');
 
@@ -146,7 +146,7 @@ Future<bool> addEditNewsflash({
   };
 
   final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-  debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+  if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
       ? 'SP [addEditNewsflash] — FAILED'
       : 'SP [addEditNewsflash] — success');
 
@@ -178,7 +178,7 @@ Future<bool> deleteNewsflash(String newsflashId) async {
   };
 
   final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-  debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+  if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
       ? 'SP [deleteNewsflash] — FAILED'
       : 'SP [deleteNewsflash] — success');
 
@@ -211,7 +211,7 @@ Future<List<NewsflashReaderModel>> queryNewsflashReaders(
   };
 
   final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-  debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+  if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
       ? 'SP [getNewsflashReaders] — FAILED'
       : 'SP [getNewsflashReaders] — success');
 

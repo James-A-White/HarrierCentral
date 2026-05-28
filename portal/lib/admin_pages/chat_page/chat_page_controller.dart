@@ -2,6 +2,7 @@
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_chat_core/flutter_chat_core.dart' as core;
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:hcportal/imports.dart';
 import 'package:web/web.dart' as web;
 
@@ -92,7 +93,7 @@ class ChatSheetController extends GetxController {
 
       unawaited(_markEventChatRead(publicEventId));
     } catch (e) {
-      debugPrint('[ChatSheetController] onInitAsync load error: $e');
+      if (kDebugMode) debugPrint('[ChatSheetController] onInitAsync load error: $e');
     }
 
     // FCM subscription always registered, even if initial load failed.
@@ -116,15 +117,15 @@ class ChatSheetController extends GetxController {
           }
           unawaited(
             _refreshMessages().catchError((Object e, StackTrace st) {
-              debugPrint('[ChatSheetController] _refreshMessages error: $e');
+              if (kDebugMode) debugPrint('[ChatSheetController] _refreshMessages error: $e');
             }),
           );
         } catch (e) {
-          debugPrint('[ChatSheetController] onMessage handler error: $e');
+          if (kDebugMode) debugPrint('[ChatSheetController] onMessage handler error: $e');
         }
       },
       onError: (Object e, StackTrace st) {
-        debugPrint('[ChatSheetController] FCM stream error: $e');
+        if (kDebugMode) debugPrint('[ChatSheetController] FCM stream error: $e');
       },
       onDone: _subscribeFcm,
       cancelOnError: false,
@@ -137,7 +138,7 @@ class ChatSheetController extends GetxController {
     _pollTimer = Timer.periodic(const Duration(seconds: 15), (_) {
       unawaited(
         _refreshMessages().catchError((Object e, StackTrace st) {
-          debugPrint('[ChatSheetController] poll error: $e');
+          if (kDebugMode) debugPrint('[ChatSheetController] poll error: $e');
         }),
       );
     });
@@ -182,7 +183,7 @@ class ChatSheetController extends GetxController {
         }
       }
     } catch (e, st) {
-      debugPrint('[ChatSheetController] _refreshMessages exception: $e\n$st');
+      if (kDebugMode) debugPrint('[ChatSheetController] _refreshMessages exception: $e\n$st');
     } finally {
       _isRefreshing = false;
       if (_pendingRefresh) {
@@ -230,7 +231,7 @@ class ChatSheetController extends GetxController {
       'publicEventId': publicEventId,
     };
     final result = await ServiceCommon.sendHttpPostToHC6Api(body);
-    debugPrint(
+    if (kDebugMode) debugPrint(
       result.startsWith(ERROR_PREFIX)
           ? 'SP [markEventChatRead] called — FAILED'
           : 'SP [markEventChatRead] called — success',
@@ -260,7 +261,7 @@ class ChatSheetController extends GetxController {
     }
 
     final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    debugPrint(
+    if (kDebugMode) debugPrint(
       jsonResult.startsWith(ERROR_PREFIX)
           ? 'SP 9 [getEventMessages] called — FAILED'
           : 'SP 9 [getEventMessages] called — success',
@@ -429,7 +430,7 @@ class ChatSheetController extends GetxController {
 
     final sendResult = await ServiceCommon.sendHttpPostToHC6Api(body);
     final failed = sendResult.startsWith(ERROR_PREFIX);
-    debugPrint(
+    if (kDebugMode) debugPrint(
       failed
           ? 'SP 17 [sendEventMessage] called — FAILED'
           : 'SP 17 [sendEventMessage] called — success',

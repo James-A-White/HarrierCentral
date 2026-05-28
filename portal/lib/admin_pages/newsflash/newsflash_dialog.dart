@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:hcportal/imports.dart';
 
 // ---------------------------------------------------------------------------
@@ -70,7 +71,7 @@ class _NewsflashDialog extends StatelessWidget {
                   width: double.infinity,
                   fit: BoxFit.contain,
                   errorBuilder: (_, error, _) {
-                    debugPrint('Newsflash image load error: $error');
+                    if (kDebugMode) debugPrint('Newsflash image load error: $error');
                     return const SizedBox.shrink();
                   },
                 ),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:hcportal/imports.dart';
 
 class EventDetailsResult {
@@ -38,7 +39,7 @@ Future<EventDetailsResult> querySingleEvent(String publicEventId) async {
   };
 
   final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-  debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+  if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
       ? 'SP 8a (a-b) [getEvent] called — FAILED'
       : 'SP 8a (a-b) [getEvent] called — success');
   if (jsonResult.length > 10) {

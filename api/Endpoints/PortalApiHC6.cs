@@ -132,7 +132,7 @@ namespace HcWebApi.Endpoints
                     errorRowset[0].TryGetValue("ErrorMessage", out var errMsgVal);
                     string errorMessage = errMsgVal?.ToString() ?? "Unknown error";
 
-                    await LogErrorAsync(connectionString, queryType, deviceId, (string)data.accessToken, errorMessage);
+                    await LogErrorAsync(connectionString, queryType, deviceId, errorMessage);
                     log.LogWarning($"HC6 SP error [{queryType}]: {errorMessage}");
 
                     return new BadRequestObjectResult(new { success = false, errorMessage });
@@ -209,7 +209,7 @@ namespace HcWebApi.Endpoints
             }
         }
 
-        private async Task LogErrorAsync(string connectionString, string spName, string deviceId, string accessToken, string? errorMessage)
+        private async Task LogErrorAsync(string connectionString, string spName, string deviceId, string? errorMessage)
         {
             try
             {
@@ -217,9 +217,9 @@ namespace HcWebApi.Endpoints
                 await conn.OpenAsync();
                 using SqlCommand cmd = new(
                     @"INSERT INTO HC.ErrorLog
-                        (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, string_1, createdAt, updatedAt)
+                        (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, createdAt, updatedAt)
                       VALUES
-                        (NEWID(), 'HC6-API', @errorName, @errorDescription, @procName, @userId, @accessToken, SYSUTCDATETIME(), SYSUTCDATETIME())",
+                        (NEWID(), 'HC6-API', @errorName, @errorDescription, @procName, @userId, SYSUTCDATETIME(), SYSUTCDATETIME())",
                     conn);
                 cmd.Parameters.AddWithValue("@errorName", $"HC6 Portal Error: {spName}");
                 cmd.Parameters.AddWithValue("@errorDescription", (object?)errorMessage ?? DBNull.Value);
@@ -228,7 +228,6 @@ namespace HcWebApi.Endpoints
                 cmd.Parameters.AddWithValue("@userId", Guid.TryParse(deviceId, out var deviceGuid)
                     ? (object)deviceGuid
                     : DBNull.Value);
-                cmd.Parameters.AddWithValue("@accessToken", (object?)accessToken ?? DBNull.Value);
                 await cmd.ExecuteNonQueryAsync();
             }
             catch (Exception ex)

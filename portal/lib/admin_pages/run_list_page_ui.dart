@@ -6,6 +6,7 @@ import 'package:hcportal/admin_pages/kennel_website_page/kennel_website_page_con
 import 'package:hcportal/admin_pages/kennel_website_page/kennel_website_page_ui.dart';
 import 'package:hcportal/admin_pages/run_list_detail_panel.dart';
 import 'package:hcportal/admin_pages/run_list_page_controller.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:hcportal/imports.dart';
 import 'package:hcportal/widgets/run_list_item.dart';
 import 'package:web/web.dart' as web;
@@ -1136,7 +1137,7 @@ class RunListPage extends StatelessWidget {
     };
 
     final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+    if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
         ? 'SP 11 [getKennel] called — FAILED'
         : 'SP 11 [getKennel] called — success');
     if (!jsonResult.startsWith(ERROR_PREFIX)) {
@@ -1167,7 +1168,7 @@ class RunListPage extends StatelessWidget {
     };
 
     final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+    if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
         ? 'SP [getKennelWebsite] called — FAILED'
         : 'SP [getKennelWebsite] called — success');
     if (!jsonResult.startsWith(ERROR_PREFIX)) {
@@ -1200,7 +1201,7 @@ class RunListPage extends StatelessWidget {
 
     final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
     if (jsonResult.startsWith(ERROR_PREFIX)) {
-      debugPrint('SP [generateWebAdminToken] — FAILED');
+      if (kDebugMode) debugPrint('SP [generateWebAdminToken] — FAILED');
       return;
     }
 

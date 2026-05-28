@@ -159,7 +159,7 @@ class AdminPortalController extends GetxController {
 
           final jsonResult =
               await ServiceCommon.sendHttpPostToHC6Api(body);
-          debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+          if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
               ? 'SP 4 [confirmAuthentication] called — FAILED'
               : 'SP 4 [confirmAuthentication] called — success');
 
@@ -237,7 +237,7 @@ class AdminPortalController extends GetxController {
       'version': packageInfo.value?.version ?? 'unknown',
     };
     final fcmResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    debugPrint(fcmResult.startsWith(ERROR_PREFIX)
+    if (kDebugMode) debugPrint(fcmResult.startsWith(ERROR_PREFIX)
         ? 'SP 19 [updateFcmToken] called — FAILED'
         : 'SP 19 [updateFcmToken] called — success');
   }
@@ -334,7 +334,7 @@ class AdminPortalController extends GetxController {
     };
 
     final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+    if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
         ? 'SP 13 [getLandingPageData] called — FAILED'
         : 'SP 13 [getLandingPageData] called — success');
 
@@ -404,7 +404,7 @@ class AdminPortalController extends GetxController {
     };
 
     final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+    if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
         ? 'SP [getHcAdminPrivileges] called — FAILED'
         : 'SP [getHcAdminPrivileges] called — success');
 

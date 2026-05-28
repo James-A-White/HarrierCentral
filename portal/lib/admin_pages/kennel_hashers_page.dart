@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:hcportal/imports.dart';
 import 'package:hcportal/models/new_hasher/new_hasher_model.dart';
 
@@ -803,7 +804,7 @@ class KennelHashersController extends GetxController {
     };
 
     final jsonString = await ServiceCommon.sendHttpPostToHC6Api(body);
-    debugPrint(jsonString.startsWith(ERROR_PREFIX)
+    if (kDebugMode) debugPrint(jsonString.startsWith(ERROR_PREFIX)
         ? 'SP 12a (a-b) [getKennelHashers] called — FAILED'
         : 'SP 12a (a-b) [getKennelHashers] called — success');
     hashers.clear();
@@ -1138,7 +1139,7 @@ class KennelHashersController extends GetxController {
 
         final jsonResult = await ServiceCommon
             .sendHttpPostToHC6Api(body);
-        debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+        if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
             ? 'SP 20 [updateKennelHasher] called — FAILED'
             : 'SP 20 [updateKennelHasher] called — success');
         //print('result=' + jsonResult);
@@ -1269,7 +1270,7 @@ class KennelHashersController extends GetxController {
       //print(body);
       final jsonString = await ServiceCommon
           .sendHttpPostToHC6Api(body);
-      debugPrint(jsonString.startsWith(ERROR_PREFIX)
+      if (kDebugMode) debugPrint(jsonString.startsWith(ERROR_PREFIX)
           ? 'SP 3 [bulkAddHashers] called — FAILED'
           : 'SP 3 [bulkAddHashers] called — success');
 

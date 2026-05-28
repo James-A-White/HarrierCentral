@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:hcportal/imports.dart';
 
 /// Fetches all songs with kennel membership flags for the given kennel.
@@ -25,7 +26,7 @@ Future<List<SongModel>> queryKennelSongs(String publicKennelId) async {
   };
 
   final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-  debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+  if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
       ? 'SP 15 [getSongs] called — FAILED'
       : 'SP 15 [getSongs] called — success');
 
@@ -88,7 +89,7 @@ Future<bool> editSong({
   };
 
   final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-  debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+  if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
       ? 'SP [editSong] called — FAILED'
       : 'SP [editSong] called — success');
 
@@ -138,7 +139,7 @@ Future<bool> toggleKennelSong({
   };
 
   final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-  debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+  if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
       ? 'SP 18 [toggleKennelSong] called — FAILED'
       : 'SP 18 [toggleKennelSong] called — success');
 

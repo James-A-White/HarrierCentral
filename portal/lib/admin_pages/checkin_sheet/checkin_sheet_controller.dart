@@ -1,5 +1,6 @@
 // ignore_for_file: require_trailing_commas
 
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:hcportal/imports.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
@@ -62,7 +63,7 @@ class CheckinSheetController extends GetxController {
 
     unawaited(
       onInitAsync().catchError((Object e, StackTrace st) {
-        debugPrint('CheckinSheet load failed: $e\n$st');
+        if (kDebugMode) debugPrint('CheckinSheet load failed: $e\n$st');
       }),
     );
   }
@@ -86,7 +87,7 @@ class CheckinSheetController extends GetxController {
         kennelLogoImage = pw.MemoryImage(response.bodyBytes);
       }
     } catch (e) {
-      debugPrint('Kennel logo fetch failed: $e');
+      if (kDebugMode) debugPrint('Kennel logo fetch failed: $e');
     }
   }
 
@@ -106,7 +107,7 @@ class CheckinSheetController extends GetxController {
       'publicKennelId': publicKennelId,
     };
     final jsonString = await ServiceCommon.sendHttpPostToHC6Api(body);
-    debugPrint(jsonString.startsWith(ERROR_PREFIX)
+    if (kDebugMode) debugPrint(jsonString.startsWith(ERROR_PREFIX)
         ? 'SP 12b (a-b) [getKennelHashers] called — FAILED'
         : 'SP 12b (a-b) [getKennelHashers] called — success');
 

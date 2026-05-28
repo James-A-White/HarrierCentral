@@ -590,7 +590,7 @@ class KennelPageFormController extends TabUiController
     bodyParams.addAll(changedData);
 
     final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(bodyParams);
-    debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+    if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
         ? 'SP 6 [editKennel] called — FAILED'
         : 'SP 6 [editKennel] called — success');
 
@@ -933,7 +933,7 @@ class KennelPageFormController extends TabUiController
     };
 
     final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+    if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
         ? 'SP 2 [addSong] called — FAILED'
         : 'SP 2 [addSong] called — success');
 

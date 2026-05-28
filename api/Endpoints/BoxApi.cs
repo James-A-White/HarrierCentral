@@ -100,10 +100,12 @@ namespace HcWebApi.Endpoints
             var tokenRes = await _http.PostAsync("https://api.box.com/oauth2/token", form);
 
             var body = await tokenRes.Content.ReadAsStringAsync();
-            _log.LogError("Box token call failed: {Status} — {Body}",
-             (int)tokenRes.StatusCode, body);
-
-            tokenRes.EnsureSuccessStatusCode();
+            if (!tokenRes.IsSuccessStatusCode)
+            {
+                _log.LogError("Box token call failed: {Status} — {Body}",
+                    (int)tokenRes.StatusCode, body);
+                tokenRes.EnsureSuccessStatusCode();
+            }
             using var doc = JsonDocument.Parse(body);
 
             var at = doc.RootElement.GetProperty("access_token").GetString()!;

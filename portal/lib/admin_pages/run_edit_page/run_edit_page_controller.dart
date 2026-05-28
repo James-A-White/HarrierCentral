@@ -516,7 +516,7 @@ class RunEditPageController extends TabUiController
 
       final jsonResult =
           await ServiceCommon.sendHttpPostToHC6Api(bodyJson);
-      debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+      if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
           ? 'SP 1 [addEditEvent] called — FAILED'
           : 'SP 1 [addEditEvent] called — success');
       final updateResult = ((jsonDecode(jsonResult) as List<dynamic>)[0]

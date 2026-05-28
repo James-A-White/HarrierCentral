@@ -1,5 +1,6 @@
 // ignore_for_file: library_private_types_in_public_api
 
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:hcportal/imports.dart';
 
 // ── Photo status labels ──────────────────────────────────────────────────────
@@ -138,7 +139,7 @@ class PhotoReviewController extends GetxController {
           .toList();
     } catch (e) {
       errorMessage.value = 'Failed to load photos.';
-      debugPrint('[PhotoReviewController] _loadPhotos error: $e');
+      if (kDebugMode) debugPrint('[PhotoReviewController] _loadPhotos error: $e');
     } finally {
       isLoading.value = false;
     }
@@ -184,7 +185,7 @@ class PhotoReviewController extends GetxController {
         'An unexpected error occurred.',
         snackPosition: SnackPosition.BOTTOM,
       );
-      debugPrint('[PhotoReviewController] applyAction error: $e');
+      if (kDebugMode) debugPrint('[PhotoReviewController] applyAction error: $e');
     } finally {
       isSaving.value = false;
     }
