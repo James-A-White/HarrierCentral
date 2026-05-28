@@ -113,6 +113,19 @@ BEGIN TRY
 		RETURN;
 	END
 
+	-- Privilege check: caller must have admin rights for this kennel (H12 fix).
+	-- AppAccessFlags 0x40000081 = superAdmin | authIsAdmin; either is sufficient.
+	DECLARE @appAccessFlags INT = 0;
+	SELECT @appAccessFlags = ISNULL(hkm.AppAccessFlags, 0)
+	FROM HC.HasherKennelMap hkm
+	WHERE hkm.UserId = @hasherId AND hkm.KennelId = @kennelId;
+
+	IF (@appAccessFlags & 0x40000081) = 0
+	BEGIN
+		SELECT 0 AS Success, 'You are not authorised to update this kennel''s website.' AS ErrorMessage;
+		RETURN;
+	END
+
 	-- Main update (wrapped in transaction)
 	BEGIN TRANSACTION;
 
@@ -154,7 +167,7 @@ BEGIN TRY
 		, [MismanagementJson]        = CASE WHEN @mismanagementJson        = '' THEN NULL ELSE COALESCE(@mismanagementJson,        [MismanagementJson])        END
 		, [ExtraMenusJson]           = CASE WHEN @extraMenusJson           = '' THEN NULL ELSE COALESCE(@extraMenusJson,           [ExtraMenusJson])           END
 		, [ContactDetailsJson]       = CASE WHEN @contactDetailsJson       = '' THEN NULL ELSE COALESCE(@contactDetailsJson,       [ContactDetailsJson])       END
-		, [ControlFlags]             = CASE WHEN @controlFlags             = '' THEN NULL ELSE COALESCE(@controlFlags,             [ControlFlags])             END
+		, [ControlFlags]             = CASE WHEN @controlFlags             IS NULL THEN [ControlFlags] ELSE @controlFlags             END
 		, [PageFeaturesJson]         = CASE WHEN @pageFeaturesJson         = '' THEN NULL ELSE COALESCE(@pageFeaturesJson,         [PageFeaturesJson])         END
 	WHERE KennelId = @kennelId;
 

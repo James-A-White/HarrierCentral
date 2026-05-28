@@ -70,6 +70,32 @@ BEGIN
     RETURN;
 END
 
+-- Admin guard (M12): caller must have hash-cash management or admin rights for this event's kennel.
+-- MismanagementRoles 0x08 = RA (hash cash); AppAccessFlags 0x40000081 = superAdmin | authIsAdmin.
+DECLARE @rptKennelId     UNIQUEIDENTIFIER;
+SELECT @rptKennelId = KennelId FROM HC.Event WHERE id = @eventId;
+
+DECLARE @rptMmRoles    INT = 0;
+DECLARE @rptAccessFlags INT = 0;
+SELECT
+    @rptMmRoles     = ISNULL(hkm.MismanagementRoles, 0),
+    @rptAccessFlags = ISNULL(hkm.AppAccessFlags, 0)
+FROM HC.HasherKennelMap hkm
+WHERE hkm.UserId = @userId AND hkm.KennelId = @rptKennelId;
+
+IF (@rptMmRoles & 0x08) = 0 AND (@rptAccessFlags & 0x40000081) = 0
+BEGIN
+    SET @errorCode = 1342; SET @errorType = 13; SET @errorId = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, '<unknown>', 'Not authorised to view payment report',
+            'Caller does not hold required role for kennel', @procName, @userId);
+    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+           'Not authorised' AS errorTitle,
+           'You are not authorised to view the payment report for this event.' AS errorUserMessage,
+           @procName AS errorProc;
+    RETURN;
+END
+
 -- ---------------------------------------------------------------
 -- Build set of attendees without a payment (used in two places below)
 -- ---------------------------------------------------------------

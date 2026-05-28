@@ -104,6 +104,36 @@ BEGIN
     RETURN;
 END
 
+-- Admin guard (M14): when called directly (not delegated), verify caller has admin rights for event's kennel.
+-- Delegated calls from write SPs skip this check — the write SP already verified auth.
+-- AppAccessFlags 0x40000081 = superAdmin | authIsAdmin.
+DECLARE @kennelId UNIQUEIDENTIFIER;
+SELECT @kennelId = e.KennelId FROM HC.Event e WHERE e.id = @eventId;
+
+IF (@procName IS NULL)
+BEGIN
+    DECLARE @syncEvtMmRoles    INT = 0;
+    DECLARE @syncEvtAccessFlags INT = 0;
+    SELECT
+        @syncEvtMmRoles     = ISNULL(hkm.MismanagementRoles, 0),
+        @syncEvtAccessFlags = ISNULL(hkm.AppAccessFlags, 0)
+    FROM HC.HasherKennelMap hkm
+    WHERE hkm.UserId = @userId AND hkm.KennelId = @kennelId;
+
+    IF (@syncEvtMmRoles & 0x2E) = 0 AND (@syncEvtAccessFlags & 0x40000081) = 0
+    BEGIN
+        SET @errorCode = 1371; SET @errorType = 13; SET @errorId = NEWID();
+        INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+        VALUES (@errorId, '<unknown>', 'Not authorised for event admin sync',
+                'Caller does not hold required role for kennel', @effectiveProcName, @userId);
+        SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+               'Not authorised' AS errorTitle,
+               'You are not authorised to sync admin data for this event.' AS errorUserMessage,
+               @effectiveProcName AS errorProc;
+        RETURN;
+    END
+END
+
 -- ---------------------------------------------------------------
 -- Paging limits
 -- ---------------------------------------------------------------
@@ -120,8 +150,7 @@ IF (@narrowEventsUpdatedAfter       IS NULL OR @narrowEventsUpdatedAfter       <
 IF (@paymentsUpdatedAfter           IS NULL OR @paymentsUpdatedAfter           <= '2000-01-01') SET @paymentsUpdatedAfter           = 'ignore';
 IF (@receiptsUpdatedAfter           IS NULL OR @receiptsUpdatedAfter           <= '2000-01-01') SET @receiptsUpdatedAfter           = 'ignore';
 
-DECLARE @kennelId UNIQUEIDENTIFIER;
-SELECT @kennelId = e.KennelId FROM HC.Event e WHERE e.id = @eventId;
+-- @kennelId already resolved above for the admin guard.
 
 DECLARE @ua DATETIMEOFFSET(7);
 

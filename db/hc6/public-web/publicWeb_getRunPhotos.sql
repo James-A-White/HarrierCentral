@@ -35,11 +35,11 @@ WHERE kp.EventId = @eventId
   AND e.id IS NOT NULL;
 
 -- Rowset 1: public photo rows
+-- NOTE: Latitude and Longitude are intentionally excluded — this is an
+-- unauthenticated public endpoint and GPS coordinates must not be exposed (M15 fix).
 SELECT
     kp.id           AS photoId,
     kp.BlobUrl,
-    kp.Latitude,
-    kp.Longitude,
     kp.Title,
     kp.Description,
     kp.CreatedAt,

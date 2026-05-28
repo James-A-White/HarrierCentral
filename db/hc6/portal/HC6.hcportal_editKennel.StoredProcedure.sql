@@ -196,6 +196,19 @@ BEGIN TRY
 		RETURN;
 	END
 
+	-- Privilege check: caller must have admin rights for this kennel (H11 fix).
+	-- AppAccessFlags 0x40000081 = superAdmin | authIsAdmin; either is sufficient.
+	DECLARE @appAccessFlags INT = 0;
+	SELECT @appAccessFlags = ISNULL(hkm.AppAccessFlags, 0)
+	FROM HC.HasherKennelMap hkm
+	WHERE hkm.UserId = @hasherId AND hkm.KennelId = @kennelId;
+
+	IF (@appAccessFlags & 0x40000081) = 0
+	BEGIN
+		SELECT 0 AS Success, 'You are not authorised to edit this kennel.' AS ErrorMessage;
+		RETURN;
+	END
+
 	-- Main update (wrapped in transaction)
 	BEGIN TRANSACTION;
 

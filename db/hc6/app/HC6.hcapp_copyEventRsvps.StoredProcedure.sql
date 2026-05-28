@@ -102,6 +102,52 @@ END
 BEGIN TRY
     BEGIN TRANSACTION;
 
+        -- Admin guard (H13): verify both events belong to the same kennel and
+        -- caller has event-admin rights for that kennel.
+        DECLARE @fromKennelId UNIQUEIDENTIFIER;
+        DECLARE @toKennelId   UNIQUEIDENTIFIER;
+        SELECT @fromKennelId = KennelId FROM HC.Event WHERE id = @fromEvent;
+        SELECT @toKennelId   = KennelId FROM HC.Event WHERE id = @toEvent;
+
+        IF @fromKennelId IS NULL OR @toKennelId IS NULL OR @fromKennelId != @toKennelId
+        BEGIN
+            SET @errorCode = 1221; SET @errorType = 12; SET @errorId = NEWID();
+            INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+            VALUES (@errorId, '<unknown>', 'Cross-kennel RSVP copy attempted',
+                    'Source and target events must belong to the same kennel', @procName, @userId);
+            ROLLBACK TRANSACTION;
+            SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+            SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+                   'Invalid events' AS errorTitle,
+                   'Both events must belong to the same kennel.' AS errorUserMessage, @procName AS errorProc;
+            RETURN;
+        END
+
+        -- Caller must hold event-admin or broader admin rights for this kennel.
+        -- MismanagementRoles 0x2E = Hash Flash | GM | VGM | RA; AppAccessFlags 0x40000081 = superAdmin | authIsAdmin.
+        DECLARE @copyMmRoles     INT = 0;
+        DECLARE @copyAccessFlags INT = 0;
+        SELECT
+            @copyMmRoles     = ISNULL(hkm.MismanagementRoles, 0),
+            @copyAccessFlags = ISNULL(hkm.AppAccessFlags, 0)
+        FROM HC.HasherKennelMap hkm
+        WHERE hkm.UserId = @userId AND hkm.KennelId = @fromKennelId;
+
+        IF (@copyMmRoles & 0x2E) = 0 AND (@copyAccessFlags & 0x40000081) = 0
+        BEGIN
+            SET @errorCode = 1321; SET @errorType = 13; SET @errorId = NEWID();
+            INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+            VALUES (@errorId, '<unknown>', 'Not authorised to copy RSVPs',
+                    'Caller does not hold required role for kennel', @procName, @userId);
+            ROLLBACK TRANSACTION;
+            SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+            SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+                   'Not authorised' AS errorTitle,
+                   'You are not authorised to copy RSVPs for this event.' AS errorUserMessage,
+                   @procName AS errorProc;
+            RETURN;
+        END
+
         INSERT INTO HC.HasherEventMap
             ([id], [EventId], [KennelId], [UserId],
              [RsvpState], [IsHare], [VirginVisitorType], [updatedAt])

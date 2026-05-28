@@ -195,12 +195,14 @@ DECLARE @resultInt int;
                 RETURN;
         END
 
-        -- Look up eventId with lock if publicEventId is provided
+        -- Look up eventId with lock if publicEventId is provided.
+        -- KennelId guard prevents cross-kennel event edits (H9 IDOR fix).
         IF @publicEventId IS NOT NULL
         BEGIN
                 SELECT @eventId = id
                 FROM HC.Event WITH (UPDLOCK, HOLDLOCK)
-                WHERE PublicEventId = @publicEventId;
+                WHERE PublicEventId = @publicEventId
+                  AND KennelId = @kennelId;
 
                 IF @eventId IS NULL
                 BEGIN

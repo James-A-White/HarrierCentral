@@ -127,6 +127,31 @@ BEGIN TRY
         DECLARE @kennelId UNIQUEIDENTIFIER;
         SELECT @kennelId = evt.KennelId FROM HC.Event evt WHERE evt.id = @eventId;
 
+        -- Admin guard (H13): caller must hold attendance-management or admin rights for this kennel.
+        -- MismanagementRoles 0x2E = Hash Flash | GM | VGM | RA; AppAccessFlags 0x40000081 = superAdmin | authIsAdmin.
+        DECLARE @bulkMmRoles INT = 0;
+        DECLARE @bulkAccessFlags INT = 0;
+        SELECT
+            @bulkMmRoles    = ISNULL(hkm.MismanagementRoles, 0),
+            @bulkAccessFlags = ISNULL(hkm.AppAccessFlags, 0)
+        FROM HC.HasherKennelMap hkm
+        WHERE hkm.UserId = @userId AND hkm.KennelId = @kennelId;
+
+        IF (@bulkMmRoles & 0x2E) = 0 AND (@bulkAccessFlags & 0x40000081) = 0
+        BEGIN
+            SET @errorCode = 1325; SET @errorType = 13; SET @errorId = NEWID();
+            INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+            VALUES (@errorId, '<unknown>', 'Not authorised for bulk attendance',
+                    'Caller does not hold required role for kennel', @procName, @userId);
+            ROLLBACK TRANSACTION;
+            SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+            SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+                   'Not authorised' AS errorTitle,
+                   'You are not authorised to set bulk attendance for this event.' AS errorUserMessage,
+                   @procName AS errorProc;
+            RETURN;
+        END
+
         -- Update existing HEM rows
         ;WITH ParsedGuids AS (
             SELECT TRY_CAST(value AS UNIQUEIDENTIFIER) AS UserId

@@ -67,6 +67,20 @@ BEGIN TRY
         RETURN;
     END
 
+    -- Privilege check: caller must have admin or member-management rights (L6 fix).
+    -- 0x40000012 = superAdmin | authIsAdmin | authCanManageHashers; 0x40000081 covers superAdmin+authIsAdmin.
+    -- Accept either admin flag or the member-management flag (0x0010 = authCanManageHashers / 0x0002 = manage-members).
+    DECLARE @appAccessFlags INT = 0;
+    SELECT @appAccessFlags = ISNULL(hkm.AppAccessFlags, 0)
+    FROM HC.HasherKennelMap hkm
+    WHERE hkm.UserId = @hasherId AND hkm.KennelId = @kennelId;
+
+    IF (@appAccessFlags & 0x40000081) = 0
+    BEGIN
+        SELECT 0 AS Success, 'You are not authorised to add members to this kennel.' AS ErrorMessage;
+        RETURN;
+    END
+
     -- Validation: newHasherJson must not be NULL or too short
     IF (@newHasherJson IS NULL) OR (LEN(@newHasherJson) < 5)
     BEGIN

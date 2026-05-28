@@ -6,11 +6,6 @@
 --              is that the first parameter is @deviceId (HC.Device.id)
 --              instead of @publicHasherId / @userId.
 --
---              Token bypass: The cutoff date below temporarily bypasses
---              validation so HC6 endpoints can be tested before the
---              Flutter portal is updated to generate HC6-format tokens.
---              To enforce validation: set the cutoff to a past date.
---
 -- Parameters:
 --   @deviceId     - HC.Device.id of the authenticating device
 --   @procName     - SP name baked into the token on the client side
@@ -20,12 +15,14 @@
 --
 -- Returns: 1 = valid, 0 = invalid
 --
--- Time windows tried (matches HC5 CHECK_PORTAL_ACCESS_TOKEN):
---   Primary:  86469s (≈24h) — broad portal window
---   Fallback: 69s            — matches Flutter portal TIME_WINDOW constant
+-- Time window: 69s — matches Flutter portal Utilities.TIME_WINDOW constant.
+--   ±2 block tolerance = 5 attempts total to tolerate clock skew and latency.
+--   The legacy 86469s (≈24h) primary window has been removed (security fix C2).
+--   The development auth bypass has been removed (security fix C1).
 --
 -- HC5 source: HC.CHECK_PORTAL_ACCESS_TOKEN
 -- Created: 2026-03-17
+-- Updated: 2026-05-28 — removed auth bypass (C1) and 86469s window (C2)
 -- =====================================================================
 SET ANSI_NULLS ON
 GO
@@ -44,16 +41,6 @@ WITH EXECUTE AS CALLER
 AS
 BEGIN
     DECLARE @generatedToken NVARCHAR(2000);
-    DECLARE @try69 INT = 0;
-
-    -- Token bypass: set cutoff to a past date to enforce validation.
-    -- Current setting: bypass active until 2026-06-01 while Flutter portal
-    -- migrates from HC5 to HC6 token format.
-    -- TO ENABLE ENFORCEMENT: change '2026-06-01' to any past date.
-    IF (DATEADD(MINUTE, -120, GETDATE()) < '2026-06-01 00:00:00.000')
-    BEGIN
-        RETURN 1;
-    END
 
     -- Basic sanity check on token length
     IF (@accessToken IS NULL OR DATALENGTH(@accessToken) < 50)
@@ -61,11 +48,10 @@ BEGIN
         RETURN 0;
     END
 
-    DECLARE @baseDate DATETIME = '15 AUG 1963 9:52:28 AM';
-    DECLARE @timeWindow INT = 86469;
+    DECLARE @baseDate   DATETIME = '15 AUG 1963 9:52:28 AM';
+    DECLARE @timeWindow INT      = 69;
 
-    -- Try primary time window (86469s ≈ 24h), checking ±2 time slots
-    -- to tolerate clock skew and network latency.
+    -- Try 69s window with ±2 block tolerance (5 attempts total).
     SET @generatedToken = HC.CREATE_ACCESS_TOKEN_V2(@deviceId, @procName, 0, @paramString, @timeWindow, @baseDate);
     IF @generatedToken != @accessToken
     BEGIN
@@ -81,35 +67,7 @@ BEGIN
                     SET @generatedToken = HC.CREATE_ACCESS_TOKEN_V2(@deviceId, @procName, -2, @paramString, @timeWindow, @baseDate);
                     IF @generatedToken != @accessToken
                     BEGIN
-                        SET @try69 = 1;
-                    END
-                END
-            END
-        END
-    END
-
-    -- Fallback to 69s window — matches Flutter portal Utilities.TIME_WINDOW = 69
-    SET @timeWindow = 69;
-
-    IF (@try69 = 1)
-    BEGIN
-        SET @generatedToken = HC.CREATE_ACCESS_TOKEN_V2(@deviceId, @procName, 0, @paramString, @timeWindow, @baseDate);
-        IF @generatedToken != @accessToken
-        BEGIN
-            SET @generatedToken = HC.CREATE_ACCESS_TOKEN_V2(@deviceId, @procName, 1, @paramString, @timeWindow, @baseDate);
-            IF @generatedToken != @accessToken
-            BEGIN
-                SET @generatedToken = HC.CREATE_ACCESS_TOKEN_V2(@deviceId, @procName, -1, @paramString, @timeWindow, @baseDate);
-                IF @generatedToken != @accessToken
-                BEGIN
-                    SET @generatedToken = HC.CREATE_ACCESS_TOKEN_V2(@deviceId, @procName, 2, @paramString, @timeWindow, @baseDate);
-                    IF @generatedToken != @accessToken
-                    BEGIN
-                        SET @generatedToken = HC.CREATE_ACCESS_TOKEN_V2(@deviceId, @procName, -2, @paramString, @timeWindow, @baseDate);
-                        IF @generatedToken != @accessToken
-                        BEGIN
-                            RETURN 0;
-                        END
+                        RETURN 0;
                     END
                 END
             END

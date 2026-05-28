@@ -100,6 +100,33 @@ BEGIN
     RETURN;
 END
 
+-- Admin guard (M13): when called directly (not delegated), verify caller has admin rights for @kennelId.
+-- Delegated calls from write SPs skip this check — the write SP already verified auth.
+-- AppAccessFlags 0x40000081 = superAdmin | authIsAdmin.
+IF (@procName IS NULL)
+BEGIN
+    DECLARE @syncKennelMmRoles    INT = 0;
+    DECLARE @syncKennelAccessFlags INT = 0;
+    SELECT
+        @syncKennelMmRoles     = ISNULL(hkm.MismanagementRoles, 0),
+        @syncKennelAccessFlags = ISNULL(hkm.AppAccessFlags, 0)
+    FROM HC.HasherKennelMap hkm
+    WHERE hkm.UserId = @userId AND hkm.KennelId = @kennelId;
+
+    IF (@syncKennelMmRoles & 0x2E) = 0 AND (@syncKennelAccessFlags & 0x40000081) = 0
+    BEGIN
+        SET @errorCode = 1372; SET @errorType = 13; SET @errorId = NEWID();
+        INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+        VALUES (@errorId, '<unknown>', 'Not authorised for kennel admin sync',
+                'Caller does not hold required role for kennel', @effectiveProcName, @userId);
+        SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+               'Not authorised' AS errorTitle,
+               'You are not authorised to sync admin data for this kennel.' AS errorUserMessage,
+               @effectiveProcName AS errorProc;
+        RETURN;
+    END
+END
+
 -- ---------------------------------------------------------------
 -- Paging limits
 -- ---------------------------------------------------------------

@@ -218,6 +218,39 @@ BEGIN
 END
 
 -- ---------------------------------------------------------------
+-- Admin guard (H13): when setting attendance for a different user,
+-- caller must hold attendance-management or admin rights for this event's kennel.
+-- Self-attendance never requires an extra check.
+-- ---------------------------------------------------------------
+IF (@hasherId != @userId)
+BEGIN
+    DECLARE @setAttKennelId UNIQUEIDENTIFIER;
+    SELECT @setAttKennelId = KennelId FROM HC.Event WHERE id = @eventId;
+
+    DECLARE @setAttMmRoles    INT = 0;
+    DECLARE @setAttAccessFlags INT = 0;
+    SELECT
+        @setAttMmRoles     = ISNULL(hkm.MismanagementRoles, 0),
+        @setAttAccessFlags = ISNULL(hkm.AppAccessFlags, 0)
+    FROM HC.HasherKennelMap hkm
+    WHERE hkm.UserId = @userId AND hkm.KennelId = @setAttKennelId;
+
+    IF (@setAttMmRoles & 0x2E) = 0 AND (@setAttAccessFlags & 0x40000081) = 0
+    BEGIN
+        SET @errorCode = 1324; SET @errorType = 13; SET @errorId = NEWID();
+        INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+        VALUES (@errorId, '<unknown>', 'Not authorised to set attendance for other user',
+                'Caller does not hold required role for kennel', @procName, @userId);
+        SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+        SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+               'Not authorised' AS errorTitle,
+               'You are not authorised to set attendance for other members.' AS errorUserMessage,
+               @procName AS errorProc;
+        RETURN;
+    END
+END
+
+-- ---------------------------------------------------------------
 -- Load event info
 -- ---------------------------------------------------------------
 DECLARE @kennelId  UNIQUEIDENTIFIER;

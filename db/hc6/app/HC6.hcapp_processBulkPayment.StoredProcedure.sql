@@ -122,6 +122,31 @@ BEGIN TRY
         DECLARE @kennelId    UNIQUEIDENTIFIER;
         SELECT @kennelId = evt.KennelId FROM HC.Event evt WHERE evt.id = @eventId;
 
+        -- Admin guard (H13): caller must hold hash-cash management or admin rights for this kennel.
+        -- MismanagementRoles 0x08 = RA (hash cash); AppAccessFlags 0x40000081 = superAdmin | authIsAdmin.
+        DECLARE @bulkPayMmRoles    INT = 0;
+        DECLARE @bulkPayAccessFlags INT = 0;
+        SELECT
+            @bulkPayMmRoles     = ISNULL(hkm.MismanagementRoles, 0),
+            @bulkPayAccessFlags  = ISNULL(hkm.AppAccessFlags, 0)
+        FROM HC.HasherKennelMap hkm
+        WHERE hkm.UserId = @userId AND hkm.KennelId = @kennelId;
+
+        IF (@bulkPayMmRoles & 0x08) = 0 AND (@bulkPayAccessFlags & 0x40000081) = 0
+        BEGIN
+            SET @errorCode = 1341; SET @errorType = 13; SET @errorId = NEWID();
+            INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+            VALUES (@errorId, '<unknown>', 'Not authorised for bulk payment',
+                    'Caller does not hold required role for kennel', @procName, @userId);
+            ROLLBACK TRANSACTION;
+            SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+            SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+                   'Not authorised' AS errorTitle,
+                   'You are not authorised to process bulk payments for this event.' AS errorUserMessage,
+                   @procName AS errorProc;
+            RETURN;
+        END
+
         -- ---------------------------------------------------------------
         -- Upsert HEM rows: update existing, insert missing
         -- ---------------------------------------------------------------
@@ -253,7 +278,7 @@ BEGIN TRY
                 p.basePrice,
                 0,
                 @userId,
-                COALESCE(CAST(LEFT(@transactionTimestamp, 23) AS DATETIME), GETDATE()),
+                COALESCE(TRY_CAST(LEFT(@transactionTimestamp, 23) AS DATETIME), GETDATE()),
                 @paymentType,
                 @productType,
                 'HC:' + REPLACE(CAST(NEWID() AS NVARCHAR(40)), '-', ''),

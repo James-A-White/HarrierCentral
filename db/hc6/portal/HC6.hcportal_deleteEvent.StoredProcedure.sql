@@ -54,7 +54,12 @@ BEGIN
 END
 
     DECLARE @eventId uniqueidentifier;
-    SELECT @eventId = id FROM HC.Event WHERE PublicEventId = @publicEventId;
+    DECLARE @eventKennelId UNIQUEIDENTIFIER;
+
+    -- Resolve event and its kennel.
+    SELECT @eventId = id, @eventKennelId = KennelId
+    FROM HC.Event
+    WHERE PublicEventId = @publicEventId;
 
     IF (@eventId IS NULL)
     BEGIN
@@ -62,16 +67,31 @@ END
         RETURN;
     END
 
+    -- Kennel ownership check: caller must have admin rights for the event's kennel (H10 IDOR fix).
+    -- AppAccessFlags 0x40000081 = superAdmin | authIsAdmin; either is sufficient.
+    DECLARE @callerAccessFlags INT = 0;
+    SELECT @callerAccessFlags = ISNULL(hkm.AppAccessFlags, 0)
+    FROM HC.HasherKennelMap hkm
+    WHERE hkm.UserId = @hasherId AND hkm.KennelId = @eventKennelId;
+
+    IF (@callerAccessFlags & 0x40000081) = 0
+    BEGIN
+        SELECT 0 AS Success, 'Event not found.' AS ErrorMessage;
+        RETURN;
+    END
+
     DECLARE @countAtHash int;
 
-    SELECT @countAtHash = COUNT(*) FROM HC.HasherEventMap
+    -- Wrap the attendance count check and the UPDATE together in one transaction
+    -- to eliminate the TOCTOU race (L7 fix).
+    BEGIN TRANSACTION;
+
+    SELECT @countAtHash = COUNT(*) FROM HC.HasherEventMap WITH (HOLDLOCK)
     WHERE EventId = @eventId
     AND AttendenceState >= 20;
 
     IF (@countAtHash = 0)
     BEGIN
-        BEGIN TRANSACTION;
-
         UPDATE HC.Event
             SET updatedAt = GETDATE(),
                 removed = 1
@@ -90,6 +110,8 @@ END
     END
     ELSE
     BEGIN
+        ROLLBACK TRANSACTION;
+
         IF (@countAtHash = 1)
         BEGIN
             SELECT 'Cannot delete this run because 1 Hasher has been checked in to the run.' AS Result;

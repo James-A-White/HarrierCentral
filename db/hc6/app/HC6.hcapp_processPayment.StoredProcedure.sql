@@ -168,6 +168,37 @@ BEGIN TRY
         -- ---------------------------------------------------------------
         IF (@paymentType = 100)
         BEGIN
+            -- Admin guard (M16): only hash-cash managers or admins may confirm bank transfers.
+            -- Resolve the kennel from the HEM row, then check caller rights.
+            DECLARE @confirmKennelId    UNIQUEIDENTIFIER;
+            SELECT @confirmKennelId = e.KennelId
+            FROM HC.HasherEventMap hem
+            INNER JOIN HC.Event e ON e.id = hem.EventId
+            WHERE hem.id = @hasherEventMapId;
+
+            DECLARE @confirmMmRoles    INT = 0;
+            DECLARE @confirmAccessFlags INT = 0;
+            SELECT
+                @confirmMmRoles     = ISNULL(hkm.MismanagementRoles, 0),
+                @confirmAccessFlags = ISNULL(hkm.AppAccessFlags, 0)
+            FROM HC.HasherKennelMap hkm
+            WHERE hkm.UserId = @userId AND hkm.KennelId = @confirmKennelId;
+
+            IF (@confirmMmRoles & 0x08) = 0 AND (@confirmAccessFlags & 0x40000081) = 0
+            BEGIN
+                SET @errorCode = 1340; SET @errorType = 13; SET @errorId = NEWID();
+                INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+                VALUES (@errorId, '<unknown>', 'Not authorised to confirm bank transfer',
+                        'Caller does not hold required role for kennel', @procName, @userId);
+                ROLLBACK TRANSACTION;
+                SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+                SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+                       'Not authorised' AS errorTitle,
+                       'You are not authorised to confirm bank transfers for this event.' AS errorUserMessage,
+                       @procName AS errorProc;
+                RETURN;
+            END
+
             UPDATE HC.Payment SET
                 ConfirmedDate      = GETDATE(),
                 ConfirmedBy_UserId = @userId,
@@ -388,7 +419,7 @@ BEGIN TRY
                 (@kennelId, @payer_userIdGuid, @eventId, @hasherEventMapId,
                  @creditAmount, @debitAmount, 0,
                  @userId,
-                 COALESCE(CAST(LEFT(@transactionTimestamp, 23) AS DATETIME), GETDATE()),
+                 COALESCE(TRY_CAST(LEFT(@transactionTimestamp, 23) AS DATETIME), GETDATE()),
                  @paymentType, @productType, @paymentReference,
                  @doPayForExtras, @paymentProvider,
                  @discountAmount, @discountPercent, @discountDescription,

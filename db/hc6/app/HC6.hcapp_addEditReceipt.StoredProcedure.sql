@@ -113,6 +113,33 @@ BEGIN
     RETURN;
 END
 
+-- Admin guard (H13): resolve event's kennel and verify caller has hash-cash or run-management rights.
+-- MismanagementRoles 0x2E = Hash Flash | GM | VGM | RA; AppAccessFlags 0x40000081 = superAdmin | authIsAdmin.
+DECLARE @receiptKennelId UNIQUEIDENTIFIER;
+SELECT @receiptKennelId = KennelId FROM HC.Event WHERE id = @eventId;
+
+DECLARE @receiptMmRoles    INT = 0;
+DECLARE @receiptAccessFlags INT = 0;
+SELECT
+    @receiptMmRoles     = ISNULL(hkm.MismanagementRoles, 0),
+    @receiptAccessFlags = ISNULL(hkm.AppAccessFlags, 0)
+FROM HC.HasherKennelMap hkm
+WHERE hkm.UserId = @userId AND hkm.KennelId = @receiptKennelId;
+
+IF (@receiptMmRoles & 0x2E) = 0 AND (@receiptAccessFlags & 0x40000081) = 0
+BEGIN
+    SET @errorCode = 1343; SET @errorType = 13; SET @errorId = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, '<unknown>', 'Not authorised to manage receipts',
+            'Caller does not hold required role for kennel', @procName, @userId);
+    SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+           'Not authorised' AS errorTitle,
+           'You are not authorised to manage receipts for this event.' AS errorUserMessage,
+           @procName AS errorProc;
+    RETURN;
+END
+
 -- When reimbursedBy is set, override date and amount from the receipt
 DECLARE @reimbursedOnDate DATETIMEOFFSET(7) = @reimbursedOn;
 DECLARE @clearReimbursement BIT = 0;
