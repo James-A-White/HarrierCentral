@@ -1,11 +1,13 @@
 
-1.5.1+625
-    • Chat — FCM: diagnostic logging added (message counter, onDone/onError
-      stream lifecycle hooks, _refreshMessages tracing) to both ChatSheetController
-      and RunListPageController — browser console will show exactly where the
-      "stops after 3 messages" failure occurs
-    • Chat — FCM: both subscriptions now auto-resubscribe if the onMessage
-      stream closes unexpectedly
+1.5.2+626
+    • Chat — remove debug code: recipient dialog, FCM echo signal indicator,
+      message counters
+    • Chat — fix double checkmark: SP confirmation now sets delivered status
+      directly (portal sender is excluded from own FCM dispatch, so double tick
+      was never arriving via FCM echo)
+    • Chat — Safari fix: 15-second polling timer active only on Safari, only
+      while chat window is open — works around Safari's 3-message silent push quota
+    • Chat/Run list — FCM subscription: auto-resubscribes if onMessage stream closes
 
 1.5.0+624
     • Chat — service worker: guard data-only payloads in onBackgroundMessage —

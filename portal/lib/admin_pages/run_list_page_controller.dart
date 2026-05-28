@@ -63,7 +63,6 @@ class RunListPageController extends GetxController
 
   late StreamSubscription<RemoteMessage> _fcmSubscription;
   Map<String, int> thisEventChatCount = {};
-  int _fcmMsgCount = 0;
 
   final FocusNode searchFocusNode = FocusNode();
   final TextEditingController searchController = TextEditingController();
@@ -133,9 +132,6 @@ class RunListPageController extends GetxController
           );
           if (publicEventId.isEmpty) return;
 
-          _fcmMsgCount++;
-          debugPrint('[RunListFCM #$_fcmMsgCount] received, eventId=$publicEventId');
-
           final type = message.data['Type']?.toString();
           if (type == 'read_sync') {
             thisEventChatCount[publicEventId] = 0;
@@ -145,21 +141,15 @@ class RunListPageController extends GetxController
           }
           update(['chatCountBadge']);
         } catch (e) {
-          debugPrint('[RunListFCM] onMessage error: $e');
+          debugPrint('[RunListPageController] onMessage error: $e');
         }
       },
       onError: (Object e, StackTrace st) {
-        debugPrint('[RunListFCM] stream ERROR after $_fcmMsgCount messages: $e');
+        debugPrint('[RunListPageController] FCM stream error: $e');
       },
-      onDone: () {
-        debugPrint(
-          '[RunListFCM] stream CLOSED after $_fcmMsgCount messages — resubscribing',
-        );
-        _subscribeRunListFcm();
-      },
+      onDone: _subscribeRunListFcm,
       cancelOnError: false,
     );
-    debugPrint('[RunListFCM] subscribed');
   }
 
   void _onKennelPickerScroll() {
