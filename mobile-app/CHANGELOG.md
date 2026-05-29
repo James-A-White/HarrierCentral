@@ -1,5 +1,27 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.6.8+1140 (2026-05-29)
+
+### Security
+
+- **Secure storage migration**: Device reset code is now stored in the iOS
+  Keychain / Android Keystore (hardware-backed encrypted storage) instead of
+  plain local storage. All existing users are migrated automatically on first
+  launch — the app re-stages itself from the server with no manual action
+  required.
+
+- **API key protection**: IP geolocation lookup now proxied through the HC
+  API — the IPInfo token no longer appears in the app binary.
+
+- **Token redaction**: Device tokens and IDs are now redacted from any
+  diagnostic logs before they are persisted or sent to the server.
+
+- **HTTPS enforcement**: Payment provider links now require HTTPS — plain HTTP
+  payment URLs are rejected.
+
+- **GPS log guard**: Last-known device coordinates are no longer written to the
+  on-device debug log in release builds.
+
 ## 2.6.7+1139 (2026-05-28)
 
 ### Improvements
