@@ -1,4 +1,18 @@
 
+1.0.14+12
+    • Security: SQL injection fixes — EmailInviteCode and GenericJsonQueryHC6 fully parameterised
+    • Security: GetPositions now requires API key — live GPS data no longer publicly accessible
+    • Security: PublicWebAdminApi validates HC_INTERNAL_SECRET header on savePageLayout/getPageLayout
+    • Security: ProxyGeocode and ProxyReverseGeocode endpoints — geocode SAS tokens and hcazurefunctions7 URL moved server-side
+    • Security: GetIpGeoInfo endpoint — IPInfo token moved server-side (removes token from mobile binary)
+    • Security: checkConnection no longer bypasses token validation in AppApiHC6
+    • Security: GetPortalUploadSas SAS token now bound to specific container and filename
+    • Security: HC5 endpoints return generic 500 instead of raw exception messages
+    • Security: HC6 portal/app endpoints filter debugMessage from client-facing error responses
+    • Security: Firebase credentials fetch has 10-second timeout
+    • Fix: HttpsRedirect disabled — was routing to localhost:5000 in production
+    • Fix: RunCheckInNotification reads ApiKey from environment variable
+
 1.0.13+11
     • Security: new GetPortalUploadSas endpoint — server-side SAS generation for portal blob uploads (replaces hardcoded tokens)
     • Security: AppApiHC6 catch blocks return generic 500 instead of leaking SP exception details
