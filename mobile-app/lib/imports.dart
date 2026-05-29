@@ -40,6 +40,7 @@ export 'package:flutter/services.dart';
 export 'package:freezed_annotation/freezed_annotation.dart';
 // export 'package:get_it/get_it.dart';
 export 'package:get_storage/get_storage.dart';
+export 'package:harrier_central/util/secure_storage.dart';
 export 'package:harrier_central/bindings/initial_bindings.dart';
 export 'package:harrier_central/controllers/run_tracker_map_controller.dart';
 export 'package:harrier_central/data/hc3_services/cities/cities_model_ns.dart';
