@@ -103,7 +103,7 @@ class ImprintPageContentState extends State<ImprintPageContent> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: <Widget>[
                         Text(
-                          'Name: $appName\r\nVersion: $version\r\nBuild number: $buildNumber\r\nDatabase version: ${DB_VERSION.toString()}',
+                          'Name: $appName\r\nVersion: $version\r\nBuild number: $buildNumber\r\nDatabase version: ${DB_VERSION.toString()}\r\nStorage: ${getStringPref(StringPrefsEnum.storageType) ?? 'legacy'}',
                           style: ts_regular,
                         ),
                       ],

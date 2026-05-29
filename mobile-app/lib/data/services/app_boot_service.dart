@@ -332,7 +332,18 @@ class AppBootService {
       await setStringPref(StringPrefsEnum.bootType, BOOT_TYPE_UPGRADE_DB);
     }
 
+    // Secure storage migration: try flutter_secure_storage first (set by the
+    // migration path), fall back to plain GetStorage. storageType records which
+    // path was used so the dialog and Imprint page can reflect it.
+    // TODO: add flutter_secure_storage read here when migration is implemented.
     final String resetCode = getStringPref(StringPrefsEnum.resetCode) ?? '';
+    // ignore: prefer_const_declarations — will be set by secure storage read when migration is implemented
+    final bool usedSecureStorage = false;
+    await setStringPref(
+      StringPrefsEnum.storageType,
+      usedSecureStorage ? 'encrypted' : 'legacy',
+    );
+
     if (resetCode.isEmpty) {
       // No reset code — can't re-authorise. Boot offline so the user can
       // recover via their profile page.
@@ -369,7 +380,11 @@ class AppBootService {
     final String userName =
         getStringPref(StringPrefsEnum.displayName) ?? '<no user name>';
 
-    String dialogTitle = 'Profile Load Successful';
+    final bool isEncrypted =
+        getStringPref(StringPrefsEnum.storageType) == 'encrypted';
+
+    String dialogTitle =
+        isEncrypted ? 'Account Load Successful' : 'Profile Load Successful';
     String dialogMessage =
         'The app has been successfully updated for $userName.';
 

@@ -48,6 +48,7 @@ enum StringPrefsEnum {
   splashSequenceRootName,
   splashSequenceRootNameViewed,
   ssoAuthType,
+  storageType,
   supportCode,
   thirdPartyAccessToken,
   thirdPartyAuthorizationCode,
