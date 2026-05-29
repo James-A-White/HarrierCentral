@@ -1,4 +1,9 @@
 
+1.5.8+632
+    • Security: geocode place-to-address now calls ProxyGeocode shim — Logic App SAS token removed from JS bundle
+    • Security: reverse geocode now calls ProxyReverseGeocode shim — hcazurefunctions7 no longer called from client
+    • Security: error messages show errorUserMessage instead of raw server error text
+
 1.5.7+631
     • Fix photo review auth: pass publicKennelId to getRunAllPhotos and batchUpdatePhotoStatus SPs
 
