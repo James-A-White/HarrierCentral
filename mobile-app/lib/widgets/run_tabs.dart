@@ -2013,12 +2013,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                   preferredSize: const Size.fromHeight(120.0),
                   child: Container(
                     width: MediaQuery.sizeOf(context).width,
-                    height: 40.0,
+                    height: 48.0,
                     decoration: BoxDecoration(
                       color: Theme.of(context).primaryColorLight,
-                      borderRadius: const BorderRadius.all(
-                        Radius.circular(0.0),
-                      ),
                     ),
                     child: TextScaleFactorClamper(
                       textScaleFactor: deviceInfo.textClamp15,
@@ -2026,12 +2023,13 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                         id: 'chatTab',
                         builder: (controller) {
                           return Container(
-                            height: 40.0,
                             decoration: BoxDecoration(
                               color: Colors.grey[300],
-                              //borderRadius: BorderRadius.circular(999),
                             ),
-                            padding: const EdgeInsets.all(5.0),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 5.0,
+                              vertical: 2.0,
+                            ),
                             child: Row(
                               children: [
                                 Expanded(
@@ -2041,11 +2039,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                       labelStyle: ts_tabSelected,
                                       unselectedLabelStyle: ts_tabUnselected,
                                       isScrollable: false,
-                                      labelPadding: const EdgeInsets.only(
-                                        top: 5,
-                                        left: 0,
-                                        right: 0,
-                                      ),
+                                      labelPadding: EdgeInsets.zero,
+                                      dividerHeight: 0,
                                       unselectedLabelColor: Colors.black,
                                       labelColor: Colors.white,
                                       indicatorSize: TabBarIndicatorSize.tab,
@@ -2062,7 +2057,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                 ),
 
                                 Obx(() {
-                                  if ((!notificationService.unreadEventCounts
+                                  if (!Get.isRegistered<NotificationService>() ||
+                                      (!notificationService.unreadEventCounts
                                           .containsKey(
                                             widget
                                                 .futureRun
