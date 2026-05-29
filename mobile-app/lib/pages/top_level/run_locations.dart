@@ -18,6 +18,7 @@ class RunAndKennelMapPage extends StatelessWidget {
     final ctrl = Get.put(RunAndKennelMapController(kennel: kennel), tag: _tag);
 
     return AppScaffold(
+      floatingActionButton: kennel == null ? _MapFab(controller: ctrl) : null,
       body: kennel == null
           ? _RunLocationsBody(controller: ctrl)
           : AppScaffold(
