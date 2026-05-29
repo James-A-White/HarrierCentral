@@ -1,7 +1,6 @@
 import { cookies } from "next/headers";
 import { getIsCustomDomain } from "@/lib/server-utils";
-import { redirect } from "next/navigation";
-import { notFound } from "next/navigation";
+import { redirect, notFound, unauthorized } from "next/navigation";
 import { getKennelLandingData, getEvents, getPageLayout, getSongs, getStats } from "@/lib/api";
 import { verifySession } from "@/lib/admin-session";
 import { toKennelContext } from "@/lib/kennel-utils";
@@ -26,10 +25,7 @@ export default async function AdminLayoutPage({ params, searchParams }: PageProp
     if (token) {
       redirect(`/api/admin/auth?token=${encodeURIComponent(token)}&slug=${encodeURIComponent(slug)}`);
     }
-    return new Response(
-      "Access denied. Open this page from the Harrier Central portal app.",
-      { status: 401, headers: { "Content-Type": "text/plain" } }
-    );
+    unauthorized();
   }
 
   const kennelData = await getKennelLandingData(slug);
