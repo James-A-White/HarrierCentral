@@ -1,5 +1,16 @@
 # public-web Changelog
 
+## 0.21.6 — 2026-05-29
+
+- Security: admin session cookie upgraded to sameSite strict
+- Security: rehype-sanitize added — blocks script/event handler injection in admin-authored markdown
+- Security: HTTP security headers added (X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy, Permissions-Policy)
+- Security: OTP redemption rate-limited (10 req/min per IP)
+- Security: X-Internal-Secret header sent to PublicWebAdminApi on save-layout
+- Fix: slug cache now has 10-minute TTL and 500-entry size cap
+- Fix: date format validation on global-runs API route
+- Fix: admin page returns 401 instead of 200 on unauthenticated access
+
 ## 0.21.4 — 2026-05-11
 
 - Calendar view: day separator line moved above the date header so date and its runs are visually grouped together
