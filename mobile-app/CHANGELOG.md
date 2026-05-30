@@ -1,5 +1,53 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.7.0+1141 (2026-05-30)
+
+### Features
+
+- **Hash Flash caption editing**: The photo review screen now lets the Hash
+  Flash add, edit, or clear captions on any photo — not just those the uploader
+  already captioned. A pencil icon and tap target are always visible at the
+  bottom of each photo. Tapping opens an editor with a live 200-word counter
+  and a Clear button. Any queued status decisions are flushed before the caption
+  is saved so no review work is lost.
+
+- **Caption on map photo view**: Tapping a photo marker on the run map now
+  shows the caption (if one exists) below the full-screen image. Long captions
+  scroll within a capped area; safe-area padding ensures the text clears the
+  home indicator on all devices.
+
+- **Photo review — smart tab**: The review screen now opens directly on the
+  Reviewed tab when all photos for a run have already been actioned, so the
+  Hash Flash lands on useful content rather than an empty pending state. The
+  same logic applies on every refresh.
+
+- **Status badge always colored**: The per-photo badge in the review screen
+  now shows the current status in its action color at all times — grey for Keep
+  Private, red for Deleted, green for Share/Gallery, teal for Home/Cover. The
+  previous grey styling for already-committed statuses was confusing because
+  it looked unsaved; the color now matches the action buttons directly below.
+
+### Fixes
+
+- **PackTrack live positions**: GetPositions requests now include the required
+  `X-Api-Key` header. The live position feed was silently failing for all
+  viewers since the API was secured, making PackTrack appear broken even when
+  running correctly.
+
+- **Map FAB restored**: The floating action button on the global map (Explore
+  tab) had gone missing after a navigation refactor. Restored.
+
+- **DB version mismatch**: A version mismatch between the local database and
+  the expected schema now shows an explanatory dialog and triggers a clean warm
+  reload rather than leaving the app in a silent inconsistent state.
+
+- **Notification guard**: Notification handlers now check whether their target
+  controllers are registered before calling `Get.find`. Previously a
+  notification arriving on a cold launch could throw if the destination screen
+  had never been opened.
+
+---
+
 ## 2.6.8+1140 (2026-05-29)
 
 ### Security
