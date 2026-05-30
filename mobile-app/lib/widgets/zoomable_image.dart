@@ -146,7 +146,8 @@ class ZoomableImagePage2 extends StatelessWidget {
             ),
             if (((infoTitle ?? '').isNotEmpty) || ((infoText ?? '').isNotEmpty))
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                padding: EdgeInsets.fromLTRB(
+                    24, 8, 24, MediaQuery.of(context).padding.bottom + 16),
                 child: Column(
                   children: <Widget>[
                     if ((infoTitle ?? '').isNotEmpty)
