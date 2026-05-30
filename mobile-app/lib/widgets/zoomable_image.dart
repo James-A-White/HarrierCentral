@@ -159,10 +159,15 @@ class ZoomableImagePage2 extends StatelessWidget {
                         ),
                       ),
                     if ((infoText ?? '').isNotEmpty)
-                      Text(
-                        infoText!,
-                        style: ts_body,
-                        textAlign: TextAlign.center,
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 140),
+                        child: SingleChildScrollView(
+                          child: Text(
+                            infoText!,
+                            style: ts_body,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
                       ),
                   ],
                 ),

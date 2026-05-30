@@ -1087,10 +1087,8 @@ class _PhotoPageView extends StatelessWidget {
               ),
             ),
 
-            // Status badge — always visible, reflecting the current effective
-            // status (queued decision takes priority over committed status).
-            // Queued decisions use a green accent border; committed status
-            // uses a muted border so the reviewer can see what's already set.
+            // Status badge — always visible, always colored by action type.
+            // Queued decision takes priority over committed status.
             Obx(() {
               final queued = controller.decisionFor(photo.photoId);
               final committed = photo.isDeleted
@@ -1105,7 +1103,7 @@ class _PhotoPageView extends StatelessWidget {
                     };
               final effective = queued ?? committed;
               if (effective == null) return const SizedBox.shrink();
-              final isQueued = queued != null;
+              final color = _badgeColor(effective);
               return Positioned(
                 top: 10,
                 right: 10,
@@ -1115,35 +1113,19 @@ class _PhotoPageView extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.black87,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: isQueued
-                          ? Colors.greenAccent.withValues(alpha: 0.7)
-                          : Colors.white38,
-                      width: 1,
-                    ),
+                    border: Border.all(color: color, width: 1),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        isQueued
-                            ? Icons.check_circle
-                            : Icons.label_outline,
-                        color: isQueued
-                            ? Colors.greenAccent
-                            : Colors.white54,
-                        size: 13,
-                      ),
+                      Icon(Icons.check_circle, color: color, size: 13),
                       const SizedBox(width: 5),
                       Text(
                         _actionLabel(effective),
-                        style: TextStyle(
-                          color:
-                              isQueued ? Colors.white : Colors.white54,
+                        style: const TextStyle(
+                          color: Colors.white,
                           fontSize: 11,
-                          fontWeight: isQueued
-                              ? FontWeight.w600
-                              : FontWeight.normal,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -1165,6 +1147,16 @@ class _PhotoPageView extends StatelessWidget {
         photoActionAddToHomeGallery => 'Home Page Gallery',
         photoActionMakeEventCover => 'Event Cover Photo',
         _ => 'Actioned',
+      };
+
+  Color _badgeColor(int action) => switch (action) {
+        photoActionKeepPrivate    => Colors.grey.shade600,
+        photoActionDelete         => hc_red,
+        photoActionShare          => Colors.green.shade600,
+        photoActionAddToGallery   => Colors.green.shade700,
+        photoActionAddToHomeGallery => Colors.teal.shade600,
+        photoActionMakeEventCover => Colors.teal.shade800,
+        _ => Colors.white38,
       };
 }
 
