@@ -101,6 +101,11 @@ const String EMAIL_RUN_REPORT_API_URL =
 const String STORE_POSITIONS_URL = 'https://$BASE_AF_URL/api/StorePositions';
 const String GET_POSITIONS_URL = 'https://$BASE_AF_URL/api/GetPositions';
 
+// API key required by GetPositions (X-Api-Key header). Matches the ApiKey
+// environment variable in Azure App Service. StorePositions is unauthenticated.
+const String GET_POSITIONS_API_KEY =
+    'npsXZr6xtEPv9iaA7LAEfjRZhCuGbpbwC8BSlLpwbwkGzZdRdNndXWNfvKr8p4l9hdBWE5acK8q';
+
 // old APIs below
 
 // TODO: Re-implement email run details
