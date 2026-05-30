@@ -280,6 +280,11 @@ class PhotoReviewController extends GetxController {
           .whereType<Map<String, dynamic>>()
           .map(KennelPendingPhoto.fromJson)
           .toList();
+      // If there's nothing left to review, open on the Reviewed tab so the
+      // reviewer isn't left staring at an empty pending state.
+      if (pendingPhotos.isEmpty && reviewedPhotos.isNotEmpty) {
+        activeTab.value = PhotoReviewTab.reviewed;
+      }
       _preloadAhead(0);
     } catch (e, s) {
       loadError.value =
