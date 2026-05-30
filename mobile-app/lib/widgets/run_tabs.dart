@@ -2017,12 +2017,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                     decoration: BoxDecoration(
                       color: Theme.of(context).primaryColorLight,
                     ),
-                    child: TextScaleFactorClamper(
-                      textScaleFactor: deviceInfo.textClamp15,
-                      child: GetBuilder<FutureRunListPageController>(
-                        id: 'chatTab',
-                        builder: (controller) {
-                          return Container(
+                    child: Container(
                             decoration: BoxDecoration(
                               color: Colors.grey[300],
                             ),
@@ -2044,11 +2039,13 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                       unselectedLabelColor: Colors.black,
                                       labelColor: Colors.white,
                                       indicatorSize: TabBarIndicatorSize.tab,
+                                      indicatorPadding: const EdgeInsets.symmetric(
+                                        vertical: 6.0,
+                                        horizontal: 4.0,
+                                      ),
                                       indicator: BoxDecoration(
                                         color: hc_red,
-                                        borderRadius: BorderRadius.circular(
-                                          999,
-                                        ),
+                                        borderRadius: BorderRadius.circular(999),
                                       ),
                                       tabs: _tabs,
                                       controller: _tabController,
@@ -2056,44 +2053,32 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                   ),
                                 ),
 
-                                Obx(() {
-                                  if (!Get.isRegistered<NotificationService>() ||
-                                      (!notificationService.unreadEventCounts
-                                          .containsKey(
-                                            widget
+                                Builder(builder: (_) {
+                                  if (!Get.isRegistered<NotificationService>()) {
+                                    return const SizedBox();
+                                  }
+                                  return Obx(() {
+                                    final count = notificationService
+                                            .unreadEventCounts[widget
                                                 .futureRun
                                                 .event
-                                                .publicEventId,
-                                          )) ||
-                                      (notificationService
-                                              .unreadEventCounts[widget
-                                                  .futureRun
-                                                  .event
-                                                  .publicEventId]
-                                              ?.value ==
-                                          0)) {
-                                    return const SizedBox();
-                                  } else {
+                                                .publicEventId]
+                                            ?.value ??
+                                        0;
+                                    if (count == 0) return const SizedBox();
                                     return badges.Badge(
                                       position: badges.BadgePosition.topEnd(
                                         top: -5,
                                         end: 0,
                                       ),
                                       badgeContent: Container(
-                                        padding: EdgeInsets.symmetric(
+                                        padding: const EdgeInsets.symmetric(
                                           horizontal: 2,
                                         ),
                                         width: 30,
                                         height: 13,
                                         child: AutoSizeText(
-                                          notificationService
-                                                  .unreadEventCounts[widget
-                                                      .futureRun
-                                                      .event
-                                                      .publicEventId]
-                                                  ?.value
-                                                  .toString() ??
-                                              '0',
+                                          count.toString(),
                                           textAlign: TextAlign.center,
                                           maxLines: 1,
                                           minFontSize: 10,
@@ -2106,7 +2091,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                         padding: const EdgeInsets.all(6),
                                       ),
                                     );
-                                  }
+                                  });
                                 }),
 
                                 // if ((chatCount > 0) &&
@@ -2140,9 +2125,6 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                 // ],
                               ],
                             ),
-                          );
-                        },
-                      ),
                     ),
                   ),
                 ),

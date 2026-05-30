@@ -1,5 +1,32 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.7.1+1142 (2026-05-30)
+
+### Fixes
+
+- **Logout now clears keychain**: "Log out of Harrier Central" and "Delete
+  Account" now wipe the device reset code from the iOS keychain in addition to
+  GetStorage. Previously the reset code survived logout; on the next boot
+  `_handleDbUpgrade` found the old user's code in the keychain and silently
+  re-authorised as them, causing the previous profile to reappear after restart.
+
+- **Run tabs — badge null-guard and tab indicator**: Replaced the
+  `TextScaleFactorClamper`/`GetBuilder` wrapper on the chat tab with a plain
+  `Container`. The unread-message badge now guards against `NotificationService`
+  not being registered (was a potential crash) and simplifies the count check.
+  Added `indicatorPadding` to the tab bar for tighter visual fit.
+
+### Internal
+
+- **Session A test infrastructure**: Added `mockito`, `sqflite_common_ffi`, and
+  `fake_async` dev dependencies. Added `parseBitField()` utility
+  (`lib/util/bit_utils.dart`). Added `test/helpers/mock_http_client.dart` and
+  `test/helpers/sqflite_ffi_setup.dart` as scaffolding for Session B widget
+  tests. Fixed `setupTestEnvironment()` to initialise the default GetStorage
+  container and the Flutter test binding for plain `test()` functions.
+  Added 27 unit tests: UUID normalisation (13), BIT field parsing (7),
+  `currentUserId` safe fallback (5), `isAtRunStart` throttle (2).
+
 ## 2.7.0+1141 (2026-05-30)
 
 ### Features
