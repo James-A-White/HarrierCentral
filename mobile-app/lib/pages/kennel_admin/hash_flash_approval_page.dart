@@ -34,6 +34,24 @@ class KennelPendingPhoto {
   bool get isDeleted => deletedAt != null;
   bool get isPending => status == 1 && !isDeleted;
 
+  KennelPendingPhoto copyWithDescription(String? newDescription) {
+    return KennelPendingPhoto(
+      photoId: photoId,
+      eventId: eventId,
+      status: status,
+      deletedAt: deletedAt,
+      blobUrl: blobUrl,
+      uploaderDisplayName: uploaderDisplayName,
+      eventName: eventName,
+      eventNumber: eventNumber,
+      createdAt: createdAt,
+      title: title,
+      description: (newDescription == null || newDescription.trim().isEmpty)
+          ? null
+          : newDescription.trim(),
+    );
+  }
+
   factory KennelPendingPhoto.fromJson(Map<String, dynamic> json) {
     return KennelPendingPhoto(
       photoId: normalizeUuid(
@@ -442,6 +460,87 @@ class PhotoReviewController extends GetxController {
           '$failureCount photo${failureCount == 1 ? '' : 's'} could not '
           'be updated — they may have been removed by another user. All '
           'other changes were saved successfully.',
+          style: ts_alertDialogBody,
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: hc_red,
+              foregroundColor: Colors.white,
+            ),
+            child: Text('OK', style: ts_button),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Caption editing ───────────────────────────────────────────────────────
+
+  /// Flushes any queued status decisions, then saves the caption update.
+  /// [newCaption] null or empty clears the existing caption.
+  Future<void> editCaption({
+    required String photoId,
+    required String? newCaption,
+  }) async {
+    // Flush pending status decisions first — the user paused the rapid flow
+    // to edit a caption, so this is the right moment to commit queued actions.
+    if (_queue.isNotEmpty) await _flushQueue();
+
+    isSaving.value = true;
+    try {
+      final trimmed =
+          (newCaption == null || newCaption.trim().isEmpty) ? null : newCaption.trim();
+
+      final result = await _service.updatePhotoCaption(
+        photoId: photoId,
+        description: trimmed,
+      );
+
+      if (result.startsWith(ERROR_PREFIX)) {
+        _showCaptionFailureDialog();
+        return;
+      }
+
+      final outer = jsonDecode(result) as List<dynamic>;
+      final row = (outer.isNotEmpty &&
+              outer[0] is List &&
+              (outer[0] as List).isNotEmpty)
+          ? (outer[0] as List)[0] as Map<String, dynamic>?
+          : null;
+
+      if (row?['success'] != 1 && row?['success'] != true) {
+        _showCaptionFailureDialog();
+        return;
+      }
+
+      // Optimistic local update — no full reload needed.
+      final idx = allPhotos.indexWhere((p) => p.photoId == photoId);
+      if (idx >= 0) {
+        allPhotos[idx] = allPhotos[idx].copyWithDescription(trimmed);
+      }
+    } catch (e, s) {
+      debugPrint('PhotoReviewController.editCaption error: $e');
+      BootLogger.logError(
+          '[PhotoReviewController.editCaption] photoId=$photoId', e, s);
+      _showCaptionFailureDialog();
+    } finally {
+      isSaving.value = false;
+    }
+  }
+
+  void _showCaptionFailureDialog() {
+    final ctx = navigatorKey.currentContext;
+    if (ctx == null || !ctx.mounted) return;
+    showDialog<void>(
+      context: ctx,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        title: Text('Caption not saved', style: ts_alertDialogTitle),
+        content: Text(
+          'The caption could not be saved. Please check your connection '
+          'and try again.',
           style: ts_alertDialogBody,
         ),
         actions: [
@@ -921,28 +1020,8 @@ class _PhotoPageView extends StatelessWidget {
                     color: Colors.white38, size: 64),
               ),
 
-            // Caption overlay — shown when the photo has a description
-            if (photo.description != null && photo.description!.isNotEmpty)
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
-                  color: Colors.black.withValues(alpha: 0.65),
-                  child: Text(
-                    photo.description!,
-                    style: const TextStyle(
-                        color: Colors.white, fontSize: 13, height: 1.4),
-                    maxLines: 4,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ),
-
-            // Soft-deleted overlay — plain conditional, no Obx needed:
-            // photo.isDeleted is not reactive; parent _PhotoBody Obx rebuilds
-            // the whole PageView whenever allPhotos changes.
+            // Soft-deleted overlay — rendered before caption strip so the
+            // strip sits on top and remains tappable on deleted photos.
             if (photo.isDeleted)
               Positioned.fill(
                 child: ColoredBox(
@@ -963,11 +1042,70 @@ class _PhotoPageView extends StatelessWidget {
                 ),
               ),
 
-            // Decision badge
+            // Caption strip — always visible so the reviewer can add or edit
+            // captions regardless of whether one exists already.
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => unawaited(
+                    _showCaptionEditor(context, controller, photo)),
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
+                  color: Colors.black.withValues(alpha: 0.65),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: photo.description != null &&
+                                photo.description!.isNotEmpty
+                            ? Text(
+                                photo.description!,
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    height: 1.4),
+                                maxLines: 4,
+                                overflow: TextOverflow.ellipsis,
+                              )
+                            : Text(
+                                'Add a caption…',
+                                style: TextStyle(
+                                    color: Colors.white38,
+                                    fontSize: 13,
+                                    fontStyle: FontStyle.italic),
+                              ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.edit_outlined,
+                          color: Colors.white54, size: 16),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Status badge — always visible, reflecting the current effective
+            // status (queued decision takes priority over committed status).
+            // Queued decisions use a green accent border; committed status
+            // uses a muted border so the reviewer can see what's already set.
             Obx(() {
-              final action =
-                  controller.decisionFor(photo.photoId);
-              if (action == null) return const SizedBox.shrink();
+              final queued = controller.decisionFor(photo.photoId);
+              final committed = photo.isDeleted
+                  ? photoActionDelete
+                  : switch (photo.status) {
+                      0 => photoActionKeepPrivate,
+                      2 => photoActionShare,
+                      3 => photoActionAddToGallery,
+                      4 => photoActionAddToHomeGallery,
+                      5 => photoActionMakeEventCover,
+                      _ => null, // status 1 = pending, no badge until actioned
+                    };
+              final effective = queued ?? committed;
+              if (effective == null) return const SizedBox.shrink();
+              final isQueued = queued != null;
               return Positioned(
                 top: 10,
                 right: 10,
@@ -978,22 +1116,35 @@ class _PhotoPageView extends StatelessWidget {
                     color: Colors.black87,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                        color:
-                            Colors.greenAccent.withValues(alpha: 0.7),
-                        width: 1),
+                      color: isQueued
+                          ? Colors.greenAccent.withValues(alpha: 0.7)
+                          : Colors.white38,
+                      width: 1,
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.check_circle,
-                          color: Colors.greenAccent, size: 13),
+                      Icon(
+                        isQueued
+                            ? Icons.check_circle
+                            : Icons.label_outline,
+                        color: isQueued
+                            ? Colors.greenAccent
+                            : Colors.white54,
+                        size: 13,
+                      ),
                       const SizedBox(width: 5),
                       Text(
-                        _actionLabel(action),
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600),
+                        _actionLabel(effective),
+                        style: TextStyle(
+                          color:
+                              isQueued ? Colors.white : Colors.white54,
+                          fontSize: 11,
+                          fontWeight: isQueued
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                        ),
                       ),
                     ],
                   ),
@@ -1154,6 +1305,165 @@ class _ActionPanel extends StatelessWidget {
         ),
       );
     });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Caption editor bottom sheet
+// ---------------------------------------------------------------------------
+
+Future<void> _showCaptionEditor(
+  BuildContext context,
+  PhotoReviewController controller,
+  KennelPendingPhoto photo,
+) async {
+  // result == null  → dismissed without action (back / tap outside)
+  // result == ''    → Clear tapped, or Save with empty field
+  // result == 'txt' → Save tapped with content
+  final result = await showModalBottomSheet<String>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.grey.shade900,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (_) => _CaptionEditorSheet(
+      initialCaption: photo.description ?? '',
+    ),
+  );
+
+  if (result == null) return; // dismissed, no action
+
+  final newCaption = result.isEmpty ? null : result;
+  if (newCaption == photo.description) return; // nothing changed
+
+  await controller.editCaption(photoId: photo.photoId, newCaption: newCaption);
+}
+
+class _CaptionEditorSheet extends StatefulWidget {
+  const _CaptionEditorSheet({required this.initialCaption});
+  final String initialCaption;
+
+  @override
+  State<_CaptionEditorSheet> createState() => _CaptionEditorSheetState();
+}
+
+class _CaptionEditorSheetState extends State<_CaptionEditorSheet> {
+  late final TextEditingController _textController;
+  int _wordCount = 0;
+
+  static int _countWords(String text) {
+    final t = text.trim();
+    if (t.isEmpty) return 0;
+    return t.split(RegExp(r'\s+')).length;
+  }
+
+  String? get _finalCaption {
+    final t = _textController.text.trim();
+    if (t.isEmpty) return null;
+    if (_wordCount <= 200) return t;
+    return t.split(RegExp(r'\s+')).take(200).join(' ');
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _textController = TextEditingController(text: widget.initialCaption);
+    _wordCount = _countWords(widget.initialCaption);
+    _textController.addListener(() {
+      final count = _countWords(_textController.text);
+      if (count != _wordCount) setState(() => _wordCount = count);
+    });
+  }
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 16,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                'Caption',
+                style: ts_bodySmall.copyWith(
+                    color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+              const Spacer(),
+              if (widget.initialCaption.isNotEmpty)
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(''),
+                  child: Text('Clear',
+                      style:
+                          ts_bodySmall.copyWith(color: Colors.redAccent)),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _textController,
+            maxLines: 5,
+            minLines: 2,
+            autofocus: true,
+            style: const TextStyle(color: Colors.white, fontSize: 14),
+            decoration: InputDecoration(
+              hintText: 'Describe this photo…',
+              hintStyle:
+                  const TextStyle(color: Colors.white38, fontSize: 14),
+              filled: true,
+              fillColor: Colors.white10,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12, vertical: 10),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              '$_wordCount / 200 words',
+              style: TextStyle(
+                color:
+                    _wordCount > 200 ? Colors.redAccent : Colors.white38,
+                fontSize: 11,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green.shade700,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: () =>
+                  Navigator.of(context).pop(_finalCaption ?? ''),
+              child: Text('Save caption', style: ts_button),
+            ),
+          ),
+          const SizedBox(height: 4),
+        ],
+      ),
+    );
   }
 }
 

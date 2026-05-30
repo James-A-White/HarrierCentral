@@ -476,6 +476,33 @@ class KennelPhotoService {
     );
   }
 
+  /// Updates (or clears) the caption on a photo. Passing null clears any
+  /// existing caption. Only callable by Hash Flash, GM, VGM, or RA.
+  Future<String> updatePhotoCaption({
+    required String photoId,
+    String? description,
+  }) async {
+    final userId = currentUserId;
+    final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    final body = <String, dynamic>{
+      'queryType': 'updatePhotoCaption',
+      'deviceId': deviceId,
+      'accessToken': Utilities.generateToken(
+        userId,
+        'hcapp_updatePhotoCaption',
+        paramString: deviceSecret,
+      ),
+      'photoId': photoId,
+    };
+    if (description != null && description.isNotEmpty) {
+      body['description'] = description;
+    }
+
+    return ServiceCommon.sendHttpPost(() => jsonEncode(body), noRetries: true);
+  }
+
   // ── Share intent page ────────────────────────────────────────────────────
 
   Future<_PhotoShareResult?> _showSharePage(File imageFile) async {
