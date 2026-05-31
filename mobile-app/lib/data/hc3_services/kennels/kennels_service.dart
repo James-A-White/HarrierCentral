@@ -144,6 +144,7 @@ class KennelsTableHelper extends BaseTableHelper<AppDomainType>
             $colRunCountStartDate TEXT,
             $colKennelMismanagementTeam TEXT,
             $colDistancePreference INT,
+            $colTrailSymbolsConfigJson TEXT,
             $colUpdatedAt TEXT NOT NULL,
             $colRemoved INT NOT NULL,
             $colUpdatedAtValue INT NULL
