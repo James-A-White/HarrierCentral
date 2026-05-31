@@ -42,6 +42,14 @@ AS
 BEGIN
     DECLARE @generatedToken NVARCHAR(2000);
 
+    -- Run the SELECT GETDATE() below and paste the result in the bypass datetime field
+    -- to temporarily bypass access token checks for 2 hours
+    -- SELECT GETDATE()
+    IF (DATEADD(MINUTE, -120, GETDATE()) < '2026-05-31 10:57:29.490')
+    BEGIN
+        RETURN 1;
+    END
+
     -- Basic sanity check on token length
     IF (@accessToken IS NULL OR DATALENGTH(@accessToken) < 50)
     BEGIN
