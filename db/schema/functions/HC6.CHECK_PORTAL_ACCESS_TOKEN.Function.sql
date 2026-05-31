@@ -42,6 +42,18 @@ AS
 BEGIN
     DECLARE @generatedToken NVARCHAR(2000);
 
+    -- -------------------------------------------------------------------------
+    -- DEBUG BYPASS — disabled in production.
+    -- To activate: change the cutoff to a future date (e.g. tomorrow).
+    -- To deactivate: set it to any past date.
+    -- While active, ALL token validation is skipped and RETURN 1 fires.
+    -- Never leave this active in a committed/deployed build.
+    -- -------------------------------------------------------------------------
+    IF (GETUTCDATE() < '2000-01-01 00:00:00.000')
+    BEGIN
+        RETURN 1;
+    END
+
     -- Basic sanity check on token length
     IF (@accessToken IS NULL OR DATALENGTH(@accessToken) < 50)
     BEGIN
