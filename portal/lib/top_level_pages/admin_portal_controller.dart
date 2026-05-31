@@ -136,7 +136,16 @@ class AdminPortalController extends GetxController {
           const Duration(seconds: AUTH_POLL_INTERVAL_SECONDS),
         );
 
+        if (kDebugMode) debugPrint(
+          '[Auth poll] Starting — authCode: ${authCode.substring(0, 8)}… '
+          'max $AUTH_POLL_MAX_ATTEMPTS attempts @ ${AUTH_POLL_INTERVAL_SECONDS}s',
+        );
+
         for (var i = 0; i < AUTH_POLL_MAX_ATTEMPTS; i++) {
+          if (kDebugMode) debugPrint(
+            '[Auth poll] Attempt ${i + 1}/$AUTH_POLL_MAX_ATTEMPTS',
+          );
+
           // NOTE: This is a randomly generated user ID that matches the one
           // in the database used to generate the access token.
           // DO NOT CHANGE THIS or it will result in an invalid access token error.
@@ -160,17 +169,23 @@ class AdminPortalController extends GetxController {
           final authResult =
               await ServiceCommon.sendHttpPostToHC6Api(body);
           if (kDebugMode) debugPrint(authResult is ApiError
-              ? 'SP 4 [confirmAuthentication] called — FAILED'
-              : 'SP 4 [confirmAuthentication] called — success');
+              ? '[Auth poll] Attempt ${i + 1} — SP FAILED'
+              : '[Auth poll] Attempt ${i + 1} — SP success');
 
           if (authResult case ApiSuccess(:final body)) {
             final rows = (json.decode(body) as List<dynamic>)[0] as List<dynamic>;
             if (rows.isEmpty) {
+              if (kDebugMode) debugPrint(
+                '[Auth poll] Attempt ${i + 1} — no scan yet, waiting…',
+              );
               await Future<void>.delayed(
                 const Duration(seconds: AUTH_POLL_INTERVAL_SECONDS),
               );
               continue;
             }
+            if (kDebugMode) debugPrint(
+              '[Auth poll] Attempt ${i + 1} — scan received! Parsing credentials…',
+            );
             final items = rows[0] as Map<String, dynamic>;
 
             publicHasherId = items['publicHasherId'] as String;
@@ -198,6 +213,10 @@ class AdminPortalController extends GetxController {
               await _getHasherKennels();
               await _fetchPlatformAdminPrivileges();
 
+              if (kDebugMode) debugPrint(
+                '[Auth poll] Login complete on attempt ${i + 1} — '
+                'hasher: $publicHasherId',
+              );
               break;
             }
           }
@@ -205,6 +224,7 @@ class AdminPortalController extends GetxController {
             const Duration(seconds: AUTH_POLL_INTERVAL_SECONDS),
           );
         }
+        if (kDebugMode) debugPrint('[Auth poll] Loop ended.');
       }
       unawaited(_initializeNotifications());
     } on Exception catch (e) {
