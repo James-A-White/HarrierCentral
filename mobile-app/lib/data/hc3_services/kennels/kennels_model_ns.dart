@@ -61,6 +61,7 @@ abstract class KennelsModel with _$KennelsModel implements BaseModel {
     DateTime? runCountStartDate,
     String? kennelMismanagementTeam,
     int? distancePreference,
+    String? trailSymbolsConfigJson,
     DateTime? updatedAt,
     int? removed,
   }) = _KennelsModel;

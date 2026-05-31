@@ -373,6 +373,15 @@ class Tables {
       appliedAtInt: 0,
     ),
 
+    // MIGRATION 522 — Per-kennel trail symbol configuration
+    MigrationsModel(
+      dbVersion: 522,
+      migrationText: '''
+        ALTER TABLE ${EnumDataTables.kennels.commonTableName} ADD COLUMN ${tableModel.kennelsTableHelper.colTrailSymbolsConfigJson} TEXT;
+      ''',
+      appliedAtInt: 0,
+    ),
+
   ];
 
   static Future<void> createTables(

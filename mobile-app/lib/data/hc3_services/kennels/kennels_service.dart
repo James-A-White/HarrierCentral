@@ -77,6 +77,7 @@ class KennelsTableHelper extends BaseTableHelper<AppDomainType>
   final String colRunCountStartDate = 'runCountStartDate';
   final String colKennelMismanagementTeam = 'kennelMismanagementTeam';
   final String colDistancePreference = 'distancePreference';
+  final String colTrailSymbolsConfigJson = 'trailSymbolsConfigJson';
 
   @override
   Future<dynamic> createTable(
