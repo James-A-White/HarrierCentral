@@ -22,6 +22,7 @@ class LiveRunGeneralController extends GetxController {
   late final RxBool canStartTracking;
 
   DateTime? _trackingStartedAt;
+  DateTime? _trackingEndedAt;
   Timer? _elapsedTicker;
   Timer? _preRunTimer;
   Worker? _trackingWorker;
@@ -108,12 +109,32 @@ class LiveRunGeneralController extends GetxController {
   }
 
   void stopTracking() {
+    _trackingEndedAt = DateTime.now();
     unawaited(_locationService.stopTracking());
     _stopElapsedTicker();
   }
 
-  Future<void> markPoint(HashRunPointTypes type, {String? label}) async {
-    await _locationService.markPoint(type, label: label);
+  Future<void> markSlot(TrailSlot slot, {String? label}) async {
+    await _locationService.markSlot(slot, label: label);
+  }
+
+  /// Returns the timestamp (epoch ms) that should be stamped on the GPS track
+  /// marker for a photo taken right now.
+  ///
+  /// - Before tracking starts: the run's scheduled start time, so the marker
+  ///   sits at the beginning of the timeline.
+  /// - During / paused: current time (normal behaviour).
+  /// - After tracking ends: the moment tracking stopped, so the marker sits
+  ///   at the end of the timeline.
+  int get _photoMarkerTimestampMs {
+    if (isTracking.value || isPaused.value) {
+      return DateTime.now().millisecondsSinceEpoch;
+    }
+    if (_trackingEndedAt != null) {
+      return _trackingEndedAt!.millisecondsSinceEpoch;
+    }
+    // Pre-run: anchor to the scheduled start so the photo lands at t=0.
+    return run.event.eventStartDatetimeGmt.millisecondsSinceEpoch;
   }
 
   Future<void> takePhoto() async {
@@ -122,6 +143,7 @@ class LiveRunGeneralController extends GetxController {
       kennelId: run.kennel.kennelId,
       kennelSlug: run.kennel.kennelUniqueShortName,
       eventNumber: run.event.eventNumber,
+      markerTimestampMs: _photoMarkerTimestampMs,
     );
     if (blobUrl != null) {
       Get.snackbar(
@@ -380,35 +402,28 @@ class LiveRunGeneralPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
-              child: Obx(() {
-                final active =
-                    controller.isTracking.value || controller.isPaused.value;
-                return ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: active ? hc_blue : Colors.grey.shade700,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: Colors.grey.shade700,
-                    disabledForegroundColor: Colors.white54,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: hc_blue,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () => unawaited(controller.takePhoto()),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.camera_alt, size: 44),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Take\nPhoto',
+                      textAlign: TextAlign.center,
+                      style: ts_button.copyWith(fontSize: 15),
                     ),
-                  ),
-                  onPressed:
-                      active ? () => unawaited(controller.takePhoto()) : null,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.camera_alt, size: 44),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Take\nPhoto',
-                        textAlign: TextAlign.center,
-                        style: ts_button.copyWith(fontSize: 15),
-                      ),
-                    ],
-                  ),
-                );
-              }),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 8),
             SizedBox(
@@ -508,27 +523,12 @@ class LiveRunGeneralPage extends StatelessWidget {
   }
 
   Widget _buildMarkerGrid(BuildContext context) {
-    final markers = [
-      HashRunPointTypes.check,
-      HashRunPointTypes.falseTrail,
-      HashRunPointTypes.shortCut,
-      HashRunPointTypes.checkback,
-
-      HashRunPointTypes.whichyWay,
-      HashRunPointTypes.fishhook,
-      HashRunPointTypes.regroup,
-      HashRunPointTypes.hashView,
-
-      HashRunPointTypes.customLabel,
-      HashRunPointTypes.drinkStop,
-      HashRunPointTypes.onInn,
-      HashRunPointTypes.caution,
-    ];
+    final slots = run.kennel.trailSlots;
 
     const int perRow = 4;
     final rows = <Widget>[];
-    for (var i = 0; i < markers.length; i += perRow) {
-      final slice = markers.skip(i).take(perRow).toList(growable: false);
+    for (var i = 0; i < slots.length; i += perRow) {
+      final slice = slots.skip(i).take(perRow).toList(growable: false);
       rows.add(
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 0),
@@ -536,7 +536,7 @@ class LiveRunGeneralPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               for (var j = 0; j < slice.length; j++) ...[
-                _buildMarkerButton(context, slice[j]),
+                _buildSlotButton(context, slice[j]),
                 if (j != slice.length - 1) const SizedBox(width: 10),
               ],
             ],
@@ -560,24 +560,17 @@ class LiveRunGeneralPage extends StatelessWidget {
     );
   }
 
-  Widget _buildMarkerButton(BuildContext context, HashRunPointTypes type) {
+  Widget _buildSlotButton(BuildContext context, TrailSlot slot) {
     return InkWell(
       onTap: () async {
         String? label;
 
-        if (type == HashRunPointTypes.customLabel ||
-            type == HashRunPointTypes.caution) {
+        if (slot.parsedAction == TrailSlotAction.addText) {
           final popup = GetPointLabelPopup(
-            title: type == HashRunPointTypes.customLabel
-                ? 'Add Point Label'
-                : 'Add Caution Note',
-            hintText: type == HashRunPointTypes.customLabel
-                ? 'Point Label'
-                : 'Caution / warning text',
-            confirmButtonText: type == HashRunPointTypes.customLabel
-                ? 'Save Label'
-                : 'Save Warning',
-            iconData: type.iconData,
+            title: 'Add Note',
+            hintText: slot.name,
+            confirmButtonText: 'Save',
+            iconData: Icons.label_outline,
           );
 
           final dialogResult = await showDialog<Map<String, String>>(
@@ -587,34 +580,27 @@ class LiveRunGeneralPage extends StatelessWidget {
           );
 
           final trimmed = dialogResult?['label']?.trim() ?? '';
-          if (trimmed.isEmpty) {
-            return;
-          }
+          if (trimmed.isEmpty) return;
           label = trimmed;
         }
 
-        await controller.markPoint(type, label: label);
+        if (!context.mounted) return;
+        unawaited(_showSlotFlash(context, slot, label));
 
-        if (type == HashRunPointTypes.onInn) {
+        await controller.markSlot(slot, label: label);
+
+        if (slot.parsedAction == TrailSlotAction.endRun) {
           controller.stopTracking();
         }
-
-        final suffix = (label != null && label.isNotEmpty) ? ' — $label' : '';
-        Get.snackbar(
-          'Marker recorded',
-          '${type.label}$suffix',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: hc_blue,
-        );
       },
       borderRadius: BorderRadius.circular(40),
       child: Image.asset(
-        'images/live_run_trail_markers/${type.pngIcon}',
+        slot.assetPath,
         height: 50,
         width: 50,
         fit: BoxFit.contain,
         errorBuilder: (_, _, _) =>
-            Icon(type.iconData, color: type.color, size: 32),
+            const Icon(Icons.place, color: customRed, size: 32),
       ),
     );
   }
@@ -623,6 +609,144 @@ class LiveRunGeneralPage extends StatelessWidget {
     return ChatStripWidget(
       eventId: run.event.eventId,
       publicEventId: run.event.publicEventId,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Slot flash overlay — shown immediately on tap, dismissed after 4 s or tap
+// ---------------------------------------------------------------------------
+
+Future<void> _showSlotFlash(
+  BuildContext context,
+  TrailSlot slot,
+  String? label,
+) {
+  return showDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    barrierColor: Colors.black.withValues(alpha: 0.65),
+    builder: (_) => _SlotFlashDialog(slot: slot, label: label),
+  );
+}
+
+class _SlotFlashDialog extends StatefulWidget {
+  const _SlotFlashDialog({required this.slot, this.label});
+  final TrailSlot slot;
+  final String? label;
+
+  @override
+  _SlotFlashDialogState createState() => _SlotFlashDialogState();
+}
+
+class _SlotFlashDialogState extends State<_SlotFlashDialog>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _animCtrl;
+  late final Animation<double> _scale;
+  late final Animation<double> _opacity;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _animCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 220),
+    );
+    _scale = CurvedAnimation(parent: _animCtrl, curve: Curves.easeOutBack);
+    _opacity = CurvedAnimation(parent: _animCtrl, curve: Curves.easeIn);
+    _animCtrl.forward();
+    _timer = Timer(const Duration(seconds: 4), _dismiss);
+  }
+
+  @override
+  void dispose() {
+    _animCtrl.dispose();
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _dismiss() {
+    if (mounted) Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _dismiss,
+      behavior: HitTestBehavior.opaque,
+      child: FadeTransition(
+        opacity: _opacity,
+        child: Center(
+          child: ScaleTransition(
+            scale: _scale,
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 40),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(28),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.35),
+                      blurRadius: 24,
+                      spreadRadius: 4,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(
+                      widget.slot.assetPath,
+                      width: 160,
+                      height: 160,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, _, _) => const Icon(
+                        Icons.place,
+                        color: customRed,
+                        size: 120,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      widget.slot.name,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                    if (widget.label?.isNotEmpty ?? false) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        widget.label!,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.black54,
+                          decoration: TextDecoration.none,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                    const SizedBox(height: 24),
+                    Text(
+                      'Tap to dismiss',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade400,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
