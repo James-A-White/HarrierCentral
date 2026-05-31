@@ -1,5 +1,26 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.7.2+1143 (2026-05-31)
+
+### Fixes
+
+- **Logout now reliably restarts the app**: Replaced `Get.offAll()` with
+  `restartKey.currentState?.restartApp()` in the logout handler.
+  `Get.offAll()` ran a route transition animation during which
+  `MainNavigationPage.build()` fired and recreated a permanent
+  `MainNavigationController` — causing `onInitAsync()` to run with cleared
+  credentials and then be reused by the next session, skipping the initial
+  data sync. `restartApp()` tears down the widget tree via `dispose()` (no
+  build pass) so no stale controller is ever created.
+
+- **`database_closed` after logout**: `setupDatabase()` called
+  `Get.delete<Database>()` to evict the old DB handle before opening a fresh
+  one, but the handle was registered as `permanent: true`, so GetX silently
+  ignored the deletion and `Get.putAsync<Database>()` returned the existing
+  closed handle. Changed the call to `Get.delete<Database>(force: true)` so
+  the permanent flag is bypassed and a genuinely fresh connection is always
+  opened.
+
 ## 2.7.1+1142 (2026-05-30)
 
 ### Fixes

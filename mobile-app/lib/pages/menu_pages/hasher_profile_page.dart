@@ -1956,17 +1956,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             DB_NAME,
                                                           );
 
-                                                          // Get.reset(
-                                                          //   clearRouteBindings:
-                                                          //       true,
-                                                          // );
                                                           await initServices();
-                                                          await Get.offAll(
-                                                            () =>
-                                                                AppEntryPage(),
-                                                            binding:
-                                                                InitialBindings(),
-                                                          );
+                                                          restartKey.currentState
+                                                              ?.restartApp();
                                                         }
                                                       });
                                                     },
