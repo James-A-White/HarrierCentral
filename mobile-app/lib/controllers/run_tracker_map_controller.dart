@@ -91,6 +91,13 @@ class RunTrackerMapController extends GetxController
   // Survives map zoom/pan rebuilds so markers skip the loading animation.
   final Map<String, bool> _photoOrientationCache = {};
 
+  // Uploader identity — populated lazily from local SQLite on first photo fetch.
+  // Keyed by lowercase userId so multiple photos by the same person only trigger
+  // one DB lookup. photoId → userId provides the join between the two maps.
+  final Map<String, String> _photoUploaderIdCache = {};  // photoId  → userId
+  final Map<String, String> _uploaderNameCache = {};     // userId   → display name
+  final Map<String, String> _uploaderPhotoCache = {};    // userId   → profile photo URL
+
   Worker? _timelineWorker;
   Worker? _selectionWorker;
   StreamSubscription<MapEvent>? _mapEventsSub;
@@ -217,7 +224,8 @@ class RunTrackerMapController extends GetxController
 
           final bool hasAttachedLabel =
               (parsedType.customLabel?.isNotEmpty ?? false) &&
-              (parsedType.type == HashRunPointTypes.customLabel ||
+              (parsedType.slotIcon != null ||
+                  parsedType.type == HashRunPointTypes.customLabel ||
                   parsedType.type == HashRunPointTypes.caution);
 
           const double baseIconSize = 72.0;
@@ -238,10 +246,7 @@ class RunTrackerMapController extends GetxController
             height: markerHeight,
             point: latlng.LatLng(point.lat, point.lng),
             alignment: Alignment.topCenter,
-            child: _buildCheckpointMarker(
-              parsedType.type,
-              customLabel: parsedType.customLabel,
-            ),
+            child: _buildCheckpointMarker(parsedType),
           );
         })
         .whereType<Marker>()
@@ -342,8 +347,8 @@ class RunTrackerMapController extends GetxController
   }
 
   // Fetches the authorised photo URL list for this event and populates
-  // _photoUrlCache (photoId → blobUrl) and _photoAssetIdCache (photoId → assetId).
-  // Called on init and every auto-update tick so newly-taken photos appear.
+  // _photoUrlCache, _photoAssetIdCache, _photoCaptionCache, and the uploader
+  // identity caches. Called on init and every auto-update tick.
   Future<void> _loadPhotoCache() async {
     try {
       final raw = await KennelPhotoService().getRunPhotos(eventId: event.eventId);
@@ -369,6 +374,22 @@ class RunTrackerMapController extends GetxController
                 (row['Description'] ?? row['description']) as String?;
             if (description != null && description.isNotEmpty) {
               _photoCaptionCache[id] = description;
+            }
+            // Uploader identity — look up from local SQLite on first encounter.
+            final rawUserId = (row['UserId'] ?? row['userId']) as String?;
+            if (rawUserId != null && rawUserId.isNotEmpty) {
+              final userId = normalizeUuid(rawUserId);
+              _photoUploaderIdCache[id] = userId;
+              if (!_uploaderNameCache.containsKey(userId)) {
+                final userData = await QueryUsers.querySingleUser(userId);
+                if (userData.isNotEmpty) {
+                  _uploaderNameCache[userId] =
+                      _preferredDisplayName(userData.first);
+                  final photoUrl = userData.first[
+                      tableModel.hashersTableHelper.colPhoto] as String?;
+                  _uploaderPhotoCache[userId] = photoUrl ?? '';
+                }
+              }
             }
             updated = true;
           }
@@ -604,41 +625,45 @@ class RunTrackerMapController extends GetxController
         ? parts.sublist(1).join('::').trim()
         : null;
 
+    final label = (customLabel != null && customLabel.isNotEmpty)
+        ? customLabel
+        : null;
+
+    // New-style slot icon (e.g. 'I-003.png') — use asset filename directly.
+    if (typeKey.startsWith('I-')) {
+      return _ParsedCheckpointType(slotIcon: typeKey, customLabel: label);
+    }
+
+    // Legacy: resolve via HashRunPointTypes enum.
     try {
       final type = HashRunPointTypes.fromKey(typeKey);
       if (type == null) return null;
-      return _ParsedCheckpointType(
-        type: type,
-        customLabel: (customLabel != null && customLabel.isNotEmpty)
-            ? customLabel
-            : null,
-      );
+      return _ParsedCheckpointType(type: type, customLabel: label);
     } catch (_) {
       return null;
     }
   }
 
-  Widget _buildCheckpointMarker(HashRunPointTypes type, {String? customLabel}) {
-    // PHO markers: the customLabel is the blob sub-path, not a display label.
+  Widget _buildCheckpointMarker(_ParsedCheckpointType parsed) {
+    final type = parsed.type;
+    final customLabel = parsed.customLabel;
+
+    // PHO markers: customLabel is the blob sub-path, not a display label.
     if (type == HashRunPointTypes.photo) {
       return _buildPhotoMarker(customLabel ?? '');
     }
 
-    final bool showLabel =
-        (type == HashRunPointTypes.customLabel ||
-            type == HashRunPointTypes.caution) &&
-        customLabel != null &&
-        customLabel.isNotEmpty;
+    final bool showLabel = customLabel != null && customLabel.isNotEmpty;
+    final bool isCaution = type == HashRunPointTypes.caution;
 
-    final icon = _buildCheckpointIcon(type);
+    final icon = parsed.slotIcon != null
+        ? _buildSlotCheckpointIcon(parsed.slotIcon!)
+        : _buildCheckpointIcon(type!);
 
     if (!showLabel) return icon;
 
-    final bool isCaution = type == HashRunPointTypes.caution;
     final double scale = _markerScale();
     const double baseIconSize = 72.0;
-    // const double baseLabelWidth = 140.0;
-    // const double baseLabelHeight = 140.0;
     final double labelMaxWidth = 120.0 * scale;
 
     return Column(
@@ -693,6 +718,21 @@ class RunTrackerMapController extends GetxController
     );
   }
 
+  Widget _buildSlotCheckpointIcon(String icon) {
+    final double scale = _markerScale();
+    const double baseIconSize = 72.0;
+    final double size = baseIconSize * scale;
+
+    return Image.asset(
+      'images/live_run_map_markers/$icon',
+      width: size,
+      height: size,
+      fit: BoxFit.contain,
+      errorBuilder: (_, _, _) =>
+          Icon(Icons.place, color: customRed, size: size * 0.8),
+    );
+  }
+
   Widget _buildPhotoMarker(String? label) {
     const double baseSize = 144.0;
     final double size = baseSize * _photoMarkerScale();
@@ -716,8 +756,6 @@ class RunTrackerMapController extends GetxController
     final String? resolvedLabel = label?.toLowerCase();
     final String? assetId =
         resolvedLabel != null ? _photoAssetIdCache[resolvedLabel] : null;
-    final String? caption =
-        resolvedLabel != null ? _photoCaptionCache[resolvedLabel] : null;
 
     final marker = CameraPhotoMarker(
       photoUrl: resolvedUrl,
@@ -729,19 +767,53 @@ class RunTrackerMapController extends GetxController
           _photoOrientationCache[url] = isLandscape,
     );
 
+    final photoItems = _orderedPhotoItems;
+    final tappedIndex =
+        photoItems.indexWhere((p) => p.imageUrl == resolvedUrl);
+
     return GestureDetector(
       onTap: () => Navigator.of(navigatorKey.currentContext!).push(
         MaterialPageRoute<void>(
-          builder: (_) => ZoomableImagePage2(
+          builder: (_) => MapPhotoPage(
             pageTitle: event.eventName,
-            imageUrl: resolvedUrl,
+            photos: photoItems,
+            initialIndex: tappedIndex.clamp(0, photoItems.length - 1),
             background: Backgrounds.defaultHcBackground(),
-            infoText: caption,
           ),
         ),
       ),
       child: marker,
     );
+  }
+
+  // Builds the ordered list of resolved photo items from userPositions for the
+  // carousel. Order matches the order markers appear on the track. Photos whose
+  // URL has not yet resolved (not approved / not fetched) are excluded.
+  List<MapPhotoItem> get _orderedPhotoItems {
+    final seen = <String>{};
+    final items = <MapPhotoItem>[];
+    for (final user in userPositions) {
+      for (final point in user.positions) {
+        final parsed = _parseCheckpointType(point.type);
+        if (parsed == null || parsed.type != HashRunPointTypes.photo) continue;
+        final label = parsed.customLabel;
+        if (label == null || label.isEmpty) continue;
+        final lowerLabel = label.toLowerCase();
+        final String? url =
+            label.startsWith('http') ? label : _photoUrlCache[lowerLabel];
+        if (url == null) continue;
+        if (!seen.add(url)) continue; // deduplicate legacy-URL markers
+        final caption = _photoCaptionCache[lowerLabel] ?? '';
+        final userId = _photoUploaderIdCache[lowerLabel] ?? '';
+        items.add(MapPhotoItem(
+          imageUrl: url,
+          caption: caption,
+          uploaderName: _uploaderNameCache[userId] ?? '',
+          uploaderPhotoUrl: _uploaderPhotoCache[userId] ?? '',
+        ));
+      }
+    }
+    return items;
   }
 
   double _markerScale() {
@@ -1286,8 +1358,10 @@ class _InterpolatedPoint {
 }
 
 class _ParsedCheckpointType {
-  const _ParsedCheckpointType({required this.type, this.customLabel});
+  const _ParsedCheckpointType({this.type, this.slotIcon, this.customLabel})
+      : assert(type != null || slotIcon != null);
 
-  final HashRunPointTypes type;
+  final HashRunPointTypes? type;
+  final String? slotIcon;
   final String? customLabel;
 }
