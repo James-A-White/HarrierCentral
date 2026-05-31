@@ -1,5 +1,42 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.7.3+1144 (2026-06-01)
+
+### Features
+
+- **Configurable trail marking symbols**: The 12 trail map buttons in the live
+  run screen are now configured per kennel, editable by admins via the new Trail
+  Symbols tab in the portal Edit Kennel page. Each slot can have any of the
+  available symbol images, a kennel-specific name (shown in the confirmation
+  flash), and an optional action (Add Text, End Run). Empty slots are not
+  rendered. Kennels with no saved configuration use the existing 12 defaults.
+
+- **Symbol image library**: Trail marker PNGs are now published under a numbered
+  scheme (`I-001.png` through `I-012.png`) to allow future expansion up to 999
+  symbols without app updates.
+
+### Fixes
+
+- **Kennel admin sync crash** (`type 'Null' is not a subtype of type 'num'`):
+  `hcapp_syncKennelAdminData` was missing `disseminateAllowWebLinks` from its
+  kennel rowset. The field was always absent; the crash only surfaced now because
+  editing trail symbols via the portal updated the kennel's `updatedAt`, causing
+  the admin sync to re-fetch that record for the first time.
+
+- **Sync `FormatException: Unterminated string`**: The base sync library used a
+  regex (`\[(\{(.*?)\})\]`) to split multi-result-set API responses. The
+  non-greedy `.*?` stopped at the first `}]` sequence — which appears literally
+  inside JSON-typed column values like `trailSymbolsConfigJson`. Replaced with
+  `jsonDecode` on the full `[[...]]` response; handles embedded JSON arrays
+  correctly. Fixed in `ive_flutter_core_mobile`.
+
+### Internal
+
+- SQLite migration 522: `ADD COLUMN trailSymbolsConfigJson TEXT` on `common_kennels`
+- `DB_VERSION` bumped to 522
+- `ive_flutter_core_mobile` bumped to `eefbbc1` (JSON result-set parser fix)
+- `hcapp_syncUserData` and `hcapp_syncKennelAdminData` kennel rowsets include `trailSymbolsConfigJson` and `disseminateAllowWebLinks`
+
 ## 2.7.2+1143 (2026-05-31)
 
 ### Fixes
