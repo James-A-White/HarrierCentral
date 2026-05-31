@@ -167,6 +167,7 @@ BEGIN TRY
 		, n.[DistancePreference] as defaultDistancePreference
 		, k.[ExtApiKey] as extApiKey
 		, k.[KennelSearchTags] as kennelSearchTags
+		, k.[TrailSymbolsConfigJson] as trailSymbolsConfigJson
 		, k.[NotificationMinutesBeforeRunForChatPushNotifications] as notificationMinutesBeforeRunForChatPushNotifications
 		, k.[NotificationMinutesBeforeRunForCheckinReminder] as notificationMinutesBeforeRunForCheckinReminder
 	FROM HC.Kennel k
