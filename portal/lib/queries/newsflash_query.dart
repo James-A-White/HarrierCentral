@@ -24,18 +24,15 @@ Future<List<NewsflashModel>> queryPendingNewsflashes() async {
     'accessToken': _token('hcportal_getPendingNewsflashes'),
   };
 
-  final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-  if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+  final result = await ServiceCommon.sendHttpPostToHC6Api(body);
+  if (kDebugMode) debugPrint(result is ApiError
       ? 'SP [getPendingNewsflashes] — FAILED'
       : 'SP [getPendingNewsflashes] — success');
 
-  if (jsonResult.startsWith(ERROR_PREFIX) || jsonResult.length <= 10) {
-    return [];
-  }
+  if (result is! ApiSuccess) return [];
 
   try {
-    final rows =
-        (json.decode(jsonResult) as List<dynamic>)[0] as List<dynamic>;
+    final rows = (json.decode(result.body) as List<dynamic>)[0] as List<dynamic>;
     return rows
         .map((r) => NewsflashModel.fromJson(r as Map<String, dynamic>))
         .toList();
@@ -64,17 +61,15 @@ Future<bool> respondToNewsflash(
     'isDismissed': isDismissed ? '1' : '0',
   };
 
-  final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-  if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+  final result = await ServiceCommon.sendHttpPostToHC6Api(body);
+  if (kDebugMode) debugPrint(result is ApiError
       ? 'SP [respondToNewsflash] — FAILED'
       : 'SP [respondToNewsflash] — success');
 
-  if (jsonResult.startsWith(ERROR_PREFIX) || jsonResult.length <= 10) {
-    return false;
-  }
+  if (result is! ApiSuccess) return false;
 
   try {
-    final row = ((json.decode(jsonResult) as List<dynamic>)[0]
+    final row = ((json.decode(result.body) as List<dynamic>)[0]
         as List<dynamic>)[0] as Map<String, dynamic>;
     return (row['Success'] as int?) == 1;
   } on Exception catch (e) {
@@ -95,18 +90,15 @@ Future<List<NewsflashAdminModel>> queryNewsflashList() async {
     'accessToken': _token('hcportal_getNewsflashList'),
   };
 
-  final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-  if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+  final result = await ServiceCommon.sendHttpPostToHC6Api(body);
+  if (kDebugMode) debugPrint(result is ApiError
       ? 'SP [getNewsflashList] — FAILED'
       : 'SP [getNewsflashList] — success');
 
-  if (jsonResult.startsWith(ERROR_PREFIX) || jsonResult.length <= 10) {
-    return [];
-  }
+  if (result is! ApiSuccess) return [];
 
   try {
-    final rows =
-        (json.decode(jsonResult) as List<dynamic>)[0] as List<dynamic>;
+    final rows = (json.decode(result.body) as List<dynamic>)[0] as List<dynamic>;
     return rows
         .map((r) => NewsflashAdminModel.fromJson(r as Map<String, dynamic>))
         .toList();
@@ -135,27 +127,25 @@ Future<bool> addEditNewsflash({
     'queryType': 'addEditNewsflash',
     'deviceId': _deviceId(),
     'accessToken': _token('hcportal_addEditNewsflash'),
-    'newsflashId': ?newsflashId,
+    'newsflashId': newsflashId,
     'title': title,
     'bodyText': bodyText,
     if (imageUrl != null && imageUrl.isNotEmpty) 'imageUrl': imageUrl,
     'startDate': startDate.toIso8601String().substring(0, 10),
     if (endDate != null)
       'endDate': endDate.toIso8601String().substring(0, 10),
-    'kennelId': ?kennelId,
+    'kennelId': kennelId,
   };
 
-  final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-  if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+  final result = await ServiceCommon.sendHttpPostToHC6Api(body);
+  if (kDebugMode) debugPrint(result is ApiError
       ? 'SP [addEditNewsflash] — FAILED'
       : 'SP [addEditNewsflash] — success');
 
-  if (jsonResult.startsWith(ERROR_PREFIX) || jsonResult.length <= 10) {
-    return false;
-  }
+  if (result is! ApiSuccess) return false;
 
   try {
-    final row = ((json.decode(jsonResult) as List<dynamic>)[0]
+    final row = ((json.decode(result.body) as List<dynamic>)[0]
         as List<dynamic>)[0] as Map<String, dynamic>;
     return (row['Success'] as int?) == 1;
   } on Exception catch (e) {
@@ -177,17 +167,15 @@ Future<bool> deleteNewsflash(String newsflashId) async {
     'newsflashId': newsflashId,
   };
 
-  final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-  if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+  final result = await ServiceCommon.sendHttpPostToHC6Api(body);
+  if (kDebugMode) debugPrint(result is ApiError
       ? 'SP [deleteNewsflash] — FAILED'
       : 'SP [deleteNewsflash] — success');
 
-  if (jsonResult.startsWith(ERROR_PREFIX) || jsonResult.length <= 10) {
-    return false;
-  }
+  if (result is! ApiSuccess) return false;
 
   try {
-    final row = ((json.decode(jsonResult) as List<dynamic>)[0]
+    final row = ((json.decode(result.body) as List<dynamic>)[0]
         as List<dynamic>)[0] as Map<String, dynamic>;
     return (row['Success'] as int?) == 1;
   } on Exception catch (e) {
@@ -210,18 +198,15 @@ Future<List<NewsflashReaderModel>> queryNewsflashReaders(
     'newsflashId': newsflashId,
   };
 
-  final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-  if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+  final result = await ServiceCommon.sendHttpPostToHC6Api(body);
+  if (kDebugMode) debugPrint(result is ApiError
       ? 'SP [getNewsflashReaders] — FAILED'
       : 'SP [getNewsflashReaders] — success');
 
-  if (jsonResult.startsWith(ERROR_PREFIX) || jsonResult.length <= 10) {
-    return [];
-  }
+  if (result is! ApiSuccess) return [];
 
   try {
-    final rows =
-        (json.decode(jsonResult) as List<dynamic>)[0] as List<dynamic>;
+    final rows = (json.decode(result.body) as List<dynamic>)[0] as List<dynamic>;
     return rows
         .map((r) => NewsflashReaderModel.fromJson(r as Map<String, dynamic>))
         .toList();

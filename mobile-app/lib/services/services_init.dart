@@ -101,4 +101,13 @@ Future<void> initServices() async {
     await Get.delete<DataChangeService>(force: true);
   }
   Get.lazyPut<DataChangeService>(() => DataChangeService(), fenix: true);
+
+  // MainNavigationController is registered as permanent inside MainNavigationPage.
+  // It must be explicitly deleted here so that after logout the next user gets a
+  // fresh controller instance — onInit/onInitAsync fires correctly, stale Rx state
+  // is cleared, and the WidgetsBindingObserver + screenWatcherSub from the old
+  // session are properly torn down via onClose().
+  if (Get.isRegistered<MainNavigationController>()) {
+    await Get.delete<MainNavigationController>(force: true);
+  }
 }

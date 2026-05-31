@@ -127,11 +127,11 @@ class PhotoReviewController extends GetxController {
         'eventId': eventId,
       };
       final result = await ServiceCommon.sendHttpPostToHC6Api(body);
-      if (result.startsWith(ERROR_PREFIX)) {
+      if (result is! ApiSuccess) {
         errorMessage.value = 'Failed to load photos.';
         return;
       }
-      final outer = jsonDecode(result) as List<dynamic>;
+      final outer = jsonDecode(result.body) as List<dynamic>;
       final rows = outer[0] as List<dynamic>;
       photos.value = rows
           .map((r) => _Photo.fromJson(r as Map<String, dynamic>))
@@ -167,7 +167,7 @@ class PhotoReviewController extends GetxController {
         'updates': updates,
       };
       final result = await ServiceCommon.sendHttpPostToHC6Api(body);
-      if (result.startsWith(ERROR_PREFIX)) {
+      if (result is ApiError) {
         Get.snackbar(
           'Error',
           'Failed to update photo status.',

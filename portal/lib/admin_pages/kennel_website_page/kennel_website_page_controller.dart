@@ -215,7 +215,7 @@ class KennelWebsiteController extends TabUiController
     final accessToken = Utilities.generateToken(
       deviceId,
       'hcportal_updateKennelWebsite',
-      paramString: deviceSecret,
+      paramString: '$deviceSecret:$publicKennelId',
     );
 
     final body = <String, dynamic>{
@@ -227,14 +227,14 @@ class KennelWebsiteController extends TabUiController
 
     body.addAll(_buildChangedDataPayload());
 
-    final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+    final apiResult = await ServiceCommon.sendHttpPostToHC6Api(body);
     if (kDebugMode) {
-      debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+      debugPrint(apiResult is ApiError
           ? 'SP [updateKennelWebsite] — FAILED'
           : 'SP [updateKennelWebsite] — success');
     }
 
-    await _handleSaveResponse(jsonResult, showDialog);
+    await _handleSaveResponse(apiResult, showDialog);
   }
 
   Map<String, dynamic> _buildChangedDataPayload() {
@@ -258,10 +258,10 @@ class KennelWebsiteController extends TabUiController
     return changed;
   }
 
-  Future<void> _handleSaveResponse(String jsonResult, bool showDialog) async {
-    if (jsonResult.startsWith(ERROR_PREFIX)) return;
+  Future<void> _handleSaveResponse(ApiResult apiResult, bool showDialog) async {
+    if (apiResult is! ApiSuccess) return;
 
-    final decoded = json.decode(jsonResult) as List<dynamic>;
+    final decoded = json.decode(apiResult.body) as List<dynamic>;
     final items = (decoded[0] as List<dynamic>)[0] as Map<String, dynamic>;
 
     // Response is either a SuccessResult (result/resultCode) or error envelope

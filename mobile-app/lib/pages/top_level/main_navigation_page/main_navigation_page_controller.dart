@@ -215,9 +215,21 @@ class MainNavigationController extends GetxController
 
     appBarText.value = tabTitles[0];
 
-    // Force DB instantiation
+    // Guard: DB_VERSION must have a matching entry at the end of migrationList.
+    // A mismatch means a developer bumped DB_VERSION without adding a migration.
     Tables.migrationList.sort((a, b) => a.dbVersion.compareTo(b.dbVersion));
-    assert(DB_VERSION == Tables.migrationList.last.dbVersion);
+    final int lastMigration = Tables.migrationList.last.dbVersion;
+    if (DB_VERSION != lastMigration) {
+      await Utilities.showAlert(
+        'Database Version Mismatch',
+        'DB_VERSION is $DB_VERSION but the last migration record is $lastMigration.\n\n'
+        'A migration record must be added to Tables.migrationList for every '
+        'DB_VERSION change. The app cannot start until this is fixed.',
+        'OK',
+      );
+      assert(DB_VERSION == lastMigration, 'DB_VERSION ($DB_VERSION) != last migration ($lastMigration) — add a MigrationsModel entry to Tables.migrationList.');
+      return;
+    }
 
     // Setup database
     debugPrint('[BOOT] MainNavController: setupDatabase start: ${DateTime.now().millisecondsSinceEpoch}ms');

@@ -84,6 +84,9 @@ class RunTrackerMapController extends GetxController
   // Used to attempt local-first image loading in CameraPhotoMarker.
   final Map<String, String> _photoAssetIdCache = {};
 
+  // photoId → caption text. Null entries are simply absent from the map.
+  final Map<String, String> _photoCaptionCache = {};
+
   // blobUrl → isLandscape, populated on first render of each photo marker.
   // Survives map zoom/pan rebuilds so markers skip the loading animation.
   final Map<String, bool> _photoOrientationCache = {};
@@ -361,6 +364,11 @@ class RunTrackerMapController extends GetxController
             final assetId = (row['AssetId'] ?? row['assetId']) as String?;
             if (assetId != null && assetId.isNotEmpty) {
               _photoAssetIdCache[id] = assetId;
+            }
+            final description =
+                (row['Description'] ?? row['description']) as String?;
+            if (description != null && description.isNotEmpty) {
+              _photoCaptionCache[id] = description;
             }
             updated = true;
           }
@@ -708,6 +716,8 @@ class RunTrackerMapController extends GetxController
     final String? resolvedLabel = label?.toLowerCase();
     final String? assetId =
         resolvedLabel != null ? _photoAssetIdCache[resolvedLabel] : null;
+    final String? caption =
+        resolvedLabel != null ? _photoCaptionCache[resolvedLabel] : null;
 
     final marker = CameraPhotoMarker(
       photoUrl: resolvedUrl,
@@ -726,6 +736,7 @@ class RunTrackerMapController extends GetxController
             pageTitle: event.eventName,
             imageUrl: resolvedUrl,
             background: Backgrounds.defaultHcBackground(),
+            infoText: caption,
           ),
         ),
       ),

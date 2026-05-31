@@ -157,15 +157,14 @@ class AdminPortalController extends GetxController {
             'deviceInfo': allInfo,
           };
 
-          final jsonResult =
+          final authResult =
               await ServiceCommon.sendHttpPostToHC6Api(body);
-          if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+          if (kDebugMode) debugPrint(authResult is ApiError
               ? 'SP 4 [confirmAuthentication] called — FAILED'
               : 'SP 4 [confirmAuthentication] called — success');
 
-          if ((jsonResult.length > 10) &&
-              (!jsonResult.contains(ERROR_PREFIX))) {
-            final items = ((json.decode(jsonResult) as List<dynamic>)[0]
+          if (authResult case ApiSuccess(:final body)) {
+            final items = ((json.decode(body) as List<dynamic>)[0]
                 as List<dynamic>)[0] as Map<String, dynamic>;
 
             publicHasherId = items['publicHasherId'] as String;
@@ -223,10 +222,12 @@ class AdminPortalController extends GetxController {
   Future<void> _syncFcmTokenToServer(String? fcmToken) async {
     final deviceId = (box.get(HIVE_DEVICE_ID) as String?) ?? '';
     final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
+    // Compound token: binds the auth to the specific FCM token being registered.
+    // Use deviceSecret-only paramString when fcmToken is null (no token to bind).
     final accessToken = Utilities.generateToken(
       deviceId,
       'hcportal_updateFcmToken',
-      paramString: deviceSecret,
+      paramString: fcmToken != null ? '$deviceSecret:$fcmToken' : deviceSecret,
     );
     final body = <String, String?>{
       'queryType': 'updateFcmToken',
@@ -237,7 +238,7 @@ class AdminPortalController extends GetxController {
       'version': packageInfo.value?.version ?? 'unknown',
     };
     final fcmResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    if (kDebugMode) debugPrint(fcmResult.startsWith(ERROR_PREFIX)
+    if (kDebugMode) debugPrint(fcmResult is ApiError
         ? 'SP 19 [updateFcmToken] called — FAILED'
         : 'SP 19 [updateFcmToken] called — success');
   }
@@ -333,8 +334,8 @@ class AdminPortalController extends GetxController {
       'fcmToken': fcmToken,
     };
 
-    final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+    final landingResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+    if (kDebugMode) debugPrint(landingResult is ApiError
         ? 'SP 13 [getLandingPageData] called — FAILED'
         : 'SP 13 [getLandingPageData] called — success');
 
@@ -344,14 +345,14 @@ class AdminPortalController extends GetxController {
     // A private/incognito window fixes it because it starts with empty Hive.
     // Reproduce that fix automatically: clear Hive and reload to force a fresh
     // QR-code login whenever the startup SP call returns an auth error.
-    if (jsonResult.startsWith(ERROR_PREFIX)) {
+    if (landingResult is ApiError) {
       await box.clear();
       web.window.location.reload();
       return;
     }
 
-    if (jsonResult.length > 10) {
-      final items = ((json.decode(jsonResult) as List<dynamic>)[0]
+    if (landingResult case ApiSuccess(:final body)) {
+      final items = ((json.decode(body) as List<dynamic>)[0]
           as List<dynamic>)[0] as Map<String, dynamic>;
 
       if (publicHasherId.isNotEmpty) {
@@ -363,7 +364,7 @@ class AdminPortalController extends GetxController {
         await box.put(HIVE_HASH_NAME, hashName);
 
         final itemList =
-            (json.decode(jsonResult) as List<dynamic>)[1] as List<dynamic>;
+            (json.decode(body) as List<dynamic>)[1] as List<dynamic>;
 
         for (var i = 0; i < itemList.length; i++) {
           final hkModel = HasherKennelsModel.fromJson(
@@ -403,13 +404,13 @@ class AdminPortalController extends GetxController {
       'accessToken': accessToken,
     };
 
-    final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+    final result = await ServiceCommon.sendHttpPostToHC6Api(body);
+    if (kDebugMode) debugPrint(result is ApiError
         ? 'SP [getHcAdminPrivileges] called — FAILED'
         : 'SP [getHcAdminPrivileges] called — success');
 
-    if (!jsonResult.startsWith(ERROR_PREFIX) && jsonResult.length > 10) {
-      final row = ((json.decode(jsonResult) as List<dynamic>)[0]
+    if (result case ApiSuccess(:final body)) {
+      final row = ((json.decode(body) as List<dynamic>)[0]
           as List<dynamic>)[0] as Map<String, dynamic>;
 
       await box.put(HIVE_PLATFORM_ADMIN_CAN_VIEW_MONITOR,

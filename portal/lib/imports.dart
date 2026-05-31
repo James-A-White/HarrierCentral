@@ -98,6 +98,7 @@ export 'package:hcportal/test/login_controller.dart';
 export 'package:hcportal/test/login_form.dart';
 export 'package:hcportal/top_level_pages/admin_portal_app.dart';
 export 'package:hcportal/top_level_pages/admin_portal_controller.dart';
+export 'package:hcportal/util/api_result.dart';
 export 'package:hcportal/util/constants.dart';
 export 'package:hcportal/util/core_uutilities.dart';
 export 'package:hcportal/util/extensions.dart';

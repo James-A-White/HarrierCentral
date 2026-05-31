@@ -23,8 +23,13 @@ Future<void> _mockPathProvider() async {
 /// Boot a minimal test environment: GetStorage (via mocked path_provider) + a stubbed DeviceInfo.
 /// Call this in setUp() before pumping any widget that uses deviceInfo or prefs.
 Future<void> setupTestEnvironment() async {
+  // Ensure the Flutter binding is initialised before any platform channel or
+  // GetStorage call. This is a no-op when called inside testWidgets(), but is
+  // required for plain test() functions.
+  TestWidgetsFlutterBinding.ensureInitialized();
   await _mockPathProvider();
-  await GetStorage.init('test');
+  await GetStorage.init();       // default container — used by all app getStringPref/getDatePref calls
+  await GetStorage.init('test'); // named container — kept for backwards-compat
 
   // Suppress AVIF codec failures — the native AVIF decoder is unavailable in
   // the headless test environment. All other Flutter errors still propagate.
@@ -49,9 +54,12 @@ Future<void> setupTestEnvironment() async {
   Get.put<NetworkService>(NetworkService(), permanent: true);
 }
 
-/// Tear down GetX registrations and restore error handler between tests.
-void tearDownTestEnvironment() {
+/// Tear down GetX registrations, clear prefs, and restore error handler between tests.
+Future<void> tearDownTestEnvironment() async {
   FlutterError.onError = FlutterError.dumpErrorToConsole;
+  try {
+    await GetStorage().erase(); // clear default container so prefs don't bleed between tests
+  } catch (_) {}
   Get.reset();
 }
 

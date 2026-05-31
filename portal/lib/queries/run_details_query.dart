@@ -29,7 +29,7 @@ Future<EventDetailsResult> querySingleEvent(String publicEventId) async {
   final accessToken = Utilities.generateToken(
     deviceId,
     'hcportal_getEvent',
-    paramString: deviceSecret,
+    paramString: '$deviceSecret:$publicEventId',
   );
   final body = <String, dynamic>{
     'queryType': 'getEvent',
@@ -38,27 +38,19 @@ Future<EventDetailsResult> querySingleEvent(String publicEventId) async {
     'publicEventId': publicEventId,
   };
 
-  final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-  if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+  final result = await ServiceCommon.sendHttpPostToHC6Api(body);
+  if (kDebugMode) debugPrint(result is ApiError
       ? 'SP 8a (a-b) [getEvent] called — FAILED'
       : 'SP 8a (a-b) [getEvent] called — success');
-  if (jsonResult.length > 10) {
-    final jsonItems = json.decode(jsonResult) as List<dynamic>;
+  if (result case ApiSuccess(:final body)) {
+    final jsonItems = json.decode(body) as List<dynamic>;
 
-    // Parse the run details from the first result set
     final rdm = RunDetailsModel.fromJson(
         (jsonItems[0] as List<dynamic>)[0] as Map<String, dynamic>);
 
-    // Parse the participants from the second result set
     final participants = <ParticipantModel>[];
-    final participantRecords = (jsonItems[1] as List<dynamic>);
-
-    for (final record in participantRecords) {
-      participants.add(
-        ParticipantModel.fromJson(
-          record as Map<String, dynamic>,
-        ),
-      );
+    for (final record in jsonItems[1] as List<dynamic>) {
+      participants.add(ParticipantModel.fromJson(record as Map<String, dynamic>));
     }
 
     return EventDetailsResult(participants: participants, runDetails: rdm);

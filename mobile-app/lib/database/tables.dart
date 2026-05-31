@@ -364,6 +364,15 @@ class Tables {
       appliedAtInt: 0,
     ),
 
+    // MIGRATION 521 — Move device reset code to flutter_secure_storage
+    // No SQLite schema changes; the secure storage migration happens in
+    // app_boot_service._handleDbUpgrade before the DB is touched.
+    MigrationsModel(
+      dbVersion: 521,
+      migrationText: '',
+      appliedAtInt: 0,
+    ),
+
   ];
 
   static Future<void> createTables(

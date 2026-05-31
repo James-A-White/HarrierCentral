@@ -97,7 +97,7 @@ class CheckinSheetController extends GetxController {
     final accessToken = Utilities.generateToken(
       deviceId,
       'hcportal_getKennelHashers',
-      paramString: deviceSecret,
+      paramString: '$deviceSecret:$publicKennelId',
     );
 
     final body = <String, dynamic>{
@@ -106,12 +106,12 @@ class CheckinSheetController extends GetxController {
       'accessToken': accessToken,
       'publicKennelId': publicKennelId,
     };
-    final jsonString = await ServiceCommon.sendHttpPostToHC6Api(body);
-    if (kDebugMode) debugPrint(jsonString.startsWith(ERROR_PREFIX)
+    final result = await ServiceCommon.sendHttpPostToHC6Api(body);
+    if (kDebugMode) debugPrint(result is ApiError
         ? 'SP 12b (a-b) [getKennelHashers] called — FAILED'
         : 'SP 12b (a-b) [getKennelHashers] called — success');
 
-    if (jsonString.length > 10) {
+    if (result case ApiSuccess(:final jsonString)) {
       final decodedJson = (json.decode(jsonString) as List<dynamic>)[0];
       final decodedHashers = (decodedJson as List<dynamic>)
           .map((item) => item as Map<String, dynamic>)

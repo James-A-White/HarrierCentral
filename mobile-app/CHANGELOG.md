@@ -1,5 +1,102 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.7.1+1142 (2026-05-30)
+
+### Fixes
+
+- **Logout now clears keychain**: "Log out of Harrier Central" and "Delete
+  Account" now wipe the device reset code from the iOS keychain in addition to
+  GetStorage. Previously the reset code survived logout; on the next boot
+  `_handleDbUpgrade` found the old user's code in the keychain and silently
+  re-authorised as them, causing the previous profile to reappear after restart.
+
+- **Run tabs — badge null-guard and tab indicator**: Replaced the
+  `TextScaleFactorClamper`/`GetBuilder` wrapper on the chat tab with a plain
+  `Container`. The unread-message badge now guards against `NotificationService`
+  not being registered (was a potential crash) and simplifies the count check.
+  Added `indicatorPadding` to the tab bar for tighter visual fit.
+
+### Internal
+
+- **Session A test infrastructure**: Added `mockito`, `sqflite_common_ffi`, and
+  `fake_async` dev dependencies. Added `parseBitField()` utility
+  (`lib/util/bit_utils.dart`). Added `test/helpers/mock_http_client.dart` and
+  `test/helpers/sqflite_ffi_setup.dart` as scaffolding for Session B widget
+  tests. Fixed `setupTestEnvironment()` to initialise the default GetStorage
+  container and the Flutter test binding for plain `test()` functions.
+  Added 27 unit tests: UUID normalisation (13), BIT field parsing (7),
+  `currentUserId` safe fallback (5), `isAtRunStart` throttle (2).
+
+## 2.7.0+1141 (2026-05-30)
+
+### Features
+
+- **Hash Flash caption editing**: The photo review screen now lets the Hash
+  Flash add, edit, or clear captions on any photo — not just those the uploader
+  already captioned. A pencil icon and tap target are always visible at the
+  bottom of each photo. Tapping opens an editor with a live 200-word counter
+  and a Clear button. Any queued status decisions are flushed before the caption
+  is saved so no review work is lost.
+
+- **Caption on map photo view**: Tapping a photo marker on the run map now
+  shows the caption (if one exists) below the full-screen image. Long captions
+  scroll within a capped area; safe-area padding ensures the text clears the
+  home indicator on all devices.
+
+- **Photo review — smart tab**: The review screen now opens directly on the
+  Reviewed tab when all photos for a run have already been actioned, so the
+  Hash Flash lands on useful content rather than an empty pending state. The
+  same logic applies on every refresh.
+
+- **Status badge always colored**: The per-photo badge in the review screen
+  now shows the current status in its action color at all times — grey for Keep
+  Private, red for Deleted, green for Share/Gallery, teal for Home/Cover. The
+  previous grey styling for already-committed statuses was confusing because
+  it looked unsaved; the color now matches the action buttons directly below.
+
+### Fixes
+
+- **PackTrack live positions**: GetPositions requests now include the required
+  `X-Api-Key` header. The live position feed was silently failing for all
+  viewers since the API was secured, making PackTrack appear broken even when
+  running correctly.
+
+- **Map FAB restored**: The floating action button on the global map (Explore
+  tab) had gone missing after a navigation refactor. Restored.
+
+- **DB version mismatch**: A version mismatch between the local database and
+  the expected schema now shows an explanatory dialog and triggers a clean warm
+  reload rather than leaving the app in a silent inconsistent state.
+
+- **Notification guard**: Notification handlers now check whether their target
+  controllers are registered before calling `Get.find`. Previously a
+  notification arriving on a cold launch could throw if the destination screen
+  had never been opened.
+
+---
+
+## 2.6.8+1140 (2026-05-29)
+
+### Security
+
+- **Secure storage migration**: Device reset code is now stored in the iOS
+  Keychain / Android Keystore (hardware-backed encrypted storage) instead of
+  plain local storage. All existing users are migrated automatically on first
+  launch — the app re-stages itself from the server with no manual action
+  required.
+
+- **API key protection**: IP geolocation lookup now proxied through the HC
+  API — the IPInfo token no longer appears in the app binary.
+
+- **Token redaction**: Device tokens and IDs are now redacted from any
+  diagnostic logs before they are persisted or sent to the server.
+
+- **HTTPS enforcement**: Payment provider links now require HTTPS — plain HTTP
+  payment URLs are rejected.
+
+- **GPS log guard**: Last-known device coordinates are no longer written to the
+  on-device debug log in release builds.
+
 ## 2.6.7+1139 (2026-05-28)
 
 ### Improvements

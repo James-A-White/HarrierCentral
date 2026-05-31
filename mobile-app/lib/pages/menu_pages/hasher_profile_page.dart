@@ -1950,6 +1950,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                       ) async {
                                                         if (result ?? false) {
                                                           await clearPrefs();
+                                                          await deleteAllSecure();
 
                                                           await DBProvider.deleteDb(
                                                             DB_NAME,
@@ -2174,6 +2175,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                           }
 
                                                           await clearPrefs();
+                                                          await deleteAllSecure();
                                                           await DBProvider.deleteDb(
                                                             DB_NAME,
                                                           );

@@ -322,48 +322,61 @@ class AppBootService {
     debugPrint('[BOOT] Get.off(MainNavigationPage) done: ${DateTime.now().millisecondsSinceEpoch}ms');
   }
 
-  /// DB version is too far behind — delete local DB and re-authorise to pull a
-  /// fresh profile. Falls back to offline mode if the reset code is missing or
-  /// device re-auth fails.
+  /// DB version is too far behind — migrate to secure storage, wipe local DB,
+  /// and re-authorise to pull a fresh profile from the server.
   Future<void> _handleDbUpgrade(int installedDbVersion) async {
-    // Only set the upgrade boot type if this is a real upgrade, not a first
-    // run where installedDbVersion == 0 (DB was never initialised).
     if (installedDbVersion != 0) {
       await setStringPref(StringPrefsEnum.bootType, BOOT_TYPE_UPGRADE_DB);
     }
 
-    // Secure storage migration: try flutter_secure_storage first (set by the
-    // migration path), fall back to plain GetStorage. storageType records which
-    // path was used so the dialog and Imprint page can reflect it.
-    // TODO: add flutter_secure_storage read here when migration is implemented.
-    final String resetCode = getStringPref(StringPrefsEnum.resetCode) ?? '';
-    // ignore: prefer_const_declarations — will be set by secure storage read when migration is implemented
-    final bool usedSecureStorage = false;
-    await setStringPref(
-      StringPrefsEnum.storageType,
-      usedSecureStorage ? 'encrypted' : 'legacy',
-    );
+    // ── Step 1: Read resetCode ───────────────────────────────────────────────
+    // Prefer secure storage (already migrated devices) over plain GetStorage.
+    final String? secureCode = await readSecureResetCode();
+    final bool readFromSecure = secureCode != null && secureCode.isNotEmpty;
+    final String resetCode =
+        readFromSecure ? secureCode : (getStringPref(StringPrefsEnum.resetCode) ?? '');
 
     if (resetCode.isEmpty) {
-      // No reset code — can't re-authorise. Boot offline so the user can
-      // recover via their profile page.
       await Get.off(() => MainNavigationPage(), routeName: '/main');
       return;
     }
 
+    // ── Step 2: Wipe ALL local storage ───────────────────────────────────────
+    await GetStorage().erase();
+    await deleteAllSecure();
+
+    // ── Step 3: Write resetCode to secure storage ────────────────────────────
+    // Retry once. On persistent failure, warn the user and fall back to plain
+    // GetStorage so the migration can still complete.
+    final bool wroteToSecure = await writeSecureResetCode(resetCode);
+    if (!wroteToSecure) {
+      await Utilities.showAlert(
+        'Secure Storage Unavailable',
+        'Your device does not support encrypted storage. Your data will be stored using standard security.',
+        'OK',
+      );
+      await setStringPref(StringPrefsEnum.resetCode, resetCode);
+    }
+
+    // ── Step 4: Record storage type ──────────────────────────────────────────
+    // GetStorage was just erased — this is the first write back into it.
+    await setStringPref(
+      StringPrefsEnum.storageType,
+      wroteToSecure ? 'encrypted' : 'legacy',
+    );
+
+    // ── Step 5: Delete local SQLite DB ───────────────────────────────────────
     await DBProvider.deleteDb(DB_NAME);
     appModel.dbStatus = EdbStatus.uninitialized;
 
-    // authorizeDevice may already have been called during the 1.x→2.x migration
-    // path earlier in this same boot. Only call it again if deviceId is missing.
-    bool authorized = true;
-    if (getStringPref(StringPrefsEnum.deviceId) == null) {
-      final AuthorizeDeviceService srv = AuthorizeDeviceService();
-      final Map<String, String> result = await srv.authorizeDevice(
-        scanText: resetCode.toUpperCase(),
-      );
-      authorized = result['result'] != 'failed';
-    }
+    // ── Step 6: Re-authorise device ──────────────────────────────────────────
+    // GetStorage was erased so deviceId is always null here — always call
+    // authorizeDevice to get a fresh deviceSecret and user profile from server.
+    final AuthorizeDeviceService srv = AuthorizeDeviceService();
+    final Map<String, String> result = await srv.authorizeDevice(
+      scanText: resetCode.toUpperCase(),
+    );
+    final bool authorized = result['result'] != 'failed';
 
     if (!authorized) {
       await Utilities.showAlert(
@@ -375,11 +388,23 @@ class AppBootService {
       return;
     }
 
+    // ── Step 7: Migrate fresh resetCode to secure storage ───────────────────
+    // authorizeDevice wrote a new resetCode to GetStorage. If we're using
+    // secure storage, move it there and remove it from GetStorage.
+    if (wroteToSecure) {
+      final String? freshCode = getStringPref(StringPrefsEnum.resetCode);
+      if (freshCode != null && freshCode.isNotEmpty) {
+        final bool migrated = await writeSecureResetCode(freshCode);
+        if (migrated) {
+          await removePref(StringPrefsEnum.resetCode);
+        }
+      }
+    }
+
     await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
 
     final String userName =
         getStringPref(StringPrefsEnum.displayName) ?? '<no user name>';
-
     final bool isEncrypted =
         getStringPref(StringPrefsEnum.storageType) == 'encrypted';
 

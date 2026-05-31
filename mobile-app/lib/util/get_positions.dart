@@ -38,6 +38,7 @@ class GetPositionsApi {
             HttpHeaders.acceptEncodingHeader: 'gzip',
             HttpHeaders.acceptHeader: 'application/json',
             HttpHeaders.contentTypeHeader: 'application/json',
+            'X-Api-Key': GET_POSITIONS_API_KEY,
           },
           body: requestBody,
         )
