@@ -496,7 +496,7 @@ class RunEditPageController extends TabUiController
       final accessToken = Utilities.generateToken(
         deviceId,
         'hcportal_addEditEvent',
-        paramString: deviceSecret,
+        paramString: '$deviceSecret:$publicKennelId',
       );
 
       final bodyJson = <String, dynamic>{
@@ -514,12 +514,13 @@ class RunEditPageController extends TabUiController
 
       bodyJson.addAll(changes);
 
-      final jsonResult =
+      final saveResult =
           await ServiceCommon.sendHttpPostToHC6Api(bodyJson);
-      if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+      if (kDebugMode) debugPrint(saveResult is ApiError
           ? 'SP 1 [addEditEvent] called — FAILED'
           : 'SP 1 [addEditEvent] called — success');
-      final updateResult = ((jsonDecode(jsonResult) as List<dynamic>)[0]
+      if (saveResult is! ApiSuccess) return;
+      final updateResult = ((jsonDecode(saveResult.body) as List<dynamic>)[0]
           as List<dynamic>)[0] as Map<String, dynamic>;
 
       final resultForDisplay = updateResult['result'] as String?;

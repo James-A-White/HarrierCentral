@@ -254,8 +254,8 @@ class RunListPageController extends GetxController
           : 'all',
     };
 
-    final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+    final apiResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+    if (kDebugMode) debugPrint(apiResult is ApiError
         ? 'SP 10 [getEvents] called — FAILED'
         : 'SP 10 [getEvents] called — success');
     eventForSingleEventDetailsView = EventDetailsResult.empty().obs;
@@ -263,7 +263,7 @@ class RunListPageController extends GetxController
     allEvents.clear();
     allEventsDetails.clear();
 
-    if (jsonResult.length > 10) {
+    if (apiResult case ApiSuccess(:final jsonResult)) {
       if (getAllEventDetails) {
         final jsonItems = json.decode(jsonResult) as List<dynamic>;
         for (var i = 0; i < (jsonItems[0] as List<dynamic>).length; i++) {
@@ -348,7 +348,7 @@ class RunListPageController extends GetxController
       final accessToken = Utilities.generateToken(
         deviceId,
         'hcportal_deleteEvent',
-        paramString: deviceSecret,
+        paramString: '$deviceSecret:$eventId',
       );
 
       final body = <String, dynamic>{
@@ -358,13 +358,13 @@ class RunListPageController extends GetxController
         'publicEventId': eventId,
       };
 
-      final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-      if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+      final apiResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+      if (kDebugMode) debugPrint(apiResult is ApiError
           ? 'SP 5 [deleteEvent] called — FAILED'
           : 'SP 5 [deleteEvent] called — success');
 
-      if (!jsonResult.startsWith(ERROR_PREFIX)) {
-        final jsonItems = json.decode(jsonResult) as List<dynamic>;
+      if (apiResult case ApiSuccess(:final body)) {
+        final jsonItems = json.decode(body) as List<dynamic>;
         final result =
             ((jsonItems[0] as List<dynamic>)[0]
                     as Map<String, dynamic>)['Result']

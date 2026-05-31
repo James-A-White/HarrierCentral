@@ -85,9 +85,14 @@ SET @callerType = CASE
     ELSE 0
 END;
 
--- Build param string: prepend UPPER(deviceSecret) to callerParamString
+-- Build param string for token validation.
+-- Standard (NULL callerParamString):  UPPER(deviceSecret)
+-- Compound (non-NULL callerParamString): UPPER(deviceSecret):UPPER(callerParamString)
+-- The colon delimiter makes the device-secret boundary explicit.
+-- Flutter callers must use paramString: '$deviceSecret:$callerParamString' for compound SPs.
 DECLARE @paramString NVARCHAR(650);
-SET @paramString = UPPER(@deviceSecret) + COALESCE(CAST(@callerParamString AS NVARCHAR(500)), '');
+SET @paramString = UPPER(@deviceSecret)
+    + COALESCE(':' + UPPER(CAST(@callerParamString AS NVARCHAR(500))), '');
 
 -- Validate access token
 DECLARE @tokenResult INT;

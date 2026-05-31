@@ -1126,7 +1126,7 @@ class RunListPage extends StatelessWidget {
     final accessToken = Utilities.generateToken(
       deviceId,
       'hcportal_getKennel',
-      paramString: deviceSecret,
+      paramString: '$deviceSecret:$publicKennelId',
     );
 
     final body = <String, String>{
@@ -1136,12 +1136,12 @@ class RunListPage extends StatelessWidget {
       'publicKennelId': publicKennelId,
     };
 
-    final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+    final result = await ServiceCommon.sendHttpPostToHC6Api(body);
+    if (kDebugMode) debugPrint(result is ApiError
         ? 'SP 11 [getKennel] called — FAILED'
         : 'SP 11 [getKennel] called — success');
-    if (!jsonResult.startsWith(ERROR_PREFIX)) {
-      final jsonItems = json.decode(jsonResult) as List<dynamic>;
+    if (result case ApiSuccess(:final body)) {
+      final jsonItems = json.decode(body) as List<dynamic>;
       rdm = KennelModel.fromJson(
         (jsonItems[0] as List<dynamic>)[0] as Map<String, dynamic>,
       );
@@ -1157,7 +1157,7 @@ class RunListPage extends StatelessWidget {
     final accessToken = Utilities.generateToken(
       deviceId,
       'hcportal_getKennelWebsite',
-      paramString: deviceSecret,
+      paramString: '$deviceSecret:$publicKennelId',
     );
 
     final body = <String, String>{
@@ -1167,12 +1167,12 @@ class RunListPage extends StatelessWidget {
       'publicKennelId': publicKennelId,
     };
 
-    final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+    final result = await ServiceCommon.sendHttpPostToHC6Api(body);
+    if (kDebugMode) debugPrint(result is ApiError
         ? 'SP [getKennelWebsite] called — FAILED'
         : 'SP [getKennelWebsite] called — success');
-    if (!jsonResult.startsWith(ERROR_PREFIX)) {
-      final jsonItems = json.decode(jsonResult) as List<dynamic>;
+    if (result case ApiSuccess(:final body)) {
+      final jsonItems = json.decode(body) as List<dynamic>;
       final rows = jsonItems[0] as List<dynamic>;
       if (rows.isNotEmpty) {
         return KennelWebsiteModel.fromJson(rows[0] as Map<String, dynamic>);
@@ -1199,13 +1199,12 @@ class RunListPage extends StatelessWidget {
       'kennelSlug': kennelSlug,
     };
 
-    final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    if (jsonResult.startsWith(ERROR_PREFIX)) {
+    final webTokenResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+    if (webTokenResult is ApiError) {
       if (kDebugMode) debugPrint('SP [generateWebAdminToken] — FAILED');
       return;
     }
-
-    final decoded = json.decode(jsonResult) as List<dynamic>;
+    final decoded = json.decode((webTokenResult as ApiSuccess).body) as List<dynamic>;
     final rows = (decoded[0] as List<dynamic>);
     if (rows.isEmpty) return;
 

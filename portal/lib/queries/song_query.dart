@@ -15,7 +15,7 @@ Future<List<SongModel>> queryKennelSongs(String publicKennelId) async {
   final accessToken = Utilities.generateToken(
     deviceId,
     'hcportal_getSongs',
-    paramString: deviceSecret,
+    paramString: '$deviceSecret:$publicKennelId',
   );
 
   final body = <String, String>{
@@ -25,15 +25,13 @@ Future<List<SongModel>> queryKennelSongs(String publicKennelId) async {
     'publicKennelId': publicKennelId,
   };
 
-  final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-  if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+  final result = await ServiceCommon.sendHttpPostToHC6Api(body);
+  if (kDebugMode) debugPrint(result is ApiError
       ? 'SP 15 [getSongs] called — FAILED'
       : 'SP 15 [getSongs] called — success');
 
-  if (!jsonResult.startsWith(ERROR_PREFIX)) {
-    final jsonItems = json.decode(jsonResult) as List<dynamic>;
-
-    // The SP returns a single result set of songs
+  if (result case ApiSuccess(:final body)) {
+    final jsonItems = json.decode(body) as List<dynamic>;
     final songRecords = jsonItems[0] as List<dynamic>;
     return songRecords
         .map((record) => SongModel.fromJson(record as Map<String, dynamic>))
@@ -69,7 +67,7 @@ Future<bool> editSong({
   final accessToken = Utilities.generateToken(
     deviceId,
     'hcportal_editSong',
-    paramString: deviceSecret,
+    paramString: '$deviceSecret:$publicKennelId',
   );
 
   final body = <String, dynamic>{
@@ -88,17 +86,16 @@ Future<bool> editSong({
     'bawdyRating': bawdyRating,
   };
 
-  final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-  if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+  final apiResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+  if (kDebugMode) debugPrint(apiResult is ApiError
       ? 'SP [editSong] called — FAILED'
       : 'SP [editSong] called — success');
 
-  if (!jsonResult.startsWith(ERROR_PREFIX)) {
-    final jsonItems = json.decode(jsonResult) as List<dynamic>;
-    final result = (jsonItems[0] as List<dynamic>)[0] as Map<String, dynamic>;
-    if ((result['resultCode'] as int?) == 1) return true;
-    // SP returned a business error (auth/validation) — show the message
-    final errorMsg = result['ErrorMessage'] as String? ?? 'Edit failed';
+  if (apiResult case ApiSuccess(:final body)) {
+    final jsonItems = json.decode(body) as List<dynamic>;
+    final row = (jsonItems[0] as List<dynamic>)[0] as Map<String, dynamic>;
+    if ((row['resultCode'] as int?) == 1) return true;
+    final errorMsg = row['ErrorMessage'] as String? ?? 'Edit failed';
     await CoreUtilities.showAlert('Edit Song', errorMsg, 'OK');
   }
 
@@ -126,7 +123,7 @@ Future<bool> toggleKennelSong({
   final accessToken = Utilities.generateToken(
     deviceId,
     'hcportal_toggleKennelSong',
-    paramString: deviceSecret,
+    paramString: '$deviceSecret:$songId',
   );
 
   final body = <String, String>{
@@ -138,15 +135,15 @@ Future<bool> toggleKennelSong({
     'isInKennel': isInKennel ? '1' : '0',
   };
 
-  final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-  if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+  final apiResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+  if (kDebugMode) debugPrint(apiResult is ApiError
       ? 'SP 18 [toggleKennelSong] called — FAILED'
       : 'SP 18 [toggleKennelSong] called — success');
 
-  if (!jsonResult.startsWith(ERROR_PREFIX)) {
-    final jsonItems = json.decode(jsonResult) as List<dynamic>;
-    final result = (jsonItems[0] as List<dynamic>)[0] as Map<String, dynamic>;
-    return (result['resultCode'] as int) == 1;
+  if (apiResult case ApiSuccess(:final body)) {
+    final jsonItems = json.decode(body) as List<dynamic>;
+    final row = (jsonItems[0] as List<dynamic>)[0] as Map<String, dynamic>;
+    return (row['resultCode'] as int) == 1;
   }
 
   return false;

@@ -85,10 +85,11 @@ class ServiceCommon {
     final box = Hive.box(HIVE_NAME);
     final deviceId = (box.get(HIVE_DEVICE_ID) as String?) ?? '';
     final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
+    // Compound token: binds the SAS request to the exact container and filename.
     final accessToken = Utilities.generateToken(
       deviceId,
       'hcportal_getPortalUploadSas',
-      paramString: deviceSecret,
+      paramString: '$deviceSecret:$container:$fileName',
     );
 
     // Request a short-lived SAS token from the server
@@ -244,7 +245,7 @@ class ServiceCommon {
   //   return ERROR_UNKNOWN_HTTP_ERROR;
   // }
 
-  static Future<String> sendHttpPostToHC6Api(
+  static Future<ApiResult> sendHttpPostToHC6Api(
     Map<String, dynamic> requestBody,
   ) async {
     try {
@@ -262,21 +263,19 @@ class ServiceCommon {
             )
             .timeout(const Duration(seconds: DEFAULT_HTTP_TIMEOUT));
       } on Exception catch (error) {
-        if (foundation.kDebugMode) {
-          debugPrint('HTTP error: $error');
-        }
-        return ERROR_UNKNOWN_HTTP_ERROR;
+        if (foundation.kDebugMode) debugPrint('HTTP error: $error');
+        return const ApiError();
       }
 
       if ((response.statusCode < 200) || (response.statusCode >= 300)) {
-        // HC6 API returns 400 with {"success":false,"errorMessage":"..."} for SP errors
         if (response.body.isNotEmpty) {
           try {
             final errorJson = jsonDecode(response.body) as Map<String, dynamic>;
-            // Prefer HC6 StandardErrorResult errorUserMessage (safe, user-facing).
-            // Never show raw HC5-style errorMessage — it may contain internal detail.
+            // HC6 SP errors use errorMessage; errorUserMessage is reserved for
+            // future StandardErrorResult adoption. Read both, prefer the latter.
             final errorMessage =
                 errorJson['errorUserMessage'] as String? ??
+                errorJson['errorMessage'] as String? ??
                 'An error occurred. Please try again.';
             await IveCoreUtilities.showAlert(
               navigatorKey.currentContext!,
@@ -284,21 +283,17 @@ class ServiceCommon {
               errorMessage,
               'OK',
             );
-            return ERROR_KEY_OK_BTN_PRESSED;
           } on Exception {
-            // body wasn't JSON — fall through to generic error
+            // body wasn't valid JSON — no dialog, just return error
           }
         }
-        return ERROR_UNKNOWN_HTTP_ERROR;
+        return const ApiError();
       }
 
-      return response.body;
+      return ApiSuccess(response.body);
     } on Exception catch (e) {
-      if (foundation.kDebugMode) {
-        debugPrint('sendHttpPostToHC6Api exception: $e');
-      }
+      if (foundation.kDebugMode) debugPrint('sendHttpPostToHC6Api exception: $e');
+      return const ApiError();
     }
-
-    return ERROR_UNKNOWN_HTTP_ERROR;
   }
 }

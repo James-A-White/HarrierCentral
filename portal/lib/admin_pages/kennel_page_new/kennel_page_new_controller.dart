@@ -575,7 +575,7 @@ class KennelPageFormController extends TabUiController
     final accessToken = Utilities.generateToken(
       deviceId,
       'hcportal_editKennel',
-      paramString: deviceSecret,
+      paramString: '$deviceSecret:${editedData.value.kennelPublicId.uuid}',
     );
 
     final bodyParams = <String, dynamic>{
@@ -589,12 +589,12 @@ class KennelPageFormController extends TabUiController
     final changedData = _buildChangedDataPayload();
     bodyParams.addAll(changedData);
 
-    final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(bodyParams);
-    if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+    final apiResult = await ServiceCommon.sendHttpPostToHC6Api(bodyParams);
+    if (kDebugMode) debugPrint(apiResult is ApiError
         ? 'SP 6 [editKennel] called — FAILED'
         : 'SP 6 [editKennel] called — success');
 
-    await _handleSaveResponse(jsonResult, showDialog);
+    await _handleSaveResponse(apiResult, showDialog);
   }
 
   /// Builds a map of only the changed fields for the API payload.
@@ -619,10 +619,10 @@ class KennelPageFormController extends TabUiController
   }
 
   /// Handles the API response after saving.
-  Future<void> _handleSaveResponse(String jsonResult, bool showDialog) async {
-    if (jsonResult.startsWith(ERROR_PREFIX)) return;
+  Future<void> _handleSaveResponse(ApiResult apiResult, bool showDialog) async {
+    if (apiResult is! ApiSuccess) return;
 
-    final decoded = json.decode(jsonResult) as List<dynamic>;
+    final decoded = json.decode(apiResult.body) as List<dynamic>;
     final items = (decoded[0] as List<dynamic>)[0] as Map<String, dynamic>;
     final result = items['result'] as String;
     final resultCode = items['resultCode'] as int;
@@ -914,7 +914,7 @@ class KennelPageFormController extends TabUiController
     final accessToken = Utilities.generateToken(
       deviceId,
       'hcportal_addSong',
-      paramString: deviceSecret,
+      paramString: '$deviceSecret:${originalData.kennelPublicId.uuid}',
     );
 
     final body = <String, dynamic>{
@@ -932,12 +932,12 @@ class KennelPageFormController extends TabUiController
       'bawdyRating': newSongBawdyRating.value,
     };
 
-    final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+    final addSongResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+    if (kDebugMode) debugPrint(addSongResult is ApiError
         ? 'SP 2 [addSong] called — FAILED'
         : 'SP 2 [addSong] called — success');
 
-    if (jsonResult.length > 10) {
+    if (addSongResult is ApiSuccess) {
       isAddingSong.value = false;
 
       // Reload songs to pick up the newly added one

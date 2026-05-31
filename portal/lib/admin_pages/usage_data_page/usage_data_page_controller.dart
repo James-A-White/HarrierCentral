@@ -53,13 +53,13 @@ class UsageDataPageController extends GetxController {
         'accessToken': accessToken,
       };
 
-      final jsonString = await ServiceCommon.sendHttpPostToHC6Api(body);
-      if (kDebugMode) debugPrint(jsonString.startsWith(ERROR_PREFIX)
+      final result = await ServiceCommon.sendHttpPostToHC6Api(body);
+      if (kDebugMode) debugPrint(result is ApiError
           ? 'SP 16b (a-b) [getUsageData] called — FAILED'
           : 'SP 16b (a-b) [getUsageData] called — success');
-      if (jsonString.startsWith(ERROR_PREFIX)) return;
+      if (result is! ApiSuccess) return;
 
-      final outer = json.decode(jsonString) as List<dynamic>;
+      final outer = json.decode(result.body) as List<dynamic>;
       hcVersions.value = _parseList(outer[0] as List<dynamic>, UdHcVersion.fromJson);
       _calculateMaxHcVersion();
 
@@ -121,10 +121,10 @@ class UsageDataPageController extends GetxController {
       };
 
       final result = await ServiceCommon.sendHttpPostToHC6Api(body);
-      if (kDebugMode) debugPrint(result.startsWith(ERROR_PREFIX)
+      if (kDebugMode) debugPrint(result is ApiError
           ? 'SP 7c (a-d) [getCategoryDetail2] called — FAILED'
           : 'SP 7c (a-d) [getCategoryDetail2] called — success');
-      await _showCategoryDetailDialog(result, title);
+      if (result case ApiSuccess(:final body)) await _showCategoryDetailDialog(body, title);
     } catch (e) {
       if (kDebugMode) debugPrint('getCategoryDetail error: $e');
     } finally {
@@ -161,10 +161,10 @@ class UsageDataPageController extends GetxController {
       };
 
       final result = await ServiceCommon.sendHttpPostToHC6Api(body);
-      if (kDebugMode) debugPrint(result.startsWith(ERROR_PREFIX)
+      if (kDebugMode) debugPrint(result is ApiError
           ? 'SP 7d (a-d) [getCategoryDetail2] called — FAILED'
           : 'SP 7d (a-d) [getCategoryDetail2] called — success');
-      await _showCategoryDetailDialog(result, title);
+      if (result case ApiSuccess(:final body)) await _showCategoryDetailDialog(body, title);
     } catch (e) {
       if (kDebugMode) debugPrint('getHcVersionDetail error: $e');
     } finally {
@@ -173,11 +173,10 @@ class UsageDataPageController extends GetxController {
   }
 
   Future<void> _showCategoryDetailDialog(
-    String result,
+    String body,
     String title,
   ) async {
-    if (result.startsWith(ERROR_PREFIX)) return;
-    final outer = json.decode(result) as List<dynamic>;
+    final outer = json.decode(body) as List<dynamic>;
     if (outer.isEmpty) return;
 
     // HC6 format: [[{row1}, {row2}, ...]] — single rowset of typed columns
@@ -300,10 +299,11 @@ class UsageDataPageController extends GetxController {
       };
 
       final result = await ServiceCommon.sendHttpPostToHC6Api(body);
-      if (kDebugMode) debugPrint(result.startsWith(ERROR_PREFIX)
+      if (kDebugMode) debugPrint(result is ApiError
           ? 'SP 14 [getLoginHistory] called — FAILED'
           : 'SP 14 [getLoginHistory] called — success');
-      final outer = json.decode(result) as List<dynamic>;
+      if (result is! ApiSuccess) return <UdLoginHistoryModel>[];
+      final outer = json.decode(result.body) as List<dynamic>;
       final items = outer.first as List<dynamic>;
       return items
           .map(

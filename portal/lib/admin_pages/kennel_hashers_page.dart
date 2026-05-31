@@ -793,7 +793,7 @@ class KennelHashersController extends GetxController {
     final accessToken = Utilities.generateToken(
       deviceId,
       'hcportal_getKennelHashers',
-      paramString: deviceSecret,
+      paramString: '$deviceSecret:${kennel.publicKennelId}',
     );
 
     final body = <String, dynamic>{
@@ -803,14 +803,14 @@ class KennelHashersController extends GetxController {
       'publicKennelId': kennel.publicKennelId,
     };
 
-    final jsonString = await ServiceCommon.sendHttpPostToHC6Api(body);
-    if (kDebugMode) debugPrint(jsonString.startsWith(ERROR_PREFIX)
+    final apiResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+    if (kDebugMode) debugPrint(apiResult is ApiError
         ? 'SP 12a (a-b) [getKennelHashers] called — FAILED'
         : 'SP 12a (a-b) [getKennelHashers] called — success');
     hashers.clear();
     rows.clear();
     newHashers.clear();
-    if (jsonString.length > 10) {
+    if (apiResult case ApiSuccess(:final jsonString)) {
       final decodedJson = json.decode(jsonString) as List<dynamic>;
       final jsonGroup = (decodedJson[0] as List)
           .map<Map<String, dynamic>>((e) => e as Map<String, dynamic>)
@@ -1111,7 +1111,7 @@ class KennelHashersController extends GetxController {
       final accessToken = Utilities.generateToken(
         deviceId,
         'hcportal_updateKennelHasher',
-        paramString: deviceSecret,
+        paramString: '$deviceSecret:$hasherBeingEditedPublicId',
       );
 
       if ((field == 'firstName') ||
@@ -1137,15 +1137,14 @@ class KennelHashersController extends GetxController {
           field: newValue,
         };
 
-        final jsonResult = await ServiceCommon
+        final hasherResult = await ServiceCommon
             .sendHttpPostToHC6Api(body);
-        if (kDebugMode) debugPrint(jsonResult.startsWith(ERROR_PREFIX)
+        if (kDebugMode) debugPrint(hasherResult is ApiError
             ? 'SP 20 [updateKennelHasher] called — FAILED'
             : 'SP 20 [updateKennelHasher] called — success');
-        //print('result=' + jsonResult);
-        if (jsonResult.length > 10) {
+        if (hasherResult case ApiSuccess(:final body)) {
           final jsonItems =
-              json.decode(jsonResult) as List<dynamic>;
+              json.decode(body) as List<dynamic>;
           if (jsonItems.isNotEmpty) {
             final item = ((jsonItems[0]) as List<dynamic>)[0]
                 as Map<String, dynamic>;
@@ -1257,7 +1256,7 @@ class KennelHashersController extends GetxController {
       final accessToken = Utilities.generateToken(
         deviceId,
         'hcportal_bulkAddHashers',
-        paramString: deviceSecret,
+        paramString: '$deviceSecret:${kennel.publicKennelId}',
       );
 
       final body = <String, dynamic>{
@@ -1267,17 +1266,17 @@ class KennelHashersController extends GetxController {
         'publicKennelId': kennel.publicKennelId,
         'newHasherJson': newHasherJson,
       };
-      //print(body);
-      final jsonString = await ServiceCommon
+      final bulkResult = await ServiceCommon
           .sendHttpPostToHC6Api(body);
-      if (kDebugMode) debugPrint(jsonString.startsWith(ERROR_PREFIX)
+      if (kDebugMode) debugPrint(bulkResult is ApiError
           ? 'SP 3 [bulkAddHashers] called — FAILED'
           : 'SP 3 [bulkAddHashers] called — success');
 
       newHashers.clear();
 
+      if (bulkResult is! ApiSuccess) return;
       final decodedJson =
-          json.decode(jsonString) as List<dynamic>;
+          json.decode(bulkResult.body) as List<dynamic>;
       final jsonGroup = (decodedJson[0] as List)
           .map<Map<String, dynamic>>(
             (e) => e as Map<String, dynamic>,

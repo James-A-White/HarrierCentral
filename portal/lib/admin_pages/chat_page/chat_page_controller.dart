@@ -75,7 +75,7 @@ class ChatSheetController extends GetxController {
   Future<void> onInitAsync() async {
     try {
       final result = await _getEventMessages(publicEventId);
-      if (result != null && !result.startsWith(ERROR_PREFIX)) {
+      if (result != null) {
         final outerItem = jsonDecode(result) as List<dynamic>;
         final rawMessages = outerItem[0] as List<dynamic>;
 
@@ -156,7 +156,7 @@ class ChatSheetController extends GetxController {
         publicEventId,
         sinceSequenceCount: sinceSeq,
       );
-      if (result == null || result.startsWith(ERROR_PREFIX)) return;
+      if (result == null) return;
       final outerItem = jsonDecode(result) as List<dynamic>;
       final rawMessages = outerItem[0] as List<dynamic>;
       if (rawMessages.isEmpty) return;
@@ -222,7 +222,7 @@ class ChatSheetController extends GetxController {
     final accessToken = Utilities.generateToken(
       deviceId,
       'hcportal_markEventChatRead',
-      paramString: deviceSecret,
+      paramString: '$deviceSecret:$publicEventId',
     );
     final body = <String, dynamic>{
       'queryType': 'markEventChatRead',
@@ -232,7 +232,7 @@ class ChatSheetController extends GetxController {
     };
     final result = await ServiceCommon.sendHttpPostToHC6Api(body);
     if (kDebugMode) debugPrint(
-      result.startsWith(ERROR_PREFIX)
+      result is ApiError
           ? 'SP [markEventChatRead] called — FAILED'
           : 'SP [markEventChatRead] called — success',
     );
@@ -247,7 +247,7 @@ class ChatSheetController extends GetxController {
     final accessToken = Utilities.generateToken(
       deviceId,
       'hcportal_getEventMessages',
-      paramString: deviceSecret,
+      paramString: '$deviceSecret:$publicEventId',
     );
 
     final body = <String, dynamic>{
@@ -260,13 +260,13 @@ class ChatSheetController extends GetxController {
       body['sinceSequenceCount'] = sinceSequenceCount;
     }
 
-    final jsonResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+    final result = await ServiceCommon.sendHttpPostToHC6Api(body);
     if (kDebugMode) debugPrint(
-      jsonResult.startsWith(ERROR_PREFIX)
+      result is ApiError
           ? 'SP 9 [getEventMessages] called — FAILED'
           : 'SP 9 [getEventMessages] called — success',
     );
-    return jsonResult;
+    return result is ApiSuccess ? result.body : null;
   }
 
   List<core.Message> _parseMessages(List<dynamic> messageList) {
@@ -411,10 +411,12 @@ class ChatSheetController extends GetxController {
     final deviceId = box.get(HIVE_DEVICE_ID) as String;
     final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
 
+    // Compound token: binds to the specific event AND message UUID, preventing
+    // a captured token from being replayed to send a different message.
     final accessToken = Utilities.generateToken(
       deviceId,
       'hcportal_sendEventMessage',
-      paramString: deviceSecret,
+      paramString: '$deviceSecret:$publicEventId:$uuid',
     );
 
     final body = <String, dynamic>{
@@ -429,7 +431,7 @@ class ChatSheetController extends GetxController {
     };
 
     final sendResult = await ServiceCommon.sendHttpPostToHC6Api(body);
-    final failed = sendResult.startsWith(ERROR_PREFIX);
+    final failed = sendResult is ApiError;
     if (kDebugMode) debugPrint(
       failed
           ? 'SP 17 [sendEventMessage] called — FAILED'

@@ -66,7 +66,12 @@ DECLARE @authError NVARCHAR(255);
 DECLARE @hasherId UNIQUEIDENTIFIER;
 DECLARE @callerType INT;
 DECLARE @procName NVARCHAR(128) = OBJECT_NAME(@@PROCID);
-EXEC HC6.ValidatePortalAuth @deviceId, @accessToken, @procName, @publicEventId, @authError OUTPUT, @hasherId OUTPUT, @callerType OUTPUT;
+-- Compound callerParamString binds the token to the specific event AND message,
+-- preventing a captured token from being replayed for a different message.
+-- Flutter caller must use paramString: '$deviceSecret:$publicEventId:$messageId'.
+EXEC HC6.ValidatePortalAuth @deviceId, @accessToken, @procName,
+    CAST(@publicEventId AS NVARCHAR(36)) + ':' + CAST(@messageId AS NVARCHAR(36)),
+    @authError OUTPUT, @hasherId OUTPUT, @callerType OUTPUT;
 IF @authError IS NOT NULL
 BEGIN
     SELECT 0 AS Success, @authError AS ErrorMessage;
