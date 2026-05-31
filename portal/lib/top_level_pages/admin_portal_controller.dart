@@ -164,8 +164,14 @@ class AdminPortalController extends GetxController {
               : 'SP 4 [confirmAuthentication] called — success');
 
           if (authResult case ApiSuccess(:final body)) {
-            final items = ((json.decode(body) as List<dynamic>)[0]
-                as List<dynamic>)[0] as Map<String, dynamic>;
+            final rows = (json.decode(body) as List<dynamic>)[0] as List<dynamic>;
+            if (rows.isEmpty) {
+              await Future<void>.delayed(
+                const Duration(seconds: AUTH_POLL_INTERVAL_SECONDS),
+              );
+              continue;
+            }
+            final items = rows[0] as Map<String, dynamic>;
 
             publicHasherId = items['publicHasherId'] as String;
             if (publicHasherId.isNotEmpty) {
