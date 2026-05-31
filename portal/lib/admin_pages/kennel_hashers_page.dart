@@ -810,7 +810,7 @@ class KennelHashersController extends GetxController {
     hashers.clear();
     rows.clear();
     newHashers.clear();
-    if (apiResult case ApiSuccess(:final jsonString)) {
+    if (apiResult case ApiSuccess(body: final jsonString)) {
       final decodedJson = json.decode(jsonString) as List<dynamic>;
       final jsonGroup = (decodedJson[0] as List)
           .map<Map<String, dynamic>>((e) => e as Map<String, dynamic>)

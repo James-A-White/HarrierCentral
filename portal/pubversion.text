@@ -1,4 +1,19 @@
 
+2.0.1+634
+    • Milestone: portal fully migrated to agentic AI-assisted development
+    • Security (phases 1–5): credentials removed from source, server-side SAS
+      tokens, error detail sanitisation, session hardening, SQL injection fixes,
+      permission guards, proxy geocode endpoints
+    • Auth fix: compound token paramString corrected for all 19 kennel/event-
+      scoped SP callers — restores all portal operations broken by auth bypass removal
+    • HC6.ValidatePortalAuth: explicit ':' delimiter in compound paramString
+    • hcportal_sendEventMessage: token now bound to event + message UUID
+    • ApiResult sealed class replaces ERROR_xxx string prefix throughout — type-safe,
+      compile-enforced error handling across all 35 call sites
+
+2.0.0+633
+    • Version bump and CHANGELOG.md for 2.0 milestone (source-only, no build)
+
 1.5.8+632
     • Security: geocode place-to-address now calls ProxyGeocode shim — Logic App SAS token removed from JS bundle
     • Security: reverse geocode now calls ProxyReverseGeocode shim — hcazurefunctions7 no longer called from client
