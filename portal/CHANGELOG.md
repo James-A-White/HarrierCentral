@@ -1,0 +1,107 @@
+# Harrier Central Portal — Changelog
+
+---
+
+## 2.0.0+633 — 2026-05-31
+
+### Milestone: Agentic AI Development
+
+Version 2.0 marks the completion of the Harrier Central Admin Portal's migration
+to agentic AI-assisted development. Every feature, security fix, and refactor in
+this release was designed, reviewed, and implemented through a structured
+human-AI collaboration — with James proposing direction and Claude (Anthropic)
+executing and explaining. The portal is now fully on this development model
+alongside the public web and API, with the mobile app to follow.
+
+### Security Hardening (Phases 1–5)
+
+A comprehensive security audit and remediation across the full stack:
+
+- **Phase 1 — Credentials out of source:** Deleted `data.dart` (contained live
+  API keys, kennel UUIDs, and bank details compiled into the JS bundle). Removed
+  FCM tokens and auth tokens from all log output. Replaced unguarded `debugPrint`
+  calls with `kDebugMode`-gated logging across 14 portal files.
+
+- **Phase 2 — Server-side SAS tokens:** Replaced three hardcoded year-2100 Azure
+  Blob SAS tokens (container-level write, compiled into JS) with a new server-side
+  endpoint (`GetPortalUploadSas`) that issues per-blob, 15-minute write-only SAS
+  tokens on demand, validated against portal auth.
+
+- **Phase 3 — Error detail sanitisation:** Stopped propagating raw database error
+  messages to HTTP clients. Internal detail now stays in Azure logs only.
+
+- **Phase 4 — Session and URL hardening:** `HC_ADMIN_SESSION_SECRET` now throws at
+  startup if missing (removes silent fallback). HMAC comparison uses
+  `timingSafeEqual` (prevents timing side-channel). `_launchUrl` restricted to
+  `http`/`https` schemes (blocks `javascript:`, `data:`, `file:` injection).
+  Photo upload validates SAS URL host before sending bytes.
+
+- **Phase 5 — SQL injection fixes and permission guards:** Converted string-
+  interpolated `EXEC` calls in `GenericJsonQuery.cs` to parameterised commands.
+  Added `AppAccessFlags` permission check to `hcportal_updateKennelHasher`.
+  Transaction guard added to `hcportal_deleteEvent`. Atomic OTP redemption in
+  `publicWeb_redeemAdminToken`. IDOR fixes in `hcportal_addEditEvent` and
+  `hcportal_deleteEvent`.
+
+- **Proxy geocode endpoints:** Geocode lookups now route through the HC API shim
+  (`ProxyGeocode`, `ProxyReverseGeocode`) so the TomTom API key is never exposed
+  in client-side JavaScript.
+
+- **DB auth bypass removed:** `HC6.CHECK_PORTAL_ACCESS_TOKEN` development bypass
+  (which had allowed unauthenticated access during HC6 migration) was removed and
+  full token validation enforced.
+
+### Auth Fix — Compound Token Paramstring
+
+The removal of the auth bypass exposed a pre-existing mismatch: 19 portal SP
+callers were generating tokens with only `deviceSecret` as the paramstring, while
+the SPs pass a context value (kennel ID, event ID, etc.) to `ValidatePortalAuth`,
+which builds `UPPER(deviceSecret) + callerParamString` for validation. Every
+kennel-scoped and event-scoped operation was broken.
+
+Fixed across three layers:
+
+- **`HC6.ValidatePortalAuth`:** Compound paramstring now uses an explicit colon
+  delimiter — `UPPER(deviceSecret):UPPER(callerParamString)` — making the boundary
+  unambiguous and consistent across all callers.
+- **All 19 Dart callers** updated to `paramString: '$deviceSecret:$callerParam'`.
+- **`hcportal_sendEventMessage`** extended to bind the token to both the event ID
+  *and* the message UUID (`publicEventId:messageId`), preventing a captured token
+  from being replayed to send a different message.
+
+The device secret is never transmitted — it is used only as a signing ingredient
+in the SHA-256 hash and remains on the client at all times.
+
+### Code Quality — `ApiResult` Sealed Class
+
+Replaced the `ERROR_xxx` string-prefix pattern throughout the portal with a
+typed `ApiResult` sealed class (`ApiSuccess` / `ApiError`). This eliminates the
+class of bug where `json.decode` could be called on an error string — under the
+old pattern it required a manual `startsWith(ERROR_PREFIX)` guard that was easy
+to forget; under the new pattern the compiler rejects it outright. All 35 call
+sites across 16 files updated.
+
+### Other Fixes
+
+- **Photo review auth:** `getRunAllPhotos` and `batchUpdatePhotoStatus` now receive
+  `publicKennelId` for correct kennel-scoped auth validation.
+- **`authCanManagePublicWebContent` (0x0080):** New permission flag wired through
+  portal UI and SP layer, controlling access to the public web content editor.
+- **Error dialog message:** Portal now reads `errorUserMessage ?? errorMessage`
+  from API error responses, restoring meaningful error messages that had been
+  silenced by the security hardening field-name change.
+
+---
+
+## 1.5.x (2026-03 to 2026-05)
+
+Incremental releases covering: HC6 SP migration completion, Flutter portal on
+HC6 API throughout, public web Puck page builder (6 top-level pages), admin auth
+OTP token flow (Flutter portal → URL token → HMAC session cookie), photo review
+page, FCM chat infrastructure, newsflash feature, HC Admin Tools hub, button
+colour system, and ongoing SP/contract work.
+
+---
+
+*Harrier Central is maintained by James White. Agentic AI development powered
+by Claude (Anthropic).*
