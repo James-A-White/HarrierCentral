@@ -111,7 +111,7 @@ class CheckinSheetController extends GetxController {
         ? 'SP 12b (a-b) [getKennelHashers] called — FAILED'
         : 'SP 12b (a-b) [getKennelHashers] called — success');
 
-    if (result case ApiSuccess(:final jsonString)) {
+    if (result case ApiSuccess(body: final jsonString)) {
       final decodedJson = (json.decode(jsonString) as List<dynamic>)[0];
       final decodedHashers = (decodedJson as List<dynamic>)
           .map((item) => item as Map<String, dynamic>)

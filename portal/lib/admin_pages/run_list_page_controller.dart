@@ -263,7 +263,7 @@ class RunListPageController extends GetxController
     allEvents.clear();
     allEventsDetails.clear();
 
-    if (apiResult case ApiSuccess(:final jsonResult)) {
+    if (apiResult case ApiSuccess(body: final jsonResult)) {
       if (getAllEventDetails) {
         final jsonItems = json.decode(jsonResult) as List<dynamic>;
         for (var i = 0; i < (jsonItems[0] as List<dynamic>).length; i++) {
