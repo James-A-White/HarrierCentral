@@ -29,10 +29,12 @@ class AppEntryPageState extends State<AppEntryPage>
     unawaited(setIntPref(IntPrefsEnum.launchCount, _launchCount + 1));
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await precacheImage(
-        const AssetAvifImage('images/backgrounds/hash_foot_background.avif'),
-        navigatorKey.currentState!.context,
-      );
+      try {
+        await precacheImage(
+          const AssetAvifImage('images/backgrounds/hash_foot_background.avif'),
+          navigatorKey.currentState!.context,
+        );
+      } catch (_) {}
       await _runBoot();
     });
   }

@@ -1,5 +1,8 @@
 .DS_Store
 
+# Test artifacts
+test/golden/failures/
+
 # Dart/Flutter generated
 .dart_tool/
 .dart_tool */

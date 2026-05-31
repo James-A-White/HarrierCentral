@@ -329,11 +329,69 @@ class LocationService extends GetxService {
     );
   }
 
+  Future<void> markSlot(TrailSlot slot, {String? label}) async {
+    final position = await Geolocator.getCurrentPosition(
+      locationSettings: const LocationSettings(accuracy: LocationAccuracy.best),
+    );
+    await updateDeviceLocation(
+      position,
+      forceFlush: true,
+      slotIcon: slot.icon,
+      label: label,
+    );
+  }
+
+  /// Places a single track point with an explicit [timestampMs] — used for
+  /// photos taken before or after the run where [DateTime.now()] would put
+  /// the marker in the wrong place on the timeline.
+  ///
+  /// The GPS position is the real current position (where the photo was taken).
+  /// If tracking is active the existing buffer is used; otherwise a one-shot
+  /// flush is made directly to StorePositions.
+  Future<void> markPointAt({
+    required HashRunPointTypes pointType,
+    required int timestampMs,
+    required String overrideEventId,
+    required String overrideUserId,
+    String? label,
+  }) async {
+    final position = await Geolocator.getCurrentPosition(
+      locationSettings: const LocationSettings(accuracy: LocationAccuracy.best),
+    );
+
+    String? pointStr = pointType.key;
+    if (label != null) pointStr += '::$label';
+
+    final point = UserEventLocation(
+      ts: pad19(timestampMs),
+      lat: double.parse(position.latitude.toStringAsFixed(5)),
+      lng: double.parse(position.longitude.toStringAsFixed(5)),
+      acc: double.parse(position.accuracy.toStringAsFixed(2)),
+      alt: double.parse(position.altitude.toStringAsFixed(2)),
+      type: pointStr,
+    );
+
+    if (_runBuffer != null) {
+      _runBuffer!.enqueue(point);
+      await _runBuffer!.flush();
+    } else {
+      final buf = RunPointBuffer(
+        apiUrl: STORE_POSITIONS_URL,
+        eventId: overrideEventId,
+        userId: overrideUserId,
+      );
+      buf.enqueue(point);
+      await buf.flush();
+      buf.dispose();
+    }
+  }
+
   // Private method to handle location updates from the stream/one-time fetch
   Future<void> updateDeviceLocation(
     Position position, {
     bool forceFlush = false,
     HashRunPointTypes? pointType,
+    String? slotIcon,
     String? label,
   }) async {
     final lat = position.latitude.toDouble();
@@ -399,6 +457,11 @@ class LocationService extends GetxService {
 
       if (pointType != null) {
         pointStr = pointType.key;
+        if (label != null) {
+          pointStr += '::$label';
+        }
+      } else if (slotIcon != null) {
+        pointStr = slotIcon;
         if (label != null) {
           pointStr += '::$label';
         }

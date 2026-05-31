@@ -161,6 +161,7 @@ BEGIN
         k.KennelUniqueShortName                                             AS kennelUniqueShortName,
         k.KennelDescription                                                 AS kennelDescription,
         k.KennelSearchTags                                                  AS kennelSearchTags,
+        k.DisseminateAllowWebLinks                                          AS disseminateAllowWebLinks,
         k.KennelLogo                                                        AS kennelLogo,
         k.KennelPinColor                                                    AS kennelPinColor,
         k.KennelCoverPhoto                                                  AS kennelCoverPhoto,
@@ -205,6 +206,7 @@ BEGIN
         k.KennelPaymentUrlExpires3                                          AS kennelPaymentUrlExpires3,
         k.KennelPaymentMemberSurcharge3                                     AS kennelPaymentMemberSurcharge3,
         k.KennelPaymentNonMemberSurcharge3                                  AS kennelPaymentNonMemberSurcharge3,
+        k.TrailSymbolsConfigJson                                            AS trailSymbolsConfigJson,
         k.removed                                                           AS removed,
         CONVERT(NVARCHAR(50), CAST(k.updatedAt AS DATETIME2))               AS updatedAt
     FROM HC.Kennel k WITH (INDEX(IX_AllSyncKennels))

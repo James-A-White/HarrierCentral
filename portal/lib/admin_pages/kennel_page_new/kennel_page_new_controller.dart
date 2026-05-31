@@ -22,6 +22,7 @@ part 'pages/kennel_developer_page/controls.dart';
 part 'pages/kennel_hash_cash_page/controls.dart';
 part 'pages/kennel_songs_page/controls.dart';
 part 'pages/kennel_logo_page/controls.dart';
+part 'pages/kennel_trail_symbols_page/controls.dart';
 
 // ---------------------------------------------------------------------------
 // Controller
@@ -163,6 +164,13 @@ class KennelPageFormController extends TabUiController
 
   /// Google Calendar addresses validation flag.
   final RxBool googleCalendarAddressesValid = true.obs;
+
+  // ---------------------------------------------------------------------------
+  // State - Trail Symbols Tab
+  // ---------------------------------------------------------------------------
+
+  /// Reactive list of the 12 trail slot configs for the trail symbols tab.
+  final RxList<TrailSlotConfig> _trailSlots = <TrailSlotConfig>[].obs;
 
   // ---------------------------------------------------------------------------
   // State - Platform Admin Tab Settings
@@ -363,6 +371,7 @@ class KennelPageFormController extends TabUiController
     initKennelHashCashControls();
     initKennelSongsControls();
     initKennelLogoControls();
+    initTrailSymbolsControls();
 
     populateTextControllers();
   }

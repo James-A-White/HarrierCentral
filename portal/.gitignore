@@ -1,6 +1,15 @@
 .dart_tool/*
 build/native_assets/*
 build/ios/*
+build/native_hooks/*
+build/flutter_assets/
+build/*.dill
+build/*.stamp
+build/*.d
+build/*.json
+# Exclude hash-named build cache directories (keep build/web/)
+build/[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]*
+.flutter-plugins
 .flutter-plugins
 .flutter-plugins-dependencies
 .packages

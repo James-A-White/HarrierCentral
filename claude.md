@@ -385,6 +385,18 @@ Rules:
 - This applies to every `fromJson` factory that reads a column declared as
   `BIT` in the base table, including hand-written and Freezed models.
 
+**ALTER TABLE on synced tables — disable triggers first:**
+
+Tables that participate in the mobile sync have an `UpdatedAt` trigger. If that
+trigger is active when you run `ALTER TABLE ... ADD COLUMN`, SQL Server fires it
+against **every row**, stamping a current `UpdatedAt` on all of them. The sync
+system then treats every row as recently modified and forces a full re-sync to
+all clients — unnecessary load for every user.
+
+**Rule:** Never write or suggest an `ALTER TABLE ADD COLUMN` script for a
+synced table without explicitly noting that James must disable the `UpdatedAt`
+trigger first, run the ALTER, then re-enable it. Do not run this autonomously.
+
 **Always flag as code smells:**
 - Sentinel magic values (`-1`, `-2`, `'<null>'`, `-99.0`, `-999.0`)
 - Inconsistent sentinel values across parameters in the same SP

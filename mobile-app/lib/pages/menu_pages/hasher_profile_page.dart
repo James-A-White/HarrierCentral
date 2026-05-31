@@ -336,7 +336,13 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       isDirty = true;
     }
 
-    if (_hasherPreferences !=
+    // Only compare the bits this form controls. Other bits in the stored pref
+    // (photo sharing, debug harvest, etc.) are managed elsewhere and must not
+    // trigger dirty state here.
+    const int formPrefMask = hasherPref_distanceMeasuredIn |
+        hasherPref_distanceForAutoDisplay |
+        hasherPref_cameraRollSaveDisabled;
+    if ((_hasherPreferences & formPrefMask) !=
         (_distancePreference +
             _autoRunPreference +
             (_savePhotosToCameraRoll ? 0 : hasherPref_cameraRollSaveDisabled))) {
@@ -1956,17 +1962,9 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                             DB_NAME,
                                                           );
 
-                                                          // Get.reset(
-                                                          //   clearRouteBindings:
-                                                          //       true,
-                                                          // );
                                                           await initServices();
-                                                          await Get.offAll(
-                                                            () =>
-                                                                AppEntryPage(),
-                                                            binding:
-                                                                InitialBindings(),
-                                                          );
+                                                          restartKey.currentState
+                                                              ?.restartApp();
                                                         }
                                                       });
                                                     },
@@ -2244,15 +2242,17 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                               children: <Widget>[
                                                 ElevatedButton.icon(
                                                   style: ElevatedButton.styleFrom(
+                                                    backgroundColor: _bootLogCopied
+                                                        ? Colors.green.shade700
+                                                        : hc_blue,
+                                                    foregroundColor: Colors.white,
                                                     padding:
                                                         const EdgeInsets.symmetric(
                                                           vertical: 8.0,
                                                           horizontal: 15.0,
                                                         ),
                                                   ),
-                                                  onPressed: (getStringPref(StringPrefsEnum.lastSessionErrorLog) ?? '').isEmpty
-                                                      ? null
-                                                      : _copyBootLogToClipboard,
+                                                  onPressed: _copyBootLogToClipboard,
                                                   icon: Icon(
                                                     _bootLogCopied
                                                         ? Icons.check

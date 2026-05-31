@@ -55,7 +55,7 @@ Future<bool> setupDatabase(
   appModel.dbStatus = EdbStatus.opening;
 
   if (Get.isRegistered<Database>()) {
-    await Get.delete<Database>(); // or await if you prefer
+    await Get.delete<Database>(force: true);
   }
 
   await Get.putAsync<Database>(() async {

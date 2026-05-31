@@ -20,6 +20,10 @@ class KennelPhotoService {
     required String kennelId,
     required String kennelSlug,
     required int eventNumber,
+    // Timestamp for the GPS track marker. Pass the run's scheduled start time
+    // for pre-run photos, the last track-point time for post-run photos, or
+    // null to use DateTime.now() (the normal during-run behaviour).
+    int? markerTimestampMs,
   }) async {
     // Run folder: "<kennelSlug>-<runNumber>" when there is a run number,
     // otherwise "other". Nested under the kennel slug in blob storage.
@@ -57,7 +61,33 @@ class KennelPhotoService {
     //    Camera roll already received the full-quality copy in step 4.
     final uploadFile = await _compressForUpload(imageFile) ?? imageFile;
 
-    // 6. Request a short-lived SAS write token from the API
+    // 6. Queue for later if offline — save compressed file to documents dir
+    //    and store metadata in GetStorage. The upload completes automatically
+    //    the next time the app opens with a network connection.
+    if (!Utilities.isConnected()) {
+      await _queueForOfflineUpload(
+        imageFile: uploadFile,
+        photoGuid: photoGuid,
+        eventId: eventId,
+        kennelId: kennelId,
+        kennelSlug: kennelSlug,
+        eventNumber: eventNumber,
+        sharingOverride: sharingOverride,
+        caption: caption,
+        assetId: assetId,
+      );
+      // Stamp the GPS track now at the correct position and time. If the photo
+      // upload eventually fails permanently the map resolves the photoId to null
+      // and hides the marker — no user-visible damage.
+      _enqueuePhotoMarker(
+        photoId: photoGuid,
+        eventId: eventId,
+        timestampMs: markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
+      );
+      return null;
+    }
+
+    // 7. (online path) Request a short-lived SAS write token from the API
     final tokenResult = await _getUploadToken(
       kennelId: kennelId,
       kennelSlug: kennelSlug,
@@ -65,12 +95,22 @@ class KennelPhotoService {
       photoGuid: photoGuid,
     );
     if (tokenResult == null) {
-      Get.snackbar(
-        'Upload failed',
-        'Could not get an upload token. Please try again.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade700,
-        colorText: Colors.white,
+      await _queueForOfflineUpload(
+        imageFile: uploadFile,
+        photoGuid: photoGuid,
+        eventId: eventId,
+        kennelId: kennelId,
+        kennelSlug: kennelSlug,
+        eventNumber: eventNumber,
+        sharingOverride: sharingOverride,
+        caption: caption,
+        assetId: assetId,
+        isOnlineFailure: true,
+      );
+      _enqueuePhotoMarker(
+        photoId: photoGuid,
+        eventId: eventId,
+        timestampMs: markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
       );
       return null;
     }
@@ -82,20 +122,20 @@ class KennelPhotoService {
         'Upload failed',
         'Upload token was missing required fields. Please try again.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade700,
+        backgroundColor: hc_red,
         colorText: Colors.white,
       );
       return null;
     }
 
-    final sasUri = Uri.tryParse(sasUrl as String);
+    final sasUri = Uri.tryParse(sasUrl);
     if (sasUri == null ||
         sasUri.host != 'harriercentral.blob.core.windows.net') {
       Get.snackbar(
         'Upload failed',
         'Invalid upload token. Please try again.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade700,
+        backgroundColor: hc_red,
         colorText: Colors.white,
       );
       return null;
@@ -104,12 +144,22 @@ class KennelPhotoService {
     // 7. Upload compressed bytes directly to blob storage via the SAS URL
     final uploaded = await _uploadToBlob(sasUrl: sasUrl, imageFile: uploadFile);
     if (!uploaded) {
-      Get.snackbar(
-        'Upload failed',
-        'The photo could not be uploaded. Please try again.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade700,
-        colorText: Colors.white,
+      await _queueForOfflineUpload(
+        imageFile: uploadFile,
+        photoGuid: photoGuid,
+        eventId: eventId,
+        kennelId: kennelId,
+        kennelSlug: kennelSlug,
+        eventNumber: eventNumber,
+        sharingOverride: sharingOverride,
+        caption: caption,
+        assetId: assetId,
+        isOnlineFailure: true,
+      );
+      _enqueuePhotoMarker(
+        photoId: photoGuid,
+        eventId: eventId,
+        timestampMs: markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
       );
       return null;
     }
@@ -130,7 +180,7 @@ class KennelPhotoService {
         'The photo was uploaded but could not be recorded. '
             'It may not appear on the map.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.shade700,
+        backgroundColor: hc_red,
         colorText: Colors.white,
       );
       // Still return blobUrl — photo is in storage even if the DB call failed
@@ -138,7 +188,11 @@ class KennelPhotoService {
     }
 
     // 9. Enqueue a PHO marker into the GPS track feed
-    _enqueuePhotoMarker(photoId: photoGuid);
+    _enqueuePhotoMarker(
+      photoId: photoGuid,
+      eventId: eventId,
+      timestampMs: markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
+    );
 
     return blobUrl;
   }
@@ -260,6 +314,11 @@ class KennelPhotoService {
       debugPrint(
         'GetPhotoUploadToken failed: HTTP ${response.statusCode} — ${response.body}',
       );
+      BootLogger.logError(
+        '[KennelPhotoService._getUploadToken] HTTP ${response.statusCode}',
+        response.body,
+        null,
+      );
     } catch (e, s) {
       debugPrint('GetPhotoUploadToken exception: $e');
       BootLogger.logError('[KennelPhotoService._getUploadToken] kennelId=$kennelId kennelSlug=$kennelSlug runFolder=$runFolder', e, s);
@@ -298,9 +357,18 @@ class KennelPhotoService {
     String? assetId,
     int? perRunSharingOverride,
     String? caption,
+    // Explicit coords for queued uploads; falls back to current position
+    // for live uploads so existing call sites remain unchanged.
+    double? lat,
+    double? lng,
   }) async {
-    final locationService = Get.find<LocationService>();
-    final pos = locationService.lastKnownPosition.value;
+    double resolvedLat = lat ?? 0.0;
+    double resolvedLng = lng ?? 0.0;
+    if (lat == null || lng == null) {
+      final pos = Get.find<LocationService>().lastKnownPosition.value;
+      resolvedLat = pos?.latitude ?? 0.0;
+      resolvedLng = pos?.longitude ?? 0.0;
+    }
 
     final userId = currentUserId;
     final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
@@ -318,8 +386,8 @@ class KennelPhotoService {
       'eventId': eventId,
       'kennelId': kennelId,
       'blobUrl': blobUrl,
-      'latitude': pos?.latitude ?? 0.0,
-      'longitude': pos?.longitude ?? 0.0,
+      'latitude': resolvedLat,
+      'longitude': resolvedLng,
     };
 
     if (assetId != null && assetId.isNotEmpty) {
@@ -341,13 +409,22 @@ class KennelPhotoService {
 
   // ── GPS track marker ─────────────────────────────────────────────────────
 
-  void _enqueuePhotoMarker({required String photoId}) {
-    final locationService = Get.find<LocationService>();
+  void _enqueuePhotoMarker({
+    required String photoId,
+    required String eventId,
+    required int timestampMs,
+  }) {
     // Label is the photoId (UUID) only — the map controller resolves the
     // blob URL via hcapp_getRunPhotos so the URL is never stored in the
     // GPS track, preventing unauthenticated blob access from the label alone.
     unawaited(
-      locationService.markPoint(HashRunPointTypes.photo, label: photoId),
+      Get.find<LocationService>().markPointAt(
+        pointType: HashRunPointTypes.photo,
+        timestampMs: timestampMs,
+        overrideEventId: eventId,
+        overrideUserId: currentUserId,
+        label: photoId,
+      ),
     );
   }
 
@@ -503,6 +580,190 @@ class KennelPhotoService {
     return ServiceCommon.sendHttpPost(() => jsonEncode(body), noRetries: true);
   }
 
+  // ── Offline queue ─────────────────────────────────────────────────────────
+
+  /// Copies [imageFile] to a stable path in the app documents directory and
+  /// enqueues the metadata in GetStorage for later upload.
+  Future<void> _queueForOfflineUpload({
+    required File imageFile,
+    required String photoGuid,
+    required String eventId,
+    required String kennelId,
+    required String kennelSlug,
+    required int eventNumber,
+    required int sharingOverride,
+    String? caption,
+    String? assetId,
+    bool isOnlineFailure = false,
+  }) async {
+    try {
+      final docsDir = await getApplicationDocumentsDirectory();
+      final queuedPath = '${docsDir.path}/hc_pending_$photoGuid.jpg';
+      await imageFile.copy(queuedPath);
+
+      final pos = Get.find<LocationService>().lastKnownPosition.value;
+
+      await KennelPhotoUploadQueue.enqueue(PendingPhotoUpload(
+        photoId: photoGuid,
+        eventId: eventId,
+        kennelId: kennelId,
+        kennelSlug: kennelSlug,
+        eventNumber: eventNumber,
+        sharingOverride: sharingOverride,
+        filePath: queuedPath,
+        lat: pos?.latitude ?? 0.0,
+        lng: pos?.longitude ?? 0.0,
+        savedAtMs: DateTime.now().millisecondsSinceEpoch,
+        caption: caption,
+        assetId: assetId,
+      ));
+
+      Get.snackbar(
+        'Photo queued',
+        isOnlineFailure
+            ? 'Upload failed — photo saved and will retry automatically.'
+            : 'No network connection — photo saved and will upload automatically when connected.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange.shade700,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 5),
+      );
+    } catch (e, s) {
+      BootLogger.logError('[KennelPhotoService._queueForOfflineUpload] photoGuid=$photoGuid', e, s);
+      Get.snackbar(
+        'Photo could not be saved',
+        isOnlineFailure
+            ? 'Upload failed and the photo could not be saved for retry.'
+            : 'No network and the local queue failed. The photo has been lost.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: hc_red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  /// Drains any pending offline uploads. Call on app open when connected.
+  /// Processes entries in order, stopping at the first network failure so the
+  /// remaining entries stay in the queue for the next attempt.
+  Future<void> processPendingQueue() async {
+    if (!Utilities.isConnected()) return;
+
+    final entries = KennelPhotoUploadQueue.load();
+    if (entries.isEmpty) return;
+
+    final total = entries.length;
+    final photoWord = total == 1 ? 'photo' : 'photos';
+
+    Get.snackbar(
+      'Uploading queued photos',
+      'Uploading $total queued $photoWord…',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.orange.shade700,
+      colorText: Colors.white,
+      duration: const Duration(seconds: 4),
+    );
+
+    debugPrint('[KennelPhotoService] Processing $total pending photo(s)...');
+
+    int uploadedCount = 0;
+    bool stoppedEarly = false;
+
+    for (final entry in entries) {
+      try {
+        final file = File(entry.filePath);
+        if (!await file.exists()) {
+          // Local file was lost (e.g. app data cleared) — discard the entry.
+          await KennelPhotoUploadQueue.remove(entry.photoId);
+          continue;
+        }
+
+        final runFolder =
+            entry.eventNumber > 0 ? '${entry.kennelSlug}-${entry.eventNumber}' : 'other';
+
+        final tokenResult = await _getUploadToken(
+          kennelId: entry.kennelId,
+          kennelSlug: entry.kennelSlug,
+          runFolder: runFolder,
+          photoGuid: entry.photoId,
+        );
+        if (tokenResult == null) {
+          debugPrint('[KennelPhotoService] Queue: token failed for ${entry.photoId} — stopping');
+          stoppedEarly = true;
+          break;
+        }
+
+        final sasUrl = tokenResult['sasUrl']!;
+        final blobUrl = tokenResult['blobUrl']!;
+
+        final uploadOk = await _uploadToBlob(sasUrl: sasUrl, imageFile: file);
+        if (!uploadOk) {
+          debugPrint('[KennelPhotoService] Queue: blob upload failed for ${entry.photoId} — stopping');
+          stoppedEarly = true;
+          break;
+        }
+
+        await _addKennelPhoto(
+          eventId: entry.eventId,
+          kennelId: entry.kennelId,
+          photoId: entry.photoId,
+          blobUrl: blobUrl,
+          assetId: entry.assetId,
+          perRunSharingOverride: entry.sharingOverride,
+          caption: entry.caption,
+          lat: entry.lat,
+          lng: entry.lng,
+        );
+
+        await KennelPhotoUploadQueue.remove(entry.photoId);
+        await file.delete();
+
+        uploadedCount++;
+        debugPrint('[KennelPhotoService] Queue: uploaded ${entry.photoId} ($uploadedCount/$total)');
+      } catch (e, s) {
+        BootLogger.logError(
+          '[KennelPhotoService.processPendingQueue] photoId=${entry.photoId}',
+          e,
+          s,
+        );
+        // Unexpected error — skip this entry rather than stopping the whole run.
+      }
+    }
+
+    // No completion snackbar needed if every entry had already lost its local
+    // file — nothing was actually attempted.
+    if (uploadedCount == 0 && !stoppedEarly) return;
+
+    if (uploadedCount == total) {
+      final uploadedWord = total == 1 ? 'photo' : 'photos';
+      Get.snackbar(
+        'Photos uploaded',
+        '$total $uploadedWord uploaded successfully.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green.shade700,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 4),
+      );
+    } else if (uploadedCount > 0) {
+      Get.snackbar(
+        'Photos partially uploaded',
+        '$uploadedCount of $total $photoWord uploaded — will retry the rest next time.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange.shade700,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 5),
+      );
+    } else {
+      Get.snackbar(
+        'Upload failed',
+        'Could not upload queued $photoWord — will retry next time.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange.shade700,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 5),
+      );
+    }
+  }
+
   // ── Share intent page ────────────────────────────────────────────────────
 
   Future<_PhotoShareResult?> _showSharePage(File imageFile) async {
@@ -593,24 +854,26 @@ class _PhotoSharePageState extends State<_PhotoSharePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              // Photo fills all available space above the button panel
-              Expanded(
-                child: Image.file(
-                  _currentFile,
-                  fit: BoxFit.contain,
-                  width: double.infinity,
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: Backgrounds.defaultHcBackground(),
+        child: Stack(
+          children: [
+            Column(
+              children: [
+                // Photo fills all available space above the button panel
+                Expanded(
+                  child: Image.file(
+                    _currentFile,
+                    fit: BoxFit.contain,
+                    width: double.infinity,
+                  ),
                 ),
-              ),
 
-              // Fixed button panel — safe-area padded, never overflows
-              Container(
-                color: Colors.black,
-                padding: EdgeInsets.only(
+                // Fixed button panel — safe-area padded, never overflows
+                Container(
+                  color: Colors.black.withValues(alpha: 0.75),
+                  padding: EdgeInsets.only(
                   left: 12,
                   right: 12,
                   top: 12,
@@ -712,6 +975,7 @@ class _PhotoSharePageState extends State<_PhotoSharePage> {
               ),
             ),
         ],
+      ),
       ),
     );
   }

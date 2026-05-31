@@ -149,7 +149,7 @@ class DrawerMenuState extends State<DrawerMenu> {
                                   HasherProfilePage.flagUiElement_logOutButton |
                                   HasherProfilePage
                                       .flagUiElement_gdprDeleteAccount |
-                                  (((getIntPref(IntPrefsEnum.hasherPreferences) ?? 0) & hasherPref_debugHarvestEnabled) != 0
+                                  (getBoolPref(BoolPrefsEnum.debugHarvestEnabled) == true
                                       ? HasherProfilePage
                                             .flagUiElement_copyBootLog
                                       : 0),

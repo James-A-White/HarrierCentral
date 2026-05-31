@@ -2,6 +2,26 @@
 
 ---
 
+## 2.0.3+636 — 2026-06-01
+
+### Features
+
+- **Trail Symbols tab in Edit Kennel**: Admins can now configure the 12 trail
+  marking symbol slots shown in the mobile app during live run tracking. Each
+  slot has a visual image picker (tap to open a 4×3 grid of available symbol
+  PNGs), a free-text name field (the kennel's own terminology), and an action
+  selector (None / Add Text / End Run). Empty slots are excluded from the mobile
+  app grid. Changes are saved automatically as part of the standard kennel save
+  flow and take effect on the next user sync.
+
+### Internal
+
+- `hcportal_editKennel`: new `@trailSymbolsConfigJson NVARCHAR(4000)` parameter
+- `hcportal_getKennel`: `TrailSymbolsConfigJson` added to kennel rowset so saved
+  config is visible on page reload
+
+---
+
 ## 2.0.0+633 — 2026-05-31
 
 ### Milestone: Agentic AI Development
