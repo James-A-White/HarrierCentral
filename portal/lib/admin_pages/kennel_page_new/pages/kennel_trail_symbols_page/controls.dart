@@ -87,6 +87,7 @@ extension KennelTrailSymbolsControlsExtension on KennelPageFormController {
     final configured = _trailSlots.where((s) => !s.isEmpty).toList();
     final json = '[${configured.map(_slotToJsonString).join(',')}]';
     editedData.value = editedData.value.copyWith(trailSymbolsConfigJson: json);
+    checkIfFormIsDirty();
   }
 
   static List<TrailSlotConfig> _parseTrailSlots(String? json) {

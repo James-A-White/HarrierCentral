@@ -237,11 +237,19 @@ class _SymbolPickerDialog extends StatelessWidget {
         ),
       ),
       actions: [
-        TextButton(
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red.shade700,
+            foregroundColor: Colors.white,
+          ),
           onPressed: () => Navigator.of(context).pop(''),
-          child: const Text('Clear slot', style: TextStyle(color: Colors.red)),
+          child: const Text('Clear slot'),
         ),
-        TextButton(
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue.shade700,
+            foregroundColor: Colors.white,
+          ),
           onPressed: () => Navigator.of(context).pop(null),
           child: const Text('Cancel'),
         ),
