@@ -1,6 +1,6 @@
 .dart_tool/*
-build/native_assets/*
-build/ios/*
+build/
+.flutter-plugins
 .flutter-plugins
 .flutter-plugins-dependencies
 .packages
