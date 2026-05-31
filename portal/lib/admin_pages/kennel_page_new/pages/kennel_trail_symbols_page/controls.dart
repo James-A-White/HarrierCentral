@@ -27,19 +27,22 @@ class TrailSlotConfig {
 // Available symbol icons in the library
 // ---------------------------------------------------------------------------
 
+/// Ordered list of available trail symbol asset filenames.
+/// The picker dialog renders each as an image — no text labels
+/// so admins assign their own meaning per kennel.
 const kTrailSymbolLibrary = [
-  ('I-001.png', 'I-001 — Check'),
-  ('I-002.png', 'I-002 — False Trail'),
-  ('I-003.png', 'I-003 — Short Cut'),
-  ('I-004.png', 'I-004 — Checkback'),
-  ('I-005.png', 'I-005 — Whichy Way'),
-  ('I-006.png', 'I-006 — Fish Hook'),
-  ('I-007.png', 'I-007 — Regroup'),
-  ('I-008.png', 'I-008 — Hash View'),
-  ('I-009.png', 'I-009 — Label'),
-  ('I-010.png', 'I-010 — Drink Stop'),
-  ('I-011.png', 'I-011 — On Inn'),
-  ('I-012.png', 'I-012 — Caution'),
+  ('I-001.png', ''),
+  ('I-002.png', ''),
+  ('I-003.png', ''),
+  ('I-004.png', ''),
+  ('I-005.png', ''),
+  ('I-006.png', ''),
+  ('I-007.png', ''),
+  ('I-008.png', ''),
+  ('I-009.png', ''),
+  ('I-010.png', ''),
+  ('I-011.png', ''),
+  ('I-012.png', ''),
 ];
 
 // ---------------------------------------------------------------------------
