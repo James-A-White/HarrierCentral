@@ -63,15 +63,50 @@ class LiveRunShell extends StatelessWidget {
           ),
           actions: [
             IconButton(
-              tooltip: 'End run tracking (coming soon)',
+              tooltip: 'End run tracking',
               icon: const Icon(Icons.flag_outlined, color: Colors.white),
-              onPressed: () {
-                // Placeholder for future end-run logic.
-                Get.snackbar(
-                  'End run tracking',
-                  'This will be wired up soon.',
-                  snackPosition: SnackPosition.BOTTOM,
+              onPressed: () async {
+                final generalTag = 'live-run-general-${run.event.eventId}';
+                if (!Get.isRegistered<LiveRunGeneralController>(
+                  tag: generalTag,
+                )) {
+                  return;
+                }
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (_) => AlertDialog(
+                    title: Text('End Run?', style: ts_alertDialogTitle),
+                    content: Text(
+                      'Are you sure you want to end your run? '
+                      'Once stopped, tracking cannot be restarted. '
+                      'Your data will be saved.',
+                      style: ts_alertDialogBody,
+                    ),
+                    actions: [
+                      ElevatedButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey.shade600,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: Text('Keep Tracking', style: ts_button),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: hc_red,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: Text('End Run', style: ts_button),
+                      ),
+                    ],
+                  ),
                 );
+                if (confirmed == true) {
+                  Get.find<LiveRunGeneralController>(tag: generalTag)
+                      .stopTracking();
+                }
               },
             ),
           ],

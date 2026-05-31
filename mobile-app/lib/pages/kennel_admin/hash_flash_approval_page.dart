@@ -180,10 +180,12 @@ class PhotoReviewController extends GetxController {
   // ── Derived ──────────────────────────────────────────────────────────────
 
   List<KennelPendingPhoto> get pendingPhotos =>
-      allPhotos.where((p) => p.isPending).toList();
+      (allPhotos.where((p) => p.isPending).toList()
+        ..sort((a, b) => a.createdAt.compareTo(b.createdAt)));
 
   List<KennelPendingPhoto> get reviewedPhotos =>
-      allPhotos.where((p) => !p.isPending).toList();
+      (allPhotos.where((p) => !p.isPending).toList()
+        ..sort((a, b) => a.createdAt.compareTo(b.createdAt)));
 
   List<KennelPendingPhoto> get visiblePhotos =>
       activeTab.value == PhotoReviewTab.pending

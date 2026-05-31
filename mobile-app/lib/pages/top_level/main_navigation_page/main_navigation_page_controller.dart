@@ -236,6 +236,9 @@ class MainNavigationController extends GetxController
     await setupDatabase(informUser, 'PRO_APP');
     debugPrint('[BOOT] MainNavController: setupDatabase done: ${DateTime.now().millisecondsSinceEpoch}ms');
 
+    // Drain any photos that were taken while offline.
+    unawaited(KennelPhotoService().processPendingQueue());
+
     // Create pages
     debugPrint('[BOOT] MainNavController: creating pages: ${DateTime.now().millisecondsSinceEpoch}ms');
     futureRunsListPage = FutureRunsListPage();
