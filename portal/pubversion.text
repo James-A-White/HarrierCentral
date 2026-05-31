@@ -1,4 +1,12 @@
 
+2.0.2+635
+    • Fix: confirmAuthentication poll no longer crashes on empty response
+      (SP returns empty rows while waiting for QR scan — guard added before [0][0] access)
+    • Debug: auth poll loop now logs each attempt, outcome, and completion in debug builds
+    • DB: ValidatePortalAuth colon separator conditional on non-empty deviceSecret
+      (fixes QR login broken for service account after 2.0.0 compound token change)
+    • DB: CHECK_PORTAL_ACCESS_TOKEN debug bypass restored (inactive — timestamp in past)
+
 2.0.1+634
     • Milestone: portal fully migrated to agentic AI-assisted development
     • Security (phases 1–5): credentials removed from source, server-side SAS
