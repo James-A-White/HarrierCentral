@@ -86,13 +86,27 @@ SET @callerType = CASE
 END;
 
 -- Build param string for token validation.
--- Standard (NULL callerParamString):  UPPER(deviceSecret)
--- Compound (non-NULL callerParamString): UPPER(deviceSecret):UPPER(callerParamString)
--- The colon delimiter makes the device-secret boundary explicit.
--- Flutter callers must use paramString: '$deviceSecret:$callerParamString' for compound SPs.
+--
+-- Regular device (non-empty deviceSecret):
+--   Standard (NULL callerParamString):  UPPER(deviceSecret)
+--   Compound (non-NULL callerParamString): UPPER(deviceSecret):UPPER(callerParamString)
+--   Flutter caller uses paramString: '$deviceSecret' or '$deviceSecret:$callerParamString'
+--
+-- Service account (empty deviceSecret, e.g. confirmAuthentication):
+--   paramString is the callerParamString alone — no device-secret prefix, no colon.
+--   Flutter caller uses paramString: callerParamString (e.g. authCode UUID)
+--
 DECLARE @paramString NVARCHAR(650);
-SET @paramString = UPPER(@deviceSecret)
-    + COALESCE(':' + UPPER(CAST(@callerParamString AS NVARCHAR(500))), '');
+SET @paramString =
+    CASE
+        WHEN LEN(ISNULL(@deviceSecret, '')) > 0 THEN
+            -- Regular device: prepend device secret, colon-delimit if callerParamString present
+            UPPER(@deviceSecret)
+            + COALESCE(':' + UPPER(CAST(@callerParamString AS NVARCHAR(500))), '')
+        ELSE
+            -- Service account: no device secret, callerParamString is the sole context
+            COALESCE(UPPER(CAST(@callerParamString AS NVARCHAR(500))), '')
+    END;
 
 -- Validate access token
 DECLARE @tokenResult INT;
