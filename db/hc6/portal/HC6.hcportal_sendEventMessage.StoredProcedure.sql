@@ -69,8 +69,10 @@ DECLARE @procName NVARCHAR(128) = OBJECT_NAME(@@PROCID);
 -- Compound callerParamString binds the token to the specific event AND message,
 -- preventing a captured token from being replayed for a different message.
 -- Flutter caller must use paramString: '$deviceSecret:$publicEventId:$messageId'.
+DECLARE @msgCallerParam NVARCHAR(73) =
+    CAST(@publicEventId AS NVARCHAR(36)) + ':' + CAST(@messageId AS NVARCHAR(36));
 EXEC HC6.ValidatePortalAuth @deviceId, @accessToken, @procName,
-    CAST(@publicEventId AS NVARCHAR(36)) + ':' + CAST(@messageId AS NVARCHAR(36)),
+    @msgCallerParam,
     @authError OUTPUT, @hasherId OUTPUT, @callerType OUTPUT;
 IF @authError IS NOT NULL
 BEGIN
