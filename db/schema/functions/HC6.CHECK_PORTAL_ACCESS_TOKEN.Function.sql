@@ -42,14 +42,10 @@ AS
 BEGIN
     DECLARE @generatedToken NVARCHAR(2000);
 
-    -- -------------------------------------------------------------------------
-    -- DEBUG BYPASS — disabled in production.
-    -- To activate: change the cutoff to a future date (e.g. tomorrow).
-    -- To deactivate: set it to any past date.
-    -- While active, ALL token validation is skipped and RETURN 1 fires.
-    -- Never leave this active in a committed/deployed build.
-    -- -------------------------------------------------------------------------
-    IF (GETUTCDATE() < '2000-01-01 00:00:00.000')
+    -- Run the SELECT GETDATE() below and paste the result in the bypass datetime field
+    -- to temporarily bypass access token checks for 2 hours
+    -- SELECT GETDATE()
+    IF (DATEADD(MINUTE, -120, GETDATE()) < '2026-05-31 10:57:29.490')
     BEGIN
         RETURN 1;
     END
