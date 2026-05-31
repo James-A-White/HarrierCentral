@@ -108,6 +108,7 @@ mixin _$KennelModel {
   DateTime? get runCountStartDate;
   int? get distancePreference;
   String? get kennelSearchTags;
+  String? get trailSymbolsConfigJson;
 
   /// Create a copy of KennelModel
   /// with the given fields replaced by the non-null parameter values.
@@ -242,7 +243,8 @@ mixin _$KennelModel {
             (identical(other.kennelPaymentNonMemberSurcharge3, kennelPaymentNonMemberSurcharge3) || other.kennelPaymentNonMemberSurcharge3 == kennelPaymentNonMemberSurcharge3) &&
             (identical(other.runCountStartDate, runCountStartDate) || other.runCountStartDate == runCountStartDate) &&
             (identical(other.distancePreference, distancePreference) || other.distancePreference == distancePreference) &&
-            (identical(other.kennelSearchTags, kennelSearchTags) || other.kennelSearchTags == kennelSearchTags));
+            (identical(other.kennelSearchTags, kennelSearchTags) || other.kennelSearchTags == kennelSearchTags) &&
+            (identical(other.trailSymbolsConfigJson, trailSymbolsConfigJson) || other.trailSymbolsConfigJson == trailSymbolsConfigJson));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -336,12 +338,13 @@ mixin _$KennelModel {
         kennelPaymentNonMemberSurcharge3,
         runCountStartDate,
         distancePreference,
-        kennelSearchTags
+        kennelSearchTags,
+        trailSymbolsConfigJson
       ]);
 
   @override
   String toString() {
-    return 'KennelModel(kennelPublicId: $kennelPublicId, kennelName: $kennelName, kennelShortName: $kennelShortName, kennelUniqueShortName: $kennelUniqueShortName, kennelLogo: $kennelLogo, kennelDescription: $kennelDescription, excludeFromLeaderboard: $excludeFromLeaderboard, cityName: $cityName, regionName: $regionName, countryName: $countryName, continentName: $continentName, kennelStatus: $kennelStatus, disseminateHashRunsDotOrg: $disseminateHashRunsDotOrg, disseminateAllowWebLinks: $disseminateAllowWebLinks, disseminationAudience: $disseminationAudience, disseminateOnGlobalGoogleCalendar: $disseminateOnGlobalGoogleCalendar, canEditRunAttendence: $canEditRunAttendence, kennelPinColor: $kennelPinColor, defaultEventPriceForMembers: $defaultEventPriceForMembers, defaultEventPriceForNonMembers: $defaultEventPriceForNonMembers, defaultRunStartTime: $defaultRunStartTime, allowSelfPayment: $allowSelfPayment, allowNegativeCredit: $allowNegativeCredit, cityId: $cityId, provinceStateId: $provinceStateId, countryId: $countryId, defaultRunTags1: $defaultRunTags1, defaultRunTags2: $defaultRunTags2, defaultRunTags3: $defaultRunTags3, membershipDurationInMonths: $membershipDurationInMonths, defaultDistancePreference: $defaultDistancePreference, notificationMinutesBeforeRunForChatPushNotifications: $notificationMinutesBeforeRunForChatPushNotifications, notificationMinutesBeforeRunForCheckinReminder: $notificationMinutesBeforeRunForCheckinReminder, extApiKey: $extApiKey, latitude: $latitude, longitude: $longitude, defaultLatitude: $defaultLatitude, defaultLongitude: $defaultLongitude, publishToGoogleCalendar: $publishToGoogleCalendar, publishToGoogleCalendarAddresses: $publishToGoogleCalendarAddresses, mismanagementTeam: $mismanagementTeam, kennelCoverPhoto: $kennelCoverPhoto, countryFlag: $countryFlag, regionFlag: $regionFlag, cityFlag: $cityFlag, websiteBackgroundColor: $websiteBackgroundColor, websiteBackgroundImage: $websiteBackgroundImage, websiteTitleText: $websiteTitleText, websiteMenuBackgroundColor: $websiteMenuBackgroundColor, websiteMenuTextColor: $websiteMenuTextColor, websiteWelcomeText: $websiteWelcomeText, websiteBodyTextColor: $websiteBodyTextColor, websiteTitleTextColor: $websiteTitleTextColor, websiteMismanagementDescription: $websiteMismanagementDescription, websiteMismanagementJson: $websiteMismanagementJson, websiteExtraMenusJson: $websiteExtraMenusJson, websiteControlFlags: $websiteControlFlags, websiteContactDetailsJson: $websiteContactDetailsJson, websiteBannerImage: $websiteBannerImage, websiteUrlShortcode: $websiteUrlShortcode, websiteTitleFont: $websiteTitleFont, websiteBodyFont: $websiteBodyFont, kennelAdminEmailList: $kennelAdminEmailList, kennelWebsiteUrl: $kennelWebsiteUrl, kennelEventsUrl: $kennelEventsUrl, kennelHcEventsUrl: $kennelHcEventsUrl, bankScheme: $bankScheme, bankAccountNumber: $bankAccountNumber, bankBic: $bankBic, bankBeneficiary: $bankBeneficiary, kennelPaymentScheme: $kennelPaymentScheme, kennelPaymentUrl: $kennelPaymentUrl, kennelPaymentUrlExpires: $kennelPaymentUrlExpires, kennelPaymentMemberSurcharge: $kennelPaymentMemberSurcharge, kennelPaymentNonMemberSurcharge: $kennelPaymentNonMemberSurcharge, kennelPaymentScheme2: $kennelPaymentScheme2, kennelPaymentUrl2: $kennelPaymentUrl2, kennelPaymentUrlExpires2: $kennelPaymentUrlExpires2, kennelPaymentMemberSurcharge2: $kennelPaymentMemberSurcharge2, kennelPaymentNonMemberSurcharge2: $kennelPaymentNonMemberSurcharge2, kennelPaymentScheme3: $kennelPaymentScheme3, kennelPaymentUrl3: $kennelPaymentUrl3, kennelPaymentUrlExpires3: $kennelPaymentUrlExpires3, kennelPaymentMemberSurcharge3: $kennelPaymentMemberSurcharge3, kennelPaymentNonMemberSurcharge3: $kennelPaymentNonMemberSurcharge3, runCountStartDate: $runCountStartDate, distancePreference: $distancePreference, kennelSearchTags: $kennelSearchTags)';
+    return 'KennelModel(kennelPublicId: $kennelPublicId, kennelName: $kennelName, kennelShortName: $kennelShortName, kennelUniqueShortName: $kennelUniqueShortName, kennelLogo: $kennelLogo, kennelDescription: $kennelDescription, excludeFromLeaderboard: $excludeFromLeaderboard, cityName: $cityName, regionName: $regionName, countryName: $countryName, continentName: $continentName, kennelStatus: $kennelStatus, disseminateHashRunsDotOrg: $disseminateHashRunsDotOrg, disseminateAllowWebLinks: $disseminateAllowWebLinks, disseminationAudience: $disseminationAudience, disseminateOnGlobalGoogleCalendar: $disseminateOnGlobalGoogleCalendar, canEditRunAttendence: $canEditRunAttendence, kennelPinColor: $kennelPinColor, defaultEventPriceForMembers: $defaultEventPriceForMembers, defaultEventPriceForNonMembers: $defaultEventPriceForNonMembers, defaultRunStartTime: $defaultRunStartTime, allowSelfPayment: $allowSelfPayment, allowNegativeCredit: $allowNegativeCredit, cityId: $cityId, provinceStateId: $provinceStateId, countryId: $countryId, defaultRunTags1: $defaultRunTags1, defaultRunTags2: $defaultRunTags2, defaultRunTags3: $defaultRunTags3, membershipDurationInMonths: $membershipDurationInMonths, defaultDistancePreference: $defaultDistancePreference, notificationMinutesBeforeRunForChatPushNotifications: $notificationMinutesBeforeRunForChatPushNotifications, notificationMinutesBeforeRunForCheckinReminder: $notificationMinutesBeforeRunForCheckinReminder, extApiKey: $extApiKey, latitude: $latitude, longitude: $longitude, defaultLatitude: $defaultLatitude, defaultLongitude: $defaultLongitude, publishToGoogleCalendar: $publishToGoogleCalendar, publishToGoogleCalendarAddresses: $publishToGoogleCalendarAddresses, mismanagementTeam: $mismanagementTeam, kennelCoverPhoto: $kennelCoverPhoto, countryFlag: $countryFlag, regionFlag: $regionFlag, cityFlag: $cityFlag, websiteBackgroundColor: $websiteBackgroundColor, websiteBackgroundImage: $websiteBackgroundImage, websiteTitleText: $websiteTitleText, websiteMenuBackgroundColor: $websiteMenuBackgroundColor, websiteMenuTextColor: $websiteMenuTextColor, websiteWelcomeText: $websiteWelcomeText, websiteBodyTextColor: $websiteBodyTextColor, websiteTitleTextColor: $websiteTitleTextColor, websiteMismanagementDescription: $websiteMismanagementDescription, websiteMismanagementJson: $websiteMismanagementJson, websiteExtraMenusJson: $websiteExtraMenusJson, websiteControlFlags: $websiteControlFlags, websiteContactDetailsJson: $websiteContactDetailsJson, websiteBannerImage: $websiteBannerImage, websiteUrlShortcode: $websiteUrlShortcode, websiteTitleFont: $websiteTitleFont, websiteBodyFont: $websiteBodyFont, kennelAdminEmailList: $kennelAdminEmailList, kennelWebsiteUrl: $kennelWebsiteUrl, kennelEventsUrl: $kennelEventsUrl, kennelHcEventsUrl: $kennelHcEventsUrl, bankScheme: $bankScheme, bankAccountNumber: $bankAccountNumber, bankBic: $bankBic, bankBeneficiary: $bankBeneficiary, kennelPaymentScheme: $kennelPaymentScheme, kennelPaymentUrl: $kennelPaymentUrl, kennelPaymentUrlExpires: $kennelPaymentUrlExpires, kennelPaymentMemberSurcharge: $kennelPaymentMemberSurcharge, kennelPaymentNonMemberSurcharge: $kennelPaymentNonMemberSurcharge, kennelPaymentScheme2: $kennelPaymentScheme2, kennelPaymentUrl2: $kennelPaymentUrl2, kennelPaymentUrlExpires2: $kennelPaymentUrlExpires2, kennelPaymentMemberSurcharge2: $kennelPaymentMemberSurcharge2, kennelPaymentNonMemberSurcharge2: $kennelPaymentNonMemberSurcharge2, kennelPaymentScheme3: $kennelPaymentScheme3, kennelPaymentUrl3: $kennelPaymentUrl3, kennelPaymentUrlExpires3: $kennelPaymentUrlExpires3, kennelPaymentMemberSurcharge3: $kennelPaymentMemberSurcharge3, kennelPaymentNonMemberSurcharge3: $kennelPaymentNonMemberSurcharge3, runCountStartDate: $runCountStartDate, distancePreference: $distancePreference, kennelSearchTags: $kennelSearchTags, trailSymbolsConfigJson: $trailSymbolsConfigJson)';
   }
 }
 
@@ -439,7 +442,8 @@ abstract mixin class $KennelModelCopyWith<$Res> {
       double? kennelPaymentNonMemberSurcharge3,
       DateTime? runCountStartDate,
       int? distancePreference,
-      String? kennelSearchTags});
+      String? kennelSearchTags,
+      String? trailSymbolsConfigJson});
 }
 
 /// @nodoc
@@ -542,6 +546,7 @@ class _$KennelModelCopyWithImpl<$Res> implements $KennelModelCopyWith<$Res> {
     Object? runCountStartDate = freezed,
     Object? distancePreference = freezed,
     Object? kennelSearchTags = freezed,
+    Object? trailSymbolsConfigJson = freezed,
   }) {
     return _then(_self.copyWith(
       kennelPublicId: null == kennelPublicId
@@ -904,6 +909,10 @@ class _$KennelModelCopyWithImpl<$Res> implements $KennelModelCopyWith<$Res> {
           ? _self.kennelSearchTags
           : kennelSearchTags // ignore: cast_nullable_to_non_nullable
               as String?,
+      trailSymbolsConfigJson: freezed == trailSymbolsConfigJson
+          ? _self.trailSymbolsConfigJson
+          : trailSymbolsConfigJson // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -1089,7 +1098,7 @@ extension KennelModelPatterns on KennelModel {
             double? kennelPaymentNonMemberSurcharge3,
             DateTime? runCountStartDate,
             int? distancePreference,
-            String? kennelSearchTags)?
+            String? kennelSearchTags,  String? trailSymbolsConfigJson)?
         $default, {
     required TResult orElse(),
   }) {
@@ -1184,7 +1193,7 @@ extension KennelModelPatterns on KennelModel {
             _that.kennelPaymentNonMemberSurcharge3,
             _that.runCountStartDate,
             _that.distancePreference,
-            _that.kennelSearchTags);
+            _that.kennelSearchTags,_that.trailSymbolsConfigJson);
       case _:
         return orElse();
     }
@@ -1293,7 +1302,7 @@ extension KennelModelPatterns on KennelModel {
             double? kennelPaymentNonMemberSurcharge3,
             DateTime? runCountStartDate,
             int? distancePreference,
-            String? kennelSearchTags)
+            String? kennelSearchTags,  String? trailSymbolsConfigJson)
         $default,
   ) {
     final _that = this;
@@ -1387,7 +1396,7 @@ extension KennelModelPatterns on KennelModel {
             _that.kennelPaymentNonMemberSurcharge3,
             _that.runCountStartDate,
             _that.distancePreference,
-            _that.kennelSearchTags);
+            _that.kennelSearchTags,_that.trailSymbolsConfigJson);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -1495,7 +1504,7 @@ extension KennelModelPatterns on KennelModel {
             double? kennelPaymentNonMemberSurcharge3,
             DateTime? runCountStartDate,
             int? distancePreference,
-            String? kennelSearchTags)?
+            String? kennelSearchTags,  String? trailSymbolsConfigJson)?
         $default,
   ) {
     final _that = this;
@@ -1589,7 +1598,7 @@ extension KennelModelPatterns on KennelModel {
             _that.kennelPaymentNonMemberSurcharge3,
             _that.runCountStartDate,
             _that.distancePreference,
-            _that.kennelSearchTags);
+            _that.kennelSearchTags,_that.trailSymbolsConfigJson);
       case _:
         return null;
     }
@@ -1687,7 +1696,8 @@ class _KennelModel implements KennelModel {
       this.kennelPaymentNonMemberSurcharge3,
       this.runCountStartDate,
       this.distancePreference,
-      this.kennelSearchTags});
+      this.kennelSearchTags,
+      this.trailSymbolsConfigJson});
   factory _KennelModel.fromJson(Map<String, dynamic> json) =>
       _$KennelModelFromJson(json);
 
@@ -1874,6 +1884,7 @@ class _KennelModel implements KennelModel {
   final int? distancePreference;
   @override
   final String? kennelSearchTags;
+  @override final  String? trailSymbolsConfigJson;
 
   /// Create a copy of KennelModel
   /// with the given fields replaced by the non-null parameter values.
@@ -2013,7 +2024,8 @@ class _KennelModel implements KennelModel {
             (identical(other.kennelPaymentNonMemberSurcharge3, kennelPaymentNonMemberSurcharge3) || other.kennelPaymentNonMemberSurcharge3 == kennelPaymentNonMemberSurcharge3) &&
             (identical(other.runCountStartDate, runCountStartDate) || other.runCountStartDate == runCountStartDate) &&
             (identical(other.distancePreference, distancePreference) || other.distancePreference == distancePreference) &&
-            (identical(other.kennelSearchTags, kennelSearchTags) || other.kennelSearchTags == kennelSearchTags));
+            (identical(other.kennelSearchTags, kennelSearchTags) || other.kennelSearchTags == kennelSearchTags) &&
+            (identical(other.trailSymbolsConfigJson, trailSymbolsConfigJson) || other.trailSymbolsConfigJson == trailSymbolsConfigJson));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -2107,12 +2119,13 @@ class _KennelModel implements KennelModel {
         kennelPaymentNonMemberSurcharge3,
         runCountStartDate,
         distancePreference,
-        kennelSearchTags
+        kennelSearchTags,
+        trailSymbolsConfigJson
       ]);
 
   @override
   String toString() {
-    return 'KennelModel(kennelPublicId: $kennelPublicId, kennelName: $kennelName, kennelShortName: $kennelShortName, kennelUniqueShortName: $kennelUniqueShortName, kennelLogo: $kennelLogo, kennelDescription: $kennelDescription, excludeFromLeaderboard: $excludeFromLeaderboard, cityName: $cityName, regionName: $regionName, countryName: $countryName, continentName: $continentName, kennelStatus: $kennelStatus, disseminateHashRunsDotOrg: $disseminateHashRunsDotOrg, disseminateAllowWebLinks: $disseminateAllowWebLinks, disseminationAudience: $disseminationAudience, disseminateOnGlobalGoogleCalendar: $disseminateOnGlobalGoogleCalendar, canEditRunAttendence: $canEditRunAttendence, kennelPinColor: $kennelPinColor, defaultEventPriceForMembers: $defaultEventPriceForMembers, defaultEventPriceForNonMembers: $defaultEventPriceForNonMembers, defaultRunStartTime: $defaultRunStartTime, allowSelfPayment: $allowSelfPayment, allowNegativeCredit: $allowNegativeCredit, cityId: $cityId, provinceStateId: $provinceStateId, countryId: $countryId, defaultRunTags1: $defaultRunTags1, defaultRunTags2: $defaultRunTags2, defaultRunTags3: $defaultRunTags3, membershipDurationInMonths: $membershipDurationInMonths, defaultDistancePreference: $defaultDistancePreference, notificationMinutesBeforeRunForChatPushNotifications: $notificationMinutesBeforeRunForChatPushNotifications, notificationMinutesBeforeRunForCheckinReminder: $notificationMinutesBeforeRunForCheckinReminder, extApiKey: $extApiKey, latitude: $latitude, longitude: $longitude, defaultLatitude: $defaultLatitude, defaultLongitude: $defaultLongitude, publishToGoogleCalendar: $publishToGoogleCalendar, publishToGoogleCalendarAddresses: $publishToGoogleCalendarAddresses, mismanagementTeam: $mismanagementTeam, kennelCoverPhoto: $kennelCoverPhoto, countryFlag: $countryFlag, regionFlag: $regionFlag, cityFlag: $cityFlag, websiteBackgroundColor: $websiteBackgroundColor, websiteBackgroundImage: $websiteBackgroundImage, websiteTitleText: $websiteTitleText, websiteMenuBackgroundColor: $websiteMenuBackgroundColor, websiteMenuTextColor: $websiteMenuTextColor, websiteWelcomeText: $websiteWelcomeText, websiteBodyTextColor: $websiteBodyTextColor, websiteTitleTextColor: $websiteTitleTextColor, websiteMismanagementDescription: $websiteMismanagementDescription, websiteMismanagementJson: $websiteMismanagementJson, websiteExtraMenusJson: $websiteExtraMenusJson, websiteControlFlags: $websiteControlFlags, websiteContactDetailsJson: $websiteContactDetailsJson, websiteBannerImage: $websiteBannerImage, websiteUrlShortcode: $websiteUrlShortcode, websiteTitleFont: $websiteTitleFont, websiteBodyFont: $websiteBodyFont, kennelAdminEmailList: $kennelAdminEmailList, kennelWebsiteUrl: $kennelWebsiteUrl, kennelEventsUrl: $kennelEventsUrl, kennelHcEventsUrl: $kennelHcEventsUrl, bankScheme: $bankScheme, bankAccountNumber: $bankAccountNumber, bankBic: $bankBic, bankBeneficiary: $bankBeneficiary, kennelPaymentScheme: $kennelPaymentScheme, kennelPaymentUrl: $kennelPaymentUrl, kennelPaymentUrlExpires: $kennelPaymentUrlExpires, kennelPaymentMemberSurcharge: $kennelPaymentMemberSurcharge, kennelPaymentNonMemberSurcharge: $kennelPaymentNonMemberSurcharge, kennelPaymentScheme2: $kennelPaymentScheme2, kennelPaymentUrl2: $kennelPaymentUrl2, kennelPaymentUrlExpires2: $kennelPaymentUrlExpires2, kennelPaymentMemberSurcharge2: $kennelPaymentMemberSurcharge2, kennelPaymentNonMemberSurcharge2: $kennelPaymentNonMemberSurcharge2, kennelPaymentScheme3: $kennelPaymentScheme3, kennelPaymentUrl3: $kennelPaymentUrl3, kennelPaymentUrlExpires3: $kennelPaymentUrlExpires3, kennelPaymentMemberSurcharge3: $kennelPaymentMemberSurcharge3, kennelPaymentNonMemberSurcharge3: $kennelPaymentNonMemberSurcharge3, runCountStartDate: $runCountStartDate, distancePreference: $distancePreference, kennelSearchTags: $kennelSearchTags)';
+    return 'KennelModel(kennelPublicId: $kennelPublicId, kennelName: $kennelName, kennelShortName: $kennelShortName, kennelUniqueShortName: $kennelUniqueShortName, kennelLogo: $kennelLogo, kennelDescription: $kennelDescription, excludeFromLeaderboard: $excludeFromLeaderboard, cityName: $cityName, regionName: $regionName, countryName: $countryName, continentName: $continentName, kennelStatus: $kennelStatus, disseminateHashRunsDotOrg: $disseminateHashRunsDotOrg, disseminateAllowWebLinks: $disseminateAllowWebLinks, disseminationAudience: $disseminationAudience, disseminateOnGlobalGoogleCalendar: $disseminateOnGlobalGoogleCalendar, canEditRunAttendence: $canEditRunAttendence, kennelPinColor: $kennelPinColor, defaultEventPriceForMembers: $defaultEventPriceForMembers, defaultEventPriceForNonMembers: $defaultEventPriceForNonMembers, defaultRunStartTime: $defaultRunStartTime, allowSelfPayment: $allowSelfPayment, allowNegativeCredit: $allowNegativeCredit, cityId: $cityId, provinceStateId: $provinceStateId, countryId: $countryId, defaultRunTags1: $defaultRunTags1, defaultRunTags2: $defaultRunTags2, defaultRunTags3: $defaultRunTags3, membershipDurationInMonths: $membershipDurationInMonths, defaultDistancePreference: $defaultDistancePreference, notificationMinutesBeforeRunForChatPushNotifications: $notificationMinutesBeforeRunForChatPushNotifications, notificationMinutesBeforeRunForCheckinReminder: $notificationMinutesBeforeRunForCheckinReminder, extApiKey: $extApiKey, latitude: $latitude, longitude: $longitude, defaultLatitude: $defaultLatitude, defaultLongitude: $defaultLongitude, publishToGoogleCalendar: $publishToGoogleCalendar, publishToGoogleCalendarAddresses: $publishToGoogleCalendarAddresses, mismanagementTeam: $mismanagementTeam, kennelCoverPhoto: $kennelCoverPhoto, countryFlag: $countryFlag, regionFlag: $regionFlag, cityFlag: $cityFlag, websiteBackgroundColor: $websiteBackgroundColor, websiteBackgroundImage: $websiteBackgroundImage, websiteTitleText: $websiteTitleText, websiteMenuBackgroundColor: $websiteMenuBackgroundColor, websiteMenuTextColor: $websiteMenuTextColor, websiteWelcomeText: $websiteWelcomeText, websiteBodyTextColor: $websiteBodyTextColor, websiteTitleTextColor: $websiteTitleTextColor, websiteMismanagementDescription: $websiteMismanagementDescription, websiteMismanagementJson: $websiteMismanagementJson, websiteExtraMenusJson: $websiteExtraMenusJson, websiteControlFlags: $websiteControlFlags, websiteContactDetailsJson: $websiteContactDetailsJson, websiteBannerImage: $websiteBannerImage, websiteUrlShortcode: $websiteUrlShortcode, websiteTitleFont: $websiteTitleFont, websiteBodyFont: $websiteBodyFont, kennelAdminEmailList: $kennelAdminEmailList, kennelWebsiteUrl: $kennelWebsiteUrl, kennelEventsUrl: $kennelEventsUrl, kennelHcEventsUrl: $kennelHcEventsUrl, bankScheme: $bankScheme, bankAccountNumber: $bankAccountNumber, bankBic: $bankBic, bankBeneficiary: $bankBeneficiary, kennelPaymentScheme: $kennelPaymentScheme, kennelPaymentUrl: $kennelPaymentUrl, kennelPaymentUrlExpires: $kennelPaymentUrlExpires, kennelPaymentMemberSurcharge: $kennelPaymentMemberSurcharge, kennelPaymentNonMemberSurcharge: $kennelPaymentNonMemberSurcharge, kennelPaymentScheme2: $kennelPaymentScheme2, kennelPaymentUrl2: $kennelPaymentUrl2, kennelPaymentUrlExpires2: $kennelPaymentUrlExpires2, kennelPaymentMemberSurcharge2: $kennelPaymentMemberSurcharge2, kennelPaymentNonMemberSurcharge2: $kennelPaymentNonMemberSurcharge2, kennelPaymentScheme3: $kennelPaymentScheme3, kennelPaymentUrl3: $kennelPaymentUrl3, kennelPaymentUrlExpires3: $kennelPaymentUrlExpires3, kennelPaymentMemberSurcharge3: $kennelPaymentMemberSurcharge3, kennelPaymentNonMemberSurcharge3: $kennelPaymentNonMemberSurcharge3, runCountStartDate: $runCountStartDate, distancePreference: $distancePreference, kennelSearchTags: $kennelSearchTags, trailSymbolsConfigJson: $trailSymbolsConfigJson)';
   }
 }
 
@@ -2212,7 +2225,8 @@ abstract mixin class _$KennelModelCopyWith<$Res>
       double? kennelPaymentNonMemberSurcharge3,
       DateTime? runCountStartDate,
       int? distancePreference,
-      String? kennelSearchTags});
+      String? kennelSearchTags,
+      String? trailSymbolsConfigJson});
 }
 
 /// @nodoc
@@ -2315,6 +2329,7 @@ class __$KennelModelCopyWithImpl<$Res> implements _$KennelModelCopyWith<$Res> {
     Object? runCountStartDate = freezed,
     Object? distancePreference = freezed,
     Object? kennelSearchTags = freezed,
+    Object? trailSymbolsConfigJson = freezed,
   }) {
     return _then(_KennelModel(
       kennelPublicId: null == kennelPublicId
@@ -2676,6 +2691,10 @@ class __$KennelModelCopyWithImpl<$Res> implements _$KennelModelCopyWith<$Res> {
       kennelSearchTags: freezed == kennelSearchTags
           ? _self.kennelSearchTags
           : kennelSearchTags // ignore: cast_nullable_to_non_nullable
+              as String?,
+      trailSymbolsConfigJson: freezed == trailSymbolsConfigJson
+          ? _self.trailSymbolsConfigJson
+          : trailSymbolsConfigJson // ignore: cast_nullable_to_non_nullable
               as String?,
     ));
   }

@@ -133,6 +133,21 @@ enum KennelTabType {
     isPlatformAdminOnly: false,
   ),
 
+  /// Per-kennel trail symbol configuration for the mobile app.
+  trailSymbols(
+    key: 'trailSymbols',
+    title: 'Trail Symbols',
+    description: 'Configure the trail marking symbols shown in the mobile app '
+        'during live run tracking.\n\n'
+        'Each of the 12 slots can have a symbol icon, a display name, and an '
+        'optional action. Empty slots are not shown.',
+    icon: MaterialCommunityIcons.map_marker_multiple,
+    isTabLockable: true,
+    hasCustomTabStatusFunction: false,
+    showTabInSubmitSummary: false,
+    isPlatformAdminOnly: false,
+  ),
+
   /// Platform-level admin settings (kennel status). Only visible to users
   /// with the CanEditKennel platform-admin privilege.
   platformAdmin(
