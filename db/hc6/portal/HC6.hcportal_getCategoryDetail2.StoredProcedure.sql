@@ -269,7 +269,7 @@ BEGIN TRY
 		SELECT
 			er.updatedAt,
 			er.ErrorDescription AS errorDescription,
-			h.displayName,
+			COALESCE(h.DisplayName, '') AS displayName,
 			er.userId,
 			er.ProcName AS procName
 		FROM HC.ErrorLog er WITH (NOLOCK)
