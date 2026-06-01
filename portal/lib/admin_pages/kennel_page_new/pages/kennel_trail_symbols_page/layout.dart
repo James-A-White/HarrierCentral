@@ -174,57 +174,44 @@ class _TrailSlotRowState extends State<_TrailSlotRow> {
           ),
           const SizedBox(width: 8),
 
-          // Name field — plain text for fixed slots, editable for variable slots
+          // Name field — always editable
           Expanded(
             flex: 3,
-            child: _isFixed
-                ? Text(_nameCtrl.text, style: const TextStyle(fontSize: 14))
-                : TextField(
-                    controller: _nameCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Name',
-                      isDense: true,
-                      border: OutlineInputBorder(),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                    ),
-                    onChanged: (_) => _notify(),
-                  ),
+            child: TextField(
+              controller: _nameCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Name',
+                isDense: true,
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              ),
+              onChanged: (_) => _notify(),
+            ),
           ),
           const SizedBox(width: 8),
 
-          // Action — plain text for fixed slots, dropdown for variable slots
+          // Action dropdown — always editable
           Expanded(
             flex: 2,
-            child: _isFixed
-                ? Text(
-                    switch (_selectedAction) {
-                      'addText' => 'Add Text',
-                      'endRun'  => 'End Run',
-                      _         => 'None',
-                    },
-                    style: const TextStyle(fontSize: 14),
-                  )
-                : DropdownButtonFormField<String?>(
-                    value: _selectedAction,
-                    isExpanded: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Action',
-                      isDense: true,
-                      border: OutlineInputBorder(),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                    ),
-                    items: const [
-                      DropdownMenuItem(value: null,      child: Text('None')),
-                      DropdownMenuItem(value: 'addText', child: Text('Add Text')),
-                      DropdownMenuItem(value: 'endRun',  child: Text('End Run')),
-                    ],
-                    onChanged: (v) {
-                      setState(() => _selectedAction = v);
-                      _notify();
-                    },
-                  ),
+            child: DropdownButtonFormField<String?>(
+              value: _selectedAction,
+              isExpanded: true,
+              decoration: const InputDecoration(
+                labelText: 'Action',
+                isDense: true,
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              ),
+              items: const [
+                DropdownMenuItem(value: null,      child: Text('None')),
+                DropdownMenuItem(value: 'addText', child: Text('Add Text')),
+                DropdownMenuItem(value: 'endRun',  child: Text('End Run')),
+              ],
+              onChanged: (v) {
+                setState(() => _selectedAction = v);
+                _notify();
+              },
+            ),
           ),
         ],
       ),
