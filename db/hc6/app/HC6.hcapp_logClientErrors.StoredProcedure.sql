@@ -31,23 +31,10 @@ DECLARE @errorId   UNIQUEIDENTIFIER;
 DECLARE @errorCode INT;
 DECLARE @errorType INT;
 
--- Device-only validation: access token is intentionally not checked
-DECLARE @userId UNIQUEIDENTIFIER;
-SELECT @userId = d.UserId FROM HC.Device d WHERE d.id = @deviceId;
-
-IF (@userId IS NULL OR @userId = '00000000-0000-0000-0000-000000000000')
-BEGIN
-    SET @errorCode = 1392; SET @errorType = 13; SET @errorId = NEWID();
-    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Device not registered',
-            'Device not found for logClientErrors', @procName, NULL);
-    SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
-    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
-           'Device not registered' AS errorTitle,
-           'The device is not registered. Please re-authorise the app.' AS errorUserMessage,
-           @procName AS errorProc;
-    RETURN;
-END
+-- Access token is intentionally not validated (see description).
+-- Device registration is NOT required — logs from unregistered devices are
+-- accepted so that error patterns (e.g. repeated approveLogin token failures)
+-- can be captured even when the device has been de-registered.
 
 BEGIN TRY
     BEGIN TRANSACTION;

@@ -622,33 +622,26 @@ class AppBootService {
   }
 
   Future<void> _handleDeviceNoLongerRegistered() async {
-    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '<not set>';
-    final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '<not set>';
+    // Report immediately before clearing prefs so the stale deviceId is captured.
+    // hcapp_logClientErrors accepts unregistered devices for exactly this case.
+    unawaited(ServiceCommon.recordClientErrorLog(
+      '[${DateTime.now().toIso8601String()}] [DEVICE_NOT_REGISTERED] '
+      'deviceId=${getStringPref(StringPrefsEnum.deviceId) ?? "<null>"} '
+      'userId=${getStringPref(StringPrefsEnum.userId) ?? "<null>"} '
+      'hcVersion=${getStringPref(StringPrefsEnum.harrierCentralVersionAndBuild) ?? "<null>"}',
+    ));
 
     await Get.dialog<void>(
       AlertDialog(
         title: const Text('Device No Longer Registered'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'This device is no longer registered with Harrier Central.\n\nTap Reload to reconnect automatically.',
-            ),
-            const SizedBox(height: 16),
-            OutlinedButton.icon(
-              onPressed: () => Clipboard.setData(ClipboardData(
-                text: 'deviceId: $deviceId\ndeviceSecret: $deviceSecret',
-              )),
-              icon: const Icon(Icons.copy, size: 16),
-              label: const Text('Copy device credentials'),
-            ),
-          ],
+        content: const Text(
+          'This device is no longer registered with Harrier Central.\n\nTap Reload to reconnect automatically.',
         ),
         actions: [
-          TextButton(
+          ElevatedButton.icon(
             onPressed: () => Get.back(),
-            child: const Text('Reload'),
+            icon: const Icon(Icons.refresh, size: 18),
+            label: const Text('Reload'),
           ),
         ],
       ),
