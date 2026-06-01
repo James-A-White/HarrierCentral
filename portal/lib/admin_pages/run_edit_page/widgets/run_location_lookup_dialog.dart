@@ -286,11 +286,14 @@ class RunLocationLookupController extends GetxController
     gazetteerSelectedIndex.value = null;
 
     try {
+      final params = <String, String>{
+        'q': searchText,
+        'lat': kennelLat.toString(),
+        'lon': kennelLon.toString(),
+      };
+      if (kennelCountryCodes.isNotEmpty) params['countryCodes'] = kennelCountryCodes;
       final url = Uri.parse(PORTAL_GEOCODE_PLACE_TO_ADDRESS_API_URL).replace(
-        queryParameters: {
-          'q': searchText,
-          'type': 'fuzzy',
-        },
+        queryParameters: params,
       );
       final response = await http.get(
         url,

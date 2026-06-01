@@ -1,4 +1,9 @@
 
+1.0.16+14
+    • Fix: ProxyGeocode now calls Azure Maps directly using AzureMapsSubscriptionKey — removes Logic App dependency that was returning 400 (POST-only trigger vs GET request)
+    • Improvement: ProxyGeocode now accepts lat/lon/countryCodes params for location-biased results
+    • Portal: performGazetteerSearch passes kennel lat/lon and country codes to the proxy
+
 1.0.15+13
     • Fix: HC6 error envelope reads errorUserMessage/errorId from rowset 1
       (detail row), not rowset 0 (success envelope) — errorUserMessage was

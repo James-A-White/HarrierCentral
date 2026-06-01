@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
@@ -6,11 +7,10 @@ using Microsoft.Extensions.Logging;
 namespace HcWebApi.Endpoints
 {
     /// <summary>
-    /// Proxy endpoint that forwards geocode requests to the Logic App URL stored in
-    /// HC_GEOCODE_LOGIC_APP_URL. This keeps the SAS token (sig= parameter) server-side
-    /// and out of the compiled Flutter portal JS bundle.
+    /// Proxy endpoint that calls Azure Maps fuzzy search directly, keeping the
+    /// subscription key server-side and out of the compiled Flutter portal JS bundle.
     ///
-    /// Usage: GET /api/ProxyGeocode?q=Wellington&type=address
+    /// Usage: GET /api/ProxyGeocode?q=Wellington[&lat=51.5&lon=-0.1&countryCodes=GB]
     ///
     /// Callers must have their own portal auth — this endpoint uses Anonymous
     /// because the portal already performs device/token auth upstream.
@@ -33,25 +33,34 @@ namespace HcWebApi.Endpoints
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "ProxyGeocode")] HttpRequest req)
         {
-            string? logicAppUrl = Environment.GetEnvironmentVariable("HC_GEOCODE_LOGIC_APP_URL");
-            if (string.IsNullOrEmpty(logicAppUrl))
+            string? subscriptionKey = Environment.GetEnvironmentVariable("AzureMapsSubscriptionKey");
+            if (string.IsNullOrEmpty(subscriptionKey))
             {
-                _log.LogError("HC_GEOCODE_LOGIC_APP_URL is not configured.");
+                _log.LogError("AzureMapsSubscriptionKey is not configured.");
                 return new ObjectResult("Geocode service unavailable.") { StatusCode = 503 };
             }
 
-            // Forward q and type query params to the Logic App
-            string? q    = req.Query["q"].ToString();
-            string? type = req.Query["type"].ToString();
+            string? q            = req.Query["q"].ToString();
+            string? lat          = req.Query["lat"].ToString();
+            string? lon          = req.Query["lon"].ToString();
+            string? countryCodes = req.Query["countryCodes"].ToString();
 
-            var uriBuilder = new UriBuilder(logicAppUrl);
-            var existingQuery = System.Web.HttpUtility.ParseQueryString(uriBuilder.Query);
-            if (!string.IsNullOrEmpty(q))    existingQuery["q"]    = q;
-            if (!string.IsNullOrEmpty(type)) existingQuery["type"] = type;
-            uriBuilder.Query = existingQuery.ToString();
+            if (string.IsNullOrWhiteSpace(q))
+                return new BadRequestObjectResult("Missing required parameter: q");
 
-            string targetUrl = uriBuilder.ToString();
-            _log.LogInformation("ProxyGeocode forwarding request");
+            var qs = System.Web.HttpUtility.ParseQueryString(string.Empty);
+            qs["subscription-key"] = subscriptionKey;
+            qs["api-version"]      = "1.0";
+            qs["typeahead"]        = "false";
+            qs["limit"]            = "25";
+            qs["minFuzzyLevel"]    = "1";
+            qs["maxFuzzyLevel"]    = "4";
+            qs["query"]            = q;
+            if (!string.IsNullOrEmpty(lat))          qs["lat"]        = lat;
+            if (!string.IsNullOrEmpty(lon))          qs["lon"]        = lon;
+            if (!string.IsNullOrEmpty(countryCodes)) qs["countrySet"] = countryCodes;
+
+            string targetUrl = "https://atlas.microsoft.com/search/fuzzy/JSON?" + qs.ToString();
 
             try
             {
@@ -71,12 +80,12 @@ namespace HcWebApi.Endpoints
             }
             catch (OperationCanceledException)
             {
-                _log.LogWarning("ProxyGeocode: upstream request timed out.");
+                _log.LogWarning("ProxyGeocode: Azure Maps request timed out.");
                 return new ObjectResult("Geocode service timed out.") { StatusCode = 504 };
             }
             catch (Exception ex)
             {
-                _log.LogError("ProxyGeocode upstream error: {Message}", ex.Message);
+                _log.LogError("ProxyGeocode error: {Message}", ex.Message);
                 return new ObjectResult("Geocode service error.") { StatusCode = 502 };
             }
         }
