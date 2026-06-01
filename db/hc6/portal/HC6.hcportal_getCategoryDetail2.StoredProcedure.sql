@@ -269,11 +269,12 @@ BEGIN TRY
 		SELECT
 			er.updatedAt,
 			er.ErrorDescription AS errorDescription,
-			COALESCE(h.DisplayName, '') AS displayName,
+			COALESCE(h1.DisplayName, h2.DisplayName, '') AS displayName,
 			er.userId,
 			er.ProcName AS procName
 		FROM HC.ErrorLog er WITH (NOLOCK)
-		LEFT OUTER JOIN HC.Hasher h WITH (NOLOCK) ON er.userId = h.id
+		LEFT OUTER JOIN HC.Hasher h1 WITH (NOLOCK) ON h1.id              = er.userId
+		LEFT OUTER JOIN HC.Hasher h2 WITH (NOLOCK) ON h2.PublicHasherId  = er.userId
 		WHERE er.updatedAt > @cutoffDate
 		ORDER BY er.updatedAt DESC
 		OPTION (RECOMPILE)
