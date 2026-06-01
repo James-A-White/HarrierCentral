@@ -247,44 +247,38 @@ class _SymbolPickerDialog extends StatelessWidget {
       title: const Text('Choose a symbol'),
       contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       content: SizedBox(
-        width: 320,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            GridView.count(
-              crossAxisCount: 4,
-              shrinkWrap: true,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              children: ([...kTrailSymbolLibrary]..sort((a, b) => a.$1.compareTo(b.$1))).map((entry) {
-                final icon = entry.$1;
-                final isSelected = icon == current;
-                return GestureDetector(
-                  onTap: () => Navigator.of(context).pop(icon),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? Colors.blue.shade100
-                          : Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: isSelected
-                            ? Colors.blue.shade600
-                            : Colors.grey.shade300,
-                        width: isSelected ? 2 : 1,
-                      ),
-                    ),
-                    padding: const EdgeInsets.all(6),
-                    child: Image.asset(
-                      'images/trail_symbols/$icon',
-                      fit: BoxFit.contain,
-                    ),
+        width: 360,
+        height: 480,
+        child: GridView.count(
+          crossAxisCount: 5,
+          mainAxisSpacing: 6,
+          crossAxisSpacing: 6,
+          children: ([...kTrailSymbolLibrary]..sort((a, b) => a.$1.compareTo(b.$1))).map((entry) {
+            final icon = entry.$1;
+            final isSelected = icon == current;
+            return GestureDetector(
+              onTap: () => Navigator.of(context).pop(icon),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? Colors.blue.shade100
+                      : Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isSelected
+                        ? Colors.blue.shade600
+                        : Colors.grey.shade300,
+                    width: isSelected ? 2 : 1,
                   ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 12),
-          ],
+                ),
+                padding: const EdgeInsets.all(6),
+                child: Image.asset(
+                  'images/trail_symbols/$icon',
+                  fit: BoxFit.contain,
+                ),
+              ),
+            );
+          }).toList(),
         ),
       ),
       actions: [
