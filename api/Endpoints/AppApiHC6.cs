@@ -158,21 +158,28 @@ namespace HcWebApi.Endpoints
                     }
                 }
 
-                // Detect HC6 app error envelope: single rowset, single row, contains errorType.
-                // SP auth failures and validation errors return this shape rather than the
-                // expected multi-rowset success response.
+                // Detect HC6 app error envelope: first rowset has exactly one row with "errorType".
+                // HC6 SPs return two rowsets on error: rowset 0 is the success envelope
+                // {success, errorCode, errorType} and rowset 1 is the human-readable detail
+                // {errorId, errorType, errorUserMessage, errorTitle, errorProc}.
+                // Read errorType from rowset 0 (always present); read detail fields from
+                // rowset 1 when available, falling back to rowset 0 for older SP shapes.
                 if (multipleResults.Count > 0
                     && multipleResults[0].Count == 1
                     && multipleResults[0][0].ContainsKey("errorType"))
                 {
-                    var errorRow = multipleResults[0][0];
-                    errorRow.TryGetValue("errorUserMessage", out var errMsg);
-                    errorRow.TryGetValue("errorType", out var errType);
-                    errorRow.TryGetValue("errorId", out var errId);
-                    // Log full error row (including debugMessage and errorProc) server-side only.
+                    var envelopeRow = multipleResults[0][0];
+                    var detailRow = (multipleResults.Count > 1 && multipleResults[1].Count > 0)
+                        ? multipleResults[1][0]
+                        : envelopeRow;
+
+                    envelopeRow.TryGetValue("errorType", out var errType);
+                    detailRow.TryGetValue("errorUserMessage", out var errMsg);
+                    detailRow.TryGetValue("errorId", out var errId);
+                    // Log full detail row (including debugMessage and errorProc) server-side only.
                     log.LogWarning("AppApiHC6 SP error [{QueryType}]: errorType={ErrorType} message={Message} row={Row}",
                         (string)data.queryType, errType?.ToString(), errMsg?.ToString(),
-                        Newtonsoft.Json.JsonConvert.SerializeObject(errorRow));
+                        Newtonsoft.Json.JsonConvert.SerializeObject(detailRow));
                     // Return only safe fields to the caller — never expose debugMessage or errorProc.
                     return new BadRequestObjectResult(new
                     {

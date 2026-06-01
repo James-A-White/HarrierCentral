@@ -489,7 +489,9 @@ class AppBootService {
     debugPrint('[BOOT] _prepareDeviceContext: hasLocationPermissions=${appModel.hasLocationPermissions}: ${DateTime.now().millisecondsSinceEpoch}ms');
 
     if (appModel.hasLocationPermissions) {
-      Get.put(LocationService());
+      if (!Get.isRegistered<LocationService>()) {
+        Get.put(LocationService());
+      }
       if (kDebugMode) {
         debugPrint('[BOOT] _prepareDeviceContext: Geolocator.getLastKnownPosition start: ${DateTime.now().millisecondsSinceEpoch}ms');
       }

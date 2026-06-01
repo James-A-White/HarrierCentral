@@ -302,7 +302,70 @@ class ServiceCommon {
   }) async {
     String returnValue = ERROR_UNKNOWN_HTTP_ERROR;
 
-    if ((response.statusCode < 200) || (response.statusCode >= 300)) {
+    // Check for an SP-level error before checking HTTP status. AppApiHC6 returns
+    // 400 for SP errors, so checking status first would swallow the errorCallback.
+    if (response.body.contains('"errorId"')) {
+      BootLogger.logError(
+        '[ERROR][HTTP]',
+        '${response.statusCode} ${response.reasonPhrase ?? ""} → $BASE_AF_API_URL\nBody: ${_redactBody(requestBody)}\nResponse: ${response.body}',
+        null,
+      );
+      returnValue = ERROR_UNKNOWN_REMOTE_DB_ERROR;
+
+      // AppApiHC6 returns SP errors in two formats:
+      //   1. Flat object  {"errorType":N,"errorUserMessage":"...","errorId":"..."}
+      //      (produced by the shim's HC6 error detection reading rowset 0)
+      //   2. Nested rowsets [[{...}],[{...}]] for 200 responses with SP errors
+      final dynamic decoded = json.decode(response.body);
+      Map<String, dynamic> errorRow;
+
+      if (decoded is List) {
+        final rowsets = decoded;
+        final firstRowset = rowsets.isNotEmpty
+            ? (rowsets[0] as List<dynamic>)
+            : <dynamic>[];
+        Map<String, dynamic> firstRow = firstRowset.isNotEmpty
+            ? (firstRowset[0] as Map<String, dynamic>)
+            : <String, dynamic>{};
+        // HC6 write SPs: rowset 0 is the success envelope {success, errorCode, errorType};
+        // human-readable detail is at rowset 1. Redirect when detected.
+        if (firstRow.containsKey('success') &&
+            firstRow['success'] == 0 &&
+            rowsets.length > 1) {
+          final secondRowset = rowsets[1] as List<dynamic>;
+          errorRow = secondRowset.isNotEmpty
+              ? secondRowset[0] as Map<String, dynamic>
+              : firstRow;
+        } else {
+          errorRow = firstRow;
+        }
+      } else if (decoded is Map<String, dynamic>) {
+        // Flat object from AppApiHC6's error detection — errorType is present,
+        // errorUserMessage/errorId may be null if read from the wrong rowset.
+        errorRow = decoded;
+      } else {
+        errorRow = <String, dynamic>{};
+      }
+
+      final DbErrorModel errorResult = DbErrorModel.fromJson(errorRow);
+
+      if (errorCallback != null) {
+        final bool errorCallbackResult = await errorCallback(errorResult);
+        returnValue = errorCallbackResult ? ERROR_HANDLED : ERROR_NOT_HANDLED;
+      } else {
+        final bool alertResult =
+            (await Utilities.showAlert(
+              errorResult.errorTitle ?? '',
+              (errorResult.errorUserMessage ?? '').replaceAll('~', '\r\n'),
+              'Quit',
+            )) ??
+            false;
+
+        returnValue = alertResult
+            ? ERROR_KEY_OK_BTN_PRESSED
+            : ERROR_KEY_CANCEL_BTN_PRESSED;
+      }
+    } else if ((response.statusCode < 200) || (response.statusCode >= 300)) {
       if (response.reasonPhrase == 'Site Disabled') {
         await Utilities.showAlert(
           'Down for Maintenance',
@@ -314,7 +377,6 @@ class ServiceCommon {
           'Site Disabled: ${response.statusCode} ${response.reasonPhrase ?? ""} → $BASE_AF_API_URL\nBody: ${_redactBody(requestBody)}\nResponse: ${response.body}',
           null,
         );
-        // appModel.connectionStatus = EnumConnectionStatus2.notConnected;
       } else {
         // bypass the Harrier Central backend server check and
         // check the internet connection using other services.
@@ -336,57 +398,6 @@ class ServiceCommon {
             backgroundColor: hc_blue,
           );
         }
-        // await Utilities.showAlert(
-        //     'Unknown Server Error',
-        //     'The Harrier Central server is experiencing an unknown server error. Please send this screenshot to us at harriercentral@gmail.com so we can attempt to resolve the issue.\r\n\r\nYou may continue using the app in Offline Mode with cached data. Press the \'Offline Mode\' ribbon to find out when the last time the data was updated.\r\n\r\nServer Error Code = ${response.statusCode.toString()}',
-        //     'Use Offline');
-        // appModel.connectionStatus = EnumConnectionStatus2.notConnected;
-      }
-    } else if (response.body.contains('"errorId"')) {
-      BootLogger.logError(
-        '[ERROR][HTTP]',
-        'DB error ${response.statusCode} → $BASE_AF_API_URL\nBody: ${_redactBody(requestBody)}\nResponse: ${response.body}',
-        null,
-      );
-      returnValue = ERROR_UNKNOWN_REMOTE_DB_ERROR;
-      // Response body is [[{...}]] — outer array is rowsets, inner array is rows.
-      // Guard against empty arrays before indexing to avoid RangeError.
-      final dynamic decoded = json.decode(response.body);
-      final rowsets = decoded as List<dynamic>;
-      final firstRowset = rowsets.isNotEmpty
-          ? (rowsets[0] as List<dynamic>)
-          : <dynamic>[];
-      final Map<String, dynamic> firstRow = firstRowset.isNotEmpty
-          ? (firstRowset[0] as Map<String, dynamic>)
-          : <String, dynamic>{};
-      // HC6 write SPs return a success envelope at rowset 0 {success, errorCode, errorType}.
-      // The human-readable error detail is at rowset 1. Detect this and redirect.
-      Map<String, dynamic> errorRow = firstRow;
-      if (firstRow.containsKey('success') &&
-          firstRow['success'] == 0 &&
-          rowsets.length > 1) {
-        final secondRowset = rowsets[1] as List<dynamic>;
-        if (secondRowset.isNotEmpty) {
-          errorRow = secondRowset[0] as Map<String, dynamic>;
-        }
-      }
-      final DbErrorModel errorResult = DbErrorModel.fromJson(errorRow);
-
-      if (errorCallback != null) {
-        final bool errorCallbackResult = await errorCallback(errorResult);
-        returnValue = errorCallbackResult ? ERROR_HANDLED : ERROR_NOT_HANDLED;
-      } else {
-        final bool alertResult =
-            (await Utilities.showAlert(
-              errorResult.errorTitle ?? '',
-              (errorResult.errorUserMessage ?? '').replaceAll('~', '\r\n'),
-              'Quit',
-            )) ??
-            false; // CHECK
-
-        returnValue = alertResult
-            ? ERROR_KEY_OK_BTN_PRESSED
-            : ERROR_KEY_CANCEL_BTN_PRESSED;
       }
     } else {
       returnValue = response.body;
