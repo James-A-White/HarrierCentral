@@ -1,5 +1,37 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.7.4+1145 (2026-06-01)
+
+### Fixes
+
+- **Boot crash: `DeviceInfo not found`** (`[ERROR][ASYNC]`): `AppLifecycleController`
+  is registered before `DeviceInfo` in `initServices()`. Its `onResumed()` callback
+  can fire between `await` points and register `LocationService` before `DeviceInfo`
+  is ready. Added a `Get.isRegistered<DeviceInfo>()` guard in
+  `LocationService.subscribeToGeoLocationStream` and a duplicate-registration guard
+  in `AppBootService._prepareDeviceContext`.
+
+- **`approveLogin` errorType:11 cascade** (7 × errorType:3 sync failures on boot):
+  `checkHttpPostResponse` checked HTTP status before checking for `"errorId"` in the
+  body. `AppApiHC6` returns 400 for all SP errors, so the status check short-circuited
+  before `errorCallback` was called. `_isReauthorizationError` was never reached,
+  `_handleDeviceNoLongerRegistered` was never triggered, and the boot fell through to
+  `_handleNoConnection` — navigating to `MainNavigationPage` with stale credentials,
+  which immediately fired all sync calls. Fixed by checking `"errorId"` first; also
+  handles the flat JSON error shape that `AppApiHC6` returns for detected SP errors.
+
+- **Device re-registration dialog**: replaced `Utilities.showAlert` with a custom
+  dialog that includes a "Copy device credentials" button (copies `deviceId` +
+  `deviceSecret` to clipboard) to aid server-side diagnosis when the error recurs.
+
+- **Device-not-registered telemetry**: `_handleDeviceNoLongerRegistered` now fires
+  an immediate `recordClientErrorLog` before clearing prefs, capturing the stale
+  `deviceId`, `userId`, and `hcVersion` in `HC.ClientErrorLog` for pattern analysis.
+  `hcapp_logClientErrors` updated to accept unregistered devices (previously rejected
+  them, making it useless for exactly this failure mode).
+
+---
+
 ## 2.7.3+1144 (2026-06-01)
 
 ### Features
