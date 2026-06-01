@@ -108,6 +108,8 @@ class RunLocationLookupController extends GetxController
   final RxList<Results> gazetteerResults = <Results>[].obs;
   final RxBool isSearching = false.obs;
   final Rx<int?> gazetteerSelectedIndex = Rx<int?>(null);
+  final ScrollController gazetteerListScrollController = ScrollController();
+  final Map<int, GlobalKey> gazetteerItemKeys = {};
   late final geo_map.MapController gazetteerMapController;
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
@@ -140,6 +142,7 @@ class RunLocationLookupController extends GetxController
     searchController.dispose();
     listScrollController.dispose();
     gazetteerSearchController.dispose();
+    gazetteerListScrollController.dispose();
     super.onClose();
   }
 
@@ -755,10 +758,12 @@ class RunLocationLookupDialog extends StatelessWidget {
 // ---------------------------------------------------------------------------
 // Map sub-widgets — StatefulWidget for gesture tracking
 //
-// The map package (geo_map.MapLayout) manages its own rebuilds via
-// ChangeNotifier, so gesture mutations (zoom, drag) don't need setState.
-// ever() listeners fire setState when business-logic state changes
-// (filter results, selection) so map markers repaint correctly.
+// MapController is a ChangeNotifier, but the map package's TileLayer does not
+// subscribe to it — it reads the controller once via findAncestorWidgetOfExactType
+// and never registers a rebuild dependency. We must call setState() ourselves
+// whenever the controller changes (drag, zoom, or scroll wheel) so the tile
+// layer and markers repaint. ever() listeners do the same for business-logic
+// state changes (filter results, selection).
 // ---------------------------------------------------------------------------
 
 class _PreviousRunsMap extends StatefulWidget {
@@ -775,6 +780,10 @@ class _PreviousRunsMapState extends State<_PreviousRunsMap> {
   late final Worker _filteredWatcher;
   late final Worker _selectedWatcher;
 
+  void _onMapChanged() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void initState() {
     super.initState();
@@ -784,12 +793,14 @@ class _PreviousRunsMapState extends State<_PreviousRunsMap> {
     _selectedWatcher = ever(widget.controller.selectedIndex, (_) {
       if (mounted) setState(() {});
     });
+    widget.controller.mapController.addListener(_onMapChanged);
   }
 
   @override
   void dispose() {
     _filteredWatcher.dispose();
     _selectedWatcher.dispose();
+    widget.controller.mapController.removeListener(_onMapChanged);
     super.dispose();
   }
 
@@ -912,6 +923,10 @@ class _GazetteerMapState extends State<_GazetteerMap> {
   late final Worker _resultsWatcher;
   late final Worker _selectedWatcher;
 
+  void _onMapChanged() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void initState() {
     super.initState();
@@ -921,12 +936,14 @@ class _GazetteerMapState extends State<_GazetteerMap> {
     _selectedWatcher = ever(widget.controller.gazetteerSelectedIndex, (_) {
       if (mounted) setState(() {});
     });
+    widget.controller.gazetteerMapController.addListener(_onMapChanged);
   }
 
   @override
   void dispose() {
     _resultsWatcher.dispose();
     _selectedWatcher.dispose();
+    widget.controller.gazetteerMapController.removeListener(_onMapChanged);
     super.dispose();
   }
 
