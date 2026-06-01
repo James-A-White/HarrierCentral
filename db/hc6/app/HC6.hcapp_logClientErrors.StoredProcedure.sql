@@ -8,9 +8,9 @@ AS
 -- =====================================================================
 -- Procedure: HC6.hcapp_logClientErrors
 -- Description: Stores a session-level client error log in HC.ClientErrorLog.
---   The device must be registered in HC.Device, but the access token is NOT
---   validated — this mirrors hcapp_logAppError and allows the app to upload
---   logs even when token generation has itself failed.
+--   No auth required and device registration is NOT required — logs from
+--   de-registered devices are accepted so that failure patterns (e.g.
+--   repeated approveLogin token failures) can be captured for diagnosis.
 --   The @accessToken parameter is accepted for API consistency but ignored.
 -- Parameters:
 --   @deviceId    - Registered device UUID (must exist in HC.Device)
@@ -52,7 +52,7 @@ BEGIN CATCH
 
     SET @errorCode = 1992; SET @errorType = 19; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
+    VALUES (@errorId, '<unknown>', 'Unhandled error', ERROR_MESSAGE(), @procName, NULL);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Unexpected error' AS errorTitle,
