@@ -53,13 +53,15 @@ class _TrailSlotRowState extends State<_TrailSlotRow> {
   late TextEditingController _nameCtrl;
   late String? _selectedIcon;
   late String? _selectedAction;
+  late String? _selectedPurpose;
 
   @override
   void initState() {
     super.initState();
-    _nameCtrl = TextEditingController(text: widget.slot.name);
-    _selectedIcon = widget.slot.icon;
+    _nameCtrl       = TextEditingController(text: widget.slot.name);
+    _selectedIcon   = widget.slot.icon;
     _selectedAction = widget.slot.action;
+    _selectedPurpose = widget.slot.purpose;
   }
 
   @override
@@ -70,11 +72,43 @@ class _TrailSlotRowState extends State<_TrailSlotRow> {
 
   void _notify() {
     widget.onChanged(TrailSlotConfig(
-      slot: widget.slot.slot,
-      icon: _selectedIcon,
-      name: _nameCtrl.text.trim(),
-      action: _selectedAction,
+      slot:    widget.slot.slot,
+      icon:    _selectedIcon,
+      name:    _nameCtrl.text.trim(),
+      action:  _selectedAction,
+      purpose: _selectedPurpose,
     ));
+  }
+
+  bool get _isFixed => kFixedSlotPurposes.containsKey(widget.slot.slot);
+
+  Widget _buildPurposeWidget() {
+    final slot = widget.slot.slot;
+    if (kFixedSlotPurposes.containsKey(slot)) {
+      return Text(
+        kFixedSlotPurposes[slot]!,
+        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+      );
+    }
+    return DropdownButtonFormField<String?>(
+      value: _selectedPurpose,
+      isExpanded: true,
+      decoration: const InputDecoration(
+        isDense: true,
+        border: OutlineInputBorder(),
+        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      ),
+      items: [
+        const DropdownMenuItem<String?>(value: null, child: Text('-- none --')),
+        ...kVariableSlotPurposes.map(
+          (p) => DropdownMenuItem<String?>(value: p, child: Text(p)),
+        ),
+      ],
+      onChanged: (v) {
+        setState(() => _selectedPurpose = v);
+        _notify();
+      },
+    );
   }
 
   Future<void> _pickIcon(BuildContext context) async {
@@ -112,6 +146,10 @@ class _TrailSlotRowState extends State<_TrailSlotRow> {
           ),
           const SizedBox(width: 8),
 
+          // Purpose — fixed text for slots 1–5, dropdown for 6–12
+          SizedBox(width: 150, child: _buildPurposeWidget()),
+          const SizedBox(width: 8),
+
           // Symbol picker button — shows current PNG or empty placeholder
           GestureDetector(
             onTap: () => _pickIcon(context),
@@ -136,44 +174,57 @@ class _TrailSlotRowState extends State<_TrailSlotRow> {
           ),
           const SizedBox(width: 8),
 
-          // Name field
+          // Name field — plain text for fixed slots, editable for variable slots
           Expanded(
             flex: 3,
-            child: TextField(
-              controller: _nameCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Name',
-                isDense: true,
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              ),
-              onChanged: (_) => _notify(),
-            ),
+            child: _isFixed
+                ? Text(_nameCtrl.text, style: const TextStyle(fontSize: 14))
+                : TextField(
+                    controller: _nameCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Name',
+                      isDense: true,
+                      border: OutlineInputBorder(),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    ),
+                    onChanged: (_) => _notify(),
+                  ),
           ),
           const SizedBox(width: 8),
 
-          // Action dropdown
+          // Action — plain text for fixed slots, dropdown for variable slots
           Expanded(
             flex: 2,
-            child: DropdownButtonFormField<String?>(
-              value: _selectedAction,
-              isExpanded: true,
-              decoration: const InputDecoration(
-                labelText: 'Action',
-                isDense: true,
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              ),
-              items: const [
-                DropdownMenuItem(value: null,      child: Text('None')),
-                DropdownMenuItem(value: 'addText', child: Text('Add Text')),
-                DropdownMenuItem(value: 'endRun',  child: Text('End Run')),
-              ],
-              onChanged: (v) {
-                setState(() => _selectedAction = v);
-                _notify();
-              },
-            ),
+            child: _isFixed
+                ? Text(
+                    switch (_selectedAction) {
+                      'addText' => 'Add Text',
+                      'endRun'  => 'End Run',
+                      _         => 'None',
+                    },
+                    style: const TextStyle(fontSize: 14),
+                  )
+                : DropdownButtonFormField<String?>(
+                    value: _selectedAction,
+                    isExpanded: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Action',
+                      isDense: true,
+                      border: OutlineInputBorder(),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: null,      child: Text('None')),
+                      DropdownMenuItem(value: 'addText', child: Text('Add Text')),
+                      DropdownMenuItem(value: 'endRun',  child: Text('End Run')),
+                    ],
+                    onChanged: (v) {
+                      setState(() => _selectedAction = v);
+                      _notify();
+                    },
+                  ),
           ),
         ],
       ),
@@ -205,7 +256,7 @@ class _SymbolPickerDialog extends StatelessWidget {
               shrinkWrap: true,
               mainAxisSpacing: 8,
               crossAxisSpacing: 8,
-              children: kTrailSymbolLibrary.map((entry) {
+              children: ([...kTrailSymbolLibrary]..sort((a, b) => a.$1.compareTo(b.$1))).map((entry) {
                 final icon = entry.$1;
                 final isSelected = icon == current;
                 return GestureDetector(
