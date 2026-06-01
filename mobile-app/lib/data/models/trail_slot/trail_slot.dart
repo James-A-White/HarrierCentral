@@ -34,17 +34,17 @@ class TrailSlot {
 
   static const List<TrailSlot> defaults = [
     TrailSlot(slot: 1,  icon: 'I-001.png', name: 'Check'),
-    TrailSlot(slot: 2,  icon: 'I-002.png', name: 'False Trail'),
-    TrailSlot(slot: 3,  icon: 'I-003.png', name: 'Short Cut'),
-    TrailSlot(slot: 4,  icon: 'I-004.png', name: 'Checkback'),
-    TrailSlot(slot: 5,  icon: 'I-005.png', name: 'Whichy Way'),
-    TrailSlot(slot: 6,  icon: 'I-006.png', name: 'Fish Hook'),
-    TrailSlot(slot: 7,  icon: 'I-007.png', name: 'Regroup'),
-    TrailSlot(slot: 8,  icon: 'I-008.png', name: 'Hash View'),
-    TrailSlot(slot: 9,  icon: 'I-009.png', name: 'Label',       action: 'addText'),
-    TrailSlot(slot: 10, icon: 'I-010.png', name: 'Drink Stop'),
-    TrailSlot(slot: 11, icon: 'I-011.png', name: 'On Inn',      action: 'endRun'),
-    TrailSlot(slot: 12, icon: 'I-012.png', name: 'Caution',     action: 'addText'),
+    TrailSlot(slot: 2,  icon: 'I-050.png', name: 'False Trail'),
+    TrailSlot(slot: 3,  icon: 'I-100.png', name: 'Short Cut'),
+    TrailSlot(slot: 4,  icon: 'I-150.png', name: 'Checkback'),
+    TrailSlot(slot: 5,  icon: 'I-200.png', name: 'Whichy Way'),
+    TrailSlot(slot: 6,  icon: 'I-250.png', name: 'Fish Hook'),
+    TrailSlot(slot: 7,  icon: 'I-300.png', name: 'Regroup'),
+    TrailSlot(slot: 8,  icon: 'I-350.png', name: 'Hash View'),
+    TrailSlot(slot: 9,  icon: 'I-400.png', name: 'Label',       action: 'addText'),
+    TrailSlot(slot: 10, icon: 'I-450.png', name: 'Drink Stop'),
+    TrailSlot(slot: 11, icon: 'I-500.png', name: 'On Inn',      action: 'endRun'),
+    TrailSlot(slot: 12, icon: 'I-550.png', name: 'Caution',     action: 'addText'),
   ];
 }
 

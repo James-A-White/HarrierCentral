@@ -629,7 +629,7 @@ class RunTrackerMapController extends GetxController
         ? customLabel
         : null;
 
-    // New-style slot icon (e.g. 'I-003.png') — use asset filename directly.
+    // New-style slot icon (e.g. 'I-100.png') — use asset filename directly.
     if (typeKey.startsWith('I-')) {
       return _ParsedCheckpointType(slotIcon: typeKey, customLabel: label);
     }
