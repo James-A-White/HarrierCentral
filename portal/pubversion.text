@@ -1,4 +1,12 @@
 
+2.0.4+637
+    • Trail Symbol Slots: fixed purpose text for slots 1–5 (plain text, no frame);
+      Name and Action remain editable on all rows
+    • Trail symbol picker: library expanded from 12 to 49 images (I-000 – I-601
+      plus 12 named semantic symbols); 5-column scrollable grid
+
+2.0.3+636
+
 2.0.2+635
     • Fix: confirmAuthentication poll no longer crashes on empty response
       (SP returns empty rows while waiting for QR scan — guard added before [0][0] access)
