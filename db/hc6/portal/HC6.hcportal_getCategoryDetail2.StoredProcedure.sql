@@ -269,12 +269,15 @@ BEGIN TRY
 		SELECT
 			er.updatedAt,
 			er.ErrorDescription AS errorDescription,
-			COALESCE(h1.DisplayName, h2.DisplayName, '') AS displayName,
+			COALESCE(h1.DisplayName, h2.DisplayName, h3.DisplayName, '') AS displayName,
 			er.userId,
 			er.ProcName AS procName
 		FROM HC.ErrorLog er WITH (NOLOCK)
-		LEFT OUTER JOIN HC.Hasher h1 WITH (NOLOCK) ON h1.id              = er.userId
-		LEFT OUTER JOIN HC.Hasher h2 WITH (NOLOCK) ON h2.PublicHasherId  = er.userId
+		LEFT OUTER JOIN HC.Hasher h1 WITH (NOLOCK) ON h1.id             = er.userId
+		LEFT OUTER JOIN HC.Hasher h2 WITH (NOLOCK) ON h2.PublicHasherId = er.userId
+		-- Portal shim logs deviceId in userId — resolve via HC.Device
+		LEFT OUTER JOIN HC.Device  dev WITH (NOLOCK) ON dev.id          = er.userId
+		LEFT OUTER JOIN HC.Hasher h3 WITH (NOLOCK) ON h3.id             = dev.UserId
 		WHERE er.updatedAt > @cutoffDate
 		ORDER BY er.updatedAt DESC
 		OPTION (RECOMPILE)
