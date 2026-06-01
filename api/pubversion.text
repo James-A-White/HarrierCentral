@@ -1,4 +1,9 @@
 
+1.0.15+13
+    • Fix: HC6 error envelope reads errorUserMessage/errorId from rowset 1
+      (detail row), not rowset 0 (success envelope) — errorUserMessage was
+      always null in 400 responses for auth failures such as approveLogin
+
 1.0.14+12
     • Security: SQL injection fixes — EmailInviteCode and GenericJsonQueryHC6 fully parameterised
     • Security: GetPositions now requires API key — live GPS data no longer publicly accessible
