@@ -622,10 +622,37 @@ class AppBootService {
   }
 
   Future<void> _handleDeviceNoLongerRegistered() async {
-    await Utilities.showAlert(
-      'Device No Longer Registered',
-      'This device is no longer registered with Harrier Central.\n\nTap Reload to reconnect automatically.',
-      'Reload',
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '<not set>';
+    final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '<not set>';
+
+    await Get.dialog<void>(
+      AlertDialog(
+        title: const Text('Device No Longer Registered'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'This device is no longer registered with Harrier Central.\n\nTap Reload to reconnect automatically.',
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: () => Clipboard.setData(ClipboardData(
+                text: 'deviceId: $deviceId\ndeviceSecret: $deviceSecret',
+              )),
+              icon: const Icon(Icons.copy, size: 16),
+              label: const Text('Copy device credentials'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('Reload'),
+          ),
+        ],
+      ),
+      barrierDismissible: false,
     );
 
     final String resetCode = getStringPref(StringPrefsEnum.resetCode) ?? '';
