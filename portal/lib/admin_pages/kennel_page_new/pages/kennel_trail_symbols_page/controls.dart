@@ -60,6 +60,7 @@ const List<String> kVariableSlotPurposes = [
 /// automatically — add entries here in any order.
 const kTrailSymbolLibrary = [
   // I-series numbered symbols
+  ('I-000.png', ''),
   ('I-001.png', ''), ('I-002.png', ''), ('I-003.png', ''), ('I-004.png', ''),
   ('I-050.png', ''), ('I-051.png', ''), ('I-052.png', ''), ('I-053.png', ''),
   ('I-054.png', ''), ('I-055.png', ''), ('I-056.png', ''), ('I-057.png', ''),
