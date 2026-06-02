@@ -195,6 +195,72 @@ class SyncEventAdminService {
     return true;
   }
 
+  Future<bool> updateRsvpsFromBackend(
+    String eventId, {
+    bool usePaging = false,
+  }) async {
+    if (Utilities.isNotConnected()) {
+      return false;
+    }
+
+    if (getStringPref(StringPrefsEnum.adminEventId) != eventId) {
+      for (final table in EnumDataTables.values.where((t) => t.hasEventTable)) {
+        final helper = table.helperFrom(tableModel);
+        await tableModel.baseService.clearTable(
+          database,
+          helper,
+          table.eventTableName,
+        );
+      }
+      await setStringPref(StringPrefsEnum.adminEventId, eventId);
+    }
+
+    final int flags =
+        EnumDataTables.hasherEventMap.flag | EnumDataTables.hashers.flag;
+    await _getLastUpdatedTimes(flags);
+
+    final DateTime hasherEventMapUpdatedAfter =
+        DateTime.fromMicrosecondsSinceEpoch(_hasherEventMapLastUpdated + 1);
+    final DateTime hashersUpdatedAfter =
+        DateTime.fromMicrosecondsSinceEpoch(_hashersLastUpdated + 1);
+
+    String userId = getStringPref(StringPrefsEnum.userId) ?? '';
+    if (userId.isEmpty) {
+      userId = GUID_EMPTY;
+    }
+
+    String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    String deviceSecret = (getStringPref(StringPrefsEnum.deviceSecret) ?? '')
+        .toUpperCase();
+
+    final Map<String, String> syncBody = <String, String>{
+      'queryType': 'getEventRsvps',
+      'deviceId': deviceId,
+      'eventId': eventId,
+      'hashersUpdatedAfter':
+          ('${hashersUpdatedAfter}000000').substring(0, 26),
+      'hasherEventMapUpdatedAfter':
+          ('${hasherEventMapUpdatedAfter}000000').substring(0, 26),
+      'usePaging': usePaging ? '1' : '0',
+    };
+
+    final String responseBody = await ServiceCommon.sendHttpPost(() {
+      syncBody['accessToken'] = Utilities.generateToken(
+        userId,
+        'hcapp_getEventRsvps',
+        paramString: deviceSecret,
+      );
+      return jsonEncode(syncBody);
+    });
+
+    if (!responseBody.startsWith(ERROR_PREFIX)) {
+      await updateSqlTablesWithResultsFromBackendApiCall(
+        responseBody.replaceAll(' ', '').replaceAll(' ', ''),
+      );
+    }
+    return true;
+  }
+
   final List<BaseTableHelper> _eventTables = <BaseTableHelper>[
     tableModel.paymentsTableHelper,
     tableModel.receiptsTableHelper,
