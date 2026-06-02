@@ -1,5 +1,33 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.7.9+1150 (2026-06-02)
+
+### Improvements
+
+- **Interactive Songbook — real-time fix**: Song now switches immediately when
+  the songmeister taps Share Now. The previous build was missing the EventId
+  and SongId from the FCM payload, so the live update never fired. Fixed
+  server-side; no app code change required, but this build picks up the
+  companion Flutter changes below.
+
+- **Interactive Songbook — in-app toast**: When a song is shared and you are
+  not currently on the Songbook screen, a green banner appears at the top of
+  the screen: "X is leading Y — Go to song". Tapping Go to song opens the
+  Songbook directly for that event.
+
+- **Interactive Songbook — notification tap**: Tapping a visible song push
+  notification opens the app directly to the Songbook for the relevant event.
+
+- **Interactive Songbook — proximity on boot**: If you open the app within
+  500m of a run where a song has been shared in the last 5 minutes, the app
+  navigates directly to the Songbook on first load — even if you haven't
+  RSVP'd to the event.
+
+- **Interactive Songbook — checked-in users**: Hashers who are checked in to
+  a run (not just RSVP'd) now receive song push notifications.
+
+---
+
 ## 2.7.8+1149 (2026-06-02)
 
 ### Features
