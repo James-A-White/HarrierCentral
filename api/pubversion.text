@@ -1,4 +1,8 @@
 
+1.0.20+18
+    • Push notification log: every FCM push (song, chat, read-sync) recorded in HC.PushLog
+      with BatchId, QueryType, EventId, RecipientUserId, FcmToken, IsVisible, Summary
+
 1.0.19+17
     • Songbook: disable external push notifications — all song pushes are data-only silent push for now
 

@@ -292,6 +292,17 @@ namespace HcWebApi.Endpoints
                 await Task.WhenAll(tasks);
 
                 logger.LogInformation("All notifications sent successfully.");
+
+                // Log to HC.PushLog — one entry per recipient per event message
+                foreach (var eventMessage in eventDetailsList)
+                {
+                    var summary = $"chat: {eventMessage.MessageTitle}";
+                    var logEntries =
+                        notificationList.Select(r => new PushLogEntry(r.FcmToken!, r.UserId, IsVisible: true))
+                        .Concat(inAppMessageList.Select(r => new PushLogEntry(r.FcmToken!, r.UserId, IsVisible: false)))
+                        .Where(e => !string.IsNullOrEmpty(e.FcmToken));
+                    _ = LogPushBatchAsync("sendEventMessage", eventMessage.EventId, summary, logEntries, logger);
+                }
             }
             catch (Exception ex)
             {
@@ -488,6 +499,59 @@ namespace HcWebApi.Endpoints
             public required int MessageType { get; set; }
         }
 
+        // ── Push notification logging ─────────────────────────────────────────────
+        // Logs every FCM push to HC.PushLog for fan-out analysis.
+        // Non-fatal: a logging failure never blocks push delivery.
+
+        private record PushLogEntry(string FcmToken, string? UserId, bool IsVisible);
+
+        private async Task LogPushBatchAsync(
+            string queryType,
+            string? eventId,
+            string? summary,
+            IEnumerable<PushLogEntry> entries,
+            ILogger log)
+        {
+            var connectionString = Environment.GetEnvironmentVariable("HcDbConnectionString")
+                ?? throw new InvalidOperationException("HcDbConnectionString is not set.");
+            try
+            {
+                var batchId = Guid.NewGuid();
+                var sentAt  = DateTimeOffset.UtcNow;
+                var list    = entries.ToList();
+                if (list.Count == 0) return;
+
+                using var conn = new SqlConnection(connectionString);
+                await conn.OpenAsync();
+                using var tx = conn.BeginTransaction();
+                foreach (var entry in list)
+                {
+                    using var cmd = new SqlCommand(
+                        @"INSERT INTO HC.PushLog
+                            (Id, BatchId, SentAt, QueryType, EventId, RecipientUserId, FcmToken, IsVisible, Summary)
+                          VALUES
+                            (NEWID(), @batchId, @sentAt, @queryType, @eventId, @userId, @token, @isVisible, @summary)",
+                        conn, tx);
+                    cmd.Parameters.AddWithValue("@batchId",   batchId);
+                    cmd.Parameters.AddWithValue("@sentAt",    sentAt);
+                    cmd.Parameters.AddWithValue("@queryType", queryType);
+                    cmd.Parameters.AddWithValue("@eventId",   string.IsNullOrEmpty(eventId)      ? (object)DBNull.Value : Guid.Parse(eventId));
+                    cmd.Parameters.AddWithValue("@userId",    string.IsNullOrEmpty(entry.UserId) ? (object)DBNull.Value : Guid.Parse(entry.UserId));
+                    cmd.Parameters.AddWithValue("@token",     entry.FcmToken);
+                    cmd.Parameters.AddWithValue("@isVisible", entry.IsVisible);
+                    cmd.Parameters.AddWithValue("@summary",   (object?)summary ?? DBNull.Value);
+                    await cmd.ExecuteNonQueryAsync();
+                }
+                tx.Commit();
+                log.LogInformation("PushLog: {Count} entries logged for queryType={QueryType} batchId={BatchId}",
+                    list.Count, queryType, batchId);
+            }
+            catch (Exception ex)
+            {
+                log.LogError("PushLog insert failed (non-fatal): {Message}", ex.Message);
+            }
+        }
+
         private async Task SendSongToAttendeesAsync(
             List<List<Dictionary<string, object?>>> multipleResults,
             ILogger logger)
@@ -527,6 +591,13 @@ namespace HcWebApi.Endpoints
 
                 await Task.WhenAll(tasks);
                 logger.LogInformation("Song '{SongTitle}' pushed to {Count} device(s).", songTitle, recipients.Count);
+
+                var logEntries = recipients.Select(row => {
+                    row.TryGetValue("FcmToken", out var tok);
+                    row.TryGetValue("UserId",   out var uid);
+                    return new PushLogEntry(tok?.ToString() ?? "", uid?.ToString(), IsVisible: false);
+                }).Where(e => !string.IsNullOrEmpty(e.FcmToken));
+                _ = LogPushBatchAsync("selectSong", eventId, $"{selectedByName}: \"{songTitle}\"", logEntries, logger);
             }
             catch (Exception ex)
             {
@@ -646,6 +717,11 @@ namespace HcWebApi.Endpoints
                 }
 
                 logger.LogInformation("Read sync sent to {Count} device(s).", multipleResults[1].Count);
+
+                var logEntries = multipleResults[1]
+                    .Where(row => row.ContainsKey("FcmToken") && row["FcmToken"] != null)
+                    .Select(row => new PushLogEntry(row["FcmToken"]!.ToString()!, null, IsVisible: false));
+                _ = LogPushBatchAsync("markEventChatRead", null, "read_sync", logEntries, logger);
             }
             catch (Exception ex)
             {
