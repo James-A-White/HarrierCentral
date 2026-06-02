@@ -1,4 +1,9 @@
 
+1.0.18+16
+    • Interactive songbook: FCM payload now includes EventId/SongId (fixes real-time update)
+    • Visible push notification with sound for users with notifications enabled; data-only silent push for others
+    • Checked-in attendees (attendenceState >= 3) added to FCM recipient list alongside RSVP'd users
+
 1.0.17+15
     • Interactive songbook: selectSong queryType fans out a data-only FCM silent push (song_selected) to all RSVP'd attendees via SendSongToAttendeesAsync
 
