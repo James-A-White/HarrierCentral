@@ -1,5 +1,21 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.7.6+1147 (2026-06-02)
+
+### Improvements
+
+- **RSVP tab offline behaviour**: The RSVP pack list is now visible when the
+  device is offline, showing the last-synced attendee data from the local
+  cache. The RSVP action buttons (Going / Maybe / Not going) and the speed
+  dial FAB desaturate when offline to signal they require a connection, but
+  the list of who else is going remains readable at all times.
+
+- **RSVP table cleanup on navigate-away**: The local event RSVP table is now
+  cleared when leaving a run's detail page, preventing stale attendee data
+  from a previous run from briefly appearing when opening a different run.
+
+---
+
 ## 2.7.5+1146 (2026-06-02)
 
 ### Fixes

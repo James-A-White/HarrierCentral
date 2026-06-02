@@ -374,6 +374,14 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     // });
   }
 
+  Future<void> _clearEventTables() async {
+    for (final table in EnumDataTables.values.where((t) => t.hasEventTable)) {
+      final helper = table.helperFrom(tableModel);
+      await tableModel.baseService.clearTable(database, helper, table.eventTableName);
+    }
+    await setStringPref(StringPrefsEnum.adminEventId, '');
+  }
+
   @override
   void dispose() {
     _tabController.dispose();
@@ -382,6 +390,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
     //('run tabs disposedd');
 
+    unawaited(_clearEventTables());
     unawaited(Get.delete<ChatPageController>());
 
     super.dispose();
@@ -428,22 +437,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   EnumRsvpState _rsvpRequested = rsvpUnknown;
 
   Widget _buildRsvpView() {
-    return ConnectedWidget(
-      refreshFunction: () {
-        setStateIfMounted(() {});
-      },
-      showConnectButton: true,
-      disconnectedChild: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Center(
-          child: Text(
-            'RSVPs require a connection to the Internet',
-            style: ts_headingLarge,
-            textAlign: TextAlign.center,
-          ),
-        ),
-      ),
-      child: FutureBuilder(
+    return FutureBuilder(
         future: _thePackList,
         builder: (BuildContext context, AsyncSnapshot<List<PackListAggregate>?> snapshot) {
           if ((!snapshot.hasData) || (snapshot.data == null)) {
@@ -513,10 +507,11 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                         : SizedBox(),
                   ), // Collapses cleanly
 
-                  Padding(
-                    padding: const EdgeInsets.only(top: 15.0, bottom: 8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  StyleForConnected(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 15.0, bottom: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: <Widget>[
                         SizedBox(
                           width: MediaQuery.sizeOf(context).width / 5.5,
@@ -773,7 +768,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                             ],
                           ),
                         ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                   Expanded(
@@ -1266,8 +1262,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
             );
           }
         },
-      ),
-    );
+      );
   }
 
   Future<void> _getHasherZoomablePhoto(String photo, String dispName) async {
@@ -1945,10 +1940,11 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         AppScaffold(
           floatingActionButton: (!_fabIsVisible)
               ? null
-              : AnimatedOpacity(
-                  duration: const Duration(milliseconds: 500),
-                  opacity: _fabIsVisible ? 1.0 : 0.0,
-                  child: SpeedDial(
+              : StyleForConnected(
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 500),
+                    opacity: _fabIsVisible ? 1.0 : 0.0,
+                    child: SpeedDial(
                     // both default to 16
                     // marginEnd: 18,
                     // marginBottom: 20,
@@ -2012,6 +2008,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                     ],
                   ),
                 ),
+              ),
           body: Container(
             decoration: Backgrounds.defaultHcBackground(),
             child: Column(
