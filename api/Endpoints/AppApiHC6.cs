@@ -200,6 +200,9 @@ namespace HcWebApi.Endpoints
                     case "markEventChatRead":
                         await SendReadSyncAsync(multipleResults, log);
                         break;
+                    case "selectSong":
+                        _ = SendSongToAttendeesAsync(multipleResults, log);
+                        break;
                 }
 
                 // Return compressed JSON (Brotli preferred, Gzip fallback, plain if unsupported)
@@ -483,6 +486,99 @@ namespace HcWebApi.Endpoints
             public required string MessageContent { get; set; }
             public required int MessageReleasabilityFlags { get; set; }
             public required int MessageType { get; set; }
+        }
+
+        private async Task SendSongToAttendeesAsync(
+            List<List<Dictionary<string, object?>>> multipleResults,
+            ILogger logger)
+        {
+            try
+            {
+                // multipleResults[0] = success envelope
+                // multipleResults[1] = adHocData { adHocDataId, songTitle, selectedByName }
+                // multipleResults[2] = FCM recipients [{ FcmToken, UserId }]
+                if (multipleResults.Count < 3 || multipleResults[2].Count == 0)
+                {
+                    logger.LogInformation("selectSong: no recipients to push to.");
+                    return;
+                }
+
+                var songTitle = multipleResults.Count > 1 && multipleResults[1].Count > 0
+                    ? multipleResults[1][0].TryGetValue("songTitle", out var t) ? t?.ToString() ?? "" : ""
+                    : "";
+                var selectedByName = multipleResults.Count > 1 && multipleResults[1].Count > 0
+                    ? multipleResults[1][0].TryGetValue("selectedByName", out var n) ? n?.ToString() ?? "Someone" : "Someone"
+                    : "Someone";
+
+                string? accessToken = await GetFirebaseAccessTokenAsync();
+                var recipients = multipleResults[2];
+
+                var tasks = recipients
+                    .Select(row => {
+                        row.TryGetValue("FcmToken", out var tokenObj);
+                        var token = tokenObj?.ToString();
+                        if (string.IsNullOrEmpty(token)) return Task.CompletedTask;
+                        return SendSongMessageAsync(token, songTitle, selectedByName, accessToken, logger);
+                    });
+
+                await Task.WhenAll(tasks);
+                logger.LogInformation("Song '{SongTitle}' pushed to {Count} device(s).", songTitle, recipients.Count);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Error sending song to attendees: {Message}", ex.Message);
+            }
+        }
+
+        private static async Task SendSongMessageAsync(
+            string fcmToken, string songTitle, string selectedByName,
+            string? accessToken, ILogger log)
+        {
+            try
+            {
+                var messageBody = new
+                {
+                    message = new
+                    {
+                        token = fcmToken,
+                        data = new
+                        {
+                            Type = "song_selected",
+                            SongTitle = songTitle,
+                            SelectedByName = selectedByName,
+                        },
+                        android = new { priority = "high" },
+                        apns = new
+                        {
+                            headers = new Dictionary<string, string> { ["apns-priority"] = "10" },
+                            payload = new { aps = new Dictionary<string, object> { ["content-available"] = (object)1 } }
+                        }
+                    },
+                };
+
+                var jsonPayload = System.Text.Json.JsonSerializer.Serialize(messageBody);
+                var stringContent = new StringContent(jsonPayload, System.Text.Encoding.UTF8);
+                stringContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+                var request = new HttpRequestMessage(HttpMethod.Post, FcmUrl)
+                {
+                    Headers = { { "Authorization", $"Bearer {accessToken}" } },
+                    Content = stringContent
+                };
+
+                var response = await _httpClient.SendAsync(request);
+                if (!response.IsSuccessStatusCode)
+                {
+                    string errorJson = await response.Content.ReadAsStringAsync();
+                    log.LogWarning("Song FCM push failed: {Error}", errorJson);
+                    if (errorJson.Contains("BadDeviceToken") || errorJson.Contains("not a valid FCM registration token"))
+                        await DeleteFcmToken(fcmToken, log);
+                }
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Exception sending song FCM push.");
+            }
         }
 
         private async Task SendReadSyncAsync(

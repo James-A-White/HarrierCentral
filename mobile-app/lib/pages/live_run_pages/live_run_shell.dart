@@ -5,6 +5,7 @@ import 'package:harrier_central/pages/live_run_pages/live_run_chat_page.dart';
 import 'package:harrier_central/pages/live_run_pages/live_run_general_page.dart';
 import 'package:harrier_central/pages/live_run_pages/live_run_map_page.dart';
 import 'package:harrier_central/pages/live_run_pages/live_run_qr_page.dart';
+import 'package:harrier_central/pages/live_run_pages/live_run_songbook_page.dart';
 
 class LiveRunShellController extends GetxController {
   final RxInt tabIndex = 0.obs;
@@ -42,6 +43,7 @@ class LiveRunShell extends StatelessWidget {
       LiveRunChatPage(run: run),
       LiveRunMapPage(run: run),
       LiveRunQrPage(run: run),
+      LiveRunSongbookPage(run: run),
     ];
 
     return Obx(
@@ -145,6 +147,13 @@ class LiveRunShell extends StatelessWidget {
                       ? Colors.white
                       : Colors.black54)),
               label: 'QRs',
+            ),
+            CurvedNavigationBarItem(
+              child: Obx(() => Icon(Icons.music_note,
+                  color: controller.tabIndex.value == 4
+                      ? Colors.white
+                      : Colors.black54)),
+              label: 'Songs',
             ),
           ],
           onTap: controller.setTab,

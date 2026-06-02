@@ -1,0 +1,141 @@
+import 'package:harrier_central/imports.dart';
+
+// ---------------------------------------------------------------------------
+// Incoming FCM song state — permanent singleton updated by NotificationService
+// ---------------------------------------------------------------------------
+
+class SongSessionNotifier extends GetxController {
+  static SongSessionNotifier ensure() {
+    if (Get.isRegistered<SongSessionNotifier>()) {
+      return Get.find<SongSessionNotifier>();
+    }
+    return Get.put(SongSessionNotifier(), permanent: true);
+  }
+
+  final Rxn<String> pendingEventId = Rxn<String>();
+  final Rxn<String> pendingSongId = Rxn<String>();
+  final Rxn<String> pendingSongTitle = Rxn<String>();
+  final Rxn<String> pendingSelectedByName = Rxn<String>();
+
+  void onSongSelected({
+    required String eventId,
+    required String songId,
+    required String songTitle,
+    required String selectedByName,
+  }) {
+    pendingEventId.value = eventId;
+    pendingSongId.value = songId;
+    pendingSongTitle.value = songTitle;
+    pendingSelectedByName.value = selectedByName;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Result models
+// ---------------------------------------------------------------------------
+
+class CurrentSongResult {
+  CurrentSongResult({
+    required this.songId,
+    required this.selectedByName,
+    required this.songTitle,
+  });
+
+  final String songId;
+  final String selectedByName;
+  final String songTitle;
+}
+
+// ---------------------------------------------------------------------------
+// HTTP service
+// ---------------------------------------------------------------------------
+
+class SongSessionService {
+  /// Records a song selection for an event. Returns the song title on success
+  /// (for the snackbar), or null on error.
+  static Future<String?> selectSong({
+    required String eventId,
+    required String songId,
+  }) async {
+    if (Utilities.isNotConnected()) return null;
+
+    final String userId = currentUserId;
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    final Map<String, String> body = <String, String>{
+      'queryType': 'selectSong',
+      'deviceId': deviceId,
+      'eventId': eventId,
+      'songId': songId,
+    };
+
+    final String responseBody = await ServiceCommon.sendHttpPost(() {
+      body['accessToken'] = Utilities.generateToken(
+        userId,
+        'hcapp_selectSong',
+        paramString: deviceSecret,
+      );
+      return jsonEncode(body);
+    }, noRetries: true);
+
+    if (responseBody.startsWith(ERROR_PREFIX)) return null;
+
+    try {
+      // rowset 0 = success envelope, rowset 1 = adHocData
+      final List<dynamic> rowsets = jsonDecode(responseBody) as List<dynamic>;
+      if (rowsets.length > 1 && (rowsets[1] as List).isNotEmpty) {
+        final Map<String, dynamic> adHoc =
+            (rowsets[1] as List)[0] as Map<String, dynamic>;
+        return adHoc['songTitle'] as String? ?? '';
+      }
+    } catch (_) {}
+    return '';
+  }
+
+  /// Returns the currently active song for an event (selected within the last
+  /// 2 minutes) if the caller is RSVP'd, or null if none.
+  static Future<CurrentSongResult?> getCurrentSong({
+    required String eventId,
+  }) async {
+    if (Utilities.isNotConnected()) return null;
+
+    final String userId = currentUserId;
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final String deviceSecret =
+        getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    final Map<String, String> body = <String, String>{
+      'queryType': 'getCurrentSong',
+      'deviceId': deviceId,
+      'eventId': eventId,
+    };
+
+    final String responseBody = await ServiceCommon.sendHttpPost(() {
+      body['accessToken'] = Utilities.generateToken(
+        userId,
+        'hcapp_getCurrentSong',
+        paramString: deviceSecret,
+      );
+      return jsonEncode(body);
+    });
+
+    if (responseBody.startsWith(ERROR_PREFIX)) return null;
+
+    try {
+      final List<dynamic> rowsets = jsonDecode(responseBody) as List<dynamic>;
+      if (rowsets.isEmpty || (rowsets[0] as List).isEmpty) return null;
+      final Map<String, dynamic> row =
+          (rowsets[0] as List)[0] as Map<String, dynamic>;
+      final String? songId = row['songId'] as String?;
+      if (songId == null || songId.isEmpty) return null;
+      return CurrentSongResult(
+        songId: songId,
+        selectedByName: row['selectedByName'] as String? ?? 'Someone',
+        songTitle: row['songName'] as String? ?? '',
+      );
+    } catch (_) {}
+    return null;
+  }
+}

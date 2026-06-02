@@ -2,6 +2,11 @@ import 'package:harrier_central/imports.dart';
 
 class SongsPageController extends GetxController
     with GetSingleTickerProviderStateMixin {
+  SongsPageController({this.eventId});
+
+  /// When non-null, the songbook is in interactive mode for this event.
+  final String? eventId;
+
   final TextEditingController searchController = TextEditingController();
   final FocusNode searchFocusNode = FocusNode();
   final ScrollController listScrollController = ScrollController();
@@ -12,6 +17,11 @@ class SongsPageController extends GetxController
   final Rxn<SongsModel> selectedSong = Rxn<SongsModel>();
   final RxBool isLoading = true.obs;
   final RxBool isLyricsExpanded = false.obs;
+
+  // Interactive mode state
+  final RxBool isListeningMode = false.obs;
+  final Rxn<String> listeningFromName = Rxn<String>();
+  final RxBool isRsvpdToEvent = false.obs;
 
   // Bawdy rating filter toggles (all on by default)
   final RxSet<int> activeBawdyFilters = <int>{0, 1, 2, 3}.obs;
@@ -59,6 +69,109 @@ class SongsPageController extends GetxController
     );
 
     unawaited(loadSongs());
+
+    if (eventId != null) {
+      unawaited(_initInteractiveMode());
+    }
+  }
+
+  Future<void> _initInteractiveMode() async {
+    await _checkRsvpStatus();
+
+    // Subscribe to incoming FCM songs for this event
+    ever(SongSessionNotifier.ensure().pendingSongId, (_) => _onIncomingSong());
+
+    // Check if there is already an active song (pull-on-open)
+    final CurrentSongResult? current =
+        await SongSessionService.getCurrentSong(eventId: eventId!);
+    if (current != null && !_isDisposed) {
+      // Songs may still be loading — wait for them if needed
+      if (allSongs.isEmpty) {
+        await Future.doWhile(() async {
+          await Future<void>.delayed(const Duration(milliseconds: 100));
+          return allSongs.isEmpty && !_isDisposed;
+        }).timeout(const Duration(seconds: 5), onTimeout: () {});
+      }
+      _applySong(current.songId, current.selectedByName);
+    }
+  }
+
+  Future<void> _checkRsvpStatus() async {
+    try {
+      final String userId = normalizeUuid(currentUserId);
+      final String eid = normalizeUuid(eventId!);
+      final List<Map<String, dynamic>> rows = await database.rawQuery('''
+        SELECT ${tableModel.hasherEventMapTableHelper.colRsvpState}
+        FROM ${EnumDataTables.hasherEventMap.commonTableName}
+        WHERE lower(${tableModel.hasherEventMapTableHelper.colEventId}) = "$eid"
+          AND lower(${tableModel.hasherEventMapTableHelper.colUserId}) = "$userId"
+          AND ${tableModel.hasherEventMapTableHelper.colRsvpState} >= 2
+        LIMIT 1
+      ''');
+      isRsvpdToEvent.value = rows.isNotEmpty;
+    } catch (_) {}
+  }
+
+  void _onIncomingSong() {
+    if (_isDisposed) return;
+    final SongSessionNotifier notifier = SongSessionNotifier.ensure();
+    final String? incomingEventId = notifier.pendingEventId.value;
+    final String? incomingSongId = notifier.pendingSongId.value;
+    final String fromName = notifier.pendingSelectedByName.value ?? 'Someone';
+
+    if (incomingEventId == null || incomingSongId == null) return;
+    if (normalizeUuid(incomingEventId) != normalizeUuid(eventId!)) return;
+
+    _applySong(incomingSongId, fromName);
+  }
+
+  void _applySong(String songId, String fromName) {
+    if (_isDisposed) return;
+    final String normalizedId = normalizeUuid(songId);
+    final SongsModel? song = allSongs.firstWhereOrNull(
+      (SongsModel s) => normalizeUuid(s.songId) == normalizedId,
+    );
+    if (song == null) return;
+
+    selectSong(song);
+    isListeningMode.value = true;
+    listeningFromName.value = fromName;
+
+    if (!isLyricsExpanded.value) {
+      isLyricsExpanded.value = true;
+      unawaited(animController.forward());
+    }
+    if (lyricsScrollController.hasClients) {
+      lyricsScrollController.jumpTo(0);
+    }
+  }
+
+  void exitListeningMode() {
+    isListeningMode.value = false;
+    listeningFromName.value = null;
+  }
+
+  Future<void> shareNow(BuildContext context) async {
+    final SongsModel? song = selectedSong.value;
+    if (song == null || eventId == null) return;
+
+    final String? title = await SongSessionService.selectSong(
+      eventId: eventId!,
+      songId: song.songId,
+    );
+
+    if (title != null && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.green.shade700,
+          content: Text(
+            'Shared "${song.songName}" with the pack 🎵',
+            style: const TextStyle(color: Colors.white),
+          ),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
 
   @override

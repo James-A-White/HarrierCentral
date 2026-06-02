@@ -1,14 +1,49 @@
 import 'package:harrier_central/imports.dart';
 
-class SongsPage extends StatelessWidget {
-  const SongsPage({super.key});
+class SongsPage extends StatefulWidget {
+  const SongsPage({super.key, this.eventId});
+
+  /// When provided, the page operates in interactive mode for this event.
+  /// The Songs nav-tab omits this; Live Run Tools and Future Runs pass it.
+  final String? eventId;
+
+  @override
+  State<SongsPage> createState() => _SongsPageState();
+}
+
+class _SongsPageState extends State<SongsPage> {
+  late final SongsPageController c;
+  late final bool _ownsController;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.eventId != null) {
+      // Interactive instance — tagged, owned by this page
+      final String tag = widget.eventId!;
+      _ownsController = !Get.isRegistered<SongsPageController>(tag: tag);
+      c = _ownsController
+          ? Get.put(SongsPageController(eventId: tag), tag: tag)
+          : Get.find<SongsPageController>(tag: tag);
+    } else {
+      // Songs tab — untagged, long-lived
+      _ownsController = !Get.isRegistered<SongsPageController>();
+      c = _ownsController
+          ? Get.put(SongsPageController())
+          : Get.find<SongsPageController>();
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_ownsController && widget.eventId != null) {
+      Get.delete<SongsPageController>(tag: widget.eventId!, force: true);
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final SongsPageController c = Get.isRegistered<SongsPageController>()
-        ? Get.find<SongsPageController>()
-        : Get.put(SongsPageController());
-
     return Container(
       decoration: Backgrounds.defaultHcBackground(),
       child: LayoutBuilder(
@@ -22,10 +57,7 @@ class SongsPage extends StatelessWidget {
             height: fullHeight,
             child: Stack(
               children: <Widget>[
-                // Song list occupies top ~2/3
                 _buildSongList(c, listHeight),
-
-                // Lyrics panel occupies bottom ~1/3, expandable to full screen
                 _buildLyricsPanel(c, collapsedLyricsHeight, fullHeight),
               ],
             ),
@@ -241,6 +273,46 @@ class SongsPage extends StatelessWidget {
   // Song list (top section)
   // ---------------------------------------------------------------------------
 
+  Widget _buildListeningBanner(SongsPageController c) {
+    return Obx(() {
+      if (!c.isListeningMode.value) return const SizedBox.shrink();
+      return Material(
+        color: Colors.green.shade800,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 6.0),
+          child: Row(
+            children: <Widget>[
+              const Icon(Icons.hearing, color: Colors.white, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Following ${c.listeningFromName.value ?? 'the songmeister'}',
+                  style: ts_body.copyWith(
+                    color: Colors.white,
+                    fontSize: 13,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              GestureDetector(
+                onTap: c.exitListeningMode,
+                child: Text(
+                  'Stop',
+                  style: ts_body.copyWith(
+                    color: Colors.white70,
+                    fontSize: 12,
+                    decoration: TextDecoration.underline,
+                    decorationColor: Colors.white70,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
   Widget _buildSongList(SongsPageController c, double height) {
     return Obx(() {
       if (c.isLoading.value) {
@@ -261,13 +333,18 @@ class SongsPage extends StatelessWidget {
         );
       }
 
+      // Listening banner is ~38px; only present in interactive mode
+      const double bannerHeight = 38.0;
+      final bool showBanner =
+          c.eventId != null && c.isListeningMode.value;
+      final double filterSearchTop = showBanner ? bannerHeight : 0.0;
+
       return SizedBox(
         height: height,
         child: Stack(
           children: <Widget>[
-            // List behind the filter/search bar so the elevation shadow is visible
             Positioned.fill(
-              top: 92, // filter bar (~44) + search bar (~48)
+              top: 92 + filterSearchTop,
               child: RefreshIndicator(
                 onRefresh: c.loadSongs,
                 child: Obx(
@@ -285,14 +362,17 @@ class SongsPage extends StatelessWidget {
                 ),
               ),
             ),
-            // Filter bar + search bar on top
             Positioned(
               top: 0,
               left: 0,
               right: 0,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: <Widget>[_buildBawdyFilterBar(c), _buildSearchBar(c)],
+                children: <Widget>[
+                  if (c.eventId != null) _buildListeningBanner(c),
+                  _buildBawdyFilterBar(c),
+                  _buildSearchBar(c),
+                ],
               ),
             ),
           ],
@@ -828,6 +908,8 @@ class SongsPage extends StatelessWidget {
     return Obx(() {
       final SongsModel? song = c.selectedSong.value;
       final bool expanded = c.isLyricsExpanded.value;
+      final bool canShare =
+          c.eventId != null && c.isRsvpdToEvent.value && song != null;
 
       return Padding(
         padding: const EdgeInsets.fromLTRB(20.0, 12.0, 8.0, 4.0),
@@ -847,6 +929,25 @@ class SongsPage extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
+            if (canShare)
+              TextButton.icon(
+                style: TextButton.styleFrom(
+                  backgroundColor: hc_red,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                icon: const Icon(Icons.campaign, size: 16),
+                label: const Text('Share Now', style: TextStyle(fontSize: 13)),
+                onPressed: () => c.shareNow(context),
+              ),
             if (expanded)
               IconButton(
                 icon: const Icon(

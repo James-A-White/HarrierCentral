@@ -302,6 +302,13 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   }
 
   void _dispatchMessageToControllers(RemoteMessage message) {
+    // Data-only silent messages use a string Type field rather than MessageType.
+    final String? silentType = message.data['Type'] as String?;
+    if (silentType == 'song_selected') {
+      _handleSongSelected(message);
+      return;
+    }
+
     MessageType messageType = MessageType.fromId(
       int.tryParse(message.data['MessageType']) ?? 0,
     );
@@ -575,5 +582,27 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     unawaited(_fcmSubscription?.cancel());
     WidgetsBinding.instance.removeObserver(this);
     super.onClose();
+  }
+
+  void _handleSongSelected(RemoteMessage message) {
+    final String? eventId = message.data['EventId'] as String?;
+    final String? songId = message.data['SongId'] as String?;
+    final String songTitle =
+        message.data['SongTitle'] as String? ?? '';
+    final String selectedByName =
+        message.data['SelectedByName'] as String? ?? 'Someone';
+
+    if (eventId == null || songId == null) return;
+
+    SongSessionNotifier.ensure().onSongSelected(
+      eventId: eventId.toLowerCase(),
+      songId: songId.toLowerCase(),
+      songTitle: songTitle,
+      selectedByName: selectedByName,
+    );
+
+    if (kDebugMode) {
+      debugPrint('[NotificationService] song_selected: $songTitle by $selectedByName for event $eventId');
+    }
   }
 }
