@@ -1,5 +1,19 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.7.5+1146 (2026-06-02)
+
+### Fixes
+
+- **RSVP tab: "not authorised to sync admin data" for non-admin members**: The RSVP
+  tab was unconditionally calling the admin event sync SP, which requires kennel
+  admin rights. Non-admin members now use a new dedicated SP (`hcapp_getEventRsvps`)
+  that returns the full RSVP pack list without requiring admin access. Contact
+  information (email, phone) and admin-only data (payments, kennel roles, receipts)
+  are not included in this response. Admin users continue to use the full admin sync
+  as before.
+
+---
+
 ## 2.7.4+1145 (2026-06-01)
 
 ### Fixes
