@@ -1,5 +1,19 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.7.7+1148 (2026-06-02)
+
+### Fixes
+
+- **Kennel page: "not authorised to access kennel" for non-admin members**:
+  `KennelAdminController` was unconditionally calling the kennel admin sync SP
+  and the auto-follow guard on every kennel page open, regardless of whether
+  the user held admin rights. Non-admin users now skip the admin sync entirely.
+  The upcoming runs list is read from the common domain for non-admins, and
+  from the kennel domain for admins — the displayed content is the same either
+  way.
+
+---
+
 ## 2.7.6+1147 (2026-06-02)
 
 ### Improvements
