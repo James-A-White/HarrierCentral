@@ -67,16 +67,20 @@ class KennelAdminController extends GetxController {
   }
 
   Future<void> _syncAndLoad() async {
-    await _ensureFollowingForAdmin();
-    await tableModel.syncKennelAdminService.updateFromBackend(
-      EnumDataTables.kennels.flag |
-          EnumDataTables.hashers.flag |
-          EnumDataTables.hasherKennelMap.flag |
-          EnumDataTables.hasherEventMap.flag |
-          EnumDataTables.payments.flag,
-      false,
-      kennelAggregateItem.kennel.kennelId,
-    );
+    final bool isAdmin =
+        kennelAggregateItem.hkm?.appAccess.isAdmin ?? false;
+    if (isAdmin) {
+      await _ensureFollowingForAdmin();
+      await tableModel.syncKennelAdminService.updateFromBackend(
+        EnumDataTables.kennels.flag |
+            EnumDataTables.hashers.flag |
+            EnumDataTables.hasherKennelMap.flag |
+            EnumDataTables.hasherEventMap.flag |
+            EnumDataTables.payments.flag,
+        false,
+        kennelAggregateItem.kennel.kennelId,
+      );
+    }
     await refreshFromTable(true);
     isLoading.value = false;
   }
@@ -138,9 +142,11 @@ class KennelAdminController extends GetxController {
   // ---------------------------------------------------------------------------
   Future<void> refreshFromTable(bool forceRefresh) async {
     if (forceRefresh || allRuns.isEmpty) {
+      final bool isAdmin =
+          kennelAggregateItem.hkm?.appAccess.isAdmin ?? false;
       final List<Map<String, dynamic>> results = await QueryRuns.queryRuns(
         EnumRunQueryType.kennelDetailPage,
-        EnumRunQueryContext.kennelAdmin,
+        isAdmin ? EnumRunQueryContext.kennelAdmin : EnumRunQueryContext.user,
         kennelId: kennelAggregateItem.kennel.kennelId,
         runsTimeScope: RunsTimeScope.future,
         runsToDisplay: RunsToDisplay.allRuns,
