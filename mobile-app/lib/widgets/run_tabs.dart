@@ -91,7 +91,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   final ScrollController _scrollController = ScrollController();
   final ValueNotifier<bool> _saveUserMapPreference = ValueNotifier<bool>(false);
 
-  bool isAdmin = true;
+  bool isAdmin = false;
   //bool _isLoading = true;
 
   latlng.LatLng _mapCenter = latlng.LatLng(
@@ -119,11 +119,13 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       });
     }
 
-    await tableModel.syncEventAdminService.updateFromBackend(
-      EnumDataTables.hasherEventMap.flag,
-      true,
-      widget.futureRun.event.eventId,
-    );
+    if (isAdmin) {
+      await tableModel.syncEventAdminService.updateFromBackend(
+        EnumDataTables.hasherEventMap.flag,
+        true,
+        widget.futureRun.event.eventId,
+      );
+    }
     //final String resultStr = result ? 'successfully' : 'unsuccessfully';
     //print('Pack member data synchronized $resultStr');
 
@@ -139,13 +141,16 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   Future<List<PackListAggregate>> _refreshPackListFromTable() async {
     List<PackListAggregate> pla = <PackListAggregate>[];
 
+    final String hemTable = isAdmin
+        ? EnumDataTables.hasherEventMap.eventTableName
+        : EnumDataTables.hasherEventMap.commonTableName;
     final String query =
         '''
-        SELECT  
+        SELECT
           hem.*,
           h.*,
           ken.${tableModel.kennelsTableHelper.colKennelName} as kennelName
-          FROM ${EnumDataTables.hasherEventMap.eventTableName} hem
+          FROM $hemTable hem
           LEFT OUTER JOIN ${EnumDataTables.hashers.commonTableName} h on h.${tableModel.hashersTableHelper.colHasherId} = hem.${tableModel.hasherEventMapTableHelper.colUserId}
           LEFT OUTER JOIN ${EnumDataTables.kennels.commonTableName} ken on h.${tableModel.hashersTableHelper.colHomeKennelId} = ken.${tableModel.kennelsTableHelper.colKennelId}
           WHERE hem.${tableModel.hasherEventMapTableHelper.colEventId} = "${widget.futureRun.event.eventId}"
@@ -202,14 +207,17 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   Future<void> _refreshPackCountFromTable(bool callSetState) async {
     _packCount = <String, dynamic>{};
 
+    final String hemTable = isAdmin
+        ? EnumDataTables.hasherEventMap.eventTableName
+        : EnumDataTables.hasherEventMap.commonTableName;
     final String query =
         '''
-        SELECT  
+        SELECT
           count(case when hem.rsvpState = 3 then 1 else null end) as rsvpYesCount,
           count(case when hem.rsvpState = 2 then 1 else null end) as rsvpMaybeCount,
           count(case when hem.rsvpState = 1 then 1 else null end) as rsvpNoCount,
           count(case when hem.isHare = 1 then 1 else null end) as isHareCount
-          FROM ${EnumDataTables.hasherEventMap.eventTableName} hem
+          FROM $hemTable hem
           WHERE hem.eventId = "${widget.futureRun.event.eventId}"
           AND hem.${tableModel.hasherEventMapTableHelper.colRsvpState} >= 1 AND hem.${tableModel.hasherEventMapTableHelper.colRsvpState} <= 3
           ''';
@@ -245,6 +253,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+
+    isAdmin = AppAccess(widget.futureRun.extensions.appAccessFlags).isAdmin;
 
     //print('Current time in GMT: ${DateTime.now().toUtc().toString()}');
     unawaited(_refreshLiveRunButton());
