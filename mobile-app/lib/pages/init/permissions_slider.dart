@@ -156,7 +156,7 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
   Future<void> _onDonePress() async {
     await Navigator.of(
       context,
-    ).pushReplacementNamed(RouteNames.NEW_ACCOUNT.toString());
+    ).pushReplacementNamed(RouteNames.ACCOUNT_QUESTION.toString());
   }
 
   bool permission1requested = false;

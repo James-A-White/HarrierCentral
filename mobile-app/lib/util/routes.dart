@@ -6,6 +6,7 @@ enum RouteNames {
   MAIN_LANDING_PAGE,
   AVATAR_ICON_PAGE,
   NEW_ACCOUNT,
+  ACCOUNT_QUESTION,
   INTRO_SLIDER,
   PERMISSIONS_SLIDER,
   PERMISSION_PHOTO_SLIDER,
@@ -19,6 +20,8 @@ final Map<String, WidgetBuilder> routes = <String, WidgetBuilder>{
       const MainNavigationPage(),
   RouteNames.NEW_ACCOUNT.toString(): (BuildContext context) =>
       const NewAccountPage(),
+  RouteNames.ACCOUNT_QUESTION.toString(): (BuildContext context) =>
+      const AccountQuestionPage(),
   RouteNames.INTRO_SLIDER.toString(): (BuildContext context) =>
       const IntroSliderPage(),
   RouteNames.PERMISSIONS_SLIDER.toString(): (BuildContext context) =>
