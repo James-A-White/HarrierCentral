@@ -17,17 +17,38 @@ class SongSessionNotifier extends GetxController {
   final Rxn<String> pendingSongTitle = Rxn<String>();
   final Rxn<String> pendingSelectedByName = Rxn<String>();
 
+  /// Set by FCM handler — real-time song update for open songbook / in-app toast.
   void onSongSelected({
     required String eventId,
     required String songId,
     required String songTitle,
     required String selectedByName,
   }) {
+    navigateOnLoad = false;
     pendingEventId.value = eventId;
     pendingSongId.value = songId;
     pendingSongTitle.value = songTitle;
     pendingSelectedByName.value = selectedByName;
   }
+
+  /// Set at login when proximity check finds an active song. The boot service
+  /// reads [navigateOnLoad] after routing to the main page and opens the songbook.
+  void setPendingProximitySong({
+    required String eventId,
+    required String songId,
+  }) {
+    navigateOnLoad = true;
+    pendingEventId.value = eventId;
+    pendingSongId.value = songId;
+    pendingSongTitle.value = '';
+    pendingSelectedByName.value = '';
+  }
+
+  /// True when the boot service detected a proximity song and wants to navigate
+  /// directly to the songbook on first frame of the main page.
+  bool navigateOnLoad = false;
+
+  void clearNavigateOnLoad() => navigateOnLoad = false;
 }
 
 // ---------------------------------------------------------------------------

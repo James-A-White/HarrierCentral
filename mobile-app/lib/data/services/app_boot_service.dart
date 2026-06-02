@@ -320,6 +320,25 @@ class AppBootService {
     debugPrint('[BOOT] Get.off(MainNavigationPage) start: ${DateTime.now().millisecondsSinceEpoch}ms');
     await Get.off(() => MainNavigationPage(), routeName: '/main');
     debugPrint('[BOOT] Get.off(MainNavigationPage) done: ${DateTime.now().millisecondsSinceEpoch}ms');
+
+    // Navigate to songbook if a proximity song was found at login.
+    final SongSessionNotifier notifier = SongSessionNotifier.ensure();
+    if (notifier.navigateOnLoad) {
+      notifier.clearNavigateOnLoad();
+      final String? eid = notifier.pendingEventId.value;
+      if (eid != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Get.to<void>(() => AppScaffold(
+            appBar: AppBar(
+              backgroundColor: themeAppBarBackground,
+              iconTheme: const IconThemeData(color: Colors.white),
+              title: Text('Songbook', style: ts_appBarTitle),
+            ),
+            body: SongsPage(eventId: eid),
+          ));
+        });
+      }
+    }
   }
 
   /// DB version is too far behind — migrate to secure storage, wipe local DB,
@@ -538,7 +557,23 @@ class AppBootService {
     final List<dynamic> loginRowset = responseJson[1] as List<dynamic>;
     if (loginRowset.isEmpty) return null;
 
-    return ApproveLoginModel.fromJson(loginRowset[0] as Map<String, dynamic>);
+    final Map<String, dynamic> row = loginRowset[0] as Map<String, dynamic>;
+
+    // Check for proximity song (server found an active song within 500m).
+    // Parsed outside ApproveLoginModel to avoid regenerating Freezed files.
+    final String? activeSongId      = row['activeSongId']      as String?;
+    final String? activeSongEventId = row['activeSongEventId'] as String?;
+    if (activeSongId != null && activeSongId.isNotEmpty &&
+        activeSongId != GUID_EMPTY &&
+        activeSongEventId != null && activeSongEventId.isNotEmpty &&
+        activeSongEventId != GUID_EMPTY) {
+      SongSessionNotifier.ensure().setPendingProximitySong(
+        eventId: activeSongEventId,
+        songId:  activeSongId,
+      );
+    }
+
+    return ApproveLoginModel.fromJson(row);
   }
 
   /// Persist the fields from the login result that need to survive restarts.

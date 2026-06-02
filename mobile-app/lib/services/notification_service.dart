@@ -272,6 +272,17 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   }
 
   Future<void> _handleNotificationClick(RemoteMessage message) async {
+    // Song notification tap — navigate directly to the songbook
+    final String? silentType = message.data['Type'] as String?;
+    if (silentType == 'song_selected') {
+      final String? eventId = message.data['EventId'] as String?;
+      if (eventId != null) {
+        Get.until((route) => route.settings.name == '/main');
+        _navigateToSongbook(eventId.toLowerCase());
+      }
+      return;
+    }
+
     // 2. Badge Clear Logic: Reset badge counts when user interacts with notification
     final publicEventId = message.data['PublicEventId'] as String?;
 
@@ -586,23 +597,66 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
 
   void _handleSongSelected(RemoteMessage message) {
     final String? eventId = message.data['EventId'] as String?;
-    final String? songId = message.data['SongId'] as String?;
-    final String songTitle =
-        message.data['SongTitle'] as String? ?? '';
-    final String selectedByName =
-        message.data['SelectedByName'] as String? ?? 'Someone';
+    final String? songId  = message.data['SongId']  as String?;
+    final String songTitle     = message.data['SongTitle']      as String? ?? '';
+    final String selectedByName = message.data['SelectedByName'] as String? ?? 'Someone';
 
     if (eventId == null || songId == null) return;
 
+    final String eid = eventId.toLowerCase();
+    final String sid = songId.toLowerCase();
+
     SongSessionNotifier.ensure().onSongSelected(
-      eventId: eventId.toLowerCase(),
-      songId: songId.toLowerCase(),
+      eventId: eid,
+      songId:  sid,
       songTitle: songTitle,
       selectedByName: selectedByName,
     );
 
-    if (kDebugMode) {
-      debugPrint('[NotificationService] song_selected: $songTitle by $selectedByName for event $eventId');
+    // If the user is already on the interactive songbook for this event,
+    // the ever() reaction in SongsPageController handles the update directly.
+    // Otherwise, show an in-app toast so they can navigate there.
+    final bool onSongbook =
+        Get.isRegistered<SongsPageController>(tag: eid);
+    if (!onSongbook) {
+      _showSongToast(eid, songTitle, selectedByName);
     }
+
+    if (kDebugMode) {
+      debugPrint('[NotificationService] song_selected: "$songTitle" by $selectedByName (onSongbook=$onSongbook)');
+    }
+  }
+
+  void _showSongToast(String eventId, String songTitle, String selectedByName) {
+    Get.snackbar(
+      '🎵 Song Time!',
+      '$selectedByName is leading "$songTitle"',
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.green.shade800,
+      colorText: Colors.white,
+      duration: const Duration(seconds: 10),
+      isDismissible: true,
+      mainButton: TextButton(
+        onPressed: () {
+          Get.closeCurrentSnackbar();
+          _navigateToSongbook(eventId);
+        },
+        child: const Text(
+          'Go to song',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
+  }
+
+  void _navigateToSongbook(String eventId) {
+    Get.to<void>(() => AppScaffold(
+      appBar: AppBar(
+        backgroundColor: themeAppBarBackground,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text('Songbook', style: ts_appBarTitle),
+      ),
+      body: SongsPage(eventId: eventId),
+    ));
   }
 }

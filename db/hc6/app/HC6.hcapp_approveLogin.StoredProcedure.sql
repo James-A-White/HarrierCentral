@@ -250,6 +250,29 @@ BEGIN TRY
     ORDER BY splash.SequenceType, splash.SequenceOrder;
 
     -- ---------------------------------------------------------------
+    -- Active song proximity check (500m bounding-box approximation)
+    -- Returns non-null if a song was selected in the last 5 minutes
+    -- for a run whose start location is within ~500m of the device.
+    -- ---------------------------------------------------------------
+    DECLARE @activeSongId      UNIQUEIDENTIFIER = NULL;
+    DECLARE @activeSongEventId UNIQUEIDENTIFIER = NULL;
+
+    IF (@latitude IS NOT NULL AND @longitude IS NOT NULL)
+    BEGIN
+        SELECT TOP 1
+            @activeSongId      = ss.SongId,
+            @activeSongEventId = ss.EventId
+        FROM HC.SongSession ss
+        INNER JOIN HC.Event evt ON evt.id = ss.EventId
+        WHERE ss.Removed   = 0
+          AND ss.SelectedAt > DATEADD(MINUTE, -5, SYSUTCDATETIME())
+          AND evt.Removed   = 0
+          AND ABS(COALESCE(evt.Latitude,  999) - @latitude)  < 0.0045
+          AND ABS(COALESCE(evt.Longitude, 999) - @longitude) < 0.0045
+        ORDER BY ss.SelectedAt DESC;
+    END
+
+    -- ---------------------------------------------------------------
     -- Success envelope + result
     -- ---------------------------------------------------------------
     SELECT 1 AS success, NULL AS errorCode, NULL AS errorType;
@@ -273,7 +296,9 @@ BEGIN TRY
         @splashSequenceRootNameOut AS splashSequenceRootName,
         @splashSequenceType        AS splashSequenceType,
         @betaFeaturesEnabled    AS betaFeaturesEnabled,
-        @hasherPreferences      AS hasherPreferences
+        @hasherPreferences      AS hasherPreferences,
+        LOWER(CAST(@activeSongId      AS NVARCHAR(40))) AS activeSongId,
+        LOWER(CAST(@activeSongEventId AS NVARCHAR(40))) AS activeSongEventId
     FROM HC.ServerStatus svr
     ORDER BY svr.CreatedDate DESC;
 

@@ -150,20 +150,29 @@ END CATCH
 -- rowset 0: success envelope
 SELECT 1 AS success, NULL AS errorCode, NULL AS errorType;
 
--- rowset 1: adHocData — song details for the Flutter caller's snackbar
+-- rowset 1: adHocData — song details for Flutter caller + Azure Function
 SELECT
-    1                    AS adHocDataId,
-    @songTitle           AS songTitle,
-    @selectedByName      AS selectedByName;
+    1                                             AS adHocDataId,
+    @songTitle                                    AS songTitle,
+    @selectedByName                               AS selectedByName,
+    LOWER(CAST(@eventId AS NVARCHAR(40)))         AS eventId,
+    LOWER(CAST(@songId  AS NVARCHAR(40)))         AS songId;
 
--- rowset 2: FCM recipients — consumed by Azure Function; not parsed by Flutter
+-- rowset 2: FCM recipients — consumed by Azure Function; not parsed by Flutter.
+-- Includes RSVP'd (rsvpState >= 2) and checked-in (attendenceState >= 3) users.
+-- showNotification = 1 when they have event or kennel notifications enabled.
 SELECT DISTINCT
     d.FcmToken,
-    LOWER(CAST(d.UserId AS NVARCHAR(40))) AS UserId
+    LOWER(CAST(d.UserId AS NVARCHAR(40)))         AS UserId,
+    CASE WHEN COALESCE(hem.EventNotificationPreference, 0) > 0
+              OR COALESCE(hkm.KennelNotificationPreference, 0) > 0
+         THEN 1 ELSE 0 END                        AS showNotification
 FROM HC.HasherEventMap hem
 INNER JOIN HC.Device d ON d.UserId = hem.UserId
+LEFT  JOIN HC.HasherKennelMap hkm
+      ON hkm.UserId = hem.UserId AND hkm.KennelId = @kennelId
 WHERE hem.EventId  = @eventId
-  AND hem.RsvpState >= 2
+  AND (hem.RsvpState >= 2 OR hem.AttendenceState >= 3)
   AND hem.Removed   = 0
   AND d.FcmToken IS NOT NULL
   AND d.FcmToken != '';

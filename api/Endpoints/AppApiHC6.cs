@@ -495,31 +495,39 @@ namespace HcWebApi.Endpoints
             try
             {
                 // multipleResults[0] = success envelope
-                // multipleResults[1] = adHocData { adHocDataId, songTitle, selectedByName }
-                // multipleResults[2] = FCM recipients [{ FcmToken, UserId }]
+                // multipleResults[1] = adHocData { adHocDataId, songTitle, selectedByName, eventId, songId }
+                // multipleResults[2] = FCM recipients [{ FcmToken, UserId, showNotification }]
                 if (multipleResults.Count < 3 || multipleResults[2].Count == 0)
                 {
                     logger.LogInformation("selectSong: no recipients to push to.");
                     return;
                 }
 
-                var songTitle = multipleResults.Count > 1 && multipleResults[1].Count > 0
-                    ? multipleResults[1][0].TryGetValue("songTitle", out var t) ? t?.ToString() ?? "" : ""
-                    : "";
-                var selectedByName = multipleResults.Count > 1 && multipleResults[1].Count > 0
-                    ? multipleResults[1][0].TryGetValue("selectedByName", out var n) ? n?.ToString() ?? "Someone" : "Someone"
-                    : "Someone";
+                var adHoc = multipleResults.Count > 1 && multipleResults[1].Count > 0
+                    ? multipleResults[1][0] : new Dictionary<string, object?>();
+
+                var songTitle      = adHoc.TryGetValue("songTitle",      out var t) ? t?.ToString() ?? "" : "";
+                var selectedByName = adHoc.TryGetValue("selectedByName", out var n) ? n?.ToString() ?? "Someone" : "Someone";
+                var eventId        = adHoc.TryGetValue("eventId",        out var e) ? e?.ToString() ?? "" : "";
+                var songId         = adHoc.TryGetValue("songId",         out var s) ? s?.ToString() ?? "" : "";
 
                 string? accessToken = await GetFirebaseAccessTokenAsync();
                 var recipients = multipleResults[2];
 
-                var tasks = recipients
-                    .Select(row => {
-                        row.TryGetValue("FcmToken", out var tokenObj);
-                        var token = tokenObj?.ToString();
-                        if (string.IsNullOrEmpty(token)) return Task.CompletedTask;
-                        return SendSongMessageAsync(token, songTitle, selectedByName, accessToken, logger);
-                    });
+                var tasks = recipients.Select(row =>
+                {
+                    row.TryGetValue("FcmToken", out var tokenObj);
+                    var token = tokenObj?.ToString();
+                    if (string.IsNullOrEmpty(token)) return Task.CompletedTask;
+
+                    row.TryGetValue("showNotification", out var showObj);
+                    var showNotification = showObj is long l ? l == 1 :
+                                          showObj is int  i ? i == 1 :
+                                          showObj?.ToString() == "1";
+
+                    return SendSongMessageAsync(token, songTitle, selectedByName,
+                        eventId, songId, showNotification, accessToken, logger);
+                });
 
                 await Task.WhenAll(tasks);
                 logger.LogInformation("Song '{SongTitle}' pushed to {Count} device(s).", songTitle, recipients.Count);
@@ -532,29 +540,67 @@ namespace HcWebApi.Endpoints
 
         private static async Task SendSongMessageAsync(
             string fcmToken, string songTitle, string selectedByName,
+            string eventId, string songId, bool showNotification,
             string? accessToken, ILogger log)
         {
             try
             {
-                var messageBody = new
+                object messageBody;
+                if (showNotification)
                 {
-                    message = new
+                    // Visible notification + data for users with notifications enabled
+                    messageBody = new
                     {
-                        token = fcmToken,
-                        data = new
+                        message = new
                         {
-                            Type = "song_selected",
-                            SongTitle = songTitle,
-                            SelectedByName = selectedByName,
+                            token = fcmToken,
+                            notification = new
+                            {
+                                title = "🎵 Song Time!",
+                                body  = $"{selectedByName} is leading \"{songTitle}\""
+                            },
+                            data = new
+                            {
+                                Type           = "song_selected",
+                                EventId        = eventId,
+                                SongId         = songId,
+                                SongTitle      = songTitle,
+                                SelectedByName = selectedByName,
+                            },
+                            android = new { priority = "high", notification = new { sound = "default" } },
+                            apns = new
+                            {
+                                headers = new Dictionary<string, string> { ["apns-priority"] = "10" },
+                                payload = new { aps = new Dictionary<string, object> { ["sound"] = "default", ["content-available"] = (object)1 } }
+                            }
                         },
-                        android = new { priority = "high" },
-                        apns = new
+                    };
+                }
+                else
+                {
+                    // Data-only silent push for users without notifications enabled
+                    messageBody = new
+                    {
+                        message = new
                         {
-                            headers = new Dictionary<string, string> { ["apns-priority"] = "10" },
-                            payload = new { aps = new Dictionary<string, object> { ["content-available"] = (object)1 } }
-                        }
-                    },
-                };
+                            token = fcmToken,
+                            data = new
+                            {
+                                Type           = "song_selected",
+                                EventId        = eventId,
+                                SongId         = songId,
+                                SongTitle      = songTitle,
+                                SelectedByName = selectedByName,
+                            },
+                            android = new { priority = "high" },
+                            apns = new
+                            {
+                                headers = new Dictionary<string, string> { ["apns-priority"] = "10" },
+                                payload = new { aps = new Dictionary<string, object> { ["content-available"] = (object)1 } }
+                            }
+                        },
+                    };
+                }
 
                 var jsonPayload = System.Text.Json.JsonSerializer.Serialize(messageBody);
                 var stringContent = new StringContent(jsonPayload, System.Text.Encoding.UTF8);
