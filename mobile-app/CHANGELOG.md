@@ -1,5 +1,26 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.7.8+1149 (2026-06-02)
+
+### Features
+
+- **Interactive Songbook**: Any RSVP'd attendee can share the current song
+  with the whole pack in real time. Tap the music note icon on the Future Runs
+  page (or use the new Songs tab in Live Run Tools) to open the songbook in
+  event mode. Select a song, tap **Share Now**, and all other RSVP'd devices
+  receive a silent push that instantly switches them to that song in listening
+  mode. Devices that open the songbook within 2 minutes of a share
+  automatically jump to the active song (pull-on-open). A green listening
+  banner shows who is leading, with a **Stop** button to return to free browse.
+
+- **Onboarding: "Do you already have an account?" screen**: New first-run
+  screen after permissions asks whether the user has an existing Harrier
+  Central account. **Yes** goes straight to the invite code page, **No** goes
+  straight to create account, and **I don't know** opens a guidance page
+  explaining how to find out and providing both forward paths.
+
+---
+
 ## 2.7.7+1148 (2026-06-02)
 
 ### Fixes
