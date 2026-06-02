@@ -1,4 +1,7 @@
 
+1.0.17+15
+    • Interactive songbook: selectSong queryType fans out a data-only FCM silent push (song_selected) to all RSVP'd attendees via SendSongToAttendeesAsync
+
 1.0.16+14
     • Fix: ProxyGeocode now calls Azure Maps directly using AzureMapsSubscriptionKey — removes Logic App dependency that was returning 400 (POST-only trigger vs GET request)
     • Improvement: ProxyGeocode now accepts lat/lon/countryCodes params for location-biased results
