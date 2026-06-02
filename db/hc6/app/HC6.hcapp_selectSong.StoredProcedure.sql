@@ -117,6 +117,10 @@ BEGIN
     RETURN;
 END
 
+-- Resolve kennel for the event (needed for notification preference join)
+DECLARE @kennelId UNIQUEIDENTIFIER;
+SELECT @kennelId = evt.KennelId FROM HC.Event evt WHERE evt.id = @eventId;
+
 -- Resolve display name for the songmeister
 DECLARE @selectedByName NVARCHAR(200);
 SELECT @selectedByName = COALESCE(
