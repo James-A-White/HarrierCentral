@@ -1,4 +1,7 @@
 
+1.0.19+17
+    • Songbook: disable external push notifications — all song pushes are data-only silent push for now
+
 1.0.18+16
     • Interactive songbook: FCM payload now includes EventId/SongId (fixes real-time update)
     • Visible push notification with sound for users with notifications enabled; data-only silent push for others

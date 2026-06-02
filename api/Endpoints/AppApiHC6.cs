@@ -520,13 +520,9 @@ namespace HcWebApi.Endpoints
                     var token = tokenObj?.ToString();
                     if (string.IsNullOrEmpty(token)) return Task.CompletedTask;
 
-                    row.TryGetValue("showNotification", out var showObj);
-                    var showNotification = showObj is long l ? l == 1 :
-                                          showObj is int  i ? i == 1 :
-                                          showObj?.ToString() == "1";
-
+                    // External push notifications temporarily disabled — data-only silent push only.
                     return SendSongMessageAsync(token, songTitle, selectedByName,
-                        eventId, songId, showNotification, accessToken, logger);
+                        eventId, songId, showNotification: false, accessToken, logger);
                 });
 
                 await Task.WhenAll(tasks);
