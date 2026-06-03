@@ -20,6 +20,7 @@ class AdminPortalController extends GetxController {
   final List<HasherKennelsModel> filteredKennels = [];
 
   bool hasNavigated = false;
+  bool privilegesFetched = false;
 
   final FocusNode searchFocusNode = FocusNode();
   final TextEditingController searchController = TextEditingController();
@@ -415,36 +416,46 @@ class AdminPortalController extends GetxController {
   }
 
   Future<void> _fetchPlatformAdminPrivileges() async {
-    final deviceId = (box.get(HIVE_DEVICE_ID) as String?) ?? '';
-    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
+    try {
+      final deviceId = (box.get(HIVE_DEVICE_ID) as String?) ?? '';
+      final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
 
-    final accessToken = Utilities.generateToken(
-      deviceId,
-      'hcportal_getHcAdminPrivileges',
-      paramString: deviceSecret,
-    );
+      final accessToken = Utilities.generateToken(
+        deviceId,
+        'hcportal_getHcAdminPrivileges',
+        paramString: deviceSecret,
+      );
 
-    final body = <String, String?>{
-      'queryType': 'getHcAdminPrivileges',
-      'deviceId': deviceId,
-      'accessToken': accessToken,
-    };
+      final body = <String, String?>{
+        'queryType': 'getHcAdminPrivileges',
+        'deviceId': deviceId,
+        'accessToken': accessToken,
+      };
 
-    final result = await ServiceCommon.sendHttpPostToHC6Api(body);
-    if (kDebugMode) debugPrint(result is ApiError
-        ? 'SP [getHcAdminPrivileges] called — FAILED'
-        : 'SP [getHcAdminPrivileges] called — success');
+      final result = await ServiceCommon.sendHttpPostToHC6Api(body);
+      if (kDebugMode) debugPrint(result is ApiError
+          ? 'SP [getHcAdminPrivileges] called — FAILED'
+          : 'SP [getHcAdminPrivileges] called — success');
 
-    if (result case ApiSuccess(:final body)) {
-      final row = ((json.decode(body) as List<dynamic>)[0]
-          as List<dynamic>)[0] as Map<String, dynamic>;
+      if (result case ApiSuccess(:final body)) {
+        final row = ((json.decode(body) as List<dynamic>)[0]
+            as List<dynamic>)[0] as Map<String, dynamic>;
 
-      await box.put(HIVE_PLATFORM_ADMIN_CAN_VIEW_MONITOR,
-          (row['CanViewMonitor'] as int? ?? 0) != 0);
-      await box.put(HIVE_PLATFORM_ADMIN_CAN_MANAGE_NEWSFLASH,
-          (row['CanManageNewsflash'] as int? ?? 0) != 0);
-      await box.put(HIVE_PLATFORM_ADMIN_CAN_EDIT_KENNEL,
-          (row['CanEditKennel'] as int? ?? 0) != 0);
+        await box.put(HIVE_PLATFORM_ADMIN_CAN_VIEW_MONITOR,
+            (row['CanViewMonitor'] as int? ?? 0) != 0);
+        await box.put(HIVE_PLATFORM_ADMIN_CAN_MANAGE_NEWSFLASH,
+            (row['CanManageNewsflash'] as int? ?? 0) != 0);
+        await box.put(HIVE_PLATFORM_ADMIN_CAN_EDIT_KENNEL,
+            (row['CanEditKennel'] as int? ?? 0) != 0);
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('[getHcAdminPrivileges] exception: $e');
+    } finally {
+      // Signal that privilege fetch is complete (success or failure) so the
+      // navigation gate in AdminPortalApp can open. Flags default to false
+      // if the call failed — the button simply won't show.
+      privilegesFetched = true;
+      update();
     }
   }
 }

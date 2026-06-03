@@ -15,9 +15,11 @@ class AdminPortalApp extends StatelessWidget {
         final isLoggedIn =
             c.isReady && ((box.get(HIVE_IS_LOGGED_IN) ?? false) as bool);
 
-        // Auto-navigate to the combined run-list page once kennels are loaded.
+        // Auto-navigate once kennels are loaded AND privilege fetch is done.
+        // Waiting for both prevents the race where RunListPage builds before
+        // Hive has the admin flags, causing the HC Admin Tools button to hide.
         if (c.isReady && isLoggedIn && c.allKennels.isNotEmpty &&
-            !c.hasNavigated) {
+            c.privilegesFetched && !c.hasNavigated) {
           c.hasNavigated = true;
           final firstKennel = c.allKennels.firstWhere(
             (k) => k.isAdmin,

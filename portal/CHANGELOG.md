@@ -2,6 +2,20 @@
 
 ---
 
+## 2.0.5+638 — 2026-06-03
+
+### Fixes
+
+- **HC Admin Tools button race condition**: Fixed a bug where the HC Admin
+  Tools button would not appear on first login (or after clearing browser
+  storage). The platform admin privilege fetch (`hcportal_getHcAdminPrivileges`)
+  is a network call that raced with navigation to the run list page — on slow
+  connections the page built before the Hive flags were written, so
+  `hasAnyPlatformAdminPrivilege` always read `false`. Navigation now waits for
+  both the kennel list and the privilege fetch to complete before proceeding.
+
+---
+
 ## 2.0.4+637 — 2026-06-01
 
 ### Fixes
