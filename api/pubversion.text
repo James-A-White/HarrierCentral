@@ -1,4 +1,7 @@
 
+1.0.21+19
+    • Song FCM error handling: UNREGISTERED and NOT_FOUND token cleanup added (stale tokens now removed)
+
 1.0.20+18
     • Push notification log: every FCM push (song, chat, read-sync) recorded in HC.PushLog
       with BatchId, QueryType, EventId, RecipientUserId, FcmToken, IsVisible, Summary
