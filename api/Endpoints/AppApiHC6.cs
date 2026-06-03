@@ -610,10 +610,17 @@ namespace HcWebApi.Endpoints
                     var token = tokenObj?.ToString();
                     if (string.IsNullOrEmpty(token)) return Task.CompletedTask;
 
-                    // Visible notifications disabled during development — data-only silent push only.
-                    // To re-enable: read showNotification from the row (SP calculates per-user preference).
+                    // Use the SP's per-user notification preference (EventNotificationPreference
+                    // or KennelNotificationPreference > 0). Visible notifications use the APNs
+                    // notification path which is not subject to iOS background-push throttling
+                    // (roughly 3 silent pushes/hour). The Flutter app suppresses the banner via
+                    // setForegroundNotificationPresentationOptions when the app is open.
+                    row.TryGetValue("showNotification", out var showNotifObj);
+                    var showNotification = showNotifObj is bool b ? b
+                        : (showNotifObj != null && Convert.ToInt32(showNotifObj) == 1);
+
                     return SendSongMessageAsync(token, songTitle, selectedByName,
-                        eventId, songId, showNotification: false, accessToken, logger);
+                        eventId, songId, showNotification, accessToken, logger);
                 });
 
                 await Task.WhenAll(tasks);
@@ -622,7 +629,9 @@ namespace HcWebApi.Endpoints
                 var logEntries = recipients.Select(row => {
                     row.TryGetValue("FcmToken", out var tok);
                     row.TryGetValue("UserId",   out var uid);
-                    return new PushLogEntry(tok?.ToString() ?? "", uid?.ToString(), SenderUserId: null, IsVisible: false);
+                    row.TryGetValue("showNotification", out var vis);
+                    var isVis = vis is bool bv ? bv : (vis != null && Convert.ToInt32(vis) == 1);
+                    return new PushLogEntry(tok?.ToString() ?? "", uid?.ToString(), SenderUserId: null, IsVisible: isVis);
                 }).Where(e => !string.IsNullOrEmpty(e.FcmToken));
                 _ = LogPushBatchAsync("selectSong", eventId, $"{selectedByName}: \"{songTitle}\"", logEntries, logger);
             }

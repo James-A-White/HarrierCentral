@@ -1,4 +1,13 @@
 
+1.0.24+22
+    • selectSong: re-enable visible notifications for users with notification preferences set
+      (EventNotificationPreference or KennelNotificationPreference > 0). iOS throttles
+      data-only (content-available) silent pushes to ~3/hour — after 44+ test sessions,
+      both devices were almost certainly throttled. Visible notification pushes use the
+      APNs alert path which has no such limit. Flutter suppresses the banner while the
+      app is in the foreground via setForegroundNotificationPresentationOptions.
+    • selectSong: PushLog now records correct IsVisible per-recipient (was always false)
+
 1.0.23+21
     • selectSong: APNs priority fixed from 10 to 5 for data-only song pushes — priority 10 is
       invalid for content-available-only notifications per Apple spec; may have been causing
