@@ -1,4 +1,10 @@
 
+1.0.22+20
+    • HC.Device: FcmTokenCreatedAt stamped when a fresh token is stored via hcapp_setFcmTokens
+    • HC.Device: FcmTokenDeleted stamped and FcmToken nulled when a stale token is detected
+      (both AppApi HC5 and AppApiHC6 paths updated; deleted < created means token went stale
+      and was replaced)
+
 1.0.21+19
     • Song FCM error handling: UNREGISTERED and NOT_FOUND token cleanup added (stale tokens now removed)
 

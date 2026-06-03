@@ -467,11 +467,11 @@ namespace HcWebApi.Endpoints
                 using SqlConnection conn = new(connectionString);
                 await conn.OpenAsync();
                 using SqlCommand cmd = new(
-                    "UPDATE HC.Device SET FcmToken = NULL WHERE FcmToken = @fcmToken",
+                    "UPDATE HC.Device SET FcmToken = NULL, FcmTokenDeleted = SYSUTCDATETIME() WHERE FcmToken = @fcmToken",
                     conn);
                 cmd.Parameters.AddWithValue("@fcmToken", fcmToken);
                 await cmd.ExecuteNonQueryAsync();
-                log.LogInformation("Stale FCM token cleared from HC.Device.");
+                log.LogInformation("Stale FCM token cleared from HC.Device (FcmTokenDeleted stamped).");
             }
             catch (Exception ex)
             {

@@ -69,8 +69,12 @@ BEGIN TRY
     BEGIN TRANSACTION;
 
         UPDATE HC.Device SET
-            ApnsToken = @apnsToken,
-            FcmToken  = @fcmToken
+            ApnsToken        = @apnsToken,
+            FcmToken         = @fcmToken,
+            -- Stamp FcmTokenCreatedAt when a fresh token arrives; clear FcmTokenDeleted
+            -- to show the token trail: deleted < created means a new token replaced a stale one.
+            FcmTokenCreatedAt = CASE WHEN @fcmToken IS NOT NULL THEN SYSUTCDATETIME() ELSE FcmTokenCreatedAt END,
+            FcmTokenDeleted   = CASE WHEN @fcmToken IS NOT NULL THEN NULL              ELSE FcmTokenDeleted   END
         WHERE id = @deviceId;
 
     COMMIT TRANSACTION;

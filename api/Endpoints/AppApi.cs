@@ -434,63 +434,16 @@ namespace HcWebApi.Endpoints
         {
             string connectionString = Environment.GetEnvironmentVariable("HcDbConnectionString")
                 ?? throw new InvalidOperationException("HcDbConnectionString is not set in the environment.");
-
-            // Initialize a list to hold the stored procedure results
-            List<Dictionary<string, object?>> results = new List<Dictionary<string, object?>>();
-
-            // Call the stored procedure and capture the results
             try
             {
-                using (SqlConnection conn = new SqlConnection(connectionString))
-                {
-                    await conn.OpenAsync();
-
-                    String procedureName = "[HC5].[hcinternalapi_removeStaleFcmToken]";
-
-                    using (SqlCommand cmd = new SqlCommand(procedureName, conn))
-                    {
-                        cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@fcmToken", fcmToken);
-
-                        // Execute the stored procedure and retrieve multiple result sets
-                        using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
-                        {
-                            try
-                            {
-                                // Process each result set
-                                do
-                                {
-                                    List<Dictionary<string, object?>> resultSet = new List<Dictionary<string, object?>>();
-
-                                    while (await reader.ReadAsync())
-                                    {
-                                        var row = new Dictionary<string, object?>();
-                                        for (int i = 0; i < reader.FieldCount; i++)
-                                        {
-                                            string? name = reader.GetName(i);
-                                            object? value = reader.IsDBNull(i) ? null : reader.GetValue(i);
-
-                                            //if ((name != null) && (value != null))
-                                            if ((name != null) && ((value != null) || includeNulls))
-                                            {
-                                                row[name] = value;
-                                            }
-
-                                        }
-                                        resultSet.Add(row);
-                                    }
-
-                                } while (await reader.NextResultAsync()); // Move to the next result set
-                            }
-
-                            catch (System.Exception ex)
-                            {
-                                Debug.Print(ex.ToString());
-                            }
-                        }
-                    }
-                }
-
+                using SqlConnection conn = new(connectionString);
+                await conn.OpenAsync();
+                using SqlCommand cmd = new(
+                    "UPDATE HC.Device SET FcmToken = NULL, FcmTokenDeleted = SYSUTCDATETIME() WHERE FcmToken = @fcmToken",
+                    conn);
+                cmd.Parameters.AddWithValue("@fcmToken", fcmToken);
+                await cmd.ExecuteNonQueryAsync();
+                log.LogInformation("Stale FCM token cleared from HC.Device (FcmTokenDeleted stamped).");
             }
             catch (Exception ex)
             {
