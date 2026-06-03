@@ -25,10 +25,12 @@ class SongSessionNotifier extends GetxController {
     required String selectedByName,
   }) {
     navigateOnLoad = false;
+    // Set all non-trigger fields first so they are already populated when the
+    // ever() worker fires synchronously on pendingSongId assignment.
     pendingEventId.value = eventId;
-    pendingSongId.value = songId;
     pendingSongTitle.value = songTitle;
     pendingSelectedByName.value = selectedByName;
+    pendingSongId.value = songId; // triggers ever() last
   }
 
   /// Set at login when proximity check finds an active song. The boot service

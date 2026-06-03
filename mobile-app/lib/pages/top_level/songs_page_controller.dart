@@ -46,6 +46,10 @@ class SongsPageController extends GetxController
 
   bool _isDisposed = false;
 
+  // Worker for the SongSessionNotifier ever() subscription. Stored so it is
+  // properly disposed when the controller closes, preventing leaked listeners.
+  Worker? _songWorker;
+
   /// Fraction of screen height occupied by the lyrics panel when collapsed.
   static const double collapsedLyricsFraction = 0.33;
 
@@ -71,15 +75,18 @@ class SongsPageController extends GetxController
     unawaited(loadSongs());
 
     if (eventId != null) {
+      // Register the ever() worker synchronously so no push is missed while
+      // _initInteractiveMode is awaiting async operations.
+      _songWorker = ever(
+        SongSessionNotifier.ensure().pendingSongId,
+        (_) => _onIncomingSong(),
+      );
       unawaited(_initInteractiveMode());
     }
   }
 
   Future<void> _initInteractiveMode() async {
     await _checkRsvpStatus();
-
-    // Subscribe to incoming FCM songs for this event
-    ever(SongSessionNotifier.ensure().pendingSongId, (_) => _onIncomingSong());
 
     // Check if there is already an active song (pull-on-open)
     final CurrentSongResult? current =
@@ -177,6 +184,7 @@ class SongsPageController extends GetxController
   @override
   void onClose() {
     _isDisposed = true;
+    _songWorker?.dispose();
     searchController.dispose();
     searchFocusNode.dispose();
     listScrollController.dispose();

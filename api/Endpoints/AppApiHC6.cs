@@ -684,7 +684,10 @@ namespace HcWebApi.Endpoints
                 {
                     string errorJson = await response.Content.ReadAsStringAsync();
                     log.LogWarning("Song FCM push failed: {Error}", errorJson);
-                    if (errorJson.Contains("BadDeviceToken") || errorJson.Contains("not a valid FCM registration token"))
+                    if (errorJson.Contains("BadDeviceToken") ||
+                        errorJson.Contains("not a valid FCM registration token") ||
+                        errorJson.Contains("UNREGISTERED") ||
+                        errorJson.Contains("NOT_FOUND"))
                         await DeleteFcmToken(fcmToken, log);
                 }
             }

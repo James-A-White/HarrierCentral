@@ -19,8 +19,10 @@ class _SongsPageState extends State<SongsPage> {
   void initState() {
     super.initState();
     if (widget.eventId != null) {
-      // Interactive instance — tagged, owned by this page
-      final String tag = widget.eventId!;
+      // Interactive instance — tagged, owned by this page.
+      // Normalise to lowercase so Get.isRegistered checks in NotificationService
+      // (which always uses lowercase eventId from FCM) match correctly.
+      final String tag = widget.eventId!.toLowerCase();
       _ownsController = !Get.isRegistered<SongsPageController>(tag: tag);
       c = _ownsController
           ? Get.put(SongsPageController(eventId: tag), tag: tag)
@@ -37,7 +39,7 @@ class _SongsPageState extends State<SongsPage> {
   @override
   void dispose() {
     if (_ownsController && widget.eventId != null) {
-      Get.delete<SongsPageController>(tag: widget.eventId!, force: true);
+      Get.delete<SongsPageController>(tag: widget.eventId!.toLowerCase(), force: true);
     }
     super.dispose();
   }

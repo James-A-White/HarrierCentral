@@ -254,10 +254,16 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       debugPrint("Foreground message received: ${message.data}");
     }
 
+    // Song notifications bypass badge logic — dispatch immediately so the
+    // songbook updates without the badge HTTP round-trip adding latency.
+    final String? silentType = message.data['Type'] as String?;
+    if (silentType == 'song_selected') {
+      _dispatchMessageToControllers(message);
+      return;
+    }
+
     // 1. Badge Update Logic: Calculate and update unread counts
     final publicEventId = message.data['PublicEventId'] as String?;
-    // final chatCount =
-    //     (int.tryParse(message.data['EventChatMessageCount'] as String) ?? 0);
 
     int badgeCount = await _getAndResetBadgeCount(
       publicEventId: publicEventId,
