@@ -278,30 +278,42 @@ namespace HcWebApi.Endpoints
                     return;
                 }
 
-                var tasks = eventDetailsList.SelectMany(eventMessage =>
-                    notificationList
-                        .Where(r => !string.IsNullOrEmpty(r.FcmToken))
-                        .Select(r => SendNotificationAsync(r.FcmToken!, eventMessage, accessToken, true, logger))
+                // Build a flat list of dispatch items so we can pair each FCM result
+                // with its log entry after Task.WhenAll returns.
+                var dispatchList = eventDetailsList
+                    .SelectMany(em =>
+                        notificationList
+                            .Where(r => !string.IsNullOrEmpty(r.FcmToken))
+                            .Select(r => new { em, token = r.FcmToken!, userId = r.UserId, visible = true })
                         .Concat(
                             inAppMessageList
                                 .Where(r => !string.IsNullOrEmpty(r.FcmToken))
-                                .Select(r => SendNotificationAsync(r.FcmToken!, eventMessage, accessToken, false, logger))
+                                .Select(r => new { em, token = r.FcmToken!, userId = r.UserId, visible = false })
                         )
-                );
+                    )
+                    .ToList();
 
-                await Task.WhenAll(tasks);
+                var fcmResults = await Task.WhenAll(
+                    dispatchList.Select(item =>
+                        SendNotificationAsync(item.token, item.em, accessToken, item.visible, logger))
+                );
 
                 logger.LogInformation("All notifications sent successfully.");
 
-                // Log to HC.PushLog — one entry per recipient per event message
-                foreach (var eventMessage in eventDetailsList)
+                // Log to HC.PushLog — one entry per recipient per event message, with FCM result
+                foreach (var em in eventDetailsList)
                 {
-                    var summary = $"chat: {eventMessage.MessageTitle}";
-                    var logEntries =
-                        notificationList.Select(r => new PushLogEntry(r.FcmToken!, r.UserId, IsVisible: true))
-                        .Concat(inAppMessageList.Select(r => new PushLogEntry(r.FcmToken!, r.UserId, IsVisible: false)))
-                        .Where(e => !string.IsNullOrEmpty(e.FcmToken));
-                    _ = LogPushBatchAsync("sendEventMessage", eventMessage.EventId, summary, logEntries, logger);
+                    var summary = $"chat: {em.MessageTitle}";
+                    var logEntries = dispatchList
+                        .Select((item, i) => (item, result: fcmResults[i]))
+                        .Where(x => x.item.em.EventId == em.EventId && !string.IsNullOrEmpty(x.item.token))
+                        .Select(x => new PushLogEntry(
+                            x.item.token,
+                            x.item.userId,
+                            SenderUserId: em.UserId,
+                            IsVisible: x.item.visible,
+                            FcmResult: x.result));
+                    _ = LogPushBatchAsync("sendEventMessage", em.EventId, summary, logEntries, logger);
                 }
             }
             catch (Exception ex)
@@ -313,7 +325,7 @@ namespace HcWebApi.Endpoints
         private static readonly HttpClient _httpClient = new HttpClient();
         private const string FcmUrl = "https://fcm.googleapis.com/v1/projects/harrier-central-mobile/messages:send";
 
-        private static async Task SendNotificationAsync(
+        private static async Task<string> SendNotificationAsync(
             string fcmToken,
             EventMessageHc6 eventMessage,
             string? accessToken,
@@ -376,18 +388,25 @@ namespace HcWebApi.Endpoints
                 if (response.IsSuccessStatusCode)
                 {
                     log.LogInformation("FCM push sent successfully.");
+                    return "success";
                 }
                 else
                 {
                     string errorJson = await response.Content.ReadAsStringAsync();
                     log.LogWarning("FCM push failed: {Error}", errorJson);
-                    if (errorJson.Contains("BadDeviceToken") || errorJson.Contains("not a valid FCM registration token"))
+                    if (errorJson.Contains("UNREGISTERED") || errorJson.Contains("NOT_FOUND") ||
+                        errorJson.Contains("BadDeviceToken") || errorJson.Contains("not a valid FCM registration token"))
+                    {
                         await DeleteFcmToken(fcmToken, log);
+                        return "token_error";
+                    }
+                    return "error";
                 }
             }
             catch (Exception ex)
             {
                 log.LogError(ex, "Exception while sending FCM push.");
+                return "exception";
             }
         }
 
@@ -503,7 +522,12 @@ namespace HcWebApi.Endpoints
         // Logs every FCM push to HC.PushLog for fan-out analysis.
         // Non-fatal: a logging failure never blocks push delivery.
 
-        private record PushLogEntry(string FcmToken, string? UserId, bool IsVisible);
+        private record PushLogEntry(
+            string FcmToken,
+            string? UserId,
+            string? SenderUserId,
+            bool IsVisible,
+            string? FcmResult = null);
 
         private async Task LogPushBatchAsync(
             string queryType,
@@ -528,18 +552,20 @@ namespace HcWebApi.Endpoints
                 {
                     using var cmd = new SqlCommand(
                         @"INSERT INTO HC.PushLog
-                            (Id, BatchId, SentAt, QueryType, EventId, RecipientUserId, FcmToken, IsVisible, Summary)
+                            (Id, BatchId, SentAt, QueryType, EventId, RecipientUserId, FcmToken, IsVisible, Summary, SenderUserId, FcmResult)
                           VALUES
-                            (NEWID(), @batchId, @sentAt, @queryType, @eventId, @userId, @token, @isVisible, @summary)",
+                            (NEWID(), @batchId, @sentAt, @queryType, @eventId, @userId, @token, @isVisible, @summary, @senderUserId, @fcmResult)",
                         conn, tx);
-                    cmd.Parameters.AddWithValue("@batchId",   batchId);
-                    cmd.Parameters.AddWithValue("@sentAt",    sentAt);
-                    cmd.Parameters.AddWithValue("@queryType", queryType);
-                    cmd.Parameters.AddWithValue("@eventId",   string.IsNullOrEmpty(eventId)      ? (object)DBNull.Value : Guid.Parse(eventId));
-                    cmd.Parameters.AddWithValue("@userId",    string.IsNullOrEmpty(entry.UserId) ? (object)DBNull.Value : Guid.Parse(entry.UserId));
-                    cmd.Parameters.AddWithValue("@token",     entry.FcmToken);
-                    cmd.Parameters.AddWithValue("@isVisible", entry.IsVisible);
-                    cmd.Parameters.AddWithValue("@summary",   (object?)summary ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@batchId",    batchId);
+                    cmd.Parameters.AddWithValue("@sentAt",     sentAt);
+                    cmd.Parameters.AddWithValue("@queryType",  queryType);
+                    cmd.Parameters.AddWithValue("@eventId",    string.IsNullOrEmpty(eventId)            ? (object)DBNull.Value : Guid.Parse(eventId));
+                    cmd.Parameters.AddWithValue("@userId",     string.IsNullOrEmpty(entry.UserId)       ? (object)DBNull.Value : Guid.Parse(entry.UserId));
+                    cmd.Parameters.AddWithValue("@token",      entry.FcmToken);
+                    cmd.Parameters.AddWithValue("@isVisible",  entry.IsVisible);
+                    cmd.Parameters.AddWithValue("@summary",    (object?)summary ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@senderUserId", string.IsNullOrEmpty(entry.SenderUserId) ? (object)DBNull.Value : Guid.Parse(entry.SenderUserId));
+                    cmd.Parameters.AddWithValue("@fcmResult",  (object?)entry.FcmResult ?? DBNull.Value);
                     await cmd.ExecuteNonQueryAsync();
                 }
                 tx.Commit();
@@ -584,7 +610,8 @@ namespace HcWebApi.Endpoints
                     var token = tokenObj?.ToString();
                     if (string.IsNullOrEmpty(token)) return Task.CompletedTask;
 
-                    // External push notifications temporarily disabled — data-only silent push only.
+                    // Visible notifications disabled during development — data-only silent push only.
+                    // To re-enable: read showNotification from the row (SP calculates per-user preference).
                     return SendSongMessageAsync(token, songTitle, selectedByName,
                         eventId, songId, showNotification: false, accessToken, logger);
                 });
@@ -595,7 +622,7 @@ namespace HcWebApi.Endpoints
                 var logEntries = recipients.Select(row => {
                     row.TryGetValue("FcmToken", out var tok);
                     row.TryGetValue("UserId",   out var uid);
-                    return new PushLogEntry(tok?.ToString() ?? "", uid?.ToString(), IsVisible: false);
+                    return new PushLogEntry(tok?.ToString() ?? "", uid?.ToString(), SenderUserId: null, IsVisible: false);
                 }).Where(e => !string.IsNullOrEmpty(e.FcmToken));
                 _ = LogPushBatchAsync("selectSong", eventId, $"{selectedByName}: \"{songTitle}\"", logEntries, logger);
             }
@@ -645,7 +672,9 @@ namespace HcWebApi.Endpoints
                 }
                 else
                 {
-                    // Data-only silent push for users without notifications enabled
+                    // Data-only silent push for users without notifications enabled.
+                    // APNs requires priority 5 for background (content-available) notifications —
+                    // priority 10 is only valid when there is a visible alert/sound/badge.
                     messageBody = new
                     {
                         message = new
@@ -662,7 +691,7 @@ namespace HcWebApi.Endpoints
                             android = new { priority = "high" },
                             apns = new
                             {
-                                headers = new Dictionary<string, string> { ["apns-priority"] = "10" },
+                                headers = new Dictionary<string, string> { ["apns-priority"] = "5" },
                                 payload = new { aps = new Dictionary<string, object> { ["content-available"] = (object)1 } }
                             }
                         },
@@ -723,7 +752,7 @@ namespace HcWebApi.Endpoints
 
                 var logEntries = multipleResults[1]
                     .Where(row => row.ContainsKey("FcmToken") && row["FcmToken"] != null)
-                    .Select(row => new PushLogEntry(row["FcmToken"]!.ToString()!, null, IsVisible: false));
+                    .Select(row => new PushLogEntry(row["FcmToken"]!.ToString()!, null, SenderUserId: null, IsVisible: false));
                 _ = LogPushBatchAsync("markEventChatRead", null, "read_sync", logEntries, logger);
             }
             catch (Exception ex)

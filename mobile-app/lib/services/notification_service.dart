@@ -38,6 +38,16 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     if (Firebase.apps.isNotEmpty) {
       _messaging = FirebaseMessaging.instance;
 
+      // Suppress the system notification banner when the app is already in the
+      // foreground. onMessage still fires — the app shows its own in-app UI
+      // (listening banner, toast). Without this, visible song pushes pop up as
+      // iOS banners even while the user is looking at the songbook.
+      await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+        alert: false,
+        badge: false,
+        sound: false,
+      );
+
       if (!(getBoolPref(BoolPrefsEnum.notificationPreferencesRequested) ??
           false)) {
         await requestPermission();

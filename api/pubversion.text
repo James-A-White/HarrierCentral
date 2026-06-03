@@ -1,4 +1,15 @@
 
+1.0.23+21
+    • selectSong: APNs priority fixed from 10 to 5 for data-only song pushes — priority 10 is
+      invalid for content-available-only notifications per Apple spec; may have been causing
+      iOS to throttle or drop silent song pushes silently
+    • sendEventMessage: FCM result now captured per-recipient (success / token_error / error)
+      and recorded in HC.PushLog for fan-out analysis
+    • sendEventMessage: UNREGISTERED and NOT_FOUND added to FCM error cleanup (was only
+      handling BadDeviceToken / "not a valid FCM registration token" — song path already had these)
+    • PushLog: SenderUserId and FcmResult columns added to INSERT — requires HC.PushLog schema
+      migration before deploying (ALTER TABLE to add the two nullable columns)
+
 1.0.22+20
     • HC.Device: FcmTokenCreatedAt stamped when a fresh token is stored via hcapp_setFcmTokens
     • HC.Device: FcmTokenDeleted stamped and FcmToken nulled when a stale token is detected

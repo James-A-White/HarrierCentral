@@ -1,5 +1,22 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.8.1+1152 (2026-06-03)
+
+### Fixes
+
+- **Interactive Songbook — re-selecting the same song now triggers a live update**: The
+  `SongSessionNotifier` persists across songbook sessions within an app run. GetX only
+  fires `ever()` when a value changes, so selecting the same song twice in a row left
+  `pendingSongId` unchanged and the update was silently swallowed. A null-bounce before
+  assigning the new song ID forces the worker to fire every time, regardless of history.
+- **Foreground notification banner suppression**: Added
+  `setForegroundNotificationPresentationOptions(alert: false, badge: false, sound: false)`
+  so that when visible song pushes are re-enabled (currently disabled in the API during
+  development), iOS will not show a system banner while the user is already in the app.
+  `onMessage` still fires and the songbook updates via the in-app listening mode banner.
+
+---
+
 ## 2.8.0+1151 (2026-06-03)
 
 ### Fixes

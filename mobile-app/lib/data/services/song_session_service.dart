@@ -30,6 +30,11 @@ class SongSessionNotifier extends GetxController {
     pendingEventId.value = eventId;
     pendingSongTitle.value = songTitle;
     pendingSelectedByName.value = selectedByName;
+    // Bounce through null before assigning: GetX only fires ever() on value
+    // changes, so re-selecting the same song within a session (same UUID) would
+    // otherwise be silently swallowed. null → songId always triggers the worker.
+    // The ever() handler guards against null so the null assignment is harmless.
+    pendingSongId.value = null;
     pendingSongId.value = songId; // triggers ever() last
   }
 

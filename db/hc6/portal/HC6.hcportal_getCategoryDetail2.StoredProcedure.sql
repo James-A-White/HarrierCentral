@@ -17,7 +17,7 @@ AS
 --              dashboard. Returns raw data columns for one of 10
 --              categories: 0=New Hashers, 1=Event RSVPs, 2=New Events,
 --              3=New Kennels, 4=App Logins, 5=Payments, 6=Portal Access,
---              7=Errors, 8=HashRuns.Org Traffic, 100=Version Adoption.
+--              7=Errors, 8=Push Notification Log, 100=Version Adoption.
 --              Each category returns typed columns specific to its data.
 --              Portal is responsible for all presentation formatting.
 -- Parameters: @deviceId, @accessToken (auth)
@@ -284,24 +284,27 @@ BEGIN TRY
 	END
 
 	-- =============================================
-	-- CATEGORY 8: HashRuns.Org Traffic
+	-- CATEGORY 8: Push Notification Log
 	-- =============================================
 	IF (@categoryId = 8)
 	BEGIN
-		SELECT
-			gl.Timestamp AS [timestamp],
-			JSON_VALUE(gl.data, '$.city') AS city,
-			JSON_VALUE(gl.data, '$.region') AS region,
-			JSON_VALUE(gl.data, '$.country') AS country,
-			gl.message AS logMessage,
-			ken.KennelName AS kennelName,
-			evt.EventName AS eventName
-		FROM LOG.GeneralLog gl WITH (NOLOCK)
-		LEFT OUTER JOIN HC.Event evt WITH (NOLOCK) ON evt.PublicEventId = gl.StrParam1
-		LEFT OUTER JOIN HC.Kennel ken WITH (NOLOCK) ON ken.id = evt.KennelId
-		WHERE (gl.LogSource = 'HashRuns.Org Event List' OR gl.LogSource = 'HashRuns.Org Single Event')
-			AND gl.Timestamp > @cutoffDate
-		ORDER BY gl.Timestamp DESC
+		SELECT TOP 200
+			pl.SentAt,
+			COALESCE(hr.DisplayName, '[unknown]')  AS ReceiverName,
+			COALESCE(hs.DisplayName, '')            AS SenderName,
+			-- MessageType combines visibility (Full Push / Data Only) with the
+			-- queryType so you can see both the delivery mode and the trigger.
+			CASE WHEN pl.IsVisible = 1 THEN 'Full Push' ELSE 'Data Only' END
+				+ ' / ' + pl.QueryType              AS MessageType,
+			COALESCE(pl.FcmResult, 'unknown')       AS FcmResult,
+			COALESCE(pl.Summary, '')                AS Summary
+		FROM HC.PushLog pl WITH (NOLOCK)
+		-- Recipient: stored as HC.Hasher.id
+		LEFT OUTER JOIN HC.Hasher hr WITH (NOLOCK) ON hr.id             = pl.RecipientUserId
+		-- Sender: stored as HC.Hasher.PublicHasherId (returned by the SP to the mobile client)
+		LEFT OUTER JOIN HC.Hasher hs WITH (NOLOCK) ON hs.PublicHasherId = pl.SenderUserId
+		WHERE pl.SentAt > @cutoffDate
+		ORDER BY pl.SentAt DESC
 		OPTION (RECOMPILE)
 	END
 

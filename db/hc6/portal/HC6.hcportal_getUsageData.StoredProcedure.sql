@@ -284,6 +284,24 @@ BEGIN TRY
 		FROM HC.ErrorLog el WITH (NOLOCK)
 		CROSS JOIN DateBounds b
 		WHERE el.updatedAt >= b.m2
+
+		UNION ALL
+
+		-- Push (FCM notifications dispatched to device tokens)
+		SELECT
+			'Push' AS dataType,
+			8 AS id,
+			SUM(CASE WHEN pl.SentAt >= b.hr1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN pl.SentAt >= b.hr2 AND pl.SentAt < b.hr1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN pl.SentAt >= b.d1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN pl.SentAt >= b.d2 AND pl.SentAt < b.d1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN pl.SentAt >= b.w1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN pl.SentAt >= b.w2 AND pl.SentAt < b.w1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN pl.SentAt >= b.m1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN pl.SentAt >= b.m2 AND pl.SentAt < b.m1 THEN 1 ELSE 0 END)
+		FROM HC.PushLog pl WITH (NOLOCK)
+		CROSS JOIN DateBounds b
+		WHERE pl.SentAt >= b.m2
 	) d
 	ORDER BY d.id;
 
