@@ -2,6 +2,23 @@
 
 ---
 
+## 2.0.4+637 — 2026-06-01
+
+### Fixes
+
+- **Trail symbol slots — Name and Action always editable**: Name and Action
+  fields are now editable for all 12 slots regardless of whether a symbol
+  image is selected, allowing kennels to name slots before choosing an image.
+
+- **Trail symbol icon library expanded**: New symbols I-050 through I-054
+  added to the picker; existing symbols I-001 through I-004 re-optimised for
+  smaller file size. I-000 (new blank/custom marker) added.
+
+- **Run location lookup dialog updated**: Minor improvements to the location
+  lookup dialog layout.
+
+---
+
 ## 2.0.3+636 — 2026-06-01
 
 ### Features

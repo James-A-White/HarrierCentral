@@ -1,5 +1,32 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.8.0+1151 (2026-06-03)
+
+### Fixes
+
+- **Interactive Songbook — real-time update now works**: Five bugs identified
+  and fixed that were preventing the song from switching live when the
+  songmeister taps Share Now:
+  - The notification handler was awaiting an unnecessary badge-count HTTP
+    round-trip before dispatching song messages, delaying or blocking the
+    update entirely. Song notifications now bypass this and dispatch
+    immediately.
+  - The FCM listener worker (`ever()`) was registered asynchronously after an
+    `await`, leaving a brief window where a push could be missed. It is now
+    registered synchronously in `onInit` and properly stored and disposed.
+  - The controller tag was using the raw (possibly uppercase) event ID from
+    the database; the notification service always uses lowercase. The mismatch
+    caused a spurious "Go to song" toast to appear even when the user was
+    already on the correct Songbook page, and tapping it pushed a duplicate
+    page. Tag is now always normalised to lowercase.
+  - The songmeister's display name was being read before it was written,
+    showing "Someone" instead of their hash name. Assignment order corrected.
+  - Stale FCM tokens were not being cleaned up when Firebase returned
+    `UNREGISTERED` or `NOT_FOUND` errors (the FCM v1 API codes). These are
+    now caught alongside the existing checks.
+
+---
+
 ## 2.7.9+1150 (2026-06-02)
 
 ### Improvements
