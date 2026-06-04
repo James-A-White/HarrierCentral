@@ -63,22 +63,22 @@ class AccountQuestionPage extends StatelessWidget {
                       const SizedBox(height: 16),
                       _AnswerButton(
                         label: 'No',
-                        description: 'Create a new account for me',
+                        description: 'Search by hash name',
                         onPressed: () => Navigator.push<void>(
                           context,
                           MaterialPageRoute<void>(
-                            builder: (_) => const CreateNewAccountPage(),
+                            builder: (_) => const FindMyAccountPage(),
                           ),
                         ),
                       ),
                       const SizedBox(height: 16),
                       _AnswerButton(
                         label: "I don't know",
-                        description: 'Help me figure it out',
+                        description: 'Search by hash name',
                         onPressed: () => Navigator.push<void>(
                           context,
                           MaterialPageRoute<void>(
-                            builder: (_) => const DontKnowAccountPage(),
+                            builder: (_) => const FindMyAccountPage(),
                           ),
                         ),
                       ),

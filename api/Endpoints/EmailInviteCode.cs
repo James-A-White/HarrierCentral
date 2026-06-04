@@ -38,7 +38,8 @@ namespace HcWebApi.Endpoints
 
             try
             {
-                String? email = "";
+                String? email = null;
+                String? publicHasherId = null;
 
                 if (req.QueryString.HasValue)
                 {
@@ -52,61 +53,96 @@ namespace HcWebApi.Endpoints
                 {
                     string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
                     dynamic result = JsonConvert.DeserializeObject(requestBody)!;
-                    if (result == null || result?.email == null)
+                    email = (string?)result?.email;
+                    publicHasherId = (string?)result?.publicHasherId;
+
+                    if (string.IsNullOrEmpty(email) && string.IsNullOrEmpty(publicHasherId))
                     {
-                        return new BadRequestObjectResult("Email address is required.");
+                        return new BadRequestObjectResult("Email address or publicHasherId is required.");
                     }
-
-                    email = result!.email;
-
                 }
-
 
                 string inviteCode = "No code found";
                 bool success = false;
 
-
-                using (SqlConnection conn4 = new SqlConnection(connectionStr))
+                if (!string.IsNullOrEmpty(publicHasherId))
                 {
-                    using (SqlCommand updateCmd2 = new SqlCommand("HC.nonApi_getUserInviteCode", conn4))
+                    // New path: look up email + invite code by publicHasherId — email stays server-side
+                    using (SqlConnection conn = new SqlConnection(connectionStr))
                     {
-                        updateCmd2.CommandType = System.Data.CommandType.StoredProcedure;
-                        updateCmd2.Parameters.AddWithValue("@email", email);
-                        conn4.Open();
-
-                        try
+                        using (SqlCommand cmd = new SqlCommand("HC.nonApi_getUserInviteCodeByPublicHasherId", conn))
                         {
-                            // Execute the command and log the # rows affected.
-                            using (SqlDataReader updateRows2 = updateCmd2.ExecuteReader())
+                            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                            cmd.Parameters.AddWithValue("@publicHasherId", Guid.Parse(publicHasherId));
+                            conn.Open();
+                            try
                             {
-                                // log.LogInformation(updateText);
-
-                                while (updateRows2.Read())
+                                using (SqlDataReader reader = cmd.ExecuteReader())
                                 {
-                                    log.LogInformation("HC.nonApi_getUserInviteCode executed");
-                                    log.LogInformation(updateRows2.GetValue(0).ToString() + " Invite Code generated");
-                                    inviteCode = updateRows2.GetValue(0).ToString()?.Replace("URC:", "") ?? inviteCode;
-                                    if (inviteCode.Length == 6)
+                                    if (reader.Read())
                                     {
-                                        success = true;
-                                        userMessage = "An invite code has been sent to your email address. Please check your email and use the invite code you received to set up the Harrier Central app.";
+                                        email = reader["Email"]?.ToString();
+                                        inviteCode = reader["InviteCode"]?.ToString() ?? inviteCode;
+                                        if (!string.IsNullOrEmpty(email) && inviteCode.Length == 6)
+                                        {
+                                            success = true;
+                                            userMessage = "An invite code has been sent to their email address.";
+                                        }
                                     }
                                     else
                                     {
-                                        success = false;
-                                        userMessage = inviteCode;
-
+                                        userMessage = "No matching account found for the selected hasher.";
                                     }
                                 }
                             }
+                            catch (System.Exception ex)
+                            {
+                                log.LogInformation("----- HC.nonApi_getUserInviteCodeByPublicHasherId failed --- " + ex.Message);
+                                RecordErrorInDB(log, connectionStr, ex.GetType().Name, ex.Message,
+                                    "HC.nonApi_getUserInviteCodeByPublicHasherId", publicHasherId);
+                            }
                         }
-
-                        catch (System.Exception ex)
+                    }
+                }
+                else
+                {
+                    // Existing path: look up invite code by email address
+                    using (SqlConnection conn4 = new SqlConnection(connectionStr))
+                    {
+                        using (SqlCommand updateCmd2 = new SqlCommand("HC.nonApi_getUserInviteCode", conn4))
                         {
-                            log.LogInformation("----- Add remove HC App SQL query failed --- " + ex.Message);
-                            log.LogInformation("----- " + ex.GetType().Name);
+                            updateCmd2.CommandType = System.Data.CommandType.StoredProcedure;
+                            updateCmd2.Parameters.AddWithValue("@email", email);
+                            conn4.Open();
 
-                            RecordErrorInDB(log, connectionStr, ex.GetType().Name, ex.Message, "Add remove HC App SQL query failed", "HC.nonApi_getUserInviteCode");
+                            try
+                            {
+                                using (SqlDataReader updateRows2 = updateCmd2.ExecuteReader())
+                                {
+                                    while (updateRows2.Read())
+                                    {
+                                        log.LogInformation("HC.nonApi_getUserInviteCode executed");
+                                        log.LogInformation(updateRows2.GetValue(0).ToString() + " Invite Code generated");
+                                        inviteCode = updateRows2.GetValue(0).ToString()?.Replace("URC:", "") ?? inviteCode;
+                                        if (inviteCode.Length == 6)
+                                        {
+                                            success = true;
+                                            userMessage = "An invite code has been sent to your email address. Please check your email and use the invite code you received to set up the Harrier Central app.";
+                                        }
+                                        else
+                                        {
+                                            success = false;
+                                            userMessage = inviteCode;
+                                        }
+                                    }
+                                }
+                            }
+                            catch (System.Exception ex)
+                            {
+                                log.LogInformation("----- Add remove HC App SQL query failed --- " + ex.Message);
+                                log.LogInformation("----- " + ex.GetType().Name);
+                                RecordErrorInDB(log, connectionStr, ex.GetType().Name, ex.Message, "Add remove HC App SQL query failed", "HC.nonApi_getUserInviteCode");
+                            }
                         }
                     }
                 }
