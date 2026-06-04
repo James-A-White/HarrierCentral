@@ -288,7 +288,7 @@ BEGIN TRY
 	-- =============================================
 	IF (@categoryId = 8)
 	BEGIN
-		SELECT TOP 200
+		SELECT
 			pl.SentAt,
 			COALESCE(hr.DisplayName, '[unknown]')  AS ReceiverName,
 			COALESCE(hs.DisplayName, '')            AS SenderName,
@@ -297,12 +297,18 @@ BEGIN TRY
 			CASE WHEN pl.IsVisible = 1 THEN 'Full Push' ELSE 'Data Only' END
 				+ ' / ' + pl.QueryType              AS MessageType,
 			COALESCE(pl.FcmResult, 'unknown')       AS FcmResult,
+			-- DeviceId: resolved from the FCM token at query time. Will be NULL
+			-- for token_error rows where the token was already cleared by
+			-- DeleteFcmToken before this query ran.
+			d.id                                    AS DeviceId,
 			COALESCE(pl.Summary, '')                AS Summary
 		FROM HC.PushLog pl WITH (NOLOCK)
 		-- Recipient: stored as HC.Hasher.id
 		LEFT OUTER JOIN HC.Hasher hr WITH (NOLOCK) ON hr.id             = pl.RecipientUserId
 		-- Sender: stored as HC.Hasher.PublicHasherId (returned by the SP to the mobile client)
 		LEFT OUTER JOIN HC.Hasher hs WITH (NOLOCK) ON hs.PublicHasherId = pl.SenderUserId
+		-- Device: resolved via FcmToken — NULL if token was already deleted
+		LEFT OUTER JOIN HC.Device  d  WITH (NOLOCK) ON d.FcmToken       = pl.FcmToken
 		WHERE pl.SentAt > @cutoffDate
 		ORDER BY pl.SentAt DESC
 		OPTION (RECOMPILE)

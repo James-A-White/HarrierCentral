@@ -107,13 +107,15 @@ BEGIN TRY
                     , [UserId]
                     , [DeviceSecret]
                     , [TimeWindow]
-                    , [DeviceData])
+                    , [DeviceData]
+                    , [IsMobile])
                     VALUES
                     (@newDeviceId
                     , @hasherId
                     , @deviceSecret
                     , @timeWindow
                     , COALESCE(@deviceInfo, '')
+                    , 0  -- browser/portal device
                     )
 
                 COMMIT TRANSACTION;

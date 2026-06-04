@@ -173,9 +173,9 @@ BEGIN TRY
         DELETE FROM HC.Device WHERE id = @deviceId;
 
         INSERT INTO HC.Device
-            ([id], [DeviceSecret], [TimeWindow], [DeviceData], [UserId], [ApnsToken], [FcmToken])
+            ([id], [DeviceSecret], [TimeWindow], [DeviceData], [UserId], [ApnsToken], [FcmToken], [IsMobile])
         VALUES
-            (@deviceId, @deviceSecret, @timeWindow, @deviceData, @userId, @apnsToken, @fcmToken);
+            (@deviceId, @deviceSecret, @timeWindow, @deviceData, @userId, @apnsToken, @fcmToken, 1);  -- mobile app device
 
     COMMIT TRANSACTION;
 

@@ -604,35 +604,40 @@ namespace HcWebApi.Endpoints
                 string? accessToken = await GetFirebaseAccessTokenAsync();
                 var recipients = multipleResults[2];
 
-                var tasks = recipients.Select(row =>
-                {
-                    row.TryGetValue("FcmToken", out var tokenObj);
-                    var token = tokenObj?.ToString();
-                    if (string.IsNullOrEmpty(token)) return Task.CompletedTask;
+                // Build a filtered list of dispatchable recipients so indices stay aligned
+                // between Task.WhenAll results and log entries.
+                var dispatchItems = recipients
+                    .Select(row =>
+                    {
+                        row.TryGetValue("FcmToken",         out var tok);
+                        row.TryGetValue("UserId",           out var uid);
+                        row.TryGetValue("showNotification", out var vis);
+                        var isVis = vis is bool bv ? bv : (vis != null && Convert.ToInt32(vis) == 1);
+                        return new { token = tok?.ToString(), userId = uid?.ToString(), isVis };
+                    })
+                    .Where(x => !string.IsNullOrEmpty(x.token))
+                    .ToList();
 
-                    // Use the SP's per-user notification preference (EventNotificationPreference
-                    // or KennelNotificationPreference > 0). Visible notifications use the APNs
-                    // notification path which is not subject to iOS background-push throttling
-                    // (roughly 3 silent pushes/hour). The Flutter app suppresses the banner via
-                    // setForegroundNotificationPresentationOptions when the app is open.
-                    row.TryGetValue("showNotification", out var showNotifObj);
-                    var showNotification = showNotifObj is bool b ? b
-                        : (showNotifObj != null && Convert.ToInt32(showNotifObj) == 1);
+                // Use the SP's per-user notification preference (EventNotificationPreference
+                // or KennelNotificationPreference > 0). Visible notifications use the APNs
+                // notification path which is not subject to iOS background-push throttling
+                // (roughly 3 silent pushes/hour). The Flutter app suppresses the banner via
+                // setForegroundNotificationPresentationOptions when the app is open.
+                var fcmResults = await Task.WhenAll(
+                    dispatchItems.Select(item =>
+                        SendSongMessageAsync(item.token!, songTitle, selectedByName,
+                            eventId, songId, item.isVis, accessToken, logger))
+                );
 
-                    return SendSongMessageAsync(token, songTitle, selectedByName,
-                        eventId, songId, showNotification, accessToken, logger);
-                });
+                logger.LogInformation("Song '{SongTitle}' pushed to {Count} device(s).", songTitle, dispatchItems.Count);
 
-                await Task.WhenAll(tasks);
-                logger.LogInformation("Song '{SongTitle}' pushed to {Count} device(s).", songTitle, recipients.Count);
-
-                var logEntries = recipients.Select(row => {
-                    row.TryGetValue("FcmToken", out var tok);
-                    row.TryGetValue("UserId",   out var uid);
-                    row.TryGetValue("showNotification", out var vis);
-                    var isVis = vis is bool bv ? bv : (vis != null && Convert.ToInt32(vis) == 1);
-                    return new PushLogEntry(tok?.ToString() ?? "", uid?.ToString(), SenderUserId: null, IsVisible: isVis);
-                }).Where(e => !string.IsNullOrEmpty(e.FcmToken));
+                var logEntries = dispatchItems
+                    .Select((item, i) => new PushLogEntry(
+                        item.token!,
+                        item.userId,
+                        SenderUserId: null,
+                        IsVisible: item.isVis,
+                        FcmResult: fcmResults[i]));
                 _ = LogPushBatchAsync("selectSong", eventId, $"{selectedByName}: \"{songTitle}\"", logEntries, logger);
             }
             catch (Exception ex)
@@ -641,7 +646,7 @@ namespace HcWebApi.Endpoints
             }
         }
 
-        private static async Task SendSongMessageAsync(
+        private static async Task<string> SendSongMessageAsync(
             string fcmToken, string songTitle, string selectedByName,
             string eventId, string songId, bool showNotification,
             string? accessToken, ILogger log)
@@ -726,12 +731,18 @@ namespace HcWebApi.Endpoints
                         errorJson.Contains("not a valid FCM registration token") ||
                         errorJson.Contains("UNREGISTERED") ||
                         errorJson.Contains("NOT_FOUND"))
+                    {
                         await DeleteFcmToken(fcmToken, log);
+                        return "token_error";
+                    }
+                    return "error";
                 }
+                return "success";
             }
             catch (Exception ex)
             {
                 log.LogError(ex, "Exception sending song FCM push.");
+                return "exception";
             }
         }
 
@@ -749,19 +760,20 @@ namespace HcWebApi.Endpoints
 
                 string? accessToken = await GetFirebaseAccessTokenAsync();
 
+                var readSyncResults = new List<(string token, string result)>();
                 foreach (var row in multipleResults[1])
                 {
                     if (!row.TryGetValue("FcmToken", out var tokenObj)) continue;
                     var token = tokenObj?.ToString();
                     if (string.IsNullOrEmpty(token)) continue;
-                    await SendReadSyncMessageAsync(token, accessToken, logger);
+                    var result = await SendReadSyncMessageAsync(token, accessToken, logger);
+                    readSyncResults.Add((token, result));
                 }
 
-                logger.LogInformation("Read sync sent to {Count} device(s).", multipleResults[1].Count);
+                logger.LogInformation("Read sync sent to {Count} device(s).", readSyncResults.Count);
 
-                var logEntries = multipleResults[1]
-                    .Where(row => row.ContainsKey("FcmToken") && row["FcmToken"] != null)
-                    .Select(row => new PushLogEntry(row["FcmToken"]!.ToString()!, null, SenderUserId: null, IsVisible: false));
+                var logEntries = readSyncResults
+                    .Select(x => new PushLogEntry(x.token, null, SenderUserId: null, IsVisible: false, FcmResult: x.result));
                 _ = LogPushBatchAsync("markEventChatRead", null, "read_sync", logEntries, logger);
             }
             catch (Exception ex)
@@ -770,7 +782,7 @@ namespace HcWebApi.Endpoints
             }
         }
 
-        private static async Task SendReadSyncMessageAsync(
+        private static async Task<string> SendReadSyncMessageAsync(
             string fcmToken, string? accessToken, ILogger log)
         {
             try
@@ -808,13 +820,20 @@ namespace HcWebApi.Endpoints
                 {
                     string errorJson = await response.Content.ReadAsStringAsync();
                     log.LogError("Error sending read sync FCM: {ErrorJson}", errorJson);
-                    if (errorJson.Contains("BadDeviceToken") || errorJson.Contains("not a valid FCM registration token"))
+                    if (errorJson.Contains("BadDeviceToken") || errorJson.Contains("not a valid FCM registration token") ||
+                        errorJson.Contains("UNREGISTERED") || errorJson.Contains("NOT_FOUND"))
+                    {
                         await DeleteFcmToken(fcmToken, log);
+                        return "token_error";
+                    }
+                    return "error";
                 }
+                return "success";
             }
             catch (Exception ex)
             {
                 log.LogError(ex, "Exception while sending read sync FCM.");
+                return "exception";
             }
         }
 
