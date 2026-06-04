@@ -287,7 +287,7 @@ BEGIN TRY
 
 		UNION ALL
 
-		-- Push (FCM notifications dispatched to device tokens)
+		-- Push (FCM notifications dispatched to mobile devices only)
 		SELECT
 			'Push' AS dataType,
 			8 AS id,
@@ -300,6 +300,7 @@ BEGIN TRY
 			SUM(CASE WHEN pl.SentAt >= b.m1 THEN 1 ELSE 0 END),
 			SUM(CASE WHEN pl.SentAt >= b.m2 AND pl.SentAt < b.m1 THEN 1 ELSE 0 END)
 		FROM HC.PushLog pl WITH (NOLOCK)
+		INNER JOIN HC.Device d WITH (NOLOCK) ON d.FcmToken = pl.FcmToken AND d.IsMobile = 1
 		CROSS JOIN DateBounds b
 		WHERE pl.SentAt >= b.m2
 	) d

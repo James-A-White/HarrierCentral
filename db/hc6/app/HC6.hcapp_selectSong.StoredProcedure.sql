@@ -179,4 +179,5 @@ WHERE hem.EventId  = @eventId
   AND (hem.RsvpState >= 2 OR hem.AttendenceState >= 3)
   AND hem.Removed   = 0
   AND d.FcmToken IS NOT NULL
-  AND d.FcmToken != '';
+  AND d.FcmToken != ''
+  AND d.IsMobile = 1;
