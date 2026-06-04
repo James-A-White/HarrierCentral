@@ -162,17 +162,21 @@ class SongsPageController extends GetxController
     final SongsModel? song = selectedSong.value;
     if (song == null || eventId == null) return;
 
-    final String? title = await SongSessionService.selectSong(
+    final SelectSongResult? result = await SongSessionService.selectSong(
       eventId: eventId!,
       songId: song.songId,
     );
 
-    if (title != null && context.mounted) {
+    if (result != null && context.mounted) {
+      final int? count = result.recipientCount;
+      final String withWhom = (count != null && count > 0)
+          ? 'with $count pack ${count == 1 ? 'member' : 'members'}'
+          : 'with the pack';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: Colors.green.shade700,
           content: Text(
-            'Shared "${song.songName}" with the pack 🎵',
+            'Shared "${song.songName}" $withWhom 🎵',
             style: const TextStyle(color: Colors.white),
           ),
           duration: const Duration(seconds: 3),

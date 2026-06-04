@@ -121,6 +121,20 @@ END
 DECLARE @kennelId UNIQUEIDENTIFIER;
 SELECT @kennelId = evt.KennelId FROM HC.Event evt WHERE evt.id = @eventId;
 
+-- Pre-count mobile FCM recipients (excludes ignore=2; mirrors rowset 2 WHERE clause)
+DECLARE @recipientCount INT = 0;
+SELECT @recipientCount = COUNT(DISTINCT d.FcmToken)
+FROM HC.HasherEventMap hem
+INNER JOIN HC.Device d ON d.UserId = hem.UserId
+LEFT  JOIN HC.HasherKennelMap hkm ON hkm.UserId = hem.UserId AND hkm.KennelId = @kennelId
+WHERE hem.EventId  = @eventId
+  AND (hem.RsvpState >= 2 OR hem.AttendenceState >= 3)
+  AND hem.Removed   = 0
+  AND d.FcmToken IS NOT NULL
+  AND d.FcmToken != ''
+  AND d.IsMobile = 1
+  AND COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference) != 2;
+
 -- Resolve display name for the songmeister
 DECLARE @selectedByName NVARCHAR(200);
 SELECT @selectedByName = COALESCE(
@@ -160,7 +174,8 @@ SELECT
     @songTitle                                    AS songTitle,
     @selectedByName                               AS selectedByName,
     LOWER(CAST(@eventId AS NVARCHAR(40)))         AS eventId,
-    LOWER(CAST(@songId  AS NVARCHAR(40)))         AS songId;
+    LOWER(CAST(@songId  AS NVARCHAR(40)))         AS songId,
+    @recipientCount                               AS recipientCount;
 
 -- rowset 2: FCM recipients — consumed by Azure Function; not parsed by Flutter.
 -- Includes RSVP'd (rsvpState >= 2) and checked-in (attendenceState >= 3) users.
