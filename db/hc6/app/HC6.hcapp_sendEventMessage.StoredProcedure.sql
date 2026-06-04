@@ -227,8 +227,8 @@ WHERE evt.id = @eventId
    OR (@sendToMismanagement != 0 AND hkm.MismanagementRoles  != 0)
    OR (@sendToMembers       != 0 AND hkm.MembershipExpirationDate > GETDATE())
    OR (@sendToFollowers     != 0 AND hkm.Following = 1)
-   OR (@sendToRsvps         != 0 AND hem.RsvpState >= 2        AND COALESCE(hem.EventNotificationPreference, 1) != 0)
-   OR (@sendToHares         != 0 AND hem.IsHare    != 0        AND COALESCE(hem.EventNotificationPreference, 1) != 0)
+   OR (@sendToRsvps         != 0 AND hem.RsvpState >= 2)
+   OR (@sendToHares         != 0 AND hem.IsHare    != 0)
   );
 
 -- ---------------------------------------------------------------
@@ -261,8 +261,8 @@ WHERE hkm.KennelId = @kennelId
          OR (@sendToMismanagement != 0 AND hkm2.MismanagementRoles != 0)
          OR (@sendToMembers       != 0 AND hkm2.MembershipExpirationDate > GETDATE())
          OR (@sendToFollowers     != 0 AND hkm2.Following = 1)
-         OR (@sendToRsvps         != 0 AND hem2.RsvpState >= 2 AND COALESCE(hem2.EventNotificationPreference, 1) != 0)
-         OR (@sendToHares         != 0 AND hem2.IsHare    != 0 AND COALESCE(hem2.EventNotificationPreference, 1) != 0)
+         OR (@sendToRsvps         != 0 AND hem2.RsvpState >= 2)
+         OR (@sendToHares         != 0 AND hem2.IsHare    != 0)
         )
   );
 

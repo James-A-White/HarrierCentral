@@ -164,12 +164,13 @@ SELECT
 
 -- rowset 2: FCM recipients — consumed by Azure Function; not parsed by Flutter.
 -- Includes RSVP'd (rsvpState >= 2) and checked-in (attendenceState >= 3) users.
--- showNotification = 1 when they have event or kennel notifications enabled.
+-- Excludes ignore (2) — no push at all.
+-- showNotification = 1 for on (1) or onBeforeRun (4); 0 (data-only) for auto (0/NULL) and mute (3).
+-- Effective preference cascades: event-level if set, otherwise kennel-level.
 SELECT DISTINCT
     d.FcmToken,
     LOWER(CAST(d.UserId AS NVARCHAR(40)))         AS UserId,
-    CASE WHEN COALESCE(hem.EventNotificationPreference, 0) > 0
-              OR COALESCE(hkm.KennelNotificationPreference, 0) > 0
+    CASE WHEN COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference) IN (1, 4)
          THEN 1 ELSE 0 END                        AS showNotification
 FROM HC.HasherEventMap hem
 INNER JOIN HC.Device d ON d.UserId = hem.UserId
@@ -180,4 +181,5 @@ WHERE hem.EventId  = @eventId
   AND hem.Removed   = 0
   AND d.FcmToken IS NOT NULL
   AND d.FcmToken != ''
-  AND d.IsMobile = 1;
+  AND d.IsMobile = 1
+  AND COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference) != 2;
