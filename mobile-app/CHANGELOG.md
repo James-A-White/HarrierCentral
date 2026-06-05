@@ -1,5 +1,32 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.9.3+1157 (2026-06-05)
+
+### New features
+
+- **Guest saved home search**: Guests can pin a search term (e.g. "London") from the
+  search bar. Pinned runs appear first in the list under the active kennel; a divider
+  and "Other runs" section follow. The saved term persists across app restarts and can
+  be cleared with the × chip in the header.
+
+### Improvements
+
+- **Guest run detail — Details / Map tab bar**: The run detail screen for guests now
+  has two tabs. "Details" shows the existing label/value layout; "Map" shows the run
+  location on an interactive map with a "Get Directions" button that opens the device's
+  preferred maps app.
+- **Guest action bar — "Log In" text now visible**: The "Already have an account? Log
+  In" row was nearly invisible on some devices because the container was transparent
+  against the system background. The bar now uses a solid app-bar colour.
+- **Use Invite Code layout**: The "Get Started!" button has moved inside the yellow
+  invite-code box. The "Email me a new invite code" and "I didn't receive an email"
+  actions have moved below the box as full-width elevated buttons, matching the overall
+  button style.
+- **Event images on guest run cards**: Reverted the previous cap — event images now
+  render at their natural height as intended.
+
+---
+
 ## 2.9.2+1156 (2026-06-05)
 
 ### Fixes

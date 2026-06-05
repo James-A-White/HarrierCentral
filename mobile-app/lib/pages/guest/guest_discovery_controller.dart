@@ -10,6 +10,7 @@ class GuestDiscoveryController extends GetxController {
   final RxBool hasErrorPast = false.obs;
   final RxBool _pastTabLoaded = false.obs;
   final RxString searchQuery = ''.obs;
+  final RxString savedSearch = ''.obs;
 
   bool get pastTabLoaded => _pastTabLoaded.value;
 
@@ -18,25 +19,63 @@ class GuestDiscoveryController extends GetxController {
 
   void setSearch(String q) => searchQuery.value = q;
 
+  Future<void> setSavedSearch(String term) async {
+    savedSearch.value = term.trim();
+    await setStringPref(StringPrefsEnum.guestSavedSearchTerm, term.trim());
+  }
+
+  Future<void> clearSavedSearch() async {
+    savedSearch.value = '';
+    await setStringPref(StringPrefsEnum.guestSavedSearchTerm, null);
+  }
+
+  // Returns the all-runs list split into [pinned = matching saved term] and
+  // [rest = everything else]. Only meaningful when savedSearch is non-empty.
+  ({List<GuestRunModel> pinned, List<GuestRunModel> rest}) splitUpcoming() =>
+      _splitBySaved(_allUpcomingRuns);
+
+  ({List<GuestRunModel> pinned, List<GuestRunModel> rest}) splitPast() =>
+      _splitBySaved(_allPastRuns);
+
   List<GuestRunModel> _filter(List<GuestRunModel> runs) {
     final String q =
         removeDiacritics(searchQuery.value.trim().toLowerCase());
     if (q.isEmpty) return runs;
-    return runs.where((GuestRunModel r) {
-      bool hit(String? s) =>
-          s != null && removeDiacritics(s.toLowerCase()).contains(q);
-      return hit(r.kennelName) ||
-          hit(r.kennelShortName) ||
-          hit(r.eventName) ||
-          hit(r.locationCity) ||
-          hit(r.locationCountry) ||
-          hit(r.kennelContinent);
-    }).toList();
+    return runs.where((GuestRunModel r) => _matches(r, q)).toList();
+  }
+
+  ({List<GuestRunModel> pinned, List<GuestRunModel> rest}) _splitBySaved(
+    List<GuestRunModel> runs,
+  ) {
+    final String saved =
+        removeDiacritics(savedSearch.value.trim().toLowerCase());
+    if (saved.isEmpty) {
+      return (pinned: <GuestRunModel>[], rest: runs.toList());
+    }
+    final List<GuestRunModel> pinned = [];
+    final List<GuestRunModel> rest = [];
+    for (final GuestRunModel r in runs) {
+      (_matches(r, saved) ? pinned : rest).add(r);
+    }
+    return (pinned: pinned, rest: rest);
+  }
+
+  bool _matches(GuestRunModel r, String q) {
+    bool hit(String? s) =>
+        s != null && removeDiacritics(s.toLowerCase()).contains(q);
+    return hit(r.kennelName) ||
+        hit(r.kennelShortName) ||
+        hit(r.eventName) ||
+        hit(r.locationCity) ||
+        hit(r.locationCountry) ||
+        hit(r.kennelContinent);
   }
 
   @override
   void onInit() {
     super.onInit();
+    savedSearch.value =
+        getStringPref(StringPrefsEnum.guestSavedSearchTerm) ?? '';
     loadUpcoming();
   }
 

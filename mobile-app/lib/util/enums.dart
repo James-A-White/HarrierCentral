@@ -58,6 +58,7 @@ enum StringPrefsEnum {
   thirdPartyLoginType,
   thirdPartyUserId,
   userId,
+  guestSavedSearchTerm,
 }
 
 enum NumPrefsEnum {

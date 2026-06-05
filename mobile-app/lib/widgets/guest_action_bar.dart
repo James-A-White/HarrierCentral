@@ -5,12 +5,10 @@ class GuestActionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double bottomPadding = MediaQuery.of(context).padding.bottom;
     return Container(
-      padding: const EdgeInsets.fromLTRB(10, 10, 10, 20),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.35),
-        border: const Border(top: BorderSide(color: Colors.white12)),
-      ),
+      padding: EdgeInsets.fromLTRB(10, 12, 10, 12 + bottomPadding),
+      color: themeAppBarBackground,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
@@ -40,28 +38,33 @@ class GuestActionBar extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            'or',
-            style: ts_body.copyWith(color: Colors.white54, fontSize: 13),
-          ),
-          const SizedBox(height: 4),
-          GestureDetector(
-            onTap: () => Navigator.push<void>(
-              context,
-              MaterialPageRoute<void>(
-                builder: (_) => const FindMyAccountPage(),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                'Already have an account? ',
+                style: ts_body.copyWith(color: Colors.white70, fontSize: 15),
               ),
-            ),
-            child: Text(
-              'Log In',
-              style: ts_body.copyWith(
-                color: Colors.white70,
-                fontSize: 14,
-                decoration: TextDecoration.underline,
-                decorationColor: Colors.white70,
+              GestureDetector(
+                onTap: () => Navigator.push<void>(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (_) => const FindMyAccountPage(),
+                  ),
+                ),
+                child: Text(
+                  'Log In',
+                  style: ts_body.copyWith(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    decoration: TextDecoration.underline,
+                    decorationColor: Colors.white,
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
         ],
       ),

@@ -52,41 +52,82 @@ class _GuestDiscoveryPageState extends State<GuestDiscoveryPage>
             child: Column(
               children: <Widget>[
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 6, 12, 2),
-                  child: Obx(
-                    () => TextField(
-                      controller: _searchController,
-                      style: ts_body,
-                      onChanged: _controller.setSearch,
-                      decoration: InputDecoration(
-                        hintText: 'Search by run, kennel, city, country...',
-                        hintStyle: ts_hint,
-                        prefixIcon:
-                            const Icon(Icons.search, color: Colors.white54),
-                        suffixIcon: _controller.searchQuery.value.isEmpty
-                            ? null
-                            : IconButton(
-                                icon: const Icon(
-                                  Icons.clear,
-                                  color: Colors.white54,
-                                  size: 18,
-                                ),
-                                onPressed: () {
-                                  _searchController.clear();
-                                  _controller.setSearch('');
-                                },
+                  padding: const EdgeInsets.fromLTRB(12, 6, 4, 2),
+                  child: Obx(() {
+                    final bool hasText =
+                        _controller.searchQuery.value.isNotEmpty;
+                    final bool isSaved =
+                        hasText &&
+                        _controller.savedSearch.value ==
+                            _controller.searchQuery.value.trim();
+                    return Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: TextField(
+                            controller: _searchController,
+                            style: ts_body,
+                            onChanged: _controller.setSearch,
+                            decoration: InputDecoration(
+                              hintText:
+                                  'Search by run, kennel, city, country...',
+                              hintStyle: ts_hint,
+                              prefixIcon: const Icon(
+                                Icons.search,
+                                color: Colors.white54,
                               ),
-                        filled: true,
-                        fillColor: Colors.white.withValues(alpha: 0.1),
-                        contentPadding:
-                            const EdgeInsets.symmetric(vertical: 8),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide: BorderSide.none,
+                              suffixIcon: hasText
+                                  ? IconButton(
+                                      icon: const Icon(
+                                        Icons.clear,
+                                        color: Colors.white54,
+                                        size: 18,
+                                      ),
+                                      onPressed: () {
+                                        _searchController.clear();
+                                        _controller.setSearch('');
+                                      },
+                                    )
+                                  : null,
+                              filled: true,
+                              fillColor: Colors.white.withValues(alpha: 0.1),
+                              contentPadding:
+                                  const EdgeInsets.symmetric(vertical: 8),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(24),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  ),
+                        if (hasText)
+                          IconButton(
+                            tooltip: isSaved
+                                ? 'Remove home search'
+                                : 'Save as home search',
+                            icon: Icon(
+                              isSaved
+                                  ? Icons.push_pin
+                                  : Icons.push_pin_outlined,
+                              color: isSaved ? Colors.white : Colors.white54,
+                              size: 22,
+                            ),
+                            onPressed: () async {
+                              if (isSaved) {
+                                await _controller.clearSavedSearch();
+                              } else {
+                                await _controller.setSavedSearch(
+                                  _controller.searchQuery.value,
+                                );
+                                _searchController.clear();
+                                _controller.setSearch('');
+                              }
+                            },
+                          )
+                        else
+                          const SizedBox(width: 8),
+                      ],
+                    );
+                  }),
                 ),
                 TabBar(
                   controller: _tabController,
@@ -105,11 +146,57 @@ class _GuestDiscoveryPageState extends State<GuestDiscoveryPage>
       ),
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
-        child: TabBarView(
-          controller: _tabController,
+        child: Column(
           children: <Widget>[
-            _RunList(controller: _controller, isFuture: true),
-            _RunList(controller: _controller, isFuture: false),
+            // Saved-search chip — slides in when a term is pinned
+            Obx(() {
+              final String saved = _controller.savedSearch.value;
+              if (saved.isEmpty) return const SizedBox.shrink();
+              return Container(
+                color: themeAppBarBackground,
+                padding: const EdgeInsets.fromLTRB(16, 6, 12, 8),
+                child: Row(
+                  children: <Widget>[
+                    const Icon(
+                      Icons.push_pin,
+                      color: Colors.white70,
+                      size: 14,
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        '"$saved" runs first',
+                        style: ts_body.copyWith(
+                          color: Colors.white70,
+                          fontSize: 13,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: _controller.clearSavedSearch,
+                      child: const Padding(
+                        padding: EdgeInsets.only(left: 8),
+                        child: Icon(
+                          Icons.close,
+                          color: Colors.white54,
+                          size: 18,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: <Widget>[
+                  _RunList(controller: _controller, isFuture: true),
+                  _RunList(controller: _controller, isFuture: false),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -119,14 +206,11 @@ class _GuestDiscoveryPageState extends State<GuestDiscoveryPage>
 }
 
 // ---------------------------------------------------------------------------
-// Tab body — loading / error / empty / list states
+// Tab body — loading / error / empty / split-list / plain-list states
 // ---------------------------------------------------------------------------
 
 class _RunList extends StatelessWidget {
-  const _RunList({
-    required this.controller,
-    required this.isFuture,
-  });
+  const _RunList({required this.controller, required this.isFuture});
 
   final GuestDiscoveryController controller;
   final bool isFuture;
@@ -152,6 +236,66 @@ class _RunList extends StatelessWidget {
         );
       }
 
+      final bool hasSaved = controller.savedSearch.value.isNotEmpty;
+      final bool hasLiveQuery = controller.searchQuery.value.trim().isNotEmpty;
+
+      // ── Split view (saved home search, no active search bar query) ──────
+      if (hasSaved && !hasLiveQuery) {
+        final (:List<GuestRunModel> pinned, :List<GuestRunModel> rest) =
+            isFuture ? controller.splitUpcoming() : controller.splitPast();
+
+        if (pinned.isEmpty && rest.isEmpty) {
+          return _EmptyState(
+            message: isFuture
+                ? 'No upcoming runs at the moment.'
+                : 'No runs in the past two months.',
+          );
+        }
+
+        final bool showDivider = pinned.isNotEmpty && rest.isNotEmpty;
+        final int dividerIndex = showDivider ? pinned.length : -1;
+        final int restOffset =
+            pinned.length + (showDivider ? 1 : 0);
+        final int historyNoteIndex =
+            isFuture ? -1 : restOffset + rest.length;
+        final int totalItems =
+            pinned.length +
+            (showDivider ? 1 : 0) +
+            rest.length +
+            (isFuture ? 0 : 1);
+
+        return RefreshIndicator(
+          onRefresh: controller.refresh,
+          child: ListView.builder(
+            padding: const EdgeInsets.only(left: 10, right: 10, bottom: 50),
+            itemCount: totalItems,
+            itemBuilder: (BuildContext context, int index) {
+              if (index == dividerIndex) {
+                return _OtherRunsDivider(
+                  savedTerm: controller.savedSearch.value,
+                );
+              }
+              if (!isFuture && index == historyNoteIndex) {
+                return const _HistoryNote();
+              }
+              final GuestRunModel run = index < pinned.length
+                  ? pinned[index]
+                  : rest[index - restOffset];
+              return _GuestRunCard(
+                run: run,
+                onTap: () => Navigator.push<void>(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (_) => GuestRunDetailPage(run: run),
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      }
+
+      // ── Plain filtered view ─────────────────────────────────────────────
       final List<GuestRunModel> runs =
           isFuture ? controller.filteredUpcoming : controller.filteredPast;
 
@@ -166,7 +310,6 @@ class _RunList extends StatelessWidget {
         );
       }
 
-      // Past list has a note appended as a synthetic last item.
       final int itemCount = runs.length + (isFuture ? 0 : 1);
 
       return RefreshIndicator(
@@ -196,6 +339,36 @@ class _RunList extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
+// Section divider between pinned and other runs
+// ---------------------------------------------------------------------------
+
+class _OtherRunsDivider extends StatelessWidget {
+  const _OtherRunsDivider({required this.savedTerm});
+
+  final String savedTerm;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Row(
+        children: <Widget>[
+          const Expanded(child: Divider(color: Colors.white24, thickness: 1)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Text(
+              'Other runs',
+              style: ts_body.copyWith(color: Colors.white38, fontSize: 12),
+            ),
+          ),
+          const Expanded(child: Divider(color: Colors.white24, thickness: 1)),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Run card
 // ---------------------------------------------------------------------------
 
@@ -209,7 +382,6 @@ class _GuestRunCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final DateTime? startDt = run.eventStartDatetime;
 
-    // Day offset — same calculation as RunListItem
     int daysOffset = 0;
     if (startDt != null) {
       final DateTime eventDate =
@@ -244,7 +416,6 @@ class _GuestRunCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            // Header: event name
             Padding(
               padding: const EdgeInsets.only(
                 left: 10.0,
@@ -261,19 +432,10 @@ class _GuestRunCard extends StatelessWidget {
               ),
             ),
             Container(height: 1.0, color: Colors.grey[300]),
-            // Optional event image
             if (run.eventImage != null && run.eventImage!.isNotEmpty) ...<Widget>[
-              SizedBox(
-                height: 160,
-                width: double.infinity,
-                child: CachedNetworkImage(
-                  imageUrl: run.eventImage!,
-                  fit: BoxFit.cover,
-                ),
-              ),
+              CachedNetworkImage(imageUrl: run.eventImage!),
               Container(height: 1.0, color: Colors.grey[300]),
             ],
-            // Body: logo + details
             Padding(
               padding: const EdgeInsets.only(
                 top: 10.0,
