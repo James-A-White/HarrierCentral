@@ -1,5 +1,16 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.9.2+1156 (2026-06-05)
+
+### Fixes
+
+- **Guest run cards — event images now constrained**: Event images on the discovery
+  screen were rendering at full native height, causing some cards (especially those with
+  map or photo images) to take up the entire screen. Images are now capped at 160px tall
+  and cropped to fill the width.
+
+---
+
 ## 2.9.1+1155 (2026-06-05)
 
 ### Improvements

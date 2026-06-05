@@ -263,7 +263,14 @@ class _GuestRunCard extends StatelessWidget {
             Container(height: 1.0, color: Colors.grey[300]),
             // Optional event image
             if (run.eventImage != null && run.eventImage!.isNotEmpty) ...<Widget>[
-              CachedNetworkImage(imageUrl: run.eventImage!),
+              SizedBox(
+                height: 160,
+                width: double.infinity,
+                child: CachedNetworkImage(
+                  imageUrl: run.eventImage!,
+                  fit: BoxFit.cover,
+                ),
+              ),
               Container(height: 1.0, color: Colors.grey[300]),
             ],
             // Body: logo + details
