@@ -172,8 +172,7 @@ class _RunList extends StatelessWidget {
       return RefreshIndicator(
         onRefresh: controller.refresh,
         child: ListView.builder(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          padding: const EdgeInsets.only(left: 10, right: 10, bottom: 50),
           itemCount: itemCount,
           itemBuilder: (BuildContext context, int index) {
             if (!isFuture && index == runs.length) {
@@ -206,107 +205,128 @@ class _GuestRunCard extends StatelessWidget {
   final GuestRunModel run;
   final VoidCallback onTap;
 
-  static final DateFormat _dateFmt = DateFormat('EEE d MMM, h:mma');
-
   @override
   Widget build(BuildContext context) {
-    final String? dateStr = run.eventStartDatetime != null
-        ? _dateFmt.format(run.eventStartDatetime!)
-        : null;
+    final DateTime? startDt = run.eventStartDatetime;
 
-    final String locationLine = <String?>[
-      run.locationCity,
-      run.locationCountry,
-    ].where((s) => s != null && s.isNotEmpty).join(', ');
+    // Day offset — same calculation as RunListItem
+    int daysOffset = 0;
+    if (startDt != null) {
+      final DateTime eventDate =
+          DateTime.tryParse(startDt.toIso8601String().substring(0, 10)) ??
+          startDt;
+      final DateTime deviceDate = DateTime.tryParse(
+            DateTime.now().toLocal().toIso8601String().substring(0, 10),
+          ) ??
+          DateTime.now();
+      daysOffset = eventDate.difference(deviceDate).inDays;
+    }
+
+    final String runLabel =
+        (run.isCountedRun && run.eventNumber != null
+            ? 'Run #${run.eventNumber}, '
+            : 'Run / Event, ') +
+        Utilities.describeDayOffset(daysOffset);
+
+    String dateStr = '';
+    if (startDt != null) {
+      dateStr = startDt.year == DateTime.now().year
+          ? DateFormat("E, MMM d 'at' h:mm a").format(startDt)
+          : DateFormat("E, MMM d yyyy 'at' h:mm a").format(startDt);
+    }
 
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white12),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              KennelLogo(
-                kennelLogoUrl: run.kennelLogo,
-                kennelShortName: run.kennelShortName ?? run.kennelName,
-                logoHeight: 44,
-                zoomGesture: KennelLogoZoomGesture.none,
+      child: Card(
+        elevation: 4.0,
+        margin: const EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
+        color: Colors.white,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            // Header: event name
+            Padding(
+              padding: const EdgeInsets.only(
+                left: 10.0,
+                right: 10.0,
+                top: 8.0,
+                bottom: 6.0,
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: Text(
+              child: AutoSizeText(
+                run.eventName,
+                style: ts_tileText,
+                maxLines: 1,
+                minFontSize: 18,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Container(height: 1.0, color: Colors.grey[300]),
+            // Optional event image
+            if (run.eventImage != null && run.eventImage!.isNotEmpty) ...<Widget>[
+              CachedNetworkImage(imageUrl: run.eventImage!),
+              Container(height: 1.0, color: Colors.grey[300]),
+            ],
+            // Body: logo + details
+            Padding(
+              padding: const EdgeInsets.only(
+                top: 10.0,
+                bottom: 10.0,
+                left: 4.0,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  KennelLogo(
+                    kennelLogoUrl: run.kennelLogo,
+                    kennelShortName: run.kennelShortName ?? run.kennelName,
+                    logoHeight: 70.0,
+                    leftPadding: 7.0,
+                    rightPadding: 7.0,
+                    zoomGesture: KennelLogoZoomGesture.none,
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
                             run.kennelName,
-                            style: ts_body.copyWith(
-                              color: Colors.white54,
-                              fontSize: 11,
-                              letterSpacing: 0.4,
-                            ),
-                            maxLines: 1,
+                            style: ts_titleMediumDarkBlue,
                             overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                        if (run.eventNumber != null && run.eventNumber! > 0)
                           Text(
-                            '#${run.eventNumber}',
-                            style: ts_body.copyWith(
-                              color: Colors.white38,
-                              fontSize: 11,
-                            ),
+                            runLabel,
+                            style: ts_titleMediumBlack,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                      ],
+                          if (dateStr.isNotEmpty)
+                            Text(
+                              dateStr,
+                              style: ts_regularMediumBlack,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          if (run.hares != null && run.hares!.isNotEmpty)
+                            Text(
+                              'Hares: ${run.hares}',
+                              style: ts_regularMediumBlack,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          if (run.locationOneLineDesc != null &&
+                              run.locationOneLineDesc!.isNotEmpty)
+                            Text(
+                              run.locationOneLineDesc!,
+                              style: ts_regularMediumBlack,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      run.eventName,
-                      style: ts_body.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (dateStr != null) ...<Widget>[
-                      const SizedBox(height: 2),
-                      Text(
-                        dateStr,
-                        style: ts_body.copyWith(
-                          color: Colors.white70,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                    if (locationLine.isNotEmpty) ...<Widget>[
-                      const SizedBox(height: 1),
-                      Text(
-                        locationLine,
-                        style: ts_body.copyWith(
-                          color: Colors.white38,
-                          fontSize: 12,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ],
-                ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              const Icon(Icons.chevron_right, color: Colors.white24, size: 20),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

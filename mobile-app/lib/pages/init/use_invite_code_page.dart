@@ -364,13 +364,8 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                       //   ],
                       // ),
                       const SizedBox(height: 8, width: 10),
-                      TextButton(
-                        style: text_button_style.copyWith(
-                          backgroundColor: const WidgetStatePropertyAll(
-                            Colors.transparent,
-                          ),
-                          foregroundColor: WidgetStatePropertyAll(hc_red),
-                        ),
+                      ElevatedButton(
+                        style: text_button_style,
                         onPressed: () async {
                           final EmailPopup emailPopup = EmailPopup(
                             initialEmailAddress: _emailAddress,
@@ -407,16 +402,15 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                         },
                         child: Text(
                           'Email me a new invite code',
-                          style: ts_title.copyWith(color: hc_red),
+                          style: ts_title.copyWith(color: Colors.white),
                         ),
                       ),
-                      TextButton(
+                      const SizedBox(height: 8),
+                      ElevatedButton(
                         style: text_button_style.copyWith(
                           backgroundColor: const WidgetStatePropertyAll(
-                            Colors.transparent,
+                            Colors.grey,
                           ),
-                          foregroundColor:
-                              const WidgetStatePropertyAll(Colors.grey),
                         ),
                         onPressed: () => Navigator.push<void>(
                           context,
@@ -426,7 +420,7 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                         ),
                         child: Text(
                           'I didn\'t receive an email',
-                          style: ts_title.copyWith(color: Colors.grey),
+                          style: ts_title.copyWith(color: Colors.white),
                         ),
                       ),
                     ],

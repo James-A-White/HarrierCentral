@@ -1,5 +1,31 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.9.1+1155 (2026-06-05)
+
+### Improvements
+
+- **Guest run cards match the main app**: Run cards on the "Runs Around the World"
+  discovery screen now use the same white card style as the main app — kennel logo,
+  dark-blue kennel name, run number and day offset, date/time, hares, and location,
+  all with identical typography and layout.
+- **Guest run detail page redesigned**: The run detail screen for unregistered users
+  now matches the main app's layout exactly — large event image (or kennel logo
+  fallback), centred event name, two-column label/value rows with golden labels and
+  white values, FancyDivider section separators, and a "Share Runs" button at the
+  bottom.
+- **Guest action bar redesigned**: The two-button "Log In / Create Account" bar is
+  replaced with a single full-width green promotional button ("Create your free account
+  now") with an "or" / "Log In" text link underneath, making the primary CTA more
+  prominent.
+- **Find My Account button polish**: The secondary action buttons ("I have an invite
+  code", "I definitely don't have an account") are now solid elevated buttons using the
+  app-bar colour rather than transparent outlined buttons.
+- **Use Invite Code button polish**: The "Email me a new invite code" and "I didn't
+  receive an email" actions are now elevated buttons (red primary, grey secondary)
+  replacing the previous flat text buttons.
+
+---
+
 ## 2.8.2+1153 (2026-06-05)
 
 ### New Features
