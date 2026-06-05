@@ -410,6 +410,25 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                           style: ts_title.copyWith(color: hc_red),
                         ),
                       ),
+                      TextButton(
+                        style: text_button_style.copyWith(
+                          backgroundColor: const WidgetStatePropertyAll(
+                            Colors.transparent,
+                          ),
+                          foregroundColor:
+                              const WidgetStatePropertyAll(Colors.grey),
+                        ),
+                        onPressed: () => Navigator.push<void>(
+                          context,
+                          MaterialPageRoute<void>(
+                            builder: (_) => const EmailNotReceivedPage(),
+                          ),
+                        ),
+                        child: Text(
+                          'I didn\'t receive an email',
+                          style: ts_title.copyWith(color: Colors.grey),
+                        ),
+                      ),
                     ],
                   ),
                 ),

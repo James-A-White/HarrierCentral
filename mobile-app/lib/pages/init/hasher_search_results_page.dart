@@ -14,6 +14,15 @@ class _HasherSearchResultsPageState extends State<HasherSearchResultsPage> {
   String? _selectedPublicHasherId;
   bool _isSending = false;
 
+  @override
+  void initState() {
+    super.initState();
+    final Map<String, List<HasherKennelMatch>> grouped = _grouped;
+    if (grouped.length == 1) {
+      _selectedPublicHasherId = grouped.keys.first;
+    }
+  }
+
   Map<String, List<HasherKennelMatch>> get _grouped {
     final Map<String, List<HasherKennelMatch>> map =
         <String, List<HasherKennelMatch>>{};
@@ -39,7 +48,7 @@ class _HasherSearchResultsPageState extends State<HasherSearchResultsPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          backgroundColor: Colors.green.shade700,
+          backgroundColor: Colors.teal.shade700,
           content: const Text(
             "We've sent your invite code by email. Check your inbox!",
             style: TextStyle(color: Colors.white),
@@ -146,17 +155,26 @@ class _HasherSearchResultsPageState extends State<HasherSearchResultsPage> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: () => Navigator.pushReplacement<void, void>(
-                      context,
-                      MaterialPageRoute<void>(
-                        builder: (_) => const CreateNewAccountPage(),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        side: const BorderSide(color: Colors.white38),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      "None of these are me — create a new account",
-                      style:
-                          ts_body.copyWith(color: Colors.white70, fontSize: 13),
+                      onPressed: () => Navigator.pushReplacement<void, void>(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (_) => const CreateNewAccountPage(),
+                        ),
+                      ),
+                      child: Text(
+                        "None of these are me",
+                        style: ts_button,
+                      ),
                     ),
                   ),
                 ],

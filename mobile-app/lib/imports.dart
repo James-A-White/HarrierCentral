@@ -118,6 +118,7 @@ export 'package:harrier_central/data/services/song_session_service.dart';
 export 'package:harrier_central/pages/init/account_question_page.dart';
 export 'package:harrier_central/pages/init/find_my_account_page.dart';
 export 'package:harrier_central/pages/init/hasher_search_results_page.dart';
+export 'package:harrier_central/pages/init/email_not_received_page.dart';
 export 'package:harrier_central/pages/init/app_entry_page.dart';
 export 'package:harrier_central/pages/init/avatar_icons_page.dart';
 export 'package:harrier_central/pages/init/choose_profile_image.dart';
