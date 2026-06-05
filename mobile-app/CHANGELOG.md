@@ -1,5 +1,30 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.9.5+1160 (2026-06-05)
+
+### Fixes
+
+- **Stats tab no longer hangs on empty kennel**: When a kennel has no run
+  history the Stats tab now shows "No history" instead of an infinite spinner.
+- **Find My Account keyboard**: The keyboard no longer opens automatically
+  when the page loads, so all buttons are visible on arrival.
+- **Find My Account — removed redundant text**: "Already have an invite code?"
+  label removed; the button label is self-explanatory.
+
+### Improvements
+
+- **Guest action bar — single button**: The two-button "Create account / Log In"
+  layout is replaced with one green "Create your free account or Log In" button
+  that takes guests straight to the account search screen.
+- **Guest discovery title**: Renamed "Runs Around the World" to "Hashes Around
+  the World".
+- **Multiple pinned guest filters (up to 5)**: Guests can pin multiple search
+  terms; each appears as its own chip with an individual × to remove it.
+- **Larger pin icon and chip text**: Pin icon in the search bar is now 28px;
+  chip labels are 15px.
+
+---
+
 ## 2.9.4+1159 (2026-06-05)
 
 ### Improvements

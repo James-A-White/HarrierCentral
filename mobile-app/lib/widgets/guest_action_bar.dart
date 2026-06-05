@@ -9,64 +9,31 @@ class GuestActionBar extends StatelessWidget {
     return Container(
       padding: EdgeInsets.fromLTRB(10, 12, 10, 12 + bottomPadding),
       color: themeAppBarBackground,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: Colors.green.shade700,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              onPressed: () => Navigator.push<void>(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (_) => const IntroSliderPage(),
-                ),
-              ),
-              child: Text(
-                'Create your free account now',
-                style: ts_button.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-                textAlign: TextAlign.center,
-              ),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            backgroundColor: Colors.green.shade700,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
           ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                'Already have an account? ',
-                style: ts_body.copyWith(color: Colors.white70, fontSize: 15),
-              ),
-              GestureDetector(
-                onTap: () => Navigator.push<void>(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (_) => const FindMyAccountPage(),
-                  ),
-                ),
-                child: Text(
-                  'Log In',
-                  style: ts_body.copyWith(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    decoration: TextDecoration.underline,
-                    decorationColor: Colors.white,
-                  ),
-                ),
-              ),
-            ],
+          onPressed: () => Navigator.push<void>(
+            context,
+            MaterialPageRoute<void>(
+              builder: (_) => const FindMyAccountPage(),
+            ),
           ),
-        ],
+          child: Text(
+            'Create your free account or Log In',
+            style: ts_button.copyWith(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
       ),
     );
   }

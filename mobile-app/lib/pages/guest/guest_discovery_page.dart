@@ -44,7 +44,7 @@ class _GuestDiscoveryPageState extends State<GuestDiscoveryPage>
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: Text('Runs Around the World', style: ts_appBarTitle),
+        title: Text('Hashes Around the World', style: ts_appBarTitle),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(96),
           child: Container(
@@ -120,7 +120,7 @@ class _GuestDiscoveryPageState extends State<GuestDiscoveryPage>
                                   : canAdd
                                       ? Colors.white54
                                       : Colors.white24,
-                              size: 22,
+                              size: 28,
                             ),
                             onPressed: () async {
                               if (isSaved) {
