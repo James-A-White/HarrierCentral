@@ -60,8 +60,11 @@ namespace HcWebApi.Endpoints
                 return new OkObjectResult(new { connected = true });
             }
 
-            // Validate required parameters for all other calls
-            if (data.deviceId == null || data.accessToken == null)
+            // Pre-auth queries use the global shared token and have no device record yet.
+            bool isPreAuthQuery = (string?)data.queryType == "findHashersByHashName";
+
+            // Validate required parameters for all authenticated calls
+            if (!isPreAuthQuery && (data.deviceId == null || data.accessToken == null))
             {
                 log.LogInformation("Missing required parameters: deviceId or accessToken.");
                 return new BadRequestObjectResult("Missing required parameters: hasherId or accessToken.");
