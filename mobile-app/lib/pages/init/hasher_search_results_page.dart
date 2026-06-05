@@ -81,7 +81,10 @@ class _HasherSearchResultsPageState extends State<HasherSearchResultsPage> {
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
         iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
-        title: Text('We found some matches', style: ts_appBarTitle),
+        title: Text(
+          grouped.length == 1 ? 'We found your account' : 'We found some matches',
+          style: ts_appBarTitle,
+        ),
       ),
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
@@ -95,12 +98,16 @@ class _HasherSearchResultsPageState extends State<HasherSearchResultsPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      'We found ${widget.matches.length == 1 ? 'an account' : 'some accounts'} that may be yours.',
+                      grouped.length == 1
+                          ? 'Does this look like you?'
+                          : 'We found some accounts that may be yours.',
                       style: ts_body,
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Tap your kennel to select it — we\'ll email you an invite code.',
+                      grouped.length == 1
+                          ? 'Tap below and we\'ll email you an invite code.'
+                          : 'Tap your kennel to select it — we\'ll email you an invite code.',
                       style: ts_body.copyWith(color: Colors.white70),
                     ),
                     const SizedBox(height: 20),

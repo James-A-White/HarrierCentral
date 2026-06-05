@@ -13,6 +13,7 @@ enum RouteNames {
   PERMISSION_NOTIFICATION_SLIDER,
   GET_STARTED_SLIDER,
   USER_QR_CODE,
+  GUEST_DISCOVERY,
 }
 
 final Map<String, WidgetBuilder> routes = <String, WidgetBuilder>{

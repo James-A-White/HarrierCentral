@@ -1,3 +1,16 @@
+2.9.0+1154
+    • Guest Discovery Mode — new users now land on a live global runs browser
+      immediately after the splash screen, before creating an account; browse
+      upcoming and recent runs from every kennel worldwide with a full-text
+      search across run name, kennel, city, country, and continent; tap any
+      run to see full details; past runs show the last two months with a note
+      that full history is available to registered users
+    • Log In / Create Account buttons are always visible in guest mode so
+      returning users can jump straight to Find My Account and new users can
+      start the onboarding flow from any screen
+    • Find My Account: when only one matching account is found the screen now
+      reads "We found your account" with friendlier singular copy
+
 2.2.9+1103
     • Fixed hang on startup — sync paging loop no longer retries forever on a
       transient server error; was most visible as a freeze just after "Loading Hashers"
