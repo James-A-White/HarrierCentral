@@ -136,7 +136,12 @@ run_file "HC6.ValidateAppAuth" \
     "$APP_DIR/HC6.ValidateAppAuth.StoredProcedure.sql"
 
 echo ""
-echo "── Step 6: App SPs ──────────────────────────────────────────"
+echo "── Step 6: Internal helper SPs ──────────────────────────────"
+run_file "HC.nonApi_getUserInviteCodeByPublicHasherId" \
+    "$APP_DIR/HC.nonApi_getUserInviteCodeByPublicHasherId.StoredProcedure.sql"
+
+echo ""
+echo "── Step 7: App SPs ──────────────────────────────────────────"
 for file in "$APP_DIR"/HC6.hcapp_*.StoredProcedure.sql; do
     name="$(basename "$file" .StoredProcedure.sql)"
     run_file "$name" "$file"
@@ -144,6 +149,6 @@ done
 
 echo ""
 echo "══════════════════════════════════════════════════════════════"
-echo "  Done.  $PASS deployed,  $FAIL failed."
+echo "  Done.  $PASS deployed,  $FAIL failed.  (portal + public-web + internal + app)"
 echo "══════════════════════════════════════════════════════════════"
 echo ""

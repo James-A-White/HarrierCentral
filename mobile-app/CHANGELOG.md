@@ -1,5 +1,35 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.8.2+1153 (2026-06-05)
+
+### New Features
+
+- **Find My Account — new onboarding flow for users who don't have (or aren't sure
+  if they have) an account**: Both the "No" and "I don't know" paths on the account
+  question screen now lead to a dedicated search page. The user enters their hash name
+  or last name; the server searches for matching hashers within 500 miles (using GPS
+  first, IP geolocation as fallback, or no filter if neither is available). Matches are
+  grouped by hasher and shown as cards displaying name, photo, and kennel run history so
+  the user can identify themselves. Selecting their card sends their invite code to the
+  email address on file — no email address is ever returned to the client.
+- **Find My Account — single result auto-selected**: When the search returns exactly one
+  matching account the card is pre-selected automatically so the user can proceed without
+  an extra tap.
+- **"I didn't receive an email" help page**: A new link on the Enter Invite Code screen
+  takes users who never received their code to a guidance page covering spam-folder
+  checks, the wrong-email-on-file scenario, and a pre-filled Contact Us email.
+
+### Improvements
+
+- **Song share recipient count**: The "Song shared" snackbar now shows the number of
+  pack members who will receive the notification (e.g. "Song shared with 14 pack
+  members") instead of generic text.
+- **Find My Account UI polish**: The success snackbar is now teal to distinguish it from
+  the green confirm button. The "None of these are me" escape hatch is now a full-width
+  outlined button matching the styling of other secondary actions.
+
+---
+
 ## 2.8.1+1152 (2026-06-03)
 
 ### Fixes

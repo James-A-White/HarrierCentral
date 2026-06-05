@@ -62,6 +62,12 @@ class SongSessionNotifier extends GetxController {
 // Result models
 // ---------------------------------------------------------------------------
 
+class SelectSongResult {
+  SelectSongResult({required this.songTitle, this.recipientCount});
+  final String songTitle;
+  final int? recipientCount;
+}
+
 class CurrentSongResult {
   CurrentSongResult({
     required this.songId,
@@ -79,9 +85,9 @@ class CurrentSongResult {
 // ---------------------------------------------------------------------------
 
 class SongSessionService {
-  /// Records a song selection for an event. Returns the song title on success
-  /// (for the snackbar), or null on error.
-  static Future<String?> selectSong({
+  /// Records a song selection for an event. Returns song title + recipient count
+  /// on success, or null on error.
+  static Future<SelectSongResult?> selectSong({
     required String eventId,
     required String songId,
   }) async {
@@ -116,10 +122,13 @@ class SongSessionService {
       if (rowsets.length > 1 && (rowsets[1] as List).isNotEmpty) {
         final Map<String, dynamic> adHoc =
             (rowsets[1] as List)[0] as Map<String, dynamic>;
-        return adHoc['songTitle'] as String? ?? '';
+        return SelectSongResult(
+          songTitle: adHoc['songTitle'] as String? ?? '',
+          recipientCount: adHoc['recipientCount'] as int?,
+        );
       }
     } catch (_) {}
-    return '';
+    return SelectSongResult(songTitle: '');
   }
 
   /// Returns the currently active song for an event (selected within the last
