@@ -56,10 +56,15 @@ class _GuestDiscoveryPageState extends State<GuestDiscoveryPage>
                   child: Obx(() {
                     final bool hasText =
                         _controller.searchQuery.value.isNotEmpty;
+                    final String trimmed =
+                        _controller.searchQuery.value.trim();
                     final bool isSaved =
                         hasText &&
-                        _controller.savedSearch.value ==
-                            _controller.searchQuery.value.trim();
+                        _controller.savedSearches.contains(trimmed);
+                    final bool canAdd =
+                        _controller.savedSearches.length <
+                        GuestDiscoveryController.maxSavedSearches;
+
                     return Row(
                       children: <Widget>[
                         Expanded(
@@ -102,22 +107,26 @@ class _GuestDiscoveryPageState extends State<GuestDiscoveryPage>
                         if (hasText)
                           IconButton(
                             tooltip: isSaved
-                                ? 'Remove home search'
-                                : 'Save as home search',
+                                ? 'Remove from pinned filters'
+                                : canAdd
+                                    ? 'Pin as home filter'
+                                    : 'Maximum 5 pinned filters',
                             icon: Icon(
                               isSaved
                                   ? Icons.push_pin
                                   : Icons.push_pin_outlined,
-                              color: isSaved ? Colors.white : Colors.white54,
+                              color: isSaved
+                                  ? Colors.white
+                                  : canAdd
+                                      ? Colors.white54
+                                      : Colors.white24,
                               size: 22,
                             ),
                             onPressed: () async {
                               if (isSaved) {
-                                await _controller.clearSavedSearch();
-                              } else {
-                                await _controller.setSavedSearch(
-                                  _controller.searchQuery.value,
-                                );
+                                await _controller.removeSavedSearch(trimmed);
+                              } else if (canAdd) {
+                                await _controller.addSavedSearch(trimmed);
                                 _searchController.clear();
                                 _controller.setSearch('');
                               }
@@ -148,43 +157,25 @@ class _GuestDiscoveryPageState extends State<GuestDiscoveryPage>
         decoration: Backgrounds.defaultHcBackground(),
         child: Column(
           children: <Widget>[
-            // Saved-search chip — slides in when a term is pinned
+            // Saved-search chips — slides in when any term is pinned
             Obx(() {
-              final String saved = _controller.savedSearch.value;
+              final List<String> saved = _controller.savedSearches.toList();
               if (saved.isEmpty) return const SizedBox.shrink();
               return Container(
                 color: themeAppBarBackground,
-                padding: const EdgeInsets.fromLTRB(16, 6, 12, 8),
-                child: Row(
-                  children: <Widget>[
-                    const Icon(
-                      Icons.push_pin,
-                      color: Colors.white70,
-                      size: 14,
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        '"$saved" runs first',
-                        style: ts_body.copyWith(
-                          color: Colors.white70,
-                          fontSize: 13,
+                padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
+                child: Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: saved
+                      .map(
+                        (String term) => _SavedChip(
+                          term: term,
+                          onRemove: () =>
+                              _controller.removeSavedSearch(term),
                         ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: _controller.clearSavedSearch,
-                      child: const Padding(
-                        padding: EdgeInsets.only(left: 8),
-                        child: Icon(
-                          Icons.close,
-                          color: Colors.white54,
-                          size: 18,
-                        ),
-                      ),
-                    ),
-                  ],
+                      )
+                      .toList(),
                 ),
               );
             }),
@@ -201,6 +192,44 @@ class _GuestDiscoveryPageState extends State<GuestDiscoveryPage>
         ),
       ),
       bottomNavigationBar: const GuestActionBar(),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Saved search chip
+// ---------------------------------------------------------------------------
+
+class _SavedChip extends StatelessWidget {
+  const _SavedChip({required this.term, required this.onRemove});
+
+  final String term;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          const Icon(Icons.push_pin, color: Colors.white70, size: 13),
+          const SizedBox(width: 5),
+          Text(
+            term,
+            style: ts_body.copyWith(color: Colors.white, fontSize: 15),
+          ),
+          const SizedBox(width: 6),
+          GestureDetector(
+            onTap: onRemove,
+            child: const Icon(Icons.close, color: Colors.white54, size: 17),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -236,10 +265,10 @@ class _RunList extends StatelessWidget {
         );
       }
 
-      final bool hasSaved = controller.savedSearch.value.isNotEmpty;
+      final bool hasSaved = controller.savedSearches.isNotEmpty;
       final bool hasLiveQuery = controller.searchQuery.value.trim().isNotEmpty;
 
-      // ── Split view (saved home search, no active search bar query) ──────
+      // ── Split view (saved home filters, no active search bar query) ───────
       if (hasSaved && !hasLiveQuery) {
         final (:List<GuestRunModel> pinned, :List<GuestRunModel> rest) =
             isFuture ? controller.splitUpcoming() : controller.splitPast();
@@ -271,9 +300,7 @@ class _RunList extends StatelessWidget {
             itemCount: totalItems,
             itemBuilder: (BuildContext context, int index) {
               if (index == dividerIndex) {
-                return _OtherRunsDivider(
-                  savedTerm: controller.savedSearch.value,
-                );
+                return const _OtherRunsDivider();
               }
               if (!isFuture && index == historyNoteIndex) {
                 return const _HistoryNote();
@@ -343,9 +370,7 @@ class _RunList extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _OtherRunsDivider extends StatelessWidget {
-  const _OtherRunsDivider({required this.savedTerm});
-
-  final String savedTerm;
+  const _OtherRunsDivider();
 
   @override
   Widget build(BuildContext context) {

@@ -1,5 +1,19 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.9.4+1159 (2026-06-05)
+
+### Improvements
+
+- **Multiple pinned filters (up to 5)**: Guests can now pin multiple search
+  terms (e.g. "London" and "Paris", or "BMPH3" and "CityH3"). Each pinned
+  term appears as its own chip with an individual × to remove it. A run is
+  promoted to the top section if it matches any saved term. The pin icon in
+  the search bar dims when all 5 slots are used.
+- **Larger chip text**: The pinned-filter chips now use 15px text for easier
+  readability.
+
+---
+
 ## 2.9.3+1158 (2026-06-05)
 
 ### New features

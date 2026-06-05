@@ -10,7 +10,9 @@ class GuestDiscoveryController extends GetxController {
   final RxBool hasErrorPast = false.obs;
   final RxBool _pastTabLoaded = false.obs;
   final RxString searchQuery = ''.obs;
-  final RxString savedSearch = ''.obs;
+  final RxList<String> savedSearches = <String>[].obs;
+
+  static const int maxSavedSearches = 5;
 
   bool get pastTabLoaded => _pastTabLoaded.value;
 
@@ -19,18 +21,33 @@ class GuestDiscoveryController extends GetxController {
 
   void setSearch(String q) => searchQuery.value = q;
 
-  Future<void> setSavedSearch(String term) async {
-    savedSearch.value = term.trim();
-    await setStringPref(StringPrefsEnum.guestSavedSearchTerm, term.trim());
+  Future<void> addSavedSearch(String term) async {
+    final String t = term.trim();
+    if (t.isEmpty) return;
+    if (savedSearches.contains(t)) return;
+    if (savedSearches.length >= maxSavedSearches) return;
+    savedSearches.add(t);
+    await _persistSavedSearches();
   }
 
-  Future<void> clearSavedSearch() async {
-    savedSearch.value = '';
-    await setStringPref(StringPrefsEnum.guestSavedSearchTerm, null);
+  Future<void> removeSavedSearch(String term) async {
+    savedSearches.remove(term);
+    await _persistSavedSearches();
   }
 
-  // Returns the all-runs list split into [pinned = matching saved term] and
-  // [rest = everything else]. Only meaningful when savedSearch is non-empty.
+  Future<void> _persistSavedSearches() async {
+    if (savedSearches.isEmpty) {
+      await setStringPref(StringPrefsEnum.guestSavedSearchTerm, null);
+    } else {
+      await setStringPref(
+        StringPrefsEnum.guestSavedSearchTerm,
+        jsonEncode(savedSearches.toList()),
+      );
+    }
+  }
+
+  // Returns the all-runs list split into [pinned = matching any saved term] and
+  // [rest = everything else]. Only meaningful when savedSearches is non-empty.
   ({List<GuestRunModel> pinned, List<GuestRunModel> rest}) splitUpcoming() =>
       _splitBySaved(_allUpcomingRuns);
 
@@ -47,15 +64,16 @@ class GuestDiscoveryController extends GetxController {
   ({List<GuestRunModel> pinned, List<GuestRunModel> rest}) _splitBySaved(
     List<GuestRunModel> runs,
   ) {
-    final String saved =
-        removeDiacritics(savedSearch.value.trim().toLowerCase());
-    if (saved.isEmpty) {
+    if (savedSearches.isEmpty) {
       return (pinned: <GuestRunModel>[], rest: runs.toList());
     }
+    final List<String> savedNorm = savedSearches
+        .map((String s) => removeDiacritics(s.trim().toLowerCase()))
+        .toList();
     final List<GuestRunModel> pinned = [];
     final List<GuestRunModel> rest = [];
     for (final GuestRunModel r in runs) {
-      (_matches(r, saved) ? pinned : rest).add(r);
+      (savedNorm.any((String q) => _matches(r, q)) ? pinned : rest).add(r);
     }
     return (pinned: pinned, rest: rest);
   }
@@ -74,9 +92,28 @@ class GuestDiscoveryController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    savedSearch.value =
-        getStringPref(StringPrefsEnum.guestSavedSearchTerm) ?? '';
+    _loadSavedSearches();
     loadUpcoming();
+  }
+
+  void _loadSavedSearches() {
+    final String? stored =
+        getStringPref(StringPrefsEnum.guestSavedSearchTerm);
+    if (stored == null || stored.isEmpty) return;
+    try {
+      final dynamic decoded = jsonDecode(stored);
+      if (decoded is List) {
+        savedSearches.addAll(
+          decoded.cast<String>().take(maxSavedSearches),
+        );
+      } else {
+        // Migration: old format was a plain string, not JSON.
+        savedSearches.add(stored);
+      }
+    } catch (_) {
+      // If JSON parse fails it was the old plain-string format.
+      savedSearches.add(stored);
+    }
   }
 
   Future<void> loadUpcoming() async {
