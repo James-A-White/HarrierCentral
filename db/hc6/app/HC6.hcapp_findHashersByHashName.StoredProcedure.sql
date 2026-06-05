@@ -1,9 +1,9 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcapp_findHashersByHashName]
 
-    @accessToken NVARCHAR(1000),
-    @hashName    NVARCHAR(250),
-    @lat         FLOAT = NULL,
-    @lon         FLOAT = NULL
+    @accessToken  NVARCHAR(1000),
+    @searchTerm   NVARCHAR(250),
+    @lat          FLOAT = NULL,
+    @lon          FLOAT = NULL
 
 AS
 -- =====================================================================
@@ -18,10 +18,10 @@ AS
 --   home city is within 500 miles (804,672 m) are returned. Pass NULL
 --   for both to disable the distance filter.
 -- Parameters:
---   @accessToken - Global shared token (validated against null UUID)
---   @hashName    - Hash name or partial name to search (min 2 chars)
---   @lat         - Device latitude for distance filter (optional)
---   @lon         - Device longitude for distance filter (optional)
+--   @accessToken  - Global shared token (validated against null UUID)
+--   @searchTerm   - Hash name or last name to search (min 2 chars)
+--   @lat          - Device latitude for distance filter (optional)
+--   @lon          - Device longitude for distance filter (optional)
 -- Returns:
 --   Rowset 0: success envelope { success, errorCode, errorType }
 --   Rowset 1 (success): { publicHasherId, displayName, hashName, photo,
@@ -56,7 +56,7 @@ BEGIN
     RETURN;
 END
 
-IF (LEN(COALESCE(@hashName, '')) < 2)
+IF (LEN(COALESCE(@searchTerm, '')) < 2)
 BEGIN
     SET @errorCode = 1313; SET @errorType = 2; SET @errorId = NEWID();
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
@@ -90,8 +90,8 @@ INNER JOIN HC.City c               ON c.id         = k.CityId
 WHERE h.Removed             = 0
   AND hkm.HcTotalRunCount   > 0
   AND (
-       h.HashName    LIKE '%' + @hashName + '%'
-    OR h.DisplayName LIKE '%' + @hashName + '%'
+       h.HashName    LIKE '%' + @searchTerm + '%'
+    OR h.LastName    LIKE '%' + @searchTerm + '%'
   )
   AND (
        @searchPoint IS NULL

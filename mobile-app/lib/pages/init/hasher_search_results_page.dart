@@ -12,7 +12,6 @@ class HasherSearchResultsPage extends StatefulWidget {
 
 class _HasherSearchResultsPageState extends State<HasherSearchResultsPage> {
   String? _selectedPublicHasherId;
-  String? _selectedKennelId;
   bool _isSending = false;
 
   Map<String, List<HasherKennelMatch>> get _grouped {
@@ -22,13 +21,6 @@ class _HasherSearchResultsPageState extends State<HasherSearchResultsPage> {
       map.putIfAbsent(m.publicHasherId, () => <HasherKennelMatch>[]).add(m);
     }
     return map;
-  }
-
-  void _selectKennel(String publicHasherId, String kennelId) {
-    setState(() {
-      _selectedPublicHasherId = publicHasherId;
-      _selectedKennelId = kennelId;
-    });
   }
 
   Future<void> _sendInviteCode() async {
@@ -106,12 +98,10 @@ class _HasherSearchResultsPageState extends State<HasherSearchResultsPage> {
                     for (final String hasherId in hasherIds) ...<Widget>[
                       _HasherCard(
                         matches: grouped[hasherId]!,
-                        selectedKennelId:
-                            _selectedPublicHasherId == hasherId
-                                ? _selectedKennelId
-                                : null,
-                        onKennelSelected: (String kennelId) =>
-                            _selectKennel(hasherId, kennelId),
+                        isSelected: _selectedPublicHasherId == hasherId,
+                        onTap: () => setState(
+                          () => _selectedPublicHasherId = hasherId,
+                        ),
                       ),
                       const SizedBox(height: 12),
                     ],
@@ -132,7 +122,7 @@ class _HasherSearchResultsPageState extends State<HasherSearchResultsPage> {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        backgroundColor: _selectedKennelId != null
+                        backgroundColor: _selectedPublicHasherId != null
                             ? Colors.green.shade700
                             : Colors.grey.shade600,
                         shape: RoundedRectangleBorder(
@@ -140,7 +130,7 @@ class _HasherSearchResultsPageState extends State<HasherSearchResultsPage> {
                         ),
                       ),
                       onPressed:
-                          _selectedKennelId == null || _isSending
+                          _selectedPublicHasherId == null || _isSending
                               ? null
                               : _sendInviteCode,
                       child: _isSending
@@ -180,138 +170,108 @@ class _HasherSearchResultsPageState extends State<HasherSearchResultsPage> {
 }
 
 // ---------------------------------------------------------------------------
-// Hasher card — shows photo + name with expandable kennel rows
+// Hasher card — tappable at the hasher level; kennels shown as context only
 // ---------------------------------------------------------------------------
 
 class _HasherCard extends StatelessWidget {
   const _HasherCard({
     required this.matches,
-    required this.selectedKennelId,
-    required this.onKennelSelected,
-  });
-
-  final List<HasherKennelMatch> matches;
-  final String? selectedKennelId;
-  final void Function(String kennelId) onKennelSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    final HasherKennelMatch hasher = matches.first;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Row(
-              children: <Widget>[
-                ProfilePhoto(
-                  profilePhotoUrl:
-                      hasher.photo.isEmpty ? null : hasher.photo,
-                  photoHeight: 44,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    hasher.displayName,
-                    style: ts_body.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            const Divider(color: Colors.white24, height: 1),
-            const SizedBox(height: 6),
-            Text(
-              'Kennels',
-              style: ts_body.copyWith(
-                color: Colors.white54,
-                fontSize: 11,
-                letterSpacing: 0.8,
-              ),
-            ),
-            const SizedBox(height: 4),
-            for (final HasherKennelMatch kennel in matches)
-              _KennelRow(
-                kennel: kennel,
-                isSelected: selectedKennelId == kennel.kennelId,
-                onTap: () => onKennelSelected(kennel.kennelId),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Kennel row — tappable with selection highlight
-// ---------------------------------------------------------------------------
-
-class _KennelRow extends StatelessWidget {
-  const _KennelRow({
-    required this.kennel,
     required this.isSelected,
     required this.onTap,
   });
 
-  final HasherKennelMatch kennel;
+  final List<HasherKennelMatch> matches;
   final bool isSelected;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final HasherKennelMatch hasher = matches.first;
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        margin: const EdgeInsets.symmetric(vertical: 3),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected
-              ? Colors.green.shade700.withOpacity(0.4)
-              : Colors.white.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(8),
+              ? Colors.green.shade700.withOpacity(0.25)
+              : Colors.white.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? Colors.green.shade400 : Colors.transparent,
+            color: isSelected ? Colors.green.shade400 : Colors.white12,
+            width: isSelected ? 2 : 1,
           ),
         ),
-        child: Row(
-          children: <Widget>[
-            Icon(
-              isSelected
-                  ? Icons.radio_button_checked
-                  : Icons.radio_button_unchecked,
-              color: isSelected ? Colors.green.shade300 : Colors.white38,
-              size: 20,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                kennel.kennelName,
-                style: ts_body.copyWith(
-                  color: isSelected ? Colors.white : Colors.white70,
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  ProfilePhoto(
+                    profilePhotoUrl: hasher.photo.isEmpty ? null : hasher.photo,
+                    photoHeight: 44,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      hasher.displayName,
+                      style: ts_body.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    isSelected
+                        ? Icons.check_circle
+                        : Icons.radio_button_unchecked,
+                    color:
+                        isSelected ? Colors.green.shade300 : Colors.white38,
+                    size: 24,
+                  ),
+                ],
+              ),
+              if (matches.isNotEmpty) ...<Widget>[
+                const SizedBox(height: 10),
+                const Divider(color: Colors.white24, height: 1),
+                const SizedBox(height: 8),
+                Text(
+                  'Run history',
+                  style: ts_body.copyWith(
+                    color: Colors.white54,
+                    fontSize: 11,
+                    letterSpacing: 0.8,
+                  ),
                 ),
-              ),
-            ),
-            Text(
-              '${kennel.runCount} run${kennel.runCount == 1 ? '' : 's'}',
-              style: ts_body.copyWith(
-                color: Colors.white38,
-                fontSize: 12,
-              ),
-            ),
-          ],
+                const SizedBox(height: 4),
+                for (final HasherKennelMatch kennel in matches)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: Text(
+                            kennel.kennelName,
+                            style:
+                                ts_body.copyWith(color: Colors.white70),
+                          ),
+                        ),
+                        Text(
+                          '${kennel.runCount} run${kennel.runCount == 1 ? '' : 's'}',
+                          style: ts_body.copyWith(
+                            color: Colors.white38,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ],
+          ),
         ),
       ),
     );

@@ -8,19 +8,19 @@ class FindMyAccountPage extends StatefulWidget {
 }
 
 class _FindMyAccountPageState extends State<FindMyAccountPage> {
-  final TextEditingController _hashNameController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   bool _isSearching = false;
   bool _noResultsFound = false;
 
   @override
   void dispose() {
-    _hashNameController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
   Future<void> _search() async {
-    final String hashName = _hashNameController.text.trim();
-    if (hashName.length < 2) {
+    final String searchTerm = _searchController.text.trim();
+    if (searchTerm.length < 2) {
       await Utilities.showAlert(
         'Too short',
         'Please enter at least 2 characters.',
@@ -39,7 +39,7 @@ class _FindMyAccountPageState extends State<FindMyAccountPage> {
 
     final List<HasherKennelMatch>? results =
         await FindMyAccountService.findHashersByHashName(
-      hashName: hashName,
+      searchTerm: searchTerm,
       lat: lat,
       lon: lon,
     );
@@ -90,24 +90,24 @@ class _FindMyAccountPageState extends State<FindMyAccountPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  'Do you have a hash name?',
+                  'Let\'s find your account',
                   style: ts_headingVeryLarge,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Enter your hash name and we\'ll check whether a Harrier Central account already exists for you.',
+                  'Enter your hash name or last name and we\'ll check whether a Harrier Central account already exists for you.',
                   style: ts_body,
                 ),
                 const SizedBox(height: 32),
                 TextField(
-                  controller: _hashNameController,
+                  controller: _searchController,
                   autofocus: true,
                   textCapitalization: TextCapitalization.words,
                   onSubmitted: (_) => _search(),
                   style: ts_body,
                   decoration: InputDecoration(
-                    hintText: 'Hash name',
+                    hintText: 'Hash name or last name',
                     hintStyle: ts_hint,
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.1),

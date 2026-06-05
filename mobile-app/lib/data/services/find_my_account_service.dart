@@ -33,7 +33,7 @@ class FindMyAccountService {
   /// Passes lat/lon for the 500-mile distance filter when available.
   /// Returns null on network error; empty list when no matches found.
   static Future<List<HasherKennelMatch>?> findHashersByHashName({
-    required String hashName,
+    required String searchTerm,
     double? lat,
     double? lon,
   }) async {
@@ -45,7 +45,7 @@ class FindMyAccountService {
         GUID_EMPTY,
         'hcapp_findHashersByHashName',
       ),
-      'hashName': hashName,
+      'searchTerm': searchTerm,
     };
 
     if (lat != null && lon != null) {
