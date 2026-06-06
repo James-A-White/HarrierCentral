@@ -1,5 +1,23 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.9.6+1161 (2026-06-06)
+
+### Fixes
+
+- **RSVP state lost on scroll**: After RSVPing for a run, scrolling it off
+  screen and back again no longer reverts the RSVP icon to unselected. The
+  underlying model is now kept in sync with the controller so the widget
+  re-initialises correctly when recycled by the list.
+- **Guest filter chips**: Removed purple background behind the pinned filter
+  chips on the Hashes Around the World screen.
+
+### Improvements
+
+- **Guest filter chips 30% larger**: Chip padding, icon sizes, and font size
+  all scaled up for easier readability and tapping.
+
+---
+
 ## 2.9.5+1160 (2026-06-05)
 
 ### Fixes

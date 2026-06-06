@@ -1226,6 +1226,17 @@ class RunListItem extends StatelessWidget {
       rliController.hares.value = hares;
     }
 
+    // Keep the source model in sync so the controller re-initialises correctly
+    // if this list item is recycled by ListView.builder after scrolling off screen.
+    futureRun.extensions = futureRun.extensions.copyWith(
+      rsvpState: rsvpResult,
+      isHare: willHareResult,
+      notificationPreference: eventNotificationPreference ??
+          futureRun.extensions.notificationPreference,
+      emailAlertPreference:
+          emailAlertPreference ?? futureRun.extensions.emailAlertPreference,
+    );
+
     if (serverMessage.isNotEmpty) {
       await Utilities.showAlert('RSVP Result', serverMessage, 'OK');
     }

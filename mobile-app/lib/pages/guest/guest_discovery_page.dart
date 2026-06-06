@@ -161,9 +161,8 @@ class _GuestDiscoveryPageState extends State<GuestDiscoveryPage>
             Obx(() {
               final List<String> saved = _controller.savedSearches.toList();
               if (saved.isEmpty) return const SizedBox.shrink();
-              return Container(
-                color: themeAppBarBackground,
-                padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
                 child: Wrap(
                   spacing: 6,
                   runSpacing: 6,
@@ -180,6 +179,7 @@ class _GuestDiscoveryPageState extends State<GuestDiscoveryPage>
               );
             }),
             Expanded(
+
               child: TabBarView(
                 controller: _tabController,
                 children: <Widget>[
@@ -209,24 +209,24 @@ class _SavedChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(21),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          const Icon(Icons.push_pin, color: Colors.white70, size: 13),
-          const SizedBox(width: 5),
+          const Icon(Icons.push_pin, color: Colors.white70, size: 17),
+          const SizedBox(width: 6),
           Text(
             term,
-            style: ts_body.copyWith(color: Colors.white, fontSize: 15),
+            style: ts_body.copyWith(color: Colors.white, fontSize: 20),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 8),
           GestureDetector(
             onTap: onRemove,
-            child: const Icon(Icons.close, color: Colors.white54, size: 17),
+            child: const Icon(Icons.close, color: Colors.white54, size: 22),
           ),
         ],
       ),
