@@ -53,4 +53,47 @@ class GuestRunsService {
       return (success: false, total: 0, runs: <GuestRunModel>[]);
     }
   }
+
+  static Future<({bool success, List<RunPhotoModel> photos})> getRunPhotos({
+    required String publicEventId,
+  }) async {
+    final Map<String, String> params = <String, String>{
+      'queryType': 'getRunPhotos',
+      'publicEventId': publicEventId,
+    };
+
+    final Uri uri = Uri.https(BASE_AF_URL, '/api/PublicWebApi', params);
+
+    try {
+      final http.Response response =
+          await http.get(uri).timeout(const Duration(seconds: 30));
+
+      if (response.statusCode == 404) {
+        return (success: true, photos: <RunPhotoModel>[]);
+      }
+
+      if (response.statusCode != 200) {
+        return (success: false, photos: <RunPhotoModel>[]);
+      }
+
+      final List<dynamic> rowsets =
+          jsonDecode(response.body) as List<dynamic>;
+
+      // Rowset 0: existence check ({ EventFound })
+      // Rowset 1: photo rows (may be empty)
+      if (rowsets.length < 2) {
+        return (success: true, photos: <RunPhotoModel>[]);
+      }
+
+      final List<dynamic> photoList = rowsets[1] as List<dynamic>;
+      final List<RunPhotoModel> photos = photoList
+          .map((dynamic r) =>
+              RunPhotoModel.fromPublicJson(r as Map<String, dynamic>))
+          .toList();
+
+      return (success: true, photos: photos);
+    } catch (_) {
+      return (success: false, photos: <RunPhotoModel>[]);
+    }
+  }
 }

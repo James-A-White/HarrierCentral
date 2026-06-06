@@ -530,6 +530,48 @@ class KennelPhotoService {
     return ServiceCommon.sendHttpPost(() => jsonEncode(body));
   }
 
+  /// Returns all visible photos for a run merged into a flat list:
+  ///   - Own photos (all statuses, isOwnPhoto = true)
+  ///   - Others' approved photos (status >= 2)
+  /// Sorted oldest-first for gallery display.
+  Future<({bool success, List<RunPhotoModel> photos})> getRunPhotosForGallery({
+    required String eventId,
+  }) async {
+    final raw = await getRunPhotos(eventId: eventId);
+
+    if (raw.startsWith(ERROR_PREFIX)) {
+      return (success: false, photos: <RunPhotoModel>[]);
+    }
+
+    try {
+      final List<dynamic> rowsets = jsonDecode(raw) as List<dynamic>;
+
+      final List<RunPhotoModel> ownPhotos = rowsets.isNotEmpty
+          ? (rowsets[0] as List<dynamic>)
+              .map((dynamic r) =>
+                  RunPhotoModel.fromOwnJson(r as Map<String, dynamic>))
+              .toList()
+          : <RunPhotoModel>[];
+
+      final List<RunPhotoModel> otherPhotos = rowsets.length > 1
+          ? (rowsets[1] as List<dynamic>)
+              .map((dynamic r) =>
+                  RunPhotoModel.fromOthersJson(r as Map<String, dynamic>))
+              .toList()
+          : <RunPhotoModel>[];
+
+      final List<RunPhotoModel> merged = <RunPhotoModel>[
+        ...ownPhotos,
+        ...otherPhotos,
+      ]..sort((RunPhotoModel a, RunPhotoModel b) =>
+          a.createdAt.compareTo(b.createdAt));
+
+      return (success: true, photos: merged);
+    } catch (_) {
+      return (success: false, photos: <RunPhotoModel>[]);
+    }
+  }
+
   Future<String> updatePhotoStatus({
     required String photoId,
     required int action,

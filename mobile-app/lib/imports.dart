@@ -165,6 +165,7 @@ export 'package:harrier_central/pages/run_admin/receipt_detail_page.dart';
 export 'package:harrier_central/pages/run_admin/receipts_page.dart';
 export 'package:harrier_central/pages/run_admin/run_admin_main.dart';
 export 'package:harrier_central/data/models/guest/guest_run_model.dart';
+export 'package:harrier_central/data/models/run_photo_model.dart';
 export 'package:harrier_central/data/services/guest_runs_service.dart';
 export 'package:harrier_central/pages/guest/guest_discovery_controller.dart';
 export 'package:harrier_central/pages/guest/guest_discovery_page.dart';

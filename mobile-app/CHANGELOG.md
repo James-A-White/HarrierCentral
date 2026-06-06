@@ -1,5 +1,19 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.9.7+1162 (2026-06-06)
+
+### New Features
+
+- **Run photo gallery**: A new "Photos" tab appears on the run detail screen
+  (both the guest view and the authenticated user view). Approved photos appear
+  as a 3-column grid. Pull down to refresh for the latest photos. Guests see
+  Hash-Flash-approved photos; authenticated users also see their own private
+  photos with a lock badge.
+- **Photos tab on guest run detail**: The guest run detail screen now has three
+  tabs — Details, Map, and Photos.
+
+---
+
 ## 2.9.6+1161 (2026-06-06)
 
 ### Fixes

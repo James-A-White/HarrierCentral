@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/widgets/run_photo_gallery.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 import 'package:map_launcher/map_launcher.dart' as maps;
@@ -41,7 +42,9 @@ class _GuestRunDetailPageState extends State<GuestRunDetailPage> {
       ),
       body: _activeTab == 0
           ? _buildDetails(context, run, startDt)
-          : _buildMap(context, run),
+          : _activeTab == 1
+              ? _buildMap(context, run)
+              : _buildPhotos(run),
       bottomNavigationBar: const GuestActionBar(),
     );
   }
@@ -295,6 +298,18 @@ class _GuestRunDetailPageState extends State<GuestRunDetailPage> {
     );
   }
 
+  // ---------------------------------------------------------------------------
+  // Photos tab
+  // ---------------------------------------------------------------------------
+
+  Widget _buildPhotos(GuestRunModel run) {
+    return RunPhotoGallery(
+      loader: () => GuestRunsService.getRunPhotos(
+        publicEventId: run.publicEventId,
+      ),
+    );
+  }
+
   Future<void> _openDirections(
     BuildContext context,
     GuestRunModel run,
@@ -394,7 +409,7 @@ class _TabBar extends StatelessWidget {
   final int activeTab;
   final ValueChanged<int> onTabSelected;
 
-  static const List<String> _labels = <String>['Details', 'Map'];
+  static const List<String> _labels = <String>['Details', 'Map', 'Photos'];
 
   @override
   Widget build(BuildContext context) {

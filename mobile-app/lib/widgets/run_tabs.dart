@@ -2,6 +2,7 @@
 
 // ignore_for_file: constant_identifier_names
 
+import 'package:harrier_central/widgets/run_photo_gallery.dart';
 import 'package:badges/badges.dart' as badges;
 import 'package:eventide/eventide.dart';
 import 'package:harrier_central/imports.dart';
@@ -19,7 +20,8 @@ enum RunTab {
   rsvp(1),
   map(2),
   stats(3),
-  chat(4);
+  chat(4),
+  photos(5);
 
   /// The integer ID associated with this tab.
   final int id;
@@ -73,6 +75,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   static const String LABEL_RSVP = 'RSVP';
   static const String LABEL_STATS = 'Stats';
   static const String LABEL_CHAT = 'Chat';
+  static const String LABEL_PHOTOS = 'Photos';
 
   final LiveRunService _liveRunService = LiveRunService.ensure();
   LiveRunButtonStatus _liveRunStatus = LiveRunButtonStatus.hidden;
@@ -84,6 +87,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     const Tab(text: LABEL_MAP),
     const Tab(text: LABEL_STATS),
     const Tab(text: LABEL_CHAT),
+    const Tab(text: LABEL_PHOTOS),
   ];
 
   //GlobalKey packListBox = GlobalKey();
@@ -1429,6 +1433,14 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   //   }
   // }
 
+  Widget _buildPhotosView() {
+    return RunPhotoGallery(
+      loader: () => KennelPhotoService().getRunPhotosForGallery(
+        eventId: widget.futureRun.event.eventId,
+      ),
+    );
+  }
+
   Future<void> _setRsvpState(EnumRsvpState rsvpState) async {
     List<PackListAggregate>? lPla = await _thePackList;
     if (lPla != null) {
@@ -2038,8 +2050,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                     child: TabBar(
                                       labelStyle: ts_tabSelected,
                                       unselectedLabelStyle: ts_tabUnselected,
-                                      isScrollable: false,
-                                      labelPadding: EdgeInsets.zero,
+                                      isScrollable: true,
+                                      tabAlignment: TabAlignment.start,
+                                      labelPadding: const EdgeInsets.symmetric(horizontal: 12),
                                       dividerHeight: 0,
                                       unselectedLabelColor: Colors.black,
                                       labelColor: Colors.white,
@@ -2161,6 +2174,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                         ),
                       ),
                       _buildChatView(),
+                      _buildPhotosView(),
                     ],
                     // children: tabs.map((Tab tab) {
                     //   return Center(
