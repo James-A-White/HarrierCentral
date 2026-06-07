@@ -191,22 +191,25 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
   // photo pixels — transparent letterbox areas remain clear and the jungle
   // background decoration shows through unchanged.
   Widget _buildPhotoChild(String imageUrl) {
-    return SizedBox.expand(
-      child: ColorFiltered(
-        colorFilter: ColorFilter.mode(
-          Colors.black.withValues(alpha: _maskOpacity),
-          BlendMode.srcATop,
-        ),
-        child: Image(
-          image: _imageProvider(imageUrl),
-          fit: BoxFit.contain,
-          loadingBuilder: (_, child, progress) => progress == null
-              ? child
-              : const Center(
-                  child: CircularProgressIndicator(color: Colors.white54),
-                ),
-          errorBuilder: (_, _, _) => const Center(
-            child: Icon(Icons.broken_image, color: Colors.white38, size: 64),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+      child: SizedBox.expand(
+        child: ColorFiltered(
+          colorFilter: ColorFilter.mode(
+            Colors.black.withValues(alpha: _maskOpacity),
+            BlendMode.srcATop,
+          ),
+          child: Image(
+            image: _imageProvider(imageUrl),
+            fit: BoxFit.contain,
+            loadingBuilder: (_, child, progress) => progress == null
+                ? child
+                : const Center(
+                    child: CircularProgressIndicator(color: Colors.white54),
+                  ),
+            errorBuilder: (_, _, _) => const Center(
+              child: Icon(Icons.broken_image, color: Colors.white38, size: 64),
+            ),
           ),
         ),
       ),
@@ -234,7 +237,9 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
         title: AutoSizeText(
-          widget.pageTitle,
+          widget.photos.length > 1
+              ? '${widget.pageTitle} (${_currentIndex + 1} of ${widget.photos.length})'
+              : widget.pageTitle,
           style: ts_appBarTitle,
           textAlign: TextAlign.center,
           minFontSize: 2.0,
@@ -286,7 +291,7 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
                       height: 32,
                       decoration: BoxDecoration(
                         color: hc_red.withValues(alpha: 0.85),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(8),
                         image: _currentPhoto.uploaderPhotoUrl.isNotEmpty
                             ? DecorationImage(
                                 image: CachedNetworkImageProvider(

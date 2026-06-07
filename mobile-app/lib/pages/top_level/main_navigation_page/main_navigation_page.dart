@@ -307,12 +307,6 @@ class MainNavigationPage extends StatelessWidget {
                 ),
                 centerTitle: true,
                 actions: [
-                  if (controller.currentPage.value == 0)
-                    IconButton(
-                      icon: const Icon(Icons.music_note),
-                      tooltip: 'Interactive Songbook',
-                      onPressed: () => _openInteractiveSongbook(context),
-                    ),
                   IconButton(
                     icon: const Icon(Icons.qr_code_scanner_sharp),
                     onPressed: () => Navigator.push(
@@ -671,71 +665,6 @@ class MainNavigationPage extends StatelessWidget {
 
   /// Opens the interactive songbook for the RSVP'd event closest to now.
   /// Falls back to browse-only mode if no matching event is found.
-  Future<void> _openInteractiveSongbook(BuildContext context) async {
-    final String userId = normalizeUuid(currentUserId);
-
-    // Find RSVP'd events within ±6 hours of now, ordered by proximity to now
-    final List<Map<String, dynamic>> rows = await database.rawQuery('''
-      SELECT
-        lower(hem.${tableModel.hasherEventMapTableHelper.colEventId}) AS eventId,
-        evt.${tableModel.eventsTableHelper.colEventName}              AS eventName
-      FROM ${EnumDataTables.hasherEventMap.commonTableName} hem
-      INNER JOIN ${EnumDataTables.events.commonTableName} evt
-        ON lower(evt.${tableModel.eventsTableHelper.colEventId}) = lower(hem.${tableModel.hasherEventMapTableHelper.colEventId})
-      WHERE lower(hem.${tableModel.hasherEventMapTableHelper.colUserId}) = "$userId"
-        AND hem.${tableModel.hasherEventMapTableHelper.colRsvpState} >= 2
-        AND hem.${tableModel.hasherEventMapTableHelper.colRemoved} = 0
-        AND evt.${tableModel.eventsTableHelper.colRemoved} = 0
-        AND abs(julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) - julianday('now')) <= 0.25
-      ORDER BY abs(julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) - julianday('now')) ASC
-      LIMIT 5
-    ''');
-
-    String? eventId;
-
-    if (rows.isEmpty) {
-      // No current event — open in browse-only mode
-    } else if (rows.length == 1) {
-      eventId = rows[0]['eventId'] as String?;
-    } else {
-      // Multiple candidates — let the user pick
-      if (!context.mounted) return;
-      eventId = await showDialog<String>(
-        context: context,
-        builder: (BuildContext ctx) => SimpleDialog(
-          title: Text('Which run?', style: ts_alertDialogTitle),
-          children: rows.map((Map<String, dynamic> row) {
-            return SimpleDialogOption(
-              onPressed: () =>
-                  Navigator.pop(ctx, row['eventId'] as String?),
-              child: Text(
-                row['eventName'] as String? ?? 'Unknown run',
-                style: ts_body.copyWith(color: Colors.black),
-              ),
-            );
-          }).toList(),
-        ),
-      );
-      if (eventId == null) return;
-    }
-
-    if (!context.mounted) return;
-    await Navigator.push<void>(
-      context,
-      MaterialPageRoute<void>(
-        builder: (_) => AppScaffold(
-          appBar: AppBar(
-            centerTitle: true,
-            backgroundColor: themeAppBarBackground,
-            iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
-            title: Text('Songbook', style: ts_appBarTitle),
-          ),
-          body: SongsPage(eventId: eventId),
-        ),
-      ),
-    );
-  }
-
   Widget _getGenericLoadingScreen(MainNavigationController controller) {
     return Stack(
       children: [

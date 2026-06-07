@@ -1,5 +1,25 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.9.8+1163 (2026-06-07)
+
+### New Features
+
+- **Full-screen photo viewer**: Tapping a photo in the Photos tab now opens a swipeable full-screen viewer. Swipe left/right to move between photos. The page title shows the run name and photo position (e.g. "Away Weekend Hash Olympics (3 of 21)"). Long captions can be dragged upward over the photo; the image darkens progressively with a 50% black overlay as the caption expands. Photographer name and avatar appear in the top-right corner for photos taken by other members.
+- **Photographer credit**: When viewing a photo taken by another member, their display name and avatar appear in a rounded chip (8px corner radius) at the top-right of the full-screen viewer.
+
+### Improvements
+
+- **Run tracker: combined runner + timeline panel**: The two-tab carousel on the run tracking map has been replaced with a single panel. A slot-machine scroll picker (runner's colour dot, avatar, and name) sits above the timeline controls, so you can select a runner and see their stats in one view without switching tabs.
+- **Photo separation**: Photos in the full-screen viewer are visually separated — a gap is visible between pages when swiping.
+- **Tab bar**: The run detail tab bar (Details / RSVP / Map / Stats / Chat / Photos) is now evenly distributed across the full width of the screen instead of left-aligned.
+- **Removed duplicate Songbook shortcut**: The music note icon in the Hash Runs app bar has been removed — the Songbook is accessible via the bottom navigation bar.
+
+### Fixes
+
+- **Photo caption Clear button**: The Clear button in the Hash Flash approval caption editor now correctly shows white text on a red background.
+
+---
+
 ## 2.9.7+1162 (2026-06-06)
 
 ### New Features

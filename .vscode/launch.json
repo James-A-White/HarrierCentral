@@ -36,6 +36,13 @@
             ]
         },
         {
+            "name": "Mobile App — iOS Simulator",
+            "type": "dart",
+            "request": "launch",
+            "program": "${workspaceFolder}/mobile-app/lib/main.dart",
+            "deviceId": "4B61CF1C-E3DD-4724-B62B-FC134FE53363"
+        },
+        {
             "name": "Attach to .NET Functions",
             "type": "coreclr",
             "request": "attach",

@@ -304,6 +304,7 @@ class _GuestRunDetailPageState extends State<GuestRunDetailPage> {
 
   Widget _buildPhotos(GuestRunModel run) {
     return RunPhotoGallery(
+      eventName: run.eventName,
       loader: () => GuestRunsService.getRunPhotos(
         publicEventId: run.publicEventId,
       ),

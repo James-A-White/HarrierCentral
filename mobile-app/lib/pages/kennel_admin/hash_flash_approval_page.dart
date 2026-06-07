@@ -1405,9 +1405,7 @@ class _CaptionEditorSheetState extends State<_CaptionEditorSheet> {
               if (widget.initialCaption.isNotEmpty)
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(''),
-                  child: Text('Clear',
-                      style:
-                          ts_bodySmall.copyWith(color: Colors.redAccent)),
+                  child: Text('Clear', style: ts_button),
                 ),
             ],
           ),

@@ -1435,6 +1435,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
 
   Widget _buildPhotosView() {
     return RunPhotoGallery(
+      eventName: widget.futureRun.event.eventName,
       loader: () => KennelPhotoService().getRunPhotosForGallery(
         eventId: widget.futureRun.event.eventId,
       ),
@@ -2050,9 +2051,8 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                     child: TabBar(
                                       labelStyle: ts_tabSelected,
                                       unselectedLabelStyle: ts_tabUnselected,
-                                      isScrollable: true,
-                                      tabAlignment: TabAlignment.start,
-                                      labelPadding: const EdgeInsets.symmetric(horizontal: 12),
+                                      isScrollable: false,
+                                      labelPadding: const EdgeInsets.only(top: 3.0, left: 6.0, right: 6.0),
                                       dividerHeight: 0,
                                       unselectedLabelColor: Colors.black,
                                       labelColor: Colors.white,

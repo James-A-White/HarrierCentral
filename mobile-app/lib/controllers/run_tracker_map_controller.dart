@@ -39,8 +39,6 @@ class RunTrackerMapController extends GetxController
   final MapController mapController = MapController();
   final FixedExtentScrollController runnerPickerController =
       FixedExtentScrollController();
-  final PageController timelineCarouselController = PageController();
-  final RxInt timelineCarouselIndex = 0.obs;
 
   late final AnimationController _playbackController;
   bool _mapReady = false;
@@ -311,7 +309,6 @@ class RunTrackerMapController extends GetxController
     _selectionWorker?.dispose();
     unawaited(_mapEventsSub?.cancel());
     runnerPickerController.dispose();
-    timelineCarouselController.dispose();
     _playbackController.dispose();
     _positionsApi.dispose();
     super.onClose();
@@ -330,20 +327,6 @@ class RunTrackerMapController extends GetxController
         setVisible(false);
         break;
     }
-  }
-
-  void goToTimelinePage(int index) {
-    if (index < 0 || index > 1) return;
-    if (timelineCarouselController.hasClients) {
-      unawaited(
-        timelineCarouselController.animateToPage(
-          index,
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeInOut,
-        ),
-      );
-    }
-    timelineCarouselIndex.value = index;
   }
 
   // Fetches the authorised photo URL list for this event and populates

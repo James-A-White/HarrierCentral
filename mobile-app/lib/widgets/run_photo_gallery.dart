@@ -5,9 +5,14 @@ import 'package:harrier_central/imports.dart';
 /// Pass [loader] as the async function that fetches the photo list —
 /// it is called on first build and on each pull-to-refresh gesture.
 class RunPhotoGallery extends StatefulWidget {
-  const RunPhotoGallery({super.key, required this.loader});
+  const RunPhotoGallery({
+    super.key,
+    required this.loader,
+    required this.eventName,
+  });
 
   final Future<({bool success, List<RunPhotoModel> photos})> Function() loader;
+  final String eventName;
 
   @override
   State<RunPhotoGallery> createState() => _RunPhotoGalleryState();
@@ -197,20 +202,24 @@ class _RunPhotoGalleryState extends State<RunPhotoGallery> {
     RunPhotoModel photo,
     int index,
   ) async {
-    final String title = photo.displayCaption.isNotEmpty
-        ? photo.displayCaption
-        : (photo.uploaderDisplayName ?? 'Photo');
+    final items = _photos
+        .map(
+          (p) => MapPhotoItem(
+            imageUrl: p.blobUrl,
+            caption: p.displayCaption,
+            uploaderName: p.uploaderDisplayName ?? '',
+          ),
+        )
+        .toList(growable: false);
 
     await Navigator.push<void>(
       context,
       MaterialPageRoute<void>(
-        builder: (_) => ZoomableImagePage2(
-          key: Key('rpg_full_$index'),
-          pageTitle: title,
-          imageUrl: photo.blobUrl.startsWith('http') ? photo.blobUrl : null,
-          appBarBackgroundColor: themeAppBarBackground,
+        builder: (_) => MapPhotoPage(
+          pageTitle: widget.eventName,
+          photos: items,
+          initialIndex: index,
           background: Backgrounds.defaultHcBackground(),
-          margin: 0.0,
         ),
       ),
     );
