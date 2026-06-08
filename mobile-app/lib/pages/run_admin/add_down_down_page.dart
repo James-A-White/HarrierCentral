@@ -1,5 +1,11 @@
 import 'package:harrier_central/imports.dart';
 
+class _SongResult {
+  _SongResult({required this.songId, required this.songName});
+  final String songId;
+  final String songName;
+}
+
 /// Simple model for an attendee shown in the hasher picker.
 class _AttendeeItem {
   _AttendeeItem({required this.hasherId, required this.displayName});
@@ -29,6 +35,10 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
   final _chargeController = TextEditingController();
   final _songController = TextEditingController();
 
+  String? _linkedSongId;
+  bool _suppressNextSongSearch = false;
+  List<_SongResult> _songResults = [];
+
   bool _isLoading = true;
   bool _isSaving = false;
   List<_AttendeeItem> _attendees = [];
@@ -44,6 +54,60 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
     _chargeController.dispose();
     _songController.dispose();
     super.dispose();
+  }
+
+  Future<void> _searchSongs(String query) async {
+    if (query.trim().isEmpty) {
+      setState(() => _songResults = []);
+      return;
+    }
+    final tbl = tableModel.songsTableHelper;
+    final songTable = EnumDataTables.songs.commonTableName;
+    final pattern = '%${query.trim()}%';
+    final kId = widget.kennelId;
+
+    final kennelRows = await database.rawQuery('''
+      SELECT ${tbl.colSongId}, ${tbl.colSongName}
+      FROM $songTable
+      WHERE ${tbl.colRemoved} = 0
+        AND (${tbl.colAddedByKennelId} = ?
+             OR ${tbl.colAutoAddToKennel} > 0)
+        AND LOWER(${tbl.colSongName}) LIKE LOWER(?)
+      ORDER BY
+        CASE WHEN ${tbl.colAddedByKennelId} = ? THEN 0 ELSE 1 END,
+        ${tbl.colSongName}
+      LIMIT 10
+    ''', [kId, pattern, kId]);
+
+    if (kennelRows.isNotEmpty) {
+      if (mounted) {
+        setState(() => _songResults = kennelRows
+            .map((r) => _SongResult(
+                  songId: r[tbl.colSongId] as String,
+                  songName: r[tbl.colSongName] as String,
+                ))
+            .toList());
+      }
+      return;
+    }
+
+    final globalRows = await database.rawQuery('''
+      SELECT ${tbl.colSongId}, ${tbl.colSongName}
+      FROM $songTable
+      WHERE ${tbl.colRemoved} = 0
+        AND LOWER(${tbl.colSongName}) LIKE LOWER(?)
+      ORDER BY ${tbl.colSongName}
+      LIMIT 10
+    ''', [pattern]);
+
+    if (mounted) {
+      setState(() => _songResults = globalRows
+          .map((r) => _SongResult(
+                songId: r[tbl.colSongId] as String,
+                songName: r[tbl.colSongName] as String,
+              ))
+          .toList());
+    }
   }
 
   Future<void> _loadAttendees() async {
@@ -116,6 +180,7 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
         hasherIds: _selected.map((a) => a.hasherId).toList(),
         chargeText: _chargeController.text.trim(),
         songChoice: _songController.text.trim().isEmpty ? null : _songController.text.trim(),
+        songId: _linkedSongId,
       );
       if (mounted) {
         if (id != null) {
@@ -203,7 +268,7 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
                     child: TextField(
                       controller: _songController,
                       decoration: InputDecoration(
@@ -213,9 +278,59 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                         filled: true,
                         fillColor: Colors.white,
                         prefixIcon: const Icon(Icons.music_note),
+                        suffixIcon: _linkedSongId != null
+                            ? Tooltip(
+                                message: 'Unlink song',
+                                child: IconButton(
+                                  icon: const Icon(Icons.link_off, size: 18),
+                                  onPressed: () => setState(() => _linkedSongId = null),
+                                ),
+                              )
+                            : null,
                       ),
+                      onChanged: (value) {
+                        if (_suppressNextSongSearch) {
+                          _suppressNextSongSearch = false;
+                          return;
+                        }
+                        _linkedSongId = null;
+                        unawaited(_searchSongs(value));
+                      },
                     ),
                   ),
+                  if (_songResults.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                      child: Container(
+                        constraints: const BoxConstraints(maxHeight: 200),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(8),
+                          color: Colors.white,
+                        ),
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: _songResults.length,
+                          itemBuilder: (context, index) {
+                            final song = _songResults[index];
+                            return ListTile(
+                              dense: true,
+                              leading: const Icon(Icons.music_note, size: 16, color: Colors.black54),
+                              title: Text(song.songName, style: const TextStyle(fontSize: 14)),
+                              onTap: () {
+                                _suppressNextSongSearch = true;
+                                _songController.text = song.songName;
+                                setState(() {
+                                  _linkedSongId = song.songId;
+                                  _songResults = [];
+                                });
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 8),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     child: Row(

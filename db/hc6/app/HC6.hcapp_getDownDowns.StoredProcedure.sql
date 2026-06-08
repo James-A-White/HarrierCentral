@@ -107,6 +107,7 @@ SELECT
     dd.IsDone          AS isDone,
     dd.IsCancelled     AS isCancelled,
     dd.SongChoice      AS songChoice,
+    LOWER(CAST(dd.SongId AS NVARCHAR(40))) AS songId,
     h.DisplayName      AS createdByDisplayName,
     h.Photo            AS createdByPhoto,
     dd.CreatedAt       AS createdAt

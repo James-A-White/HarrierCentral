@@ -6,7 +6,8 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_addDownDown]
     @eventId     UNIQUEIDENTIFIER,
     @hasherIds   NVARCHAR(MAX),
     @chargeText  NVARCHAR(MAX),
-    @songChoice  NVARCHAR(500) = NULL
+    @songChoice  NVARCHAR(500) = NULL,
+    @songId      UNIQUEIDENTIFIER = NULL
 
 AS
 -- =====================================================================
@@ -110,8 +111,8 @@ BEGIN TRY
 
     DECLARE @newId UNIQUEIDENTIFIER = NEWID();
 
-    INSERT INTO HC.DownDowns (id, EventId, KennelId, ChargeText, SongChoice, IsDone, CreatedByUserId)
-    VALUES (@newId, @eventId, @kennelId, @chargeText, NULLIF(LTRIM(RTRIM(@songChoice)), ''), 0, @userId);
+    INSERT INTO HC.DownDowns (id, EventId, KennelId, ChargeText, SongChoice, SongId, IsDone, CreatedByUserId)
+    VALUES (@newId, @eventId, @kennelId, @chargeText, NULLIF(LTRIM(RTRIM(@songChoice)), ''), @songId, 0, @userId);
 
     INSERT INTO HC.DownDownHashers (DownDownId, HasherId)
     SELECT @newId, TRY_CAST(LTRIM(RTRIM(value)) AS UNIQUEIDENTIFIER)

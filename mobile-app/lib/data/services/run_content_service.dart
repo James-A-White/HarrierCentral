@@ -69,6 +69,7 @@ class RunContentService {
     required List<String> hasherIds,
     required String chargeText,
     String? songChoice,
+    String? songId,
   }) async {
     final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
@@ -87,6 +88,7 @@ class RunContentService {
         'hasherIds': hasherIds.join(','),
         'chargeText': chargeText,
         if (songChoice != null && songChoice.isNotEmpty) 'songChoice': songChoice,
+        if (songId != null) 'songId': songId,
       }),
     );
 
@@ -148,6 +150,7 @@ class RunContentService {
     required String downDownId,
     required String chargeText,
     String? songChoice,
+    String? songId,
   }) async {
     final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
@@ -166,6 +169,7 @@ class RunContentService {
         'downDownId': downDownId,
         'chargeText': chargeText,
         'songChoice': songChoice,
+        'songId': songId,
       }),
     );
 

@@ -1,5 +1,11 @@
 import 'package:harrier_central/imports.dart';
 
+class _SongResult {
+  _SongResult({required this.songId, required this.songName});
+  final String songId;
+  final String songName;
+}
+
 class DownDownsPage extends StatefulWidget {
   const DownDownsPage({
     super.key,
@@ -110,6 +116,7 @@ class _DownDownsPageState extends State<DownDownsPage> {
         createdByPhoto: dd.createdByPhoto,
         createdAt: dd.createdAt,
         songChoice: dd.songChoice,
+        songId: dd.songId,
         hashers: dd.hashers,
       );
 
@@ -135,16 +142,10 @@ class _DownDownsPageState extends State<DownDownsPage> {
         title: Text('Undo Down Down?', style: ts_alertDialogTitle),
         content: Text('Mark this charge as pending again?', style: ts_alertDialogBody),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
-          ),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: themeBackgroundColor,
-              foregroundColor: Colors.white,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: themeBackgroundColor, foregroundColor: Colors.white),
             child: const Text('Yes, undo'),
           ),
         ],
@@ -188,16 +189,10 @@ class _DownDownsPageState extends State<DownDownsPage> {
         title: Text('Restore Down Down?', style: ts_alertDialogTitle),
         content: Text('Mark this charge as pending again?', style: ts_alertDialogBody),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
-          ),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: themeBackgroundColor,
-              foregroundColor: Colors.white,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: themeBackgroundColor, foregroundColor: Colors.white),
             child: const Text('Yes, restore'),
           ),
         ],
@@ -219,57 +214,164 @@ class _DownDownsPageState extends State<DownDownsPage> {
     }
   }
 
+  // Queries common_songs: kennel + auto-add songs first, fallback to all.
+  Future<List<_SongResult>> _searchSongs(String query) async {
+    if (query.trim().isEmpty) return [];
+    final tbl = tableModel.songsTableHelper;
+    final songTable = EnumDataTables.songs.commonTableName;
+    final pattern = '%${query.trim()}%';
+    final kId = widget.kennelId;
+
+    final kennelRows = await database.rawQuery('''
+      SELECT ${tbl.colSongId}, ${tbl.colSongName}
+      FROM $songTable
+      WHERE ${tbl.colRemoved} = 0
+        AND (${tbl.colAddedByKennelId} = ?
+             OR ${tbl.colAutoAddToKennel} > 0)
+        AND LOWER(${tbl.colSongName}) LIKE LOWER(?)
+      ORDER BY
+        CASE WHEN ${tbl.colAddedByKennelId} = ? THEN 0 ELSE 1 END,
+        ${tbl.colSongName}
+      LIMIT 10
+    ''', [kId, pattern, kId]);
+
+    if (kennelRows.isNotEmpty) {
+      return kennelRows
+          .map((r) => _SongResult(
+                songId: r[tbl.colSongId] as String,
+                songName: r[tbl.colSongName] as String,
+              ))
+          .toList();
+    }
+
+    final globalRows = await database.rawQuery('''
+      SELECT ${tbl.colSongId}, ${tbl.colSongName}
+      FROM $songTable
+      WHERE ${tbl.colRemoved} = 0
+        AND LOWER(${tbl.colSongName}) LIKE LOWER(?)
+      ORDER BY ${tbl.colSongName}
+      LIMIT 10
+    ''', [pattern]);
+
+    return globalRows
+        .map((r) => _SongResult(
+              songId: r[tbl.colSongId] as String,
+              songName: r[tbl.colSongName] as String,
+            ))
+        .toList();
+  }
+
   Future<void> _showEditDialog(DownDownModel dd) async {
     final chargeController = TextEditingController(text: dd.chargeText);
     final songController = TextEditingController(text: dd.songChoice ?? '');
+    String? linkedSongId = dd.songId;
+    bool suppressNextSearch = false;
+    List<_SongResult> songResults = [];
 
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Edit Down Down', style: ts_alertDialogTitle),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: chargeController,
-                maxLines: 3,
-                autofocus: true,
-                decoration: InputDecoration(
-                  labelText: 'Charge',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          Future<void> doSearch(String query) async {
+            final results = await _searchSongs(query);
+            setDialogState(() => songResults = results);
+          }
+
+          return AlertDialog(
+            title: Text('Edit Down Down', style: ts_alertDialogTitle),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: chargeController,
+                    maxLines: 3,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      labelText: 'Charge',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: songController,
+                    decoration: InputDecoration(
+                      labelText: 'Recommended song (optional)',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      filled: true,
+                      fillColor: Colors.white,
+                      prefixIcon: const Icon(Icons.music_note),
+                      suffixIcon: linkedSongId != null
+                          ? Tooltip(
+                              message: 'Unlink song',
+                              child: IconButton(
+                                icon: const Icon(Icons.link_off, size: 18),
+                                onPressed: () {
+                                  linkedSongId = null;
+                                  setDialogState(() {});
+                                },
+                              ),
+                            )
+                          : null,
+                    ),
+                    onChanged: (value) {
+                      if (suppressNextSearch) {
+                        suppressNextSearch = false;
+                        return;
+                      }
+                      linkedSongId = null;
+                      unawaited(doSearch(value));
+                    },
+                  ),
+                  if (songResults.isNotEmpty)
+                    Container(
+                      constraints: const BoxConstraints(maxHeight: 200),
+                      margin: const EdgeInsets.only(top: 4),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.white,
+                      ),
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: songResults.length,
+                        itemBuilder: (context, index) {
+                          final song = songResults[index];
+                          return ListTile(
+                            dense: true,
+                            leading: const Icon(Icons.music_note, size: 16, color: Colors.black54),
+                            title: Text(song.songName, style: const TextStyle(fontSize: 14)),
+                            onTap: () {
+                              suppressNextSearch = true;
+                              songController.text = song.songName;
+                              linkedSongId = song.songId;
+                              setDialogState(() => songResults = []);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                ],
               ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: songController,
-                decoration: InputDecoration(
-                  labelText: 'Recommended song (optional)',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  filled: true,
-                  fillColor: Colors.white,
-                  prefixIcon: const Icon(Icons.music_note),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(ctx).pop(true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: themeBackgroundColor,
+                  foregroundColor: Colors.white,
                 ),
+                child: const Text('Save'),
               ),
             ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: themeBackgroundColor,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Save'),
-          ),
-        ],
+          );
+        },
       ),
     );
 
@@ -284,6 +386,7 @@ class _DownDownsPageState extends State<DownDownsPage> {
       downDownId: dd.downDownId,
       chargeText: editedCharge,
       songChoice: editedSong.isEmpty ? null : editedSong,
+      songId: linkedSongId,
     );
 
     if (mounted) {
@@ -292,6 +395,28 @@ class _DownDownsPageState extends State<DownDownsPage> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: const Text('Failed to update'), backgroundColor: Colors.red.shade700),
+        );
+      }
+    }
+  }
+
+  Future<void> _playSong(DownDownModel dd) async {
+    if (dd.songId == null) return;
+    final result = await SongSessionService.selectSong(
+      eventId: widget.eventId,
+      songId: dd.songId!,
+    );
+    if (mounted) {
+      if (result != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Now playing: ${result.songTitle}'),
+            backgroundColor: Colors.green.shade700,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to push song'), backgroundColor: Colors.red),
         );
       }
     }
@@ -346,7 +471,11 @@ class _DownDownsPageState extends State<DownDownsPage> {
                 : ListView.separated(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     itemCount: _downDowns.length,
-                    separatorBuilder: (context, i) => Divider(height: 2, thickness: 1.5, color: Colors.lightBlueAccent.withValues(alpha: 0.7)),
+                    separatorBuilder: (context, i) => Divider(
+                      height: 2,
+                      thickness: 1.5,
+                      color: Colors.lightBlueAccent.withValues(alpha: 0.7),
+                    ),
                     itemBuilder: (context, index) {
                       final dd = _downDowns[index];
                       final names = dd.hashers.map((h) => h.displayName).join(', ');
@@ -356,6 +485,7 @@ class _DownDownsPageState extends State<DownDownsPage> {
                         onCancelTap: () => _handleCancelTap(dd),
                         onCheckTap: () => _handleCheckTap(dd),
                         onEditTap: () => _showEditDialog(dd),
+                        onPlayTap: dd.songId != null ? () => _playSong(dd) : null,
                       );
                     },
                   ),
@@ -371,6 +501,7 @@ class _DownDownTile extends StatelessWidget {
     required this.onCancelTap,
     required this.onCheckTap,
     required this.onEditTap,
+    this.onPlayTap,
   });
 
   final DownDownModel dd;
@@ -378,6 +509,7 @@ class _DownDownTile extends StatelessWidget {
   final VoidCallback onCancelTap;
   final VoidCallback onCheckTap;
   final VoidCallback onEditTap;
+  final VoidCallback? onPlayTap;
 
   ImageProvider _photoProvider(String photo) {
     if (photo.startsWith('https://')) return NetworkImage(photo);
@@ -450,6 +582,18 @@ class _DownDownTile extends StatelessWidget {
                             ),
                           ),
                         ),
+                        if (onPlayTap != null)
+                          GestureDetector(
+                            onTap: onPlayTap,
+                            child: const Padding(
+                              padding: EdgeInsets.only(left: 6),
+                              child: Icon(
+                                Icons.play_circle,
+                                size: 22,
+                                color: Colors.yellow,
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   ),

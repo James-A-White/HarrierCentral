@@ -1,6 +1,12 @@
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/run_admin/add_down_down_page.dart';
 
+class _SongResult {
+  _SongResult({required this.songId, required this.songName});
+  final String songId;
+  final String songName;
+}
+
 class LiveRunChargesPage extends StatefulWidget {
   const LiveRunChargesPage({
     super.key,
@@ -55,58 +61,164 @@ class _LiveRunChargesPageState extends State<LiveRunChargesPage> {
     if (mounted) setState(() => _isLoading = false);
   }
 
+  Future<List<_SongResult>> _searchSongs(String query) async {
+    if (query.trim().isEmpty) return [];
+    final tbl = tableModel.songsTableHelper;
+    final songTable = EnumDataTables.songs.commonTableName;
+    final pattern = '%${query.trim()}%';
+    final kId = widget.kennelId;
+
+    final kennelRows = await database.rawQuery('''
+      SELECT ${tbl.colSongId}, ${tbl.colSongName}
+      FROM $songTable
+      WHERE ${tbl.colRemoved} = 0
+        AND (${tbl.colAddedByKennelId} = ?
+             OR ${tbl.colAutoAddToKennel} > 0)
+        AND LOWER(${tbl.colSongName}) LIKE LOWER(?)
+      ORDER BY
+        CASE WHEN ${tbl.colAddedByKennelId} = ? THEN 0 ELSE 1 END,
+        ${tbl.colSongName}
+      LIMIT 10
+    ''', [kId, pattern, kId]);
+
+    if (kennelRows.isNotEmpty) {
+      return kennelRows
+          .map((r) => _SongResult(
+                songId: r[tbl.colSongId] as String,
+                songName: r[tbl.colSongName] as String,
+              ))
+          .toList();
+    }
+
+    final globalRows = await database.rawQuery('''
+      SELECT ${tbl.colSongId}, ${tbl.colSongName}
+      FROM $songTable
+      WHERE ${tbl.colRemoved} = 0
+        AND LOWER(${tbl.colSongName}) LIKE LOWER(?)
+      ORDER BY ${tbl.colSongName}
+      LIMIT 10
+    ''', [pattern]);
+
+    return globalRows
+        .map((r) => _SongResult(
+              songId: r[tbl.colSongId] as String,
+              songName: r[tbl.colSongName] as String,
+            ))
+        .toList();
+  }
+
   Future<void> _showEditDialog(DownDownModel dd) async {
     final chargeController = TextEditingController(text: dd.chargeText);
     final songController = TextEditingController(text: dd.songChoice ?? '');
+    String? linkedSongId = dd.songId;
+    bool suppressNextSearch = false;
+    List<_SongResult> songResults = [];
 
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Edit Charge', style: ts_alertDialogTitle),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: chargeController,
-                maxLines: 3,
-                autofocus: true,
-                decoration: InputDecoration(
-                  labelText: 'Charge',
-                  hintText: 'What did they do?',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          Future<void> doSearch(String query) async {
+            final results = await _searchSongs(query);
+            setDialogState(() => songResults = results);
+          }
+
+          return AlertDialog(
+            title: Text('Edit Charge', style: ts_alertDialogTitle),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: chargeController,
+                    maxLines: 3,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      labelText: 'Charge',
+                      hintText: 'What did they do?',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: songController,
+                    decoration: InputDecoration(
+                      labelText: 'Recommended song (optional)',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      filled: true,
+                      fillColor: Colors.white,
+                      prefixIcon: const Icon(Icons.music_note),
+                      suffixIcon: linkedSongId != null
+                          ? Tooltip(
+                              message: 'Unlink song',
+                              child: IconButton(
+                                icon: const Icon(Icons.link_off, size: 18),
+                                onPressed: () {
+                                  linkedSongId = null;
+                                  setDialogState(() {});
+                                },
+                              ),
+                            )
+                          : null,
+                    ),
+                    onChanged: (value) {
+                      if (suppressNextSearch) {
+                        suppressNextSearch = false;
+                        return;
+                      }
+                      linkedSongId = null;
+                      unawaited(doSearch(value));
+                    },
+                  ),
+                  if (songResults.isNotEmpty)
+                    Container(
+                      constraints: const BoxConstraints(maxHeight: 200),
+                      margin: const EdgeInsets.only(top: 4),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.white,
+                      ),
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: songResults.length,
+                        itemBuilder: (context, index) {
+                          final song = songResults[index];
+                          return ListTile(
+                            dense: true,
+                            leading: const Icon(Icons.music_note, size: 16, color: Colors.black54),
+                            title: Text(song.songName, style: const TextStyle(fontSize: 14)),
+                            onTap: () {
+                              suppressNextSearch = true;
+                              songController.text = song.songName;
+                              linkedSongId = song.songId;
+                              setDialogState(() => songResults = []);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                ],
               ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: songController,
-                decoration: InputDecoration(
-                  labelText: 'Recommended song (optional)',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  filled: true,
-                  fillColor: Colors.white,
-                  prefixIcon: const Icon(Icons.music_note),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(ctx).pop(true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: themeBackgroundColor,
+                  foregroundColor: Colors.white,
                 ),
+                child: const Text('Save'),
               ),
             ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: themeBackgroundColor,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Save'),
-          ),
-        ],
+          );
+        },
       ),
     );
 
@@ -121,6 +233,7 @@ class _LiveRunChargesPageState extends State<LiveRunChargesPage> {
       downDownId: dd.downDownId,
       chargeText: editedText,
       songChoice: editedSong.isEmpty ? null : editedSong,
+      songId: linkedSongId,
     );
 
     if (mounted) {
