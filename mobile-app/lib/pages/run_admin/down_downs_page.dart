@@ -221,7 +221,7 @@ class _DownDownsPageState extends State<DownDownsPage> {
     if (saved == true && mounted) unawaited(_load());
   }
 
-  Future<void> _playSong(DownDownModel dd) async {
+  Future<void> _shareSong(DownDownModel dd) async {
     if (dd.songId == null) return;
     final result = await SongSessionService.selectSong(
       eventId: widget.eventId,
@@ -229,15 +229,23 @@ class _DownDownsPageState extends State<DownDownsPage> {
     );
     if (mounted) {
       if (result != null) {
+        final count = result.recipientCount;
+        final withWhom = (count != null && count > 0)
+            ? 'with $count pack ${count == 1 ? 'member' : 'members'}'
+            : 'with the pack';
+        final title = result.songTitle.isNotEmpty
+            ? result.songTitle
+            : (dd.songChoice ?? 'song');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Now playing: ${result.songTitle}'),
+            content: Text('Shared "$title" $withWhom 🎵'),
             backgroundColor: Colors.green.shade700,
+            duration: const Duration(seconds: 3),
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to push song'), backgroundColor: Colors.red),
+          const SnackBar(content: Text('Failed to share song'), backgroundColor: Colors.red),
         );
       }
     }
@@ -306,7 +314,7 @@ class _DownDownsPageState extends State<DownDownsPage> {
                         onCancelTap: () => _handleCancelTap(dd),
                         onCheckTap: () => _handleCheckTap(dd),
                         onEditTap: () => _openEditPage(dd),
-                        onPlayTap: dd.songId != null ? () => _playSong(dd) : null,
+                        onShareTap: dd.songId != null ? () => _shareSong(dd) : null,
                       );
                     },
                   ),
@@ -322,7 +330,7 @@ class _DownDownTile extends StatelessWidget {
     required this.onCancelTap,
     required this.onCheckTap,
     required this.onEditTap,
-    this.onPlayTap,
+    this.onShareTap,
   });
 
   final DownDownModel dd;
@@ -330,7 +338,7 @@ class _DownDownTile extends StatelessWidget {
   final VoidCallback onCancelTap;
   final VoidCallback onCheckTap;
   final VoidCallback onEditTap;
-  final VoidCallback? onPlayTap;
+  final VoidCallback? onShareTap;
 
   ImageProvider _photoProvider(String photo) {
     if (photo.startsWith('https://')) return NetworkImage(photo);
@@ -388,29 +396,29 @@ class _DownDownTile extends StatelessWidget {
                 ),
                 if (dd.songChoice != null && dd.songChoice!.isNotEmpty)
                   Padding(
-                    padding: const EdgeInsets.only(top: 5),
+                    padding: const EdgeInsets.only(top: 6),
                     child: Row(
                       children: [
-                        const Icon(Icons.music_note, size: 13, color: Colors.white54),
-                        const SizedBox(width: 4),
+                        const Icon(Icons.music_note, size: 15, color: Colors.white70),
+                        const SizedBox(width: 5),
                         Expanded(
                           child: Text(
                             dd.songChoice!,
                             style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.white54,
-                              fontStyle: FontStyle.italic,
+                              fontSize: 14,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),
-                        if (onPlayTap != null)
+                        if (onShareTap != null)
                           GestureDetector(
-                            onTap: onPlayTap,
+                            onTap: onShareTap,
                             child: const Padding(
-                              padding: EdgeInsets.only(left: 6),
+                              padding: EdgeInsets.only(left: 8),
                               child: Icon(
-                                Icons.play_circle,
-                                size: 22,
+                                Icons.ios_share,
+                                size: 20,
                                 color: Colors.yellow,
                               ),
                             ),
@@ -422,45 +430,51 @@ class _DownDownTile extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          // Action icons — X (cancel), check (deliver), edit
+          // Action icons — X + check side by side, edit below
           Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              SizedBox(
-                width: 44,
-                height: 38,
-                child: Center(
-                  child: GestureDetector(
-                    onTap: onCancelTap,
-                    child: Icon(
-                      dd.isCancelled ? Icons.cancel : Icons.cancel_outlined,
-                      color: dd.isCancelled ? Colors.redAccent : Colors.lightBlueAccent,
-                      size: 30,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 38,
+                    height: 38,
+                    child: Center(
+                      child: GestureDetector(
+                        onTap: onCancelTap,
+                        child: Icon(
+                          dd.isCancelled ? Icons.cancel : Icons.cancel_outlined,
+                          color: dd.isCancelled ? Colors.redAccent : Colors.lightBlueAccent,
+                          size: 30,
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  SizedBox(
+                    width: 38,
+                    height: 38,
+                    child: Center(
+                      child: GestureDetector(
+                        onTap: onCheckTap,
+                        child: Icon(
+                          dd.isDone ? Icons.check_circle : Icons.check_circle_outline,
+                          color: dd.isDone ? Colors.yellow : Colors.lightBlueAccent,
+                          size: 30,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               SizedBox(
                 width: 44,
-                height: 38,
-                child: Center(
-                  child: GestureDetector(
-                    onTap: onCheckTap,
-                    child: Icon(
-                      dd.isDone ? Icons.check_circle : Icons.check_circle_outline,
-                      color: dd.isDone ? Colors.yellow : Colors.lightBlueAccent,
-                      size: 30,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: 44,
-                height: 34,
+                height: 30,
                 child: Center(
                   child: GestureDetector(
                     onTap: onEditTap,
-                    child: const Icon(Icons.edit_outlined, color: Colors.white38, size: 22),
+                    child: const Icon(Icons.edit_outlined, color: Colors.white38, size: 20),
                   ),
                 ),
               ),
