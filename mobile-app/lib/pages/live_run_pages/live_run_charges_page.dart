@@ -112,8 +112,6 @@ class _LiveRunChargesPageState extends State<LiveRunChargesPage> {
 
     final editedText = chargeController.text.trim();
     final editedSong = songController.text.trim();
-    chargeController.dispose();
-    songController.dispose();
 
     if (confirmed != true || editedText.isEmpty) return;
 

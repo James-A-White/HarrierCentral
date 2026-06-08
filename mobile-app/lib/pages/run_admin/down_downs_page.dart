@@ -275,8 +275,6 @@ class _DownDownsPageState extends State<DownDownsPage> {
 
     final editedCharge = chargeController.text.trim();
     final editedSong = songController.text.trim();
-    chargeController.dispose();
-    songController.dispose();
 
     if (confirmed != true || editedCharge.isEmpty) return;
 
