@@ -89,6 +89,7 @@ enum IntPrefsEnum {
   positionReportsSent,
   splashSequenceType,
   timeWindow,
+  trackingQuality, // 0 = Power Saver, 1 = Balanced, 2 = Best (default when set)
 }
 
 enum DatePrefsEnum {

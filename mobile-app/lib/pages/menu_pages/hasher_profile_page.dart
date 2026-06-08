@@ -620,6 +620,7 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   int _distancePreference = 0;
   int _autoRunPreference = 2;
   bool _isDistanceUpdating = false;
+  int _trackingQuality = getIntPref(IntPrefsEnum.trackingQuality) ?? 2;
 
   void _handleRadioValueChange0(int? value) {
     setStateIfMounted(() {
@@ -678,6 +679,54 @@ class HasherProfilePageState extends State<HasherProfilePage> {
       _autoRunPreference = value ?? 0;
       _checkDirty();
     });
+  }
+
+  Widget _buildTrackingQualityOption(int value, String label, String sub, int boltCount) {
+    final isSelected = _trackingQuality == value;
+    return GestureDetector(
+      onTap: () async {
+        setStateIfMounted(() => _trackingQuality = value);
+        await setIntPref(IntPrefsEnum.trackingQuality, value);
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? themeBackgroundColor.withValues(alpha: 0.12) : Colors.transparent,
+          border: Border.all(
+            color: isSelected ? themeBackgroundColor : Colors.grey.shade400,
+            width: isSelected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+              color: isSelected ? themeBackgroundColor : Colors.grey,
+              size: 22,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  Text(sub, style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                ],
+              ),
+            ),
+            Row(
+              children: List.generate(3, (i) => Icon(
+                Icons.bolt,
+                size: 18,
+                color: i < boltCount ? Colors.amber.shade700 : Colors.grey.shade300,
+              )),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -1373,6 +1422,45 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                 fontSize: 20.0,
                                               ),
                                             ),
+                                          ],
+                                        ),
+                                      ),
+                                      const FancyDivider(
+                                        key: Key('tracking_quality_divider'),
+                                        innerColor: Colors.white,
+                                        topMargin: 10.0,
+                                        bottomMargin: 10.0,
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            const Icon(Icons.power, color: Colors.white, size: 20),
+                                            const SizedBox(width: 6),
+                                            Text('GPS Tracking Quality', style: ts_headingLarge, textAlign: TextAlign.center),
+                                          ],
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                                        child: Text(
+                                          'Higher accuracy gives a more detailed trail track but drains battery faster.',
+                                          style: ts_body,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                      Container(
+                                        margin: const EdgeInsets.only(bottom: 20.0),
+                                        decoration: BoxDecoration(
+                                          color: Colors.yellow[100],
+                                          borderRadius: BorderRadius.circular(5.0),
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            _buildTrackingQualityOption(2, 'Best', 'Finest GPS detail — highest battery use', 3),
+                                            _buildTrackingQualityOption(1, 'Balanced', 'Good accuracy — moderate battery use', 2),
+                                            _buildTrackingQualityOption(0, 'Power Saver', 'Coarser track — lowest battery use', 1),
                                           ],
                                         ),
                                       ),
