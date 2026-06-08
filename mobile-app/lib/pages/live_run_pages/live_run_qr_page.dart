@@ -44,18 +44,26 @@ class LiveRunQrPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: Backgrounds.defaultHcBackground(),
-      child: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: RunQrShareSection(
-            event: controller.run.event,
-            kennel: controller.run.kennel,
-            thisRunUrlForQr: controller.thisRunUrlForQr,
-            nextRunUrlForQr: controller.nextRunUrlForQr,
-            kennelUrlForQr: controller.kennelUrlForQr,
-            kennelWebsiteUrl: controller.run.kennel.kennelWebsiteUrl,
+    return AppScaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        backgroundColor: themeAppBarBackground,
+        iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
+        title: Text('Share QR Codes', style: ts_appBarTitle),
+      ),
+      body: Container(
+        decoration: Backgrounds.defaultHcBackground(),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: RunQrShareSection(
+              event: controller.run.event,
+              kennel: controller.run.kennel,
+              thisRunUrlForQr: controller.thisRunUrlForQr,
+              nextRunUrlForQr: controller.nextRunUrlForQr,
+              kennelUrlForQr: controller.kennelUrlForQr,
+              kennelWebsiteUrl: controller.run.kennel.kennelWebsiteUrl,
+            ),
           ),
         ),
       ),
