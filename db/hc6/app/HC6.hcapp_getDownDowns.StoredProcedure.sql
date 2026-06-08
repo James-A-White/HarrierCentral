@@ -106,6 +106,7 @@ SELECT
     dd.ChargeText      AS chargeText,
     dd.IsDone          AS isDone,
     dd.IsCancelled     AS isCancelled,
+    dd.SongChoice      AS songChoice,
     h.DisplayName      AS createdByDisplayName,
     h.Photo            AS createdByPhoto,
     dd.CreatedAt       AS createdAt

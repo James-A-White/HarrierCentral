@@ -5,7 +5,8 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_updateDownDown]
     @kennelId    UNIQUEIDENTIFIER,
     @eventId     UNIQUEIDENTIFIER,
     @downDownId  UNIQUEIDENTIFIER,
-    @chargeText  NVARCHAR(MAX)
+    @chargeText  NVARCHAR(MAX),
+    @songChoice  NVARCHAR(500) = NULL
 
 AS
 -- =====================================================================
@@ -130,6 +131,7 @@ BEGIN TRY
 
     UPDATE HC.DownDowns
     SET ChargeText = @chargeText,
+        SongChoice = NULLIF(LTRIM(RTRIM(@songChoice)), ''),
         UpdatedAt  = GETUTCDATE()
     WHERE id       = @downDownId
       AND EventId  = @eventId
