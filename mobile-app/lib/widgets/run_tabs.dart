@@ -1439,6 +1439,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
       loader: () => KennelPhotoService().getRunPhotosForGallery(
         eventId: widget.futureRun.event.eventId,
       ),
+      kennelId: isAdmin ? widget.futureRun.kennel.kennelId : null,
+      kennelSlug: isAdmin ? widget.futureRun.kennel.kennelUniqueShortName : null,
+      eventNumber: isAdmin ? widget.futureRun.event.absoluteEventNumber : null,
     );
   }
 

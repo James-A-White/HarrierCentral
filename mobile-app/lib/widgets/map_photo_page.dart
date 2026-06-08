@@ -7,11 +7,40 @@ class MapPhotoItem {
     required this.caption,
     this.uploaderName = '',
     this.uploaderPhotoUrl = '',
+    this.photoId,
+    this.originalBlobUrl,
+    this.kennelId,
+    this.kennelSlug,
+    this.eventNumber,
   });
   final String imageUrl;
   final String caption;
   final String uploaderName;
   final String uploaderPhotoUrl;
+
+  // Edit support — populated only for own photos when the caller knows the user
+  // can edit (Hash Flash / GM / VGM / RA role). Null for others' photos and
+  // for the guest gallery.
+  final String? photoId;
+  /// Original unedited blob URL — always start re-edits from here, never from imageUrl.
+  final String? originalBlobUrl;
+  final String? kennelId;
+  final String? kennelSlug;
+  final int? eventNumber;
+
+  bool get isEditable => photoId != null && kennelId != null && kennelSlug != null;
+
+  MapPhotoItem withImageUrl(String newUrl) => MapPhotoItem(
+        imageUrl: newUrl,
+        caption: caption,
+        uploaderName: uploaderName,
+        uploaderPhotoUrl: uploaderPhotoUrl,
+        photoId: photoId,
+        originalBlobUrl: originalBlobUrl,
+        kennelId: kennelId,
+        kennelSlug: kennelSlug,
+        eventNumber: eventNumber,
+      );
 }
 
 class MapPhotoPage extends StatefulWidget {
@@ -37,6 +66,12 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
   late final PageController _pageController;
   final ScrollController _scrollController = ScrollController();
 
+  // Mutable local copy — updated when an edit is saved so the gallery
+  // immediately reflects the new cropped image.
+  late List<MapPhotoItem> _photos;
+  bool _isEditing = false;
+  final KennelPhotoService _service = KennelPhotoService();
+
   double _captionTop = 0;
   double _maxCaptionTop = 0;
   // Minimum _captionTop: expansion is capped once all text is visible + buffer.
@@ -56,12 +91,13 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
   // Stop expanding this many px below the bottom of the screen once all text fits.
   static const double _expansionBuffer = 40.0;
 
-  MapPhotoItem get _currentPhoto => widget.photos[_currentIndex];
+  MapPhotoItem get _currentPhoto => _photos[_currentIndex];
 
   @override
   void initState() {
     super.initState();
-    _currentIndex = widget.initialIndex.clamp(0, widget.photos.length - 1);
+    _photos = List.of(widget.photos);
+    _currentIndex = widget.initialIndex.clamp(0, _photos.length - 1);
     _pageController = PageController(initialPage: _currentIndex);
     // Rebuild on scroll so the _showArrow getter re-evaluates.
     _scrollController.addListener(() => setState(() {}));
@@ -124,7 +160,7 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
   }
 
   void _navigateTo(int index) {
-    if (index < 0 || index >= widget.photos.length) return;
+    if (index < 0 || index >= _photos.length) return;
     _pageController.animateToPage(
       index,
       duration: const Duration(milliseconds: 300),
@@ -180,6 +216,88 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
     _maskOpacity = (x / (_lineHeight * 6) * 0.5).clamp(0.0, 0.5);
   }
 
+  Future<void> _editPhoto() async {
+    final photo = _currentPhoto;
+    if (!photo.isEditable || _isEditing) return;
+    setState(() => _isEditing = true);
+    try {
+      // Always start from the original unedited blob so re-edits don't stack.
+      final sourceUrl = photo.originalBlobUrl ?? photo.imageUrl;
+      final file = await _service.downloadToTempFile(sourceUrl);
+      if (file == null) {
+        Get.snackbar(
+          'Edit failed',
+          'Could not download the original photo. Please check your connection.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: hc_red,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      final cropped = await ImageCropper().cropImage(
+        sourcePath: file.path,
+        compressFormat: ImageCompressFormat.jpg,
+        compressQuality: 100,
+      );
+      if (cropped == null) return; // user cancelled — not an error
+
+      final eventNumber = photo.eventNumber ?? 0;
+      final kennelSlug = photo.kennelSlug!;
+      final runFolder =
+          eventNumber > 0 ? '$kennelSlug-$eventNumber' : 'other';
+
+      final editedUrl = await _service.uploadEditedPhoto(
+        croppedFile: File(cropped.path),
+        kennelId: photo.kennelId!,
+        kennelSlug: kennelSlug,
+        runFolder: runFolder,
+      );
+      if (editedUrl == null) {
+        Get.snackbar(
+          'Edit failed',
+          'Could not upload the edited photo. Please try again.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: hc_red,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      final result = await _service.updateRunPhotoEditedBlob(
+        photoId: photo.photoId!,
+        kennelId: photo.kennelId!,
+        editedBlobUrl: editedUrl,
+      );
+      if (result.startsWith(ERROR_PREFIX)) {
+        Get.snackbar(
+          'Edit failed',
+          'The edited photo was uploaded but could not be saved. Please try again.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: hc_red,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      // Update the local list — imageUrl shows the crop, originalBlobUrl stays.
+      setState(() {
+        _photos[_currentIndex] = photo.withImageUrl(editedUrl);
+      });
+    } catch (e, s) {
+      BootLogger.logError('[MapPhotoPage._editPhoto]', e, s);
+      Get.snackbar(
+        'Edit failed',
+        'An unexpected error occurred. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: hc_red,
+        colorText: Colors.white,
+      );
+    } finally {
+      if (mounted) setState(() => _isEditing = false);
+    }
+  }
+
   ImageProvider _imageProvider(String url) {
     return url.toLowerCase().endsWith('.avif')
         ? CachedNetworkAvifImageProvider(url)
@@ -218,7 +336,7 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.photos.isEmpty) return const SizedBox.shrink();
+    if (_photos.isEmpty) return const SizedBox.shrink();
 
     final bottomInset = MediaQuery.of(context).padding.bottom;
     final caption = _currentPhoto.caption;
@@ -237,8 +355,8 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
         title: AutoSizeText(
-          widget.photos.length > 1
-              ? '${widget.pageTitle} (${_currentIndex + 1} of ${widget.photos.length})'
+          _photos.length > 1
+              ? '${widget.pageTitle} (${_currentIndex + 1} of ${_photos.length})'
               : widget.pageTitle,
           style: ts_appBarTitle,
           textAlign: TextAlign.center,
@@ -260,9 +378,9 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
               backgroundDecoration: widget.background,
               scrollPhysics: const ClampingScrollPhysics(),
               pageOptions: List.generate(
-                widget.photos.length,
+                _photos.length,
                 (i) => PhotoViewGalleryPageOptions.customChild(
-                  child: _buildPhotoChild(widget.photos[i].imageUrl),
+                  child: _buildPhotoChild(_photos[i].imageUrl),
                   minScale: 0.1,
                   maxScale: 100.0,
                 ),
@@ -334,6 +452,32 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
               ),
             ),
 
+          // Crop button — top-left, only for own editable photos.
+          if (_currentPhoto.isEditable)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + kToolbarHeight + 8,
+              left: 12,
+              child: _isEditing
+                  ? const SizedBox(
+                      width: 32,
+                      height: 32,
+                      child: CircularProgressIndicator(
+                          color: Colors.white70, strokeWidth: 2.5),
+                    )
+                  : GestureDetector(
+                      onTap: _editPhoto,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.55),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Icon(Icons.crop,
+                            color: Colors.white70, size: 18),
+                      ),
+                    ),
+            ),
+
           // Caption overlay — a Positioned panel that starts at the bottom and
           // expands upward as the user drags vertically.
           // HitTestBehavior.opaque absorbs all touches in the panel area so they
@@ -348,7 +492,7 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onVerticalDragUpdate: _handleDragUpdate,
-                onHorizontalDragEnd: widget.photos.length > 1
+                onHorizontalDragEnd: _photos.length > 1
                     ? (details) {
                         final dx = details.velocity.pixelsPerSecond.dx;
                         if (dx.abs() < 300) return;

@@ -9,10 +9,20 @@ class RunPhotoGallery extends StatefulWidget {
     super.key,
     required this.loader,
     required this.eventName,
+    this.kennelId,
+    this.kennelSlug,
+    this.eventNumber,
   });
 
   final Future<({bool success, List<RunPhotoModel> photos})> Function() loader;
   final String eventName;
+
+  // When provided, own photos get a crop button in the full-screen viewer.
+  // Pass these only when the current user has an edit role (Hash Flash / GM /
+  // VGM / RA) — the SP enforces the same check server-side.
+  final String? kennelId;
+  final String? kennelSlug;
+  final int? eventNumber;
 
   @override
   State<RunPhotoGallery> createState() => _RunPhotoGalleryState();
@@ -202,12 +212,18 @@ class _RunPhotoGalleryState extends State<RunPhotoGallery> {
     RunPhotoModel photo,
     int index,
   ) async {
+    final canEdit = widget.kennelId != null && widget.kennelSlug != null;
     final items = _photos
         .map(
           (p) => MapPhotoItem(
-            imageUrl: p.blobUrl,
+            imageUrl: p.effectiveUrl,
             caption: p.displayCaption,
             uploaderName: p.uploaderDisplayName ?? '',
+            photoId: (canEdit && p.isOwnPhoto) ? p.photoId : null,
+            originalBlobUrl: (canEdit && p.isOwnPhoto) ? p.blobUrl : null,
+            kennelId: (canEdit && p.isOwnPhoto) ? widget.kennelId : null,
+            kennelSlug: (canEdit && p.isOwnPhoto) ? widget.kennelSlug : null,
+            eventNumber: (canEdit && p.isOwnPhoto) ? widget.eventNumber : null,
           ),
         )
         .toList(growable: false);
