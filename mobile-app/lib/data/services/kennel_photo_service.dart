@@ -622,6 +622,60 @@ class KennelPhotoService {
     return ServiceCommon.sendHttpPost(() => jsonEncode(body), noRetries: true);
   }
 
+  // ── Pending photo badge ───────────────────────────────────────────────────
+
+  /// Pending photo counts keyed by lowercase eventId. Static so all instances
+  /// share one map — the run list reads this reactively to show the badge.
+  static final RxMap<String, int> pendingPhotosByEvent = <String, int>{}.obs;
+  static final Set<String> _pendingLoadedKennels = {};
+  static final Map<String, Set<String>> _kennelEventIds = {};
+
+  /// Loads the count of status=1 photos per event for [kennelId] and merges
+  /// into [pendingPhotosByEvent]. Skips the call when already loaded unless
+  /// [force] is true. Pass [force: true] after the Hash Flash submits a
+  /// review batch so the badge immediately reflects the new counts.
+  Future<void> loadPendingPhotoSummary(
+    String kennelId, {
+    bool force = false,
+  }) async {
+    if (!force && _pendingLoadedKennels.contains(kennelId)) return;
+    _pendingLoadedKennels.add(kennelId);
+    try {
+      final result = await getKennelPendingPhotos(kennelId: kennelId);
+      if (result.startsWith(ERROR_PREFIX)) return;
+
+      // Clear stale counts for events we previously tracked for this kennel.
+      final previous = _kennelEventIds[kennelId] ?? {};
+      for (final eid in previous) {
+        pendingPhotosByEvent.remove(eid);
+      }
+
+      final outer = jsonDecode(result) as List<dynamic>;
+      if (outer.isEmpty || outer[0] is! List) {
+        _kennelEventIds[kennelId] = {};
+        return;
+      }
+
+      final rows = outer[0] as List<dynamic>;
+      final Map<String, int> counts = {};
+      for (final row in rows.whereType<Map<String, dynamic>>()) {
+        final eventId = row['EventId']?.toString().toLowerCase() ?? '';
+        if (eventId.isNotEmpty) {
+          counts[eventId] = (counts[eventId] ?? 0) + 1;
+        }
+      }
+      _kennelEventIds[kennelId] = counts.keys.toSet();
+      pendingPhotosByEvent.addAll(counts);
+    } catch (e, s) {
+      _pendingLoadedKennels.remove(kennelId); // allow retry on error
+      BootLogger.logError(
+        '[KennelPhotoService.loadPendingPhotoSummary] kennelId=$kennelId',
+        e,
+        s,
+      );
+    }
+  }
+
   // ── Hash Flash edit helpers ──────────────────────────────────────────────
 
   /// Downloads [blobUrl] to a temp file so it can be passed to ImageCropper.

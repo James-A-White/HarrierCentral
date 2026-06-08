@@ -455,6 +455,10 @@ class PhotoReviewController extends GetxController {
   /// Called by PopScope — flushes pending queue then pops the route.
   Future<void> flushAndPop() async {
     if (_queue.isNotEmpty) await _flushQueue();
+    // Refresh the pending badge on the runs list so it immediately reflects
+    // any photos just approved or rejected.
+    unawaited(KennelPhotoService()
+        .loadPendingPhotoSummary(kennelId, force: true));
     Get.back();
   }
 
