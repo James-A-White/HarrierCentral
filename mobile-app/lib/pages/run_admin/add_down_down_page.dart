@@ -47,6 +47,12 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
   Future<void> _loadAttendees() async {
     setState(() => _isLoading = true);
     try {
+      // Sync the event HEM table first so attendees are available locally.
+      // Without this the event_ tables are empty unless run admin was opened first.
+      if (Utilities.isConnected()) {
+        await tableModel.syncEventAdminService.updateRsvpsFromBackend(widget.eventId);
+      }
+
       final query = '''
         SELECT
           h.${tableModel.hashersTableHelper.colHasherId} as hasherId,
@@ -61,7 +67,10 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
         INNER JOIN ${EnumDataTables.hashers.commonTableName} h
           ON hem.${tableModel.hasherEventMapTableHelper.colUserId} = h.${tableModel.hashersTableHelper.colHasherId}
         WHERE hem.${tableModel.hasherEventMapTableHelper.colEventId} = '${widget.eventId}'
-          AND hem.${tableModel.hasherEventMapTableHelper.colAttendenceState} >= 20
+          AND (
+            hem.${tableModel.hasherEventMapTableHelper.colAttendenceState} >= 20
+            OR hem.${tableModel.hasherEventMapTableHelper.colRsvpState} = 3
+          )
           AND h.${tableModel.hashersTableHelper.colRemoved} = 0
         ORDER BY displayName COLLATE NOCASE
       ''';
