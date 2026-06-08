@@ -40,8 +40,11 @@ class _DownDownsPageState extends State<DownDownsPage> {
 
   void _sortList() {
     _downDowns.sort((a, b) {
-      if (a.isDone == b.isDone) return a.createdAt.compareTo(b.createdAt);
-      return a.isDone ? 1 : -1;
+      // pending (0) → cancelled (1) → done (2)
+      final rankA = a.isDone ? 2 : (a.isCancelled ? 1 : 0);
+      final rankB = b.isDone ? 2 : (b.isCancelled ? 1 : 0);
+      if (rankA != rankB) return rankA.compareTo(rankB);
+      return a.createdAt.compareTo(b.createdAt);
     });
   }
 
@@ -74,7 +77,6 @@ class _DownDownsPageState extends State<DownDownsPage> {
     if (mounted) setState(() => _isLoading = false);
   }
 
-  // Background refresh — no loading spinner, no error snackbar on transient failures.
   Future<void> _silentRefresh() async {
     try {
       final result = await _service.getDownDowns(
@@ -98,10 +100,12 @@ class _DownDownsPageState extends State<DownDownsPage> {
     }
   }
 
-  DownDownModel _copyWith(DownDownModel dd, {required bool isDone}) => DownDownModel(
+  DownDownModel _copyWith(DownDownModel dd, {bool? isDone, bool? isCancelled}) =>
+      DownDownModel(
         downDownId: dd.downDownId,
         chargeText: dd.chargeText,
-        isDone: isDone,
+        isDone: isDone ?? dd.isDone,
+        isCancelled: isCancelled ?? dd.isCancelled,
         createdByDisplayName: dd.createdByDisplayName,
         createdByPhoto: dd.createdByPhoto,
         createdAt: dd.createdAt,
@@ -117,7 +121,7 @@ class _DownDownsPageState extends State<DownDownsPage> {
     if (ok && mounted) {
       setState(() {
         final i = _downDowns.indexWhere((d) => d.downDownId == dd.downDownId);
-        if (i >= 0) _downDowns[i] = _copyWith(dd, isDone: true);
+        if (i >= 0) _downDowns[i] = _copyWith(dd, isDone: true, isCancelled: false);
         _sortList();
       });
     }
@@ -128,10 +132,7 @@ class _DownDownsPageState extends State<DownDownsPage> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text('Undo Down Down?', style: ts_alertDialogTitle),
-        content: Text(
-          'Mark this charge as pending again?',
-          style: ts_alertDialogBody,
-        ),
+        content: Text('Mark this charge as pending again?', style: ts_alertDialogBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
@@ -161,6 +162,75 @@ class _DownDownsPageState extends State<DownDownsPage> {
         if (i >= 0) _downDowns[i] = _copyWith(dd, isDone: false);
         _sortList();
       });
+    }
+  }
+
+  Future<void> _cancel(DownDownModel dd) async {
+    final ok = await _service.cancelDownDown(
+      kennelId: widget.kennelId,
+      eventId: widget.eventId,
+      downDownId: dd.downDownId,
+    );
+    if (ok && mounted) {
+      setState(() {
+        final i = _downDowns.indexWhere((d) => d.downDownId == dd.downDownId);
+        if (i >= 0) _downDowns[i] = _copyWith(dd, isCancelled: true, isDone: false);
+        _sortList();
+      });
+    }
+  }
+
+  Future<void> _uncancel(DownDownModel dd) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Restore Down Down?', style: ts_alertDialogTitle),
+        content: Text('Mark this charge as pending again?', style: ts_alertDialogBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: themeBackgroundColor,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Yes, restore'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    final ok = await _service.uncancelDownDown(
+      kennelId: widget.kennelId,
+      eventId: widget.eventId,
+      downDownId: dd.downDownId,
+    );
+    if (ok && mounted) {
+      setState(() {
+        final i = _downDowns.indexWhere((d) => d.downDownId == dd.downDownId);
+        if (i >= 0) _downDowns[i] = _copyWith(dd, isCancelled: false);
+        _sortList();
+      });
+    }
+  }
+
+  void _handleCancelTap(DownDownModel dd) {
+    if (dd.isCancelled) {
+      unawaited(_uncancel(dd)); // solid X → restore to pending (confirmation)
+    } else {
+      unawaited(_cancel(dd));   // outline X → cancel (no confirmation)
+    }
+  }
+
+  void _handleCheckTap(DownDownModel dd) {
+    if (dd.isDone) {
+      unawaited(_unmarkDone(dd)); // solid check → pending (confirmation)
+    } else {
+      unawaited(_markDone(dd));   // outline check → delivered (no confirmation)
     }
   }
 
@@ -204,9 +274,8 @@ class _DownDownsPageState extends State<DownDownsPage> {
                       return _DownDownTile(
                         dd: dd,
                         hasherNames: names,
-                        onCheckTap: dd.isDone
-                            ? () => _unmarkDone(dd)
-                            : () => _markDone(dd),
+                        onCancelTap: () => _handleCancelTap(dd),
+                        onCheckTap: () => _handleCheckTap(dd),
                       );
                     },
                   ),
@@ -219,11 +288,13 @@ class _DownDownTile extends StatelessWidget {
   const _DownDownTile({
     required this.dd,
     required this.hasherNames,
+    required this.onCancelTap,
     required this.onCheckTap,
   });
 
   final DownDownModel dd;
   final String hasherNames;
+  final VoidCallback onCancelTap;
   final VoidCallback onCheckTap;
 
   ImageProvider _photoProvider(String photo) {
@@ -284,20 +355,39 @@ class _DownDownTile extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          // Checkmark — fixed 44×44 so done/not-done never shift alignment
-          SizedBox(
-            width: 44,
-            height: 44,
-            child: Center(
-              child: GestureDetector(
-                onTap: onCheckTap,
-                child: Icon(
-                  dd.isDone ? Icons.check_circle : Icons.check_circle_outline,
-                  color: dd.isDone ? Colors.yellow : Colors.lightBlueAccent,
-                  size: 32,
+          // Action icons — X (cancel) above check (deliver), fixed width
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 44,
+                height: 38,
+                child: Center(
+                  child: GestureDetector(
+                    onTap: onCancelTap,
+                    child: Icon(
+                      dd.isCancelled ? Icons.cancel : Icons.cancel_outlined,
+                      color: dd.isCancelled ? Colors.redAccent : Colors.lightBlueAccent,
+                      size: 30,
+                    ),
+                  ),
                 ),
               ),
-            ),
+              SizedBox(
+                width: 44,
+                height: 38,
+                child: Center(
+                  child: GestureDetector(
+                    onTap: onCheckTap,
+                    child: Icon(
+                      dd.isDone ? Icons.check_circle : Icons.check_circle_outline,
+                      color: dd.isDone ? Colors.yellow : Colors.lightBlueAccent,
+                      size: 30,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
