@@ -604,6 +604,7 @@ class QueryRuns {
           case when ((evt.${tableModel.eventsTableHelper.colUseFbLatLon} = 0 AND evt.${tableModel.eventsTableHelper.colHcLongitude} IS NOT NULL) OR ((evt.${tableModel.eventsTableHelper.colUseFbLatLon} = 1 AND coalesce(evt.${tableModel.eventsTableHelper.colFbLatitude},evt.${tableModel.eventsTableHelper.colHcLongitude}) IS NOT NULL))) THEN 1 ELSE 0 END as isMapAndDistanceValid,
 
           coalesce(hkm.appAccessFlags,0) as appAccessFlags,
+          coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colMismanagementRoles},0) as mismanagementRoles,
           coalesce(hkm.following,0) as following,
           coalesce(hem.${tableModel.hasherEventMapTableHelper.colRsvpState},0) as rsvpState,
           coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,
@@ -642,6 +643,7 @@ class QueryRuns {
           case when ((evt.${tableModel.eventsTableHelper.colUseFbLatLon} = 0 AND evt.${tableModel.eventsTableHelper.colHcLongitude} IS NOT NULL) OR ((evt.${tableModel.eventsTableHelper.colUseFbLatLon} = 1 AND coalesce(evt.${tableModel.eventsTableHelper.colFbLatitude},evt.${tableModel.eventsTableHelper.colHcLongitude}) IS NOT NULL))) THEN 1 ELSE 0 END as isMapAndDistanceValid,
 
           coalesce(hkm.appAccessFlags,0) as appAccessFlags,
+          coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colMismanagementRoles},0) as mismanagementRoles,
           coalesce(hkm.following,0) as following,
           coalesce(hem.${tableModel.hasherEventMapTableHelper.colRsvpState},0) as rsvpState,
           coalesce(hem.${tableModel.hasherEventMapTableHelper.colAttendenceState},0) as attendenceState,

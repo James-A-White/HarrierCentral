@@ -20,7 +20,10 @@ class RunListItemController extends GetxController {
       hares = (futureRun.event.hares ?? '').obs,
       locationOneLineDesc = (futureRun.event.locationOneLineDesc ?? '').obs,
       liveRunState = LiveRunService.ensure() {
-    if (AppAccess(futureRun.extensions.appAccessFlags).isAdmin) {
+    if (AppAccess(
+      futureRun.extensions.appAccessFlags,
+      mismanagementRoles: futureRun.extensions.mismanagementRoles,
+    ).isPhotoAdmin) {
       unawaited(KennelPhotoService()
           .loadPendingPhotoSummary(futureRun.kennel.kennelId));
     }
