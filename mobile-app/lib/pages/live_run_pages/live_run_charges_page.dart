@@ -116,7 +116,7 @@ class _LiveRunChargesPageState extends State<LiveRunChargesPage> {
   @override
   Widget build(BuildContext context) {
     final content = Container(
-      decoration: Backgrounds.defaultHcBackgroundLight(),
+      decoration: Backgrounds.defaultHcBackground(),
       child: _isLoading
           ? const HcAppCircularProgressIndicator(key: Key('charges_loading'))
           : RefreshIndicator(
@@ -130,7 +130,7 @@ class _LiveRunChargesPageState extends State<LiveRunChargesPage> {
                             child: Text(
                               'No charges yet for this run.\nPull to refresh or tap + to add one.',
                               textAlign: TextAlign.center,
-                              style: ts_headingLarge.copyWith(color: themeBackgroundColor),
+                              style: ts_headingLarge.copyWith(color: Colors.white70),
                             ),
                           ),
                         ),
@@ -139,7 +139,7 @@ class _LiveRunChargesPageState extends State<LiveRunChargesPage> {
                   : ListView.separated(
                       padding: const EdgeInsets.only(bottom: 80, top: 8),
                       itemCount: _charges.length,
-                      separatorBuilder: (context, i) => const Divider(height: 1, color: Colors.black26),
+                      separatorBuilder: (context, i) => Divider(height: 1, color: Colors.lightBlueAccent.withValues(alpha: 0.35)),
                       itemBuilder: (context, index) {
                         final dd = _charges[index];
                         final names = dd.hashers.map((h) => h.displayName).join(', ');
@@ -160,8 +160,8 @@ class _LiveRunChargesPageState extends State<LiveRunChargesPage> {
           right: 16,
           bottom: 16,
           child: FloatingActionButton(
-            backgroundColor: themeBackgroundColor,
-            foregroundColor: Colors.white,
+            backgroundColor: Colors.yellow,
+            foregroundColor: Colors.black87,
             onPressed: () async {
               await Get.to(
                 () => AddDownDownPage(
@@ -208,25 +208,28 @@ class _ChargeTile extends StatelessWidget {
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
-                      color: Colors.black87,
+                      color: Colors.yellow,
                     ),
                   ),
-                const SizedBox(height: 4),
-                Text(
-                  dd.chargeText,
-                  style: const TextStyle(fontSize: 14, color: Colors.black87),
-                ),
-                const SizedBox(height: 4),
                 Text(
                   'by ${dd.createdByDisplayName}',
-                  style: const TextStyle(fontSize: 12, color: Colors.black45),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.yellow,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  dd.chargeText,
+                  style: const TextStyle(fontSize: 14, color: Colors.white),
                 ),
               ],
             ),
           ),
           IconButton(
             icon: const Icon(Icons.edit_outlined, size: 22),
-            color: Colors.grey.shade600,
+            color: Colors.white54,
             onPressed: onEdit,
             tooltip: 'Edit charge',
           ),
