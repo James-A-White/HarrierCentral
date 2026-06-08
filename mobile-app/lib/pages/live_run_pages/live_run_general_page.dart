@@ -57,6 +57,15 @@ class LiveRunGeneralController extends GetxController {
   }
 
   @override
+  void onReady() {
+    super.onReady();
+    if (getIntPref(IntPrefsEnum.trackingQuality) == null) {
+      final ctx = Get.context;
+      if (ctx != null) showTrackingQualityDialog(ctx);
+    }
+  }
+
+  @override
   void onClose() {
     _preRunTimer?.cancel();
     _trackingWorker?.dispose();
@@ -203,7 +212,7 @@ class LiveRunGeneralController extends GetxController {
   }
 }
 
-class LiveRunGeneralPage extends StatefulWidget {
+class LiveRunGeneralPage extends StatelessWidget {
   LiveRunGeneralPage({super.key, required this.run})
     : controller = Get.put(
         LiveRunGeneralController(run: run),
@@ -212,25 +221,6 @@ class LiveRunGeneralPage extends StatefulWidget {
 
   final RunDetailsAggregate run;
   final LiveRunGeneralController controller;
-
-  @override
-  State<LiveRunGeneralPage> createState() => _LiveRunGeneralPageState();
-}
-
-class _LiveRunGeneralPageState extends State<LiveRunGeneralPage> {
-  RunDetailsAggregate get run => widget.run;
-  LiveRunGeneralController get controller => widget.controller;
-
-  @override
-  void initState() {
-    super.initState();
-    // Show the tracking quality dialog the first time a user visits this page.
-    if (getIntPref(IntPrefsEnum.trackingQuality) == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) showTrackingQualityDialog(context);
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
