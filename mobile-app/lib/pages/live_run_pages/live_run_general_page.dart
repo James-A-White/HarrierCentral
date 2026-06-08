@@ -1,6 +1,5 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
-import 'package:harrier_central/pages/live_run_pages/live_run_qr_page.dart';
 import 'package:harrier_central/widgets/tracking_quality_dialog.dart';
 import 'package:intl/intl.dart';
 
@@ -408,61 +407,27 @@ class LiveRunGeneralPage extends StatelessWidget {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.only(left: 10),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: hc_blue,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: () => unawaited(controller.takePhoto()),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.camera_alt, size: 44),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Take\nPhoto',
-                      textAlign: TextAlign.center,
-                      style: ts_button.copyWith(fontSize: 15),
-                    ),
-                  ],
-                ),
-              ),
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: hc_blue,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 58,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: hc_red,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: () => Get.to(() => LiveRunQrPage(run: run)),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.qr_code_2, size: 28),
-                    const SizedBox(width: 10),
-                    Text(
-                      'Share\nRuns',
-                      textAlign: TextAlign.center,
-                      style: ts_button.copyWith(fontSize: 15),
-                    ),
-                  ],
-                ),
+          ),
+          onPressed: () => unawaited(controller.takePhoto()),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.camera_alt, size: 44),
+              const SizedBox(height: 8),
+              Text(
+                'Take\nPhoto',
+                textAlign: TextAlign.center,
+                style: ts_button.copyWith(fontSize: 15),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
