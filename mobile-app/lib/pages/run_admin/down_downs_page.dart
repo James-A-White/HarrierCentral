@@ -197,7 +197,7 @@ class _DownDownsPageState extends State<DownDownsPage> {
                 : ListView.separated(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     itemCount: _downDowns.length,
-                    separatorBuilder: (context, i) => Divider(height: 1, color: Colors.lightBlueAccent.withValues(alpha: 0.35)),
+                    separatorBuilder: (context, i) => Divider(height: 2, thickness: 1.5, color: Colors.lightBlueAccent.withValues(alpha: 0.7)),
                     itemBuilder: (context, index) {
                       final dd = _downDowns[index];
                       final names = dd.hashers.map((h) => h.displayName).join(', ');

@@ -139,7 +139,7 @@ class _LiveRunChargesPageState extends State<LiveRunChargesPage> {
                   : ListView.separated(
                       padding: const EdgeInsets.only(bottom: 80, top: 8),
                       itemCount: _charges.length,
-                      separatorBuilder: (context, i) => Divider(height: 1, color: Colors.lightBlueAccent.withValues(alpha: 0.35)),
+                      separatorBuilder: (context, i) => Divider(height: 2, thickness: 1.5, color: Colors.lightBlueAccent.withValues(alpha: 0.7)),
                       itemBuilder: (context, index) {
                         final dd = _charges[index];
                         final names = dd.hashers.map((h) => h.displayName).join(', ');
