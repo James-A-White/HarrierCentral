@@ -2,6 +2,8 @@
 
 // ignore_for_file: constant_identifier_names
 
+import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:harrier_central/pages/run_admin/add_down_down_page.dart';
 import 'package:harrier_central/widgets/run_photo_gallery.dart';
 import 'package:badges/badges.dart' as badges;
 import 'package:eventide/eventide.dart';
@@ -407,6 +409,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   num spaceBetweenRows = 23.0;
 
   Widget _buildRunDetailsView() {
+    final bool hasAttended = widget.futureRun.extensions.attendenceState >= 20;
+    final bool isLoggedIn = (getStringPref(StringPrefsEnum.userId) ?? '').isNotEmpty;
+
     return RunDetails(
       widget.futureRun.event,
       widget.futureRun.kennel,
@@ -430,6 +435,37 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         );
         setStateIfMounted(() {});
       },
+      bottomExtension: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _HashTrashView(
+            kennelId: widget.futureRun.kennel.kennelId,
+            eventId: widget.futureRun.event.eventId,
+          ),
+          if (isLoggedIn && hasAttended)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.sports_bar),
+                label: const Text('Add Down Down'),
+                onPressed: () {
+                  if (Utilities.isConnected(showDialog: true)) {
+                    Navigator.push<void>(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (_) => AddDownDownPage(
+                          kennelId: widget.futureRun.kennel.kennelId,
+                          eventId: widget.futureRun.event.eventId,
+                          eventName: widget.futureRun.event.eventName,
+                        ),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -2647,5 +2683,94 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     } finally {
       _safeSetState(() => _liveRunLoading = false);
     }
+  }
+}
+
+/// Loads and displays published HashTrash for a run.
+/// Renders nothing if the event has no published HashTrash.
+class _HashTrashView extends StatefulWidget {
+  const _HashTrashView({required this.kennelId, required this.eventId});
+
+  final String kennelId;
+  final String eventId;
+
+  @override
+  State<_HashTrashView> createState() => _HashTrashViewState();
+}
+
+class _HashTrashViewState extends State<_HashTrashView> {
+  HashTrashModel? _model;
+  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_load());
+  }
+
+  Future<void> _load() async {
+    if (!Utilities.isConnected()) return;
+    try {
+      final m = await RunContentService().getHashTrash(
+        kennelId: widget.kennelId,
+        eventId: widget.eventId,
+      );
+      if (mounted) setState(() { _model = m; _loaded = true; });
+    } catch (_) {
+      if (mounted) setState(() => _loaded = true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loaded || _model == null || (_model!.headline.isEmpty && (_model!.content == null || _model!.content!.isEmpty))) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const FancyDivider(
+          key: Key('hash_trash_divider'),
+          innerColor: Colors.white,
+          topMargin: 20,
+          bottomMargin: 10,
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: Row(
+            children: [
+              Text('Hash Trash', style: ts_headingLarge.copyWith(color: Colors.white)),
+              if (_model!.isDraft) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade700,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Text('DRAFT', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ],
+          ),
+        ),
+        Container(
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Markdown(
+            data: _model!.headline.isNotEmpty
+                ? '# ${_model!.headline}\n\n${_model!.content ?? ''}'
+                : (_model!.content ?? ''),
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(12),
+          ),
+        ),
+      ],
+    );
   }
 }
