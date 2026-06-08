@@ -21,11 +21,28 @@ class _DownDownsPageState extends State<DownDownsPage> {
 
   bool _isLoading = true;
   List<DownDownModel> _downDowns = [];
+  Timer? _pollTimer;
 
   @override
   void initState() {
     super.initState();
     unawaited(_load());
+    _pollTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+      unawaited(_silentRefresh());
+    });
+  }
+
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    super.dispose();
+  }
+
+  void _sortList() {
+    _downDowns.sort((a, b) {
+      if (a.isDone == b.isDone) return a.createdAt.compareTo(b.createdAt);
+      return a.isDone ? 1 : -1;
+    });
   }
 
   Future<void> _load() async {
@@ -42,17 +59,54 @@ class _DownDownsPageState extends State<DownDownsPage> {
               .where((h) => h.downDownId == dd.downDownId)
               .toList();
         }
-        setState(() { _downDowns = all; });
+        setState(() {
+          _downDowns = all;
+          _sortList();
+        });
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load DownDowns'), backgroundColor: Colors.red.shade700),
+          SnackBar(content: const Text('Failed to load Down Downs'), backgroundColor: Colors.red.shade700),
         );
       }
     }
     if (mounted) setState(() => _isLoading = false);
   }
+
+  // Background refresh — no loading spinner, no error snackbar on transient failures.
+  Future<void> _silentRefresh() async {
+    try {
+      final result = await _service.getDownDowns(
+        kennelId: widget.kennelId,
+        eventId: widget.eventId,
+      );
+      if (result != null && mounted) {
+        final all = result.downDowns;
+        for (final dd in all) {
+          dd.hashers = result.hashers
+              .where((h) => h.downDownId == dd.downDownId)
+              .toList();
+        }
+        setState(() {
+          _downDowns = all;
+          _sortList();
+        });
+      }
+    } catch (_) {
+      // Silently ignore — next poll will retry.
+    }
+  }
+
+  DownDownModel _copyWith(DownDownModel dd, {required bool isDone}) => DownDownModel(
+        downDownId: dd.downDownId,
+        chargeText: dd.chargeText,
+        isDone: isDone,
+        createdByDisplayName: dd.createdByDisplayName,
+        createdByPhoto: dd.createdByPhoto,
+        createdAt: dd.createdAt,
+        hashers: dd.hashers,
+      );
 
   Future<void> _markDone(DownDownModel dd) async {
     final ok = await _service.markDownDownDone(
@@ -62,18 +116,50 @@ class _DownDownsPageState extends State<DownDownsPage> {
     );
     if (ok && mounted) {
       setState(() {
-        final index = _downDowns.indexWhere((d) => d.downDownId == dd.downDownId);
-        if (index >= 0) {
-          _downDowns[index] = DownDownModel(
-            downDownId: dd.downDownId,
-            chargeText: dd.chargeText,
-            isDone: true,
-            createdByDisplayName: dd.createdByDisplayName,
-            createdByPhoto: dd.createdByPhoto,
-            createdAt: dd.createdAt,
-            hashers: dd.hashers,
-          );
-        }
+        final i = _downDowns.indexWhere((d) => d.downDownId == dd.downDownId);
+        if (i >= 0) _downDowns[i] = _copyWith(dd, isDone: true);
+        _sortList();
+      });
+    }
+  }
+
+  Future<void> _unmarkDone(DownDownModel dd) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Undo Down Down?', style: ts_alertDialogTitle),
+        content: Text(
+          'Mark this charge as pending again?',
+          style: ts_alertDialogBody,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: themeBackgroundColor,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Yes, undo'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    final ok = await _service.unmarkDownDownDone(
+      kennelId: widget.kennelId,
+      eventId: widget.eventId,
+      downDownId: dd.downDownId,
+    );
+    if (ok && mounted) {
+      setState(() {
+        final i = _downDowns.indexWhere((d) => d.downDownId == dd.downDownId);
+        if (i >= 0) _downDowns[i] = _copyWith(dd, isDone: false);
+        _sortList();
       });
     }
   }
@@ -118,7 +204,9 @@ class _DownDownsPageState extends State<DownDownsPage> {
                       return _DownDownTile(
                         dd: dd,
                         hasherNames: names,
-                        onMarkDone: dd.isDone ? null : () => _markDone(dd),
+                        onCheckTap: dd.isDone
+                            ? () => _unmarkDone(dd)
+                            : () => _markDone(dd),
                       );
                     },
                   ),
@@ -131,12 +219,12 @@ class _DownDownTile extends StatelessWidget {
   const _DownDownTile({
     required this.dd,
     required this.hasherNames,
-    this.onMarkDone,
+    required this.onCheckTap,
   });
 
   final DownDownModel dd;
   final String hasherNames;
-  final VoidCallback? onMarkDone;
+  final VoidCallback onCheckTap;
 
   ImageProvider _photoProvider(String photo) {
     if (photo.startsWith('https://')) return NetworkImage(photo);
@@ -200,16 +288,14 @@ class _DownDownTile extends StatelessWidget {
             width: 44,
             height: 44,
             child: Center(
-              child: dd.isDone
-                  ? const Icon(Icons.check_circle, color: Colors.yellow, size: 32)
-                  : GestureDetector(
-                      onTap: onMarkDone,
-                      child: const Icon(
-                        Icons.check_circle_outline,
-                        color: Colors.lightBlueAccent,
-                        size: 32,
-                      ),
-                    ),
+              child: GestureDetector(
+                onTap: onCheckTap,
+                child: Icon(
+                  dd.isDone ? Icons.check_circle : Icons.check_circle_outline,
+                  color: dd.isDone ? Colors.yellow : Colors.lightBlueAccent,
+                  size: 32,
+                ),
+              ),
             ),
           ),
         ],

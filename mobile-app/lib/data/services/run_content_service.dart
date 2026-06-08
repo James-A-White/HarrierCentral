@@ -193,4 +193,30 @@ class RunContentService {
 
     return !result.startsWith(ERROR_PREFIX);
   }
+
+  Future<bool> unmarkDownDownDone({
+    required String kennelId,
+    required String eventId,
+    required String downDownId,
+  }) async {
+    final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    final result = await ServiceCommon.sendHttpPost(
+      () => jsonEncode(<String, dynamic>{
+        'queryType': 'unmarkDownDownDone',
+        'deviceId': deviceId,
+        'accessToken': Utilities.generateToken(
+          getStringPref(StringPrefsEnum.userId) ?? '',
+          'hcapp_unmarkDownDownDone',
+          paramString: deviceSecret,
+        ),
+        'kennelId': kennelId,
+        'eventId': eventId,
+        'downDownId': downDownId,
+      }),
+    );
+
+    return !result.startsWith(ERROR_PREFIX);
+  }
 }
