@@ -102,8 +102,9 @@ END
 BEGIN TRY
 
     UPDATE HC.DownDowns
-    SET IsDone    = 1,
-        UpdatedAt = GETUTCDATE()
+    SET IsDone      = 1,
+        IsCancelled = 0,
+        UpdatedAt   = GETUTCDATE()
     WHERE id       = @downDownId
       AND EventId  = @eventId
       AND KennelId = @kennelId;
