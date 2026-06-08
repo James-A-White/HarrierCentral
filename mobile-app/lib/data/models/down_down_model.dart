@@ -24,6 +24,7 @@ class DownDownModel {
     required this.isDone,
     required this.createdByDisplayName,
     required this.createdAt,
+    this.createdByPhoto,
     this.hashers = const [],
   });
 
@@ -31,6 +32,7 @@ class DownDownModel {
   final String chargeText;
   final bool isDone;
   final String createdByDisplayName;
+  final String? createdByPhoto;
   final DateTime createdAt;
   List<DownDownHasherModel> hashers;
 
@@ -39,6 +41,7 @@ class DownDownModel {
         chargeText: json['chargeText'] as String? ?? '',
         isDone: json['isDone'] == true || json['isDone'] == 1,
         createdByDisplayName: json['createdByDisplayName'] as String? ?? '',
+        createdByPhoto: json['createdByPhoto'] as String?,
         createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
       );
 }

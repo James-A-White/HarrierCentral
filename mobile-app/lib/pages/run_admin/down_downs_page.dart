@@ -69,6 +69,7 @@ class _DownDownsPageState extends State<DownDownsPage> {
             chargeText: dd.chargeText,
             isDone: true,
             createdByDisplayName: dd.createdByDisplayName,
+            createdByPhoto: dd.createdByPhoto,
             createdAt: dd.createdAt,
             hashers: dd.hashers,
           );
@@ -93,7 +94,7 @@ class _DownDownsPageState extends State<DownDownsPage> {
         ],
       ),
       body: Container(
-        decoration: Backgrounds.defaultHcBackgroundLight(),
+        decoration: Backgrounds.defaultHcBackground(),
         child: _isLoading
             ? const HcAppCircularProgressIndicator(key: Key('dd_loading'))
             : _downDowns.isEmpty
@@ -103,14 +104,14 @@ class _DownDownsPageState extends State<DownDownsPage> {
                       child: Text(
                         'No Down Downs yet for this run',
                         textAlign: TextAlign.center,
-                        style: ts_headingLarge.copyWith(color: themeBackgroundColor),
+                        style: ts_headingLarge.copyWith(color: Colors.white),
                       ),
                     ),
                   )
                 : ListView.separated(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     itemCount: _downDowns.length,
-                    separatorBuilder: (context, i) => const Divider(height: 1, color: Colors.black26),
+                    separatorBuilder: (context, i) => const Divider(height: 1, color: Colors.white12),
                     itemBuilder: (context, index) {
                       final dd = _downDowns[index];
                       final names = dd.hashers.map((h) => h.displayName).join(', ');
@@ -137,14 +138,33 @@ class _DownDownTile extends StatelessWidget {
   final String hasherNames;
   final VoidCallback? onMarkDone;
 
+  ImageProvider _photoProvider(String photo) {
+    if (photo.startsWith('https://')) return NetworkImage(photo);
+    return AssetImage('images/avatars/${photo.replaceAll('bundle://', '')}.jpg');
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: dd.isDone ? Colors.green.withValues(alpha: 0.08) : null,
+    final photo = dd.createdByPhoto;
+
+    return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Creator profile pic
+          CircleAvatar(
+            radius: 22,
+            backgroundColor: Colors.white24,
+            backgroundImage: (photo != null && photo.isNotEmpty)
+                ? _photoProvider(photo)
+                : null,
+            child: (photo == null || photo.isEmpty)
+                ? const Icon(Icons.person, color: Colors.white54, size: 24)
+                : null,
+          ),
+          const SizedBox(width: 10),
+          // Text — flows past the avatar if the charge is long
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,31 +175,43 @@ class _DownDownTile extends StatelessWidget {
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
-                      color: Colors.black87,
+                      color: Colors.yellow,
                     ),
                   ),
-                const SizedBox(height: 4),
-                Text(
-                  dd.chargeText,
-                  style: const TextStyle(fontSize: 14, color: Colors.black87),
-                ),
-                const SizedBox(height: 4),
                 Text(
                   'by ${dd.createdByDisplayName}',
-                  style: const TextStyle(fontSize: 12, color: Colors.black45),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.yellow,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  dd.chargeText,
+                  style: const TextStyle(fontSize: 14, color: Colors.white),
                 ),
               ],
             ),
           ),
           const SizedBox(width: 8),
-          dd.isDone
-              ? const Icon(Icons.check_circle, color: Colors.green, size: 32)
-              : IconButton(
-                  icon: const Icon(Icons.check_circle_outline, size: 32),
-                  color: Colors.grey,
-                  onPressed: onMarkDone,
-                  tooltip: 'Mark done',
-                ),
+          // Checkmark — fixed 44×44 so done/not-done never shift alignment
+          SizedBox(
+            width: 44,
+            height: 44,
+            child: Center(
+              child: dd.isDone
+                  ? const Icon(Icons.check_circle, color: Colors.yellow, size: 32)
+                  : GestureDetector(
+                      onTap: onMarkDone,
+                      child: const Icon(
+                        Icons.check_circle_outline,
+                        color: Colors.lightBlueAccent,
+                        size: 32,
+                      ),
+                    ),
+            ),
+          ),
         ],
       ),
     );
