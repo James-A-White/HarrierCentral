@@ -140,6 +140,34 @@ class RunContentService {
     }
   }
 
+  Future<bool> updateDownDown({
+    required String kennelId,
+    required String eventId,
+    required String downDownId,
+    required String chargeText,
+  }) async {
+    final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    final result = await ServiceCommon.sendHttpPost(
+      () => jsonEncode(<String, dynamic>{
+        'queryType': 'updateDownDown',
+        'deviceId': deviceId,
+        'accessToken': Utilities.generateToken(
+          getStringPref(StringPrefsEnum.userId) ?? '',
+          'hcapp_updateDownDown',
+          paramString: deviceSecret,
+        ),
+        'kennelId': kennelId,
+        'eventId': eventId,
+        'downDownId': downDownId,
+        'chargeText': chargeText,
+      }),
+    );
+
+    return !result.startsWith(ERROR_PREFIX);
+  }
+
   Future<bool> markDownDownDone({
     required String kennelId,
     required String eventId,

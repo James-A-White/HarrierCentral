@@ -1,5 +1,6 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/pages/live_run_pages/live_run_charges_page.dart';
 import 'package:intl/intl.dart';
 
 class LiveRunGeneralController extends GetxController {
@@ -245,6 +246,8 @@ class LiveRunGeneralPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     _buildChatSection(),
+                    const SizedBox(height: 8),
+                    _buildChargesButton(context),
                   ],
                 ),
               ),
@@ -609,6 +612,29 @@ class LiveRunGeneralPage extends StatelessWidget {
     return ChatStripWidget(
       eventId: run.event.eventId,
       publicEventId: run.event.publicEventId,
+    );
+  }
+
+  Widget _buildChargesButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 44,
+      child: ElevatedButton.icon(
+        icon: const Icon(Icons.gavel, size: 20),
+        label: Text('Charges', style: ts_button.copyWith(fontSize: 16)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.amber.shade800,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        onPressed: () => Get.to(
+          () => LiveRunChargesPage(
+            kennelId: run.kennel.kennelId,
+            eventId: run.event.eventId,
+            eventName: run.event.eventName,
+          ),
+        ),
+      ),
     );
   }
 }

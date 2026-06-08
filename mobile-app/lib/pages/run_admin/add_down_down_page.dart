@@ -149,18 +149,6 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
         backgroundColor: themeAppBarBackground,
         iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
         title: Text('Add Down Down', style: ts_appBarTitle),
-        actions: [
-          TextButton(
-            onPressed: _isSaving ? null : _submit,
-            child: _isSaving
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                  )
-                : const Text('Submit', style: TextStyle(color: Colors.white, fontSize: 16)),
-          ),
-        ],
       ),
       body: Container(
         decoration: Backgrounds.defaultHcBackgroundLight(),
@@ -168,19 +156,47 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
             ? const HcAppCircularProgressIndicator(key: Key('add_dd_loading'))
             : Column(
                 children: [
-                  // Charge text input
+                  // Charge text input with inline send button
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                    child: TextField(
-                      controller: _chargeController,
-                      maxLines: 3,
-                      decoration: InputDecoration(
-                        labelText: 'Charge',
-                        hintText: 'What did they do?',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                        filled: true,
-                        fillColor: Colors.white,
-                      ),
+                    child: Stack(
+                      alignment: Alignment.bottomRight,
+                      children: [
+                        TextField(
+                          controller: _chargeController,
+                          maxLines: 3,
+                          decoration: InputDecoration(
+                            labelText: 'Charge',
+                            hintText: 'What did they do?',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                            filled: true,
+                            fillColor: Colors.white,
+                            contentPadding: const EdgeInsets.fromLTRB(12, 12, 52, 12),
+                          ),
+                        ),
+                        Positioned(
+                          right: 6,
+                          bottom: 6,
+                          child: Material(
+                            color: themeBackgroundColor,
+                            borderRadius: BorderRadius.circular(20),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(20),
+                              onTap: _isSaving ? null : _submit,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8),
+                                child: _isSaving
+                                    ? const SizedBox(
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                      )
+                                    : const Icon(Icons.send, color: Colors.white, size: 20),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   Padding(
@@ -213,6 +229,9 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                                 title: Text(attendee.displayName),
                                 onChanged: (v) => setState(() => attendee.selected = v ?? false),
                                 activeColor: themeBackgroundColor,
+                                controlAffinity: ListTileControlAffinity.leading,
+                                dense: true,
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12),
                               );
                             },
                           ),
