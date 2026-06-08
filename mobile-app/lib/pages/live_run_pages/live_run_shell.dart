@@ -1,6 +1,7 @@
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/pages/live_run_pages/live_run_charges_page.dart';
 import 'package:harrier_central/pages/live_run_pages/live_run_chat_page.dart';
 import 'package:harrier_central/pages/live_run_pages/live_run_general_page.dart';
 import 'package:harrier_central/pages/live_run_pages/live_run_map_page.dart';
@@ -42,7 +43,11 @@ class LiveRunShell extends StatelessWidget {
       LiveRunGeneralPage(run: run),
       LiveRunChatPage(run: run),
       LiveRunMapPage(run: run),
-      LiveRunQrPage(run: run),
+      LiveRunChargesPage(
+        kennelId: run.kennel.kennelId,
+        eventId: run.event.eventId,
+        eventName: run.event.eventName,
+      ),
       LiveRunSongbookPage(run: run),
     ];
 
@@ -65,51 +70,9 @@ class LiveRunShell extends StatelessWidget {
           ),
           actions: [
             IconButton(
-              tooltip: 'End run tracking',
-              icon: const Icon(Icons.flag_outlined, color: Colors.white),
-              onPressed: () async {
-                final generalTag = 'live-run-general-${run.event.eventId}';
-                if (!Get.isRegistered<LiveRunGeneralController>(
-                  tag: generalTag,
-                )) {
-                  return;
-                }
-                final confirmed = await showDialog<bool>(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (_) => AlertDialog(
-                    title: Text('End Run?', style: ts_alertDialogTitle),
-                    content: Text(
-                      'Are you sure you want to end your run? '
-                      'Once stopped, tracking cannot be restarted. '
-                      'Your data will be saved.',
-                      style: ts_alertDialogBody,
-                    ),
-                    actions: [
-                      ElevatedButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey.shade600,
-                          foregroundColor: Colors.white,
-                        ),
-                        child: Text('Keep Tracking', style: ts_button),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => Navigator.of(context).pop(true),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: hc_red,
-                          foregroundColor: Colors.white,
-                        ),
-                        child: Text('End Run', style: ts_button),
-                      ),
-                    ],
-                  ),
-                );
-                if (confirmed == true) {
-                  Get.find<LiveRunGeneralController>(tag: generalTag)
-                      .stopTracking();
-                }
-              },
+              tooltip: 'Share QR codes',
+              icon: const Icon(Icons.qr_code_2, color: Colors.white),
+              onPressed: () => Get.to(() => LiveRunQrPage(run: run)),
             ),
           ],
         ),
@@ -142,11 +105,11 @@ class LiveRunShell extends StatelessWidget {
               label: 'Map',
             ),
             CurvedNavigationBarItem(
-              child: Obx(() => Icon(Icons.qr_code_2,
+              child: Obx(() => Icon(Icons.sports_bar,
                   color: controller.tabIndex.value == 3
                       ? Colors.white
                       : Colors.black54)),
-              label: 'QRs',
+              label: 'Charges',
             ),
             CurvedNavigationBarItem(
               child: Obx(() => Icon(Icons.music_note,

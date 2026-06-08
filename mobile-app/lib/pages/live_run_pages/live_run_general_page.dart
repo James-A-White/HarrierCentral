@@ -1,6 +1,6 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
-import 'package:harrier_central/pages/live_run_pages/live_run_charges_page.dart';
+import 'package:harrier_central/pages/live_run_pages/live_run_qr_page.dart';
 import 'package:intl/intl.dart';
 
 class LiveRunGeneralController extends GetxController {
@@ -246,8 +246,6 @@ class LiveRunGeneralPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     _buildChatSection(),
-                    const SizedBox(height: 8),
-                    _buildChargesButton(context),
                   ],
                 ),
               ),
@@ -439,7 +437,7 @@ class LiveRunGeneralPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                onPressed: () => Get.find<LiveRunShellController>().setTab(3),
+                onPressed: () => Get.to(() => LiveRunQrPage(run: run)),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -615,28 +613,6 @@ class LiveRunGeneralPage extends StatelessWidget {
     );
   }
 
-  Widget _buildChargesButton(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 44,
-      child: ElevatedButton.icon(
-        icon: const Icon(Icons.gavel, size: 20),
-        label: Text('Charges', style: ts_button.copyWith(fontSize: 16)),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.amber.shade800,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-        onPressed: () => Get.to(
-          () => LiveRunChargesPage(
-            kennelId: run.kennel.kennelId,
-            eventId: run.event.eventId,
-            eventName: run.event.eventName,
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 // ---------------------------------------------------------------------------
