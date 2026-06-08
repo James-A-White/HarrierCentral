@@ -56,22 +56,42 @@ class _LiveRunChargesPageState extends State<LiveRunChargesPage> {
   }
 
   Future<void> _showEditDialog(DownDownModel dd) async {
-    final textController = TextEditingController(text: dd.chargeText);
+    final chargeController = TextEditingController(text: dd.chargeText);
+    final songController = TextEditingController(text: dd.songChoice ?? '');
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text('Edit Charge', style: ts_alertDialogTitle),
-        content: TextField(
-          controller: textController,
-          maxLines: 3,
-          decoration: InputDecoration(
-            hintText: 'What did they do?',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            filled: true,
-            fillColor: Colors.white,
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: chargeController,
+                maxLines: 3,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: 'Charge',
+                  hintText: 'What did they do?',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: songController,
+                decoration: InputDecoration(
+                  labelText: 'Recommended song (optional)',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: Colors.white,
+                  prefixIcon: const Icon(Icons.music_note),
+                ),
+              ),
+            ],
           ),
-          autofocus: true,
         ),
         actions: [
           TextButton(
@@ -90,8 +110,10 @@ class _LiveRunChargesPageState extends State<LiveRunChargesPage> {
       ),
     );
 
-    final editedText = textController.text.trim();
-    textController.dispose();
+    final editedText = chargeController.text.trim();
+    final editedSong = songController.text.trim();
+    chargeController.dispose();
+    songController.dispose();
 
     if (confirmed != true || editedText.isEmpty) return;
 
@@ -100,6 +122,7 @@ class _LiveRunChargesPageState extends State<LiveRunChargesPage> {
       eventId: widget.eventId,
       downDownId: dd.downDownId,
       chargeText: editedText,
+      songChoice: editedSong.isEmpty ? null : editedSong,
     );
 
     if (mounted) {
@@ -224,6 +247,26 @@ class _ChargeTile extends StatelessWidget {
                   dd.chargeText,
                   style: const TextStyle(fontSize: 14, color: Colors.white),
                 ),
+                if (dd.songChoice != null && dd.songChoice!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 5),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.music_note, size: 13, color: Colors.white54),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            dd.songChoice!,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.white54,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
               ],
             ),
           ),

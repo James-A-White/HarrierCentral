@@ -26,6 +26,7 @@ class DownDownModel {
     required this.createdByDisplayName,
     required this.createdAt,
     this.createdByPhoto,
+    this.songChoice,
     this.hashers = const [],
   });
 
@@ -35,6 +36,7 @@ class DownDownModel {
   final bool isCancelled;
   final String createdByDisplayName;
   final String? createdByPhoto;
+  final String? songChoice;
   final DateTime createdAt;
   List<DownDownHasherModel> hashers;
 
@@ -45,6 +47,7 @@ class DownDownModel {
         isCancelled: json['isCancelled'] == true || json['isCancelled'] == 1,
         createdByDisplayName: json['createdByDisplayName'] as String? ?? '',
         createdByPhoto: json['createdByPhoto'] as String?,
+        songChoice: json['songChoice'] as String?,
         createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
       );
 }

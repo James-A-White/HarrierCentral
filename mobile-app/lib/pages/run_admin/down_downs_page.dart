@@ -109,6 +109,7 @@ class _DownDownsPageState extends State<DownDownsPage> {
         createdByDisplayName: dd.createdByDisplayName,
         createdByPhoto: dd.createdByPhoto,
         createdAt: dd.createdAt,
+        songChoice: dd.songChoice,
         hashers: dd.hashers,
       );
 
@@ -218,19 +219,99 @@ class _DownDownsPageState extends State<DownDownsPage> {
     }
   }
 
+  Future<void> _showEditDialog(DownDownModel dd) async {
+    final chargeController = TextEditingController(text: dd.chargeText);
+    final songController = TextEditingController(text: dd.songChoice ?? '');
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Edit Down Down', style: ts_alertDialogTitle),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: chargeController,
+                maxLines: 3,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: 'Charge',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: songController,
+                decoration: InputDecoration(
+                  labelText: 'Recommended song (optional)',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: Colors.white,
+                  prefixIcon: const Icon(Icons.music_note),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: themeBackgroundColor,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    final editedCharge = chargeController.text.trim();
+    final editedSong = songController.text.trim();
+    chargeController.dispose();
+    songController.dispose();
+
+    if (confirmed != true || editedCharge.isEmpty) return;
+
+    final ok = await _service.updateDownDown(
+      kennelId: widget.kennelId,
+      eventId: widget.eventId,
+      downDownId: dd.downDownId,
+      chargeText: editedCharge,
+      songChoice: editedSong.isEmpty ? null : editedSong,
+    );
+
+    if (mounted) {
+      if (ok) {
+        unawaited(_load());
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: const Text('Failed to update'), backgroundColor: Colors.red.shade700),
+        );
+      }
+    }
+  }
+
   void _handleCancelTap(DownDownModel dd) {
     if (dd.isCancelled) {
-      unawaited(_uncancel(dd)); // solid X → restore to pending (confirmation)
+      unawaited(_uncancel(dd));
     } else {
-      unawaited(_cancel(dd));   // outline X → cancel (no confirmation)
+      unawaited(_cancel(dd));
     }
   }
 
   void _handleCheckTap(DownDownModel dd) {
     if (dd.isDone) {
-      unawaited(_unmarkDone(dd)); // solid check → pending (confirmation)
+      unawaited(_unmarkDone(dd));
     } else {
-      unawaited(_markDone(dd));   // outline check → delivered (no confirmation)
+      unawaited(_markDone(dd));
     }
   }
 
@@ -276,6 +357,7 @@ class _DownDownsPageState extends State<DownDownsPage> {
                         hasherNames: names,
                         onCancelTap: () => _handleCancelTap(dd),
                         onCheckTap: () => _handleCheckTap(dd),
+                        onEditTap: () => _showEditDialog(dd),
                       );
                     },
                   ),
@@ -290,12 +372,14 @@ class _DownDownTile extends StatelessWidget {
     required this.hasherNames,
     required this.onCancelTap,
     required this.onCheckTap,
+    required this.onEditTap,
   });
 
   final DownDownModel dd;
   final String hasherNames;
   final VoidCallback onCancelTap;
   final VoidCallback onCheckTap;
+  final VoidCallback onEditTap;
 
   ImageProvider _photoProvider(String photo) {
     if (photo.startsWith('https://')) return NetworkImage(photo);
@@ -324,7 +408,7 @@ class _DownDownTile extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10),
-          // Text — flows past the avatar if the charge is long
+          // Text content
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -351,11 +435,31 @@ class _DownDownTile extends StatelessWidget {
                   dd.chargeText,
                   style: const TextStyle(fontSize: 14, color: Colors.white),
                 ),
+                if (dd.songChoice != null && dd.songChoice!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 5),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.music_note, size: 13, color: Colors.white54),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            dd.songChoice!,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.white54,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
               ],
             ),
           ),
           const SizedBox(width: 8),
-          // Action icons — X (cancel) above check (deliver), fixed width
+          // Action icons — X (cancel), check (deliver), edit
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -384,6 +488,16 @@ class _DownDownTile extends StatelessWidget {
                       color: dd.isDone ? Colors.yellow : Colors.lightBlueAccent,
                       size: 30,
                     ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: 44,
+                height: 34,
+                child: Center(
+                  child: GestureDetector(
+                    onTap: onEditTap,
+                    child: const Icon(Icons.edit_outlined, color: Colors.white38, size: 22),
                   ),
                 ),
               ),

@@ -27,6 +27,7 @@ class AddDownDownPage extends StatefulWidget {
 class _AddDownDownPageState extends State<AddDownDownPage> {
   final _service = RunContentService();
   final _chargeController = TextEditingController();
+  final _songController = TextEditingController();
 
   bool _isLoading = true;
   bool _isSaving = false;
@@ -41,6 +42,7 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
   @override
   void dispose() {
     _chargeController.dispose();
+    _songController.dispose();
     super.dispose();
   }
 
@@ -113,6 +115,7 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
         eventId: widget.eventId,
         hasherIds: _selected.map((a) => a.hasherId).toList(),
         chargeText: _chargeController.text.trim(),
+        songChoice: _songController.text.trim().isEmpty ? null : _songController.text.trim(),
       );
       if (mounted) {
         if (id != null) {
@@ -197,6 +200,20 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                    child: TextField(
+                      controller: _songController,
+                      decoration: InputDecoration(
+                        labelText: 'Recommended song (optional)',
+                        hintText: 'e.g. Down Down',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        filled: true,
+                        fillColor: Colors.white,
+                        prefixIcon: const Icon(Icons.music_note),
+                      ),
                     ),
                   ),
                   Padding(
