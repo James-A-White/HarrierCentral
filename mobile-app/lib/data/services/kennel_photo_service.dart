@@ -482,6 +482,7 @@ class KennelPhotoService {
   Future<String> getKennelPendingPhotos({
     required String kennelId,
     String? eventId,
+    Function? errorCallback,
   }) async {
     final userId = currentUserId;
     final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
@@ -501,7 +502,10 @@ class KennelPhotoService {
       body['eventId'] = eventId;
     }
 
-    return ServiceCommon.sendHttpPost(() => jsonEncode(body));
+    return ServiceCommon.sendHttpPost(
+      () => jsonEncode(body),
+      errorCallback: errorCallback,
+    );
   }
 
   Future<String> getRunPhotos({
@@ -641,7 +645,13 @@ class KennelPhotoService {
     if (!force && _pendingLoadedKennels.contains(kennelId)) return;
     _pendingLoadedKennels.add(kennelId);
     try {
-      final result = await getKennelPendingPhotos(kennelId: kennelId);
+      // Suppress the error dialog — this is a background badge-load, not a
+      // user-initiated action. Auth failures (user lacks Hash Flash/GM/VGM/RA)
+      // are expected and should produce no UI feedback.
+      final result = await getKennelPendingPhotos(
+        kennelId: kennelId,
+        errorCallback: (_) async => true,
+      );
       if (result.startsWith(ERROR_PREFIX)) return;
 
       // Clear stale counts for events we previously tracked for this kennel.
