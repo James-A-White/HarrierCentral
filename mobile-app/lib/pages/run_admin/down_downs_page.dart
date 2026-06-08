@@ -240,16 +240,17 @@ class _DownDownTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Creator profile pic
-          CircleAvatar(
-            radius: 22,
-            backgroundColor: Colors.white24,
-            backgroundImage: (photo != null && photo.isNotEmpty)
-                ? _photoProvider(photo)
-                : null,
-            child: (photo == null || photo.isEmpty)
-                ? const Icon(Icons.person, color: Colors.white54, size: 24)
-                : null,
+          // Creator profile pic — rounded square, 57×57
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: Container(
+              width: 57,
+              height: 57,
+              color: Colors.white24,
+              child: (photo != null && photo.isNotEmpty)
+                  ? Image(image: _photoProvider(photo), fit: BoxFit.cover)
+                  : const Icon(Icons.person, color: Colors.white54, size: 32),
+            ),
           ),
           const SizedBox(width: 10),
           // Text — flows past the avatar if the charge is long
