@@ -115,64 +115,67 @@ class _LiveRunChargesPageState extends State<LiveRunChargesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        backgroundColor: themeAppBarBackground,
-        iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
-        title: Text('Charges', style: ts_appBarTitle),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
-            onPressed: _load,
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: themeBackgroundColor,
-        foregroundColor: Colors.white,
-        onPressed: () async {
-          await Get.to(
-            () => AddDownDownPage(
-              kennelId: widget.kennelId,
-              eventId: widget.eventId,
-              eventName: widget.eventName,
-            ),
-          );
-          unawaited(_load());
-        },
-        child: const Icon(Icons.add),
-      ),
-      body: Container(
-        decoration: Backgrounds.defaultHcBackgroundLight(),
-        child: _isLoading
-            ? const HcAppCircularProgressIndicator(key: Key('charges_loading'))
-            : _charges.isEmpty
-                ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(30),
-                      child: Text(
-                        'No charges yet for this run.\nTap + to add one.',
-                        textAlign: TextAlign.center,
-                        style: ts_headingLarge.copyWith(color: themeBackgroundColor),
-                      ),
+    final content = Container(
+      decoration: Backgrounds.defaultHcBackgroundLight(),
+      child: _isLoading
+          ? const HcAppCircularProgressIndicator(key: Key('charges_loading'))
+          : RefreshIndicator(
+              onRefresh: _load,
+              child: _charges.isEmpty
+                  ? ListView(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(30),
+                          child: Center(
+                            child: Text(
+                              'No charges yet for this run.\nPull to refresh or tap + to add one.',
+                              textAlign: TextAlign.center,
+                              style: ts_headingLarge.copyWith(color: themeBackgroundColor),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.only(bottom: 80, top: 8),
+                      itemCount: _charges.length,
+                      separatorBuilder: (context, i) => const Divider(height: 1, color: Colors.black26),
+                      itemBuilder: (context, index) {
+                        final dd = _charges[index];
+                        final names = dd.hashers.map((h) => h.displayName).join(', ');
+                        return _ChargeTile(
+                          dd: dd,
+                          hasherNames: names,
+                          onEdit: () => _showEditDialog(dd),
+                        );
+                      },
                     ),
-                  )
-                : ListView.separated(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    itemCount: _charges.length,
-                    separatorBuilder: (context, i) => const Divider(height: 1, color: Colors.black26),
-                    itemBuilder: (context, index) {
-                      final dd = _charges[index];
-                      final names = dd.hashers.map((h) => h.displayName).join(', ');
-                      return _ChargeTile(
-                        dd: dd,
-                        hasherNames: names,
-                        onEdit: () => _showEditDialog(dd),
-                      );
-                    },
-                  ),
-      ),
+            ),
+    );
+
+    return Stack(
+      children: [
+        content,
+        Positioned(
+          right: 16,
+          bottom: 16,
+          child: FloatingActionButton(
+            backgroundColor: themeBackgroundColor,
+            foregroundColor: Colors.white,
+            onPressed: () async {
+              await Get.to(
+                () => AddDownDownPage(
+                  kennelId: widget.kennelId,
+                  eventId: widget.eventId,
+                  eventName: widget.eventName,
+                ),
+              );
+              unawaited(_load());
+            },
+            child: const Icon(Icons.add),
+          ),
+        ),
+      ],
     );
   }
 }
