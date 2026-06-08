@@ -49,7 +49,7 @@ class LiveRunQrPage extends StatelessWidget {
         centerTitle: true,
         backgroundColor: themeAppBarBackground,
         iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
-        title: Text('Share QR Codes', style: ts_appBarTitle),
+        title: Text('Kennel Links', style: ts_appBarTitle),
       ),
       body: Container(
         decoration: Backgrounds.defaultHcBackground(),
