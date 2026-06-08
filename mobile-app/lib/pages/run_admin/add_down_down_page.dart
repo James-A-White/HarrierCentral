@@ -151,7 +151,7 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
         title: Text('Add Down Down', style: ts_appBarTitle),
       ),
       body: Container(
-        decoration: Backgrounds.defaultHcBackgroundLight(),
+        decoration: Backgrounds.defaultHcBackground(),
         child: _isLoading
             ? const HcAppCircularProgressIndicator(key: Key('add_dd_loading'))
             : Column(
@@ -205,12 +205,12 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                       children: [
                         Text(
                           'Select hashers ($selectedCount selected)',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                       ],
                     ),
                   ),
-                  const Divider(height: 1),
+                  const Divider(height: 1, color: Colors.white24),
                   Expanded(
                     child: _attendees.isEmpty
                         ? Center(
@@ -226,11 +226,20 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                               final attendee = _attendees[index];
                               return CheckboxListTile(
                                 value: attendee.selected,
-                                title: Text(attendee.displayName),
+                                title: Text(
+                                  attendee.displayName,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.yellow,
+                                  ),
+                                ),
                                 onChanged: (v) => setState(() => attendee.selected = v ?? false),
-                                activeColor: themeBackgroundColor,
+                                activeColor: Colors.yellow,
+                                checkColor: Colors.black87,
+                                side: const BorderSide(color: Colors.yellow, width: 1.5),
                                 controlAffinity: ListTileControlAffinity.leading,
                                 dense: true,
+                                visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 12),
                               );
                             },
