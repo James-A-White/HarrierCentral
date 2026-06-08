@@ -217,7 +217,7 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                             child: Text(
                               'No attendees found yet.\nCheck-in data may still be loading.',
                               textAlign: TextAlign.center,
-                              style: ts_headingLarge.copyWith(color: themeBackgroundColor),
+                              style: ts_headingLarge.copyWith(color: Colors.white70),
                             ),
                           )
                         : ListView.builder(
