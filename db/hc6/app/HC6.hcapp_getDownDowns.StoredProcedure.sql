@@ -106,6 +106,7 @@ SELECT
     dd.ChargeText      AS chargeText,
     dd.IsDone          AS isDone,
     h.DisplayName      AS createdByDisplayName,
+    h.Photo            AS createdByPhoto,
     dd.CreatedAt       AS createdAt
 FROM HC.DownDowns dd
 INNER JOIN HC.Hasher h ON h.id = dd.CreatedByUserId
