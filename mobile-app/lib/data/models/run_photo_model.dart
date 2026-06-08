@@ -2,6 +2,7 @@ class RunPhotoModel {
   const RunPhotoModel({
     required this.photoId,
     required this.blobUrl,
+    this.editedBlobUrl,
     this.title,
     this.description,
     required this.createdAt,
@@ -13,6 +14,9 @@ class RunPhotoModel {
 
   final String photoId;
   final String blobUrl;
+  /// Hash-Flash-edited crop. Null until the Hash Flash crops the photo.
+  /// Always display [effectiveUrl]. Always re-edit from [blobUrl] (original).
+  final String? editedBlobUrl;
   final String? title;
   final String? description;
   final DateTime createdAt;
@@ -27,6 +31,9 @@ class RunPhotoModel {
   /// Device asset ID — only populated for own photos, allows loading from device.
   final String? assetId;
 
+  /// The URL to display: edited version if available, original otherwise.
+  String get effectiveUrl => editedBlobUrl ?? blobUrl;
+
   String get displayCaption => description ?? title ?? '';
 
   // publicWeb_getRunPhotos rowset 1
@@ -34,6 +41,7 @@ class RunPhotoModel {
       RunPhotoModel(
         photoId: json['photoId'] as String? ?? '',
         blobUrl: json['BlobUrl'] as String? ?? '',
+        editedBlobUrl: json['EditedBlobUrl'] as String?,
         title: json['Title'] as String?,
         description: json['Description'] as String?,
         createdAt: _parseDateTime(json['CreatedAt']) ?? DateTime(0),
@@ -47,6 +55,7 @@ class RunPhotoModel {
       RunPhotoModel(
         photoId: json['photoId'] as String? ?? '',
         blobUrl: json['BlobUrl'] as String? ?? '',
+        editedBlobUrl: json['EditedBlobUrl'] as String?,
         title: json['Title'] as String?,
         description: json['Description'] as String?,
         createdAt: _parseDateTime(json['CreatedAt']) ?? DateTime(0),
@@ -61,6 +70,7 @@ class RunPhotoModel {
       RunPhotoModel(
         photoId: json['photoId'] as String? ?? '',
         blobUrl: json['BlobUrl'] as String? ?? '',
+        editedBlobUrl: json['EditedBlobUrl'] as String?,
         title: json['Title'] as String?,
         description: json['Description'] as String?,
         createdAt: _parseDateTime(json['CreatedAt']) ?? DateTime(0),

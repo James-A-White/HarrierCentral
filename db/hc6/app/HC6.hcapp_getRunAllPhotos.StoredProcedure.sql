@@ -104,6 +104,7 @@ SELECT
     kp.Status,
     kp.DeletedAt,
     kp.BlobUrl,
+    kp.EditedBlobUrl,
     kp.Title,
     kp.Description,
     kp.CreatedAt,

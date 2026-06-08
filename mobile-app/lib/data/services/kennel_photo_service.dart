@@ -622,6 +622,85 @@ class KennelPhotoService {
     return ServiceCommon.sendHttpPost(() => jsonEncode(body), noRetries: true);
   }
 
+  // ── Hash Flash edit helpers ──────────────────────────────────────────────
+
+  /// Downloads [blobUrl] to a temp file so it can be passed to ImageCropper.
+  Future<File?> downloadToTempFile(String blobUrl) async {
+    try {
+      final response =
+          await get(Uri.parse(blobUrl)).timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) {
+        BootLogger.logError(
+          '[KennelPhotoService.downloadToTempFile] HTTP ${response.statusCode}',
+          blobUrl,
+          null,
+        );
+        return null;
+      }
+      final dir = await getTemporaryDirectory();
+      final path =
+          '${dir.path}/hc_edit_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final file = File(path);
+      await file.writeAsBytes(response.bodyBytes);
+      return file;
+    } catch (e, s) {
+      BootLogger.logError(
+          '[KennelPhotoService.downloadToTempFile] url=$blobUrl', e, s);
+      return null;
+    }
+  }
+
+  /// Compresses [croppedFile] and uploads it as a new blob under the same
+  /// kennel/run folder. Returns the permanent blob URL, or null on failure.
+  Future<String?> uploadEditedPhoto({
+    required File croppedFile,
+    required String kennelId,
+    required String kennelSlug,
+    required String runFolder,
+  }) async {
+    final photoGuid = const Uuid().v4();
+    final uploadFile = await _compressForUpload(croppedFile) ?? croppedFile;
+    final tokenResult = await _getUploadToken(
+      kennelId: kennelId,
+      kennelSlug: kennelSlug,
+      runFolder: runFolder,
+      photoGuid: photoGuid,
+    );
+    if (tokenResult == null) return null;
+    final sasUrl = tokenResult['sasUrl']!;
+    final blobUrl = tokenResult['blobUrl']!;
+    final uploaded = await _uploadToBlob(sasUrl: sasUrl, imageFile: uploadFile);
+    return uploaded ? blobUrl : null;
+  }
+
+  /// Saves [editedBlobUrl] to the DB for [photoId]. Same pattern as
+  /// [updatePhotoCaption]. Returns the raw response string.
+  Future<String> updateRunPhotoEditedBlob({
+    required String photoId,
+    required String kennelId,
+    required String editedBlobUrl,
+  }) async {
+    final userId = currentUserId;
+    final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    return ServiceCommon.sendHttpPost(
+      () => jsonEncode(<String, dynamic>{
+        'queryType': 'updateRunPhotoEditedBlob',
+        'deviceId': deviceId,
+        'accessToken': Utilities.generateToken(
+          userId,
+          'hcapp_updateRunPhotoEditedBlob',
+          paramString: deviceSecret,
+        ),
+        'kennelId': kennelId,
+        'photoId': photoId,
+        'editedBlobUrl': editedBlobUrl,
+      }),
+      noRetries: true,
+    );
+  }
+
   // ── Offline queue ─────────────────────────────────────────────────────────
 
   /// Copies [imageFile] to a stable path in the app documents directory and

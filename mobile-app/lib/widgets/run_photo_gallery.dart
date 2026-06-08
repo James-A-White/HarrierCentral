@@ -149,7 +149,7 @@ class _RunPhotoGalleryState extends State<RunPhotoGallery> {
             fit: StackFit.expand,
             children: <Widget>[
               CachedNetworkImage(
-                imageUrl: photo.blobUrl,
+                imageUrl: photo.effectiveUrl,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Container(
                   color: Colors.white10,

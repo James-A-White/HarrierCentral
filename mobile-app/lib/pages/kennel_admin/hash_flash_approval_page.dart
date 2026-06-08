@@ -10,6 +10,7 @@ class KennelPendingPhoto {
     required this.eventId,
     required this.status,
     required this.blobUrl,
+    this.editedBlobUrl,
     required this.uploaderDisplayName,
     required this.eventName,
     required this.eventNumber,
@@ -24,6 +25,9 @@ class KennelPendingPhoto {
   final int status;
   final DateTime? deletedAt;
   final String blobUrl;
+  /// Hash-Flash-edited crop. Null until the Hash Flash crops the photo.
+  /// Always display [effectiveUrl]. Always re-edit from [blobUrl] (original).
+  final String? editedBlobUrl;
   final String uploaderDisplayName;
   final String eventName;
   final int eventNumber;
@@ -34,6 +38,9 @@ class KennelPendingPhoto {
   bool get isDeleted => deletedAt != null;
   bool get isPending => status == 1 && !isDeleted;
 
+  /// The URL to display: edited version if available, original otherwise.
+  String get effectiveUrl => editedBlobUrl ?? blobUrl;
+
   KennelPendingPhoto copyWithDescription(String? newDescription) {
     return KennelPendingPhoto(
       photoId: photoId,
@@ -41,6 +48,7 @@ class KennelPendingPhoto {
       status: status,
       deletedAt: deletedAt,
       blobUrl: blobUrl,
+      editedBlobUrl: editedBlobUrl,
       uploaderDisplayName: uploaderDisplayName,
       eventName: eventName,
       eventNumber: eventNumber,
@@ -49,6 +57,23 @@ class KennelPendingPhoto {
       description: (newDescription == null || newDescription.trim().isEmpty)
           ? null
           : newDescription.trim(),
+    );
+  }
+
+  KennelPendingPhoto copyWithEditedBlobUrl(String newEditedBlobUrl) {
+    return KennelPendingPhoto(
+      photoId: photoId,
+      eventId: eventId,
+      status: status,
+      deletedAt: deletedAt,
+      blobUrl: blobUrl,
+      editedBlobUrl: newEditedBlobUrl,
+      uploaderDisplayName: uploaderDisplayName,
+      eventName: eventName,
+      eventNumber: eventNumber,
+      createdAt: createdAt,
+      title: title,
+      description: description,
     );
   }
 
@@ -68,6 +93,7 @@ class KennelPendingPhoto {
         return DateTime.tryParse(raw);
       }(),
       blobUrl: (json['BlobUrl'] ?? json['blobUrl'])?.toString() ?? '',
+      editedBlobUrl: (json['EditedBlobUrl'] ?? json['editedBlobUrl'])?.toString(),
       uploaderDisplayName:
           json['uploaderDisplayName']?.toString() ?? 'Unknown',
       eventName: json['eventName']?.toString() ?? '',
@@ -158,13 +184,18 @@ class PhotoReviewController extends GetxController {
   PhotoReviewController({
     required this.kennelId,
     required this.eventId,
+    required this.kennelSlug,
+    required this.eventNumber,
   });
 
   final String kennelId;
   final String eventId;
+  final String kennelSlug;
+  final int eventNumber;
 
   final RxBool isLoading = true.obs;
   final RxBool isSaving = false.obs;
+  final RxBool isEditing = false.obs;
   final RxList<KennelPendingPhoto> allPhotos = <KennelPendingPhoto>[].obs;
   final RxString loadError = ''.obs;
   final Rx<PhotoReviewTab> activeTab = PhotoReviewTab.pending.obs;
@@ -236,7 +267,7 @@ class PhotoReviewController extends GetxController {
     final photos = visiblePhotos;
     final end = (fromIndex + _preloadCount).clamp(0, photos.length);
     for (int i = fromIndex.clamp(0, photos.length); i < end; i++) {
-      final url = photos[i].blobUrl;
+      final url = photos[i].effectiveUrl;
       if (url.isNotEmpty) {
         precacheImage(NetworkImage(url), ctx);
       }
@@ -537,6 +568,91 @@ class PhotoReviewController extends GetxController {
     }
   }
 
+  // ── Photo editing ─────────────────────────────────────────────────────────
+
+  /// Downloads the original [blobUrl], opens the native crop UI, uploads the
+  /// result, and persists it. Always starts from the original — never from
+  /// [effectiveUrl] — so re-edits don't compound lossy compressions.
+  Future<void> editPhoto({
+    required String photoId,
+    required String originalBlobUrl,
+  }) async {
+    if (isEditing.value) return;
+    isEditing.value = true;
+    try {
+      final file = await _service.downloadToTempFile(originalBlobUrl);
+      if (file == null) {
+        Get.snackbar(
+          'Edit failed',
+          'Could not download the original photo. Please check your connection.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: hc_red,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      final cropped = await ImageCropper().cropImage(
+        sourcePath: file.path,
+        compressFormat: ImageCompressFormat.jpg,
+        compressQuality: 100,
+      );
+      if (cropped == null) return; // user cancelled — not an error
+
+      final runFolder =
+          eventNumber > 0 ? '$kennelSlug-$eventNumber' : 'other';
+      final editedUrl = await _service.uploadEditedPhoto(
+        croppedFile: File(cropped.path),
+        kennelId: kennelId,
+        kennelSlug: kennelSlug,
+        runFolder: runFolder,
+      );
+      if (editedUrl == null) {
+        Get.snackbar(
+          'Edit failed',
+          'Could not upload the edited photo. Please try again.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: hc_red,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      final result = await _service.updateRunPhotoEditedBlob(
+        photoId: photoId,
+        kennelId: kennelId,
+        editedBlobUrl: editedUrl,
+      );
+      if (result.startsWith(ERROR_PREFIX)) {
+        Get.snackbar(
+          'Edit failed',
+          'The edited photo was uploaded but could not be saved. Please try again.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: hc_red,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      final idx = allPhotos.indexWhere((p) => p.photoId == photoId);
+      if (idx >= 0) {
+        allPhotos[idx] = allPhotos[idx].copyWithEditedBlobUrl(editedUrl);
+      }
+    } catch (e, s) {
+      BootLogger.logError(
+          '[PhotoReviewController.editPhoto] photoId=$photoId', e, s);
+      Get.snackbar(
+        'Edit failed',
+        'An unexpected error occurred. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: hc_red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isEditing.value = false;
+    }
+  }
+
   void _showCaptionFailureDialog() {
     final ctx = navigatorKey.currentContext;
     if (ctx == null || !ctx.mounted) return;
@@ -576,24 +692,31 @@ class PhotoReviewPage extends StatelessWidget {
     required this.eventId,
     required this.eventName,
     required this.eventNumber,
+    required this.kennelSlug,
     this.kennelLogoUrl,
     this.kennelShortName,
-  }) : controller = _freshController(kennelId, eventId);
+  }) : controller = _freshController(kennelId, eventId, kennelSlug, eventNumber ?? 0);
 
   final String kennelId;
   final String eventId;
   final String eventName;
   final int? eventNumber;
+  final String kennelSlug;
   final String? kennelLogoUrl;
   final String? kennelShortName;
   final PhotoReviewController controller;
 
   static PhotoReviewController _freshController(
-      String kennelId, String eventId) {
+      String kennelId, String eventId, String kennelSlug, int eventNumber) {
     final tag = 'photo-review-$eventId';
     Get.delete<PhotoReviewController>(tag: tag, force: true);
     return Get.put(
-      PhotoReviewController(kennelId: kennelId, eventId: eventId),
+      PhotoReviewController(
+        kennelId: kennelId,
+        eventId: eventId,
+        kennelSlug: kennelSlug,
+        eventNumber: eventNumber,
+      ),
       tag: tag,
     );
   }
@@ -1000,9 +1123,9 @@ class _PhotoPageView extends StatelessWidget {
         return Stack(
           fit: StackFit.expand,
           children: [
-            if (photo.blobUrl.isNotEmpty)
+            if (photo.effectiveUrl.isNotEmpty)
               Image.network(
-                photo.blobUrl,
+                photo.effectiveUrl,
                 fit: BoxFit.contain,
                 loadingBuilder: (context, child, progress) =>
                     progress == null
@@ -1013,7 +1136,7 @@ class _PhotoPageView extends StatelessWidget {
                 errorBuilder: (context, err, stack) {
                   debugPrint(
                     'PhotoReviewPage: failed to load\n'
-                    '  url: ${photo.blobUrl}\n  err: $err',
+                    '  url: ${photo.effectiveUrl}\n  err: $err',
                   );
                   return const Center(
                     child: Icon(Icons.broken_image,
@@ -1048,6 +1171,34 @@ class _PhotoPageView extends StatelessWidget {
                   ),
                 ),
               ),
+
+            // Crop/edit button — top-left, opposite the status badge.
+            Obx(() => Positioned(
+              top: 10,
+              left: 10,
+              child: controller.isEditing.value
+                  ? const SizedBox(
+                      width: 32,
+                      height: 32,
+                      child: CircularProgressIndicator(
+                          color: Colors.white70, strokeWidth: 2.5),
+                    )
+                  : GestureDetector(
+                      onTap: () => unawaited(controller.editPhoto(
+                        photoId: photo.photoId,
+                        originalBlobUrl: photo.blobUrl,
+                      )),
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.black87,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Icon(Icons.crop,
+                            color: Colors.white70, size: 18),
+                      ),
+                    ),
+            )),
 
             // Caption strip — always visible so the reviewer can add or edit
             // captions regardless of whether one exists already.
