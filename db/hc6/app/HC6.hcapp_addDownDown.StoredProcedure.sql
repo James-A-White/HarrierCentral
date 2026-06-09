@@ -1,13 +1,14 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcapp_addDownDown]
 
-    @deviceId    UNIQUEIDENTIFIER,
-    @accessToken NVARCHAR(1000),
-    @kennelId    UNIQUEIDENTIFIER,
-    @eventId     UNIQUEIDENTIFIER,
-    @hasherIds   NVARCHAR(MAX),
-    @chargeText  NVARCHAR(MAX),
-    @songChoice  NVARCHAR(500) = NULL,
-    @songId      UNIQUEIDENTIFIER = NULL
+    @deviceId        UNIQUEIDENTIFIER,
+    @accessToken     NVARCHAR(1000),
+    @kennelId        UNIQUEIDENTIFIER,
+    @eventId         UNIQUEIDENTIFIER,
+    @hasherIds       NVARCHAR(MAX),
+    @chargeText      NVARCHAR(MAX),
+    @songChoice      NVARCHAR(500) = NULL,
+    @songId          UNIQUEIDENTIFIER = NULL,
+    @chargePhotoUrl  NVARCHAR(MAX) = NULL
 
 AS
 -- =====================================================================
@@ -18,12 +19,13 @@ AS
 --   Creates one HC.DownDowns row and one HC.DownDownHashers row per
 --   hasher. Returns the new DownDown ID on success.
 -- Parameters:
---   @deviceId    - Registered device UUID
---   @accessToken - Token validated against DeviceSecret
---   @kennelId    - Kennel that owns the event
---   @eventId     - Event the charge belongs to
---   @hasherIds   - Comma-separated hasher UUIDs to charge
---   @chargeText  - Description of the charge
+--   @deviceId       - Registered device UUID
+--   @accessToken    - Token validated against DeviceSecret
+--   @kennelId       - Kennel that owns the event
+--   @eventId        - Event the charge belongs to
+--   @hasherIds      - Comma-separated hasher UUIDs to charge
+--   @chargeText     - Description of the charge
+--   @chargePhotoUrl - Optional blob URL of an attached charge photo
 -- Returns:
 --   On success (rowset 0): { downDownId }
 --   On error  (rowset 0): { success=0, errorCode, errorType }
@@ -111,8 +113,9 @@ BEGIN TRY
 
     DECLARE @newId UNIQUEIDENTIFIER = NEWID();
 
-    INSERT INTO HC.DownDowns (id, EventId, KennelId, ChargeText, SongChoice, SongId, IsDone, CreatedByUserId)
-    VALUES (@newId, @eventId, @kennelId, @chargeText, NULLIF(LTRIM(RTRIM(@songChoice)), ''), @songId, 0, @userId);
+    INSERT INTO HC.DownDowns (id, EventId, KennelId, ChargeText, SongChoice, SongId, IsDone, CreatedByUserId, ChargePhotoUrl)
+    VALUES (@newId, @eventId, @kennelId, @chargeText, NULLIF(LTRIM(RTRIM(@songChoice)), ''), @songId, 0, @userId,
+            NULLIF(LTRIM(RTRIM(@chargePhotoUrl)), ''));
 
     INSERT INTO HC.DownDownHashers (DownDownId, HasherId)
     SELECT @newId, TRY_CAST(LTRIM(RTRIM(value)) AS UNIQUEIDENTIFIER)
