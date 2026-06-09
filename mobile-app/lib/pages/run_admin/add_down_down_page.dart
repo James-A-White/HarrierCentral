@@ -20,11 +20,15 @@ class AddDownDownPage extends StatefulWidget {
     required this.kennelId,
     required this.eventId,
     required this.eventName,
+    this.kennelSlug = '',
+    this.eventNumber = 0,
   });
 
   final String kennelId;
   final String eventId;
   final String eventName;
+  final String kennelSlug;
+  final int eventNumber;
 
   @override
   State<AddDownDownPage> createState() => _AddDownDownPageState();
@@ -41,6 +45,8 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
 
   bool _isLoading = true;
   bool _isSaving = false;
+  bool _isCapturingPhoto = false;
+  String? _chargePhotoUrl;
   List<_AttendeeItem> _attendees = [];
 
   @override
@@ -158,6 +164,24 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
 
   List<_AttendeeItem> get _selected => _attendees.where((a) => a.selected).toList();
 
+  Future<void> _takeChargePhoto() async {
+    setState(() => _isCapturingPhoto = true);
+    try {
+      final url = await KennelPhotoService().captureAndUpload(
+        eventId: widget.eventId,
+        kennelId: widget.kennelId,
+        kennelSlug: widget.kennelSlug,
+        eventNumber: widget.eventNumber,
+        skipMapMarker: true,
+      );
+      if (url != null && mounted) {
+        setState(() => _chargePhotoUrl = url);
+      }
+    } finally {
+      if (mounted) setState(() => _isCapturingPhoto = false);
+    }
+  }
+
   Future<void> _submit() async {
     if (_selected.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -181,6 +205,7 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
         chargeText: _chargeController.text.trim(),
         songChoice: _songController.text.trim().isEmpty ? null : _songController.text.trim(),
         songId: _linkedSongId,
+        chargePhotoUrl: _chargePhotoUrl,
       );
       if (mounted) {
         if (id != null) {
@@ -330,6 +355,51 @@ class _AddDownDownPageState extends State<AddDownDownPage> {
                         ),
                       ),
                     ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            icon: _isCapturingPhoto
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                  )
+                                : Icon(
+                                    _chargePhotoUrl != null ? Icons.check_circle_outline : Icons.camera_alt,
+                                    color: Colors.white70,
+                                  ),
+                            label: Text(
+                              _chargePhotoUrl != null ? 'Photo added' : 'Add photo (optional)',
+                              style: const TextStyle(color: Colors.white70),
+                            ),
+                            style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.white30)),
+                            onPressed: _isCapturingPhoto ? null : _takeChargePhoto,
+                          ),
+                        ),
+                        if (_chargePhotoUrl != null) ...[
+                          const SizedBox(width: 8),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: Image.network(
+                              _chargePhotoUrl!,
+                              width: 44,
+                              height: 44,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close, size: 18, color: Colors.white54),
+                            onPressed: () => setState(() => _chargePhotoUrl = null),
+                            tooltip: 'Remove photo',
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),

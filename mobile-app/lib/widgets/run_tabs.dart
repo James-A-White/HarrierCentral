@@ -444,7 +444,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
           ),
           if (isLoggedIn && hasAttended)
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
               child: OutlinedButton.icon(
                 icon: const Icon(Icons.sports_bar),
                 label: const Text('Add Down Down'),
@@ -457,12 +457,19 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                           kennelId: widget.futureRun.kennel.kennelId,
                           eventId: widget.futureRun.event.eventId,
                           eventName: widget.futureRun.event.eventName,
+                          kennelSlug: widget.futureRun.kennel.kennelUniqueShortName,
+                          eventNumber: widget.futureRun.event.eventNumber,
                         ),
                       ),
                     );
                   }
                 },
               ),
+            ),
+          if (isLoggedIn)
+            _DownDownsHistoryView(
+              kennelId: widget.futureRun.kennel.kennelId,
+              eventId: widget.futureRun.event.eventId,
             ),
         ],
       ),
@@ -2771,6 +2778,143 @@ class _HashTrashViewState extends State<_HashTrashView> {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ── Completed charges history (visible to kennel members on past runs) ─────────
+
+class _DownDownsHistoryView extends StatefulWidget {
+  const _DownDownsHistoryView({required this.kennelId, required this.eventId});
+
+  final String kennelId;
+  final String eventId;
+
+  @override
+  State<_DownDownsHistoryView> createState() => _DownDownsHistoryViewState();
+}
+
+class _DownDownsHistoryViewState extends State<_DownDownsHistoryView> {
+  List<DownDownModel> _charges = [];
+  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_load());
+  }
+
+  Future<void> _load() async {
+    if (!Utilities.isConnected()) return;
+    try {
+      final result = await RunContentService().getCompletedDownDowns(
+        kennelId: widget.kennelId,
+        eventId: widget.eventId,
+      );
+      if (result != null && mounted) {
+        final all = result.downDowns;
+        for (final dd in all) {
+          dd.hashers = result.hashers
+              .where((h) => h.downDownId == dd.downDownId)
+              .toList();
+        }
+        setState(() { _charges = all; _loaded = true; });
+      } else {
+        if (mounted) setState(() => _loaded = true);
+      }
+    } catch (_) {
+      if (mounted) setState(() => _loaded = true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loaded || _charges.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const FancyDivider(
+          key: Key('down_downs_divider'),
+          innerColor: Colors.white,
+          topMargin: 20,
+          bottomMargin: 10,
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: Row(
+            children: [
+              const Icon(MaterialCommunityIcons.gavel, color: Colors.yellow, size: 20),
+              const SizedBox(width: 8),
+              Text('Down Downs', style: ts_headingLarge.copyWith(color: Colors.yellow)),
+            ],
+          ),
+        ),
+        for (final dd in _charges)
+          _DownDownHistoryTile(dd: dd),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+}
+
+class _DownDownHistoryTile extends StatelessWidget {
+  const _DownDownHistoryTile({required this.dd});
+
+  final DownDownModel dd;
+
+  @override
+  Widget build(BuildContext context) {
+    final names = dd.hashers.map((h) => h.displayName).join(', ');
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (names.isNotEmpty)
+            Text(
+              names,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.yellow),
+            ),
+          Text(
+            'by ${dd.createdByDisplayName}',
+            style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic, color: Colors.yellow),
+          ),
+          const SizedBox(height: 4),
+          Text(dd.chargeText, style: const TextStyle(fontSize: 14, color: Colors.white)),
+          if (dd.songChoice != null && dd.songChoice!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Row(
+                children: [
+                  const Icon(Icons.music_note, size: 13, color: Colors.white54),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      dd.songChoice!,
+                      style: const TextStyle(fontSize: 12, color: Colors.white54, fontStyle: FontStyle.italic),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (dd.chargePhotoUrl != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: Image.network(
+                  dd.chargePhotoUrl!,
+                  height: 120,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                ),
+              ),
+            ),
+          const Divider(height: 16, color: Colors.white24),
+        ],
+      ),
     );
   }
 }

@@ -733,6 +733,17 @@ enum HashRunPointTypes {
     '📷',
     'photo.png',
     // Note: photo.png asset not yet added; map overlay falls back to camera icon.
+  ),
+  downDown(
+    'DDN',
+    13,
+    '⚖️ Down Down ⚖️',
+    MaterialCommunityIcons.gavel,
+    customRed,
+    'Down Down',
+    '⚖️',
+    'gavel.png',
+    // Note: gavel.png asset not yet added; map overlay falls back to gavel icon.
   );
 
   final String key;

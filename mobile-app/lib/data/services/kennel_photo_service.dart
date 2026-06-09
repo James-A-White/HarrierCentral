@@ -24,6 +24,10 @@ class KennelPhotoService {
     // for pre-run photos, the last track-point time for post-run photos, or
     // null to use DateTime.now() (the normal during-run behaviour).
     int? markerTimestampMs,
+    // Set true to skip placing a PHO marker on the GPS track entirely.
+    // Use for photos taken before/after the run, or for charge attachments
+    // where a separate marker type already marks the location.
+    bool skipMapMarker = false,
   }) async {
     // Run folder: "<kennelSlug>-<runNumber>" when there is a run number,
     // otherwise "other". Nested under the kennel slug in blob storage.
@@ -79,11 +83,13 @@ class KennelPhotoService {
       // Stamp the GPS track now at the correct position and time. If the photo
       // upload eventually fails permanently the map resolves the photoId to null
       // and hides the marker — no user-visible damage.
-      _enqueuePhotoMarker(
-        photoId: photoGuid,
-        eventId: eventId,
-        timestampMs: markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
-      );
+      if (!skipMapMarker) {
+        _enqueuePhotoMarker(
+          photoId: photoGuid,
+          eventId: eventId,
+          timestampMs: markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
+        );
+      }
       return null;
     }
 
@@ -107,11 +113,13 @@ class KennelPhotoService {
         assetId: assetId,
         isOnlineFailure: true,
       );
-      _enqueuePhotoMarker(
-        photoId: photoGuid,
-        eventId: eventId,
-        timestampMs: markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
-      );
+      if (!skipMapMarker) {
+        _enqueuePhotoMarker(
+          photoId: photoGuid,
+          eventId: eventId,
+          timestampMs: markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
+        );
+      }
       return null;
     }
 
@@ -156,11 +164,13 @@ class KennelPhotoService {
         assetId: assetId,
         isOnlineFailure: true,
       );
-      _enqueuePhotoMarker(
-        photoId: photoGuid,
-        eventId: eventId,
-        timestampMs: markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
-      );
+      if (!skipMapMarker) {
+        _enqueuePhotoMarker(
+          photoId: photoGuid,
+          eventId: eventId,
+          timestampMs: markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
+        );
+      }
       return null;
     }
 
@@ -188,11 +198,13 @@ class KennelPhotoService {
     }
 
     // 9. Enqueue a PHO marker into the GPS track feed
-    _enqueuePhotoMarker(
-      photoId: photoGuid,
-      eventId: eventId,
-      timestampMs: markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
-    );
+    if (!skipMapMarker) {
+      _enqueuePhotoMarker(
+        photoId: photoGuid,
+        eventId: eventId,
+        timestampMs: markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
+      );
+    }
 
     return blobUrl;
   }

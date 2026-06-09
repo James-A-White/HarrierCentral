@@ -198,6 +198,20 @@ class _ChargeTile extends StatelessWidget {
                       ],
                     ),
                   ),
+                if (dd.chargePhotoUrl != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: Image.network(
+                        dd.chargePhotoUrl!,
+                        height: 120,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),

@@ -70,6 +70,7 @@ class RunContentService {
     required String chargeText,
     String? songChoice,
     String? songId,
+    String? chargePhotoUrl,
   }) async {
     final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
@@ -89,6 +90,7 @@ class RunContentService {
         'chargeText': chargeText,
         if (songChoice != null && songChoice.isNotEmpty) 'songChoice': songChoice,
         if (songId != null) 'songId': songId,
+        if (chargePhotoUrl?.isNotEmpty == true) 'chargePhotoUrl': chargePhotoUrl,
       }),
     );
 
@@ -117,6 +119,49 @@ class RunContentService {
         'accessToken': Utilities.generateToken(
           getStringPref(StringPrefsEnum.userId) ?? '',
           'hcapp_getDownDowns',
+          paramString: deviceSecret,
+        ),
+        'kennelId': kennelId,
+        'eventId': eventId,
+      }),
+    );
+
+    if (result.startsWith(ERROR_PREFIX)) return null;
+
+    try {
+      final List<dynamic> rowsets = jsonDecode(result) as List<dynamic>;
+      final downDownRows = rowsets.isNotEmpty ? rowsets[0] as List<dynamic> : <dynamic>[];
+      final hasherRows = rowsets.length > 1 ? rowsets[1] as List<dynamic> : <dynamic>[];
+
+      final downDowns = downDownRows
+          .map((r) => DownDownModel.fromJson(r as Map<String, dynamic>))
+          .toList();
+      final hashers = hasherRows
+          .map((r) => DownDownHasherModel.fromJson(r as Map<String, dynamic>))
+          .toList();
+
+      return (downDowns: downDowns, hashers: hashers);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Returns all completed (isDone=true) charges for a past run.
+  /// Visible to any kennel member — enforced server-side.
+  Future<({List<DownDownModel> downDowns, List<DownDownHasherModel> hashers})?> getCompletedDownDowns({
+    required String kennelId,
+    required String eventId,
+  }) async {
+    final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    final result = await ServiceCommon.sendHttpPost(
+      () => jsonEncode(<String, dynamic>{
+        'queryType': 'getCompletedDownDowns',
+        'deviceId': deviceId,
+        'accessToken': Utilities.generateToken(
+          getStringPref(StringPrefsEnum.userId) ?? '',
+          'hcapp_getCompletedDownDowns',
           paramString: deviceSecret,
         ),
         'kennelId': kennelId,

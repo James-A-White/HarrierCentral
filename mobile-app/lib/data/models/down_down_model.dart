@@ -28,6 +28,7 @@ class DownDownModel {
     this.createdByPhoto,
     this.songChoice,
     this.songId,
+    this.chargePhotoUrl,
     this.hashers = const [],
   });
 
@@ -39,6 +40,7 @@ class DownDownModel {
   final String? createdByPhoto;
   final String? songChoice;
   final String? songId;
+  final String? chargePhotoUrl;
   final DateTime createdAt;
   List<DownDownHasherModel> hashers;
 
@@ -51,6 +53,7 @@ class DownDownModel {
         createdByPhoto: json['createdByPhoto'] as String?,
         songChoice: json['songChoice'] as String?,
         songId: json['songId'] as String?,
+        chargePhotoUrl: json['chargePhotoUrl'] as String?,
         createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
       );
 }

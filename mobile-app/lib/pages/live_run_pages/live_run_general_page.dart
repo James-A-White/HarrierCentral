@@ -1,5 +1,6 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/pages/run_admin/add_down_down_page.dart';
 import 'package:harrier_central/widgets/tracking_quality_dialog.dart';
 import 'package:intl/intl.dart';
 
@@ -154,6 +155,7 @@ class LiveRunGeneralController extends GetxController {
       kennelSlug: run.kennel.kennelUniqueShortName,
       eventNumber: run.event.eventNumber,
       markerTimestampMs: _photoMarkerTimestampMs,
+      skipMapMarker: _trackingStartedAt == null || _trackingEndedAt != null,
     );
     if (blobUrl != null) {
       Get.snackbar(
@@ -162,6 +164,14 @@ class LiveRunGeneralController extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: hc_blue,
       );
+    }
+  }
+
+  /// Stamps a DDN (gavel) GPS marker at the current location if tracking is
+  /// active. Called by the Make a Charge button before navigating to the form.
+  Future<void> markChargeLocation() async {
+    if (isTracking.value || isPaused.value) {
+      await _locationService.markPoint(HashRunPointTypes.downDown);
     }
   }
 
@@ -249,7 +259,7 @@ class LiveRunGeneralPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           _buildMarkerGrid(context),
-                          _buildPhotoButton(),
+                          _buildActionButtons(context),
                         ],
                       ),
                     ),
@@ -402,32 +412,77 @@ class LiveRunGeneralPage extends StatelessWidget {
     });
   }
 
-  Widget _buildPhotoButton() {
-    // Expanded must be a direct Row child — Obx wraps only the reactive button.
+  Widget _buildActionButtons(BuildContext context) {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.only(left: 10),
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: hc_blue,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          onPressed: () => unawaited(controller.takePhoto()),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.camera_alt, size: 44),
-              const SizedBox(height: 8),
-              Text(
-                'Take\nPhoto',
-                textAlign: TextAlign.center,
-                style: ts_button.copyWith(fontSize: 15),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              flex: 2,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: hc_blue,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () => unawaited(controller.takePhoto()),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.camera_alt, size: 36),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Take\nPhoto',
+                      textAlign: TextAlign.center,
+                      style: ts_button.copyWith(fontSize: 13),
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              flex: 1,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.amber.shade700,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () async {
+                  await controller.markChargeLocation();
+                  if (!context.mounted) return;
+                  await Get.to(
+                    () => AddDownDownPage(
+                      kennelId: controller.run.kennel.kennelId,
+                      eventId: controller.run.event.eventId,
+                      eventName: controller.run.event.eventName,
+                      kennelSlug: controller.run.kennel.kennelUniqueShortName,
+                      eventNumber: controller.run.event.eventNumber,
+                    ),
+                  );
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(MaterialCommunityIcons.gavel, size: 20),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Make a\nCharge',
+                      textAlign: TextAlign.center,
+                      style: ts_button.copyWith(fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
