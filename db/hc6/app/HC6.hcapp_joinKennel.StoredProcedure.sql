@@ -201,7 +201,8 @@ BEGIN TRY
             UPDATE HC.HasherKennelMap SET
                 [Following]                  = COALESCE(@isFollowing, [Following]),
                 [IsMember]                   = CASE
-                    WHEN @monthsToAddToMembership = -9999 THEN 0
+                    WHEN @monthsToAddToMembership IS NULL  THEN IsMember
+                    WHEN @monthsToAddToMembership = -9999  THEN 0
                     WHEN DATEADD(MONTH, @monthsToAddToMembership, COALESCE(MembershipExpirationDate, GETDATE())) > GETDATE() THEN 1
                     ELSE 0
                     END,
