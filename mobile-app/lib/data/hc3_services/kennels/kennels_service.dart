@@ -174,7 +174,16 @@ class KennelsTableHelper extends BaseTableHelper<AppDomainType>
 
   @override
   Map<String, dynamic> normalizeMap(Map<String, dynamic> inputMap) {
-    return KennelsModel.fromJson(inputMap).toJson();
+    final map = Map<String, dynamic>.from(inputMap);
+    final raw = map['defaultRunStartTime'];
+    if (raw is String && !raw.contains('T') && !raw.contains('-')) {
+      // SQL Server TIME column arrives as "HH:MM:SS.fffffff" with no date
+      // component. DateTime.parse requires a full ISO 8601 datetime, so
+      // prefix with the epoch date. Fractional seconds stripped — only
+      // .hour and .minute are consumed (common_queries.dart:342-345).
+      map['defaultRunStartTime'] = '1970-01-01T${raw.split('.').first}';
+    }
+    return KennelsModel.fromJson(map).toJson();
   }
 
   @override
