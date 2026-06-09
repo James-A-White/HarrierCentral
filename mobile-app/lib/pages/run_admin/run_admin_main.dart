@@ -391,6 +391,8 @@ class RunAdminPage extends StatelessWidget {
                     kennelId: aggregate.kennel.kennelId,
                     eventId: aggregate.event.eventId,
                     eventName: aggregate.event.eventName,
+                    kennelSlug: aggregate.kennel.kennelUniqueShortName,
+                    eventNumber: aggregate.event.absoluteEventNumber ?? 0,
                   ),
                 ),
               );

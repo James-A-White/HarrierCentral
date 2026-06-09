@@ -7,11 +7,15 @@ class DownDownsPage extends StatefulWidget {
     required this.kennelId,
     required this.eventId,
     required this.eventName,
+    required this.kennelSlug,
+    required this.eventNumber,
   });
 
   final String kennelId;
   final String eventId;
   final String eventName;
+  final String kennelSlug;
+  final int eventNumber;
 
   @override
   State<DownDownsPage> createState() => _DownDownsPageState();
@@ -214,6 +218,8 @@ class _DownDownsPageState extends State<DownDownsPage> {
       () => EditDownDownPage(
         kennelId: widget.kennelId,
         eventId: widget.eventId,
+        kennelSlug: widget.kennelSlug,
+        eventNumber: widget.eventNumber,
         downDown: dd,
         pageTitle: 'Edit Down Down',
       ),

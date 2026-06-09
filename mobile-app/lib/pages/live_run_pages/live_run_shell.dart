@@ -47,6 +47,8 @@ class LiveRunShell extends StatelessWidget {
         kennelId: run.kennel.kennelId,
         eventId: run.event.eventId,
         eventName: run.event.eventName,
+        kennelSlug: run.kennel.kennelUniqueShortName,
+        eventNumber: run.event.absoluteEventNumber ?? 0,
       ),
       LiveRunSongbookPage(run: run),
     ];
