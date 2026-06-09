@@ -58,6 +58,7 @@ enum StringPrefsEnum {
   thirdPartyLoginType,
   thirdPartyUserId,
   userId,
+  guestSavedSearchTerm,
 }
 
 enum NumPrefsEnum {
@@ -88,6 +89,7 @@ enum IntPrefsEnum {
   positionReportsSent,
   splashSequenceType,
   timeWindow,
+  trackingQuality, // 0 = Power Saver, 1 = Balanced, 2 = Best (default when set)
 }
 
 enum DatePrefsEnum {
@@ -731,6 +733,17 @@ enum HashRunPointTypes {
     '📷',
     'photo.png',
     // Note: photo.png asset not yet added; map overlay falls back to camera icon.
+  ),
+  downDown(
+    'DDN',
+    13,
+    '⚖️ Down Down ⚖️',
+    MaterialCommunityIcons.gavel,
+    customRed,
+    'Down Down',
+    '⚖️',
+    'gavel.png',
+    // Note: gavel.png asset not yet added; map overlay falls back to gavel icon.
   );
 
   final String key;

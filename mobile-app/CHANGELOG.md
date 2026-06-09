@@ -1,5 +1,160 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.9.8+1163 (2026-06-07)
+
+### New Features
+
+- **Full-screen photo viewer**: Tapping a photo in the Photos tab now opens a swipeable full-screen viewer. Swipe left/right to move between photos. The page title shows the run name and photo position (e.g. "Away Weekend Hash Olympics (3 of 21)"). Long captions can be dragged upward over the photo; the image darkens progressively with a 50% black overlay as the caption expands. Photographer name and avatar appear in the top-right corner for photos taken by other members.
+- **Photographer credit**: When viewing a photo taken by another member, their display name and avatar appear in a rounded chip (8px corner radius) at the top-right of the full-screen viewer.
+
+### Improvements
+
+- **Run tracker: combined runner + timeline panel**: The two-tab carousel on the run tracking map has been replaced with a single panel. A slot-machine scroll picker (runner's colour dot, avatar, and name) sits above the timeline controls, so you can select a runner and see their stats in one view without switching tabs.
+- **Photo separation**: Photos in the full-screen viewer are visually separated — a gap is visible between pages when swiping.
+- **Tab bar**: The run detail tab bar (Details / RSVP / Map / Stats / Chat / Photos) is now evenly distributed across the full width of the screen instead of left-aligned.
+- **Removed duplicate Songbook shortcut**: The music note icon in the Hash Runs app bar has been removed — the Songbook is accessible via the bottom navigation bar.
+
+### Fixes
+
+- **Photo caption Clear button**: The Clear button in the Hash Flash approval caption editor now correctly shows white text on a red background.
+
+---
+
+## 2.9.7+1162 (2026-06-06)
+
+### New Features
+
+- **Run photo gallery**: A new "Photos" tab appears on the run detail screen
+  (both the guest view and the authenticated user view). Approved photos appear
+  as a 3-column grid. Pull down to refresh for the latest photos. Guests see
+  Hash-Flash-approved photos; authenticated users also see their own private
+  photos with a lock badge.
+- **Photos tab on guest run detail**: The guest run detail screen now has three
+  tabs — Details, Map, and Photos.
+
+---
+
+## 2.9.6+1161 (2026-06-06)
+
+### Fixes
+
+- **RSVP state lost on scroll**: After RSVPing for a run, scrolling it off
+  screen and back again no longer reverts the RSVP icon to unselected. The
+  underlying model is now kept in sync with the controller so the widget
+  re-initialises correctly when recycled by the list.
+- **Guest filter chips**: Removed purple background behind the pinned filter
+  chips on the Hashes Around the World screen.
+
+### Improvements
+
+- **Guest filter chips 30% larger**: Chip padding, icon sizes, and font size
+  all scaled up for easier readability and tapping.
+
+---
+
+## 2.9.5+1160 (2026-06-05)
+
+### Fixes
+
+- **Stats tab no longer hangs on empty kennel**: When a kennel has no run
+  history the Stats tab now shows "No history" instead of an infinite spinner.
+- **Find My Account keyboard**: The keyboard no longer opens automatically
+  when the page loads, so all buttons are visible on arrival.
+- **Find My Account — removed redundant text**: "Already have an invite code?"
+  label removed; the button label is self-explanatory.
+
+### Improvements
+
+- **Guest action bar — single button**: The two-button "Create account / Log In"
+  layout is replaced with one green "Create your free account or Log In" button
+  that takes guests straight to the account search screen.
+- **Guest discovery title**: Renamed "Runs Around the World" to "Hashes Around
+  the World".
+- **Multiple pinned guest filters (up to 5)**: Guests can pin multiple search
+  terms; each appears as its own chip with an individual × to remove it.
+- **Larger pin icon and chip text**: Pin icon in the search bar is now 28px;
+  chip labels are 15px.
+
+---
+
+## 2.9.4+1159 (2026-06-05)
+
+### Improvements
+
+- **Multiple pinned filters (up to 5)**: Guests can now pin multiple search
+  terms (e.g. "London" and "Paris", or "BMPH3" and "CityH3"). Each pinned
+  term appears as its own chip with an individual × to remove it. A run is
+  promoted to the top section if it matches any saved term. The pin icon in
+  the search bar dims when all 5 slots are used.
+- **Larger chip text**: The pinned-filter chips now use 15px text for easier
+  readability.
+
+---
+
+## 2.9.3+1158 (2026-06-05)
+
+### New features
+
+- **Guest saved home search**: Guests can pin a search term (e.g. "London") from the
+  search bar. Pinned runs appear first in the list under the active kennel; a divider
+  and "Other runs" section follow. The saved term persists across app restarts and can
+  be cleared with the × chip in the header.
+
+### Improvements
+
+- **Guest run detail — Details / Map tab bar**: The run detail screen for guests now
+  has two tabs. "Details" shows the existing label/value layout; "Map" shows the run
+  location on an interactive map with a "Get Directions" button that opens the device's
+  preferred maps app.
+- **Guest action bar — "Log In" text now visible**: The "Already have an account? Log
+  In" row was nearly invisible on some devices because the container was transparent
+  against the system background. The bar now uses a solid app-bar colour.
+- **Use Invite Code layout**: The "Get Started!" button has moved inside the yellow
+  invite-code box. The "Email me a new invite code" and "I didn't receive an email"
+  actions have moved below the box as full-width elevated buttons, matching the overall
+  button style.
+- **Event images on guest run cards**: Reverted the previous cap — event images now
+  render at their natural height as intended.
+
+---
+
+## 2.9.2+1156 (2026-06-05)
+
+### Fixes
+
+- **Guest run cards — event images now constrained**: Event images on the discovery
+  screen were rendering at full native height, causing some cards (especially those with
+  map or photo images) to take up the entire screen. Images are now capped at 160px tall
+  and cropped to fill the width.
+
+---
+
+## 2.9.1+1155 (2026-06-05)
+
+### Improvements
+
+- **Guest run cards match the main app**: Run cards on the "Runs Around the World"
+  discovery screen now use the same white card style as the main app — kennel logo,
+  dark-blue kennel name, run number and day offset, date/time, hares, and location,
+  all with identical typography and layout.
+- **Guest run detail page redesigned**: The run detail screen for unregistered users
+  now matches the main app's layout exactly — large event image (or kennel logo
+  fallback), centred event name, two-column label/value rows with golden labels and
+  white values, FancyDivider section separators, and a "Share Runs" button at the
+  bottom.
+- **Guest action bar redesigned**: The two-button "Log In / Create Account" bar is
+  replaced with a single full-width green promotional button ("Create your free account
+  now") with an "or" / "Log In" text link underneath, making the primary CTA more
+  prominent.
+- **Find My Account button polish**: The secondary action buttons ("I have an invite
+  code", "I definitely don't have an account") are now solid elevated buttons using the
+  app-bar colour rather than transparent outlined buttons.
+- **Use Invite Code button polish**: The "Email me a new invite code" and "I didn't
+  receive an email" actions are now elevated buttons (red primary, grey secondary)
+  replacing the previous flat text buttons.
+
+---
+
 ## 2.8.2+1153 (2026-06-05)
 
 ### New Features

@@ -19,7 +19,15 @@ class RunListItemController extends GetxController {
       isPaid = (futureRun.extensions.isPaid).obs,
       hares = (futureRun.event.hares ?? '').obs,
       locationOneLineDesc = (futureRun.event.locationOneLineDesc ?? '').obs,
-      liveRunState = LiveRunService.ensure();
+      liveRunState = LiveRunService.ensure() {
+    if (AppAccess(
+      futureRun.extensions.appAccessFlags,
+      mismanagementRoles: futureRun.extensions.mismanagementRoles,
+    ).isPhotoAdmin) {
+      unawaited(KennelPhotoService()
+          .loadPendingPhotoSummary(futureRun.kennel.kennelId));
+    }
+  }
 
   final RunDetailsAggregate futureRun;
 
@@ -284,6 +292,35 @@ class RunListItem extends StatelessWidget {
                         ),
                       );
                     }
+                  }),
+                if (AppAccess(futureRun.extensions.appAccessFlags).isAdmin)
+                  Obx(() {
+                    final count = KennelPhotoService.pendingPhotosByEvent[
+                            futureRun.event.eventId.toLowerCase()] ??
+                        0;
+                    if (count == 0) return const SizedBox();
+                    return badges.Badge(
+                      position:
+                          badges.BadgePosition.topEnd(top: -5, end: 0),
+                      badgeContent: Container(
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 2),
+                        width: 30,
+                        height: 13,
+                        child: AutoSizeText(
+                          count.toString(),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          minFontSize: 10,
+                          maxFontSize: 13,
+                          style: ts_badge,
+                        ),
+                      ),
+                      badgeStyle: badges.BadgeStyle(
+                        badgeColor: Colors.blue.shade700,
+                        padding: const EdgeInsets.all(6),
+                      ),
+                    );
                   }),
                 SizedBox(width: 5),
               ],
@@ -1225,6 +1262,17 @@ class RunListItem extends StatelessWidget {
     if (rliController.hares.value != hares) {
       rliController.hares.value = hares;
     }
+
+    // Keep the source model in sync so the controller re-initialises correctly
+    // if this list item is recycled by ListView.builder after scrolling off screen.
+    futureRun.extensions = futureRun.extensions.copyWith(
+      rsvpState: rsvpResult,
+      isHare: willHareResult,
+      notificationPreference: eventNotificationPreference ??
+          futureRun.extensions.notificationPreference,
+      emailAlertPreference:
+          emailAlertPreference ?? futureRun.extensions.emailAlertPreference,
+    );
 
     if (serverMessage.isNotEmpty) {
       await Utilities.showAlert('RSVP Result', serverMessage, 'OK');

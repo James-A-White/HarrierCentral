@@ -233,9 +233,10 @@ const int selfPaymentAutoPayAfterBankTransfer = 0x00000001;
 const int selfPaymentShowBankButtonOnAutoCheckinDialog = 0x00000002;
 
 class AppAccess {
-  AppAccess(this.appAccessFlags);
+  AppAccess(this.appAccessFlags, {this.mismanagementRoles = 0});
 
   int? appAccessFlags;
+  int mismanagementRoles;
 
   bool getAppAccess(int aaFlag) {
     return (appAccessFlags ?? 0) & aaFlag != 0;
@@ -278,6 +279,14 @@ class AppAccess {
 
   bool get canManageAwards {
     return (appAccessFlags ?? 0) & (authCanManageAwards | authIsSuperAdmin) !=
+        0;
+  }
+
+  /// True when the user holds Hash Flash, GM, VGM, or RA for this kennel —
+  /// the roles that grant access to pending photo review (hcapp_getKennelPendingPhotos).
+  bool get isPhotoAdmin {
+    return mismanagementRoles &
+            (mmRoleFlagHashFlash | mmRoleFlagGm | mmRoleFlagVgm | mmRoleFlagRa) !=
         0;
   }
 }

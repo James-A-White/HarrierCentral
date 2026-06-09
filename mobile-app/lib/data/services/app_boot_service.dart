@@ -74,13 +74,14 @@ class AppBootService {
       return;
     }
 
-    // No registered device — skip approveLogin entirely and go to intro.
-    // approveLogin requires a valid deviceSecret; without one, the token is
-    // meaningless and the SP will reject the call.
+    // No registered device — drop into guest discovery mode instead of forcing
+    // the user through the intro slider immediately. They can browse runs and
+    // choose to log in or create an account when ready.
     if (deviceId == null || deviceId.isEmpty) {
-      await Navigator.of(
-        navigatorKey.currentContext!,
-      ).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
+      await Get.off(
+        () => const GuestDiscoveryPage(),
+        routeName: RouteNames.GUEST_DISCOVERY.toString(),
+      );
       return;
     }
 

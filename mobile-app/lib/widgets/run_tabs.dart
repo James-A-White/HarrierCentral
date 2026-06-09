@@ -2,6 +2,9 @@
 
 // ignore_for_file: constant_identifier_names
 
+import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:harrier_central/pages/run_admin/add_down_down_page.dart';
+import 'package:harrier_central/widgets/run_photo_gallery.dart';
 import 'package:badges/badges.dart' as badges;
 import 'package:eventide/eventide.dart';
 import 'package:harrier_central/imports.dart';
@@ -19,7 +22,8 @@ enum RunTab {
   rsvp(1),
   map(2),
   stats(3),
-  chat(4);
+  chat(4),
+  photos(5);
 
   /// The integer ID associated with this tab.
   final int id;
@@ -73,6 +77,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   static const String LABEL_RSVP = 'RSVP';
   static const String LABEL_STATS = 'Stats';
   static const String LABEL_CHAT = 'Chat';
+  static const String LABEL_PHOTOS = 'Photos';
 
   final LiveRunService _liveRunService = LiveRunService.ensure();
   LiveRunButtonStatus _liveRunStatus = LiveRunButtonStatus.hidden;
@@ -84,6 +89,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     const Tab(text: LABEL_MAP),
     const Tab(text: LABEL_STATS),
     const Tab(text: LABEL_CHAT),
+    const Tab(text: LABEL_PHOTOS),
   ];
 
   //GlobalKey packListBox = GlobalKey();
@@ -403,6 +409,9 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   num spaceBetweenRows = 23.0;
 
   Widget _buildRunDetailsView() {
+    final bool hasAttended = widget.futureRun.extensions.attendenceState >= 20;
+    final bool isLoggedIn = (getStringPref(StringPrefsEnum.userId) ?? '').isNotEmpty;
+
     return RunDetails(
       widget.futureRun.event,
       widget.futureRun.kennel,
@@ -426,6 +435,44 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
         );
         setStateIfMounted(() {});
       },
+      bottomExtension: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _HashTrashView(
+            kennelId: widget.futureRun.kennel.kennelId,
+            eventId: widget.futureRun.event.eventId,
+          ),
+          if (isLoggedIn && hasAttended)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.sports_bar),
+                label: const Text('Add Down Down'),
+                onPressed: () {
+                  if (Utilities.isConnected(showDialog: true)) {
+                    Navigator.push<void>(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (_) => AddDownDownPage(
+                          kennelId: widget.futureRun.kennel.kennelId,
+                          eventId: widget.futureRun.event.eventId,
+                          eventName: widget.futureRun.event.eventName,
+                          kennelSlug: widget.futureRun.kennel.kennelUniqueShortName,
+                          eventNumber: widget.futureRun.event.eventNumber,
+                        ),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ),
+          if (isLoggedIn)
+            _DownDownsHistoryView(
+              kennelId: widget.futureRun.kennel.kennelId,
+              eventId: widget.futureRun.event.eventId,
+            ),
+        ],
+      ),
     );
   }
 
@@ -1429,6 +1476,18 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
   //   }
   // }
 
+  Widget _buildPhotosView() {
+    return RunPhotoGallery(
+      eventName: widget.futureRun.event.eventName,
+      loader: () => KennelPhotoService().getRunPhotosForGallery(
+        eventId: widget.futureRun.event.eventId,
+      ),
+      kennelId: isAdmin ? widget.futureRun.kennel.kennelId : null,
+      kennelSlug: isAdmin ? widget.futureRun.kennel.kennelUniqueShortName : null,
+      eventNumber: isAdmin ? widget.futureRun.event.absoluteEventNumber : null,
+    );
+  }
+
   Future<void> _setRsvpState(EnumRsvpState rsvpState) async {
     List<PackListAggregate>? lPla = await _thePackList;
     if (lPla != null) {
@@ -2039,7 +2098,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                                       labelStyle: ts_tabSelected,
                                       unselectedLabelStyle: ts_tabUnselected,
                                       isScrollable: false,
-                                      labelPadding: EdgeInsets.zero,
+                                      labelPadding: const EdgeInsets.only(top: 3.0, left: 6.0, right: 6.0),
                                       dividerHeight: 0,
                                       unselectedLabelColor: Colors.black,
                                       labelColor: Colors.white,
@@ -2161,6 +2220,7 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
                         ),
                       ),
                       _buildChatView(),
+                      _buildPhotosView(),
                     ],
                     // children: tabs.map((Tab tab) {
                     //   return Center(
@@ -2630,5 +2690,231 @@ class RunTabsState extends State<RunTabs> with TickerProviderStateMixin {
     } finally {
       _safeSetState(() => _liveRunLoading = false);
     }
+  }
+}
+
+/// Loads and displays published HashTrash for a run.
+/// Renders nothing if the event has no published HashTrash.
+class _HashTrashView extends StatefulWidget {
+  const _HashTrashView({required this.kennelId, required this.eventId});
+
+  final String kennelId;
+  final String eventId;
+
+  @override
+  State<_HashTrashView> createState() => _HashTrashViewState();
+}
+
+class _HashTrashViewState extends State<_HashTrashView> {
+  HashTrashModel? _model;
+  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_load());
+  }
+
+  Future<void> _load() async {
+    if (!Utilities.isConnected()) return;
+    try {
+      final m = await RunContentService().getHashTrash(
+        kennelId: widget.kennelId,
+        eventId: widget.eventId,
+      );
+      if (mounted) setState(() { _model = m; _loaded = true; });
+    } catch (_) {
+      if (mounted) setState(() => _loaded = true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loaded || _model == null || (_model!.headline.isEmpty && (_model!.content == null || _model!.content!.isEmpty))) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const FancyDivider(
+          key: Key('hash_trash_divider'),
+          innerColor: Colors.white,
+          topMargin: 20,
+          bottomMargin: 10,
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: Row(
+            children: [
+              Text('Hash Trash', style: ts_headingLarge.copyWith(color: Colors.white)),
+              if (_model!.isDraft) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade700,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Text('DRAFT', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ],
+          ),
+        ),
+        Container(
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Markdown(
+            data: _model!.headline.isNotEmpty
+                ? '# ${_model!.headline}\n\n${_model!.content ?? ''}'
+                : (_model!.content ?? ''),
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(12),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Completed charges history (visible to kennel members on past runs) ─────────
+
+class _DownDownsHistoryView extends StatefulWidget {
+  const _DownDownsHistoryView({required this.kennelId, required this.eventId});
+
+  final String kennelId;
+  final String eventId;
+
+  @override
+  State<_DownDownsHistoryView> createState() => _DownDownsHistoryViewState();
+}
+
+class _DownDownsHistoryViewState extends State<_DownDownsHistoryView> {
+  List<DownDownModel> _charges = [];
+  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_load());
+  }
+
+  Future<void> _load() async {
+    if (!Utilities.isConnected()) return;
+    try {
+      final result = await RunContentService().getCompletedDownDowns(
+        kennelId: widget.kennelId,
+        eventId: widget.eventId,
+      );
+      if (result != null && mounted) {
+        final all = result.downDowns;
+        for (final dd in all) {
+          dd.hashers = result.hashers
+              .where((h) => h.downDownId == dd.downDownId)
+              .toList();
+        }
+        setState(() { _charges = all; _loaded = true; });
+      } else {
+        if (mounted) setState(() => _loaded = true);
+      }
+    } catch (_) {
+      if (mounted) setState(() => _loaded = true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loaded || _charges.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const FancyDivider(
+          key: Key('down_downs_divider'),
+          innerColor: Colors.white,
+          topMargin: 20,
+          bottomMargin: 10,
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: Row(
+            children: [
+              const Icon(MaterialCommunityIcons.gavel, color: Colors.yellow, size: 20),
+              const SizedBox(width: 8),
+              Text('Down Downs', style: ts_headingLarge.copyWith(color: Colors.yellow)),
+            ],
+          ),
+        ),
+        for (final dd in _charges)
+          _DownDownHistoryTile(dd: dd),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+}
+
+class _DownDownHistoryTile extends StatelessWidget {
+  const _DownDownHistoryTile({required this.dd});
+
+  final DownDownModel dd;
+
+  @override
+  Widget build(BuildContext context) {
+    final names = dd.hashers.map((h) => h.displayName).join(', ');
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (names.isNotEmpty)
+            Text(
+              names,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.yellow),
+            ),
+          Text(
+            'by ${dd.createdByDisplayName}',
+            style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic, color: Colors.yellow),
+          ),
+          const SizedBox(height: 4),
+          Text(dd.chargeText, style: const TextStyle(fontSize: 14, color: Colors.white)),
+          if (dd.songChoice != null && dd.songChoice!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Row(
+                children: [
+                  const Icon(Icons.music_note, size: 13, color: Colors.white54),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      dd.songChoice!,
+                      style: const TextStyle(fontSize: 12, color: Colors.white54, fontStyle: FontStyle.italic),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (dd.chargePhotoUrl != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: Image.network(
+                  dd.chargePhotoUrl!,
+                  height: 120,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                ),
+              ),
+            ),
+          const Divider(height: 16, color: Colors.white24),
+        ],
+      ),
+    );
   }
 }

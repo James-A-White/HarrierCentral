@@ -112,6 +112,7 @@ class LeaderboardState extends State<Leaderboard>
 
   bool _showKennels = false;
   bool _showHomeKennel = false;
+  bool _isLoading = true;
 
   final ScrollController _leaderScrollController = ScrollController(
     keepScrollOffset: false,
@@ -159,8 +160,10 @@ class LeaderboardState extends State<Leaderboard>
       _leaderboardSortColumnIndex = 0;
       _sortOrderAsc = false;
       _sortLeaderboard(_leaderboardSortColumnIndex, false);
-      setStateIfMounted(() {});
     }
+    setStateIfMounted(() {
+      _isLoading = false;
+    });
   }
 
   Future<void> _getLeaderboard() async {
@@ -307,7 +310,7 @@ class LeaderboardState extends State<Leaderboard>
       child: Column(
         children: <Widget>[
           Expanded(
-            child: _filteredLeaderboardList.isEmpty
+            child: _isLoading
                 ? const SizedBox(
                     width: 70.0,
                     height: 70.0,
@@ -317,6 +320,17 @@ class LeaderboardState extends State<Leaderboard>
                         child: HcAppCircularProgressIndicator(
                           key: Key('22030392'),
                         ),
+                      ),
+                    ),
+                  )
+                : _filteredLeaderboardList.isEmpty
+                ? const Center(
+                    child: Text(
+                      'No history',
+                      style: TextStyle(
+                        fontFamily: 'AvenirNextCondensedMedium',
+                        fontSize: 22.0,
+                        color: Colors.white70,
                       ),
                     ),
                   )

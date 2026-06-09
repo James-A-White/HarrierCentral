@@ -52,6 +52,17 @@ These are firm decisions that must not be revisited or worked around:
   model the portal already uses. No email/password login, no NextAuth
   credentials provider, no separate user account system for admins.
 
+- **Never convert a `StatelessWidget` to `StatefulWidget` without consulting
+  James first.** The preferred direction is the opposite — migrate
+  `StatefulWidget` toward `StatelessWidget` + GetX controller wherever the
+  state logic is non-trivial. If you find yourself reaching for `StatefulWidget`
+  to get a lifecycle hook (e.g. `initState`, `didChangeDependencies`), stop and
+  look for a GetX-native equivalent first: `GetxController.onInit()`,
+  `onReady()`, `ever()`, `once()`, or `Get.context`. The only acceptable
+  `StatefulWidget` cases are very simple, self-contained widgets with minimal
+  local UI state (e.g. an animation or a focus node) that have no business
+  logic and no reason to involve a controller.
+
 ---
 
 ## Serena MCP — Semantic Code Tools

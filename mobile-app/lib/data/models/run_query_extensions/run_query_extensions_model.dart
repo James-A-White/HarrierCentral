@@ -19,6 +19,7 @@ abstract class RunQueryExtensionsModel
     @Default(0) num eventJulianLocal,
     @Default(r'Europe/London') String ianaTimeZone,
     @Default(0) int appAccessFlags,
+    @Default(0) int mismanagementRoles,
     @Default(2) int digitsAfterDecimal,
     @Default(r'$^') String currencySymbol,
     @Default(0) int rsvpState,

@@ -236,12 +236,6 @@ class HasherKennelMapService {
   }) async {
     List<dynamic> adHocData = <dynamic>[];
 
-    if (Utilities.isNotConnected()) {
-      return adHocData;
-      // TODO(James): fix this so we can return a bool
-      //return false;
-    }
-
     if (followingState == followTypeToggleHomeKennel.value) {
       followingState = -1;
     }

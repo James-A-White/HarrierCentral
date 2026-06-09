@@ -102,7 +102,6 @@ class _FindMyAccountPageState extends State<FindMyAccountPage> {
                 const SizedBox(height: 32),
                 TextField(
                   controller: _searchController,
-                  autofocus: true,
                   textCapitalization: TextCapitalization.words,
                   onSubmitted: (_) => _search(),
                   style: ts_body,
@@ -110,7 +109,7 @@ class _FindMyAccountPageState extends State<FindMyAccountPage> {
                     hintText: 'Hash name or last name',
                     hintStyle: ts_hint,
                     filled: true,
-                    fillColor: Colors.white.withOpacity(0.1),
+                    fillColor: Colors.white.withValues(alpha: 0.1),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -147,7 +146,7 @@ class _FindMyAccountPageState extends State<FindMyAccountPage> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.08),
+                      color: Colors.white.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Column(
@@ -172,17 +171,12 @@ class _FindMyAccountPageState extends State<FindMyAccountPage> {
                 const SizedBox(height: 40),
                 const Divider(color: Colors.white24),
                 const SizedBox(height: 16),
-                Text(
-                  'Already have an invite code?',
-                  style: ts_body.copyWith(color: Colors.white70),
-                ),
-                const SizedBox(height: 10),
                 SizedBox(
                   width: double.infinity,
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: themeAppBarBackground,
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      side: const BorderSide(color: Colors.white38),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -199,10 +193,10 @@ class _FindMyAccountPageState extends State<FindMyAccountPage> {
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: themeAppBarBackground,
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      side: const BorderSide(color: Colors.white38),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),

@@ -10,8 +10,24 @@ import 'package:harrier_central/util/track_point_filter.dart';
 
 String pad19(int epochMs) => epochMs.toString().padLeft(19, '0');
 
-const int DISTANCE_BETWEEN_APP_WAKEUPS = 5; // distanceFilter in meters
-const LocationAccuracy LOCATION_ACCURACY = LocationAccuracy.bestForNavigation;
+// Tracking quality tiers — chosen by the user in preferences.
+// 0 = Power Saver, 1 = Balanced, 2 = Best
+// When unset (null pref), Best is the default.
+LocationAccuracy _trackingAccuracy() {
+  switch (getIntPref(IntPrefsEnum.trackingQuality) ?? 2) {
+    case 0: return LocationAccuracy.medium;
+    case 1: return LocationAccuracy.high;
+    default: return LocationAccuracy.bestForNavigation;
+  }
+}
+
+int _trackingDistanceFilter() {
+  switch (getIntPref(IntPrefsEnum.trackingQuality) ?? 2) {
+    case 0: return 30; // Power Saver: ~60s interval
+    case 1: return 15; // Balanced: ~30s interval
+    default: return 5; // Best: fine-grained
+  }
+}
 
 class LocationService extends GetxService {
   // Rx variable to hold the latest position, making it reactive
@@ -85,8 +101,8 @@ class LocationService extends GetxService {
         _isResumingFromPause = false;
 
         final locationSettings = getLocSettings(
-          DISTANCE_BETWEEN_APP_WAKEUPS,
-          LOCATION_ACCURACY,
+          _trackingDistanceFilter(),
+          _trackingAccuracy(),
           true,
           false,
         );
@@ -233,9 +249,9 @@ class LocationService extends GetxService {
   ) {
     final LocationSettings locationSettings;
     if (defaultTargetPlatform == TargetPlatform.android) {
-      // Use a short interval for active tracking (distanceFilter ≤ 20m) so Android
-      // doesn't suppress sub-minute callbacks when the device is moving slowly.
-      // Idle and pause modes keep the 15-minute power-saving interval.
+      // Best (5m) and Balanced (15m) use 15s Android intervals so the OS doesn't
+      // suppress sub-minute callbacks. Power Saver (30m) uses 15-minute intervals.
+      // Idle/pause modes always use the 15-minute interval.
       final androidInterval = distanceFilter <= 20
           ? const Duration(seconds: 15)
           : const Duration(minutes: 15);

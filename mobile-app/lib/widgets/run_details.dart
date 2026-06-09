@@ -58,6 +58,7 @@ class RunDetails extends StatelessWidget {
     this.rsvpState = 0,
     this.processPayment,
     this.eventUrlWithKennelBackup,
+    this.bottomExtension,
   });
 
   final EventModel event;
@@ -74,6 +75,7 @@ class RunDetails extends StatelessWidget {
   final int rsvpState;
   final Function? processPayment;
   final String? eventUrlWithKennelBackup;
+  final Widget? bottomExtension;
 
   static const int _flexLeft = 30;
   static const int _flexRight = 70;
@@ -987,6 +989,7 @@ class RunDetails extends StatelessWidget {
               ),
             ),
           ],
+          ?bottomExtension,
         ],
       ),
     );

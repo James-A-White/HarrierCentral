@@ -201,10 +201,7 @@ class RunTrackerMap extends StatelessWidget {
     if (!controller.timelineAvailable) return const SizedBox.shrink();
 
     final bool hasRunners = controller.userPositions.isNotEmpty;
-    final double carouselHeight =
-        (hasRunners && controller.timelineCarouselIndex.value != 0)
-        ? 110.0
-        : 95.0;
+
     return Positioned(
       left: 0,
       right: 0,
@@ -229,13 +226,10 @@ class RunTrackerMap extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   if (hasRunners) ...[
-                    _buildCarouselNavRow(controller),
-                    const SizedBox(height: 4.0),
+                    _buildRunnerPicker(controller),
+                    const SizedBox(height: 2.0),
                   ],
-                  SizedBox(
-                    height: carouselHeight,
-                    child: _buildTimelineCarousel(controller, hasRunners),
-                  ),
+                  _buildTimelineInfo(controller),
                 ],
               ),
             ),
@@ -245,104 +239,15 @@ class RunTrackerMap extends StatelessWidget {
     );
   }
 
-  Widget _buildCarouselNavRow(RunTrackerMapController controller) {
-    return Obx(() {
-      final onTimelinePage = controller.timelineCarouselIndex.value == 0;
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _buildCarouselNavButton(
-            icon: Icons.timeline_outlined,
-            label: 'Timeline',
-            enabled: !onTimelinePage,
-            onPressed: () => controller.goToTimelinePage(0),
-          ),
-          _buildCarouselNavButton(
-            icon: Icons.people_outline,
-            label: 'Runners',
-            enabled: onTimelinePage,
-            onPressed: () => controller.goToTimelinePage(1),
-          ),
-        ],
-      );
-    });
-  }
-
-  Widget _buildCarouselNavButton({
-    required IconData icon,
-    required String label,
-    required bool enabled,
-    required VoidCallback onPressed,
-  }) {
-    return SizedBox(
-      height: 28,
-      child: TextButton.icon(
-        onPressed: enabled ? onPressed : null,
-        style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0.0),
-          backgroundColor: Colors.white.withValues(
-            alpha: enabled ? 0.18 : 0.08,
-          ),
-          foregroundColor: Colors.white,
-          shape: const StadiumBorder(),
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
-        icon: Icon(icon, size: 15.0),
-        label: Text(
-          label,
-          style: const TextStyle(fontSize: 11.0, fontWeight: FontWeight.w600),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTimelineCarousel(
-    RunTrackerMapController controller,
-    bool hasRunners,
-  ) {
-    if (!hasRunners && controller.timelineCarouselIndex.value != 0) {
-      controller.timelineCarouselIndex.value = 0;
-      if (controller.timelineCarouselController.hasClients) {
-        controller.timelineCarouselController.jumpToPage(0);
-      }
-    }
-
-    final pages = <Widget>[
-      _buildTimelineControlsPage(controller),
-      if (hasRunners) _buildRunnerPickerPage(controller),
-    ];
-
-    return PageView(
-      controller: controller.timelineCarouselController,
-      physics: hasRunners
-          ? const BouncingScrollPhysics()
-          : const NeverScrollableScrollPhysics(),
-      onPageChanged: (index) {
-        controller.timelineCarouselIndex.value = index;
-        if (index == 1) {
-          controller.syncRunnerPickerToSelection(
-            animated: false,
-            onlyIfMismatch: true,
-          );
-        }
-      },
-      children: pages,
-    );
-  }
-
-  Widget _buildTimelineControlsPage(RunTrackerMapController controller) {
+  Widget _buildTimelineInfo(RunTrackerMapController controller) {
     final label = controller.formattedTimelineLabel;
     final distanceLabel = controller.formattedDistanceLabel;
     final headingText = distanceLabel.isEmpty
         ? label
         : '$label\r\n$distanceLabel';
-    final selectedId = controller.selectedRunnerId.value;
-    final selectedName = selectedId != null
-        ? controller.userNames[selectedId]
-        : null;
 
     return SizedBox(
-      height: 90,
+      height: 70.0,
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -350,23 +255,10 @@ class RunTrackerMap extends StatelessWidget {
             alignment: Alignment.topCenter,
             child: Padding(
               padding: const EdgeInsets.only(top: 2.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (selectedName != null)
-                    Text(
-                      selectedName,
-                      textAlign: TextAlign.center,
-                      style: ts_listValueStyle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  Text(
-                    headingText,
-                    textAlign: TextAlign.center,
-                    style: ts_listValueStyle,
-                  ),
-                ],
+              child: Text(
+                headingText,
+                textAlign: TextAlign.center,
+                style: ts_listValueStyle,
               ),
             ),
           ),
@@ -399,30 +291,12 @@ class RunTrackerMap extends StatelessWidget {
     );
   }
 
-  Widget _buildRunnerPickerPage(RunTrackerMapController controller) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // Align(
-        //   alignment: Alignment.center,
-        //   child: Text(
-        //     'Select a runner',
-        //     textAlign: TextAlign.center,
-        //     style: ts_listValueStyle,
-        //   ),
-        // ),
-        // const SizedBox(height: 8.0),
-        _buildRunnerPicker(controller),
-      ],
-    );
-  }
-
   Widget _buildRunnerPicker(RunTrackerMapController controller) {
     final runners = controller.userPositions;
     if (runners.isEmpty) return const SizedBox.shrink();
 
     return SizedBox(
-      height: 95,
+      height: 80.0,
       child: CupertinoPicker(
         backgroundColor: Colors.transparent,
         magnification: 1.1,
@@ -444,20 +318,17 @@ class RunTrackerMap extends StatelessWidget {
               final name = controller.userNames[runner.id] ?? 'Runner';
               final color = controller.runnerColor(runner.id);
               final logo = controller.userLogos[runner.id];
-              return Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildRunnerColorDot(color),
-                    const SizedBox(width: 6),
-                    _buildRunnerAvatar(logo, isSelected: isSelected),
-                    const SizedBox(width: 8),
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 180),
+              return Stack(
+                children: [
+                  // Name centered over the full picker width — aligns with
+                  // the timestamp/distance text in the section below.
+                  Positioned.fill(
+                    child: Center(
                       child: Text(
                         name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: isSelected ? 18 : 16,
@@ -468,8 +339,24 @@ class RunTrackerMap extends StatelessWidget {
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  // Dot + avatar left-aligned with a small inset so the dot
+                  // is never flush against the picker's clipping edge.
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 4.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildRunnerColorDot(color),
+                          const SizedBox(width: 6),
+                          _buildRunnerAvatar(logo, isSelected: isSelected),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               );
             })
             .toList(growable: false),

@@ -1,4 +1,6 @@
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/pages/run_admin/hash_trash_page.dart';
+import 'package:harrier_central/pages/run_admin/down_downs_page.dart';
 
 class RunAdminAggregate {
   RunAdminAggregate({
@@ -316,18 +318,14 @@ class RunAdminPage extends StatelessWidget {
       );
     }
 
-    if (aggregate.extensions.mismanagement.getMismanagementState(
-          mmRoleFlagHashFlash,
-        ) ||
-        aggregate.extensions.mismanagement.getMismanagementState(
-          mmRoleFlagGm,
-        ) ||
-        aggregate.extensions.mismanagement.getMismanagementState(
-          mmRoleFlagVgm,
-        ) ||
-        aggregate.extensions.mismanagement.getMismanagementState(
-          mmRoleFlagRa,
-        )) {
+    final mm = aggregate.extensions.mismanagement;
+    final isHashFlash = mm.getMismanagementState(mmRoleFlagHashFlash);
+    final isGm = mm.getMismanagementState(mmRoleFlagGm);
+    final isVgm = mm.getMismanagementState(mmRoleFlagVgm);
+    final isRa = mm.getMismanagementState(mmRoleFlagRa);
+    final isWebMeister = mm.getMismanagementState(mmRoleFlagWebMeister);
+
+    if (isHashFlash || isGm || isVgm || isRa) {
       buttons.add(
         _buildButton(
           label: 'Review\r\nPhotos',
@@ -342,8 +340,57 @@ class RunAdminPage extends StatelessWidget {
                     eventId: aggregate.event.eventId.asUuid,
                     eventName: aggregate.event.eventName,
                     eventNumber: aggregate.event.absoluteEventNumber,
+                    kennelSlug: aggregate.kennel.kennelUniqueShortName,
                     kennelLogoUrl: aggregate.kennel.kennelLogo,
                     kennelShortName: aggregate.kennel.kennelShortName,
+                  ),
+                ),
+              );
+            }
+          },
+        ),
+      );
+    }
+
+    // HashTrash: Hash Flash, WebMeister, or GM can write the run article
+    if (isHashFlash || isWebMeister || isGm) {
+      buttons.add(
+        _buildButton(
+          label: 'Hash\r\nTrash',
+          iconAsset: 'images/icons/pencil.png',
+          onPressed: () async {
+            if (Utilities.isConnected(showDialog: true)) {
+              await Navigator.push<void>(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (_) => HashTrashPage(
+                    kennelId: aggregate.kennel.kennelId,
+                    eventId: aggregate.event.eventId,
+                    eventName: aggregate.event.eventName,
+                  ),
+                ),
+              );
+            }
+          },
+        ),
+      );
+    }
+
+    // DownDowns: GM and RA can manage the list
+    if (isGm || isRa) {
+      buttons.add(
+        _buildButton(
+          label: 'Down\r\nDowns',
+          iconAsset: 'images/icons/beer_mug.png',
+          onPressed: () async {
+            if (Utilities.isConnected(showDialog: true)) {
+              await Navigator.push<void>(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (_) => DownDownsPage(
+                    kennelId: aggregate.kennel.kennelId,
+                    eventId: aggregate.event.eventId,
+                    eventName: aggregate.event.eventName,
                   ),
                 ),
               );

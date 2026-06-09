@@ -100,6 +100,7 @@ SELECT
     kp.EventId,
     kp.UserId,
     kp.BlobUrl,
+    kp.EditedBlobUrl,
     kp.Latitude,
     kp.Longitude,
     kp.Title,

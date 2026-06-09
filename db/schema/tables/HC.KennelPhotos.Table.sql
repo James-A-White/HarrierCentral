@@ -3,8 +3,12 @@ CREATE TABLE [HC].[KennelPhotos] (
     [EventId]     UNIQUEIDENTIFIER NOT NULL,
     [KennelId]    UNIQUEIDENTIFIER NOT NULL,
     [UserId]      UNIQUEIDENTIFIER NOT NULL,
-    [BlobUrl]     NVARCHAR(500)    NOT NULL,
-    [AssetId]     NVARCHAR(500)    NULL,
+    [BlobUrl]        NVARCHAR(500)    NOT NULL,
+    [EditedBlobUrl]  NVARCHAR(500)    NULL,
+    -- Populated when a Hash Flash crops or edits the photo. Always NULL until
+    -- an edit is made. BlobUrl is never modified — re-edits always start from
+    -- the original. Display logic: EditedBlobUrl ?? BlobUrl.
+    [AssetId]        NVARCHAR(500)    NULL,
     -- Device-library identifier (iOS PHAsset.localIdentifier / Android MediaStore URI).
     -- Populated only when the uploader had "save to camera roll" enabled.
     -- Device-specific: only valid on the device that took the photo.

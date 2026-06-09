@@ -24,6 +24,10 @@ class KennelPhotoService {
     // for pre-run photos, the last track-point time for post-run photos, or
     // null to use DateTime.now() (the normal during-run behaviour).
     int? markerTimestampMs,
+    // Set true to skip placing a PHO marker on the GPS track entirely.
+    // Use for photos taken before/after the run, or for charge attachments
+    // where a separate marker type already marks the location.
+    bool skipMapMarker = false,
   }) async {
     // Run folder: "<kennelSlug>-<runNumber>" when there is a run number,
     // otherwise "other". Nested under the kennel slug in blob storage.
@@ -79,11 +83,13 @@ class KennelPhotoService {
       // Stamp the GPS track now at the correct position and time. If the photo
       // upload eventually fails permanently the map resolves the photoId to null
       // and hides the marker — no user-visible damage.
-      _enqueuePhotoMarker(
-        photoId: photoGuid,
-        eventId: eventId,
-        timestampMs: markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
-      );
+      if (!skipMapMarker) {
+        _enqueuePhotoMarker(
+          photoId: photoGuid,
+          eventId: eventId,
+          timestampMs: markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
+        );
+      }
       return null;
     }
 
@@ -107,11 +113,13 @@ class KennelPhotoService {
         assetId: assetId,
         isOnlineFailure: true,
       );
-      _enqueuePhotoMarker(
-        photoId: photoGuid,
-        eventId: eventId,
-        timestampMs: markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
-      );
+      if (!skipMapMarker) {
+        _enqueuePhotoMarker(
+          photoId: photoGuid,
+          eventId: eventId,
+          timestampMs: markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
+        );
+      }
       return null;
     }
 
@@ -156,11 +164,13 @@ class KennelPhotoService {
         assetId: assetId,
         isOnlineFailure: true,
       );
-      _enqueuePhotoMarker(
-        photoId: photoGuid,
-        eventId: eventId,
-        timestampMs: markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
-      );
+      if (!skipMapMarker) {
+        _enqueuePhotoMarker(
+          photoId: photoGuid,
+          eventId: eventId,
+          timestampMs: markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
+        );
+      }
       return null;
     }
 
@@ -188,11 +198,13 @@ class KennelPhotoService {
     }
 
     // 9. Enqueue a PHO marker into the GPS track feed
-    _enqueuePhotoMarker(
-      photoId: photoGuid,
-      eventId: eventId,
-      timestampMs: markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
-    );
+    if (!skipMapMarker) {
+      _enqueuePhotoMarker(
+        photoId: photoGuid,
+        eventId: eventId,
+        timestampMs: markerTimestampMs ?? DateTime.now().millisecondsSinceEpoch,
+      );
+    }
 
     return blobUrl;
   }
@@ -530,6 +542,48 @@ class KennelPhotoService {
     return ServiceCommon.sendHttpPost(() => jsonEncode(body));
   }
 
+  /// Returns all visible photos for a run merged into a flat list:
+  ///   - Own photos (all statuses, isOwnPhoto = true)
+  ///   - Others' approved photos (status >= 2)
+  /// Sorted oldest-first for gallery display.
+  Future<({bool success, List<RunPhotoModel> photos})> getRunPhotosForGallery({
+    required String eventId,
+  }) async {
+    final raw = await getRunPhotos(eventId: eventId);
+
+    if (raw.startsWith(ERROR_PREFIX)) {
+      return (success: false, photos: <RunPhotoModel>[]);
+    }
+
+    try {
+      final List<dynamic> rowsets = jsonDecode(raw) as List<dynamic>;
+
+      final List<RunPhotoModel> ownPhotos = rowsets.isNotEmpty
+          ? (rowsets[0] as List<dynamic>)
+              .map((dynamic r) =>
+                  RunPhotoModel.fromOwnJson(r as Map<String, dynamic>))
+              .toList()
+          : <RunPhotoModel>[];
+
+      final List<RunPhotoModel> otherPhotos = rowsets.length > 1
+          ? (rowsets[1] as List<dynamic>)
+              .map((dynamic r) =>
+                  RunPhotoModel.fromOthersJson(r as Map<String, dynamic>))
+              .toList()
+          : <RunPhotoModel>[];
+
+      final List<RunPhotoModel> merged = <RunPhotoModel>[
+        ...ownPhotos,
+        ...otherPhotos,
+      ]..sort((RunPhotoModel a, RunPhotoModel b) =>
+          a.createdAt.compareTo(b.createdAt));
+
+      return (success: true, photos: merged);
+    } catch (_) {
+      return (success: false, photos: <RunPhotoModel>[]);
+    }
+  }
+
   Future<String> updatePhotoStatus({
     required String photoId,
     required int action,
@@ -578,6 +632,139 @@ class KennelPhotoService {
     }
 
     return ServiceCommon.sendHttpPost(() => jsonEncode(body), noRetries: true);
+  }
+
+  // ── Pending photo badge ───────────────────────────────────────────────────
+
+  /// Pending photo counts keyed by lowercase eventId. Static so all instances
+  /// share one map — the run list reads this reactively to show the badge.
+  static final RxMap<String, int> pendingPhotosByEvent = <String, int>{}.obs;
+  static final Set<String> _pendingLoadedKennels = {};
+  static final Map<String, Set<String>> _kennelEventIds = {};
+
+  /// Loads the count of status=1 photos per event for [kennelId] and merges
+  /// into [pendingPhotosByEvent]. Skips the call when already loaded unless
+  /// [force] is true. Pass [force: true] after the Hash Flash submits a
+  /// review batch so the badge immediately reflects the new counts.
+  Future<void> loadPendingPhotoSummary(
+    String kennelId, {
+    bool force = false,
+  }) async {
+    if (!force && _pendingLoadedKennels.contains(kennelId)) return;
+    _pendingLoadedKennels.add(kennelId);
+    try {
+      final result = await getKennelPendingPhotos(kennelId: kennelId);
+      if (result.startsWith(ERROR_PREFIX)) return;
+
+      // Clear stale counts for events we previously tracked for this kennel.
+      final previous = _kennelEventIds[kennelId] ?? {};
+      for (final eid in previous) {
+        pendingPhotosByEvent.remove(eid);
+      }
+
+      final outer = jsonDecode(result) as List<dynamic>;
+      if (outer.isEmpty || outer[0] is! List) {
+        _kennelEventIds[kennelId] = {};
+        return;
+      }
+
+      final rows = outer[0] as List<dynamic>;
+      final Map<String, int> counts = {};
+      for (final row in rows.whereType<Map<String, dynamic>>()) {
+        final eventId = row['EventId']?.toString().toLowerCase() ?? '';
+        if (eventId.isNotEmpty) {
+          counts[eventId] = (counts[eventId] ?? 0) + 1;
+        }
+      }
+      _kennelEventIds[kennelId] = counts.keys.toSet();
+      pendingPhotosByEvent.addAll(counts);
+    } catch (e, s) {
+      _pendingLoadedKennels.remove(kennelId); // allow retry on error
+      BootLogger.logError(
+        '[KennelPhotoService.loadPendingPhotoSummary] kennelId=$kennelId',
+        e,
+        s,
+      );
+    }
+  }
+
+  // ── Hash Flash edit helpers ──────────────────────────────────────────────
+
+  /// Downloads [blobUrl] to a temp file so it can be passed to ImageCropper.
+  Future<File?> downloadToTempFile(String blobUrl) async {
+    try {
+      final response =
+          await get(Uri.parse(blobUrl)).timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) {
+        BootLogger.logError(
+          '[KennelPhotoService.downloadToTempFile] HTTP ${response.statusCode}',
+          blobUrl,
+          null,
+        );
+        return null;
+      }
+      final dir = await getTemporaryDirectory();
+      final path =
+          '${dir.path}/hc_edit_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final file = File(path);
+      await file.writeAsBytes(response.bodyBytes);
+      return file;
+    } catch (e, s) {
+      BootLogger.logError(
+          '[KennelPhotoService.downloadToTempFile] url=$blobUrl', e, s);
+      return null;
+    }
+  }
+
+  /// Compresses [croppedFile] and uploads it as a new blob under the same
+  /// kennel/run folder. Returns the permanent blob URL, or null on failure.
+  Future<String?> uploadEditedPhoto({
+    required File croppedFile,
+    required String kennelId,
+    required String kennelSlug,
+    required String runFolder,
+  }) async {
+    final photoGuid = const Uuid().v4();
+    final uploadFile = await _compressForUpload(croppedFile) ?? croppedFile;
+    final tokenResult = await _getUploadToken(
+      kennelId: kennelId,
+      kennelSlug: kennelSlug,
+      runFolder: runFolder,
+      photoGuid: photoGuid,
+    );
+    if (tokenResult == null) return null;
+    final sasUrl = tokenResult['sasUrl']!;
+    final blobUrl = tokenResult['blobUrl']!;
+    final uploaded = await _uploadToBlob(sasUrl: sasUrl, imageFile: uploadFile);
+    return uploaded ? blobUrl : null;
+  }
+
+  /// Saves [editedBlobUrl] to the DB for [photoId]. Same pattern as
+  /// [updatePhotoCaption]. Returns the raw response string.
+  Future<String> updateRunPhotoEditedBlob({
+    required String photoId,
+    required String kennelId,
+    required String editedBlobUrl,
+  }) async {
+    final userId = currentUserId;
+    final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    return ServiceCommon.sendHttpPost(
+      () => jsonEncode(<String, dynamic>{
+        'queryType': 'updateRunPhotoEditedBlob',
+        'deviceId': deviceId,
+        'accessToken': Utilities.generateToken(
+          userId,
+          'hcapp_updateRunPhotoEditedBlob',
+          paramString: deviceSecret,
+        ),
+        'kennelId': kennelId,
+        'photoId': photoId,
+        'editedBlobUrl': editedBlobUrl,
+      }),
+      noRetries: true,
+    );
   }
 
   // ── Offline queue ─────────────────────────────────────────────────────────

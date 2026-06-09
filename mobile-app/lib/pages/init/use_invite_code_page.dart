@@ -363,87 +363,19 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                       //     ),
                       //   ],
                       // ),
-                      const SizedBox(height: 8, width: 10),
-                      TextButton(
-                        style: text_button_style.copyWith(
-                          backgroundColor: const WidgetStatePropertyAll(
-                            Colors.transparent,
-                          ),
-                          foregroundColor: WidgetStatePropertyAll(hc_red),
-                        ),
-                        onPressed: () async {
-                          final EmailPopup emailPopup = EmailPopup(
-                            initialEmailAddress: _emailAddress,
-                          );
-
-                          final Future<Map<String, String?>?> dlg =
-                              showDialog<Map<String, String>>(
-                                context: context,
-                                barrierDismissible:
-                                    false, // user must tap button!
-                                builder: (BuildContext context) {
-                                  return emailPopup;
-                                },
-                              );
-
-                          final Map<String, String?>? x = await dlg;
-                          if (x != null) {
-                            final String email = x['email'] ?? '';
-                            final String type = x['type'] ?? '';
-
-                            if (type != 'cancel') {
-                              _emailAddress = email;
-                              final String userMessage =
-                                  await HashersService.sendInviteCodeByEmail(
-                                    email,
-                                  );
-                              await Utilities.showAlert(
-                                'Instructions',
-                                userMessage,
-                                'OK',
-                              );
-                            }
-                          }
-                        },
-                        child: Text(
-                          'Email me a new invite code',
-                          style: ts_title.copyWith(color: hc_red),
-                        ),
-                      ),
-                      TextButton(
-                        style: text_button_style.copyWith(
-                          backgroundColor: const WidgetStatePropertyAll(
-                            Colors.transparent,
-                          ),
-                          foregroundColor:
-                              const WidgetStatePropertyAll(Colors.grey),
-                        ),
-                        onPressed: () => Navigator.push<void>(
-                          context,
-                          MaterialPageRoute<void>(
-                            builder: (_) => const EmailNotReceivedPage(),
-                          ),
-                        ),
-                        child: Text(
-                          'I didn\'t receive an email',
-                          style: ts_title.copyWith(color: Colors.grey),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 35, width: 10),
-              _isLoading
-                  ? Text(
-                      'Please wait...',
-                      style: localHeadingStyle,
-                      textAlign: TextAlign.center,
-                    )
-                  : TextButton(
-                      style: text_button_style,
-                      child: Text('Get Started!', style: ts_button),
-                      onPressed: () async {
+                      const SizedBox(height: 16, width: 10),
+                      _isLoading
+                          ? Text(
+                              'Please wait...',
+                              style: localHeadingStyle,
+                              textAlign: TextAlign.center,
+                            )
+                          : SizedBox(
+                              width: double.infinity,
+                              child: TextButton(
+                                style: text_button_style,
+                                child: Text('Get Started!', style: ts_button),
+                                onPressed: () async {
                         if (_formKey.currentState!.validate()) {
                           // If the form is valid, display a snackbar. In the real world,
                           // you'd often call a server or save the information in a database.
@@ -506,7 +438,64 @@ class UseInviteCodePageContentState extends State<UseInviteCodePageContent> {
                         }
                       },
                     ),
-              const SizedBox(height: 50, width: 10),
+                  ),
+                ],
+              ),
+            ),
+          ),
+              const SizedBox(height: 20, width: 10),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: text_button_style,
+                  onPressed: () async {
+                    final EmailPopup emailPopup = EmailPopup(
+                      initialEmailAddress: _emailAddress,
+                    );
+                    final Future<Map<String, String?>?> dlg =
+                        showDialog<Map<String, String>>(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (BuildContext context) {
+                            return emailPopup;
+                          },
+                        );
+                    final Map<String, String?>? x = await dlg;
+                    if (x != null) {
+                      final String email = x['email'] ?? '';
+                      final String type = x['type'] ?? '';
+                      if (type != 'cancel') {
+                        _emailAddress = email;
+                        final String userMessage =
+                            await HashersService.sendInviteCodeByEmail(email);
+                        await Utilities.showAlert(
+                          'Instructions',
+                          userMessage,
+                          'OK',
+                        );
+                      }
+                    }
+                  },
+                  child: Text('Email me a new invite code', style: ts_button),
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: text_button_style.copyWith(
+                    backgroundColor: const WidgetStatePropertyAll(Colors.grey),
+                  ),
+                  onPressed: () => Navigator.push<void>(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (_) => const EmailNotReceivedPage(),
+                    ),
+                  ),
+                  child: Text("I didn't receive an email", style: ts_button),
+                ),
+              ),
+              const SizedBox(height: 50),
             ],
           ),
         );

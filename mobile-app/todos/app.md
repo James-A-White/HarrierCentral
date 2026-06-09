@@ -107,6 +107,51 @@ Note: First verify that `noRetries: true` is a real param on `sendHttpPost` — 
 
 ---
 
+## Down Downs Enhancements — Deployment Checklist (coded 2026-06-09)
+
+Features built: photo marker suppression (pre/post-run), Make a Charge button (DDN/gavel), charge photos, completed charges history view on run detail page.
+
+### DB (run against prod harriercentral.database.windows.net)
+- [x] Run `db/hc6/app/add_ChargePhotoUrl_to_DownDowns.sql` (safe — DownDowns is NOT a synced table, no trigger concern)
+- [x] Move that file to `db/hc6/app/archive/` after running
+
+### SPs to deploy (via `./tools/deploy_hc6.sh`)
+- [x] `hcapp_addDownDown` — new `@chargePhotoUrl` parameter + `ChargePhotoUrl` column in INSERT
+- [x] `hcapp_getDownDowns` — new `chargePhotoUrl` column in SELECT (admin view)
+- [x] `hcapp_getCompletedDownDowns` — new SP, SP number 58, kennel-member auth
+
+### Assets
+- [x] Add `gavel.png` to `mobile-app/images/live_run_map_markers/` (red circle background, white gavel icon, styled to match other markers).
+
+---
+
+## Hash Flash Photo Editing
+
+Design agreed 2026-06-08. Non-destructive: `BlobUrl` is never modified; `EditedBlobUrl`
+holds the cropped version. Display everywhere uses `editedBlobUrl ?? blobUrl`. Re-edits
+always start from the original `BlobUrl`.
+
+### DB (run once, already scripted)
+- [x] Run `db/hc6/add_EditedBlobUrl_to_KennelPhotos.sql` against production, then move to `db/hc6/archive/`
+
+### SPs to update
+- [x] `hcapp_getKennelPendingPhotos` — add `EditedBlobUrl` to SELECT
+- [x] `hcapp_getRunAllPhotos` — add `EditedBlobUrl` to SELECT
+- [x] `hcapp_getRunPhotos` — add `EditedBlobUrl` to SELECT
+- [x] `hcapp_batchUpdatePhotoStatus` — `COALESCE(EditedBlobUrl, BlobUrl)` already used for event cover; edit saved via dedicated `hcapp_updateRunPhotoEditedBlob` SP instead
+
+### App changes
+- [x] `KennelPendingPhoto` model — add `editedBlobUrl` nullable field
+- [x] `RunPhotoModel` — add `editedBlobUrl` nullable field
+- [x] Display everywhere — `effectiveUrl` getter (`editedBlobUrl ?? blobUrl`) used throughout
+- [x] `PhotoReviewController.editPhoto` — full download → crop → upload → persist flow (uses `hcapp_updateRunPhotoEditedBlob`, not batch)
+- [x] `KennelPhotoService.downloadToTempFile` — http.get → temp File
+- [x] `KennelPhotoService.uploadEditedPhoto` — SAS token + upload, returns blob URL
+- [x] `HashFlashApprovalPage` — crop icon button (top-left of each photo) calls `controller.editPhoto`
+- [x] After crop confirmed: optimistic `allPhotos[idx] = copyWithEditedBlobUrl(editedUrl)` update
+
+---
+
 ## DEFERRED (post-3.0, tracked for reference)
 
 - [x] **D1** `run_admin/edit_run_details.dart` — convert StatefulWidget to GetX (see fix list D1)
