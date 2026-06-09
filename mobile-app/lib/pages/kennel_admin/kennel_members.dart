@@ -1050,20 +1050,42 @@ class KennelMemberListState extends State<KennelMembersList>
         memberInfoBeingUpdated: true,
       );
     });
-    await srv.updateHasherKennelStatus(
-      widget.kennelListAggregate.kennel.kennelId,
-      AppDomainType.kennel,
-      monthsToAddToMembership: monthsToAddToMembership,
-      targetUserId: snapshot.data![index].hasherId,
+
+    List<dynamic> result = [];
+    try {
+      result = await srv.updateHasherKennelStatus(
+        widget.kennelListAggregate.kennel.kennelId,
+        AppDomainType.kennel,
+        monthsToAddToMembership: monthsToAddToMembership,
+        targetUserId: snapshot.data![index].hasherId,
+      );
+    } catch (e, s) {
+      debugPrint('_modifyMembership: updateHasherKennelStatus error: $e');
+      BootLogger.logError(
+        '[KennelMembers._modifyMembership] kennelId=${widget.kennelListAggregate.kennel.kennelId} months=$monthsToAddToMembership',
+        e,
+        s,
+      );
+    } finally {
+      await _refreshKennelMembersFromTable(true);
+      if (mounted) {
+        setStateIfMounted(() {
+          snapshot.data![index] = snapshot.data![index].copyWith(
+            memberInfoBeingUpdated: false,
+          );
+        });
+      }
+    }
+
+    if (!mounted) return;
+
+    showHcSnackbar(
+      result.isNotEmpty
+          ? 'Membership updated.'
+          : 'Could not update membership — check your connection.',
+      isError: result.isEmpty,
     );
 
-    await _refreshKennelMembersFromTable(true);
-    if (!mounted) return;
-    setStateIfMounted(() {
-      snapshot.data![index] = snapshot.data![index].copyWith(
-        memberInfoBeingUpdated: false,
-      );
-    });
     await _refreshCounters(true);
   }
 
