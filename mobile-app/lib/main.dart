@@ -1,4 +1,5 @@
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/firebase_options.dart';
 
 // this prevents exceptions being thrown on iOS when
 // the app is in the background and location services
@@ -76,6 +77,16 @@ Future<void> main() async {
       ),
     );
   });
+
+  // Firebase must be initialised before initServices() so that the
+  // Firebase.apps.isNotEmpty guards in services_init and the navigation
+  // controllers actually pass. NotificationService.init() also calls
+  // Firebase.initializeApp() but it is never reached without this bootstrap.
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  }
 
   // App-level init — safe to re-run on an in-app “restart”
   await initPrefs(); // if services read prefs during init()
