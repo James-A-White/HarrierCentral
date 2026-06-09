@@ -132,24 +132,23 @@ holds the cropped version. Display everywhere uses `editedBlobUrl ?? blobUrl`. R
 always start from the original `BlobUrl`.
 
 ### DB (run once, already scripted)
-- [ ] Run `db/hc6/add_EditedBlobUrl_to_KennelPhotos.sql` against production, then move to `db/hc6/archive/`
+- [x] Run `db/hc6/add_EditedBlobUrl_to_KennelPhotos.sql` against production, then move to `db/hc6/archive/`
 
 ### SPs to update
-- [ ] `hcapp_getKennelPendingPhotos` — add `EditedBlobUrl` to SELECT
-- [ ] `hcapp_getRunAllPhotos` — add `EditedBlobUrl` to SELECT
-- [ ] `hcapp_getRunPhotos` — add `EditedBlobUrl` to SELECT
-- [ ] `hcapp_batchUpdatePhotoStatus` — add optional `newEditedBlobUrl` per update row; UPDATE `HC.KennelPhotos SET EditedBlobUrl = ...` when provided
+- [x] `hcapp_getKennelPendingPhotos` — add `EditedBlobUrl` to SELECT
+- [x] `hcapp_getRunAllPhotos` — add `EditedBlobUrl` to SELECT
+- [x] `hcapp_getRunPhotos` — add `EditedBlobUrl` to SELECT
+- [x] `hcapp_batchUpdatePhotoStatus` — `COALESCE(EditedBlobUrl, BlobUrl)` already used for event cover; edit saved via dedicated `hcapp_updateRunPhotoEditedBlob` SP instead
 
 ### App changes
-- [ ] `KennelPendingPhoto` model — add `editedBlobUrl` nullable field
-- [ ] `RunPhotoModel` — add `editedBlobUrl` nullable field
-- [ ] Display everywhere — use `photo.editedBlobUrl ?? photo.blobUrl` for image URLs
-- [ ] `PhotoReviewController` — add `editedBlobUrls: RxMap<String, String>` to hold pending edits
-- [ ] `PhotoReviewController._flushQueue` — include `newEditedBlobUrl` in update batch when present
-- [ ] `KennelPhotoService.downloadToTemp(blobUrl)` — download blob to a temp `File` for cropping
-- [ ] `KennelPhotoService.uploadEditedPhoto(...)` — get SAS token + upload cropped file, return new blob URL
-- [ ] `HashFlashApprovalPage` — add Edit (crop) icon button to each photo card; call download→crop→upload→store flow; pass `kennelSlug` to controller (needed for upload token)
-- [ ] After crop confirmed: update `allPhotos` local state immediately so UI shows cropped image
+- [x] `KennelPendingPhoto` model — add `editedBlobUrl` nullable field
+- [x] `RunPhotoModel` — add `editedBlobUrl` nullable field
+- [x] Display everywhere — `effectiveUrl` getter (`editedBlobUrl ?? blobUrl`) used throughout
+- [x] `PhotoReviewController.editPhoto` — full download → crop → upload → persist flow (uses `hcapp_updateRunPhotoEditedBlob`, not batch)
+- [x] `KennelPhotoService.downloadToTempFile` — http.get → temp File
+- [x] `KennelPhotoService.uploadEditedPhoto` — SAS token + upload, returns blob URL
+- [x] `HashFlashApprovalPage` — crop icon button (top-left of each photo) calls `controller.editPhoto`
+- [x] After crop confirmed: optimistic `allPhotos[idx] = copyWithEditedBlobUrl(editedUrl)` update
 
 ---
 
