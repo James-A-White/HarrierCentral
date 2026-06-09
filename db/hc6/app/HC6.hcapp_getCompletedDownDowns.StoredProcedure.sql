@@ -79,12 +79,12 @@ BEGIN
     RETURN;
 END
 
--- Auth: any kennel member (active HKM row exists)
+-- Auth: any kennel member (non-removed HKM row exists)
 IF NOT EXISTS (
     SELECT 1 FROM HC.HasherKennelMap
     WHERE UserId   = @userId
       AND KennelId = @kennelId
-      AND (RemovedAt IS NULL OR RemovedAt > GETUTCDATE())
+      AND removed  = 0
 )
 BEGIN
     SET @errorCode = 1337; SET @errorType = 3; SET @errorId = NEWID();
