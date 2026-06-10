@@ -572,6 +572,89 @@ the SQL Server stored procedures — must be explicitly requested by James in th
 conversation. Do not deploy as a side effect of making code changes, even if
 asked to "make the change and push it."
 
+The explicit request is either a specific deploy instruction ("deploy the API")
+or the **"Dance baby!"** command below.
+
+---
+
+## "Dance baby!" — Full Release Command
+
+When James says **"Dance baby!"**, execute a full release of all components that
+have changed since the last deploy. This is the sanctioned way to request a
+full coordinated release.
+
+### Step 1 — Identify changed components
+
+Check git log and working tree to determine which components have changes not
+yet deployed. Only process components with actual changes — no nugatory work.
+
+| Component | Changed if… | Changelog |
+|-----------|-------------|-----------|
+| `db/hc6/` | Any `.sql` SP modified | None (commit message is sufficient) |
+| `api/` | Any `.cs` or `.csproj` modified | `api/pubversion.text` |
+| `mobile-app/` | Any Dart/Flutter file modified | `mobile-app/CHANGELOG.md` |
+| `portal/` | Any Dart/Flutter file modified | `portal/CHANGELOG.md` |
+| `public-web/` | Any TypeScript/Next.js file modified | `public-web/CHANGELOG.md` |
+
+### Step 2 — Show James a deployment plan
+
+Before doing anything irreversible, present:
+- Which components will be deployed
+- Proposed version bumps for each
+- Draft changelog entries for each
+- Order of operations
+
+**Wait for James to confirm before proceeding.**
+
+### Step 3 — Execute in this order
+
+1. **Version bumps + changelog** — update all changed components (see below)
+2. **Commit to dev**
+3. **Push dev**
+4. **Merge dev → master and push master** — portal auto-deploys via CI on master push
+5. **Deploy SPs** — `./tools/deploy_hc6.sh` (only if `db/hc6/` changed)
+6. **Deploy API** — `func publish harriercentralpublicapi` from `api/` dir (only if `api/` changed)
+7. **Deploy public web** — standalone build → zip → `az webapp deploy` to harriercentralpublicweb (only if `public-web/` changed)
+8. **Deploy mobile app** — TestFlight via xcodebuild + xcrun altool (only if `mobile-app/` changed)
+
+---
+
+### Version bump and changelog rules per component
+
+#### API (`api/`)
+- Bump `<Version>X.Y.Z</Version>` in `api/HcWebApi.csproj` (patch increment)
+- Increment the `+N` build number in `api/pubversion.text`
+- Prepend a new entry at the top of `api/pubversion.text`:
+  ```
+  X.Y.Z+N
+  • Short description of change
+  ```
+
+#### Mobile app (`mobile-app/`)
+- Bump `version: X.Y.Z+build` in `mobile-app/pubspec.yaml`
+- Prepend to `mobile-app/CHANGELOG.md`:
+  ```markdown
+  ## X.Y.Z+build (YYYY-MM-DD)
+  ### Fixes / New Features / Improvements
+  - **Feature**: Description
+  ```
+- Deploy via TestFlight (Key ID `7YDRYBL5KS`, Issuer ID in memory `reference_testflight_deploy.md`)
+
+#### Portal (`portal/`)
+- Bump `version: X.Y.Z+build` in `portal/pubspec.yaml`
+- Prepend to `portal/CHANGELOG.md`
+- **No manual deploy step** — merging to master triggers auto-deploy via CI
+
+#### Public web (`public-web/`)
+- Bump `"version"` in `public-web/package.json` (patch increment)
+- Prepend to `public-web/CHANGELOG.md`
+- Deploy steps in memory `reference_public_web_deploy.md`
+
+#### SPs (`db/hc6/`)
+- No version number, no changelog entry
+- Deploy via `./tools/deploy_hc6.sh` from repo root
+- Always deploy SPs **before** the API if both have changed
+
 ---
 
 ### Deploying SPs
