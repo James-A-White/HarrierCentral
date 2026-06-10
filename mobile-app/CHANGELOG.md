@@ -1,5 +1,38 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.10.1+1171 (2026-06-10)
+
+### Fixes
+
+- **Startup crash on iOS 26.2 beta**: Fixed crash caused by an `objective_c`
+  package path-join bug (9.3.0 → 9.4.1 via dependency_overrides).
+- **Notifications not working after fresh install**: Firebase was never
+  initialised before `initServices()` ran, so `NotificationService` never
+  registered. Firebase is now initialised in `main()` before any services start.
+- **PackTrack: distance underestimated on Low Power Mode**: GPS accuracy
+  threshold raised from 15m to 50m. iOS Low Power Mode reports 30–50m accuracy
+  — the old threshold filtered out those points and replaced them with straight
+  lines, causing the track to miss turns and undercount distance by ~50%.
+  The velocity filter (5 m/s) still catches genuine GPS jumps.
+- **Song sync: most users silently throttled**: iOS throttles silent (data-only)
+  pushes to ~3/hour. Users with default notification settings were getting
+  data-only pushes and missing most song selections. All song notifications are
+  now visible pushes (banner suppressed while the app is in the foreground).
+  Muted users are excluded unless physically checked in at the run
+  (attendanceState 20–39).
+- **Song sync: tapping notification didn't enter listening mode**: Tapping a
+  "🎵 Song Time!" banner while the app was backgrounded opened the songbook
+  but didn't highlight the song or enter interactive mode. Fixed.
+- **Song sync: reliability improvements**: Prevented double-registration of
+  NotificationService at boot; fixed subscription leak across logout/login cycles.
+
+### Improvements
+
+- **Edit Charge: photo support**: Charges can now have a photo attached.
+  Photo capture UI added to the charge editor; label and layout fixes.
+
+---
+
 ## 2.9.8+1163 (2026-06-07)
 
 ### New Features
