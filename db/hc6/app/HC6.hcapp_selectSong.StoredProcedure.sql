@@ -121,7 +121,7 @@ END
 DECLARE @kennelId UNIQUEIDENTIFIER;
 SELECT @kennelId = evt.KennelId FROM HC.Event evt WHERE evt.id = @eventId;
 
--- Pre-count mobile FCM recipients (excludes ignore=2; mirrors rowset 2 WHERE clause)
+-- Pre-count mobile FCM recipients (mirrors rowset 2 WHERE clause exactly)
 DECLARE @recipientCount INT = 0;
 SELECT @recipientCount = COUNT(DISTINCT d.FcmToken)
 FROM HC.HasherEventMap hem
@@ -133,7 +133,10 @@ WHERE hem.EventId  = @eventId
   AND d.FcmToken IS NOT NULL
   AND d.FcmToken != ''
   AND d.IsMobile = 1
-  AND COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference) != 2;
+  AND (
+      COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference) NOT IN (2, 3)
+      OR (hem.AttendenceState >= 20 AND hem.AttendenceState < 40)
+  );
 
 -- Resolve display name for the songmeister
 DECLARE @selectedByName NVARCHAR(200);
@@ -179,14 +182,14 @@ SELECT
 
 -- rowset 2: FCM recipients — consumed by Azure Function; not parsed by Flutter.
 -- Includes RSVP'd (rsvpState >= 2) and checked-in (attendenceState >= 3) users.
--- Excludes ignore (2) — no push at all.
--- showNotification = 1 for on (1) or onBeforeRun (4); 0 (data-only) for auto (0/NULL) and mute (3).
--- Effective preference cascades: event-level if set, otherwise kennel-level.
+-- Excludes ignore (2) entirely. Excludes mute (3) unless physically at the run
+-- (attendenceState 20=atHash, 30=onIn — range >=20 AND <40 future-proofs intermediate states).
+-- All included recipients get a visible push (no data-only silent pushes — iOS throttles those).
+-- Effective preference cascades: event-level if non-zero, otherwise kennel-level.
 SELECT DISTINCT
     d.FcmToken,
     LOWER(CAST(d.UserId AS NVARCHAR(40)))         AS UserId,
-    CASE WHEN COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference) IN (1, 4)
-         THEN 1 ELSE 0 END                        AS showNotification
+    1                                             AS showNotification
 FROM HC.HasherEventMap hem
 INNER JOIN HC.Device d ON d.UserId = hem.UserId
 LEFT  JOIN HC.HasherKennelMap hkm
@@ -197,4 +200,7 @@ WHERE hem.EventId  = @eventId
   AND d.FcmToken IS NOT NULL
   AND d.FcmToken != ''
   AND d.IsMobile = 1
-  AND COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference) != 2;
+  AND (
+      COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference) NOT IN (2, 3)
+      OR (hem.AttendenceState >= 20 AND hem.AttendenceState < 40)
+  );

@@ -24,16 +24,18 @@ import 'package:latlong2/latlong.dart' as latlng;
 /// - Two-pass approach prevents one bad point from cascading failures
 class TrackPointFilter {
   TrackPointFilter({
-    this.maxAccuracyMeters = 15.0,
+    this.maxAccuracyMeters = 50.0,
     this.maxVelocityMetersPerSecond = 5.0,
     this.minTimeDeltaMs = 1000,
   });
 
   /// Maximum acceptable GPS accuracy in meters.
   /// Points with accuracy > this value are considered unreliable.
-  /// Lowered to 15m based on data analysis showing GPS acquisition/loss
-  /// periods have 30-50m accuracy causing map artifacts.
-  /// Good GPS: ~5m, Acceptable: ~10-15m, Poor GPS: ~30-50m
+  /// Raised to 50m to admit low-power-mode GPS (typical iOS low-power
+  /// accuracy is 30–50m). The velocity filter (5 m/s) is the real guard
+  /// against bad jumps; a tight accuracy threshold was redundant and caused
+  /// near-total track loss for users on Low Power Mode.
+  /// Good GPS: ~5m, Balanced: ~10-15m, Low Power: ~30-50m, Indoor/poor: >50m
   final double maxAccuracyMeters;
 
   /// Maximum realistic velocity in meters per second.

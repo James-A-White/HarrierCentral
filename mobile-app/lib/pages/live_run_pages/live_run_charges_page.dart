@@ -8,11 +8,15 @@ class LiveRunChargesPage extends StatefulWidget {
     required this.kennelId,
     required this.eventId,
     required this.eventName,
+    required this.kennelSlug,
+    required this.eventNumber,
   });
 
   final String kennelId;
   final String eventId;
   final String eventName;
+  final String kennelSlug;
+  final int eventNumber;
 
   @override
   State<LiveRunChargesPage> createState() => _LiveRunChargesPageState();
@@ -61,6 +65,8 @@ class _LiveRunChargesPageState extends State<LiveRunChargesPage> {
       () => EditDownDownPage(
         kennelId: widget.kennelId,
         eventId: widget.eventId,
+        kennelSlug: widget.kennelSlug,
+        eventNumber: widget.eventNumber,
         downDown: dd,
       ),
     );

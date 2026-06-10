@@ -16,6 +16,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
 
   FirebaseMessaging? _messaging;
   StreamSubscription<RemoteMessage>? _fcmSubscription;
+  StreamSubscription<RemoteMessage>? _openedAppSubscription;
 
   // --- Initialization ---
 
@@ -251,7 +252,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   }
 
   void _setupFirebaseListeners() {
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
+    _openedAppSubscription = FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
       await _handleNotificationClick(message);
       if (kDebugMode) {
         debugPrint('Message opened app received: ${message.data}');
@@ -288,11 +289,20 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   }
 
   Future<void> _handleNotificationClick(RemoteMessage message) async {
-    // Song notification tap — navigate directly to the songbook
+    // Song notification tap — update session state then navigate to the songbook.
+    // onSongSelected() must be called first so pendingSongId is set before the
+    // SongsPageController's ever() worker fires on navigation.
     final String? silentType = message.data['Type'] as String?;
     if (silentType == 'song_selected') {
       final String? eventId = message.data['EventId'] as String?;
-      if (eventId != null) {
+      final String? songId  = message.data['SongId']  as String?;
+      if (eventId != null && songId != null) {
+        SongSessionNotifier.ensure().onSongSelected(
+          eventId: eventId.toLowerCase(),
+          songId: songId.toLowerCase(),
+          songTitle: message.data['SongTitle'] as String? ?? '',
+          selectedByName: message.data['SelectedByName'] as String? ?? 'Someone',
+        );
         Get.until((route) => route.settings.name == '/main');
         _navigateToSongbook(eventId.toLowerCase());
       }
@@ -607,6 +617,7 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   @override
   void onClose() {
     unawaited(_fcmSubscription?.cancel());
+    unawaited(_openedAppSubscription?.cancel());
     WidgetsBinding.instance.removeObserver(this);
     super.onClose();
   }

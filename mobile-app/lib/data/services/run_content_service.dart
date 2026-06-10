@@ -196,6 +196,7 @@ class RunContentService {
     required String chargeText,
     String? songChoice,
     String? songId,
+    String? chargePhotoUrl,
   }) async {
     final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
@@ -215,6 +216,7 @@ class RunContentService {
         'chargeText': chargeText,
         'songChoice': songChoice,
         'songId': songId,
+        if (chargePhotoUrl?.isNotEmpty == true) 'chargePhotoUrl': chargePhotoUrl,
       }),
     );
 

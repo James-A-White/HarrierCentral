@@ -1,6 +1,6 @@
 name: harrier_central
 description: A mobile app to manage your Hash House Harriers life.
-version: 2.10.0+1168 # see CHANGELOG.md for details
+version: 2.10.1+1171 # see CHANGELOG.md for details
 publish_to: none
 
 environment:
@@ -122,6 +122,7 @@ dependency_overrides:
   # intl: 0.19.0
   # device_info_plus: ^10.1.2
   analyzer: ^8.4.1
+  objective_c: ^9.4.1
 
 dev_dependencies:
   flutter_test:

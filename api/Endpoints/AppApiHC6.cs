@@ -607,29 +607,22 @@ namespace HcWebApi.Endpoints
                 string? accessToken = await GetFirebaseAccessTokenAsync();
                 var recipients = multipleResults[2];
 
-                // Build a filtered list of dispatchable recipients so indices stay aligned
-                // between Task.WhenAll results and log entries.
+                // All recipients from the SP get a visible push — the SP already excludes
+                // ignore (2) and mute (3) users who aren't physically at the run.
                 var dispatchItems = recipients
                     .Select(row =>
                     {
-                        row.TryGetValue("FcmToken",         out var tok);
-                        row.TryGetValue("UserId",           out var uid);
-                        row.TryGetValue("showNotification", out var vis);
-                        var isVis = vis is bool bv ? bv : (vis != null && Convert.ToInt32(vis) == 1);
-                        return new { token = tok?.ToString(), userId = uid?.ToString(), isVis };
+                        row.TryGetValue("FcmToken", out var tok);
+                        row.TryGetValue("UserId",   out var uid);
+                        return new { token = tok?.ToString(), userId = uid?.ToString() };
                     })
                     .Where(x => !string.IsNullOrEmpty(x.token))
                     .ToList();
 
-                // Use the SP's per-user notification preference (EventNotificationPreference
-                // or KennelNotificationPreference > 0). Visible notifications use the APNs
-                // notification path which is not subject to iOS background-push throttling
-                // (roughly 3 silent pushes/hour). The Flutter app suppresses the banner via
-                // setForegroundNotificationPresentationOptions when the app is open.
                 var fcmResults = await Task.WhenAll(
                     dispatchItems.Select(item =>
                         SendSongMessageAsync(item.token!, songTitle, selectedByName,
-                            eventId, songId, item.isVis, accessToken, logger))
+                            eventId, songId, accessToken, logger))
                 );
 
                 logger.LogInformation("Song '{SongTitle}' pushed to {Count} device(s).", songTitle, dispatchItems.Count);
@@ -639,7 +632,7 @@ namespace HcWebApi.Endpoints
                         item.token!,
                         item.userId,
                         SenderUserId: null,
-                        IsVisible: item.isVis,
+                        IsVisible: true,
                         FcmResult: fcmResults[i]));
                 _ = LogPushBatchAsync("selectSong", eventId, $"{selectedByName}: \"{songTitle}\"", logEntries, logger);
             }
@@ -651,69 +644,40 @@ namespace HcWebApi.Endpoints
 
         private static async Task<string> SendSongMessageAsync(
             string fcmToken, string songTitle, string selectedByName,
-            string eventId, string songId, bool showNotification,
+            string eventId, string songId,
             string? accessToken, ILogger log)
         {
             try
             {
-                object messageBody;
-                if (showNotification)
+                // Always visible push — banner suppressed in-foreground by the Flutter app via
+                // setForegroundNotificationPresentationOptions(alert: false). The SP already
+                // filters out ignore/mute users (except muted users physically at the run).
+                var messageBody = new
                 {
-                    // Visible notification + data for users with notifications enabled
-                    messageBody = new
+                    message = new
                     {
-                        message = new
+                        token = fcmToken,
+                        notification = new
                         {
-                            token = fcmToken,
-                            notification = new
-                            {
-                                title = "🎵 Song Time!",
-                                body  = $"{selectedByName} is leading \"{songTitle}\""
-                            },
-                            data = new
-                            {
-                                Type           = "song_selected",
-                                EventId        = eventId,
-                                SongId         = songId,
-                                SongTitle      = songTitle,
-                                SelectedByName = selectedByName,
-                            },
-                            android = new { priority = "high", notification = new { sound = "default" } },
-                            apns = new
-                            {
-                                headers = new Dictionary<string, string> { ["apns-priority"] = "10" },
-                                payload = new { aps = new Dictionary<string, object> { ["sound"] = "default", ["content-available"] = (object)1 } }
-                            }
+                            title = "🎵 Song Time!",
+                            body  = $"{selectedByName} is leading \"{songTitle}\""
                         },
-                    };
-                }
-                else
-                {
-                    // Data-only silent push for users without notifications enabled.
-                    // APNs requires priority 5 for background (content-available) notifications —
-                    // priority 10 is only valid when there is a visible alert/sound/badge.
-                    messageBody = new
-                    {
-                        message = new
+                        data = new
                         {
-                            token = fcmToken,
-                            data = new
-                            {
-                                Type           = "song_selected",
-                                EventId        = eventId,
-                                SongId         = songId,
-                                SongTitle      = songTitle,
-                                SelectedByName = selectedByName,
-                            },
-                            android = new { priority = "high" },
-                            apns = new
-                            {
-                                headers = new Dictionary<string, string> { ["apns-priority"] = "5" },
-                                payload = new { aps = new Dictionary<string, object> { ["content-available"] = (object)1 } }
-                            }
+                            Type           = "song_selected",
+                            EventId        = eventId,
+                            SongId         = songId,
+                            SongTitle      = songTitle,
+                            SelectedByName = selectedByName,
                         },
-                    };
-                }
+                        android = new { priority = "high", notification = new { sound = "default" } },
+                        apns = new
+                        {
+                            headers = new Dictionary<string, string> { ["apns-priority"] = "10" },
+                            payload = new { aps = new Dictionary<string, object> { ["sound"] = "default", ["content-available"] = (object)1 } }
+                        }
+                    },
+                };
 
                 var jsonPayload = System.Text.Json.JsonSerializer.Serialize(messageBody);
                 var stringContent = new StringContent(jsonPayload, System.Text.Encoding.UTF8);

@@ -1,4 +1,9 @@
 
+1.0.25+23
+    • selectSong: all song pushes now visible (no iOS throttling); data-only silent push path removed
+    • selectSong: mute (3) users excluded from recipients unless physically at the run (attendanceState >=20 <40)
+    • selectSong: showNotification per-user logic removed — always 1 from SP
+
 1.0.24+22
     • selectSong: re-enable visible notifications for users with notification preferences set
       (EventNotificationPreference or KennelNotificationPreference > 0). iOS throttles

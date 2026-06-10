@@ -11,12 +11,16 @@ class EditDownDownPage extends StatefulWidget {
     super.key,
     required this.kennelId,
     required this.eventId,
+    required this.kennelSlug,
+    required this.eventNumber,
     required this.downDown,
     this.pageTitle = 'Edit Charge',
   });
 
   final String kennelId;
   final String eventId;
+  final String kennelSlug;
+  final int eventNumber;
   final DownDownModel downDown;
   final String pageTitle;
 
@@ -33,6 +37,8 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
   bool _suppressNextSearch = false;
   List<_SongResult> _songResults = [];
   bool _isSaving = false;
+  String? _chargePhotoUrl;
+  bool _isCapturingPhoto = false;
 
   @override
   void initState() {
@@ -40,6 +46,7 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
     _chargeController = TextEditingController(text: widget.downDown.chargeText);
     _songController = TextEditingController(text: widget.downDown.songChoice ?? '');
     _linkedSongId = widget.downDown.songId;
+    _chargePhotoUrl = widget.downDown.chargePhotoUrl;
   }
 
   @override
@@ -47,6 +54,24 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
     _chargeController.dispose();
     _songController.dispose();
     super.dispose();
+  }
+
+  Future<void> _takeChargePhoto() async {
+    setState(() => _isCapturingPhoto = true);
+    try {
+      final url = await KennelPhotoService().captureAndUpload(
+        eventId: widget.eventId,
+        kennelId: widget.kennelId,
+        kennelSlug: widget.kennelSlug,
+        eventNumber: widget.eventNumber,
+        skipMapMarker: true,
+      );
+      if (url != null && mounted) {
+        setState(() => _chargePhotoUrl = url);
+      }
+    } finally {
+      if (mounted) setState(() => _isCapturingPhoto = false);
+    }
   }
 
   Future<void> _searchSongs(String query) async {
@@ -115,6 +140,10 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
     setState(() => _isSaving = true);
 
     final songText = _songController.text.trim();
+    final newPhoto = _chargePhotoUrl != widget.downDown.chargePhotoUrl
+        ? _chargePhotoUrl
+        : null;
+
     final ok = await _service.updateDownDown(
       kennelId: widget.kennelId,
       eventId: widget.eventId,
@@ -122,6 +151,7 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
       chargeText: chargeText,
       songChoice: songText.isEmpty ? null : songText,
       songId: _linkedSongId,
+      chargePhotoUrl: newPhoto,
     );
 
     if (mounted) {
@@ -138,6 +168,24 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
       }
     }
   }
+
+  Widget _fieldLabel(String text) => Padding(
+        padding: const EdgeInsets.only(left: 2, bottom: 5),
+        child: Text(
+          text,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+          ),
+        ),
+      );
+
+  static const _fieldDecoration = InputDecoration(
+    border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
+    filled: true,
+    fillColor: Colors.white,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -169,56 +217,65 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Charge text field
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
-              child: TextField(
-                controller: _chargeController,
-                maxLines: 3,
-                autofocus: true,
-                style: const TextStyle(color: Colors.black87),
-                decoration: InputDecoration(
-                  labelText: 'Charge',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _fieldLabel('Charge'),
+                  TextField(
+                    controller: _chargeController,
+                    maxLines: 3,
+                    autofocus: true,
+                    style: const TextStyle(color: Colors.black87),
+                    decoration: _fieldDecoration.copyWith(
+                      hintText: 'Enter the charge…',
+                    ),
+                  ),
+                ],
               ),
             ),
+
+            // Song field
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-              child: TextField(
-                controller: _songController,
-                style: const TextStyle(color: Colors.black87),
-                decoration: InputDecoration(
-                  labelText: 'Recommended song (optional)',
-                  hintText: 'Start typing to search…',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  filled: true,
-                  fillColor: Colors.white,
-                  prefixIcon: const Icon(Icons.music_note),
-                  suffixIcon: _linkedSongId != null
-                      ? Tooltip(
-                          message: 'Unlink song',
-                          child: IconButton(
-                            icon: const Icon(Icons.link_off, size: 18),
-                            onPressed: () => setState(() {
-                              _linkedSongId = null;
-                              _songResults = [];
-                            }),
-                          ),
-                        )
-                      : null,
-                ),
-                onChanged: (value) {
-                  if (_suppressNextSearch) {
-                    _suppressNextSearch = false;
-                    return;
-                  }
-                  _linkedSongId = null;
-                  unawaited(_searchSongs(value));
-                },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _fieldLabel('Recommended song (optional)'),
+                  TextField(
+                    controller: _songController,
+                    style: const TextStyle(color: Colors.black87),
+                    decoration: _fieldDecoration.copyWith(
+                      hintText: 'Start typing to search…',
+                      prefixIcon: const Icon(Icons.music_note),
+                      suffixIcon: _linkedSongId != null
+                          ? Tooltip(
+                              message: 'Unlink song',
+                              child: IconButton(
+                                icon: const Icon(Icons.link_off, size: 18),
+                                onPressed: () => setState(() {
+                                  _linkedSongId = null;
+                                  _songResults = [];
+                                }),
+                              ),
+                            )
+                          : null,
+                    ),
+                    onChanged: (value) {
+                      if (_suppressNextSearch) {
+                        _suppressNextSearch = false;
+                        return;
+                      }
+                      _linkedSongId = null;
+                      unawaited(_searchSongs(value));
+                    },
+                  ),
+                ],
               ),
             ),
+
             if (_linkedSongId != null)
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 16, 10),
@@ -226,20 +283,67 @@ class _EditDownDownPageState extends State<EditDownDownPage> {
                   children: [
                     const Icon(Icons.link, size: 14, color: Colors.yellow),
                     const SizedBox(width: 6),
-                    Text(
+                    const Text(
                       'Song linked',
-                      style: const TextStyle(fontSize: 12, color: Colors.yellow),
+                      style: TextStyle(fontSize: 12, color: Colors.yellow),
                     ),
                   ],
                 ),
               ),
+
+            // Photo row
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      icon: _isCapturingPhoto
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : Icon(
+                              _chargePhotoUrl != null
+                                  ? Icons.check_circle_outline
+                                  : Icons.camera_alt,
+                              color: Colors.white70,
+                            ),
+                      label: Text(
+                        _chargePhotoUrl != null ? 'Photo added' : 'Add photo (optional)',
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.white30),
+                      ),
+                      onPressed: _isCapturingPhoto ? null : _takeChargePhoto,
+                    ),
+                  ),
+                  if (_chargePhotoUrl != null) ...[
+                    const SizedBox(width: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: Image.network(
+                        _chargePhotoUrl!,
+                        width: 44,
+                        height: 44,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
             if (_songResults.isNotEmpty) ...[
               const Divider(height: 1, thickness: 1, color: Colors.white24),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 6, 16, 2),
-                child: Text(
+                child: const Text(
                   'Select a song to link it',
-                  style: const TextStyle(fontSize: 11, color: Colors.white54),
+                  style: TextStyle(fontSize: 11, color: Colors.white54),
                 ),
               ),
               Expanded(
