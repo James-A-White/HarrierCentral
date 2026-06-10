@@ -291,11 +291,16 @@ class MainNavigationController extends GetxController
     );
     debugPrint('[BOOT] MainNavController: notificationsConfigured=$notificationsConfigured: ${DateTime.now().millisecondsSinceEpoch}ms');
 
-    if (notificationsConfigured != null && notificationsConfigured) {
+    // Only register NotificationService here if services_init.dart didn't already
+    // do it at boot. Since Firebase is now initialised in main() before initServices(),
+    // services_init registers it reliably and this path is the fallback for the
+    // first-ever launch where notificationsConfigured was false at boot time.
+    if ((notificationsConfigured ?? false) &&
+        !Get.isRegistered<NotificationService>()) {
       debugPrint('[BOOT] MainNavController: NotificationService.init start: ${DateTime.now().millisecondsSinceEpoch}ms');
       await Get.putAsync(
         () => NotificationService().init(),
-      ); // Initialize and wait for the notification service
+      );
       debugPrint('[BOOT] MainNavController: NotificationService.init done: ${DateTime.now().millisecondsSinceEpoch}ms');
     }
     debugPrint('[BOOT] MainNavController: _onInitAsyncBody COMPLETE: ${DateTime.now().millisecondsSinceEpoch}ms');
