@@ -811,9 +811,10 @@ class Utilities {
     return false;
   }
 
-  // Fast internet check: interface present + single general reachability test.
-  // Does NOT check the HC backend — that is handled separately by
-  // NetworkService._scheduleBackendCheck / forceRecheck via checkHcServer().
+  // Fast internet check: interface present + reachability probe.
+  // Checks the HC backend first (most relevant for this app), then falls back
+  // to Google/MSFT. Returns true if ANY one of the three responds — so a
+  // cold-starting Azure backend doesn't cause a false offline result.
   static Future<bool> checkForInternetConnection() async {
     const Duration internetCheckTimeout = Duration(milliseconds: 3000);
 
@@ -830,6 +831,7 @@ class Utilities {
     try {
       final checker = InternetConnection.createInstance(
         customCheckOptions: [
+          InternetCheckOption(uri: Uri.parse(BASE_AF_CONNECTION_TEST_URL)),
           InternetCheckOption(uri: Uri.parse(CONNECTION_TEST_GOOGLE_URL)),
           InternetCheckOption(uri: Uri.parse(CONNECTION_TEST_MSFT_URL)),
         ],
