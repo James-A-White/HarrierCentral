@@ -11,6 +11,7 @@ class NetworkService extends GetxService {
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
   Timer? _debounceTimer;
   Timer? _backendRetryTimer;
+  Timer? _periodicCheckTimer;
   bool _isChecking = false;
 
   // Short timeout for the initial backend check — fail fast on cold start so
@@ -20,12 +21,21 @@ class NetworkService extends GetxService {
   // Full timeout for the retry loop — backend may still be warming up.
   static const Duration _retryBackendTimeout = Duration(seconds: 12);
   static const Duration _backendRetryInterval = Duration(seconds: 5);
+  // Watchdog — catches mid-session losses that hardware events miss (e.g.
+  // entering a tunnel while the cellular interface stays "connected").
+  static const Duration _periodicCheckInterval = Duration(seconds: 30);
 
   Future<void> init() async {
     _connectivity = Connectivity();
 
     // Seed both signals at boot.
     await _doCheck(_coldStartTimeout);
+
+    // Watchdog — runs every 30s regardless of interface events.
+    _periodicCheckTimer = Timer.periodic(
+      _periodicCheckInterval,
+      (_) => _runConnectivityCheck(),
+    );
 
     // Interface gone → flip offline immediately, no network call needed.
     // Interface appeared → debounced full check.
@@ -110,6 +120,7 @@ class NetworkService extends GetxService {
   void onClose() {
     _debounceTimer?.cancel();
     _backendRetryTimer?.cancel();
+    _periodicCheckTimer?.cancel();
     unawaited(_connectivitySub?.cancel());
     super.onClose();
   }
