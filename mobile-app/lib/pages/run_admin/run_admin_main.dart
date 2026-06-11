@@ -405,7 +405,7 @@ class RunAdminPage extends StatelessWidget {
       );
     }
 
-    if (isHashFlash || isWebMeister || isGm || isRa) {
+    if (isHashFlash || isWebMeister || isGm) {
       writeUpButtons.add(
         _buildButton(
           label: 'Hash\r\nTrash',
