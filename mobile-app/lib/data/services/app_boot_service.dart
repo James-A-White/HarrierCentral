@@ -65,7 +65,7 @@ class AppBootService {
     debugPrint('[BOOT] userId resolved: ${userId != null ? "present" : "null"}, deviceId: ${deviceId != null ? "present" : "null"}');
 
     debugPrint('[BOOT] checkForInternetConnection start: ${DateTime.now().millisecondsSinceEpoch}ms');
-    await Utilities.checkForInternetConnection(false);
+    await Utilities.checkForInternetConnection();
     debugPrint('[BOOT] checkForInternetConnection done: ${DateTime.now().millisecondsSinceEpoch}ms');
 
     // 1.x → 2.x migration: userId exists in legacy prefs but no deviceId yet.

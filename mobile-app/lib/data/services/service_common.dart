@@ -75,16 +75,9 @@ class ServiceCommon {
     // if the connection check is bypassed, it is because we are doing an initial
     // connection check
     if ((!bypassConnectionCheck) && Utilities.isNotConnected()) {
-      // if we were previously not connected, let's check the connection
-      // and update the connection status
-      await Utilities.checkForInternetConnection(
-        false,
-        performHcServerCheck: false,
-      );
-      // if we are still not connected, return an error
-      if (Utilities.isNotConnected()) {
-        return ERROR_NO_CONNECTION;
-      }
+      final hasNet = await Utilities.checkForInternetConnection();
+      networkService.hasInternet.value = hasNet;
+      if (!hasNet) return ERROR_NO_CONNECTION;
     }
 
     // print('>>> http post $httpCounter $requestBody');
@@ -378,14 +371,9 @@ class ServiceCommon {
           null,
         );
       } else {
-        // bypass the Harrier Central backend server check and
-        // check the internet connection using other services.
-        // This is done to prevent an infinite loop
-        await Utilities.checkForInternetConnection(
-          false,
-          performHcServerCheck: false,
-        );
-        if (Utilities.isConnected()) {
+        final hasNet = await Utilities.checkForInternetConnection();
+        networkService.hasInternet.value = hasNet;
+        if (hasNet) {
           BootLogger.logError(
             '[ERROR][HTTP]',
             '${response.statusCode} ${response.reasonPhrase ?? ""} → $BASE_AF_API_URL\nBody: ${_redactBody(requestBody)}\nResponse: ${response.body}',

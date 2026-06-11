@@ -6,7 +6,7 @@ class OfflineModeRibbon extends StatelessWidget {
     super.key,
     this.lastSync,
     this.ribbonImage = 'images/icons/offline_mode.png',
-    required this.refreshFunction, // called after we successfully reconnect
+    required this.refreshFunction,
   });
 
   final DateTime? lastSync;
@@ -18,28 +18,35 @@ class OfflineModeRibbon extends StatelessWidget {
     final network = Get.find<NetworkService>();
 
     return Obx(() {
-      // Only show when we are OFFLINE
-      final isOnline = network.isOnline();
-      if (isOnline) return const SizedBox.shrink();
+      final internet = network.hasInternet.value;
+      final backend = network.backendReachable.value;
 
-      final lastSyncText = lastSync != null
-          ? DateFormat("E, MMM d 'at' h:mm a").format(lastSync!)
-          : null;
+      if (internet && backend) return const SizedBox.shrink();
+
+      // backend-only unavailable: internet up but HC server not yet reachable
+      final backendOnly = internet && !backend;
 
       return Positioned(
         right: 0,
         top: 0,
         child: GestureDetector(
           onTap: () async {
-            // Ask the user if they want to try reconnecting
+            final String title = backendOnly ? 'Server Unavailable' : 'Offline Mode';
+            final String body = backendOnly
+                ? 'The app is connected to the internet but cannot reach the '
+                    'Harrier Central server. This may be a temporary outage.\n\n'
+                    'Tap "Try Reconnect" to check again.'
+                : lastSync != null
+                    ? 'The data displayed in this app might be out of date. '
+                        'The last time the app connected to the server was '
+                        '${DateFormat("E, MMM d 'at' h:mm a").format(lastSync!)}.'
+                    : 'The data displayed in this app might be out of date. '
+                        'There is no record indicating when the last sync occurred.';
+
             final tryReconnect =
                 !(await Utilities.showAlert2(
-                      'Offline Mode',
-                      lastSyncText != null
-                          ? 'The data displayed in this app might be out of date. '
-                                'The last time the app connected to the server was $lastSyncText.'
-                          : 'The data displayed in this app might be out of date. '
-                                'There is no record indicating when the last sync occurred.',
+                      title,
+                      body,
                       'OK',
                       showCancelButton: true,
                       cancelButtonText: 'Try reconnect',
@@ -48,24 +55,19 @@ class OfflineModeRibbon extends StatelessWidget {
 
             if (!tryReconnect) return;
 
-            // Optional: keep your existing utility check if needed
-            await Utilities.checkForInternetConnection(true);
-
-            // Then force a recheck via the service (updates Rx state)
             final reconnected = await network.forceRecheck();
 
             if (reconnected) {
               await Utilities.showAlert2(
                 'Connected',
-                'You are now connected to the Internet',
+                'You are now connected to Harrier Central.',
                 'OK',
               );
-              // Trigger your reload/refresh
               refreshFunction();
             }
           },
           child: Image.asset(
-            ribbonImage, // <-- now uses the provided image path
+            ribbonImage,
             height: 100,
             width: 100,
           ),

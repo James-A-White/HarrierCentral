@@ -1,144 +1,98 @@
 import 'package:harrier_central/imports.dart';
-
-// lib/services/network_service.dart
 import 'package:connectivity_plus/connectivity_plus.dart';
 
-/// App-level online/offline status (validated by reachability).
-enum NetworkStatus { online, offline }
-
 class NetworkService extends GetxService {
-  // Reactive public state
-  final Rx<NetworkStatus> status = NetworkStatus.online.obs;
-  final RxSet<ConnectivityResult> interfaces = <ConnectivityResult>{}.obs;
+  // Whether the device can reach the internet (Cloudflare, Google, etc.)
+  final RxBool hasInternet = false.obs;
+  // Whether the HC backend is specifically reachable (checked separately,
+  // with a longer timeout to absorb Azure cold-start delays)
+  final RxBool backendReachable = false.obs;
 
-  // Internals
   late final Connectivity _connectivity;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
   StreamSubscription<InternetStatus>? _internetStatusSub;
+  Timer? _backendDebounceTimer;
 
-  final Duration debounce = const Duration(milliseconds: 5000);
-  Timer? _debounceTimer;
+  static const Duration _backendDebounce = Duration(milliseconds: 500);
+  // 12 s: long enough to survive an Azure Functions cold start
+  static const Duration _backendTimeout = Duration(milliseconds: 12000);
 
   Future<void> init() async {
     _connectivity = Connectivity();
 
-    // Seed reachability
-    final hasNet = await Utilities.checkForInternetConnection(false);
+    // Seed hasInternet from a fast check — no HC server involvement
+    final hasNet = await Utilities.checkForInternetConnection();
+    hasInternet.value = hasNet;
+    if (hasNet) _scheduleBackendCheck();
 
-    status.value = hasNet ? NetworkStatus.online : NetworkStatus.offline;
-
-    //('1. Status => $hasNet: ${DateTime.now().millisecondsSinceEpoch}');
-
-    // Listen for interface changes
+    // Interface gone → flip offline immediately, no network call needed.
+    // Interface appeared/changed → let InternetConnection.onStatusChange handle
+    // it; that stream fires independently and does real reachability checks.
     _connectivitySub = _connectivity.onConnectivityChanged.listen((results) {
-      _setInterfaces(results);
-      _recheckInternetWithDebounce();
+      final anyInterface = results.any((r) => r != ConnectivityResult.none);
+      if (!anyInterface) {
+        hasInternet.value = false;
+        backendReachable.value = false;
+        _backendDebounceTimer?.cancel();
+      }
     });
 
-    // Listen for real internet reachability (InternetStatus.connected/disconnected)
-    _internetStatusSub = InternetConnection().onStatusChange.listen((
-      internetStatus,
-    ) {
-      final hasInternet = internetStatus == InternetStatus.connected;
-      // print(
-      //   '4. Status => $hasInternet: ${DateTime.now().millisecondsSinceEpoch}',
-      // );
-
-      _setStatusDebounced(
-        hasInternet ? NetworkStatus.online : NetworkStatus.offline,
-      );
+    // Authoritative internet reachability (Cloudflare, icanhazip, etc.)
+    _internetStatusSub = InternetConnection().onStatusChange.listen((status) {
+      final online = status == InternetStatus.connected;
+      hasInternet.value = online;
+      if (online) {
+        _scheduleBackendCheck();
+      } else {
+        backendReachable.value = false;
+        _backendDebounceTimer?.cancel();
+      }
     });
-
-    // Seed interface list (new API returns List<ConnectivityResult>)
-    final initialInterfaces = await _checkInterfacesSafe();
-    _setInterfaces(initialInterfaces);
-
-    if (!hasAnyInterface) {
-      status.value = NetworkStatus.offline;
-    }
-
-    return;
   }
 
+  // Rate-limited backend check — debounced so rapid reconnect events don't
+  // hammer the HC server with back-to-back requests.
+  void _scheduleBackendCheck() {
+    _backendDebounceTimer?.cancel();
+    _backendDebounceTimer = Timer(_backendDebounce, () async {
+      try {
+        final reachable = await Utilities.checkHcServer()
+            .timeout(_backendTimeout, onTimeout: () => false);
+        backendReachable.value = reachable;
+      } catch (_) {
+        backendReachable.value = false;
+      }
+    });
+  }
+
+  // User-initiated recheck (offline ribbon "Try Reconnect").
+  // Runs both checks synchronously and returns true only when the HC backend
+  // is reachable — i.e. the app can actually do something useful.
   Future<bool> forceRecheck() async {
-    final hasInternet = await Utilities.checkForInternetConnection(false);
-    status.value = hasInternet ? NetworkStatus.online : NetworkStatus.offline;
-    // print(
-    //   '2. Status => $hasInternet: ${DateTime.now().millisecondsSinceEpoch}',
-    // );
-
-    // if (hasInternet) {
-    //   appModel.connectionStatus = EnumConnectionStatus2.connected;
-    // } else {
-    //   appModel.connectionStatus = EnumConnectionStatus2.notConnected;
-    // }
-
-    return hasInternet;
-  }
-
-  Future<List<ConnectivityResult>> _checkInterfacesSafe() async {
+    final hasNet = await Utilities.checkForInternetConnection();
+    hasInternet.value = hasNet;
+    if (!hasNet) {
+      backendReachable.value = false;
+      return false;
+    }
     try {
-      return await _connectivity
-          .checkConnectivity(); // List<ConnectivityResult>
+      final reachable = await Utilities.checkHcServer()
+          .timeout(_backendTimeout, onTimeout: () => false);
+      backendReachable.value = reachable;
+      return reachable;
     } catch (_) {
-      return const [ConnectivityResult.none];
+      backendReachable.value = false;
+      return false;
     }
   }
 
-  void _setInterfaces(List<ConnectivityResult> list) {
-    interfaces
-      ..clear()
-      ..addAll(list);
-  }
-
-  void _recheckInternetWithDebounce() {
-    _debounceTimer?.cancel();
-    _debounceTimer = Timer(debounce, () async {
-      final hasInternet = await Utilities.checkForInternetConnection(false);
-      status.value = hasInternet ? NetworkStatus.online : NetworkStatus.offline;
-      // print(
-      //   '3. Status => $hasInternet: ${DateTime.now().millisecondsSinceEpoch}',
-      // );
-
-      // if (hasInternet) {
-      //   appModel.connectionStatus = EnumConnectionStatus2.connected;
-      // } else {
-      //   appModel.connectionStatus = EnumConnectionStatus2.notConnected;
-      // }
-    });
-  }
-
-  void _setStatusDebounced(NetworkStatus newStatus) {
-    //print('5. Status => $newStatus: ${DateTime.now().millisecondsSinceEpoch}');
-    _debounceTimer?.cancel();
-    _debounceTimer = Timer(debounce, () {
-      status.value = newStatus;
-      // print(
-      //   '6. Status => $newStatus: ${DateTime.now().millisecondsSinceEpoch}',
-      // );
-
-      // if (newStatus == NetworkStatus.online) {
-      //   appModel.connectionStatus = EnumConnectionStatus2.connected;
-      // } else {
-      //   appModel.connectionStatus = EnumConnectionStatus2.notConnected;
-      // }
-    });
-  }
-
-  // Convenience getters
-  bool get hasAnyInterface =>
-      interfaces.any((r) => r != ConnectivityResult.none);
-  //bool get isOnline => status.value == NetworkStatus.online;
-
-  bool isOnline() {
-    bool isOnline = false;
-    isOnline = status.value == NetworkStatus.online;
-    return isOnline;
-  }
+  // Returns true when the device has internet — used by all service-layer guards.
+  // backendReachable is checked separately only where needed (e.g. the ribbon).
+  bool isOnline() => hasInternet.value;
 
   @override
   void onClose() {
-    _debounceTimer?.cancel();
+    _backendDebounceTimer?.cancel();
     unawaited(_connectivitySub?.cancel());
     unawaited(_internetStatusSub?.cancel());
     super.onClose();
