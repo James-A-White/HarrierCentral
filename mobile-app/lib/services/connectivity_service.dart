@@ -4,51 +4,48 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 class NetworkService extends GetxService {
   // Whether the device can reach the internet (Google/MSFT probe)
   final RxBool hasInternet = false.obs;
-  // Whether the HC backend is fully reachable (API → hcapp_checkConnection SP → DB)
+  // Whether the HC backend is fully reachable (API → hcapp_checkConnection SP → DB).
+  // True at boot once backend responds, and assumed true whenever internet is up
+  // (99.99% uptime). Explicitly set false only when checkHcServer() fails.
   final RxBool backendReachable = false.obs;
 
   late final Connectivity _connectivity;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
-  // Only active while offline — polls Google/MSFT so recovery is detected fast
-  // without hitting the HC backend. Stopped the moment backend responds.
+  // Active only while offline — polls Google/MSFT so recovery is detected within
+  // ~5s without any HC backend traffic.
   StreamSubscription<InternetStatus>? _recoveryWatcherSub;
   Timer? _debounceTimer;
-  Timer? _backendRetryTimer;
   Timer? _periodicCheckTimer;
   bool _isChecking = false;
 
-  // Short timeout for the initial backend check — fail fast on cold start so
-  // the internet fallback runs promptly and the retry loop takes over.
   static const Duration _checkDebounce = Duration(milliseconds: 500);
-  static const Duration _coldStartTimeout = Duration(seconds: 3);
-  // Full timeout for the retry loop — backend may still be warming up.
-  static const Duration _retryBackendTimeout = Duration(seconds: 12);
-  static const Duration _backendRetryInterval = Duration(seconds: 5);
-  // Watchdog — catches mid-session losses that hardware events miss (e.g.
-  // entering a tunnel while the cellular interface stays "connected").
+  // Per-attempt timeout for boot polling, forceRecheck, and API failure checks.
+  static const Duration _backendCheckTimeout = Duration(seconds: 10);
+  // Boot retries: 3 × 10s = 30s max to handle Azure cold starts.
+  static const int _bootMaxAttempts = 3;
+  // Watchdog interval — Google/MSFT only, no HC backend traffic.
   static const Duration _periodicCheckInterval = Duration(seconds: 30);
 
   Future<void> init() async {
     _connectivity = Connectivity();
 
-    // Seed both signals at boot.
-    await _doCheck(_coldStartTimeout);
+    // Boot: poll HC backend to trigger Azure cold start and wait for it to respond.
+    await _bootCheck();
 
-    // Watchdog — runs every 30s regardless of interface events.
+    // 30s watchdog — Google/MSFT only.
     _periodicCheckTimer = Timer.periodic(
       _periodicCheckInterval,
-      (_) => _runConnectivityCheck(),
+      (_) => _runInternetCheck(),
     );
 
-    // Interface gone → flip offline immediately, no network call needed.
-    // Interface appeared → debounced full check.
+    // Interface gone → offline immediately, no network call needed.
+    // Interface appeared → debounced Google/MSFT check.
     _connectivitySub = _connectivity.onConnectivityChanged.listen((results) {
       final anyInterface = results.any((r) => r != ConnectivityResult.none);
       if (!anyInterface) {
         hasInternet.value = false;
         backendReachable.value = false;
         _debounceTimer?.cancel();
-        _backendRetryTimer?.cancel();
         _startRecoveryWatcher();
       } else {
         _scheduleCheck();
@@ -56,55 +53,97 @@ class NetworkService extends GetxService {
     });
   }
 
-  void _scheduleCheck() {
-    _backendRetryTimer?.cancel();
-    _debounceTimer?.cancel();
-    _debounceTimer = Timer(_checkDebounce, _runConnectivityCheck);
+  // Polls HC backend at boot to trigger Azure cold start.
+  // Retries up to _bootMaxAttempts before falling back to an internet check.
+  Future<void> _bootCheck() async {
+    final interfaces = await _connectivity.checkConnectivity();
+    if (!interfaces.any((r) => r != ConnectivityResult.none)) {
+      _startRecoveryWatcher();
+      return;
+    }
+
+    for (int i = 0; i < _bootMaxAttempts; i++) {
+      final ok = await Utilities.checkHcServer()
+          .timeout(_backendCheckTimeout, onTimeout: () => false);
+      if (ok) {
+        hasInternet.value = true;
+        backendReachable.value = true;
+        return;
+      }
+    }
+
+    // All backend attempts failed — check if general internet is available.
+    final internetOk = await Utilities.checkForInternetConnection();
+    hasInternet.value = internetOk;
+    backendReachable.value = false;
+    if (!internetOk) _startRecoveryWatcher();
   }
 
-  // Guard wrapper — prevents overlapping background checks.
-  Future<void> _runConnectivityCheck({bool longTimeout = false}) async {
+  void _scheduleCheck() {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(_checkDebounce, _runInternetCheck);
+  }
+
+  // Google/MSFT check — no HC backend traffic.
+  // If internet is reachable, assumes the HC backend is also up (99.99% uptime).
+  // If not, starts the recovery watcher so restoration is detected quickly.
+  Future<void> _runInternetCheck() async {
     if (_isChecking) return;
     _isChecking = true;
     try {
-      await _doCheck(longTimeout ? _retryBackendTimeout : _coldStartTimeout);
+      final internetOk = await Utilities.checkForInternetConnection();
+      hasInternet.value = internetOk;
+      if (internetOk) {
+        backendReachable.value = true;
+        _stopRecoveryWatcher();
+      } else {
+        backendReachable.value = false;
+        _startRecoveryWatcher();
+      }
     } finally {
       _isChecking = false;
     }
   }
 
-  // Core two-step check. No guard — safe to call directly from forceRecheck().
-  //
-  // Step 1: full end-to-end backend check (API → hcapp_checkConnection SP → DB).
-  //         Happy path — both signals confirmed in one round-trip.
-  // Step 2: backend timed out or down — probe Google/MSFT to distinguish
-  //         "no internet" from "internet up but backend cold-starting/down".
-  Future<void> _doCheck(Duration backendTimeout) async {
+  // Full end-to-end backend check (API → SP → DB). Falls back to Google/MSFT
+  // if the backend doesn't respond, to distinguish "backend specifically down"
+  // from "no internet". No guard — callers manage entry.
+  Future<void> _runBackendCheck() async {
     final backendOk = await Utilities.checkHcServer()
-        .timeout(backendTimeout, onTimeout: () => false);
-
+        .timeout(_backendCheckTimeout, onTimeout: () => false);
     if (backendOk) {
       hasInternet.value = true;
       backendReachable.value = true;
-      _backendRetryTimer?.cancel();
       _stopRecoveryWatcher();
-      return;
-    }
-
-    final internetOk = await Utilities.checkForInternetConnection();
-    hasInternet.value = internetOk;
-    backendReachable.value = false;
-    if (internetOk) {
-      _scheduleBackendRetry();
     } else {
-      // No internet — hand recovery detection to Google/MSFT watcher so the
-      // HC backend isn't polled while the device is genuinely offline.
-      _startRecoveryWatcher();
+      final internetOk = await Utilities.checkForInternetConnection();
+      hasInternet.value = internetOk;
+      backendReachable.value = false;
+      if (!internetOk) _startRecoveryWatcher();
     }
   }
 
-  // Starts polling Google/MSFT while offline so recovery is detected within
-  // ~5s without touching the HC backend. No-op if already watching.
+  // Called by service_common.dart when an API call fails unexpectedly.
+  // Updates both signals so the ribbon shows the appropriate state.
+  Future<void> handleApiFailure() async {
+    if (_isChecking) return;
+    _isChecking = true;
+    try {
+      await _runBackendCheck();
+    } finally {
+      _isChecking = false;
+    }
+  }
+
+  // User-initiated recheck (offline ribbon "Try Reconnect").
+  // Always runs unconditionally — bypasses the _isChecking guard.
+  Future<bool> forceRecheck() async {
+    _debounceTimer?.cancel();
+    _stopRecoveryWatcher();
+    await _runBackendCheck();
+    return backendReachable.value;
+  }
+
   void _startRecoveryWatcher() {
     if (_recoveryWatcherSub != null) return;
     _recoveryWatcherSub = InternetConnection.createInstance(
@@ -115,7 +154,7 @@ class NetworkService extends GetxService {
     ).onStatusChange.listen((status) {
       if (status == InternetStatus.connected) {
         _stopRecoveryWatcher();
-        _scheduleCheck(); // debounced → _doCheck() → single HC backend hit
+        _scheduleCheck();
       }
     });
   }
@@ -125,35 +164,12 @@ class NetworkService extends GetxService {
     _recoveryWatcherSub = null;
   }
 
-  // Auto-retry while internet is up but backend is unreachable — handles
-  // Azure cold starts and brief outages without requiring user action.
-  // Stops automatically once backendReachable flips to true.
-  void _scheduleBackendRetry() {
-    if (!hasInternet.value) return;
-    _backendRetryTimer?.cancel();
-    _backendRetryTimer = Timer(
-      _backendRetryInterval,
-      () => _runConnectivityCheck(longTimeout: true),
-    );
-  }
-
-  // User-initiated recheck (offline ribbon "Try Reconnect").
-  // Bypasses the _isChecking guard so it always runs unconditionally.
-  Future<bool> forceRecheck() async {
-    _debounceTimer?.cancel();
-    _backendRetryTimer?.cancel();
-    _stopRecoveryWatcher();
-    await _doCheck(_retryBackendTimeout);
-    return backendReachable.value;
-  }
-
   // Returns true when the device has internet — used by service-layer guards.
   bool isOnline() => hasInternet.value;
 
   @override
   void onClose() {
     _debounceTimer?.cancel();
-    _backendRetryTimer?.cancel();
     _periodicCheckTimer?.cancel();
     _stopRecoveryWatcher();
     unawaited(_connectivitySub?.cancel());
