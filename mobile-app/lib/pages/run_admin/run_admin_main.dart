@@ -405,7 +405,7 @@ class RunAdminPage extends StatelessWidget {
       );
     }
 
-    if (isHashFlash || isWebMeister || isGm) {
+    if (isHashFlash || isWebMeister || isGm || isRa) {
       writeUpButtons.add(
         _buildButton(
           label: 'Hash\r\nTrash',
@@ -450,6 +450,7 @@ class RunAdminPage extends StatelessWidget {
         Wrap(
           spacing: spacing,
           runSpacing: 0,
+          alignment: WrapAlignment.center,
           children: buttons,
         ),
       ],
@@ -477,7 +478,7 @@ class RunAdminPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               Padding(
-                padding: const EdgeInsets.only(left: 3, top: 5),
+                padding: const EdgeInsets.only(top: 5),
                 child: Image.asset(
                   iconAsset,
                   height: iconSize,
