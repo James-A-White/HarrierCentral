@@ -13,12 +13,16 @@ class NetworkService extends GetxService {
   StreamSubscription<InternetStatus>? _internetStatusSub;
   Timer? _backendDebounceTimer;
   Timer? _backendRetryTimer;
+  bool _isCheckingBackend = false;
 
   static const Duration _backendDebounce = Duration(milliseconds: 500);
   // 12 s: long enough to survive an Azure Functions cold start
   static const Duration _backendTimeout = Duration(milliseconds: 12000);
-  // Retry interval when backend is unreachable but internet is up
-  static const Duration _backendRetryInterval = Duration(seconds: 30);
+  // Retry interval when backend is unreachable but internet is up.
+  // 5 s is the practical minimum — checkHcServer() itself has a 5 s timeout,
+  // so going lower risks overlapping requests; the _isCheckingBackend guard
+  // prevents that, but 5 s gives the check time to resolve cleanly first.
+  static const Duration _backendRetryInterval = Duration(seconds: 5);
 
   Future<void> init() async {
     _connectivity = Connectivity();
@@ -64,17 +68,20 @@ class NetworkService extends GetxService {
   }
 
   Future<void> _runBackendCheck() async {
-    if (!hasInternet.value) return;
+    if (!hasInternet.value || _isCheckingBackend) return;
+    _isCheckingBackend = true;
     try {
       final reachable = await Utilities.checkHcServer()
           .timeout(_backendTimeout, onTimeout: () => false);
       backendReachable.value = reachable;
-      // Auto-retry every 30 s while internet is up but backend is unreachable —
+      // Auto-retry every 5 s while internet is up but backend is unreachable —
       // covers Azure cold-start and brief outages without requiring user action.
       if (!reachable) _scheduleBackendRetry();
     } catch (_) {
       backendReachable.value = false;
       _scheduleBackendRetry();
+    } finally {
+      _isCheckingBackend = false;
     }
   }
 
