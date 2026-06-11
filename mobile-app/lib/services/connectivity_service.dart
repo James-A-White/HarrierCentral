@@ -2,7 +2,7 @@ import 'package:harrier_central/imports.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 class NetworkService extends GetxService {
-  // Whether the device can reach the internet (HC backend, Google, MSFT)
+  // Whether the device can reach the internet (Google, MSFT)
   final RxBool hasInternet = false.obs;
   // Whether the HC backend is specifically reachable (checked separately,
   // with a longer timeout to absorb Azure cold-start delays)
@@ -45,11 +45,10 @@ class NetworkService extends GetxService {
       }
     });
 
-    // Authoritative internet reachability — same three URLs used by
-    // checkForInternetConnection() so the two signals stay in sync.
+    // Authoritative internet reachability — general internet check only.
+    // HC backend reachability is handled separately via checkHcServer() (SP → DB).
     _internetStatusSub = InternetConnection.createInstance(
       customCheckOptions: [
-        InternetCheckOption(uri: Uri.parse(BASE_AF_CONNECTION_TEST_URL)),
         InternetCheckOption(uri: Uri.parse(CONNECTION_TEST_GOOGLE_URL)),
         InternetCheckOption(uri: Uri.parse(CONNECTION_TEST_MSFT_URL)),
       ],
