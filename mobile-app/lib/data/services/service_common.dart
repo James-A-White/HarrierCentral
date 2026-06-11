@@ -75,16 +75,7 @@ class ServiceCommon {
     // if the connection check is bypassed, it is because we are doing an initial
     // connection check
     if ((!bypassConnectionCheck) && Utilities.isNotConnected()) {
-      // if we were previously not connected, let's check the connection
-      // and update the connection status
-      await Utilities.checkForInternetConnection(
-        false,
-        performHcServerCheck: false,
-      );
-      // if we are still not connected, return an error
-      if (Utilities.isNotConnected()) {
-        return ERROR_NO_CONNECTION;
-      }
+      return ERROR_NO_CONNECTION;
     }
 
     // print('>>> http post $httpCounter $requestBody');
@@ -378,20 +369,30 @@ class ServiceCommon {
           null,
         );
       } else {
-        // bypass the Harrier Central backend server check and
-        // check the internet connection using other services.
-        // This is done to prevent an infinite loop
-        await Utilities.checkForInternetConnection(
-          false,
-          performHcServerCheck: false,
+        BootLogger.logError(
+          '[ERROR][HTTP]',
+          '${response.statusCode} ${response.reasonPhrase ?? ""} → $BASE_AF_API_URL\nBody: ${_redactBody(requestBody)}\nResponse: ${response.body}',
+          null,
         );
-        if (Utilities.isConnected()) {
-          BootLogger.logError(
-            '[ERROR][HTTP]',
-            '${response.statusCode} ${response.reasonPhrase ?? ""} → $BASE_AF_API_URL\nBody: ${_redactBody(requestBody)}\nResponse: ${response.body}',
-            null,
-          );
 
+        // Network-level failures (timeout, server error): run the full backend
+        // check so the ribbon reflects the correct state. Only show a snackbar
+        // if the backend is confirmed reachable — i.e. the error was transient.
+        // Application errors (4xx) are not connectivity issues; always snackbar.
+        final isNetworkFailure = response.statusCode == 0 ||
+            response.statusCode == 408 ||
+            response.statusCode >= 500;
+
+        if (isNetworkFailure) {
+          await networkService.handleApiFailure();
+          if (networkService.backendReachable.value) {
+            _showSnackbarSafely(
+              title: 'Unknown Server Error',
+              message: response.reasonPhrase ?? ' - ${response.body}',
+              backgroundColor: hc_blue,
+            );
+          }
+        } else {
           _showSnackbarSafely(
             title: 'Unknown Server Error',
             message: response.reasonPhrase ?? ' - ${response.body}',

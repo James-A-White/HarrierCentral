@@ -10,7 +10,7 @@ AS
 -- Parameters:
 --   @token        - The QR code token to redeem
 --   @restaurantId - The restaurant making the redemption (from session)
--- Returns: Success (BIT), ErrorMessage
+-- Returns: Success (SMALLINT), ErrorMessage
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;

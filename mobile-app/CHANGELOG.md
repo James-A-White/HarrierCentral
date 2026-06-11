@@ -1,5 +1,18 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.10.2+1172 (2026-06-11)
+
+### Improvements
+
+- **Connectivity**: Complete rewrite of offline/server detection. The app now
+  polls the HC backend at boot to wake the server; a 30-second background
+  watchdog detects mid-session outages (e.g. entering a tunnel); a fast
+  recovery watcher (~5s) detects when connectivity is restored without
+  polling the backend; API failures trigger an immediate backend check with
+  appropriate ribbon feedback (Offline vs Server Unavailable).
+- **Run Admin**: Buttons arranged in rows of 3 with category headings
+  (On the Day, Before On Out, The Write-Up); partial rows and icons centred.
+
 ## 2.10.1+1171 (2026-06-10)
 
 ### Fixes

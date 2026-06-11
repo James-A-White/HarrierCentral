@@ -1,6 +1,6 @@
 CREATE OR ALTER PROCEDURE [HC6].[publicWeb_getMultiKennelRuns]
     @SlugList    NVARCHAR(MAX),
-    @IsFuture    BIT,
+    @IsFuture    SMALLINT,
     @MaxEvents   INT = NULL,
     @DaysOffset  INT = NULL
 AS
@@ -16,7 +16,7 @@ AS
 --                Rowset 0: { TotalMatchingEvents INT } — always 1 row
 --                Rowset 1: event rows with kennel context columns
 -- Parameters:  @SlugList   NVARCHAR(MAX) — comma-separated KennelUniqueShortName values
---              @IsFuture   BIT           — 1=upcoming, 0=past
+--              @IsFuture   SMALLINT      — 1=upcoming, 0=past
 --              @MaxEvents  INT  (opt)    — cap total events returned
 --              @DaysOffset INT  (opt)    — relative boundary in days from
 --                                         today (always positive; direction

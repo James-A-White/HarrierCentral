@@ -142,7 +142,7 @@ END
 
 -- When reimbursedBy is set, override date and amount from the receipt
 DECLARE @reimbursedOnDate DATETIMEOFFSET(7) = @reimbursedOn;
-DECLARE @clearReimbursement BIT = 0;
+DECLARE @clearReimbursement SMALLINT = 0;
 
 IF (@reimbursedBy = 'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF')
 BEGIN

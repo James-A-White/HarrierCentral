@@ -137,13 +137,25 @@ class RunAdminPage extends StatelessWidget {
                       topMargin: 20.0,
                       bottomMargin: 5.0,
                     ),
-                    TextScaleFactorClamper(
-                      textScaleFactor: deviceInfo.textClamp15,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.max,
-                        children: _buildButtons(context, controller, aggregate),
-                      ),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        const double spacing = 12.0;
+                        final double btnSize =
+                            (constraints.maxWidth - 2 * spacing) / 3;
+                        return TextScaleFactorClamper(
+                          textScaleFactor: deviceInfo.textClamp15,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: _buildSections(
+                              context,
+                              controller,
+                              aggregate,
+                              btnSize,
+                              spacing,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                     const FancyDivider(
                       key: Key('669190022'),
@@ -175,17 +187,26 @@ class RunAdminPage extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildButtons(
+  List<Widget> _buildSections(
     BuildContext context,
     RunAdminController controller,
     RunAdminAggregate aggregate,
+    double btnSize,
+    double spacing,
   ) {
-    final List<Widget> buttons = <Widget>[];
+    final mm = aggregate.extensions.mismanagement;
+    final isHashFlash = mm.getMismanagementState(mmRoleFlagHashFlash);
+    final isGm = mm.getMismanagementState(mmRoleFlagGm);
+    final isVgm = mm.getMismanagementState(mmRoleFlagVgm);
+    final isRa = mm.getMismanagementState(mmRoleFlagRa);
+    final isWebMeister = mm.getMismanagementState(mmRoleFlagWebMeister);
 
-    buttons.add(
+    // ── On the Day ──────────────────────────────────────────────────
+    final dayButtons = <Widget>[
       _buildButton(
-        label: 'Manual check in',
+        label: 'Manual\r\ncheck in',
         iconAsset: 'images/icons/check_in_pack_icon.png',
+        size: btnSize,
         onPressed: () async {
           await Get.to(
             () => CheckInPackPage(controllerTag: aggregate.event.eventId),
@@ -206,12 +227,10 @@ class RunAdminPage extends StatelessWidget {
           );
         },
       ),
-    );
-
-    buttons.add(
       _buildButton(
-        label: 'Scan to check in',
+        label: 'Scan to\r\ncheck in',
         iconAsset: 'images/icons/qr_scanner_phone_icon.png',
+        size: btnSize,
         onPressed: () async {
           await Navigator.push<dynamic>(
             context,
@@ -222,13 +241,14 @@ class RunAdminPage extends StatelessWidget {
           );
         },
       ),
-    );
+    ];
 
     if (aggregate.extensions.appAccess.canManageHashCash) {
-      buttons.add(
+      dayButtons.add(
         _buildButton(
           label: 'Hash\r\ncash',
           iconAsset: 'images/icons/hash_cash_icon.png',
+          size: btnSize,
           onPressed: () async {
             await Navigator.push<dynamic>(
               context,
@@ -240,10 +260,63 @@ class RunAdminPage extends StatelessWidget {
           },
         ),
       );
-      buttons.add(
+    }
+
+    if (aggregate.extensions.appAccess.canManageRuns &&
+        aggregate.extensions.appAccess.canManageAwards) {
+      dayButtons.add(
         _buildButton(
-          label: 'Manage receipts',
+          label: 'Award\r\nlist',
+          iconAsset: 'images/icons/run_awards.png',
+          size: btnSize,
+          onPressed: () async {
+            await Navigator.push<dynamic>(
+              context,
+              MaterialPageRoute<dynamic>(
+                builder: (BuildContext context) =>
+                    DrinksList(eventAggregate: aggregate),
+              ),
+            );
+          },
+        ),
+      );
+    }
+
+    if (isGm || isRa) {
+      dayButtons.add(
+        _buildButton(
+          label: 'Down\r\nDowns',
+          iconAsset: 'images/icons/beer_mug.png',
+          size: btnSize,
+          onPressed: () async {
+            if (Utilities.isConnected(showDialog: true)) {
+              await Navigator.push<void>(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (_) => DownDownsPage(
+                    kennelId: aggregate.kennel.kennelId,
+                    eventId: aggregate.event.eventId,
+                    eventName: aggregate.event.eventName,
+                    kennelSlug: aggregate.kennel.kennelUniqueShortName,
+                    eventNumber: aggregate.event.absoluteEventNumber ?? 0,
+                  ),
+                ),
+              );
+            }
+          },
+        ),
+      );
+    }
+
+    // ── Before the Off ──────────────────────────────────────────────
+    final planButtons = <Widget>[];
+
+    if (aggregate.extensions.appAccess.canManageHashCash) {
+      planButtons.add(
+        _buildButton(
+          label: 'Manage\r\nreceipts',
           iconAsset: 'images/icons/receipt_icon.png',
+          size: btnSize,
           onPressed: () async {
             await Navigator.push<dynamic>(
               context,
@@ -258,10 +331,11 @@ class RunAdminPage extends StatelessWidget {
     }
 
     if (aggregate.extensions.appAccess.canManageRuns) {
-      buttons.add(
+      planButtons.add(
         _buildButton(
-          label: 'Edit run details',
+          label: 'Edit run\r\ndetails',
           iconAsset: 'images/icons/edit_run_icon.png',
+          size: btnSize,
           onPressed: () async {
             await Navigator.push<dynamic>(
               context,
@@ -273,29 +347,11 @@ class RunAdminPage extends StatelessWidget {
           },
         ),
       );
-
-      if (aggregate.extensions.appAccess.canManageAwards) {
-        buttons.add(
-          _buildButton(
-            label: 'Award\r\nlist',
-            iconAsset: 'images/icons/run_awards.png',
-            onPressed: () async {
-              await Navigator.push<dynamic>(
-                context,
-                MaterialPageRoute<dynamic>(
-                  builder: (BuildContext context) =>
-                      DrinksList(eventAggregate: aggregate),
-                ),
-              );
-            },
-          ),
-        );
-      }
-
-      buttons.add(
+      planButtons.add(
         _buildButton(
-          label: 'Print QR codes',
+          label: 'Print QR\r\ncodes',
           iconAsset: 'images/icons/print_qr_icon.png',
+          size: btnSize,
           onPressed: () async {
             await Navigator.push<dynamic>(
               context,
@@ -318,18 +374,15 @@ class RunAdminPage extends StatelessWidget {
       );
     }
 
-    final mm = aggregate.extensions.mismanagement;
-    final isHashFlash = mm.getMismanagementState(mmRoleFlagHashFlash);
-    final isGm = mm.getMismanagementState(mmRoleFlagGm);
-    final isVgm = mm.getMismanagementState(mmRoleFlagVgm);
-    final isRa = mm.getMismanagementState(mmRoleFlagRa);
-    final isWebMeister = mm.getMismanagementState(mmRoleFlagWebMeister);
+    // ── The Write-Up ────────────────────────────────────────────────
+    final writeUpButtons = <Widget>[];
 
     if (isHashFlash || isGm || isVgm || isRa) {
-      buttons.add(
+      writeUpButtons.add(
         _buildButton(
           label: 'Review\r\nPhotos',
           iconAsset: 'images/icons/android_camera.png',
+          size: btnSize,
           onPressed: () async {
             if (Utilities.isConnected(showDialog: true)) {
               await Navigator.push<void>(
@@ -352,12 +405,12 @@ class RunAdminPage extends StatelessWidget {
       );
     }
 
-    // HashTrash: Hash Flash, WebMeister, or GM can write the run article
     if (isHashFlash || isWebMeister || isGm) {
-      buttons.add(
+      writeUpButtons.add(
         _buildButton(
           label: 'Hash\r\nTrash',
           iconAsset: 'images/icons/pencil.png',
+          size: btnSize,
           onPressed: () async {
             if (Utilities.isConnected(showDialog: true)) {
               await Navigator.push<void>(
@@ -376,52 +429,46 @@ class RunAdminPage extends StatelessWidget {
       );
     }
 
-    // DownDowns: GM and RA can manage the list
-    if (isGm || isRa) {
-      buttons.add(
-        _buildButton(
-          label: 'Down\r\nDowns',
-          iconAsset: 'images/icons/beer_mug.png',
-          onPressed: () async {
-            if (Utilities.isConnected(showDialog: true)) {
-              await Navigator.push<void>(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (_) => DownDownsPage(
-                    kennelId: aggregate.kennel.kennelId,
-                    eventId: aggregate.event.eventId,
-                    eventName: aggregate.event.eventName,
-                    kennelSlug: aggregate.kennel.kennelUniqueShortName,
-                    eventNumber: aggregate.event.absoluteEventNumber ?? 0,
-                  ),
-                ),
-              );
-            }
-          },
-        ),
-      );
-    }
-
     return [
-      Wrap(
-        alignment: WrapAlignment.spaceAround,
-        spacing: 20,
-        runSpacing: 0,
-        children: buttons,
-      ),
+      _buildSection('On the Day', dayButtons, spacing),
+      if (planButtons.isNotEmpty)
+        _buildSection('Before On Out', planButtons, spacing),
+      if (writeUpButtons.isNotEmpty)
+        _buildSection('The Write-Up', writeUpButtons, spacing),
+      const SizedBox(height: 8),
     ];
+  }
+
+  Widget _buildSection(String title, List<Widget> buttons, double spacing) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 20, bottom: 2),
+          child: Text(title, style: ts_heading),
+        ),
+        Wrap(
+          spacing: spacing,
+          runSpacing: 0,
+          alignment: WrapAlignment.center,
+          children: buttons,
+        ),
+      ],
+    );
   }
 
   Widget _buildButton({
     required String label,
     required String iconAsset,
+    required double size,
     required VoidCallback onPressed,
   }) {
+    final double iconSize = size * 0.48;
     return Padding(
-      padding: const EdgeInsets.only(top: 15, bottom: 15),
+      padding: const EdgeInsets.only(top: 10, bottom: 10),
       child: SizedBox(
-        width: 110,
-        height: 110,
+        width: size,
+        height: size,
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
@@ -431,8 +478,12 @@ class RunAdminPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               Padding(
-                padding: const EdgeInsets.only(left: 3, top: 5),
-                child: Image.asset(iconAsset, height: 55.0, width: 55.0),
+                padding: const EdgeInsets.only(top: 5),
+                child: Image.asset(
+                  iconAsset,
+                  height: iconSize,
+                  width: iconSize,
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.only(left: 10, right: 10, top: 10),

@@ -62,17 +62,14 @@ class ConnectedWidget extends StatelessWidget {
   }
 
   Future<void> _attemptReconnect() async {
-    await Utilities.checkForInternetConnection(true);
-
-    if (Utilities.isConnected()) {
+    final reconnected = await Get.find<NetworkService>().forceRecheck();
+    if (reconnected) {
       await Utilities.showAlert2(
         'Connected',
-        'You are now connected to the Internet',
+        'You are now connected to Harrier Central.',
         'OK',
       );
-      if (refreshFunction != null) {
-        refreshFunction!();
-      }
+      refreshFunction?.call();
     }
   }
 }

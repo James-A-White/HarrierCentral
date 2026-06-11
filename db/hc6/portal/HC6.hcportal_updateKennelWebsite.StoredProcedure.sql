@@ -6,7 +6,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_updateKennelWebsite]
 	@publicKennelId UNIQUEIDENTIFIER = NULL,
 
 	-- optional parameters — all use COALESCE so omitted params preserve existing values
-	@enabled BIT = NULL,
+	@enabled SMALLINT = NULL,
 	@themeMode NVARCHAR(10) = NULL,
 	@primaryColor NVARCHAR(25) = NULL,
 	@accentColor NVARCHAR(25) = NULL,
@@ -130,7 +130,7 @@ BEGIN TRY
 	BEGIN TRANSACTION;
 
 	-- Empty string ('') is the sentinel for "clear this field to NULL".
-	-- Non-string fields (BIT, INT) use plain COALESCE — they are never cleared.
+	-- Non-string fields (SMALLINT, INT) use plain COALESCE — they are never cleared.
 	-- Nullable NVARCHAR fields use CASE WHEN to honour the sentinel.
 	UPDATE HC.KennelWebsite
 	SET

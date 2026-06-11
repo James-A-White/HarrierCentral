@@ -446,7 +446,7 @@ DECLARE @resultInt int;
         END
 
         -- Update run numbers (now inside transaction for consistency)
-        EXEC HC.nonApi_updateRunNumbers @eventId = @eventId;
+        EXEC HC6.nonApi_updateRunNumbers @eventId = @eventId;
 
         COMMIT TRANSACTION;
 

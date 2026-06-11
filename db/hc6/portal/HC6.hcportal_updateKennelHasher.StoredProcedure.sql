@@ -13,7 +13,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_updateKennelHasher]
 @hashName nvarchar(250) = NULL,
 
 -- optional parameters: membership and preferences
--- TODO: Change to proper types (BIT/INT) when portal is updated
+-- TODO: Change to proper types (SMALLINT/INT) when portal is updated
 @isMember nvarchar(50) = NULL,
 @status nvarchar(50) = NULL,
 @emailAlerts nvarchar(50) = NULL,
@@ -25,7 +25,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_updateKennelHasher]
 @discountDescription nvarchar(50) = NULL,
 
 -- optional parameters: historical run counts
--- TODO: Change to proper types (BIT/INT) when portal is updated
+-- TODO: Change to proper types (SMALLINT/INT) when portal is updated
 @historicTotalRuns nvarchar(50) = NULL,
 @historicHaring nvarchar(50) = NULL,
 @historicCountsAreEstimates nvarchar(50) = NULL

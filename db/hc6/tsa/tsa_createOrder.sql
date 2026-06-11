@@ -12,7 +12,7 @@ AS
 --   @workerId     - Worker placing the order
 --   @restaurantId - Restaurant selected
 --   @mealId       - Menu item selected
--- Returns: token (UNIQUEIDENTIFIER), Success (BIT), ErrorMessage
+-- Returns: token (UNIQUEIDENTIFIER), Success (SMALLINT), ErrorMessage
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;

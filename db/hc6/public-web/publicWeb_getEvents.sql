@@ -1,10 +1,10 @@
 CREATE OR ALTER PROCEDURE [HC6].[publicWeb_getEvents]
     @PublicKennelId    NVARCHAR(50),
-    @IsFuture          BIT,
+    @IsFuture          SMALLINT,
     @MaxEvents         INT           = NULL,
     @DateCutoff        NVARCHAR(50)  = NULL,
     @DaysOffset        INT           = NULL,
-    @SummaryOnly       BIT           = 0
+    @SummaryOnly       SMALLINT      = 0
 AS
 -- =====================================================================
 -- Procedure:   HC6.publicWeb_getEvents
@@ -18,14 +18,14 @@ AS
 --              This two-rowset design allows Rowset 1 to be empty without
 --              the shim misreading it as a 404.
 -- Parameters:  @PublicKennelId   NVARCHAR(50)  — HC.Kennel.PublicKennelId
---              @IsFuture         BIT           — 1=upcoming, 0=past
+--              @IsFuture         SMALLINT      — 1=upcoming, 0=past
 --              @MaxEvents        INT  (opt)    — return up to N events
 --              @DateCutoff       NVARCHAR(50) (opt) — absolute far boundary
 --                                               (ISO 8601, e.g. 2027-01-01)
 --              @DaysOffset       INT  (opt)    — relative boundary in days
 --                                               from today (always positive;
 --                                               direction from @IsFuture)
---              @SummaryOnly      BIT  (opt)    — when 1, nulls out heavy text
+--              @SummaryOnly      SMALLINT (opt) — when 1, nulls out heavy text
 --                                               fields (EventDescription,
 --                                               EventUrl, w3wJson) for list views
 --              Rules:

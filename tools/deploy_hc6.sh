@@ -10,10 +10,12 @@
 # What this deploys:
 #   1. HC6 schema (CREATE SCHEMA if not exists)
 #   2. HC6.ValidatePortalAuth helper SP  ← must be first; called by all portal SPs
+#      HC6.nonApi_updateRunNumbers       ← shared helper; called by portal, app, and trigger
 #   3. All HC6.hcportal_* portal SPs
 #   4. All publicWeb_* public-web SPs
 #   5. HC6.ValidateAppAuth helper SP     ← must precede all app SPs
-#   6. All HC6.hcapp_* app SPs
+#   6. Internal helper SPs (HC.nonApi_getUserInviteCodeByPublicHasherId)
+#   7. All HC6.hcapp_* app SPs
 #
 # What this does NOT deploy:
 #   - Table DDL (HC.* tables are shared with HC5 and already exist)
@@ -112,9 +114,11 @@ run_query "HC6 schema" \
     "IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = 'HC6') EXEC('CREATE SCHEMA HC6');"
 
 echo ""
-echo "── Step 2: Helper SP (must precede all portal SPs) ──────────"
+echo "── Step 2: Helper SPs (must precede all portal + app SPs) ──"
 run_file "HC6.ValidatePortalAuth" \
     "$SP_DIR/HC6.ValidatePortalAuth.StoredProcedure.sql"
+run_file "HC6.nonApi_updateRunNumbers" \
+    "$APP_DIR/HC6.nonApi_updateRunNumbers.StoredProcedure.sql"
 
 echo ""
 echo "── Step 3: Portal SPs ───────────────────────────────────────"
@@ -149,6 +153,6 @@ done
 
 echo ""
 echo "══════════════════════════════════════════════════════════════"
-echo "  Done.  $PASS deployed,  $FAIL failed.  (portal + public-web + internal + app)"
+echo "  Done.  $PASS deployed,  $FAIL failed.  (helpers + portal + public-web + internal + app)"
 echo "══════════════════════════════════════════════════════════════"
 echo ""

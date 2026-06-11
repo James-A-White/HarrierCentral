@@ -811,116 +811,36 @@ class Utilities {
     return false;
   }
 
-  static Future<bool> checkForInternetConnection(
-    bool reconnectAttempt, {
-    bool performHcServerCheck = true,
-  }) async {
+  // Fast internet check: interface present + general reachability probe.
+  // Does NOT check the HC backend — that full end-to-end check (API → SP → DB)
+  // is done separately by checkHcServer() / NetworkService.backendReachable.
+  static Future<bool> checkForInternetConnection() async {
     const Duration internetCheckTimeout = Duration(milliseconds: 3000);
-    const int maxRetries = 3;
-
-    //('Connection check: time = ${DateTime.now().millisecondsSinceEpoch}');
-
-    bool backendAvailable = false;
 
     final connectivity = Connectivity();
     List<ConnectivityResult> interfaces = [];
-
     try {
       interfaces = await connectivity.checkConnectivity();
     } catch (_) {
       interfaces = [ConnectivityResult.none];
     }
 
-    final hasInterface = interfaces.any((r) => r != ConnectivityResult.none);
+    if (!interfaces.any((r) => r != ConnectivityResult.none)) return false;
 
-    if (!hasInterface) {
-      // Radios off (Wi-Fi + mobile data + ethernet + VPN)
-      //appModel.connectionStatus = EnumConnectionStatus2.notConnected;
-      //print('No interfaces detected: ${DateTime.now().millisecondsSinceEpoch}');
-      return false;
-    }
-
-    if (performHcServerCheck) {
-      final hcServerOnline = await checkHcServer();
-      if (hcServerOnline) return true;
-    }
-
-    // --- If we get here, Harrier Central backend failed or was skipped ---
-
-    final backendChecker = InternetConnection.createInstance(
-      customCheckOptions: [
-        InternetCheckOption(uri: Uri.parse(BASE_AF_CONNECTION_TEST_URL)),
-      ],
-    );
-
-    // 🚨 Add timeout to the backend check
     try {
-      backendAvailable = await backendChecker.hasInternetAccess.timeout(
-        internetCheckTimeout,
-        onTimeout: () => false,
-      );
-      //('HC backend detected: ${DateTime.now().millisecondsSinceEpoch}');
-    } catch (_) {
-      backendAvailable = false;
-      // print(
-      //   'HC backend not detected: ${DateTime.now().millisecondsSinceEpoch}',
-      // );
-    }
-
-    if (!backendAvailable) {
-      // --- Fallback to general internet check ---
-      final fallbackChecker = InternetConnection.createInstance(
+      final checker = InternetConnection.createInstance(
         customCheckOptions: [
           InternetCheckOption(uri: Uri.parse(CONNECTION_TEST_GOOGLE_URL)),
           InternetCheckOption(uri: Uri.parse(CONNECTION_TEST_MSFT_URL)),
         ],
       );
-
-      bool internetAvailable = false;
-      int attempt = 0;
-
-      while (!internetAvailable && attempt < maxRetries) {
-        try {
-          internetAvailable = await fallbackChecker.hasInternetAccess.timeout(
-            internetCheckTimeout,
-            onTimeout: () => false,
-          );
-        } catch (_) {
-          internetAvailable = false;
-          // print(
-          //   'Internet not available: ${DateTime.now().millisecondsSinceEpoch}',
-          // );
-        }
-
-        if (internetAvailable) {
-          // Internet up, backend still down
-          if (!reconnectAttempt) {
-            await Utilities.showAlert(
-              'Server Offline',
-              'The Harrier Central App is able to access the network but cannot connect to our backend server.\n\nThis may be a temporary outage or maintenance.\n\nYou can use the app offline or try again later.',
-              'OK',
-            );
-          }
-          //appModel.connectionStatus = EnumConnectionStatus2.notConnected;
-          return false;
-        }
-
-        attempt++;
-        await Future.delayed(const Duration(seconds: 2));
-      }
-
-      // After retries, still no internet
-      //appModel.connectionStatus = EnumConnectionStatus2.notConnected;
-      // print(
-      //   'Retries failed.. not connected: ${DateTime.now().millisecondsSinceEpoch}',
-      // );
+      return await checker.hasInternetAccess.timeout(
+        internetCheckTimeout,
+        onTimeout: () => false,
+      );
+    } catch (_) {
       return false;
     }
-
-    //print('Connected: ${DateTime.now().millisecondsSinceEpoch}');
-    // --- Everything OK ---
-    //appModel.connectionStatus = EnumConnectionStatus2.connected;
-    return true;
   }
 
   static bool isConnected({
@@ -947,98 +867,6 @@ class Utilities {
     final network = Get.find<NetworkService>();
     return !network.isOnline();
   }
-
-  // static Future<bool> checkForInternetConnection(
-  //   bool reconnectAttempt, {
-  //   bool performHcServerCheck = true,
-  // }) async {
-  //   if (performHcServerCheck) {
-  //     final String userId = getStringPref(StringPrefsEnum.userId) ?? GUID_EMPTY;
-
-  //     final String deviceId =
-  //         getStringPref(StringPrefsEnum.deviceId) ?? GUID_EMPTY;
-  //     final String deviceSecret =
-  //         getStringPref(StringPrefsEnum.deviceSecret) ??
-  //         'no_secret_required_here';
-
-  //     // NOTE: Eventually refactor the internet connectivity checks into a GetX service
-
-  //     // The first check should be a simple end-to-end check with the Harrier Central backend
-  //     final String accessToken = Utilities.generateToken(
-  //       userId,
-  //       'hcapp_checkConnection',
-  //       paramString: deviceSecret,
-  //     );
-
-  //     final Map<String, String?> bodyMap = <String, String?>{
-  //       'queryType': 'checkConnection',
-  //       'deviceId': deviceId,
-  //       'accessToken': accessToken,
-  //     };
-
-  //     final String body = jsonEncode(bodyMap);
-
-  //     final String responseBody = await ServiceCommon.sendHttpPostV2(
-  //       body,
-  //       bypassConnectionCheck: true,
-  //     );
-
-  //     if (!responseBody.startsWith(ERROR_PREFIX)) {
-  //       if (jsonDecode(responseBody)[0][0]['result'] == 'Connected') {
-  //         appModel.connectionStatus = EnumConnectionStatus2.connected;
-  //         // check against the Harrier Central backend succeeded
-  //         return true;
-  //       }
-  //     }
-  //   }
-
-  //   // check against the Harrier Central backend failed or was bypassed, let's check the internet connection
-  //   // using the InternetConnection package
-
-  //   final backendChecker = InternetConnection.createInstance(
-  //     customCheckOptions: [
-  //       InternetCheckOption(uri: Uri.parse(BASE_AF_CONNECTION_TEST_URL)),
-  //     ],
-  //   );
-
-  //   bool backendAvailable = await backendChecker.hasInternetAccess;
-
-  //   // Retry logic if Harrier Central server is unavailable
-  //   while (!backendAvailable) {
-  //     final fallbackChecker = InternetConnection.createInstance(
-  //       customCheckOptions: [
-  //         InternetCheckOption(
-  //           uri: Uri.parse('https://www.google.com/generate_204'),
-  //         ),
-  //         InternetCheckOption(
-  //           uri: Uri.parse('https://www.msftconnecttest.com/connecttest.txt'),
-  //         ),
-  //       ],
-  //     );
-
-  //     final internetAvailable = await fallbackChecker.hasInternetAccess;
-
-  //     if (internetAvailable) {
-  //       // Internet is up but our backend is down
-  //       await Utilities.showAlert(
-  //         'Server Offline',
-  //         'The Harrier Central App is able to access the network but is unable to connect to our backend server.\n\nThis can happen if there is a problem with the network or our service is down for maintenance.\n\nYou can use the app offline or close the app and try again later.',
-  //         'OK',
-  //       );
-  //       appModel.connectionStatus = EnumConnectionStatus2.notConnected;
-  //       return false;
-  //     } else {
-  //       appModel.connectionStatus = EnumConnectionStatus2.notConnected;
-
-  //       await Future<void>.delayed(const Duration(seconds: 2));
-  //       backendAvailable = await backendChecker.hasInternetAccess;
-  //     }
-  //   }
-
-  //   // If we get here, everything is good
-  //   appModel.connectionStatus = EnumConnectionStatus2.connected;
-  //   return true;
-  // }
 
   static String getFullLatLong(EventModel evt) {
     String fullLatLon = '';
