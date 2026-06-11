@@ -9,6 +9,9 @@ class NetworkService extends GetxService {
 
   late final Connectivity _connectivity;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
+  // Only active while offline — polls Google/MSFT so recovery is detected fast
+  // without hitting the HC backend. Stopped the moment backend responds.
+  StreamSubscription<InternetStatus>? _recoveryWatcherSub;
   Timer? _debounceTimer;
   Timer? _backendRetryTimer;
   Timer? _periodicCheckTimer;
@@ -46,6 +49,7 @@ class NetworkService extends GetxService {
         backendReachable.value = false;
         _debounceTimer?.cancel();
         _backendRetryTimer?.cancel();
+        _startRecoveryWatcher();
       } else {
         _scheduleCheck();
       }
@@ -83,13 +87,42 @@ class NetworkService extends GetxService {
       hasInternet.value = true;
       backendReachable.value = true;
       _backendRetryTimer?.cancel();
+      _stopRecoveryWatcher();
       return;
     }
 
     final internetOk = await Utilities.checkForInternetConnection();
     hasInternet.value = internetOk;
     backendReachable.value = false;
-    if (internetOk) _scheduleBackendRetry();
+    if (internetOk) {
+      _scheduleBackendRetry();
+    } else {
+      // No internet — hand recovery detection to Google/MSFT watcher so the
+      // HC backend isn't polled while the device is genuinely offline.
+      _startRecoveryWatcher();
+    }
+  }
+
+  // Starts polling Google/MSFT while offline so recovery is detected within
+  // ~5s without touching the HC backend. No-op if already watching.
+  void _startRecoveryWatcher() {
+    if (_recoveryWatcherSub != null) return;
+    _recoveryWatcherSub = InternetConnection.createInstance(
+      customCheckOptions: [
+        InternetCheckOption(uri: Uri.parse(CONNECTION_TEST_GOOGLE_URL)),
+        InternetCheckOption(uri: Uri.parse(CONNECTION_TEST_MSFT_URL)),
+      ],
+    ).onStatusChange.listen((status) {
+      if (status == InternetStatus.connected) {
+        _stopRecoveryWatcher();
+        _scheduleCheck(); // debounced → _doCheck() → single HC backend hit
+      }
+    });
+  }
+
+  void _stopRecoveryWatcher() {
+    _recoveryWatcherSub?.cancel();
+    _recoveryWatcherSub = null;
   }
 
   // Auto-retry while internet is up but backend is unreachable — handles
@@ -109,6 +142,7 @@ class NetworkService extends GetxService {
   Future<bool> forceRecheck() async {
     _debounceTimer?.cancel();
     _backendRetryTimer?.cancel();
+    _stopRecoveryWatcher();
     await _doCheck(_retryBackendTimeout);
     return backendReachable.value;
   }
@@ -121,6 +155,7 @@ class NetworkService extends GetxService {
     _debounceTimer?.cancel();
     _backendRetryTimer?.cancel();
     _periodicCheckTimer?.cancel();
+    _stopRecoveryWatcher();
     unawaited(_connectivitySub?.cancel());
     super.onClose();
   }
