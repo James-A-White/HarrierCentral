@@ -3,7 +3,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_respondToNewsflash]
     @deviceId       UNIQUEIDENTIFIER = NULL,
     @accessToken    NVARCHAR(1000) = NULL,
     @newsflashId    UNIQUEIDENTIFIER = NULL,
-    @isDismissed    BIT = NULL  -- 1 = "I've read it"; 0 = "Read Later" (snooze until tomorrow)
+    @isDismissed    SMALLINT = NULL  -- 1 = "I've read it"; 0 = "Read Later" (snooze until tomorrow)
 
 AS
 -- =====================================================================

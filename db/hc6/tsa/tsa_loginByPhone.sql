@@ -10,7 +10,7 @@ AS
 --              once Twilio is provisioned.
 -- Parameters:
 --   @phoneNumber - Worker phone number in E.164 format
--- Returns: Success (BIT), ErrorMessage, sessionId, workerId,
+-- Returns: Success (SMALLINT), ErrorMessage, sessionId, workerId,
 --          firstName, lastName
 -- =====================================================================
 SET NOCOUNT ON;

@@ -86,7 +86,7 @@ FROM HC.HasherKennelMap
 WHERE UserId = @userId AND KennelId = @kennelId;
 
 -- Mismanagement can see drafts; everyone else only sees published
-DECLARE @canSeeDraft BIT = CASE WHEN (@mmRoleFlags & 0x0000102E) <> 0 THEN 1 ELSE 0 END;
+DECLARE @canSeeDraft SMALLINT = CASE WHEN (@mmRoleFlags & 0x0000102E) <> 0 THEN 1 ELSE 0 END;
 
 SELECT
     e.HashTrashHeadline AS headline,

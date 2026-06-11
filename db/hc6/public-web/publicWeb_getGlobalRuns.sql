@@ -1,5 +1,5 @@
 CREATE OR ALTER PROCEDURE [HC6].[publicWeb_getGlobalRuns]
-    @IsFuture     BIT,
+    @IsFuture     SMALLINT,
     @PageSize     INT            = 50,
     @Offset       INT            = 0,
     @MinEventDate DATETIMEOFFSET = NULL,
@@ -13,7 +13,7 @@ AS
 --              events per day per kennel into one row), this SP returns
 --              individual events with full kennel and event detail so
 --              the client detail panel needs no second API call.
--- Parameters:  @IsFuture     BIT  — 1 = upcoming events (>= now, ASC);
+-- Parameters:  @IsFuture     SMALLINT — 1 = upcoming events (>= now, ASC);
 --                                   0 = past events (< now, DESC)
 --              @PageSize     INT  — events per page (default 50,
 --                                  clamped to 1–5000). Use a large value

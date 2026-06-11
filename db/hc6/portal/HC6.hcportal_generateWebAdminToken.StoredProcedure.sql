@@ -56,7 +56,7 @@ BEGIN TRY
     END
 
     -- Require authIsAdmin (0x0001) | authCanManagePublicWebContent (0x0080) | authIsSuperAdmin (0x40000000)
-    DECLARE @HasAdminRights BIT = 0;
+    DECLARE @HasAdminRights SMALLINT = 0;
     SELECT @HasAdminRights = CASE WHEN (hkm.AppAccessFlags & 0x40000081) <> 0 THEN 1 ELSE 0 END
     FROM   HC.HasherKennelMap hkm
     WHERE  hkm.UserId   = @saHasherId

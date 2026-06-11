@@ -24,7 +24,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_addEditEvent]
     @locationOneLineDesc       NVARCHAR(250)       = NULL,
     @eventFacebookId           NVARCHAR(250)       = NULL,
     @coverPhotoUrl             NVARCHAR(500)       = NULL,
-    @deleteEventImage          BIT                 = 0,
+    @deleteEventImage          SMALLINT            = 0,
     @coverPhotoOffsetX         INT                 = NULL,
     @coverPhotoOffsetY         INT                 = NULL,
     @latitude                  DECIMAL(18,15)      = NULL,
@@ -41,7 +41,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_addEditEvent]
     @useFbRunDetails           SMALLINT            = NULL,
     @useFbLocation             SMALLINT            = NULL,
     @useFbImage                SMALLINT            = NULL,
-    @deleted                   BIT                 = NULL,
+    @deleted                   SMALLINT            = NULL,
     @hasherEventMapUpdatedAfter   NVARCHAR(50)     = NULL,
     @hasherKennelMapUpdatedAfter  NVARCHAR(50)     = NULL,
     @hares                     NVARCHAR(2500)      = NULL
@@ -87,7 +87,7 @@ AS
 --   @eventName widened NVARCHAR(120) → NVARCHAR(250) to match column.
 --   @locationPostCode widened NVARCHAR(50) → NVARCHAR(250) to match column.
 --   @eventPriceFor* changed FLOAT → DECIMAL(10,4) to match column.
---   @deleted changed SMALLINT → BIT. Sentinel -1 removed (pass NULL to keep).
+--   @deleted stays SMALLINT (maps to BIT column via implicit conversion). Sentinel -1 removed (pass NULL to keep).
 --   @narrowEventsUpdatedAfter / @hasherEventMapUpdatedAfter / @hasherKennelMapUpdatedAfter
 --     changed DATETIMEOFFSET(7) → NVARCHAR(50) to match sync SP watermark pattern.
 --   HC5 INSERT bug fixed: Hares column now receives @hares (was @locationOneLineDesc).
@@ -409,7 +409,7 @@ BEGIN TRY
             END
         END
 
-        EXEC HC.nonApi_updateRunNumbers @eventId = @eventId;
+        EXEC HC6.nonApi_updateRunNumbers @eventId = @eventId;
 
     COMMIT TRANSACTION;
 
