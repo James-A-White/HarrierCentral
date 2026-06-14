@@ -1,5 +1,9 @@
 # public-web Changelog
 
+## 0.21.7 — 2026-06-14
+
+- Fix: past runs not loading on hashruns.org — bucket date format mismatch (ISO string vs YYYY-MM-DD)
+
 ## 0.21.6 — 2026-05-29
 
 - Security: admin session cookie upgraded to sameSite strict

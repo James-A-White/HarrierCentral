@@ -1,3 +1,6 @@
+0.21.7
+    • Fix: past runs not loading on hashruns.org — bucket date format mismatch (ISO string vs YYYY-MM-DD)
+
 0.21.6
     • Security: admin session cookie upgraded to sameSite strict
     • Security: rehype-sanitize added — blocks script/event handler injection in admin-authored markdown
