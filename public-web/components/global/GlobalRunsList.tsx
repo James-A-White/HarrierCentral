@@ -474,7 +474,7 @@ function getPastRunBuckets(): PastRunBucket[] {
     const maxDate = buckets.length === 0 ? todayStart : new Date(Date.UTC(nextY, nextQ * 3, 1));
 
     if (minDate < maxDate) {
-      buckets.push({ minEventDate: minDate.toISOString(), maxEventDate: maxDate.toISOString() });
+      buckets.push({ minEventDate: minDate.toISOString().slice(0, 10), maxEventDate: maxDate.toISOString().slice(0, 10) });
     }
 
     quarter--;
