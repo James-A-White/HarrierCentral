@@ -589,6 +589,61 @@ class HasherEventMapService {
     return adHocData;
   }
 
+  Future<List<dynamic>> setMultiRunRsvpAndCheckin({
+    required List<String> checkInEventIds,
+    required List<String> rsvpNoEventIds,
+  }) async {
+    if (Utilities.isNotConnected()) {
+      return <dynamic>[];
+    }
+
+    final String userId = currentUserId;
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
+
+    final int hemLastUpdated = await tableModel.baseService.getLastUpdatedTime(
+      database,
+      tableModel.hasherEventMapTableHelper,
+      tableModel.hasherEventMapTableHelper.getTableName(AppDomainType.user),
+      tableModel.hasherEventMapTableHelper.colUpdatedAtValue,
+    );
+    final int hkmLastUpdated = await tableModel.baseService.getLastUpdatedTime(
+      database,
+      tableModel.hasherKennelMapTableHelper,
+      tableModel.hasherKennelMapTableHelper.getTableName(AppDomainType.user),
+      tableModel.hasherKennelMapTableHelper.colUpdatedAtValue,
+    );
+
+    final DateTime hemUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(hemLastUpdated + 1);
+    final DateTime hkmUpdatedAfter = DateTime.fromMicrosecondsSinceEpoch(hkmLastUpdated + 1);
+
+    final Map<String, Object?> body = <String, Object?>{
+      'queryType': 'setMultiRunRsvpAndCheckin',
+      'deviceId': deviceId,
+      'hasherId': userId,
+      'checkInEventIds': checkInEventIds.join('|'),
+      'rsvpNoEventIds': rsvpNoEventIds.join('|'),
+      'hasherEventMapUpdatedAfter': hemUpdatedAfter.toString(),
+      'hasherKennelMapUpdatedAfter': hkmUpdatedAfter.toString(),
+    };
+
+    final String responseBody = await ServiceCommon.sendHttpPost(() {
+      body['accessToken'] = Utilities.generateToken(
+        userId,
+        'hcapp_setMultiRunRsvpAndCheckin',
+        paramString: deviceSecret,
+      );
+      return jsonEncode(body);
+    }, noRetries: true);
+
+    if (responseBody.startsWith(ERROR_PREFIX)) {
+      return <dynamic>[];
+    }
+
+    return tableModel.syncUserDataService
+        .updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
+  }
+
   Future<List<dynamic>> copyEventRsvps(
     String fromEventId,
     String toEventId,
