@@ -23,6 +23,9 @@
 -- Breaking Changes vs HC5:
 --   - HC5.fn_GetRunCounts and HC5.fn_GetRunCountsRolling inlined
 --     directly; those legacy functions can now be retired.
+--   - Affected users materialised into #affected once at the top and
+--     JOINed in all stages, eliminating 3 repeated HEM scans and the
+--     O(N²) correlated EXISTS in the HKM summary step.
 --   - Asymmetric COALESCE sentinels (-999/999) replaced with
 --     ISNULL(x, -1) pattern.
 -- =====================================================================
@@ -36,25 +39,35 @@ BEGIN
     -- 1-minute lookback guards against sub-second race conditions
     SELECT @updatedSince = DATEADD(minute, -1, COALESCE(@updatedSince, '2000-01-01'));
 
+    -- Materialise the set of affected non-anonymous users once.
+    -- All 5 stages JOIN to this table; HEM is scanned for updatedAt only here.
+    SELECT DISTINCT hem.UserId
+    INTO   #affected
+    FROM   HC.HasherEventMap hem
+    JOIN   HC.Hasher h ON h.id = hem.UserId
+    WHERE  hem.updatedAt > @updatedSince
+      AND  h.isAnonymous  = 0;
+
+    IF NOT EXISTS (SELECT 1 FROM #affected)
+    BEGIN
+        DROP TABLE #affected;
+        RETURN;
+    END
+
     -- ----------------------------------------------------------------
-    -- Stage 1: Insert HasherKennelMap rows for any kennel a recently-
-    --          updated user has attended but has no existing HKM record.
+    -- Stage 1: Insert HasherKennelMap rows for any kennel an affected
+    --          user has attended but has no existing HKM record.
     -- ----------------------------------------------------------------
-    ;WITH recentUsers AS (
-        SELECT DISTINCT hem.UserId
-        FROM   HC.HasherEventMap hem
-        WHERE  hem.updatedAt > @updatedSince
-    ),
-    attended AS (
+    ;WITH attended AS (
         SELECT DISTINCT hem.UserId, evt.KennelId
-        FROM   HC.HasherEventMap hem
-        JOIN   recentUsers ru   ON ru.UserId = hem.UserId
-        JOIN   HC.Event evt     ON evt.id    = hem.EventId
-        WHERE  hem.AttendenceState  >= 20
-          AND  hem.VirginVisitorType = 0
-          AND  evt.IsCountedRun      = 1
-          AND  evt.IsVisible         = 1
-          AND  evt.removed           = 0
+        FROM   #affected af
+        JOIN   HC.HasherEventMap hem ON hem.UserId = af.UserId
+        JOIN   HC.Event evt          ON evt.id     = hem.EventId
+        WHERE  hem.AttendenceState   >= 20
+          AND  hem.VirginVisitorType  = 0
+          AND  evt.IsCountedRun       = 1
+          AND  evt.IsVisible          = 1
+          AND  evt.removed            = 0
     )
     INSERT INTO HC.HasherKennelMap (
         id, UserId, KennelId,
@@ -87,15 +100,9 @@ BEGIN
     -- Stage 2: Recompute HEM run-count columns for affected users.
     --          (Inline of HC5.fn_GetRunCounts)
     -- ----------------------------------------------------------------
-    ;WITH affectedUsers AS (
-        SELECT DISTINCT hem.UserId
-        FROM   HC.HasherEventMap hem
-        WHERE  hem.updatedAt > @updatedSince
-    ),
-    counted AS (
+    ;WITH counted AS (
         SELECT
             hem.id AS hemId,
-            hem.UserId,
             hem.isHare,
             ROW_NUMBER() OVER (PARTITION BY hem.userId
                                ORDER BY evt.EventStartDatetimeIndexed, evt.KennelId, evt.EventNumber, evt.id)
@@ -115,17 +122,17 @@ BEGIN
             ROW_NUMBER() OVER (PARTITION BY hem.userId, evt.KennelId, hem.isHare, DATEPART(YEAR, evt.EventStartDatetimeIndexed)
                                ORDER BY evt.EventStartDatetimeIndexed, evt.KennelId, evt.EventNumber, evt.id)
                 AS ytdHaringThisKennel
-        FROM   HC.HasherEventMap hem  WITH (INDEX = IX_HemRunCount)
-        JOIN   affectedUsers au       ON au.UserId = hem.UserId
-        JOIN   HC.Event evt           WITH (INDEX = IX_EvtRunCount) ON evt.id = hem.EventId
+        FROM   #affected af
+        JOIN   HC.HasherEventMap hem  WITH (INDEX = IX_HemRunCount) ON hem.UserId = af.UserId
+        JOIN   HC.Event evt           WITH (INDEX = IX_EvtRunCount)  ON evt.id    = hem.EventId
         JOIN   HC.Kennel ken          ON ken.id  = evt.KennelId
         JOIN   HC.City c              ON c.id    = ken.CityId
         JOIN   DomainValues.Timezone tz ON tz.id = c.TimezoneId
-        WHERE  hem.AttendenceState  >= 20
-          AND  hem.VirginVisitorType = 0
-          AND  evt.IsCountedRun      = 1
-          AND  evt.IsVisible         = 1
-          AND  evt.removed           = 0
+        WHERE  hem.AttendenceState   >= 20
+          AND  hem.VirginVisitorType  = 0
+          AND  evt.IsCountedRun       = 1
+          AND  evt.IsVisible          = 1
+          AND  evt.removed            = 0
           AND  (CAST(evt.EventStartDatetime AS datetime) AT TIME ZONE tz.Timezone)
                AT TIME ZONE 'UTC' < GETDATE()
     )
@@ -139,9 +146,7 @@ BEGIN
            hem.updatedAt              = SYSDATETIMEOFFSET()
     FROM   HC.HasherEventMap hem
     JOIN   counted c ON c.hemId = hem.id
-    JOIN   HC.Hasher h ON h.id  = hem.UserId
-    WHERE  h.isAnonymous = 0
-      AND  hem.AttendenceState >= 20
+    WHERE  hem.AttendenceState >= 20
       AND  (
                ISNULL(hem.TotalRuns,              -1) != ISNULL(c.totalRuns,              -1) OR
                ISNULL(hem.TotalRunsThisKennel,    -1) != ISNULL(c.totalRunsThisKennel,    -1) OR
@@ -174,23 +179,12 @@ BEGIN
 
     -- ----------------------------------------------------------------
     -- Stage 4: Update HasherKennelMap summary counters for all kennels
-    --          associated with affected users.
+    --          associated with affected users.  JOIN to #affected avoids
+    --          the correlated EXISTS anti-pattern against all HKM rows.
     -- ----------------------------------------------------------------
     DECLARE @thisYear INT = DATEPART(YEAR, GETDATE());
 
-    ;WITH affectedHkm AS (
-        SELECT DISTINCT hkm.UserId, hkm.KennelId
-        FROM   HC.HasherKennelMap hkm
-        JOIN   HC.Hasher h ON h.id = hkm.UserId
-        JOIN   HC.Kennel k ON k.id = hkm.KennelId
-        WHERE  h.isAnonymous = 0
-          AND  EXISTS (
-                   SELECT 1 FROM HC.HasherEventMap hem
-                   WHERE  hem.UserId   = hkm.UserId
-                     AND  hem.updatedAt > @updatedSince
-               )
-    ),
-    hkmSummary AS (
+    ;WITH hkmSummary AS (
         SELECT
             hkm.UserId,
             hkm.KennelId,
@@ -201,9 +195,8 @@ BEGIN
             COALESCE(MAX(CASE WHEN DATEPART(YEAR, evt.EventStartDatetimeIndexed) = @thisYear
                               THEN hem.YtdHaringThisKennel    ELSE NULL END), 0) AS maxYtdHaringCount,
             MAX(evt.EventStartDatetimeIndexed) AS dateOfLastRun
-        FROM   affectedHkm ahkm
-        JOIN   HC.HasherKennelMap hkm ON hkm.UserId   = ahkm.UserId
-                                     AND hkm.KennelId  = ahkm.KennelId
+        FROM   #affected af
+        JOIN   HC.HasherKennelMap hkm ON hkm.UserId = af.UserId
         LEFT   JOIN HC.HasherEventMap hem ON hem.KennelId = hkm.KennelId
                                          AND hem.UserId   = hkm.UserId
                                          AND hem.AttendenceState >= 20
@@ -235,12 +228,7 @@ BEGIN
     -- Stage 5: Update rolling-year (≈182-day) counts on HKM.
     --          (Inline of HC5.fn_GetRunCountsRolling)
     -- ----------------------------------------------------------------
-    ;WITH rollingAffected AS (
-        SELECT DISTINCT hem.UserId
-        FROM   HC.HasherEventMap hem
-        WHERE  hem.updatedAt > @updatedSince
-    ),
-    rollingCounted AS (
+    ;WITH rollingCounted AS (
         SELECT
             hem.UserId,
             evt.KennelId,
@@ -256,17 +244,17 @@ BEGIN
                              ((DATEDIFF(day, DATEADD(month, -6, GETDATE()), evt.EventStartDatetimeIndexed)) / 182)
                 ORDER BY     evt.EventStartDatetimeIndexed, evt.KennelId
             ) AS rollingHaring
-        FROM   HC.HasherEventMap hem  WITH (INDEX = IX_HemRunCount)
-        JOIN   rollingAffected ra     ON ra.UserId = hem.UserId
-        JOIN   HC.Event evt           WITH (INDEX = IX_EvtRunCount) ON evt.id = hem.EventId
+        FROM   #affected af
+        JOIN   HC.HasherEventMap hem  WITH (INDEX = IX_HemRunCount) ON hem.UserId = af.UserId
+        JOIN   HC.Event evt           WITH (INDEX = IX_EvtRunCount)  ON evt.id    = hem.EventId
         JOIN   HC.Kennel ken          ON ken.id  = evt.KennelId
         JOIN   HC.City c              ON c.id    = ken.CityId
         JOIN   DomainValues.Timezone tz ON tz.id = c.TimezoneId
-        WHERE  hem.AttendenceState  >= 20
-          AND  hem.VirginVisitorType = 0
-          AND  evt.IsCountedRun      = 1
-          AND  evt.IsVisible         = 1
-          AND  evt.removed           = 0
+        WHERE  hem.AttendenceState   >= 20
+          AND  hem.VirginVisitorType  = 0
+          AND  evt.IsCountedRun       = 1
+          AND  evt.IsVisible          = 1
+          AND  evt.removed            = 0
           AND  (CAST(evt.EventStartDatetime AS datetime) AT TIME ZONE tz.Timezone)
                AT TIME ZONE 'UTC' < GETDATE()
     ),
@@ -283,14 +271,14 @@ BEGIN
            hkm.RollingYearHaringCount   = ISNULL(ra.rollingYearHaring, 0),
            hkm.updatedAt                = SYSDATETIMEOFFSET()
     FROM   HC.HasherKennelMap hkm
-    JOIN   HC.Hasher h ON h.id = hkm.UserId
     JOIN   rollingAgg ra ON ra.UserId   = hkm.UserId
                         AND ra.KennelId = hkm.KennelId
-    WHERE  h.isAnonymous = 0
-      AND  (
+    WHERE  (
                ISNULL(hkm.RollingYearTotalRunCount, -1) != ISNULL(ra.rollingYearTotal,  -1) OR
                ISNULL(hkm.RollingYearHaringCount,   -1) != ISNULL(ra.rollingYearHaring, -1)
            );
+
+    DROP TABLE #affected;
 
     INSERT INTO LOG.GeneralLog (LogSource, Message)
     VALUES ('RUN COUNTS', 'Updated all user run counts');
