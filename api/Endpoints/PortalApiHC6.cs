@@ -192,15 +192,14 @@ namespace HcWebApi.Endpoints
             {
                 string ipAddress = req.HttpContext.Connection.RemoteIpAddress?.ToString() ?? string.Empty;
                 string logSource = $"Admin Portal: hcportal_{spName}";
-                if (logSource.Length > 50) logSource = logSource[..50];  // LOG.GeneralLog.LogSource is NVARCHAR(50)
+                if (logSource.Length > 50) logSource = logSource[..50];
 
                 using SqlConnection conn = new(connectionString);
                 await conn.OpenAsync();
-                using SqlCommand cmd = new(
-                    "INSERT INTO LOG.GeneralLog (LogSource, Message, Timestamp) VALUES (@logSource, @message, SYSUTCDATETIME())",
-                    conn);
+                using SqlCommand cmd = new("[HC6].[nonApi_logPortalRequest]", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
                 cmd.Parameters.AddWithValue("@logSource", logSource);
-                cmd.Parameters.AddWithValue("@message", ipAddress);
+                cmd.Parameters.AddWithValue("@message",   ipAddress);
                 await cmd.ExecuteNonQueryAsync();
             }
             catch (Exception ex)
@@ -215,17 +214,12 @@ namespace HcWebApi.Endpoints
             {
                 using SqlConnection conn = new(connectionString);
                 await conn.OpenAsync();
-                using SqlCommand cmd = new(
-                    @"INSERT INTO HC.ErrorLog
-                        (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, createdAt, updatedAt)
-                      VALUES
-                        (NEWID(), 'HC6-API', @errorName, @errorDescription, @procName, @userId, SYSUTCDATETIME(), SYSUTCDATETIME())",
-                    conn);
-                cmd.Parameters.AddWithValue("@errorName", $"HC6 Portal Error: {spName}");
+                using SqlCommand cmd = new("[HC6].[nonApi_logPortalError]", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@errorName",        $"HC6 Portal Error: {spName}");
                 cmd.Parameters.AddWithValue("@errorDescription", (object?)errorMessage ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@procName", $"[HC6].[hcportal_{spName}]");
-                // userId column is UNIQUEIDENTIFIER — store deviceId to preserve audit trail
-                cmd.Parameters.AddWithValue("@userId", Guid.TryParse(deviceId, out var deviceGuid)
+                cmd.Parameters.AddWithValue("@procName",         $"[HC6].[hcportal_{spName}]");
+                cmd.Parameters.AddWithValue("@userId",           Guid.TryParse(deviceId, out var deviceGuid)
                     ? (object)deviceGuid
                     : DBNull.Value);
                 await cmd.ExecuteNonQueryAsync();
@@ -514,12 +508,11 @@ namespace HcWebApi.Endpoints
             {
                 using SqlConnection conn = new(connectionString);
                 await conn.OpenAsync();
-                using SqlCommand cmd = new(
-                    "UPDATE HC.Device SET FcmToken = NULL WHERE FcmToken = @fcmToken",
-                    conn);
+                using SqlCommand cmd = new("[HC6].[nonApi_deleteFcmToken]", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
                 cmd.Parameters.AddWithValue("@fcmToken", fcmToken);
                 await cmd.ExecuteNonQueryAsync();
-                log.LogInformation("Stale FCM token cleared from HC.Device.");
+                log.LogInformation("Stale FCM token cleared via HC6.nonApi_deleteFcmToken.");
             }
             catch (Exception ex)
             {

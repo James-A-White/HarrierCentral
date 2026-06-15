@@ -488,12 +488,11 @@ namespace HcWebApi.Endpoints
             {
                 using SqlConnection conn = new(connectionString);
                 await conn.OpenAsync();
-                using SqlCommand cmd = new(
-                    "UPDATE HC.Device SET FcmToken = NULL, FcmTokenDeleted = SYSUTCDATETIME() WHERE FcmToken = @fcmToken",
-                    conn);
+                using SqlCommand cmd = new("[HC6].[nonApi_deleteFcmToken]", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
                 cmd.Parameters.AddWithValue("@fcmToken", fcmToken);
                 await cmd.ExecuteNonQueryAsync();
-                log.LogInformation("Stale FCM token cleared from HC.Device (FcmTokenDeleted stamped).");
+                log.LogInformation("Stale FCM token cleared via HC6.nonApi_deleteFcmToken.");
             }
             catch (Exception ex)
             {
@@ -553,22 +552,18 @@ namespace HcWebApi.Endpoints
                 using var tx = conn.BeginTransaction();
                 foreach (var entry in list)
                 {
-                    using var cmd = new SqlCommand(
-                        @"INSERT INTO HC.PushLog
-                            (Id, BatchId, SentAt, QueryType, EventId, RecipientUserId, FcmToken, IsVisible, Summary, SenderUserId, FcmResult)
-                          VALUES
-                            (NEWID(), @batchId, @sentAt, @queryType, @eventId, @userId, @token, @isVisible, @summary, @senderUserId, @fcmResult)",
-                        conn, tx);
-                    cmd.Parameters.AddWithValue("@batchId",    batchId);
-                    cmd.Parameters.AddWithValue("@sentAt",     sentAt);
-                    cmd.Parameters.AddWithValue("@queryType",  queryType);
-                    cmd.Parameters.AddWithValue("@eventId",    string.IsNullOrEmpty(eventId)            ? (object)DBNull.Value : Guid.Parse(eventId));
-                    cmd.Parameters.AddWithValue("@userId",     string.IsNullOrEmpty(entry.UserId)       ? (object)DBNull.Value : Guid.Parse(entry.UserId));
-                    cmd.Parameters.AddWithValue("@token",      entry.FcmToken);
-                    cmd.Parameters.AddWithValue("@isVisible",  entry.IsVisible);
-                    cmd.Parameters.AddWithValue("@summary",    (object?)summary ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@senderUserId", string.IsNullOrEmpty(entry.SenderUserId) ? (object)DBNull.Value : Guid.Parse(entry.SenderUserId));
-                    cmd.Parameters.AddWithValue("@fcmResult",  (object?)entry.FcmResult ?? DBNull.Value);
+                    using var cmd = new SqlCommand("[HC6].[nonApi_logPushBatch]", conn, tx);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@batchId",         batchId);
+                    cmd.Parameters.AddWithValue("@sentAt",          sentAt);
+                    cmd.Parameters.AddWithValue("@queryType",       queryType);
+                    cmd.Parameters.AddWithValue("@eventId",         string.IsNullOrEmpty(eventId)             ? (object)DBNull.Value : Guid.Parse(eventId));
+                    cmd.Parameters.AddWithValue("@recipientUserId", string.IsNullOrEmpty(entry.UserId)        ? (object)DBNull.Value : Guid.Parse(entry.UserId));
+                    cmd.Parameters.AddWithValue("@fcmToken",        entry.FcmToken);
+                    cmd.Parameters.AddWithValue("@isVisible",       entry.IsVisible ? 1 : 0);
+                    cmd.Parameters.AddWithValue("@summary",         (object?)summary ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@senderUserId",    string.IsNullOrEmpty(entry.SenderUserId)  ? (object)DBNull.Value : Guid.Parse(entry.SenderUserId));
+                    cmd.Parameters.AddWithValue("@fcmResult",       (object?)entry.FcmResult ?? DBNull.Value);
                     await cmd.ExecuteNonQueryAsync();
                 }
                 tx.Commit();
