@@ -1,0 +1,306 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getMultiKennelRuns",
+  "version": "1.0.0",
+  "description": "Returns upcoming or past events for a comma-separated list of kennel slugs (KennelUniqueShortName). Each event row includes kennel name, logo, and theme colours so mixed-kennel lists can render kennel badges without a second API call. Invalid, unknown, or deleted slugs are silently ignored. Supports optional total-event cap (@MaxEvents) and relative date boundary (@DaysOffset). Returns two rowsets: Rowset 0 is a total count sentinel (1 row, prevents 404 misread); Rowset 1 is the event rows. No authentication required. On validation error: returns { Success = 0, ErrorMessage } instead of the normal rowsets.",
+  "parameters": [
+    {
+      "name": "SlugList",
+      "type": "NVARCHAR(MAX)",
+      "nullable": false,
+      "mapsToColumn": "Kennel.KennelUniqueShortName",
+      "description": "Comma-separated list of kennel slug values (KennelUniqueShortName). Split via STRING_SPLIT. Whitespace around values is trimmed with LTRIM/RTRIM. Required — returns { Success=0, ErrorMessage } if null or empty."
+    },
+    {
+      "name": "IsFuture",
+      "type": "SMALLINT",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "1 = return upcoming events (start >= 8 hours ago, i.e. same-day runs still visible). 0 = return past events (start < now)."
+    },
+    {
+      "name": "MaxEvents",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Maximum number of event rows to return. NULL = no cap (returns all matching events). Must be > 0 when provided — returns { Success=0, ErrorMessage } otherwise. Default NULL."
+    },
+    {
+      "name": "DaysOffset",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Relative date boundary in days from today. Always positive — direction determined by @IsFuture (forward for upcoming, backward for past). NULL = no boundary date limit. Must be > 0 when provided — returns { Success=0, ErrorMessage } otherwise. Default NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "TotalCount",
+      "description": "Always exactly 1 row on success. Contains the total count of matching events (before @MaxEvents cap). The shim must never misread an empty Rowset 0 as 404 — this rowset always returns 1 row when the SP succeeds. On validation error: { Success=0, ErrorMessage } is returned instead.",
+      "columns": [
+        {
+          "name": "TotalMatchingEvents",
+          "type": "INT",
+          "nullable": false,
+          "description": "COUNT(*) of events matching the slug list, IsFuture direction, and DaysOffset boundary — before the @MaxEvents cap is applied. Callers use this for pagination display ('showing N of M events')."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Events",
+      "description": "One row per event matching the query, ordered by EventStartDatetime ASC (upcoming) or DESC (past). Capped at @MaxEvents rows when provided. May be empty when no matching events exist (the TotalCount rowset still returns 1 row with TotalMatchingEvents = 0).",
+      "columns": [
+        {
+          "name": "KennelSlug",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "Kennel.KennelUniqueShortName — the kennel's URL slug."
+        },
+        {
+          "name": "KennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Kennel.KennelName — full kennel name."
+        },
+        {
+          "name": "KennelShortName",
+          "type": "NVARCHAR(25)",
+          "nullable": false,
+          "description": "Kennel.KennelShortName — abbreviated kennel name for compact badge display."
+        },
+        {
+          "name": "KennelLogo",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Kennel.KennelLogo URL, or NULL if the value is the default bundle URL ('bundle://defaultKennelLogo'). Clients should fall back to a default logo image when NULL."
+        },
+        {
+          "name": "KennelPrimaryColor",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "KennelWebsite.PrimaryColor — CSS colour string for kennel theming. NULL if no KennelWebsite row exists for the kennel."
+        },
+        {
+          "name": "KennelAccentColor",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "KennelWebsite.AccentColor — CSS colour string for kennel theming. NULL if no KennelWebsite row exists."
+        },
+        {
+          "name": "EventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.Event.id — internal event primary key."
+        },
+        {
+          "name": "PublicEventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.Event.PublicEventId — public-facing event UUID for deep-links."
+        },
+        {
+          "name": "EventNumber",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HC.Event.EventNumber — kennel-scoped run number."
+        },
+        {
+          "name": "EventName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "HC.Event.EventName — event name. Table column NOT NULL."
+        },
+        {
+          "name": "EventStartDatetime",
+          "type": "DATETIME2(7)",
+          "nullable": false,
+          "description": "CAST(Event.EventStartDatetime AS datetime2(7)) — timezone offset stripped. Client receives local time without UTC offset. Use KennelIANATimezone to reconstruct the offset if needed."
+        },
+        {
+          "name": "EventEndDatetime",
+          "type": "DATETIME2(7)",
+          "nullable": true,
+          "description": "CAST(Event.EventEndDatetime AS datetime2(7)) — timezone offset stripped. NULL when no end time is set."
+        },
+        {
+          "name": "EventStartDatetimeGmt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "HC.Event.EventStartDatetimeGmt — explicit GMT datetime if set by the event creator. NULL for most events."
+        },
+        {
+          "name": "KennelIANATimezone",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "IANA timezone identifier (e.g. 'America/New_York') derived from the kennel's city via DomainValues.TimeZoneMap. NULL if no timezone mapping exists for the kennel's city. Used by clients to display local times correctly."
+        },
+        {
+          "name": "EventTypeName",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "DomainValues.EventThemeType.EventEnumName — human-readable event theme type (e.g. 'Red Dress Run'). NULL when Event.ThemeRunType has no matching DomainValues row (ThemeRunType = 0 = normal run)."
+        },
+        {
+          "name": "EventPriceForMembers",
+          "type": "DECIMAL(10,4)",
+          "nullable": true,
+          "description": "COALESCE(Event.EventPriceForMembers, Kennel.DefaultEventPriceForMembers) — event-level price overrides kennel default. NULL when neither is set."
+        },
+        {
+          "name": "EventPriceForNonMembers",
+          "type": "DECIMAL(10,4)",
+          "nullable": true,
+          "description": "COALESCE(Event.EventPriceForNonMembers, Kennel.DefaultEventPriceForNonMembers) — event-level price overrides kennel default. NULL when neither is set."
+        },
+        {
+          "name": "EventCurrencyType",
+          "type": "NVARCHAR(10)",
+          "nullable": true,
+          "description": "COALESCE(Event.EventCurrencyType, Kennel.DefaultEventCurrencyType) — currency code (e.g. 'USD'). NULL when neither is set."
+        },
+        {
+          "name": "Hares",
+          "type": "NVARCHAR(2500)",
+          "nullable": true,
+          "description": "HC.Event.Hares — free-text hare names. Table column is NVARCHAR(2500) NULL."
+        },
+        {
+          "name": "LocationOneLineDesc",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "HC.Event.LocationOneLineDesc — one-line human-readable location."
+        },
+        {
+          "name": "LocationStreet",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "HC.Event.SyncLocationStreet — computed column (LocationStreet or FbLocationStreet depending on UseFbLocation)."
+        },
+        {
+          "name": "LocationCity",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "HC.Event.SyncLocationCity — computed column."
+        },
+        {
+          "name": "LocationPostCode",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "HC.Event.SyncLocationPostCode — computed column."
+        },
+        {
+          "name": "LocationRegion",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "HC.Event.SyncLocationRegion — computed column."
+        },
+        {
+          "name": "LocationCountry",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "HC.Event.SyncLocationCountry — computed column."
+        },
+        {
+          "name": "Latitude",
+          "type": "DECIMAL(18,15)",
+          "nullable": true,
+          "description": "HC.Event.SyncLatitude — computed column (Latitude or FbLatitude depending on UseFbLatLon). Table column type DECIMAL(18,15) NULL."
+        },
+        {
+          "name": "Longitude",
+          "type": "DECIMAL(19,15)",
+          "nullable": true,
+          "description": "HC.Event.SyncLongitude — computed column. Table column type DECIMAL(19,15) NULL."
+        },
+        {
+          "name": "w3wJson",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "Always NULL. Placeholder for future what3words location data."
+        },
+        {
+          "name": "EventDescription",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "Always NULL. Placeholder — event descriptions are not returned by this SP (use a dedicated detail SP)."
+        },
+        {
+          "name": "EventImage",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "HC.Event.EventImage — URL of the event image. NULL when not set."
+        },
+        {
+          "name": "EventUrl",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "Always NULL. Placeholder for future event URL support."
+        },
+        {
+          "name": "Tags1",
+          "type": "INT",
+          "nullable": false,
+          "description": "HC.Event.Tags1 — raw bitflag integer for event tags set 1. Decoded client-side."
+        },
+        {
+          "name": "Tags2",
+          "type": "INT",
+          "nullable": false,
+          "description": "HC.Event.Tags2 — raw bitflag integer for event tags set 2. Decoded client-side."
+        },
+        {
+          "name": "Tags3",
+          "type": "INT",
+          "nullable": false,
+          "description": "HC.Event.Tags3 — raw bitflag integer for event tags set 3. Decoded client-side."
+        },
+        {
+          "name": "IsCountedRun",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HC.Event.IsCountedRun — whether this run counts toward run totals. SMALLINT NOT NULL."
+        },
+        {
+          "name": "IsPromotedEvent",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HC.Event.IsPromotedEvent — whether this event is promoted/featured. SMALLINT NOT NULL."
+        },
+        {
+          "name": "EventGeographicScope",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HC.Event.EventGeographicScope — scope code (1=normal, 2=local special, 3=regional, etc.). SMALLINT NOT NULL."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "EventStartDatetime loses timezone offset via CAST to DATETIME2",
+      "detail": "EventStartDatetime and EventEndDatetime are DATETIMEOFFSET(7) in the table but are returned as DATETIME2(7) via CAST, stripping the timezone offset. Clients receive local time with no UTC indication. KennelIANATimezone is provided alongside for client-side offset reconstruction, but this is an implicit contract rather than a structured offset."
+    },
+    {
+      "severity": "medium",
+      "issue": "@IsFuture uses an 8-hour lookback, not 'now'",
+      "detail": "The future boundary is DATEADD(HOUR, -8, @UtcNow) — events that started up to 8 hours ago are still treated as 'upcoming'. This allows same-day runs to remain visible for late joiners. Callers must be aware that 'IsFuture=1' includes recently-started events."
+    },
+    {
+      "severity": "low",
+      "issue": "Comma-separated slug list uses STRING_SPLIT — order not guaranteed",
+      "detail": "@SlugList is split via STRING_SPLIT(@SlugList, ',') which returns values in unspecified order. The join to HC.Kennel on KennelUniqueShortName is correct regardless of split order, but callers should not assume any ordering from the slug resolution step."
+    },
+    {
+      "severity": "low",
+      "issue": "w3wJson, EventDescription, EventUrl always NULL",
+      "detail": "Three columns are placeholder NULLs: w3wJson, EventDescription, EventUrl. They consume no real resources but inflate the rowset schema and add dead contracts for callers that may try to read them."
+    }
+  ],
+  "breakingChanges": [
+    "New SP — no HC5 equivalent. First introduced for HC6 RunListBlock multi-kennel support."
+  ]
+}

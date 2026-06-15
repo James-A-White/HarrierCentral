@@ -1,0 +1,42 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_updateKennelCreditByUser",
+  "version": "1.0.0",
+  "description": "Recalculates the running payment credit balance for a single user (optionally scoped to one kennel) and writes the result back to three tables: HC.Payment.CreditAvailable (per-payment running balance), HC.HasherKennelMap.KennelCredit (current balance summary), and HC.KennelCredit (legacy credit table, kept in sync until retired). Called inside and after transactions by portal and app payment SPs. Returns nothing.",
+  "parameters": [
+    {
+      "name": "userId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "HasherKennelMap.UserId",
+      "description": "Hasher whose credit balances to recalculate."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.KennelId",
+      "description": "Scope to a single kennel. NULL = recalculate credit across all kennels for this user. Default NULL."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [
+    "Updates HC.Payment.CreditAvailable and HC.Payment.updatedAt for all uncancelled payments for the user (optionally scoped to @kennelId) where the running balance has changed.",
+    "Updates HC.HasherKennelMap.KennelCredit and HC.HasherKennelMap.updatedAt for the latest payment per kennel where the balance has changed.",
+    "Updates HC.KennelCredit.currentBalance, HC.KennelCredit.balanceAsOfEventId, HC.KennelCredit.updatedAt for existing rows where the balance or event has changed.",
+    "Inserts new rows into HC.KennelCredit for kennels where no existing row exists and the balance is non-zero."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "HC.KennelCredit is a legacy table — kept in sync but marked for retirement",
+      "detail": "The SP comment explicitly flags HC.KennelCredit as a legacy table to be removed when retired. Until then, every credit recalculation must maintain three separate tables. The dual-update pattern adds complexity and two additional write paths that must stay in sync."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH wrapper",
+      "detail": "The SP has no TRY/CATCH. An error in any of the three UPDATE/INSERT steps propagates as a raw exception to the caller. Since this SP is typically called inside a caller's transaction, a raw exception will roll back that transaction correctly — but partial updates within this SP body are possible if XACT_ABORT does not cover all cases."
+    }
+  ],
+  "breakingChanges": []
+}

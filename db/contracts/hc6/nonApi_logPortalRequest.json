@@ -1,0 +1,31 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_logPortalRequest",
+  "version": "1.0.0",
+  "description": "Inserts a portal request audit entry into LOG.GeneralLog. Called by PortalApiHC6 after every successful HC6 portal SP dispatch. Fire-and-forget — errors are swallowed by the caller.",
+  "parameters": [
+    {
+      "name": "logSource",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "mapsToColumn": "GeneralLog.LogSource",
+      "description": "Short source label identifying the SP dispatched, e.g. 'Admin Portal: hcportal_getEvents'. Caller truncates to 50 characters before calling. Table column is NVARCHAR(50) NOT NULL — matches parameter type exactly."
+    },
+    {
+      "name": "message",
+      "type": "NVARCHAR(255)",
+      "nullable": false,
+      "mapsToColumn": "GeneralLog.Message",
+      "description": "IP address or request identifier for audit purposes. Table column is NVARCHAR(255) NOT NULL — matches parameter type exactly."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [
+    "Inserts 1 row into LOG.GeneralLog with LogSource, Message, and Timestamp = SYSUTCDATETIME().",
+    "LOG.GeneralLog.Timestamp has a DEFAULT of GETDATE() but the SP passes SYSUTCDATETIME() explicitly — ensures UTC timestamp regardless of server local time setting."
+  ],
+  "codeSmells": [],
+  "breakingChanges": [
+    "HC5 used inline SQL in PortalApiHC6.LogRequestAsync. HC6 extracts this into a named SP."
+  ]
+}

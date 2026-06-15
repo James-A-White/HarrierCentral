@@ -1,0 +1,92 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_logPushBatch",
+  "version": "1.0.0",
+  "description": "Inserts a single FCM push audit entry into HC.PushLog. AppApiHC6.LogPushBatchAsync calls this once per recipient per push batch. Non-fatal — callers swallow errors from this SP. HC.PushLog.IsVisible is BIT; @isVisible is SMALLINT per the no-BIT-parameters rule; SQL Server converts implicitly.",
+  "parameters": [
+    {
+      "name": "batchId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "PushLog.BatchId",
+      "description": "Shared GUID for all entries in this push batch — groups per-recipient rows that belong to the same push dispatch."
+    },
+    {
+      "name": "sentAt",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": false,
+      "mapsToColumn": "PushLog.SentAt",
+      "description": "UTC timestamp when the batch was dispatched."
+    },
+    {
+      "name": "queryType",
+      "type": "NVARCHAR(100)",
+      "nullable": false,
+      "mapsToColumn": "PushLog.QueryType",
+      "description": "HC6 queryType string that triggered this push batch (e.g. 'hcapp_setEventAttendence')."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "PushLog.EventId",
+      "description": "Event UUID associated with the push. Nullable — some push types are not event-scoped. Default NULL."
+    },
+    {
+      "name": "recipientUserId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "PushLog.RecipientUserId",
+      "description": "Recipient hasher UUID. Nullable — may be unknown for broadcast pushes. Default NULL."
+    },
+    {
+      "name": "fcmToken",
+      "type": "NVARCHAR(500)",
+      "nullable": false,
+      "mapsToColumn": "PushLog.FcmToken",
+      "description": "FCM registration token used for this push attempt."
+    },
+    {
+      "name": "isVisible",
+      "type": "SMALLINT",
+      "nullable": false,
+      "mapsToColumn": "PushLog.IsVisible",
+      "description": "1 = visible push (alert notification), 0 = data-only silent push. Target column is BIT — SMALLINT parameter converts implicitly. Per project convention: SMALLINT parameters, never BIT parameters."
+    },
+    {
+      "name": "summary",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "PushLog.Summary",
+      "description": "Short human-readable description for dashboard review. Nullable. Default NULL."
+    },
+    {
+      "name": "senderUserId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "PushLog.SenderUserId",
+      "description": "Sending hasher UUID (the user whose action triggered the push). Nullable. Default NULL."
+    },
+    {
+      "name": "fcmResult",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": "PushLog.FcmResult",
+      "description": "FCM HTTP API result string (e.g. 'SUCCESS', 'UNREGISTERED', 'NOT_FOUND'). Nullable — callers may not always capture the FCM result. Default NULL."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [
+    "Inserts 1 row into HC.PushLog with Id = NEWID()."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "HC.PushLog schema not in /db/schema/tables/ snapshot",
+      "detail": "HC.PushLog is referenced by this SP but its CREATE TABLE definition does not appear in the extracted table schema files. The table exists in production (the SP was deployed and runs successfully) but was added after the schema snapshot was taken. Column types above are inferred from SP parameter types and SP comments."
+    }
+  ],
+  "breakingChanges": [
+    "HC5 used inline SQL in AppApiHC6.LogPushBatchAsync. HC6 extracts this into a named SP for consistency."
+  ]
+}

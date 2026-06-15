@@ -1,0 +1,51 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_updateRunCountsByUser",
+  "version": "1.0.0",
+  "description": "Recalculates all run-count statistics for a single hasher across all kennels. Executes 5 stages: (1) Insert HasherKennelMap rows for any kennel the user has attended but has no existing HKM record; (2) Update run-count columns on HasherEventMap using window functions; (3) Clear counts on HEM rows where the user is no longer attending (AttendenceState < 20); (4) Update HasherKennelMap summary counters (HcTotalRunCount, HcHaringCount, YtdTotalRunCount, YtdHaringCount, DateOfLastRun); (5) Update rolling-year (~182-day) counts on HasherKennelMap. Exits immediately (no-op) if @userId is anonymous or not found. Called inside and after transactions by portal and app SPs.",
+  "parameters": [
+    {
+      "name": "userId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Hasher.id",
+      "description": "Internal hasher UUID to recalculate. SP is a no-op if the hasher does not exist or has isAnonymous = 1."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [
+    "Stage 1: May INSERT rows into HC.HasherKennelMap for kennels the user has attended but has no HKM record (default zeros for all counter and permission columns).",
+    "Stage 2: UPDATEs HC.HasherEventMap.TotalRuns, TotalHaring, TotalRunsThisKennel, TotalHaringThisKennel, YtdTotalRunsThisKennel, YtdHaringThisKennel, updatedAt for all attended events (AttendenceState >= 20) where any count has changed.",
+    "Stage 3: NULLs out the same six HEM count columns and updatedAt for non-attending rows (AttendenceState < 20) where any count is non-NULL.",
+    "Stage 4: UPDATEs HC.HasherKennelMap.CurrentHaringCount (to 0), CurrentPackRunCount (to 0), HistoricalPackRunCount (to 0), HcTotalRunCount, HcHaringCount, YtdTotalRunCount, YtdHaringCount, DateOfLastRun, updatedAt where any value has changed.",
+    "Stage 5: UPDATEs HC.HasherKennelMap.RollingYearTotalRunCount, RollingYearHaringCount, updatedAt where any value has changed."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Stage 3 clears counts on ALL non-attending HEM rows for the user, not just affected ones",
+      "detail": "The Stage 3 UPDATE does not filter by any per-event scope — it clears counts on every HEM row for @userId with AttendenceState < 20 and non-NULL counts. This is correct but potentially expensive for users with a long history of RSVP-only or cancelled attendance records. No practical impact for typical users."
+    },
+    {
+      "severity": "medium",
+      "issue": "Stage 4 unconditionally zeros CurrentHaringCount, CurrentPackRunCount, HistoricalPackRunCount",
+      "detail": "These three columns are set to 0 in every HKM UPDATE regardless of their current value. CurrentHaringCount and CurrentPackRunCount appear to be deprecated columns (no logic computes their correct value here). Zeroing them on every run-count recalculation is correct for the current data model but may be surprising to any code that expects them to hold meaningful values."
+    },
+    {
+      "severity": "low",
+      "issue": "Rolling-year window is ~182 days (6 months), not 365 days",
+      "detail": "The SP name and comment say 'rolling year' but the bucket calculation uses 182-day windows (DATEDIFF / 182). Bucket 0 = the current 182-day window. This is consistent with HC5's fn_GetRunCountsRolling but the naming is misleading."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH wrapper",
+      "detail": "The SP has SET XACT_ABORT ON but no TRY/CATCH. Errors in any stage propagate as raw exceptions to the caller. Since this SP is typically called inside a caller's transaction, XACT_ABORT ensures the caller's transaction is rolled back, but there is no structured error rowset."
+    }
+  ],
+  "breakingChanges": [
+    "@eventDateTime parameter removed (was accepted in HC5 but never used in the SP body).",
+    "Timezone-aware event filter added to Stage 2 HEM update (was absent in HC5 nonApi_updateRunCountsByUser; HC5.fn_GetRunCounts already applied this filter).",
+    "HC4.vwRunCountsRolling (no timezone filter) replaced with the timezone-aware logic inlined from HC5.fn_GetRunCountsRolling.",
+    "Asymmetric COALESCE sentinels (-999/999) in change-detection comparisons replaced with ISNULL(x, -1) pattern."
+  ]
+}

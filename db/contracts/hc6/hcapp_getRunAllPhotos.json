@@ -1,0 +1,95 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getRunAllPhotos",
+  "version": "1.0.0",
+  "description": "Returns every photo for a specific event regardless of status — pending, approved at any level, private, and soft-deleted. Used to power the photo review screen (both Pending and Reviewed tabs) and the persistent status-count header. Caller must hold Hash Flash (0x20), GM (0x02), VGM (0x04), RA (0x08), or WebMeister (0x1000) for the kennel. Unlike hcapp_getKennelPendingPhotos, this SP shows all statuses for a single event rather than only pending across all events.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth for auth resolution."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token validated against DeviceSecret."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "KennelPhotos.KennelId",
+      "description": "Kennel the event belongs to. Used for role check and to scope the query. Null or zero-UUID triggers a validation error (errorCode 1234, errorType 12)."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "KennelPhotos.EventId",
+      "description": "Event to fetch all photos for. Null or zero-UUID triggers a validation error (errorCode 1234, errorType 12)."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned only on auth, validation, or role check failure. Contains {success, errorCode, errorType}. Mutually exclusive with AllPhotos rowset.",
+      "columns": [
+        { "name": "success", "type": "INT", "nullable": false, "description": "Always 0 on this error path." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Numeric error code." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code." }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Returned only on auth, validation, or role check failure (paired with ErrorEnvelope at index 0). Not present on success."
+    },
+    {
+      "index": 0,
+      "name": "AllPhotos",
+      "description": "On success: all photos for the event regardless of status (including soft-deleted where DeletedAt IS NOT NULL), joined to Hasher and Event for display context, ordered by CreatedAt DESC. Returns zero rows if the event has no photos. Mutually exclusive with ErrorEnvelope.",
+      "columns": [
+        { "name": "photoId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "KennelPhotos.id — primary key of the photo." },
+        { "name": "EventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "KennelPhotos.EventId — always equal to @eventId." },
+        { "name": "Status", "type": "TINYINT", "nullable": false, "description": "KennelPhotos.Status — 0=private, 1=pending_review, 2=public, 3=run_gallery, 4=home_gallery, 5=event_cover." },
+        { "name": "DeletedAt", "type": "DATETIME2", "nullable": true, "description": "KennelPhotos.DeletedAt — NULL if not soft-deleted; non-NULL timestamp if soft-deleted." },
+        { "name": "BlobUrl", "type": "NVARCHAR(500)", "nullable": false, "description": "KennelPhotos.BlobUrl — CDN URL of the original uploaded image." },
+        { "name": "EditedBlobUrl", "type": "NVARCHAR(500)", "nullable": true, "description": "KennelPhotos.EditedBlobUrl — CDN URL of the Hash Flash-edited version, if any." },
+        { "name": "Title", "type": "NVARCHAR(250)", "nullable": true, "description": "KennelPhotos.Title — optional short title." },
+        { "name": "Description", "type": "NVARCHAR(MAX)", "nullable": true, "description": "KennelPhotos.Description — optional caption." },
+        { "name": "CreatedAt", "type": "DATETIME2", "nullable": false, "description": "KennelPhotos.CreatedAt — UTC timestamp when the photo was recorded." },
+        { "name": "uploaderDisplayName", "type": "NVARCHAR(MAX)", "nullable": false, "description": "Hasher.DisplayName (persisted computed column) — the display name of the uploader." },
+        { "name": "eventName", "type": "NVARCHAR(250)", "nullable": false, "description": "Event.EventName — name of the event." },
+        { "name": "eventNumber", "type": "SMALLINT", "nullable": true, "description": "Event.AbsoluteEventNumber — cross-kennel run number. Nullable in the base table." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Writes to HC.ErrorLog on validation or role check failure."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Role mask inconsistency: getKennelPendingPhotos uses 0x002E, getRunAllPhotos uses 0x102E",
+      "detail": "hcapp_getKennelPendingPhotos allows roles 0x002E. This SP and hcapp_batchUpdatePhotoStatus use 0x102E (adds WebMeister 0x1000). A WebMeister can see all-photo status and batch-action photos but cannot view the cross-event pending list."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH around the main SELECT",
+      "detail": "The SP has no TRY/CATCH block. An unexpected DB error will propagate as a raw SQL error rather than a structured error rowset. HC6 SPs should wrap the main query in TRY/CATCH."
+    },
+    {
+      "severity": "low",
+      "issue": "HcVersion hardcoded to '<unknown>' in all ErrorLog inserts",
+      "detail": "Consistent with other HC6 SPs but means the version is never captured in the error log."
+    }
+  ],
+  "breakingChanges": [
+    "New SP — no HC5 predecessor. No breaking changes from migration."
+  ]
+}

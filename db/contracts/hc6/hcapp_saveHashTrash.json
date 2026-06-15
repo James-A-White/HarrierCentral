@@ -1,0 +1,101 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_saveHashTrash",
+  "version": "1.0.0",
+  "description": "Creates or updates the HashTrash article for a run. HashTrash is a headline + markdown article written per run by mismanagement. Status 0 = draft (mismanagement only); 1 = published (visible to all). Only the three HashTrash columns on HC.Event are touched — UpdatedAt is deliberately NOT updated so that the sync pipeline does not re-distribute the event row to all clients. Auth: Hash Flash (0x20), WebMeister (0x1000), or GM (0x02) — bitmask 0x1022. New feature — no HC5 equivalent.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth for auth resolution."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token validated against DeviceSecret."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Event.KennelId",
+      "description": "Kennel that owns the event. Required — null or zero-UUID triggers validation error."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Event.id",
+      "description": "Event to write HashTrash for. Required — null or zero-UUID triggers validation error. If no event matches eventId + kennelId (or it is deleted), returns errorCode 4040, errorType 3."
+    },
+    {
+      "name": "headline",
+      "type": "NVARCHAR(500)",
+      "nullable": false,
+      "mapsToColumn": "Event.HashTrashHeadline",
+      "description": "Short article headline. Required — empty or whitespace-only triggers validation error. The table column type is inferred from the SP parameter type (NVARCHAR(500))."
+    },
+    {
+      "name": "content",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "Event.HashTrashContent",
+      "description": "Markdown body of the article. May be NULL or empty — the validation only requires @headline. No length limit."
+    },
+    {
+      "name": "status",
+      "type": "SMALLINT",
+      "nullable": false,
+      "mapsToColumn": "Event.HashTrashStatus",
+      "description": "0 = draft (mismanagement-only visibility); 1 = published (all users). Any other value triggers validation error (errorCode 1234, errorType 2). The SP validates @status NOT IN (0, 1) — note this means @status IS NULL also triggers the error."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Compact error envelope returned on auth, validation, role check, event-not-found, or unhandled errors: { success=0, errorCode, errorType }. Followed by StandardErrorResult at index 1. Mutually exclusive with SuccessEnvelope rowset.",
+      "columns": [
+        { "name": "success", "type": "SMALLINT", "nullable": false, "description": "Always 0 on error." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Numeric error code." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "Returned on successful save: { success=1, errorCode=NULL, errorType=NULL }. Mutually exclusive with ErrorEnvelope rowset.",
+      "columns": [
+        { "name": "success", "type": "SMALLINT", "nullable": false, "description": "Always 1 on success." },
+        { "name": "errorCode", "type": "INT", "nullable": true, "description": "Always NULL on success." },
+        { "name": "errorType", "type": "INT", "nullable": true, "description": "Always NULL on success." }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Returned at index 1 alongside the ErrorEnvelope (index 0) on any error."
+    }
+  ],
+  "sideEffects": [
+    "Updates HC.Event: sets HashTrashHeadline, HashTrashContent, HashTrashStatus where id + kennelId match and deleted = 0. Deliberately does NOT update UpdatedAt to avoid triggering event sync distribution.",
+    "Writes to HC.ErrorLog on auth, validation, role, event-not-found, or unhandled errors."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Intentional UpdatedAt omission bypasses sync pipeline — must be documented in caller",
+      "detail": "The SP deliberately omits UpdatedAt from the UPDATE SET clause so the sync system does not re-distribute this event row to all clients. This is a deliberate design choice but callers must be aware that after a HashTrash save, the Event row will NOT be re-synced to device SQLite databases. HashTrash must always be fetched on-demand via this SP, never read from local sync data."
+    },
+    {
+      "severity": "low",
+      "issue": "@status NULL treated as invalid by NOT IN (0, 1) check",
+      "detail": "The validation uses @status NOT IN (0, 1). In SQL Server, NULL NOT IN (0, 1) evaluates to UNKNOWN, which is treated as TRUE in a WHERE/IF predicate, so a NULL @status will trigger the validation error. This is the correct behaviour but may surprise callers that expect NULL to be handled separately."
+    }
+  ],
+  "breakingChanges": []
+}

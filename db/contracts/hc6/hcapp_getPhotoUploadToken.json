@@ -1,0 +1,94 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getPhotoUploadToken",
+  "version": "1.0.0",
+  "description": "Validates auth, then returns the userId, kennelId, and kennelSlug so the calling Azure Function can construct a scoped SAS write token for the trail-photos blob container. Any authenticated HC user may call this — no kennel membership or following check is required. No side effects and no DB writes — pure auth check plus a single Kennel lookup.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth for auth resolution."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token validated against DeviceSecret."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Kennel.id",
+      "description": "Kennel the photo will be uploaded under. Null or zero-UUID triggers a validation error (errorCode 1230, errorType 12)."
+    },
+    {
+      "name": "photoGuid",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Client-generated GUID for the photo. Validated to be non-null and non-zero-UUID (errorCode 1230, errorType 12). Not stored in the DB by this SP — used by the Azure Function when constructing the SAS blob path."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "On auth or validation failure: success=0, errorCode and errorType set. On success: success=1, errorCode=NULL, errorType=NULL. Always present.",
+      "columns": [
+        { "name": "success", "type": "INT", "nullable": false, "description": "1 on success, 0 on auth or validation failure." },
+        { "name": "errorCode", "type": "INT", "nullable": true, "description": "Numeric error code. NULL on success." },
+        { "name": "errorType", "type": "INT", "nullable": true, "description": "Error classification code. NULL on success." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ErrorDetail",
+      "description": "Returned only on auth or validation failure. Follows the standard HC6 error detail shape. Not present on success.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Numeric error code." },
+        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
+        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "TokenData",
+      "description": "On success: userId, kennelId, and kennelSlug needed by the Azure Function to scope the SAS token. If @kennelId does not match any Kennel row, this rowset will be empty (zero rows) with no error — callers should guard against an empty result. Mutually exclusive with ErrorDetail at index 1.",
+      "columns": [
+        { "name": "userId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The authenticated user's HC.Hasher.id — resolved by ValidateAppAuth." },
+        { "name": "kennelId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Echoed back from @kennelId." },
+        { "name": "kennelSlug", "type": "NVARCHAR(50)", "nullable": false, "description": "Kennel.KennelUniqueShortName — used by the Azure Function to construct the blob container path." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Writes to HC.ErrorLog on validation failures only. No other side effects."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Missing Kennel existence check — empty TokenData rowset on unknown kennelId",
+      "detail": "The final SELECT queries HC.Kennel WHERE k.id = @kennelId. If @kennelId is a valid UUID format but does not match any kennel row, the TokenData rowset returns zero rows with success=1. The Azure Function caller receives a success envelope but no data to work with. A NOT EXISTS check and explicit error response would be safer."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH",
+      "detail": "The SP has no TRY/CATCH block. An unexpected DB error will propagate as a raw SQL error rather than a structured error rowset."
+    },
+    {
+      "severity": "low",
+      "issue": "HcVersion hardcoded to '<unknown>' in all ErrorLog inserts",
+      "detail": "Consistent with other HC6 SPs but means the version is never captured in the error log."
+    }
+  ],
+  "breakingChanges": [
+    "New SP — no HC5 predecessor. No breaking changes from migration."
+  ]
+}

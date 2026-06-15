@@ -1,0 +1,171 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_getRunAllPhotos",
+  "version": "1.0.0",
+  "description": "Returns every photo for a specific event regardless of status — pending, approved at any level, private, and soft-deleted (DeletedAt IS NOT NULL rows are included). Used to power the portal photo review screen. Caller must hold authIsAdmin (0x0001), authCanManagePublicWebContent (0x0080), or authIsSuperAdmin (0x40000000) in HC.HasherKennelMap.AppAccessFlags for the specified kennel. Results are ordered newest-first by KennelPhotos.CreatedAt. New for HC6 — no HC5 equivalent.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Registered portal device UUID. Passed to HC6.ValidatePortalAuth for auth resolution."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived cryptographic token validated against device secret via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "Public-facing kennel UUID. Resolved to internal Kennel.id. Required — NULL or zero-UUID returns an error. Permission is checked against the resolved kennel."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.id",
+      "description": "Internal event UUID (HC.Event.id, not PublicEventId). Required — NULL or zero-UUID returns an error. Photos returned are filtered to this event within the resolved kennel."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on auth failure, validation error, or unhandled CATCH. Mutually exclusive with PhotoList. All error paths return this shape: ValidatePortalAuth failure, missing/invalid publicKennelId, kennel not found, missing/invalid eventId, permission denied. Also returned from the CATCH block on runtime error.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error."
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(255)",
+          "nullable": true,
+          "description": "Human-readable error description. From ValidatePortalAuth output on auth failure; literal string on validation errors; ERROR_MESSAGE() on runtime error."
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "PhotoList",
+      "description": "Returned when auth and validation pass. One row per KennelPhotos record for the event, regardless of Status or DeletedAt. May be empty (zero rows) if no photos exist for the event. Ordered by KennelPhotos.CreatedAt DESC (newest first). Mutually exclusive with ErrorEnvelope.",
+      "columns": [
+        {
+          "name": "photoId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "KennelPhotos.id — primary key of the photo record."
+        },
+        {
+          "name": "EventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "KennelPhotos.EventId — the event this photo belongs to. Will always equal the @eventId parameter."
+        },
+        {
+          "name": "Status",
+          "type": "TINYINT",
+          "nullable": false,
+          "description": "KennelPhotos.Status — photo visibility/approval state. Values: 0=private, 1=pending_review, 2=public (share), 3=gallery, 4=home_gallery, 5=event_cover. Note: table column is TINYINT NOT NULL DEFAULT 0 — project standard is SMALLINT but this table uses TINYINT."
+        },
+        {
+          "name": "DeletedAt",
+          "type": "DATETIME2",
+          "nullable": true,
+          "description": "KennelPhotos.DeletedAt — NULL when not soft-deleted; non-NULL timestamp when the photo has been soft-deleted. Table column is DATETIME2 NULL."
+        },
+        {
+          "name": "BlobUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "KennelPhotos.BlobUrl — original blob storage URL. Table column is NVARCHAR(500) NOT NULL."
+        },
+        {
+          "name": "Title",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "KennelPhotos.Title — optional photo title. Table column is NVARCHAR(250) NULL."
+        },
+        {
+          "name": "Description",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "KennelPhotos.Description — optional photo description. Table column is NVARCHAR(MAX) NULL."
+        },
+        {
+          "name": "CreatedAt",
+          "type": "DATETIME2",
+          "nullable": false,
+          "description": "KennelPhotos.CreatedAt — UTC timestamp when the photo was uploaded. Table column is DATETIME2 NOT NULL DEFAULT GETUTCDATE(). Used for ORDER BY DESC."
+        },
+        {
+          "name": "uploaderDisplayName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "HC.Hasher.DisplayName — computed persisted column. The uploader's display name based on their NameDisplayPreference. Always non-NULL due to the COALESCE chain in the computed column definition (falls back to '<no names provided>'). Sourced from INNER JOIN HC.Hasher on KennelPhotos.UserId."
+        },
+        {
+          "name": "eventName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "HC.Event.EventName — raw HC-managed event name. Table column is NVARCHAR(250) NOT NULL. Note: the SP returns EventName directly, not the FB-fallback resolved name (UseFbRunDetails is not applied)."
+        },
+        {
+          "name": "eventNumber",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HC.Event.AbsoluteEventNumber — cross-kennel run number. Table column is SMALLINT NULL. Note: aliased as 'eventNumber' in the result but maps to AbsoluteEventNumber, not EventNumber."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "eventNumber column maps to AbsoluteEventNumber, not EventNumber",
+      "detail": "The SELECT aliases e.AbsoluteEventNumber AS eventNumber. HC.Event has two number columns: EventNumber (SMALLINT NOT NULL, kennel-scoped) and AbsoluteEventNumber (SMALLINT NULL, cross-kennel). Callers receiving 'eventNumber' may reasonably assume this is the kennel-scoped run number, but they are getting AbsoluteEventNumber which is nullable and has different semantics. This is misleading naming and could cause display bugs if a caller uses it as the kennel run counter."
+    },
+    {
+      "severity": "medium",
+      "issue": "Non-standard error envelope — not using ValidatePortalAuth StandardErrorResult",
+      "detail": "Portal SPs that call HC6.ValidatePortalAuth typically propagate the full StandardErrorResult rowset (errorId, errorType, errorTitle, errorUserMessage, debugMessage, errorProc) when auth fails. This SP returns a simplified 2-column envelope (Success=0, ErrorMessage) across all error paths, consistent with the other KennelPhotos-related portal SPs but inconsistent with the broader portal SP set."
+    },
+    {
+      "severity": "medium",
+      "issue": "EditedBlobUrl is not returned",
+      "detail": "HC.KennelPhotos has an EditedBlobUrl column (NVARCHAR(500) NULL) that stores the blob URL of a cropped/edited version of a photo. The SP returns only BlobUrl. A portal review screen that wants to display the edited version of a photo (e.g. to show what will appear in the gallery) cannot distinguish original from edited without EditedBlobUrl. Whether this is intentional is unclear — the app equivalent SP may differ."
+    },
+    {
+      "severity": "low",
+      "issue": "eventName returns raw EventName, not FB-resolved name",
+      "detail": "The SP returns e.EventName directly without applying the UseFbRunDetails / FbEventName fallback logic used in other event SPs (e.g. hcportal_getEvents). For most kennels this is harmless because FB integration is off, but for kennels that use Facebook event data the displayed event name in the portal review screen will be the HC-managed name, not the public-facing name."
+    },
+    {
+      "severity": "low",
+      "issue": "KennelPhotos.Status column type is TINYINT, not SMALLINT",
+      "detail": "The HC.KennelPhotos.Status column is declared TINYINT NOT NULL. The project standard is SMALLINT for boolean and small integer columns. The SP returns Status as-is; Dart callers parsing this column should be aware it comes back as an integer (not a bool) but the type in the table is non-standard."
+    },
+    {
+      "severity": "low",
+      "issue": "Permission comment in header misidentifies the authCanManageRuns flag",
+      "detail": "The SP header comment says 'authCanManageRuns (0x0004)' but the actual permission check in the body uses 0x40000081, which is authIsAdmin (0x0001) | authCanManagePublicWebContent (0x0080) | authIsSuperAdmin (0x40000000). The 0x0004 flag (authCanManageRuns) is not included in the actual check. The permission comment also appears verbatim in hcportal_batchUpdatePhotoStatus — likely copied and not corrected."
+    }
+  ],
+  "breakingChanges": [
+    "New SP — no HC5 equivalent. App equivalent is HC6.hcapp_getRunAllPhotos.",
+    "Never remove DeletedAt from the result — callers use it to distinguish soft-deleted photos from active ones.",
+    "Never filter out soft-deleted rows — the entire point of this SP is to return all photos for admin review, including deleted ones.",
+    "Never change the ORDER BY from CreatedAt DESC without updating callers that depend on newest-first ordering.",
+    "Never change the eventNumber column alias without updating callers — note it currently returns AbsoluteEventNumber, not EventNumber.",
+    "Never change the permission bitmask check (0x40000081) without updating all callers that manage AppAccessFlags."
+  ]
+}

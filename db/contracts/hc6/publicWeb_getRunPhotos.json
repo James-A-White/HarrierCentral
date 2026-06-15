@@ -1,0 +1,95 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getRunPhotos",
+  "version": "1.0.0",
+  "description": "Returns Hash-Flash-approved photos (Status = 2) for a run, identified by its public event UUID. Used by the mobile guest gallery and the public website. Unauthenticated — no auth parameters. GPS coordinates (Latitude, Longitude) are intentionally excluded from the result (M15 privacy fix) since this is a public endpoint. Returns two rowsets: Rowset 0 is an event-existence sentinel (0 rows = event not found, triggers 404 at the shim); Rowset 1 is the approved photo rows ordered chronologically. On validation error: returns { Success = 0, ErrorMessage } instead of the normal rowsets.",
+  "parameters": [
+    {
+      "name": "publicEventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Event.PublicEventId",
+      "description": "The run's public-facing UUID (HC.Event.PublicEventId), not the internal Event.id. Required — returns { Success=0, ErrorMessage='@publicEventId is required' } if NULL or zero-UUID."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "EventExistence",
+      "description": "Returns TOP 1 row (always { EventFound: 1 }) when the event exists. Returns 0 rows when the event is not found — the shim interprets 0 rows as 404. This sentinel prevents Rowset 1 (photo rows) from being misread as an empty-but-valid result when the event itself does not exist.",
+      "columns": [
+        {
+          "name": "EventFound",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1. Literal value used as an existence signal. 0 rows in this rowset means event not found."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Photos",
+      "description": "Approved (Status=2) non-deleted (DeletedAt IS NULL) photos for the event, ordered by CreatedAt ASC (oldest-first for chronological gallery display). May be empty when the event exists but has no approved photos. GPS coordinates are intentionally excluded.",
+      "columns": [
+        {
+          "name": "photoId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.KennelPhotos.id — primary key of the photo record. Table column is UNIQUEIDENTIFIER NOT NULL DEFAULT NEWSEQUENTIALID()."
+        },
+        {
+          "name": "BlobUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "HC.KennelPhotos.BlobUrl — URL of the original photo blob. Table column is NVARCHAR(500) NOT NULL. Display logic: clients should prefer EditedBlobUrl (not returned here — use a separate authenticated endpoint) if they need to show edited versions."
+        },
+        {
+          "name": "Title",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "HC.KennelPhotos.Title — optional photo title. Table column is NVARCHAR(250) NULL."
+        },
+        {
+          "name": "Description",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "HC.KennelPhotos.Description — optional photo description. Table column is NVARCHAR(MAX) NULL."
+        },
+        {
+          "name": "CreatedAt",
+          "type": "DATETIME2",
+          "nullable": false,
+          "description": "HC.KennelPhotos.CreatedAt — UTC upload timestamp. Table column is DATETIME2 NOT NULL DEFAULT GETUTCDATE(). Used as the sort key for chronological ordering."
+        },
+        {
+          "name": "uploaderDisplayName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "HC.Hasher.DisplayName (computed column) for the uploading hasher. May be NULL if the hasher has no name set (DisplayName defaults to '<no names provided>' computed value, so effectively always non-null unless the computed column evaluates to NULL)."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "EditedBlobUrl not returned — clients cannot display edited photos",
+      "detail": "HC.KennelPhotos has an EditedBlobUrl column (nullable) populated when a Hash Flash crops/edits a photo. The SP returns only BlobUrl (the original). Public gallery clients that want to display the edited version cannot do so via this endpoint. A future update should add EditedBlobUrl as COALESCE(EditedBlobUrl, BlobUrl) to the rowset — but this would be a non-breaking addition."
+    },
+    {
+      "severity": "low",
+      "issue": "Status column uses TINYINT in the table schema — potential gotcha",
+      "detail": "HC.KennelPhotos.Status is TINYINT NOT NULL DEFAULT 0, which is a violation of the project's no-BIT/no-TINYINT convention (should be SMALLINT). The SP filter WHERE kp.Status = 2 works correctly via implicit conversion, but any future SP parameter mapping to this column should use SMALLINT with the understanding that TINYINT is the actual column type."
+    },
+    {
+      "severity": "low",
+      "issue": "No filter on Event.removed or Event.deleted",
+      "detail": "Rowset 0 selects FROM HC.Event WHERE PublicEventId = @publicEventId with no filter on removed or deleted. A removed/deleted event will still satisfy the existence check and return EventFound = 1, which means approved photos for a removed event remain publicly accessible. This may be intentional (soft-delete semantics) but is worth noting."
+    }
+  ],
+  "breakingChanges": [
+    "New SP — no HC5 equivalent. First introduced for HC6 KennelPhotos feature.",
+    "2026-06-06 update: parameter renamed from @eventId (internal Event.id lookup) to @publicEventId (Event.PublicEventId lookup). Any caller using the earlier version must be updated to pass PublicEventId instead of the internal id."
+  ]
+}

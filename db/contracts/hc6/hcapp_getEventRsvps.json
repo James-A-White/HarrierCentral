@@ -1,0 +1,140 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getEventRsvps",
+  "version": "1.0.0",
+  "description": "Returns RSVP attendance data for a specific event, accessible by any authenticated app user (no admin role required). Returns the same Hashers and HasherEventMap column shapes as hcapp_syncEventAdminData so the client can reuse the same sync infrastructure, but deliberately omits contact info (email, phoneNumber are returned as NULL). HasherKennelMap, Payments, and Receipts rowsets are not returned — those remain admin-only. Both rowsets are watermark-gated: if the watermark is 'ignore', that rowset is skipped entirely.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth. SP number 75 — auth errorCode range 1175 (token) / 1375 (device not found)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token validated against DeviceSecret. Default 'none' not set on this SP — caller must always provide."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Event.id",
+      "description": "Event to fetch RSVPs for. NULL or zero-UUID returns errorCode 1272, errorType 2."
+    },
+    {
+      "name": "hashersUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Watermark for the Hashers rowset. Pass 'ignore' (or NULL, or a date <= '2000-01-01') to skip the Hashers rowset entirely. Otherwise pass a DATETIMEOFFSET string — rows with updatedAt > this value are returned."
+    },
+    {
+      "name": "hasherEventMapUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Watermark for the HasherEventMap rowset. Pass 'ignore' (or NULL, or a date <= '2000-01-01') to skip the HEM rowset entirely. Otherwise pass a DATETIMEOFFSET string — rows with updatedAt > this value are returned."
+    },
+    {
+      "name": "usePaging",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "1 = enforce page limits (2500 rows for Hashers, 250 rows for HasherEventMap). 0 or NULL = unlimited (internally 1,000,000 row cap). Default 0."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "AuthOrValidationError",
+      "description": "Returned when HC6.ValidateAppAuth fails or @eventId is NULL/zero-UUID. On auth failure the shape comes directly from ValidateAppAuth OUTPUT params. On eventId failure, errorCode=1272, errorType=2. Mutually exclusive with Hashers and HasherEventMap rowsets.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification (1=auth, 3=device not found, 2=validation)." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Specific error code." },
+        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
+        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "Hashers",
+      "description": "Returned at index 0 when @hashersUpdatedAfter != 'ignore' and auth succeeds. Global hasher updates since the watermark. Same column shape as hcapp_syncEventAdminData. Omits contact info. Ordered by updatedAt ASC, id ASC. May be empty (zero rows). Mutually exclusive with error rowset. Note: if both watermarks are != 'ignore', Hashers is rowset 0 and HasherEventMap is rowset 1.",
+      "columns": [
+        { "name": "hasherId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Hasher.id — internal PK." },
+        { "name": "firstName", "type": "NVARCHAR(250)", "nullable": false, "description": "COALESCE(Hasher.FirstName, ''). Table column is NVARCHAR(250) NULL." },
+        { "name": "lastName", "type": "NVARCHAR(250)", "nullable": false, "description": "COALESCE(Hasher.LastName, ''). Table column is NVARCHAR(250) NULL." },
+        { "name": "dispName", "type": "NVARCHAR(MAX)", "nullable": false, "description": "COALESCE(Hasher.DisplayName, '') — persisted computed column." },
+        { "name": "hashName", "type": "NVARCHAR(250)", "nullable": false, "description": "COALESCE(Hasher.HashName, ''). Table column is NVARCHAR(250) NULL." },
+        { "name": "photo", "type": "NVARCHAR(1000)", "nullable": false, "description": "COALESCE(Hasher.Photo, ''). Table column is NVARCHAR(1000) NULL." },
+        { "name": "dispPref", "type": "SMALLINT", "nullable": false, "description": "COALESCE(Hasher.NameDisplayPreference, 0). Table column is SMALLINT NOT NULL." },
+        { "name": "includeInGlobalHashDirectory", "type": "SMALLINT", "nullable": false, "description": "COALESCE(Hasher.IncludeInGlobalHashDirectory, 0). Table column is SMALLINT NOT NULL." },
+        { "name": "updatedAt", "type": "NVARCHAR(50)", "nullable": false, "description": "CONVERT(NVARCHAR(50), CAST(COALESCE(h.updatedAt, GETDATE()) AS DATETIME2)) — updatedAt as a string, timezone offset stripped." },
+        { "name": "removed", "type": "SMALLINT", "nullable": false, "description": "COALESCE(Hasher.Removed, 0). Table column is SMALLINT NULL." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "HasherEventMap",
+      "description": "Returned when @hasherEventMapUpdatedAfter != 'ignore' and auth succeeds. Event-scoped HEM rows updated since the watermark for @eventId. Same column shape as hcapp_syncEventAdminData, with email and phoneNumber hardcoded to NULL. Ordered by updatedAt ASC, id ASC. May be empty (zero rows). Index is 1 when Hashers rowset is also emitted, or 0 if only this rowset is emitted.",
+      "columns": [
+        { "name": "hemId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HasherEventMap.id — PK." },
+        { "name": "userId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HasherEventMap.UserId. Table column is UNIQUEIDENTIFIER NOT NULL." },
+        { "name": "eventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HasherEventMap.EventId. Table column is UNIQUEIDENTIFIER NOT NULL." },
+        { "name": "hasherOwnEventId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "HasherEventMap.HasherOwnEventId. Table column is UNIQUEIDENTIFIER NULL." },
+        { "name": "userStartEvent", "type": "DATETIMEOFFSET(7)", "nullable": true, "description": "HasherEventMap.UserStartEvent. Table column is DATETIMEOFFSET(7) NULL." },
+        { "name": "userEndEvent", "type": "DATETIMEOFFSET(7)", "nullable": true, "description": "HasherEventMap.UserEndEvent. Table column is DATETIMEOFFSET(7) NULL." },
+        { "name": "rsvpState", "type": "SMALLINT", "nullable": false, "description": "HasherEventMap.RsvpState. Table column is SMALLINT NOT NULL DEFAULT 0." },
+        { "name": "attendenceState", "type": "SMALLINT", "nullable": false, "description": "HasherEventMap.AttendenceState. Table column is SMALLINT NOT NULL DEFAULT 0." },
+        { "name": "isHare", "type": "SMALLINT", "nullable": false, "description": "HasherEventMap.IsHare. Table column is SMALLINT NOT NULL." },
+        { "name": "eventNotificationPreference", "type": "SMALLINT", "nullable": true, "description": "HasherEventMap.EventNotificationPreference. Table column is SMALLINT NULL." },
+        { "name": "eventEmailAlertPreference", "type": "SMALLINT", "nullable": true, "description": "HasherEventMap.EventEmailAlertPreference. Table column is SMALLINT NULL." },
+        { "name": "eventCountOverride", "type": "SMALLINT", "nullable": true, "description": "HasherEventMap.EventCountOverride. Table column is SMALLINT NULL." },
+        { "name": "virginVisitorType", "type": "SMALLINT", "nullable": false, "description": "HasherEventMap.VirginVisitorType. Table column is SMALLINT NOT NULL." },
+        { "name": "totalHaring", "type": "INT", "nullable": true, "description": "HasherEventMap.TotalHaring. Table column is INT NULL." },
+        { "name": "totalHaringThisKennel", "type": "INT", "nullable": true, "description": "HasherEventMap.TotalHaringThisKennel. Table column is INT NULL." },
+        { "name": "totalRuns", "type": "INT", "nullable": true, "description": "HasherEventMap.TotalRuns. Table column is INT NULL." },
+        { "name": "totalRunsThisKennel", "type": "INT", "nullable": true, "description": "HasherEventMap.TotalRunsThisKennel. Table column is INT NULL." },
+        { "name": "displayName", "type": "NVARCHAR(120)", "nullable": true, "description": "HasherEventMap.DisplayName. Table column is NVARCHAR(120) NULL." },
+        { "name": "email", "type": "NVARCHAR(120)", "nullable": true, "description": "Always NULL — contact info deliberately omitted for non-admins." },
+        { "name": "phoneNumber", "type": "NVARCHAR(120)", "nullable": true, "description": "Always NULL — contact info deliberately omitted for non-admins." },
+        { "name": "hemEventNumber", "type": "SMALLINT", "nullable": false, "description": "Event.EventNumber. Table column is SMALLINT NOT NULL." },
+        { "name": "hemEventName", "type": "NVARCHAR(250)", "nullable": true, "description": "Effective event name: FbEventName if UseFbRunDetails=1, else EventName. Table columns are NVARCHAR(250) NULL." },
+        { "name": "hemEventStartDatetime", "type": "DATETIME2", "nullable": true, "description": "Effective event start: CONVERT(DATETIME2, FbEventStartDatetime) or CONVERT(DATETIME2, EventStartDatetime). Timezone offset stripped. Table columns are DATETIMEOFFSET(7)." },
+        { "name": "hemEventStartDatetimeGmt", "type": "DATETIMEOFFSET(7)", "nullable": true, "description": "COALESCE(Event.EventStartDatetimeGmt, Event.EventStartDatetime). Preserves timezone offset." },
+        { "name": "hemCanEditRunAttendence", "type": "SMALLINT", "nullable": false, "description": "Event.CanEditRunAttendence. Table column is SMALLINT NOT NULL." },
+        { "name": "hemEventIsCountedAndVisible", "type": "INT", "nullable": false, "description": "1 when Event.IsCountedRun != 0 AND Event.IsVisible != 0, else 0. Computed expression." },
+        { "name": "hemEventKennelId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Event.KennelId. Table column is UNIQUEIDENTIFIER NOT NULL." },
+        { "name": "hemKennelUserPhoto", "type": "NVARCHAR(500)", "nullable": true, "description": "HasherKennelMap.KennelUserPhoto (LEFT JOIN — NULL if no HKM row). Table column is NVARCHAR(500) NULL." },
+        { "name": "hemKennelHashName", "type": "NVARCHAR(150)", "nullable": true, "description": "HasherKennelMap.KennelHashName (LEFT JOIN — NULL if no HKM row). Table column is NVARCHAR(150) NULL." },
+        { "name": "removed", "type": "SMALLINT", "nullable": false, "description": "HasherEventMap.removed. Table column is SMALLINT NOT NULL." },
+        { "name": "updatedAt", "type": "NVARCHAR(50)", "nullable": false, "description": "CONVERT(NVARCHAR(50), CAST(hem.updatedAt AS DATETIME2)) — timezone offset stripped. Table column is DATETIMEOFFSET(7) NOT NULL." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Writes to HC.ErrorLog on @eventId validation failure.",
+    "No writes on auth failure — ValidateAppAuth writes its own error log entries."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "hemEventStartDatetime loses timezone offset via CONVERT to DATETIME2",
+      "detail": "Both EventStartDatetime and FbEventStartDatetime are DATETIMEOFFSET(7) but the SP strips the offset with CONVERT(DATETIME2, ...). This is the same pattern as hcapp_getRuns. Client receives local time with no UTC offset."
+    },
+    {
+      "severity": "low",
+      "issue": "updatedAt returned as NVARCHAR(50) string",
+      "detail": "Both Hashers.updatedAt and HasherEventMap.updatedAt are stringified via CONVERT(NVARCHAR(50), CAST(... AS DATETIME2)), stripping the timezone offset. Clients must parse the string and treat it as local time."
+    }
+  ],
+  "breakingChanges": [
+    "email and phoneNumber columns are always NULL in this SP — callers that expect real values must use the admin-only hcapp_syncEventAdminData instead.",
+    "Rowset index depends on which watermarks are non-'ignore': if only HasherEventMap is requested, it arrives at index 0. If both are requested, Hashers is 0 and HasherEventMap is 1. Clients must not assume a fixed index."
+  ]
+}

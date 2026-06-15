@@ -1,0 +1,115 @@
+{
+  "schema": "HC6",
+  "name": "ValidateAppAuth",
+  "version": "1.0.0",
+  "description": "Internal authentication helper SP used by all HC6 app SPs. Resolves device credentials from HC.Device using @deviceId, then validates the access token via HC.CHECK_ACCESS_TOKEN_V2. On success, returns @userId (HC.Hasher.id), @deviceSecret (HC.Device.DeviceSecret), and @timeWindow (HC.Device.TimeWindow) to the caller via OUTPUT parameters. On failure, populates error OUTPUT parameters (@errorCode, @errorType, @errorId, @errorTitle, @errorMsg) for the calling SP to emit a standard app error rowset. NOT exposed as an API endpoint — called only by other HC6 app SPs.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "Calling device UUID. Looked up in HC.Device to retrieve UserId, DeviceSecret, and TimeWindow. Required."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived cryptographic token from the app. Validated via HC.CHECK_ACCESS_TOKEN_V2 using @userId, @procName, and the resolved token context string."
+    },
+    {
+      "name": "procName",
+      "type": "NVARCHAR(128)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Caller MUST pass OBJECT_NAME(@@PROCID). Baked into the token hash on the Flutter client side — must match the SP name exactly for validation to succeed."
+    },
+    {
+      "name": "spNumber",
+      "type": "INT",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Two-digit SP number assigned to the calling SP. Used to compute errorCode: auth failure = 1100 + @spNumber, device not found = 1300 + @spNumber."
+    },
+    {
+      "name": "param",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Optional compound param string (e.g. deviceSecret + targetUserId). When provided, replaces @deviceSecret as the token validation context string. Pass NULL for standard device-secret-only auth."
+    },
+    {
+      "name": "userId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Hasher.id",
+      "description": "OUTPUT: HC.Hasher.id of the authenticated user (resolved via Device.UserId). NULL on failure."
+    },
+    {
+      "name": "deviceSecret",
+      "type": "NVARCHAR(150)",
+      "nullable": true,
+      "mapsToColumn": "Device.DeviceSecret",
+      "description": "OUTPUT: HC.Device.DeviceSecret (stored uppercase). NULL on failure. Returned to calling SPs that need it to construct compound @param strings for nested SP calls."
+    },
+    {
+      "name": "timeWindow",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "Device.TimeWindow",
+      "description": "OUTPUT: HC.Device.TimeWindow (seconds). Used by HC.CHECK_ACCESS_TOKEN_V2 for token expiry validation. NULL on failure."
+    },
+    {
+      "name": "errorCode",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "OUTPUT: NULL on success. 1300 + @spNumber when device not found. 1100 + @spNumber when token invalid."
+    },
+    {
+      "name": "errorType",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "OUTPUT: NULL on success. 3 when device not found. 1 when token invalid."
+    },
+    {
+      "name": "errorId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "ErrorLog.id",
+      "description": "OUTPUT: NULL on success. HC.ErrorLog GUID written on any failure."
+    },
+    {
+      "name": "errorTitle",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "OUTPUT: NULL on success. Short error title on failure: 'Device not registered' or 'Invalid access token'."
+    },
+    {
+      "name": "errorMsg",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "OUTPUT: NULL on success. User-facing error message on failure."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [
+    "Writes to HC.ErrorLog on device-not-found failure.",
+    "Writes to HC.ErrorLog on token validation failure."
+  ],
+  "prerequisites": [
+    "HC.CHECK_ACCESS_TOKEN_V2 scalar function must exist.",
+    "HC.Device row must exist for @deviceId with a non-null, non-zero UserId for auth to pass."
+  ],
+  "breakingChangeRules": [
+    "Never change the OUTPUT parameter semantics — all callers read them by position after EXEC.",
+    "Never change the errorType integer codes (1 = auth, 3 = not found) without updating all callers.",
+    "Never change the errorCode formula (1100+N / 1300+N) without updating all callers and the Flutter error handler.",
+    "Never change the token context string logic (COALESCE(@param, @deviceSecret)) without coordinating with Flutter.",
+    "Never add a new OUTPUT parameter without updating all callers — SQL EXEC with named params is safe but callers must add the new OUTPUT binding."
+  ]
+}

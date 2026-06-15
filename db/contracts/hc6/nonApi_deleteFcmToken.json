@@ -1,0 +1,32 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_deleteFcmToken",
+  "version": "1.0.0",
+  "description": "Clears a stale or invalid FCM registration token from HC.Device by setting FcmToken = NULL and stamping FcmTokenDeleted. Called by AppApiHC6, PortalApiHC6, and RunCheckInNotification whenever FCM returns UNREGISTERED or NOT_FOUND for a token. Fire-and-forget — errors are swallowed by callers. Preserves the device row (including location/audit history) rather than deleting it.",
+  "parameters": [
+    {
+      "name": "fcmToken",
+      "type": "NVARCHAR(500)",
+      "nullable": false,
+      "mapsToColumn": "Device.FcmToken",
+      "description": "The stale FCM registration token to clear. If NULL or empty string, the SP returns immediately with no action. Table column is NVARCHAR(500) NULL."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [
+    "Sets HC.Device.FcmToken = NULL for the matching device row.",
+    "Sets HC.Device.FcmTokenDeleted = SYSUTCDATETIME() for the matching device row.",
+    "No-op if @fcmToken is NULL or empty (early return guard).",
+    "No-op if no HC.Device row matches the given token (UPDATE affects 0 rows silently)."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "FcmTokenDeleted column not in extracted table schema",
+      "detail": "The SP references HC.Device.FcmTokenDeleted, which does not appear in the /db/schema/tables/HC.Device.Table.sql snapshot. This column was likely added after the schema was exported. Callers should be aware it exists in production."
+    }
+  ],
+  "breakingChanges": [
+    "HC5.hcinternalapi_removeStaleFcmToken performed DELETE FROM HC.Device, destroying the device row. HC6 sets FcmToken = NULL instead, preserving the row. Any code that relied on the device row being deleted after token removal must be updated."
+  ]
+}

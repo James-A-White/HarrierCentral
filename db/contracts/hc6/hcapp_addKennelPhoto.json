@@ -1,0 +1,138 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_addKennelPhoto",
+  "version": "1.0.0",
+  "description": "Records a kennel photo after the app has uploaded the image blob directly to Azure Storage. Resolves the effective sharing preference (per-run override → per-kennel HasherKennelMap.PhotoSharingPreference → global Hasher.Preferences bit 0x40) and sets the initial status accordingly: 0=private or 1=pending_review. No sync delegation — photos are fetched on-demand via hcapp_getRunPhotos.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth for auth resolution."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token validated against DeviceSecret."
+    },
+    {
+      "name": "photoId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "KennelPhotos.id",
+      "description": "Client-generated GUID for the photo row. Must be unique. Null or zero-UUID triggers a validation error (errorCode 1231, errorType 12)."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "KennelPhotos.EventId",
+      "description": "Event the photo belongs to. Must exist and belong to @kennelId. Null or zero-UUID triggers a validation error."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "KennelPhotos.KennelId",
+      "description": "Kennel scope. Must match the event's KennelId. Null or zero-UUID triggers a validation error."
+    },
+    {
+      "name": "blobUrl",
+      "type": "NVARCHAR(500)",
+      "nullable": false,
+      "mapsToColumn": "KennelPhotos.BlobUrl",
+      "description": "Full CDN URL to the uploaded blob. Required; empty string triggers a validation error."
+    },
+    {
+      "name": "latitude",
+      "type": "DECIMAL(9,6)",
+      "nullable": false,
+      "mapsToColumn": "KennelPhotos.Latitude",
+      "description": "Latitude where the photo was taken."
+    },
+    {
+      "name": "longitude",
+      "type": "DECIMAL(9,6)",
+      "nullable": false,
+      "mapsToColumn": "KennelPhotos.Longitude",
+      "description": "Longitude where the photo was taken."
+    },
+    {
+      "name": "title",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "KennelPhotos.Title",
+      "description": "Optional short title for the photo. Defaults to NULL."
+    },
+    {
+      "name": "description",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "KennelPhotos.Description",
+      "description": "Optional longer caption/description. Defaults to NULL."
+    },
+    {
+      "name": "assetId",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "KennelPhotos.AssetId",
+      "description": "Device-library identifier (iOS PHAsset.localIdentifier / Android MediaStore URI). NULL when the user had 'save to camera roll' disabled or permission denied. Device-specific — only valid on the device that uploaded the photo. Defaults to NULL."
+    },
+    {
+      "name": "perRunSharingOverride",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Per-run sharing preference override. NULL = resolve from saved preferences. 0 = keep private. 1 = share with Hash Flash (status=pending_review). Overrides HasherKennelMap.PhotoSharingPreference and Hasher.Preferences bit 0x40. Defaults to NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "Standard success/failure envelope. On auth failure or validation error: success=0, errorCode and errorType set. On DB error: success=0, errorCode=1931, errorType=19. On success: success=1, errorCode=NULL, errorType=NULL. Mutually exclusive position with error detail rowset at index 1.",
+      "columns": [
+        { "name": "success", "type": "INT", "nullable": false, "description": "1 on success, 0 on any failure." },
+        { "name": "errorCode", "type": "INT", "nullable": true, "description": "Numeric error code. NULL on success." },
+        { "name": "errorType", "type": "INT", "nullable": true, "description": "Error classification code. NULL on success." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "PhotoResult",
+      "description": "On success: the inserted photo ID and resolved initial status. On error: standard HC6 error detail rowset. These two shapes are mutually exclusive at index 1.",
+      "columns": [
+        { "name": "photoId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The photo's UUID (echoed back from @photoId)." },
+        { "name": "status", "type": "TINYINT", "nullable": false, "description": "Resolved initial status. 0=private, 1=pending_review. Derived from effective sharing preference." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Inserts one row into HC.KennelPhotos with the resolved status.",
+    "Writes to HC.ErrorLog on validation, auth, event/kennel mismatch, or unhandled errors.",
+    "Reads Hasher.Preferences (bit 0x40) and HasherKennelMap.PhotoSharingPreference to resolve sharing preference when @perRunSharingOverride is NULL."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Quota enforcement stub always inactive",
+      "detail": "@maxPhotosPerUserPerRun is hardcoded to NULL, making the entire quota check block dead code until paid tiers are designed. Noted in the SP header as intentional (v2 placeholder)."
+    },
+    {
+      "severity": "low",
+      "issue": "HcVersion hardcoded to '<unknown>' in all ErrorLog inserts",
+      "detail": "All HC.ErrorLog inserts throughout this SP pass '<unknown>' for HcVersion. This is consistent with other HC6 SPs but means the version is never captured."
+    },
+    {
+      "severity": "low",
+      "issue": "Validation for eventId/kennelId/blobUrl combined in one block",
+      "detail": "A single error block covers three distinct missing-parameter cases (eventId, kennelId, blobUrl). If multiple parameters are missing, only one error is reported and the caller cannot distinguish which parameter caused the failure."
+    }
+  ],
+  "breakingChanges": [
+    "New SP — no HC5 predecessor. No breaking changes from migration."
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getProfilePhotoUploadToken",
+  "version": "1.0.0",
+  "description": "Validates auth and returns the userId so the calling Azure Function can construct a scoped SAS write token for the profile-photos blob container. No side effects — pure auth check. The simplest of the photo SPs: no additional parameters, no kennel lookup, no extra validation beyond auth.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth for auth resolution."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token validated against DeviceSecret."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "On auth failure: success=0, errorCode and errorType set. On success: success=1, plus userId. Note: on success the envelope and the userId are combined in a single rowset rather than split across two rowsets — this is an unusual shape for this SP family.",
+      "columns": [
+        { "name": "success", "type": "INT", "nullable": false, "description": "1 on success, 0 on auth failure." },
+        { "name": "userId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "HC.Hasher.id of the authenticated user. NULL on failure." }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Returned only on auth failure (paired with success=0 in rowset 0). Not present on success."
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Success rowset combines envelope and data in a single rowset",
+      "detail": "On success, this SP returns SELECT 1 AS success, @userId AS userId — mixing the envelope (success flag) and the payload (userId) into one rowset. All other photo SPs in this family return the envelope at rowset 0 and payload at rowset 1. The inconsistency means the API shim and Dart caller must handle a different shape for this SP alone."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH",
+      "detail": "The SP has no TRY/CATCH block. An unexpected DB error will propagate as a raw SQL error rather than a structured error rowset. Low risk for a read-only SP with no DB writes."
+    }
+  ],
+  "breakingChanges": [
+    "New SP — no HC5 predecessor. No breaking changes from migration."
+  ]
+}

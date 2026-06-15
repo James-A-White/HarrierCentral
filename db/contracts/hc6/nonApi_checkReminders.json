@@ -1,0 +1,151 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_checkReminders",
+  "version": "1.0.0",
+  "description": "Timer-triggered SP (RunCheckInNotification, every 1 minute) that scans HC.Event for events within the check-in reminder window (±11 minutes from start) or RSVP reminder window (±3 days from start) that have not yet had their reminder sent. Returns two rowsets consumed by the C# timer trigger to dispatch FCM pushes, then stamps CheckInReminderSent / RsvpReminderSent on HC.Event so reminders are not re-sent on the next tick. No parameters — called inside Azure Functions and not publicly accessible.",
+  "parameters": [],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "MessageDetails",
+      "description": "One row per qualifying event (minutesToEvent > 0). Empty when no reminders are due. Consumed by the C# RunCheckInNotification trigger to build FCM notification payloads. MessageRelesabilityFlags column name preserves the HC5 typo so the C# EventMessage deserialiser continues to work without a breaking change.",
+      "columns": [
+        {
+          "name": "MessageId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "NEWID() generated per qualifying event — shared key between Rowset 0 and Rowset 1."
+        },
+        {
+          "name": "EventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.Event.id — internal event primary key."
+        },
+        {
+          "name": "PublicEventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.Event.PublicEventId — public-facing event UUID for deep-links in push notifications."
+        },
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "PublicHasherId of the HC system user ('B6BAFD0D-5D2E-41CD-8495-811D551F01D0'). Always the same hardcoded system user."
+        },
+        {
+          "name": "UserDisplayName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "HC.Hasher.DisplayName for the HC system user. Computed column from Hasher table."
+        },
+        {
+          "name": "UserPhoto",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "HC.Hasher.Photo for the HC system user. Table column is NVARCHAR(1000) NULL."
+        },
+        {
+          "name": "MessageTitle",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Notification title: 'Time to check in' (MessageType=1) or 'Time to RSVP' (MessageType=2)."
+        },
+        {
+          "name": "MessageContent",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Notification body text constructed from event name and time-to-event. Human-readable string with time units (minutes/hours/days)."
+        },
+        {
+          "name": "MessageRelesabilityFlags",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 65535. Intentional typo in column name ('Relesability' not 'Releasability') preserved for C# EventMessage deserialiser compatibility."
+        },
+        {
+          "name": "EventChatMessageCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0. Obsolete since app version 2.1.3; kept for C# deserialiser compatibility."
+        },
+        {
+          "name": "MessageType",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 = check-in reminder (within ±11 minutes of event start), 2 = RSVP reminder (within ±3 days of event start)."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Recipients",
+      "description": "One row per FCM token that should receive the push for a given event. For MessageType=1 (check-in): filtered to tokens within 100 km of the event and not already checked in. For MessageType=2 (RSVP): all token holders who have not yet RSVPd. May be empty when no qualifying recipients exist.",
+      "columns": [
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.HasherKennelMap.UserId — the recipient hasher's internal UUID."
+        },
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "HC.Device.FcmToken — the FCM registration token for this device. May be NULL (for check-in pushes, geo-filter may pass NULL-token devices if GeoPoint matches; for RSVP pushes, NULL tokens are explicitly excluded)."
+        },
+        {
+          "name": "EventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "The event this push relates to — links back to Rowset 0 EventId."
+        },
+        {
+          "name": "MessageId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "NEWID() from #messages — links back to Rowset 0 MessageId."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Stamps HC.Event.CheckInReminderSent = GETDATE() for all type-1 events returned in Rowset 0.",
+    "Stamps HC.Event.RsvpReminderSent = GETDATE() for all type-2 events returned in Rowset 0.",
+    "On stamp failure: inserts an error row into HC.ErrorLog (does not abort — rowsets have already been returned).",
+    "Stamp failures cause the reminder to be re-sent on the next timer tick (preferred over silent failure)."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Rowsets are returned before the stamp UPDATE commits",
+      "detail": "Steps 3 and 4 SELECT from #messages and return the rowsets, then Step 5 issues the UPDATE inside TRY/CATCH. If the timer trigger reads the rowsets and dispatches pushes before the stamp completes, and the stamp then fails, the next timer tick will re-process the same events and send duplicate reminders. This is documented as the preferred trade-off (duplicate reminder vs. lost push), but callers must be aware of the idempotency risk."
+    },
+    {
+      "severity": "medium",
+      "issue": "Check-in recipient filter can return rows with NULL FcmToken",
+      "detail": "The check-in (MessageType=1) UNION branch filters d.Latitude IS NOT NULL and uses GeoPoint.STDistance for geo-fencing but does not filter d.FcmToken IS NOT NULL. Recipients with a known location but a NULL FCM token will appear in Rowset 1. The C# caller must guard against null tokens before dispatching."
+    },
+    {
+      "severity": "low",
+      "issue": "Hardcoded system user UUIDs",
+      "detail": "The HC system user id ('0CDBB109-215E-4B5F-A405-F6C9FBCB18EC') and PublicHasherId ('B6BAFD0D-5D2E-41CD-8495-811D551F01D0') are hardcoded literals. If these ever change in the DB, the SP breaks silently."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH around main SELECT steps",
+      "detail": "Only Step 5 (the stamp UPDATE) is wrapped in TRY/CATCH. An unexpected error in Steps 1-4 (the #temp population or SELECT queries) will propagate as a raw SQL exception to the C# timer trigger with no structured error rowset."
+    },
+    {
+      "severity": "low",
+      "issue": "MessageReleasabilityFlags typo preserved for compat",
+      "detail": "Column alias 'MessageRelesabilityFlags' (misspelling of 'Releasability') is intentionally preserved to avoid a C# breaking change. This is a known documented smell, not an accidental bug."
+    }
+  ],
+  "breakingChanges": [
+    "HC5 accepted an @apiKey parameter and validated it against a hardcoded key. HC6 removes @apiKey entirely — the timer trigger is internal to Azure Functions.",
+    "HC5 wrote a startup entry to LOG.GeneralLog. HC6 removes this noise (timer runs every minute).",
+    "HC5 stamp failure caused the SP to abort with a raw error. HC6 wraps the stamp in TRY/CATCH and continues — duplicate reminders are possible on transient stamp failures."
+  ]
+}

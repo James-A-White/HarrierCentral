@@ -1,0 +1,57 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_logError",
+  "version": "1.0.0",
+  "description": "Inserts an error entry into HC.ErrorLog. Called directly by name from the EmailInviteCode Azure Function when an invite-code lookup fails. Fire-and-forget helper — returns no rowsets. All parameters default to '<unknown>' so partial calls are safe.",
+  "parameters": [
+    {
+      "name": "errorType",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "ErrorLog.ErrorName",
+      "description": "Exception type name or short error label. Defaults to '<unknown>'. Maps to HC.ErrorLog.ErrorName (NVARCHAR(250) NULL). Note: parameter name 'errorType' maps to column 'ErrorName' — slight semantic mismatch."
+    },
+    {
+      "name": "message",
+      "type": "NVARCHAR(2500)",
+      "nullable": true,
+      "mapsToColumn": "ErrorLog.ErrorDescription",
+      "description": "Exception message or full error description. Defaults to '<unknown>'. Maps to HC.ErrorLog.ErrorDescription (NVARCHAR(2500) NULL). Parameter type NVARCHAR(2500) matches column length exactly."
+    },
+    {
+      "name": "location",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "ErrorLog.ProcName",
+      "description": "Method or SP name where the error was caught. Defaults to '<unknown>'. Maps to HC.ErrorLog.ProcName (NVARCHAR(250) NULL)."
+    },
+    {
+      "name": "inputText",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": "ErrorLog.string_1",
+      "description": "Input value relevant to the error (email address, hasher ID, etc.). Defaults to '<unknown>'. Maps to HC.ErrorLog.string_1 (NVARCHAR(4000) NULL). Parameter is narrower than the column (1000 vs 4000) — acceptable for this use case."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [
+    "Inserts 1 row into HC.ErrorLog with HcVersion = 'HC6-EmailInviteCode'.",
+    "HC.ErrorLog.id, createdAt, updatedAt are populated by table defaults (NEWID(), SYSUTCDATETIME(), SYSUTCDATETIME())."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Parameter name 'errorType' maps to column 'ErrorName' — semantic mismatch",
+      "detail": "The @errorType parameter is inserted into HC.ErrorLog.ErrorName. The column is named ErrorName, not ErrorType. Callers pass the exception class name or short label, which is correctly stored in ErrorName. No functional issue, just a naming inconsistency."
+    },
+    {
+      "severity": "low",
+      "issue": "@inputText is narrower than the target column",
+      "detail": "@inputText is NVARCHAR(1000) but HC.ErrorLog.string_1 is NVARCHAR(4000). Values longer than 1000 characters will be silently truncated at the parameter boundary. Acceptable for email addresses and hasher IDs (the documented use cases), but could be widened for safety."
+    }
+  ],
+  "breakingChanges": [
+    "HC5 accepted @errorCode, @string_2, @string_3, @string_4 parameters. HC6 removes all four — no HC6 caller uses them, and they were only needed for the HcExternalDataIntegration Facebook token-refresh side effect (errorCode=30010).",
+    "HC5 had an INFO-type filter that skipped logging for informational entries. HC6 removes this filter — all calls now insert unconditionally."
+  ]
+}

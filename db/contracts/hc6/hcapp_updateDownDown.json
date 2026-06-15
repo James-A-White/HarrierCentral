@@ -1,0 +1,115 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_updateDownDown",
+  "version": "1.0.0",
+  "description": "Updates the charge text, song choice/ID, and optionally the charge photo URL on an existing DownDown. Only the original creator or a GM/RA for the kennel may edit. chargePhotoUrl is merged with COALESCE — pass NULL to leave the existing photo unchanged (there is no way to clear it via this SP). Scoped to eventId + kennelId for safety. New feature — no HC5 equivalent.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth for auth resolution."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token validated against DeviceSecret."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "DownDowns.KennelId",
+      "description": "Kennel that owns the event. Used as auth scope and as part of the UPDATE WHERE clause. Required — null or zero-UUID triggers validation error."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "DownDowns.EventId",
+      "description": "Event the DownDown belongs to. Used as part of the UPDATE WHERE clause. Required — null or zero-UUID triggers validation error."
+    },
+    {
+      "name": "downDownId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "DownDowns.id",
+      "description": "DownDown to update. Required — null or zero-UUID triggers validation error. If no DownDown matches downDownId + eventId + kennelId, returns errorCode 4041, errorType 3."
+    },
+    {
+      "name": "chargeText",
+      "type": "NVARCHAR(MAX)",
+      "nullable": false,
+      "mapsToColumn": "DownDowns.ChargeText",
+      "description": "New charge text. Required — empty or whitespace-only triggers validation error."
+    },
+    {
+      "name": "songChoice",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "DownDowns.SongChoice",
+      "description": "Updated suggested song name (free text). Stored as NULL if blank or not supplied."
+    },
+    {
+      "name": "songId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "DownDowns.SongId",
+      "description": "Updated FK to HC.Song. NULL to clear the song association."
+    },
+    {
+      "name": "chargePhotoUrl",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "DownDowns.ChargePhotoUrl",
+      "description": "Updated charge photo blob URL. Uses COALESCE(@chargePhotoUrl, ChargePhotoUrl) — passing NULL leaves the existing value unchanged. There is no way to clear the photo via this SP."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Compact error envelope returned on auth, validation, not-found, or unhandled errors: { success=0, errorCode, errorType }. Mutually exclusive with SuccessEnvelope rowset.",
+      "columns": [
+        { "name": "success", "type": "SMALLINT", "nullable": false, "description": "Always 0 on error." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Numeric error code." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "Returned on successful update: { success=1, errorCode=NULL, errorType=NULL }. Mutually exclusive with ErrorEnvelope rowset.",
+      "columns": [
+        { "name": "success", "type": "SMALLINT", "nullable": false, "description": "Always 1 on success." },
+        { "name": "errorCode", "type": "INT", "nullable": true, "description": "Always NULL on success." },
+        { "name": "errorType", "type": "INT", "nullable": true, "description": "Always NULL on success." }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Returned (at index 1) alongside the ErrorEnvelope (index 0) on any auth, validation, not-found, or unhandled error."
+    }
+  ],
+  "sideEffects": [
+    "Updates HC.DownDowns: sets ChargeText, SongChoice, SongId, ChargePhotoUrl (via COALESCE), UpdatedAt where id + eventId + kennelId match.",
+    "Writes to HC.ErrorLog on auth, validation, not-found, or unhandled errors."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "No way to clear ChargePhotoUrl via this SP",
+      "detail": "ChargePhotoUrl is updated with COALESCE(@chargePhotoUrl, ChargePhotoUrl). If the caller wants to remove a charge photo, there is no way to do it through this SP — passing NULL leaves the existing URL. A sentinel empty-string or a separate @clearPhoto flag would be needed to support photo removal."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH wrapping the UPDATE statement",
+      "detail": "The main UPDATE is not inside a BEGIN TRY block. An unexpected DB error will propagate as a raw SQL error. XACT_ABORT ON ensures rollback, but the caller receives an unstructured error."
+    }
+  ],
+  "breakingChanges": []
+}

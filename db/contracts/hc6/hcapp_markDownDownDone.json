@@ -1,0 +1,87 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_markDownDownDone",
+  "version": "1.0.0",
+  "description": "Marks a DownDown charge as done (IsDone = 1, IsCancelled = 0). The two flags are mutually exclusive — marking done also clears IsCancelled. The operation is idempotent. Auth: GM (MismanagementRoles bit 0x02) or RA (0x08). New feature — no HC5 equivalent.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth for auth resolution."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token validated against DeviceSecret."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "DownDowns.KennelId",
+      "description": "Kennel that owns the event. Used as auth scope and as part of the UPDATE WHERE clause. Required — null or zero-UUID triggers validation error."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "DownDowns.EventId",
+      "description": "Event the DownDown belongs to. Used as part of the UPDATE WHERE clause. Required — null or zero-UUID triggers validation error."
+    },
+    {
+      "name": "downDownId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "DownDowns.id",
+      "description": "DownDown to mark as done. Required — null or zero-UUID triggers validation error. If no DownDown matches downDownId + eventId + kennelId, returns errorCode 4041, errorType 3."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Compact error envelope returned on auth, validation, not-found, or unhandled errors: { success=0, errorCode, errorType }. Mutually exclusive with SuccessEnvelope rowset.",
+      "columns": [
+        { "name": "success", "type": "SMALLINT", "nullable": false, "description": "Always 0 on error." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Numeric error code." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "Returned on successful mark-done: { success=1, errorCode=NULL, errorType=NULL }. Mutually exclusive with ErrorEnvelope rowset.",
+      "columns": [
+        { "name": "success", "type": "SMALLINT", "nullable": false, "description": "Always 1 on success." },
+        { "name": "errorCode", "type": "INT", "nullable": true, "description": "Always NULL on success." },
+        { "name": "errorType", "type": "INT", "nullable": true, "description": "Always NULL on success." }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Returned (at index 1) alongside the ErrorEnvelope (index 0) on any auth, validation, not-found, or unhandled error."
+    }
+  ],
+  "sideEffects": [
+    "Updates HC.DownDowns: sets IsDone = 1, IsCancelled = 0, UpdatedAt = GETUTCDATE() where id + eventId + kennelId match.",
+    "Writes to HC.ErrorLog on auth, validation, not-found, or unhandled errors."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "IsDone and IsCancelled columns are BIT in the table, not SMALLINT",
+      "detail": "HC.DownDowns.IsDone and IsCancelled are declared as BIT NOT NULL. The project standard is SMALLINT. SQL Server implicitly converts the integer literals used in the UPDATE. Dart callers must handle these as JSON booleans, not integers."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH wrapping the UPDATE statement",
+      "detail": "The main UPDATE is not inside a BEGIN TRY block. An unexpected DB error will propagate as a raw SQL error. XACT_ABORT ON ensures rollback, but the caller receives an unstructured error."
+    }
+  ],
+  "breakingChanges": []
+}

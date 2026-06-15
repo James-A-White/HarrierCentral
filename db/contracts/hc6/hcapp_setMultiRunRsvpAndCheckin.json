@@ -1,0 +1,135 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_setMultiRunRsvpAndCheckin",
+  "version": "1.0.0",
+  "description": "Processes the multi-run check-in dialog result in a single transaction. For each event in @checkInEventIds, upserts HasherEventMap with AttendenceState=20 (at hash) and RsvpState=3 (RSVP yes), guarded so existing check-ins (AttendenceState >= 20) are never downgraded. For each event in @rsvpNoEventIds, upserts HasherEventMap with RsvpState=1 (not coming), guarded so rows where the hasher is already checked in are not touched. Both lists are pipe-delimited UUID strings. After the transaction, runs HC6.nonApi_updateRunCountsByUser for check-in events, then delegates to HC6.hcapp_syncUserData (common domain) to replicate attendance changes back to the device.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth (SP number 93, auth errorCode range 1193/1393) and forwarded to hcapp_syncUserData."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token validated against DeviceSecret. @param = NULL (device-secret-only auth). Also forwarded to hcapp_syncUserData."
+    },
+    {
+      "name": "checkInEventIds",
+      "type": "NVARCHAR(MAX)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Pipe-delimited list of event UUIDs to check in to (AttendenceState=20, RsvpState=3). Pass an empty string or NULL to skip check-in processing. UUIDs are TRIM()ed before CAST."
+    },
+    {
+      "name": "rsvpNoEventIds",
+      "type": "NVARCHAR(MAX)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Pipe-delimited list of event UUIDs to mark RSVP No (RsvpState=1). Pass an empty string or NULL to skip RSVP-No processing. Never downgrades existing check-ins."
+    },
+    {
+      "name": "hasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Hasher.id",
+      "description": "Target hasher to check in or RSVP for. If NULL, defaults to the authenticated user (@userId resolved from auth). Allows admins to act on behalf of other hashers."
+    },
+    {
+      "name": "hasherEventMapUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Sync watermark forwarded to hcapp_syncUserData for the HasherEventMap rowset. Pass 'ignore' to skip that domain. NULL is COALESCE'd to 'ignore'."
+    },
+    {
+      "name": "hasherKennelMapUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Sync watermark forwarded to hcapp_syncUserData for the HasherKennelMap rowset. Pass 'ignore' to skip that domain. NULL is COALESCE'd to 'ignore'."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "Always returned as rowset 0. success=0 on auth failure or unhandled error; success=1 on success.",
+      "columns": [
+        { "name": "success", "type": "INT", "nullable": false, "description": "1 on success, 0 on any error." },
+        { "name": "errorCode", "type": "INT", "nullable": true, "description": "NULL on success. Auth error codes (1193/1393) or CATCH error code (1993)." },
+        { "name": "errorType", "type": "INT", "nullable": true, "description": "NULL on success. 1=auth, 3=device not found, 19=unhandled CATCH error." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ErrorDetail",
+      "description": "Returned at rowset 1 when success=0. Standard HC6 app error shape. Mutually exclusive with AdHocData and sync rowsets.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Specific error code." },
+        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
+        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "AdHocData",
+      "description": "Returned at rowset 1 when success=1. Minimal confirmation token per the adHocDataId pattern. Mutually exclusive with ErrorDetail rowset.",
+      "columns": [
+        {
+          "name": "adHocDataId",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1. Sentinel value confirming successful write. Clients should check rowset 0 success=1 rather than inspecting this value."
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "SyncUserDataRowsets",
+      "description": "Rowsets 2+ are the output of HC6.hcapp_syncUserData (common domain) called with @hashersUpdatedAfter='ignore', the caller-supplied HEM and HKM watermarks. The exact rowset count and shapes match hcapp_syncUserData's contract. Only present when success=1.",
+      "columns": []
+    }
+  ],
+  "sideEffects": [
+    "Upserts HC.HasherEventMap rows for all event UUIDs in @checkInEventIds (AttendenceState=20, RsvpState=3). Guard: never downgrades AttendenceState >= 20.",
+    "Upserts HC.HasherEventMap rows for all event UUIDs in @rsvpNoEventIds (RsvpState=1). Guard: never touches rows where AttendenceState >= 20.",
+    "Calls HC6.nonApi_updateRunCountsByUser(@hasherId) after commit if @checkInEventIds is non-empty — updates run count totals on HasherKennelMap.",
+    "Calls HC6.hcapp_syncUserData with common-domain watermarks to return updated HEM and HKM data.",
+    "Writes to HC.ErrorLog on auth failure (via ValidateAppAuth) and on CATCH error."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "nonApi_updateRunCountsByUser called outside the transaction",
+      "detail": "HC6.nonApi_updateRunCountsByUser is called after COMMIT TRANSACTION. If it fails, the HasherEventMap rows are committed but run counts are not updated, leaving totals stale. The SP itself has SET XACT_ABORT ON so an unhandled error in the post-commit section would raise an exception but not roll back the already-committed HEM changes. This is the same pattern noted in other app SPs — run count updates are treated as eventually-consistent background work."
+    },
+    {
+      "severity": "medium",
+      "issue": "Unhandled CATCH errorType 19 is non-standard",
+      "detail": "The CATCH block uses errorType=19, which is not in the standard HC6 errorType table (valid codes are 1=auth, 2=validation, 3=not found, 4=concurrent modification, 5=unhandled DB error). Callers that branch on errorType=5 for unhandled errors will not catch this case."
+    },
+    {
+      "severity": "low",
+      "issue": "No validation on empty or malformed event UUID strings",
+      "detail": "STRING_SPLIT + CAST(TRIM(s.value) AS UNIQUEIDENTIFIER) will throw an exception (caught by TRY/CATCH) if any pipe-delimited segment is not a valid UUID. The error message will be a raw SQL CAST failure with no indication of which event ID was malformed. Client-side validation is the only guard."
+    },
+    {
+      "severity": "low",
+      "issue": "updatedAt set with GETDATE() instead of SYSUTCDATETIME()",
+      "detail": "HasherEventMap upserts set updatedAt = GETDATE() (local server time). Other SPs in the codebase use SYSUTCDATETIME() for UTC consistency. The UpdatedAt trigger on HasherEventMap will override this value on INSERT/UPDATE, so the final stored value is trigger-computed — but the GETDATE() in the MERGE is redundant and potentially misleading."
+    }
+  ],
+  "breakingChanges": [
+    "Pipe delimiter (|) for event UUID lists is project-standard. Callers must never use comma-delimited lists.",
+    "hcapp_syncUserData is called with @hashersUpdatedAfter='ignore' hardcoded — the Hashers rowset is never included in the sync response from this SP regardless of what callers pass.",
+    "The CATCH block uses errorType=19 (non-standard). Callers should treat any success=0 at rowset 0 as an error regardless of errorType value."
+  ]
+}

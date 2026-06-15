@@ -1,0 +1,47 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_getUserInviteCodeByPublicHasherId",
+  "version": "1.0.0",
+  "description": "Resolves a hasher's email address and current invite code from their public hasher ID so the EmailInviteCode Azure Function can send an invite without requiring the client to supply the email address directly. Called only from the EmailInviteCode endpoint — never from the app. Returns an empty result set when the hasher is not found or is removed (Removed != 0).",
+  "parameters": [
+    {
+      "name": "publicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Hasher.PublicHasherId",
+      "description": "The hasher's public-facing UUID from HC.Hasher.PublicHasherId — typically obtained by the client from hcapp_findHashersByHashName. Table column is UNIQUEIDENTIFIER NOT NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "HasherInviteDetails",
+      "description": "Returns 0 or 1 rows. 0 rows when the hasher is not found or is removed (Removed != 0). 1 row with email and invite code when found. The C# caller must handle the 0-row case.",
+      "columns": [
+        {
+          "name": "Email",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "HC.Hasher.Email — the hasher's email address. Table column is NVARCHAR(250) NOT NULL. The C# caller uses this to address the invite email."
+        },
+        {
+          "name": "InviteCode",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "HC.Hasher.ResetCode with the 'URC:' prefix stripped via REPLACE. Returns the raw 6-letter code. Table column is NVARCHAR(50) NOT NULL (default '######'). May return an empty string or non-URC value if the code has never been generated for this hasher."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "InviteCode may be the default placeholder if no code was ever generated",
+      "detail": "HC.Hasher.ResetCode has a default value of '######'. If nonApi_getUserInviteCode has never been called for this hasher, the REPLACE strips the 'URC:' prefix (no-op since the default does not contain it) and returns '######' as the InviteCode. The C# caller should call nonApi_getUserInviteCode first to ensure a code is generated before calling this SP."
+    }
+  ],
+  "breakingChanges": [
+    "HC5 lived in the HC schema (HC.nonApi_getUserInviteCodeByPublicHasherId). HC6 moves it to the HC6 schema. Any C# code referencing the HC schema name directly must be updated."
+  ]
+}

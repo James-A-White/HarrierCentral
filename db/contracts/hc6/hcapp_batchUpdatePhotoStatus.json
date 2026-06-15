@@ -1,0 +1,86 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_batchUpdatePhotoStatus",
+  "version": "1.0.0",
+  "description": "Applies a batch of photo-status changes in a single round-trip. Accepts a JSON array of {photoId, action} pairs parsed via OPENJSON. Auth is checked once at kennel level — caller must hold Hash Flash (0x20), GM (0x02), VGM (0x04), RA (0x08), or WebMeister (0x1000). Set-based UPDATEs are used throughout — no cursor or loop. Items referencing photos not found in the kennel are counted as failures; successful items are committed regardless. Action 6 also propagates the effective URL (EditedBlobUrl ?? BlobUrl) to HC.Event.EventCoverPhotoUrl.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth for auth resolution."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token validated against DeviceSecret."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "KennelPhotos.KennelId",
+      "description": "Kennel that owns all photos in the batch. Used for role check and to scope all UPDATE statements."
+    },
+    {
+      "name": "updates",
+      "type": "NVARCHAR(MAX)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "JSON array of update objects: [{\"photoId\":\"<uuid>\",\"action\":<1-6>}, ...]. Rows with unparseable photoIds or actions outside 1-6 are silently skipped before counting. Actions: 1=soft-delete (set DeletedAt), 2=private (status 0), 3=share (status 2), 4=run_gallery (status 3), 5=home_gallery (status 4), 6=event_cover (status 5)."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "On auth failure or validation error: success=0, errorCode and errorType set, plus standard error detail at index 1. On empty/invalid batch (zero valid items after parsing): success=1, successCount=0, failureCount=0 (early return, no second rowset). On DB error: success=0, errorCode=1933, errorType=19. On success: success=1, successCount, failureCount.",
+      "columns": [
+        { "name": "success", "type": "INT", "nullable": false, "description": "1 on success or empty batch, 0 on auth/validation/DB failure." },
+        { "name": "successCount", "type": "INT", "nullable": true, "description": "Number of photos successfully actioned. NULL on error paths that include a second rowset." },
+        { "name": "failureCount", "type": "INT", "nullable": true, "description": "Number of submitted items where the photo was not found in the kennel. NULL on error paths." },
+        { "name": "errorCode", "type": "INT", "nullable": true, "description": "Numeric error code. Present only on error paths (auth/validation/DB failure)." },
+        { "name": "errorType", "type": "INT", "nullable": true, "description": "Error classification code. Present only on error paths." }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Returned only on auth failure, role check failure, or unhandled DB error. Not present on success or empty-batch paths."
+    }
+  ],
+  "sideEffects": [
+    "Updates HC.KennelPhotos.DeletedAt, Status, UpdatedAt for matched photos.",
+    "When action=6: propagates COALESCE(EditedBlobUrl, BlobUrl) to HC.Event.EventCoverPhotoUrl for the affected event.",
+    "Writes to HC.ErrorLog on auth failure, role check failure, or unhandled DB error.",
+    "Creates and drops a #Updates temp table per call."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Role mask inconsistency: getKennelPendingPhotos uses 0x002E, batchUpdate uses 0x102E",
+      "detail": "hcapp_getKennelPendingPhotos allows roles 0x002E (Hash Flash 0x20 | GM 0x02 | VGM 0x04 | RA 0x08). hcapp_batchUpdatePhotoStatus and hcapp_getRunAllPhotos use 0x102E (adds WebMeister 0x1000). The read and write permissions are inconsistent — a WebMeister can batch-update but cannot view the pending list to identify which photos to action."
+    },
+    {
+      "severity": "low",
+      "issue": "Failure count based on LEFT JOIN, not actual UPDATE outcome",
+      "detail": "failureCount is computed before the UPDATE by counting items where no matching KennelPhotos row exists. This does not capture rows that exist but fail during the UPDATE for other reasons (e.g. constraint violation). In practice this is unlikely but the count is not a guaranteed reflection of actual DB changes."
+    },
+    {
+      "severity": "low",
+      "issue": "Rowset shape differs between success and error paths",
+      "detail": "On success: rowset 0 has {success, successCount, failureCount}. On auth/role/DB error: rowset 0 has {success, errorCode, errorType} and rowset 1 is the standard error detail. These are structurally incompatible — the caller must branch on the presence of successCount to determine which shape was returned."
+    },
+    {
+      "severity": "low",
+      "issue": "HcVersion hardcoded to '<unknown>' in all ErrorLog inserts",
+      "detail": "Consistent with other HC6 SPs but means the version is never captured in the error log."
+    }
+  ],
+  "breakingChanges": [
+    "New SP — no HC5 predecessor. No breaking changes from migration."
+  ]
+}

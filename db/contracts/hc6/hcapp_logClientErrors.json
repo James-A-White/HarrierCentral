@@ -1,0 +1,66 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_logClientErrors",
+  "version": "1.0.0",
+  "description": "Stores a session-level client error log in HC.ClientErrorLog. No auth validation is performed — the @accessToken parameter is accepted for API consistency but intentionally not checked. Device registration is also not required: logs from de-registered devices are accepted so that failure patterns (e.g. repeated approveLogin token failures) can be captured for diagnosis. Each call inserts one row representing one session's accumulated exception log.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "ClientErrorLog.DeviceId",
+      "description": "Device UUID written directly to HC.ClientErrorLog.DeviceId. Does not need to exist in HC.Device — no FK constraint on that column. Passed as-is from the caller."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Accepted for API consistency but intentionally not validated. The SP design requires that error logs from unauthenticated or de-registered devices are still accepted."
+    },
+    {
+      "name": "errorLog",
+      "type": "NVARCHAR(MAX)",
+      "nullable": false,
+      "mapsToColumn": "ClientErrorLog.ErrorLog",
+      "description": "Full session error log text. Exception entries are separated by newlines and '===' delimiters within the string. Written as-is to HC.ClientErrorLog.ErrorLog."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "Always present. On success: success=1, errorCode=NULL, errorType=NULL. On DB error: success=0, errorCode=1992, errorType=19. Standard success envelope.",
+      "columns": [
+        { "name": "success", "type": "INT", "nullable": false, "description": "1 on success, 0 on unhandled DB error." },
+        { "name": "errorCode", "type": "INT", "nullable": true, "description": "Numeric error code. NULL on success. 1992 on DB error." },
+        { "name": "errorType", "type": "INT", "nullable": true, "description": "Error classification code. NULL on success. 19 on DB error." }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Returned only on unhandled DB error (CATCH block). Not present on success. Note: HC.ErrorLog INSERT uses userId=NULL since no auth was performed."
+    }
+  ],
+  "sideEffects": [
+    "Inserts one row into HC.ClientErrorLog with DeviceId, ErrorLog, and LoggedAt (DEFAULT SYSDATETIMEOFFSET()).",
+    "Writes to HC.ErrorLog with userId=NULL on unhandled DB error."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "No input validation on @errorLog",
+      "detail": "@errorLog is accepted and written as-is with no length or content validation. A NULL @errorLog would fail with a NOT NULL constraint violation on ClientErrorLog.ErrorLog, which would be caught by the CATCH block and logged as an unhandled error rather than a meaningful validation error."
+    },
+    {
+      "severity": "low",
+      "issue": "@accessToken is a dead input parameter",
+      "detail": "@accessToken is accepted in the signature but is never read or used in the SP body. This is by design (documented in the SP header) but is a code smell per CLAUDE.md rules. The parameter cannot be removed without an API contract change."
+    }
+  ],
+  "breakingChanges": [
+    "New SP — no HC5 predecessor. No breaking changes from migration.",
+    "Auth is intentionally skipped for this SP. Callers must not assume that @accessToken is validated."
+  ]
+}

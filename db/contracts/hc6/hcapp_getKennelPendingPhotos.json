@@ -1,0 +1,102 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getKennelPendingPhotos",
+  "version": "1.0.0",
+  "description": "Returns all photos with Status=1 (pending_review) for a kennel, ordered newest-first. Used to power the photo review screen. Caller must hold Hash Flash (0x20), GM (0x02), VGM (0x04), or RA (0x08) for the kennel. Optionally restrict to a single event via @eventId.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth for auth resolution."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token validated against DeviceSecret."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "KennelPhotos.KennelId",
+      "description": "Kennel to fetch pending photos for. Null or zero-UUID triggers a validation error (errorCode 1234, errorType 12)."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "KennelPhotos.EventId",
+      "description": "Optional. When provided, restricts results to photos for this specific event. NULL returns all pending photos across all events for the kennel. Defaults to NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned only on auth failure or validation/role error. Contains {success, errorCode, errorType}. Mutually exclusive with PendingPhotos rowset.",
+      "columns": [
+        { "name": "success", "type": "INT", "nullable": false, "description": "Always 0 on this error path." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Numeric error code." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code." }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Returned only on auth failure or validation/role error (paired with ErrorEnvelope at index 0). Not present on success."
+    },
+    {
+      "index": 0,
+      "name": "PendingPhotos",
+      "description": "On success: all Status=1 photos for the kennel, joined to Hasher and Event for display context, ordered by CreatedAt DESC. Returns zero rows if no pending photos exist. Mutually exclusive with ErrorEnvelope.",
+      "columns": [
+        { "name": "photoId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "KennelPhotos.id — primary key of the photo." },
+        { "name": "EventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "KennelPhotos.EventId — the event the photo belongs to." },
+        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "KennelPhotos.UserId — the user who uploaded the photo." },
+        { "name": "BlobUrl", "type": "NVARCHAR(500)", "nullable": false, "description": "KennelPhotos.BlobUrl — CDN URL of the original uploaded image." },
+        { "name": "EditedBlobUrl", "type": "NVARCHAR(500)", "nullable": true, "description": "KennelPhotos.EditedBlobUrl — CDN URL of the Hash Flash-edited (cropped) version, if any." },
+        { "name": "Latitude", "type": "DECIMAL(9,6)", "nullable": false, "description": "KennelPhotos.Latitude — GPS latitude where the photo was taken." },
+        { "name": "Longitude", "type": "DECIMAL(9,6)", "nullable": false, "description": "KennelPhotos.Longitude — GPS longitude where the photo was taken." },
+        { "name": "Title", "type": "NVARCHAR(250)", "nullable": true, "description": "KennelPhotos.Title — optional short title." },
+        { "name": "Description", "type": "NVARCHAR(MAX)", "nullable": true, "description": "KennelPhotos.Description — optional caption." },
+        { "name": "CreatedAt", "type": "DATETIME2", "nullable": false, "description": "KennelPhotos.CreatedAt — UTC timestamp when the photo was recorded." },
+        { "name": "UpdatedAt", "type": "DATETIME2", "nullable": false, "description": "KennelPhotos.UpdatedAt — UTC timestamp of the last status change." },
+        { "name": "uploaderDisplayName", "type": "NVARCHAR(MAX)", "nullable": false, "description": "Hasher.DisplayName (persisted computed column) — the display name of the user who uploaded the photo." },
+        { "name": "eventName", "type": "NVARCHAR(250)", "nullable": false, "description": "Event.EventName — name of the event the photo belongs to." },
+        { "name": "eventNumber", "type": "SMALLINT", "nullable": true, "description": "Event.AbsoluteEventNumber — cross-kennel run number for the event. Nullable in the base table." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Writes to HC.ErrorLog on kennelId validation failure or role check failure."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Role mask inconsistency with hcapp_batchUpdatePhotoStatus and hcapp_getRunAllPhotos",
+      "detail": "This SP uses role mask 0x002E (Hash Flash 0x20 | GM 0x02 | VGM 0x04 | RA 0x08). hcapp_batchUpdatePhotoStatus and hcapp_getRunAllPhotos use 0x102E which also includes WebMeister (0x1000). A WebMeister can batch-action photos but cannot see the pending list to identify which photos need actioning."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH around the main SELECT",
+      "detail": "The SP uses SET NOCOUNT ON but has no TRY/CATCH. An unexpected DB error (deadlock, timeout) will propagate as a raw SQL error rather than a structured error rowset. HC6 SPs should wrap the main query in TRY/CATCH."
+    },
+    {
+      "severity": "low",
+      "issue": "No XACT_ABORT ON",
+      "detail": "Unlike other photo SPs in this set, this SP does not SET XACT_ABORT ON. For a read-only SP this is low risk, but inconsistent with the codebase pattern."
+    },
+    {
+      "severity": "low",
+      "issue": "HcVersion hardcoded to '<unknown>' in all ErrorLog inserts",
+      "detail": "Consistent with other HC6 SPs but means the version is never captured in the error log."
+    }
+  ],
+  "breakingChanges": [
+    "New SP — no HC5 predecessor. No breaking changes from migration."
+  ]
+}
