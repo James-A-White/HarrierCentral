@@ -94,9 +94,6 @@ namespace HcWebApi.Endpoints
 
                     await GetMyKennelRunTotals(wb, log, deviceIdGuid, accessToken_getMyKennelRunTotals, accessToken_getMyRuns, kennelIdGuid, userName);
 
-                    SendGrid.SendGridClient mailClient = new SendGrid.SendGridClient(Environment.GetEnvironmentVariable("SENDGRID_API_KEY"));
-
-
                     await Utilities.SendEmailAsync(
                             "https://prod-46.northeurope.logic.azure.com:443/workflows/ea2b7fd09a8d407fa58ab04b64638217/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=aqjP-q4tvhj-S9aemqQKFGP5ZQYBWOBFTL_KSUvcVl8",
                             "james@defenceinnovation.eu",
@@ -132,21 +129,21 @@ namespace HcWebApi.Endpoints
 
         public static async Task GetMyKennelRunTotals(ExcelPackage wb, ILogger log, Guid deviceId, String accessToken_getMyKennelRunTotals, String accessToken_getMyRuns, Guid kennelId, String userName)
         {
-            String connectionStr = "";
-            if (String.IsNullOrWhiteSpace(connectionStr))
-            {
-                connectionStr = "Server=tcp:harriercentral.database.windows.net,1433;Initial Catalog=HarrierCentralWebDb;Persist Security Info=False;User ID=harrieradmin;Password=Op33AndTuna;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
-            }
+            string connectionStr = Environment.GetEnvironmentVariable("HcDbConnectionString")
+                ?? throw new InvalidOperationException("HcDbConnectionString is not set in the environment.");
 
             using (SqlConnection conn = new SqlConnection(connectionStr))
             {
                 conn.Open();
 
-                var queryTotals = $"EXEC HC5.hcapp_getMyKennelRunTotals @deviceId = '{deviceId.ToString()}', @accessToken = '{accessToken_getMyKennelRunTotals}',@kennelId = '{kennelId.ToString()}'";
-
-                using (SqlCommand cmdTotals = new SqlCommand(queryTotals, conn))
+                using (SqlCommand cmdTotals = new SqlCommand("[HC6].[hcapp_getMyKennelRunTotals]", conn))
                 {
-                    // Execute the command and log the # rows affected.
+                    cmdTotals.CommandType = System.Data.CommandType.StoredProcedure;
+                    cmdTotals.Parameters.AddWithValue("@deviceId",    deviceId);
+                    cmdTotals.Parameters.AddWithValue("@accessToken", accessToken_getMyKennelRunTotals);
+                    // HC6 uses NULL for "all kennels"; HC5 used Guid.Empty
+                    cmdTotals.Parameters.AddWithValue("@kennelId",    kennelId == Guid.Empty ? (object)DBNull.Value : kennelId);
+
                     using (SqlDataReader rowsTotals = await cmdTotals.ExecuteReaderAsync())
                     {
 
@@ -256,11 +253,13 @@ namespace HcWebApi.Endpoints
                                     {
                                         conn2.Open();
 
-                                        var queryOneKennel = $"EXEC HC5.hcapp_getRuns @deviceId = '{deviceId.ToString()}', @accessToken = '{accessToken_getMyRuns}',@kennelId = '{kennelIdStr}'";
-
-                                        using (SqlCommand cmdOneKennel = new SqlCommand(queryOneKennel, conn2))
+                                        using (SqlCommand cmdOneKennel = new SqlCommand("[HC6].[hcapp_getRuns]", conn2))
                                         {
-                                            // Execute the command and log the # rows affected.
+                                            cmdOneKennel.CommandType = System.Data.CommandType.StoredProcedure;
+                                            cmdOneKennel.Parameters.AddWithValue("@deviceId",    deviceId);
+                                            cmdOneKennel.Parameters.AddWithValue("@accessToken", accessToken_getMyRuns);
+                                            cmdOneKennel.Parameters.AddWithValue("@kennelId",    Guid.TryParse(kennelIdStr, out var kGuid) ? (object)kGuid : DBNull.Value);
+
                                             using (SqlDataReader rowOneKennel = await cmdOneKennel.ExecuteReaderAsync())
                                             {
 

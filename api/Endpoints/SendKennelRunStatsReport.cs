@@ -121,10 +121,12 @@ namespace HcWebApi.Endpoints
             using SqlConnection conn = new(connectionStr);
             conn.Open();
 
-            var queryTotals = $"EXEC HC5.hcapp_rptKennelRunStats @deviceId = '{deviceIdGuid}', @accessToken = '{accessToken}',@kennelId = '{kennelId}'";
+            using SqlCommand cmdTotals = new("[HC6].[hcapp_rptKennelRunStats]", conn);
+            cmdTotals.CommandType = CommandType.StoredProcedure;
+            cmdTotals.Parameters.AddWithValue("@deviceId",    deviceIdGuid);
+            cmdTotals.Parameters.AddWithValue("@accessToken", accessToken);
+            cmdTotals.Parameters.AddWithValue("@kennelId",    kennelId);
 
-            using SqlCommand cmdTotals = new(queryTotals, conn);
-            // Execute the command and log the # rows affected.
             using SqlDataReader rowsTotals = await cmdTotals.ExecuteReaderAsync();
 
             if (rowsTotals.HasRows)
