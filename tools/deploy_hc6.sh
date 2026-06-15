@@ -14,8 +14,11 @@
 #   3. All HC6.hcportal_* portal SPs
 #   4. All publicWeb_* public-web SPs
 #   5. HC6.ValidateAppAuth helper SP     ← must precede all app SPs
-#   6. Internal helper SPs (HC.nonApi_getUserInviteCodeByPublicHasherId)
-#   7. All HC6.hcapp_* app SPs
+#   6. Internal helper SPs:
+#        HC.nonApi_getUserInviteCodeByPublicHasherId
+#        All HC6.nonApi_* SPs (nonApi_updateRunNumbers redeploys idempotently)
+#   7. All HC6.util_* maintenance SPs (safe to redeploy; run by hand only)
+#   8. All HC6.hcapp_* app SPs
 #
 # What this does NOT deploy:
 #   - Table DDL (HC.* tables are shared with HC5 and already exist)
@@ -143,9 +146,20 @@ echo ""
 echo "── Step 6: Internal helper SPs ──────────────────────────────"
 run_file "HC.nonApi_getUserInviteCodeByPublicHasherId" \
     "$APP_DIR/HC.nonApi_getUserInviteCodeByPublicHasherId.StoredProcedure.sql"
+for file in "$APP_DIR"/HC6.nonApi_*.StoredProcedure.sql; do
+    name="$(basename "$file" .StoredProcedure.sql)"
+    run_file "$name" "$file"
+done
 
 echo ""
-echo "── Step 7: App SPs ──────────────────────────────────────────"
+echo "── Step 7: Maintenance SPs (util_) ──────────────────────────"
+for file in "$APP_DIR"/HC6.util_*.StoredProcedure.sql; do
+    name="$(basename "$file" .StoredProcedure.sql)"
+    run_file "$name" "$file"
+done
+
+echo ""
+echo "── Step 8: App SPs ──────────────────────────────────────────"
 for file in "$APP_DIR"/HC6.hcapp_*.StoredProcedure.sql; do
     name="$(basename "$file" .StoredProcedure.sql)"
     run_file "$name" "$file"
@@ -153,6 +167,6 @@ done
 
 echo ""
 echo "══════════════════════════════════════════════════════════════"
-echo "  Done.  $PASS deployed,  $FAIL failed.  (helpers + portal + public-web + internal + app)"
+echo "  Done.  $PASS deployed,  $FAIL failed.  (helpers + portal + public-web + internal + nonApi + util + app)"
 echo "══════════════════════════════════════════════════════════════"
 echo ""
