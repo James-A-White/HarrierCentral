@@ -280,7 +280,7 @@ BEGIN CATCH
 END CATCH;
 
 -- Post-write run count update (outside transaction)
-EXEC HC.nonApi_updateRunCountsByUser @userId = @hasherId, @eventDateTime = @eventDate;
+EXEC HC6.nonApi_updateRunCountsByUser @userId = @hasherId;
 
 -- Re-read final state for response
 DECLARE @eventNotificationPreference INT;

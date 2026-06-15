@@ -141,7 +141,7 @@ END CATCH;
 
 -- Post-write: update run counts for check-in events
 IF (@checkInEventIds IS NOT NULL AND LEN(TRIM(@checkInEventIds)) > 0)
-    EXEC HC.nonApi_updateRunCountsByUser @userId = @hasherId;
+    EXEC HC6.nonApi_updateRunCountsByUser @userId = @hasherId;
 
 SELECT 1 AS success, NULL AS errorCode, NULL AS errorType;
 

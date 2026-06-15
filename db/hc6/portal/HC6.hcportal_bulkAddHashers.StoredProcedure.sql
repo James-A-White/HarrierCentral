@@ -25,7 +25,7 @@ AS
 --   - Membership "never expires" date changed from 2100-01-01 to 2999-12-31
 --   - Validation now short-circuits with RETURN on first error
 --   - Added TRY/CATCH and transaction around all writes
---   - HC.nonApi_updateRunCountsByUser now called inside transaction
+--   - nonApi_updateRunCountsByUser now called inside transaction
 --   - Auth validated via HC6.ValidatePortalAuth helper SP
 --   - Removed @ipAddress, @ipGeoDetails (logging moved to API shim)
 --   - Removed ErrorLog inserts (error logging moved to API shim)
@@ -243,7 +243,7 @@ BEGIN TRY
 
             IF (@runCountsUpdated = 1)
             BEGIN
-                EXEC [HC].[nonApi_updateRunCountsByUser]
+                EXEC [HC6].[nonApi_updateRunCountsByUser]
                     @userId = @newHasherId
             END
 

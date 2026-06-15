@@ -8,14 +8,14 @@ AS
 -- =====================================================================
 -- Procedure: HC6.hcapp_rptKennelRunStats
 -- Description: Returns run statistics for a kennel by delegating to the
---   HC.nonApi_rptKennelRunStats helper after validating the device token.
+--   HC6.nonApi_rptKennelRunStats helper after validating the device token.
 -- Parameters:
 --   @deviceId    - Registered device UUID
 --   @accessToken - Token validated against DeviceSecret
 --   @kennelId    - Kennel to report on
 -- Returns:
 --   Read SP (no success envelope).
---   On success (rowset 0): run statistics from HC.nonApi_rptKennelRunStats
+--   On success (rowset 0): run statistics from HC6.nonApi_rptKennelRunStats
 --   On error (rowset 0): standard HC6 error detail
 -- Author: Harrier Central
 -- Created: 2026-05-10
@@ -58,4 +58,4 @@ BEGIN
     RETURN;
 END
 
-EXEC HC.nonApi_rptKennelRunStats @kennelId = @kennelId;
+EXEC HC6.nonApi_rptKennelRunStats @kennelId = @kennelId;
