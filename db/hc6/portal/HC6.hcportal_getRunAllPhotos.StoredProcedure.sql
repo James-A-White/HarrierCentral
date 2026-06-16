@@ -92,7 +92,8 @@ BEGIN TRY
         kp.CreatedAt,
         h.DisplayName         AS uploaderDisplayName,
         e.EventName           AS eventName,
-        e.AbsoluteEventNumber AS eventNumber
+        e.EventNumber         AS eventNumber,
+        e.AbsoluteEventNumber AS absoluteEventNumber
     FROM HC.KennelPhotos kp
     INNER JOIN HC.Hasher h ON h.id = kp.UserId
     INNER JOIN HC.Event  e ON e.id = kp.EventId

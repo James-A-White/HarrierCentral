@@ -119,7 +119,7 @@ BEGIN
     FETCH NEXT FROM xCrsr INTO @dname, @rc;
     WHILE @@FETCH_STATUS = 0
     BEGIN
-        SET @cols = ISNULL(@cols + ', ', '') + '[' + TRIM(@dname) + ']';
+        SET @cols = ISNULL(@cols + ', ', '') + '[' + REPLACE(TRIM(@dname), ']', ']]') + ']';
         FETCH NEXT FROM xCrsr INTO @dname, @rc;
     END;
     CLOSE xCrsr;

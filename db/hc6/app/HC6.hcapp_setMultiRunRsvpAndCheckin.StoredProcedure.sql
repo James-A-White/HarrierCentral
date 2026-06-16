@@ -139,9 +139,20 @@ BEGIN CATCH
     RETURN;
 END CATCH;
 
--- Post-write: update run counts for check-in events
+-- Post-write: update run counts for check-in events.
+-- Best-effort: runs after COMMIT so a failure here does not roll back
+-- the already-committed check-in. Errors are logged but not surfaced.
 IF (@checkInEventIds IS NOT NULL AND LEN(TRIM(@checkInEventIds)) > 0)
-    EXEC HC6.nonApi_updateRunCountsByUser @userId = @hasherId;
+BEGIN
+    BEGIN TRY
+        EXEC HC6.nonApi_updateRunCountsByUser @userId = @hasherId;
+    END TRY
+    BEGIN CATCH
+        INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+        VALUES (NEWID(), '<unknown>', 'Run count update failed (non-fatal)',
+                ERROR_MESSAGE(), @procName, @hasherId);
+    END CATCH
+END
 
 SELECT 1 AS success, NULL AS errorCode, NULL AS errorType;
 

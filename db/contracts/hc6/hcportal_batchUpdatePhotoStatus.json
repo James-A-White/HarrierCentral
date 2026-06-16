@@ -30,7 +30,7 @@
       "type": "NVARCHAR(MAX)",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "JSON array of photo update objects: [{\"photoId\":\"<uuid>\",\"action\":<1-6>}, ...]. Action codes: 1=soft-delete (sets DeletedAt), 2=private (Status=0), 3=share (Status=2), 4=gallery (Status=3), 5=home_gallery (Status=4), 6=event_cover (Status=5, propagates BlobUrl to HC.Event.EventCoverPhotoUrl). Items with invalid photoId UUIDs or action values outside 1-6 are silently dropped before counting. NULL or empty string returns Success=1 with zero counts."
+      "description": "JSON array of photo update objects: [{\"photoId\":\"<uuid>\",\"action\":<1-6>}, ...]. Action codes: 1=soft-delete (sets DeletedAt), 2=private (Status=0), 3=share (Status=2), 4=gallery (Status=3), 5=home_gallery (Status=4), 6=event_cover (Status=5, propagates COALESCE(EditedBlobUrl, BlobUrl) to HC.Event.EventCoverPhotoUrl). Items with invalid photoId UUIDs or action values outside 1-6 are silently dropped before counting. NULL or empty string returns Success=1 with zero counts."
     }
   ],
   "rowsets": [
@@ -82,7 +82,7 @@
   "sideEffects": [
     "For action=1 (soft-delete): sets KennelPhotos.DeletedAt = GETUTCDATE() and KennelPhotos.UpdatedAt = GETUTCDATE() for matched rows.",
     "For actions 2-6 (status changes): sets KennelPhotos.Status to the mapped value (0/2/3/4/5), clears KennelPhotos.DeletedAt to NULL, and sets KennelPhotos.UpdatedAt = GETUTCDATE() for matched rows.",
-    "For action=6 (event_cover): additionally propagates KennelPhotos.BlobUrl to HC.Event.EventCoverPhotoUrl for the event associated with the photo, within the same transaction.",
+    "For action=6 (event_cover): additionally propagates COALESCE(KennelPhotos.EditedBlobUrl, KennelPhotos.BlobUrl) to HC.Event.EventCoverPhotoUrl, preferring the edited/cropped version when one exists, within the same transaction.",
     "All changes are committed in a single transaction. If any statement fails (CATCH block), the entire transaction is rolled back."
   ],
   "codeSmells": [
@@ -90,11 +90,6 @@
       "severity": "medium",
       "issue": "Non-standard error envelope — not using ValidatePortalAuth StandardErrorResult",
       "detail": "Portal SPs that call HC6.ValidatePortalAuth typically propagate the full StandardErrorResult rowset (6 columns: errorId, errorType, errorTitle, errorUserMessage, debugMessage, errorProc) when auth fails. This SP instead returns a simplified 2-column envelope (Success=0, ErrorMessage) across all error paths, including auth failure. This is an intentional design choice per the header comment but is inconsistent with other portal SPs. Callers cannot distinguish an auth failure from a validation error without inspecting ErrorMessage content."
-    },
-    {
-      "severity": "medium",
-      "issue": "action=6 propagates BlobUrl only, not EditedBlobUrl",
-      "detail": "When action=6 (event_cover) is applied, the SP writes kp.BlobUrl to HC.Event.EventCoverPhotoUrl. The equivalent app SP (HC6.hcapp_batchUpdatePhotoStatus) uses COALESCE(kp.EditedBlobUrl, kp.BlobUrl) — preferring the cropped/edited version. The portal SP ignores EditedBlobUrl, which means edited photos will have their original (uncropped) URL used as the event cover. Whether this is intentional is unclear."
     },
     {
       "severity": "low",

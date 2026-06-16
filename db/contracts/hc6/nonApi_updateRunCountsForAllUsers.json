@@ -16,17 +16,12 @@
   "sideEffects": [
     "Stage 1: May INSERT rows into HC.HasherKennelMap for affected users who have attended a kennel without an existing HKM row.",
     "Stage 2: UPDATEs HC.HasherEventMap count columns (TotalRuns, TotalHaring, TotalRunsThisKennel, TotalHaringThisKennel, YtdTotalRunsThisKennel, YtdHaringThisKennel, updatedAt) for affected users' attended events where counts have changed.",
-    "Stage 3: NULLs out the same six HEM count columns for all non-attending (AttendenceState < 20) HEM rows across ALL users (not scoped to #affected — see code smell).",
+    "Stage 3: NULLs out the same six HEM count columns for non-attending (AttendenceState < 20) HEM rows scoped to affected users only via JOIN to #affected.",
     "Stage 4: UPDATEs HC.HasherKennelMap summary counters (HcTotalRunCount, HcHaringCount, YtdTotalRunCount, YtdHaringCount, DateOfLastRun, and zeros CurrentHaringCount/CurrentPackRunCount/HistoricalPackRunCount, updatedAt) for affected users' kennel memberships.",
     "Stage 5: UPDATEs HC.HasherKennelMap.RollingYearTotalRunCount, RollingYearHaringCount, updatedAt for affected users.",
     "Inserts 1 row into LOG.GeneralLog (LogSource='RUN COUNTS', Message='Updated all user run counts') after completion."
   ],
   "codeSmells": [
-    {
-      "severity": "high",
-      "issue": "Stage 3 clears non-attending HEM rows for ALL users, not just #affected",
-      "detail": "The Stage 3 UPDATE WHERE hem.AttendenceState < 20 AND (counts IS NOT NULL) has no JOIN to #affected. It touches every non-attending HEM row across the entire table that has stale counts — not just the rows for users in #affected. This is semantically correct (clears any stale non-attending counts) but means a large unscoped UPDATE runs on every call, potentially touching many rows unrelated to the current recalculation batch."
-    },
     {
       "severity": "medium",
       "issue": "@updatedSince is DATETIME, not DATETIMEOFFSET(7)",

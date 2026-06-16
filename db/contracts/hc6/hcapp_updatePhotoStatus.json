@@ -2,7 +2,7 @@
   "schema": "HC6",
   "name": "hcapp_updatePhotoStatus",
   "version": "1.0.0",
-  "description": "Allows an authorised reviewer (Hash Flash 0x20, GM 0x02, VGM 0x04, or RA 0x08) to action a photo. Works on photos of any current status — supports re-review from the Reviewed tab and initial review from the Pending tab. Action 1 soft-deletes by setting DeletedAt (Status is unchanged). Actions 2-6 clear DeletedAt and set the new Status, effectively restoring soft-deleted photos. Action 6 additionally propagates BlobUrl to HC.Event.EventCoverPhotoUrl.",
+  "description": "Allows an authorised reviewer (Hash Flash 0x20, GM 0x02, VGM 0x04, or RA 0x08) to action a photo. Works on photos of any current status — supports re-review from the Reviewed tab and initial review from the Pending tab. Action 1 soft-deletes by setting DeletedAt (Status is unchanged). Actions 2-6 clear DeletedAt and set the new Status, effectively restoring soft-deleted photos. Action 6 additionally propagates COALESCE(EditedBlobUrl, BlobUrl) to HC.Event.EventCoverPhotoUrl, preferring the cropped/edited version.",
   "parameters": [
     {
       "name": "deviceId",
@@ -30,7 +30,7 @@
       "type": "TINYINT",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Action to apply. 1=soft-delete (set DeletedAt, Status unchanged). 2=keep_private (Status=0, clear DeletedAt). 3=share (Status=2, clear DeletedAt). 4=run_gallery (Status=3, clear DeletedAt). 5=home_gallery (Status=4, clear DeletedAt). 6=event_cover (Status=5, clear DeletedAt, propagate BlobUrl to Event.EventCoverPhotoUrl). Values outside 1-6 trigger a validation error (errorCode 1233, errorType 12)."
+      "description": "Action to apply. 1=soft-delete (set DeletedAt, Status unchanged). 2=keep_private (Status=0, clear DeletedAt). 3=share (Status=2, clear DeletedAt). 4=run_gallery (Status=3, clear DeletedAt). 5=home_gallery (Status=4, clear DeletedAt). 6=event_cover (Status=5, clear DeletedAt, propagate COALESCE(EditedBlobUrl, BlobUrl) to Event.EventCoverPhotoUrl). Values outside 1-6 trigger a validation error (errorCode 1233, errorType 12)."
     }
   ],
   "rowsets": [
@@ -58,15 +58,10 @@
   "sideEffects": [
     "Updates KennelPhotos.DeletedAt and KennelPhotos.UpdatedAt for action=1.",
     "Updates KennelPhotos.Status, KennelPhotos.DeletedAt, and KennelPhotos.UpdatedAt for actions 2-6.",
-    "When action=6: updates HC.Event.EventCoverPhotoUrl with BlobUrl (not EditedBlobUrl — note: hcapp_batchUpdatePhotoStatus uses COALESCE(EditedBlobUrl, BlobUrl) but this SP uses only BlobUrl).",
+    "When action=6: updates HC.Event.EventCoverPhotoUrl with COALESCE(EditedBlobUrl, BlobUrl), preferring the edited/cropped version when one exists.",
     "Writes to HC.ErrorLog on invalid action, photo-not-found, role check failure, or unhandled DB error."
   ],
   "codeSmells": [
-    {
-      "severity": "medium",
-      "issue": "action=6 writes BlobUrl to EventCoverPhotoUrl, not COALESCE(EditedBlobUrl, BlobUrl)",
-      "detail": "hcapp_batchUpdatePhotoStatus uses COALESCE(kp.EditedBlobUrl, kp.BlobUrl) when setting EventCoverPhotoUrl for action=6, correctly preferring the edited version. This SP uses only @photoBlobUrl (the original BlobUrl fetched before the transaction). If a photo has been cropped via hcapp_updateRunPhotoEditedBlob, the event cover will point to the unedited original. This is an inconsistency between the single-item and batch action paths."
-    },
     {
       "severity": "low",
       "issue": "newStatus is misleading for action=1 (soft-delete)",

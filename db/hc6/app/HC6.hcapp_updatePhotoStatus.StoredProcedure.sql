@@ -92,13 +92,15 @@ BEGIN
     RETURN;
 END
 
-DECLARE @photoKennelId UNIQUEIDENTIFIER;
-DECLARE @photoEventId  UNIQUEIDENTIFIER;
-DECLARE @photoBlobUrl  NVARCHAR(500);
+DECLARE @photoKennelId    UNIQUEIDENTIFIER;
+DECLARE @photoEventId     UNIQUEIDENTIFIER;
+DECLARE @photoBlobUrl     NVARCHAR(500);
+DECLARE @photoEditedBlobUrl NVARCHAR(MAX);
 
-SELECT @photoKennelId = KennelId,
-       @photoEventId  = EventId,
-       @photoBlobUrl  = BlobUrl
+SELECT @photoKennelId     = KennelId,
+       @photoEventId      = EventId,
+       @photoBlobUrl      = BlobUrl,
+       @photoEditedBlobUrl = EditedBlobUrl
 FROM HC.KennelPhotos
 WHERE id = @photoId;
 
@@ -170,7 +172,7 @@ BEGIN TRY
 
         IF (@action = 6 AND @photoEventId IS NOT NULL)
             UPDATE HC.Event
-            SET EventCoverPhotoUrl = @photoBlobUrl
+            SET EventCoverPhotoUrl = COALESCE(@photoEditedBlobUrl, @photoBlobUrl)
             WHERE id = @photoEventId;
     END
 

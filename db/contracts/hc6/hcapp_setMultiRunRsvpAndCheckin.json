@@ -101,16 +101,11 @@
   "sideEffects": [
     "Upserts HC.HasherEventMap rows for all event UUIDs in @checkInEventIds (AttendenceState=20, RsvpState=3). Guard: never downgrades AttendenceState >= 20.",
     "Upserts HC.HasherEventMap rows for all event UUIDs in @rsvpNoEventIds (RsvpState=1). Guard: never touches rows where AttendenceState >= 20.",
-    "Calls HC6.nonApi_updateRunCountsByUser(@hasherId) after commit if @checkInEventIds is non-empty — updates run count totals on HasherKennelMap.",
+    "Calls HC6.nonApi_updateRunCountsByUser(@hasherId) after commit if @checkInEventIds is non-empty — best-effort, wrapped in TRY/CATCH so a failure logs to HC.ErrorLog but does not surface as a SP error.",
     "Calls HC6.hcapp_syncUserData with common-domain watermarks to return updated HEM and HKM data.",
     "Writes to HC.ErrorLog on auth failure (via ValidateAppAuth) and on CATCH error."
   ],
   "codeSmells": [
-    {
-      "severity": "medium",
-      "issue": "nonApi_updateRunCountsByUser called outside the transaction",
-      "detail": "HC6.nonApi_updateRunCountsByUser is called after COMMIT TRANSACTION. If it fails, the HasherEventMap rows are committed but run counts are not updated, leaving totals stale. The SP itself has SET XACT_ABORT ON so an unhandled error in the post-commit section would raise an exception but not roll back the already-committed HEM changes. This is the same pattern noted in other app SPs — run count updates are treated as eventually-consistent background work."
-    },
     {
       "severity": "medium",
       "issue": "Unhandled CATCH errorType 19 is non-standard",

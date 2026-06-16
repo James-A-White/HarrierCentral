@@ -54,9 +54,9 @@
   "sideEffects": [],
   "codeSmells": [
     {
-      "severity": "high",
-      "issue": "Dynamic SQL with bracket-delimited hasher names — SQL error if name contains ']'",
-      "detail": "The PIVOT column list is built by wrapping DisplayName in brackets: '[' + TRIM(@dname) + ']'. A DisplayName containing the ']' character produces malformed SQL that fails at EXEC sp_executesql time rather than returning an error rowset. The SP header notes this as a known limitation. Upstream sanitisation of display names is required."
+      "severity": "low",
+      "issue": "Dynamic SQL column list escapes ']' via REPLACE — display names with ']' are safe",
+      "detail": "The PIVOT column list wraps DisplayName in brackets using REPLACE(TRIM(@dname), ']', ']]') to escape any ']' characters before bracket-quoting. This follows the SQL Server convention for escaping bracket-delimited identifiers. Names containing ']' will appear with ']]' in the column header but the dynamic SQL will execute correctly."
     },
     {
       "severity": "high",

@@ -122,18 +122,19 @@
           "name": "eventNumber",
           "type": "SMALLINT",
           "nullable": false,
-          "description": "HC.Event.AbsoluteEventNumber — cross-kennel run number. Table column is SMALLINT NULL. Note: aliased as 'eventNumber' in the result but maps to AbsoluteEventNumber, not EventNumber."
+          "description": "HC.Event.EventNumber — kennel-scoped run number. Table column is SMALLINT NOT NULL."
+        },
+        {
+          "name": "absoluteEventNumber",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "HC.Event.AbsoluteEventNumber — cross-kennel run number. Table column is SMALLINT NULL."
         }
       ]
     }
   ],
   "sideEffects": [],
   "codeSmells": [
-    {
-      "severity": "medium",
-      "issue": "eventNumber column maps to AbsoluteEventNumber, not EventNumber",
-      "detail": "The SELECT aliases e.AbsoluteEventNumber AS eventNumber. HC.Event has two number columns: EventNumber (SMALLINT NOT NULL, kennel-scoped) and AbsoluteEventNumber (SMALLINT NULL, cross-kennel). Callers receiving 'eventNumber' may reasonably assume this is the kennel-scoped run number, but they are getting AbsoluteEventNumber which is nullable and has different semantics. This is misleading naming and could cause display bugs if a caller uses it as the kennel run counter."
-    },
     {
       "severity": "medium",
       "issue": "Non-standard error envelope — not using ValidatePortalAuth StandardErrorResult",
@@ -165,7 +166,7 @@
     "Never remove DeletedAt from the result — callers use it to distinguish soft-deleted photos from active ones.",
     "Never filter out soft-deleted rows — the entire point of this SP is to return all photos for admin review, including deleted ones.",
     "Never change the ORDER BY from CreatedAt DESC without updating callers that depend on newest-first ordering.",
-    "Never change the eventNumber column alias without updating callers — note it currently returns AbsoluteEventNumber, not EventNumber.",
+    "Never remove eventNumber from the result — it is the kennel-scoped run number (EventNumber). absoluteEventNumber is also returned for callers that need the cross-kennel number.",
     "Never change the permission bitmask check (0x40000081) without updating all callers that manage AppAccessFlags."
   ]
 }

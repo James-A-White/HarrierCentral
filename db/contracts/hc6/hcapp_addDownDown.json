@@ -37,7 +37,7 @@
       "type": "NVARCHAR(MAX)",
       "nullable": false,
       "mapsToColumn": "DownDownHashers.HasherId",
-      "description": "Comma-separated list of hasher UUID strings to charge. Each valid UUID produces one DownDownHashers row. Invalid UUIDs are silently skipped via TRY_CAST. Required — empty string triggers validation error. NOTE: the SP uses comma as delimiter, not the project-standard pipe ('|') — this is a code smell."
+      "description": "Pipe-delimited list of hasher UUID strings to charge. Each valid UUID produces one DownDownHashers row. Invalid UUIDs are silently skipped via TRY_CAST. Required — empty string triggers validation error."
     },
     {
       "name": "chargeText",
@@ -104,11 +104,6 @@
     "Writes to HC.ErrorLog on validation or unhandled errors."
   ],
   "codeSmells": [
-    {
-      "severity": "high",
-      "issue": "Comma delimiter in @hasherIds violates project standard",
-      "detail": "@hasherIds uses comma as the list delimiter (STRING_SPLIT(@hasherIds, ',')), but the project standard is '|'. Commas can appear in some data fields and make the delimiter ambiguous. Should use '|' and STRING_SPLIT(@hasherIds, '|') for consistency with all other list parameters."
-    },
     {
       "severity": "medium",
       "issue": "IsDone and IsCancelled columns are BIT in the table, not SMALLINT",

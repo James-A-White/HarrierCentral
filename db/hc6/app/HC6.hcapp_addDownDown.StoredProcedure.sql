@@ -15,7 +15,7 @@ AS
 -- Procedure: HC6.hcapp_addDownDown
 -- Description: Records a DownDown charge for one or more hashers.
 --   Any run attendee (AttendenceState >= 20 on the event) may submit.
---   @hasherIds is a comma-separated list of UUID strings.
+--   @hasherIds is a pipe-delimited list of UUID strings.
 --   Creates one HC.DownDowns row and one HC.DownDownHashers row per
 --   hasher. Returns the new DownDown ID on success.
 -- Parameters:
@@ -23,7 +23,7 @@ AS
 --   @accessToken    - Token validated against DeviceSecret
 --   @kennelId       - Kennel that owns the event
 --   @eventId        - Event the charge belongs to
---   @hasherIds      - Comma-separated hasher UUIDs to charge
+--   @hasherIds      - Pipe-delimited hasher UUIDs to charge
 --   @chargeText     - Description of the charge
 --   @chargePhotoUrl - Optional blob URL of an attached charge photo
 -- Returns:
@@ -119,7 +119,7 @@ BEGIN TRY
 
     INSERT INTO HC.DownDownHashers (DownDownId, HasherId)
     SELECT @newId, TRY_CAST(LTRIM(RTRIM(value)) AS UNIQUEIDENTIFIER)
-    FROM STRING_SPLIT(@hasherIds, ',')
+    FROM STRING_SPLIT(@hasherIds, '|')
     WHERE TRY_CAST(LTRIM(RTRIM(value)) AS UNIQUEIDENTIFIER) IS NOT NULL;
 
     COMMIT TRANSACTION;

@@ -156,7 +156,9 @@ BEGIN
            );
 
     -- ----------------------------------------------------------------
-    -- Stage 3: Clear counts on non-attending HEM rows.
+    -- Stage 3: Clear counts on non-attending HEM rows for affected users
+    --          only. Scoped to #affected to avoid a full-table scan and
+    --          unnecessary UpdatedAt stamps on unrelated users.
     -- ----------------------------------------------------------------
     UPDATE hem
     SET    hem.TotalRuns              = NULL,
@@ -167,6 +169,7 @@ BEGIN
            hem.YtdHaringThisKennel    = NULL,
            hem.updatedAt              = SYSDATETIMEOFFSET()
     FROM   HC.HasherEventMap hem
+    JOIN   #affected af ON af.UserId = hem.UserId
     WHERE  hem.AttendenceState < 20
       AND  (
                hem.TotalRuns              IS NOT NULL OR

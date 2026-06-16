@@ -149,9 +149,10 @@ BEGIN TRY
         INNER JOIN #Updates u ON u.photoId = kp.id AND u.action BETWEEN 2 AND 6
         WHERE kp.KennelId = @kennelId;
 
-        -- 3. Event cover (action = 6): propagate BlobUrl to HC.Event
+        -- 3. Event cover (action = 6): propagate best available URL to HC.Event
+        --    Prefer EditedBlobUrl so the cover shows the cropped/edited version.
         UPDATE e
-        SET e.EventCoverPhotoUrl = kp.BlobUrl
+        SET e.EventCoverPhotoUrl = COALESCE(kp.EditedBlobUrl, kp.BlobUrl)
         FROM HC.Event e
         INNER JOIN HC.KennelPhotos kp ON kp.EventId = e.id
         INNER JOIN #Updates u         ON u.photoId  = kp.id AND u.action = 6

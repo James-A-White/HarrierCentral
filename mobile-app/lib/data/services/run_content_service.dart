@@ -86,7 +86,7 @@ class RunContentService {
         ),
         'kennelId': kennelId,
         'eventId': eventId,
-        'hasherIds': hasherIds.join(','),
+        'hasherIds': hasherIds.join('|'),
         'chargeText': chargeText,
         if (songChoice != null && songChoice.isNotEmpty) 'songChoice': songChoice,
         if (songId != null) 'songId': songId,
