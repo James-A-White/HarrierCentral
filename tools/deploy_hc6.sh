@@ -14,9 +14,7 @@
 #   3. All HC6.hcportal_* portal SPs
 #   4. All publicWeb_* public-web SPs
 #   5. HC6.ValidateAppAuth helper SP     ← must precede all app SPs
-#   6. Internal helper SPs:
-#        HC.nonApi_getUserInviteCodeByPublicHasherId
-#        All HC6.nonApi_* SPs (nonApi_updateRunNumbers redeploys idempotently)
+#   6. All HC6.nonApi_* SPs (nonApi_updateRunNumbers redeploys idempotently)
 #   7. All HC6.util_* maintenance SPs (safe to redeploy; run by hand only)
 #   8. All HC6.hcapp_* app SPs
 #
@@ -144,8 +142,6 @@ run_file "HC6.ValidateAppAuth" \
 
 echo ""
 echo "── Step 6: Internal helper SPs ──────────────────────────────"
-run_file "HC.nonApi_getUserInviteCodeByPublicHasherId" \
-    "$APP_DIR/HC.nonApi_getUserInviteCodeByPublicHasherId.StoredProcedure.sql"
 for file in "$APP_DIR"/HC6.nonApi_*.StoredProcedure.sql; do
     name="$(basename "$file" .StoredProcedure.sql)"
     run_file "$name" "$file"
