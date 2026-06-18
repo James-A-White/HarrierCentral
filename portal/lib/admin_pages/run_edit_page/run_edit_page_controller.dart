@@ -1320,32 +1320,13 @@ class RunEditPageController extends TabUiController
     isGeocoding.value = true;
 
     try {
-      final hasherId = box.get(HIVE_HASHER_ID) as String;
-      final paramString =
-          '$hasherId:${lat.toStringAsFixed(2)},${lon.toStringAsFixed(2)}';
-      final accessToken = Utilities.generateToken(
-        hasherId,
-        'hcportal_reverseGeocode',
-        paramString: paramString,
-      );
-
-      final body = <String, String>{
-        'userId': hasherId,
-        'accessToken': accessToken,
-        'lat': lat.toString(),
-        'lon': lon.toString(),
-      };
-
-      final url = Uri.parse(PORTAL_REVERSE_GEOCODE_API_URL);
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Accept': '*/*',
+      final url = Uri.parse(PORTAL_REVERSE_GEOCODE_API_URL).replace(
+        queryParameters: {
+          'lat': lat.toString(),
+          'lon': lon.toString(),
         },
-        body: jsonEncode(body),
       );
+      final response = await http.get(url);
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final azureAddress = AzureGeoAddress.fromJson(
