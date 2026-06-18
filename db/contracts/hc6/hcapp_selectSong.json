@@ -1,0 +1,153 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_selectSong",
+  "version": "1.0.0",
+  "description": "Records a song selection for an event in the interactive songbook. Any authenticated user who is RSVP'd (RsvpState >= 2, Removed = 0) to the event may call this. All selections are retained in HC.SongSession for history — this does not replace a previous selection. Returns three rowsets on success: a compact envelope, adHocData with song details for the Flutter caller plus metadata for the Azure Function fan-out, and a third rowset of FCM token recipients for the Azure Function to push a visible notification to. New feature — no HC5 equivalent.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth for auth resolution."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token validated against DeviceSecret."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "SongSession.EventId",
+      "description": "Event the song is being selected for. Required — null or zero-UUID triggers validation error (errorCode 1281, errorType 2)."
+    },
+    {
+      "name": "songId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "SongSession.SongId",
+      "description": "Song being selected. Must exist in HC.Song with Removed = 0. Required — null or zero-UUID triggers validation error (errorCode 1282, errorType 2). Song-not-found returns errorCode 1284, errorType 2."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Compact error envelope on auth, validation, RSVP check, song-not-found, or insert failure: { success=0, errorCode, errorType }. Followed by StandardErrorResult at index 1. Mutually exclusive with SuccessEnvelope.",
+      "columns": [
+        { "name": "success", "type": "SMALLINT", "nullable": false, "description": "Always 0 on error." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Numeric error code." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "Compact success envelope: { success=1, errorCode=NULL, errorType=NULL }. Mutually exclusive with ErrorEnvelope. Followed by AdHocData at index 1 and FcmRecipients at index 2.",
+      "columns": [
+        { "name": "success", "type": "SMALLINT", "nullable": false, "description": "Always 1 on success." },
+        { "name": "errorCode", "type": "INT", "nullable": true, "description": "Always NULL on success." },
+        { "name": "errorType", "type": "INT", "nullable": true, "description": "Always NULL on success." }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Returned at index 1 alongside the ErrorEnvelope (index 0) on any error. Mutually exclusive with AdHocData rowset."
+    },
+    {
+      "index": 1,
+      "name": "AdHocData",
+      "description": "Single row of non-sync data for the Flutter caller and the Azure Function. adHocDataId = 1 (constant sentinel per the adHocDataId pattern). Contains the song title, selector name, event/song IDs (lowercase), and the count of push recipients pre-computed at insert time. Mutually exclusive with StandardErrorResult rowset.",
+      "columns": [
+        {
+          "name": "adHocDataId",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1. Sentinel value per the HC6 adHocDataId pattern — signals this is a non-sync data rowset."
+        },
+        {
+          "name": "songTitle",
+          "type": "NVARCHAR(120)",
+          "nullable": false,
+          "description": "HC.Song.SongName for the selected song — used in the Flutter snackbar and push notification body."
+        },
+        {
+          "name": "selectedByName",
+          "type": "NVARCHAR(200)",
+          "nullable": true,
+          "description": "Display name of the caller resolved via COALESCE(NULLIF(HashName,''), NULLIF(DisplayName,''), NULLIF(FirstName,''), 'Someone')."
+        },
+        {
+          "name": "eventId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "The event UUID as lowercase NVARCHAR(40). Used by the Azure Function to scope the push."
+        },
+        {
+          "name": "songId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "The selected song UUID as lowercase NVARCHAR(40). Used by the Azure Function to include in the push payload."
+        },
+        {
+          "name": "recipientCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Pre-computed count of distinct mobile FCM recipients who will receive the push notification. Matches the rowset 2 WHERE clause exactly."
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "FcmRecipients",
+      "description": "One row per distinct FCM token for mobile devices eligible to receive the song-selected push notification. Consumed by the Azure Function for fan-out — not parsed by the Flutter client. Excludes users who have set notification preference to 'ignore' (2) entirely; excludes 'mute' (3) unless the user is physically at the run (AttendenceState 20-39). Effective preference cascades: event-level if non-zero, otherwise kennel-level.",
+      "columns": [
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "HC.Device.FcmToken — Firebase Cloud Messaging token for the recipient device."
+        },
+        {
+          "name": "UserId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "HC.Device.UserId cast to lowercase NVARCHAR(40) — the recipient user ID."
+        },
+        {
+          "name": "showNotification",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1. Signals the Azure Function to send a visible (alert) notification, not a silent data-only push (iOS throttles silent pushes to ~3/hour)."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Inserts one row into HC.SongSession (EventId, SongId, SelectedByUserId, SelectedAt).",
+    "Writes to HC.ErrorLog on auth, validation, RSVP check, song-not-found, or insert errors."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "HC.SongSession.Removed is BIT, not SMALLINT",
+      "detail": "HC.SongSession.Removed is declared as BIT NOT NULL DEFAULT 0. The project standard is SMALLINT. The SP's companion hcapp_getCurrentSong filters WHERE ss.Removed = 0, which works via implicit conversion but the schema is inconsistent."
+    },
+    {
+      "severity": "low",
+      "issue": "Variable named @procName_self instead of @procName",
+      "detail": "The local variable for OBJECT_NAME(@@PROCID) is named @procName_self rather than the standard @procName used across all other app SPs. Cosmetic inconsistency."
+    },
+    {
+      "severity": "low",
+      "issue": "recipientCount pre-computed with a separate COUNT query that duplicates rowset 2 logic",
+      "detail": "The @recipientCount variable is computed by a separate SELECT COUNT before the INSERT, mirroring the rowset 2 WHERE clause. If the rowset 2 logic is ever modified without updating the COUNT query, the recipientCount value will diverge from the actual push count."
+    }
+  ],
+  "breakingChanges": []
+}

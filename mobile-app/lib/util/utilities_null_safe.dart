@@ -1130,22 +1130,42 @@ class Utilities {
       }
 
       if (showRunList) {
-        var doCheckIn =
-            await Get.to<bool?>(
-              SelectRunPage(runList: resultList, selected: selectedRuns),
-            ) ??
-            false;
+        final Map<String, bool>? selections = await Get.to<Map<String, bool>?>(
+          SelectRunPage(runList: resultList, selected: selectedRuns),
+        );
 
-        if (doCheckIn) {
-          for (AreWeAtRunModel result in resultList) {
-            if ((selectedRuns.containsKey(result.eventId)) &&
-                (selectedRuns[result.eventId] == true)) {
-              await tableModel.hasherEventMapService.setEventAttendence(
-                result.eventId,
-                userId,
-                AppDomainType.user,
-                attendenceAtHash.value,
+        // null = Cancel tapped — no writes, dialog may appear again
+        if (selections != null) {
+          final List<String> checkInIds = selections.entries
+              .where((e) => e.value)
+              .map((e) => e.key)
+              .toList();
+          final List<String> rsvpNoIds = selections.entries
+              .where((e) => !e.value)
+              .map((e) => e.key)
+              .toList();
+
+          final List<dynamic> adHoc =
+              await tableModel.hasherEventMapService.setMultiRunRsvpAndCheckin(
+            checkInEventIds: checkInIds,
+            rsvpNoEventIds: rsvpNoIds,
+          );
+
+          if (adHoc.isEmpty) {
+            showHcSnackbar(
+              'Save failed — please check your connection and try again.',
+              isError: true,
+            );
+          } else {
+            if (checkInIds.isNotEmpty) {
+              showHcSnackbar(
+                checkInIds.length == 1
+                    ? 'Checked in!'
+                    : 'Checked in to ${checkInIds.length} runs!',
               );
+            }
+            if (Get.isRegistered<FutureRunListPageController>()) {
+              await Get.find<FutureRunListPageController>().refreshFromTable(true);
             }
           }
         }

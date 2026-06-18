@@ -337,7 +337,7 @@ END CATCH;
 -- Post-write: update run counts, re-read final state
 -- ---------------------------------------------------------------
 IF (@recalculateRunNumbers = 1)
-    EXEC HC.nonApi_updateRunCountsByUser @userId = @hasherId;
+    EXEC HC6.nonApi_updateRunCountsByUser @userId = @hasherId;
 
 SELECT @attendenceState = hem.AttendenceState
 FROM HC.HasherEventMap hem WHERE hem.UserId = @hasherId AND hem.EventId = @eventId;

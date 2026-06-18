@@ -189,7 +189,7 @@ BEGIN TRY
     COMMIT TRANSACTION;
 
     -- Recalculate run counts for all affected users (outside transaction)
-    EXEC HC.nonApi_updateRunCountsForAllUsers @updatedSince = @queryStart;
+    EXEC HC6.nonApi_updateRunCountsForAllUsers @updatedSince = @queryStart;
 
     SELECT 1 AS success, NULL AS errorCode, NULL AS errorType;
 

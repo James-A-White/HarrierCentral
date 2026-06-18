@@ -1,0 +1,118 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_batchUpdatePhotoStatus",
+  "version": "1.0.0",
+  "description": "Applies a batch of photo-status changes for a kennel in a single round-trip. Accepts a JSON array of {photoId, action} pairs. Auth is checked once at kennel level via AppAccessFlags. Set-based UPDATEs are used throughout. Partial failures (photo not found or belonging to a different kennel) are counted and reported; all valid items are always committed regardless. Caller must hold authIsAdmin (0x0001), authCanManagePublicWebContent (0x0080), or authIsSuperAdmin (0x40000000) in HC.HasherKennelMap.AppAccessFlags for the specified kennel. New for HC6 — no HC5 equivalent.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Registered portal device UUID. Passed to HC6.ValidatePortalAuth for auth resolution."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived cryptographic token validated against device secret via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "Public-facing kennel UUID. Resolved to internal Kennel.id. Required — NULL or zero-UUID returns an error. Permission is checked against the resolved kennel."
+    },
+    {
+      "name": "updates",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "JSON array of photo update objects: [{\"photoId\":\"<uuid>\",\"action\":<1-6>}, ...]. Action codes: 1=soft-delete (sets DeletedAt), 2=private (Status=0), 3=share (Status=2), 4=gallery (Status=3), 5=home_gallery (Status=4), 6=event_cover (Status=5, propagates COALESCE(EditedBlobUrl, BlobUrl) to HC.Event.EventCoverPhotoUrl). Items with invalid photoId UUIDs or action values outside 1-6 are silently dropped before counting. NULL or empty string returns Success=1 with zero counts."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on auth failure, validation error, or unhandled CATCH. Mutually exclusive with SuccessEnvelope. All error paths (ValidatePortalAuth failure, missing/invalid publicKennelId, kennel not found, missing updates, permission denied) return this shape. Also returned from the CATCH block on runtime error.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error."
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(255)",
+          "nullable": true,
+          "description": "Human-readable error description. From ValidatePortalAuth output on auth failure; literal string on validation errors; ERROR_MESSAGE() on runtime error."
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "Returned when auth and validation pass and the batch completes. Mutually exclusive with ErrorEnvelope. Returned even when successCount=0 and failureCount>0 (partial failure is not a transaction abort). Also returned when @updates parses to zero valid items (successCount=0, failureCount=0).",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1 on success."
+        },
+        {
+          "name": "successCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Number of submitted items that matched a KennelPhotos row belonging to this kennel and were updated. Computed as (submitted count) - failureCount."
+        },
+        {
+          "name": "failureCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Number of submitted items whose photoId could not be matched to a HC.KennelPhotos row for this kennel (photo not found or belongs to a different kennel). These items are silently skipped."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "For action=1 (soft-delete): sets KennelPhotos.DeletedAt = GETUTCDATE() and KennelPhotos.UpdatedAt = GETUTCDATE() for matched rows.",
+    "For actions 2-6 (status changes): sets KennelPhotos.Status to the mapped value (0/2/3/4/5), clears KennelPhotos.DeletedAt to NULL, and sets KennelPhotos.UpdatedAt = GETUTCDATE() for matched rows.",
+    "For action=6 (event_cover): additionally propagates COALESCE(KennelPhotos.EditedBlobUrl, KennelPhotos.BlobUrl) to HC.Event.EventCoverPhotoUrl, preferring the edited/cropped version when one exists, within the same transaction.",
+    "All changes are committed in a single transaction. If any statement fails (CATCH block), the entire transaction is rolled back."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Non-standard error envelope — not using ValidatePortalAuth StandardErrorResult",
+      "detail": "Portal SPs that call HC6.ValidatePortalAuth typically propagate the full StandardErrorResult rowset (6 columns: errorId, errorType, errorTitle, errorUserMessage, debugMessage, errorProc) when auth fails. This SP instead returns a simplified 2-column envelope (Success=0, ErrorMessage) across all error paths, including auth failure. This is an intentional design choice per the header comment but is inconsistent with other portal SPs. Callers cannot distinguish an auth failure from a validation error without inspecting ErrorMessage content."
+    },
+    {
+      "severity": "low",
+      "issue": "Partial failure detection uses LEFT JOIN count before transaction, but updates run inside transaction",
+      "detail": "failureCount is computed via a LEFT JOIN on #Updates before BEGIN TRANSACTION. Between that count and the UPDATE statements inside the transaction, another concurrent update could theoretically change the set. In practice this is a very narrow race, but the failure count could be misleading if a photo is deleted or reassigned between the pre-check and the UPDATE. This is a design limitation, not a bug."
+    },
+    {
+      "severity": "low",
+      "issue": "TINYINT used in temp table for action column",
+      "detail": "The #Updates temp table declares action as TINYINT. The project standard is SMALLINT for boolean/small integer columns; TINYINT is not a standard type in this codebase. Harmless in practice (TINYINT supports values 0-255, more than sufficient for 1-6), but inconsistent."
+    },
+    {
+      "severity": "low",
+      "issue": "DROP TABLE after RETURN in early-exit paths may not execute",
+      "detail": "The final 'DROP TABLE IF EXISTS #Updates' at line 170 is outside the TRY/CATCH block and runs only when execution reaches it. The early-exit RETURN statements at lines 53, 60, 69, 75, 88 all fire before the temp table is created, so no leak. The RETURN at line 114 (empty parsed batch) does fire after the temp table exists — but in that path, DROP is called explicitly before the RETURN. The CATCH block does not DROP the temp table, but since the temp table is session-scoped it will be cleaned up when the connection closes. Not a leak, but a minor inconsistency in cleanup discipline."
+    }
+  ],
+  "breakingChanges": [
+    "New SP — no HC5 equivalent. App equivalent is HC6.hcapp_batchUpdatePhotoStatus.",
+    "Never remove or reorder the action codes (1-6) — callers encode these as integer literals.",
+    "Never change the Status values written for each action (0/2/3/4/5) without updating all callers that read KennelPhotos.Status.",
+    "Never change the permission bitmask check (0x40000081) without updating all callers that manage AppAccessFlags.",
+    "Never change the JSON input shape {photoId, action} — callers serialise this client-side.",
+    "Never remove failureCount from the success rowset — callers use it to detect partial failures."
+  ]
+}

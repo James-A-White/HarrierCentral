@@ -1,0 +1,141 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_findHashersByHashName",
+  "version": "1.0.0",
+  "description": "Pre-login account discovery. Searches for active hashers by hash name or last name and returns each matched hasher with their kennel memberships and run counts, so a new user can identify their existing account and request an invite code. Uses a global shared token validated against the null UUID (same mechanism as hcapp_authorizeDevice) — no device record is required. Optionally filters kennels by proximity: if @lat and @lon are provided, only kennels whose home city is within 500 miles (804,672 m) are returned.",
+  "parameters": [
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Global shared token validated against the null UUID (00000000-...) and a 30-second time window. Not device-specific — used before device registration exists."
+    },
+    {
+      "name": "searchTerm",
+      "type": "NVARCHAR(250)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Hash name or last name substring to search. Minimum 2 characters. Used in LIKE '%term%' against Hasher.HashName and Hasher.LastName."
+    },
+    {
+      "name": "lat",
+      "type": "FLOAT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Device latitude for distance filter. Pass NULL to disable proximity filtering. Both @lat and @lon must be non-NULL to activate the filter."
+    },
+    {
+      "name": "lon",
+      "type": "FLOAT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Device longitude for distance filter. Pass NULL to disable proximity filtering. Both @lat and @lon must be non-NULL to activate the filter."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "Always returned as rowset 0. success=0 on auth or validation error; success=1 on success. Mutually exclusive with the error detail rowset at index 1.",
+      "columns": [
+        { "name": "success", "type": "INT", "nullable": false, "description": "1 on success, 0 on any error." },
+        { "name": "errorCode", "type": "INT", "nullable": true, "description": "NULL on success. 1312 for auth failure, 1313 for search term too short." },
+        { "name": "errorType", "type": "INT", "nullable": true, "description": "NULL on success. 11 for auth failure, 2 for validation error." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ErrorDetail",
+      "description": "Returned at index 1 when success=0. Contains the standard HC6 app error shape. Mutually exclusive with HasherResults rowset.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID for auth failures (not written for search-term validation errors)." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification: 11 = auth failure, 2 = validation error." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "1312 = auth failure, 1313 = search term too short." },
+        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "'Invalid access token' or 'Search term too short'." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
+        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "HasherResults",
+      "description": "Returned at index 1 when success=1. One row per matched hasher+kennel combination. Empty result set (zero rows) if no hashers match the search term. Ordered by PublicHasherId ASC, HcTotalRunCount DESC. Mutually exclusive with ErrorDetail rowset.",
+      "columns": [
+        {
+          "name": "publicHasherId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "LOWER(CAST(Hasher.PublicHasherId AS NVARCHAR(40))) — the public-facing hasher UUID, lowercased. Table column is UNIQUEIDENTIFIER NOT NULL."
+        },
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Hasher.DisplayName — computed persisted column (COALESCE of HashName/FirstName+LastName, falls back to '<no names provided>'). Never NULL in practice."
+        },
+        {
+          "name": "hashName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "COALESCE(Hasher.HashName, '') — hash name, empty string if NULL. Table column is NVARCHAR(250) NULL."
+        },
+        {
+          "name": "photo",
+          "type": "NVARCHAR(1000)",
+          "nullable": false,
+          "description": "COALESCE(Hasher.Photo, '') — photo URL, empty string if NULL. Table column is NVARCHAR(1000) NULL."
+        },
+        {
+          "name": "kennelId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "LOWER(CAST(Kennel.id AS NVARCHAR(40))) — the kennel's internal UUID, lowercased. Table column is UNIQUEIDENTIFIER NOT NULL."
+        },
+        {
+          "name": "kennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Kennel.KennelName. Table column is NVARCHAR(250) NOT NULL."
+        },
+        {
+          "name": "runCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "HasherKennelMap.HcTotalRunCount — number of HC-tracked runs at this kennel. Filter requires > 0 (only hashers with at least one run are returned). Table column is INT NOT NULL."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Writes to HC.ErrorLog on auth failure (errorId is a NEWID() value).",
+    "No write to HC.ErrorLog on search-term validation failure (errorId is NEWID() but not persisted — note: SP code sets @errorId = NEWID() but does NOT insert into HC.ErrorLog for the search-term-too-short case)."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "errorId populated but not logged for search-term validation failure",
+      "detail": "When @searchTerm is too short (errorCode 1313), the SP sets @errorId = NEWID() and returns it in the error rowset, but never inserts into HC.ErrorLog. The client receives a GUID that does not correspond to any error log entry. This is inconsistent with auth failures where the log entry is always written."
+    },
+    {
+      "severity": "low",
+      "issue": "FLOAT used for @lat and @lon parameters",
+      "detail": "@lat and @lon are FLOAT. While FLOAT is appropriate for geographic coordinates (not monetary values), it is inconsistent with the HC.Device table which stores Latitude and Longitude as DECIMAL(18,15)/DECIMAL(19,15). The geography::Point() call still works correctly since SQL Server converts implicitly."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH block",
+      "detail": "The main SELECT has no error handling. An unexpected DB error (geography::Point() failure on bad coordinates, deadlock, timeout) will propagate as a raw SQL error rather than a structured error rowset."
+    },
+    {
+      "severity": "low",
+      "issue": "c.CityGeolocation IS NULL rows always pass the distance filter",
+      "detail": "The WHERE predicate includes 'OR c.CityGeolocation IS NULL' so kennels whose city has no geolocation are always included even when @lat/@lon is provided. This is a deliberate fallback but may surprise callers who expect distance filtering to be strict."
+    }
+  ],
+  "breakingChanges": [
+    "This SP does not call HC6.ValidateAppAuth — it uses a direct HC.CHECK_ACCESS_TOKEN_V2 call with the null UUID. Auth errorType is 11 (not the standard 1 or 3 used by device-authenticated SPs).",
+    "The errorId for search-term validation errors is a client-generated NEWID() with no corresponding HC.ErrorLog row — support lookup by errorId will return no results for errorCode 1313.",
+    "Returned UUIDs (publicHasherId, kennelId) are NVARCHAR(40) lowercase strings, not UNIQUEIDENTIFIER — callers must not cast them back to GUID without normalising case first."
+  ]
+}

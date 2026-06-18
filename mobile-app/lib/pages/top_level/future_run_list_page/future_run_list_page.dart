@@ -549,9 +549,9 @@ class FutureRunsListPage extends StatelessWidget {
                                                           true;
 
                                                       final locService =
-                                                          Get.put(
-                                                            LocationService(),
-                                                          );
+                                                          Get.isRegistered<LocationService>()
+                                                              ? Get.find<LocationService>()
+                                                              : Get.put(LocationService());
                                                       if (locService
                                                           .initialized) {
                                                         await Utilities.showAlert(

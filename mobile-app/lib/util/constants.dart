@@ -80,6 +80,9 @@ const String BASE_AF_URL = 'harriercentralpublicapi.azurewebsites.net';
 const String BASE_AF_API_URL = 'https://$BASE_AF_URL/api/AppApiHC6';
 const String BASE_AF_CONNECTION_TEST_URL = 'https://$BASE_AF_URL/api/TestApi';
 
+const String APP_GEOCODE_PLACE_TO_ADDRESS_API_URL =
+    'https://$BASE_AF_URL/api/ProxyGeocode';
+
 // new APIs below
 const String PHOTO_UPLOAD_TOKEN_URL =
     'https://$BASE_AF_URL/api/GetPhotoUploadToken';

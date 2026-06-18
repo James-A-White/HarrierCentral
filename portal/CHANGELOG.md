@@ -2,6 +2,14 @@
 
 ---
 
+## 2.0.6+639 — 2026-06-18
+
+### Fixes
+
+- **Set address from lat/lon**: Fixed — was silently failing due to a stale upstream URL in the reverse geocode proxy. Now calls Azure Maps directly.
+
+---
+
 ## 2.0.5+638 — 2026-06-03
 
 ### Fixes

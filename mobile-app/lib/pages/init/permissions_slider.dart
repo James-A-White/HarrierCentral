@@ -199,7 +199,7 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
         if (ps.isGranted) {
           if (await Permission.location.serviceStatus.isEnabled) {
             appModel.hasLocationPermissions = true;
-            Get.put(LocationService());
+            if (!Get.isRegistered<LocationService>()) Get.put(LocationService());
             //await Utilities.subscribeToGeoLocationStream();
           }
         } else {
@@ -238,9 +238,9 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
     //   sound: true,
     // );
 
-    await Get.putAsync(
-      () => NotificationService().init(),
-    ); // Initialize and wait for the notification service
+    if (Firebase.apps.isNotEmpty && !Get.isRegistered<NotificationService>()) {
+      await Get.putAsync<NotificationService>(() => NotificationService().init());
+    }
 
     // NotificationSettings settings = await messaging.requestPermission(
     //   alert: true,
@@ -274,7 +274,7 @@ class PermissionSliderPageState extends State<PermissionSliderPage> {
       ).then((bool? allow) async {
         if (allow ?? false) {
           if (await Permission.locationWhenInUse.request().isGranted) {
-            Get.put(LocationService());
+            if (!Get.isRegistered<LocationService>()) Get.put(LocationService());
             //await Utilities.subscribeToGeoLocationStream();
             _goToTab(1);
           }

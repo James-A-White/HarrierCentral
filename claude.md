@@ -16,6 +16,7 @@ display its contents to James before doing anything else.
 | `portal/`         | `todos/portal.md` |
 | `public-web/`     | `todos/public-web.md` |
 | `api/`            | `todos/api.md` |
+| `db/`             | `todos/db.md` |
 
 If the session spans multiple components, show all relevant TODO files.
 If a TODO item is completed during the session, mark it `[x]` in the file.
@@ -39,6 +40,7 @@ or reviewing any code.** These are non-negotiable — do not skip them even for
 |---|---|
 | `/hc6-adhoc-data` | Working with SP responses that return non-sync data (e.g. a generated ID after an insert, status flags). Required any time you design or consume the `adHocDataId` pattern. |
 | `/packtrack` | Working on any part of the live run tracking feature (GPS sending, map display, position retrieval). |
+| `/hc-api-endpoints` | Adding a new SP, adding a new service method, or any work that touches the API shim. Prevents unnecessary API changes — new HC6 SPs are callable immediately after deploy with no API modification. |
 
 ---
 
@@ -360,7 +362,22 @@ END CATCH
 - `LEN()` for string length checks (not `DATALENGTH`)
 - `DECIMAL(10,4)` for monetary values (not `FLOAT`)
 - `CREATE OR ALTER PROCEDURE` (not `CREATE` or `ALTER` alone)
-- `BIT` for boolean columns (match the table definition exactly)
+- `SMALLINT` for boolean columns — `0` = false, `1` = true
+
+**Delimited list parameters (SP and Dart):**
+
+When passing a list of values as a delimited string parameter, always use `|` as
+the delimiter — never comma. Commas appear in natural language and some data fields;
+`|` is rarely used in real data and eliminates the risk of a value accidentally
+splitting the list. Use `STRING_SPLIT(@param, '|')` on the SQL side and
+`join('|')` / `split('|')` on the Dart side.
+
+**Never use:**
+- `BIT` — never in new columns, SP parameters, or table definitions. Use
+  `SMALLINT` instead. The only exception is the pre-existing `deleted BIT NOT NULL`
+  column on core HC tables (HC.Event, HC.Hasher, HC.Kennel, etc.) — this column
+  is staying as-is and SP parameters that map to it should use `SMALLINT` (SQL
+  Server converts implicitly).
 
 **UUID normalisation (Flutter/Dart):**
 
@@ -382,6 +399,9 @@ Rules:
   to already be lowercase (e.g. both came through `UuidValue`).
 
 **BIT columns in Flutter/Dart `fromJson` (API serialisation gotcha):**
+
+Some columns in existing tables are `BIT` — these are bugs to fix, but until
+they are migrated to `SMALLINT` they need careful handling in Dart.
 
 The .NET Azure Functions API shim serialises SQL Server `BIT` columns as JSON
 booleans (`true`/`false`), not as integers (`1`/`0`). All other integer column
@@ -522,7 +542,7 @@ Found by comparing `hcportal_addEditEvent2` against the base tables:
 | `@eventName` | `NVARCHAR(120)` | `NVARCHAR(250)` | Widen to 250 |
 | `@locationPostCode` | `NVARCHAR(50)` | `NVARCHAR(250)` | Widen to 250 |
 | `@eventPriceFor*` | `FLOAT` | `DECIMAL(10,4)` | Change to DECIMAL |
-| `@deleted` | `SMALLINT` | `BIT` | Change to BIT |
+| `@deleted` | `SMALLINT` | `BIT` | Keep as SMALLINT (BIT column but we never use BIT — implicit conversion) |
 | `@integrationEnabled` | `SMALLINT` | `INT` | Change to INT |
 | `evtDisseminateAllowWebLinks` | sentinel `2` | should be `-2` | Fix sentinel |
 

@@ -1,0 +1,90 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_rptKennelRunStats",
+  "version": "1.0.0",
+  "description": "Generates a pivoted run-stats report for a kennel. Each hasher becomes a column; each run becomes a row. The 'paid' value encodes payment amount and type into a single integer so a single pivot covers both. Also inserts summary rows for total run counts and hare counts. The pivot column list is built dynamically from display names — dynamic SQL is required because the column count (one per hasher) is not known at compile time. Called by the portal or internal tools for reporting; not called by the API directly.",
+  "parameters": [
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Event.KennelId",
+      "description": "The kennel to report on. All events, hashers, and payments are scoped to this kennel."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "PivotedRunStats",
+      "description": "Dynamic pivot: one row per event (ordered by Event_date DESC), plus two sentinel summary rows per hasher appended at the bottom (Event_name = 'Run totals' at future date 1/1/2200, 'Times hared' at 1/1/2100). Fixed columns are Event_name, Run_number, Total_hashers, Event_date. Dynamic columns: one per hasher named by their DisplayName, plus a 'Visitors & Virgins' aggregate column. Column order is by run count descending. The pivot cell value is an encoded integer representing payment + type + hare status. Schema cannot be fully defined statically.",
+      "columns": [
+        {
+          "name": "Event_name",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "Effective event name — FbEventName or EventName depending on UseFbRunDetails. Summary rows use 'Run totals' or 'Times hared'."
+        },
+        {
+          "name": "Run_number",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "HC.Event.EventNumber for run rows. 0 for summary sentinel rows."
+        },
+        {
+          "name": "Total_hashers",
+          "type": "INT",
+          "nullable": true,
+          "description": "Count of attendees (AttendenceState >= 20) for the event. NULL for summary sentinel rows."
+        },
+        {
+          "name": "Event_date",
+          "type": "DATETIME2",
+          "nullable": true,
+          "description": "Effective event start datetime (CONVERT to datetime2). Summary rows use sentinel dates: '1/1/2200' (Run totals), '1/1/2100' (Times hared) to sort them after real events in DESC order."
+        },
+        {
+          "name": "[HasherDisplayName] (dynamic)",
+          "type": "INT",
+          "nullable": true,
+          "description": "One column per unique hasher DisplayName, plus 'Visitors & Virgins'. Pivot cell value encodes: (COALESCE(DebitAmount * 10000, 99990000) + PaymentType + 100000000) * CASE WHEN isHare = 1 THEN -1 ELSE 1 END. Negative = hare, positive = not hare. Special payment sentinel 99990000 means no payment. Summary rows contain MAX(runcount) or MAX(hareCount) in the hasher's column."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Dynamic SQL column list escapes ']' via REPLACE — display names with ']' are safe",
+      "detail": "The PIVOT column list wraps DisplayName in brackets using REPLACE(TRIM(@dname), ']', ']]') to escape any ']' characters before bracket-quoting. This follows the SQL Server convention for escaping bracket-delimited identifiers. Names containing ']' will appear with ']]' in the column header but the dynamic SQL will execute correctly."
+    },
+    {
+      "severity": "high",
+      "issue": "CURSOR used to build dynamic column list — O(N) cursor for N hashers",
+      "detail": "The column list is assembled by iterating a CURSOR over all distinct hasher display names. This is the standard approach for dynamic PIVOT in SQL Server but is inherently serial. For kennels with many hashers, this adds latency proportional to hasher count."
+    },
+    {
+      "severity": "medium",
+      "issue": "Encoded pivot cell value is opaque — complex decoding required by callers",
+      "detail": "The pivot cell value encodes payment amount, payment type, and hare/non-hare status into a single integer using arithmetic encoding. Callers must implement the inverse formula to decode values, and the encoding assumes PaymentType fits in the low 4 digits, which is not enforced."
+    },
+    {
+      "severity": "medium",
+      "issue": "Visitor/Virgin rows use a subquery with correlated scan against #rpt",
+      "detail": "The Visitors & Virgins INSERT uses SELECT TOP 1 Total_hashers FROM #rpt WHERE t.Event_date = ... to look up the attendee count for each event. This is a correlated subquery executed once per event row. For kennels with many events it may be slow. An indexed join would be more efficient."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH wrapper",
+      "detail": "The SP has no TRY/CATCH around the main logic. An error in the dynamic SQL (e.g. malformed column name) propagates as a raw exception to the caller with no cleanup — #rpt is left in tempdb until the session ends."
+    },
+    {
+      "severity": "low",
+      "issue": "Sentinel dates for summary rows ('1/1/2200', '1/1/2100') are implicit sort trick",
+      "detail": "Summary rows are sorted to the bottom of the DESC-ordered result by using far-future dates. This is a clever trick but brittle — any caller that sorts or filters by Event_date must understand these sentinels represent non-event rows."
+    }
+  ],
+  "breakingChanges": [
+    "HC5 source was HC.nonApi_rptKennelRunStats. HC6 migrates to HC6 schema with no functional changes to the pivot logic."
+  ]
+}

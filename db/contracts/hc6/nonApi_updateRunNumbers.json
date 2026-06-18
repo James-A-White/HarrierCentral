@@ -1,0 +1,44 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_updateRunNumbers",
+  "version": "1.0.0",
+  "description": "Recalculates HC.Event.EventNumber for all counted (IsCountedRun=1), visible (IsVisible=1), non-removed, non-deleted events in a kennel. Events are partitioned by the nearest preceding AbsoluteEventNumber anchor using an island-group window function pattern; within each segment, numbers run sequentially from the anchor value (or from 1 when no anchor exists). Can resolve the kennel from either @kennelId directly or from @eventId. Called by portal/app SPs and trgRecalculateRunCounts trigger.",
+  "parameters": [
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.KennelId",
+      "description": "Kennel to recalculate EventNumber for. If NULL or zero-UUID ('00000000-...'), resolved from @eventId. Default NULL."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.id",
+      "description": "Any event in the target kennel. Used only to resolve @kennelId when not supplied directly. Default '00000000-0000-0000-0000-000000000000'. Ignored when @kennelId is supplied and non-zero."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [
+    "UPDATEs HC.Event.EventNumber and HC.Event.updatedAt for all qualifying events in the kennel where NewEventNumber != current EventNumber.",
+    "No-op if both @kennelId resolves to NULL and @eventId does not match any event."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "updatedAt set with GETDATE() instead of SYSDATETIMEOFFSET()",
+      "detail": "The UPDATE sets evt.updatedAt = GETDATE() which returns DATETIME, not DATETIMEOFFSET(7). HC.Event.updatedAt is DATETIMEOFFSET(7). SQL Server performs an implicit conversion using the server's local timezone. Other SPs in HC6 use SYSDATETIMEOFFSET() consistently. This triggers the updatedAt trigger (trgRecalculateRunCounts) on every modified event row — which is expected but should use a consistent time function."
+    },
+    {
+      "severity": "low",
+      "issue": "Updating updatedAt triggers trgRecalculateRunCounts on each modified event row",
+      "detail": "HC.Event has a trgRecalculateRunCounts trigger that fires on UPDATE. When nonApi_updateRunNumbers writes EventNumber, it also writes updatedAt, which may cause the trigger to fire. The trigger checks IF UPDATE(IsCountedRun) OR UPDATE(AbsoluteEventNumber) — these are not updated by this SP, so the trigger's run-number branch should not recurse. However, the trigger also updates EventStartDatetimeIndexed on UseFbRunDetails/date changes, which do not fire here. Risk of recursive trigger execution is low but should be verified."
+    }
+  ],
+  "breakingChanges": [
+    "HC5 used an O(N²) correlated subquery pattern for island grouping. HC6 replaces this with an O(N log N) window function (SUM OVER ... ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) — identical semantics, faster execution.",
+    "HC6 adds an EventStartDatetimeIndexed IS NOT NULL guard: rows without a date are excluded rather than silently sorting first (NULL sorts first in ASC), which could steal run number 1.",
+    "HC6 adds deleted = 0 filter for completeness (HC5 did not filter on deleted)."
+  ]
+}

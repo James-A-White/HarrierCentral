@@ -49,12 +49,9 @@ namespace HcWebApi.Endpoints
                 {
                     await conn.OpenAsync();
 
-                    String procedureName = $"[HC5].[hcinternalapi_checkReminders]";
-
-                    using (SqlCommand cmd = new SqlCommand(procedureName, conn))
+                    using (SqlCommand cmd = new SqlCommand("[HC6].[nonApi_checkReminders]", conn))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@apiKey", Environment.GetEnvironmentVariable("ApiKey") ?? string.Empty);
 
                         // Execute the stored procedure and retrieve multiple result sets
                         using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
@@ -179,8 +176,6 @@ namespace HcWebApi.Endpoints
             ILogger log)
         {
 
-            Console.WriteLine($"FCM token = {fcmToken}");
-
             try
             {
                 var messageBody = new
@@ -231,13 +226,14 @@ namespace HcWebApi.Endpoints
                 var response = await _httpClient.SendAsync(request);
                 if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine("FCM message sent successfully!");
+                    log.LogInformation("FCM check-in reminder sent successfully.");
                 }
                 else
                 {
                     string errorJson = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Error sending FCM message: {errorJson}");
-                    if (errorJson.Contains("BadDeviceToken") || errorJson.Contains("not a valid FCM registration token"))
+                    log.LogWarning("FCM check-in reminder failed: {Error}", errorJson);
+                    if (errorJson.Contains("UNREGISTERED") || errorJson.Contains("NOT_FOUND") ||
+                        errorJson.Contains("BadDeviceToken") || errorJson.Contains("not a valid FCM registration token"))
                     {
                         await DeleteFcmToken(fcmToken, log);
                     }
@@ -245,7 +241,7 @@ namespace HcWebApi.Endpoints
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Exception while sending FCM message: {ex.Message}");
+                log.LogError("Exception while sending check-in FCM: {Message}", ex.Message);
             }
         }
 
@@ -273,7 +269,7 @@ namespace HcWebApi.Endpoints
                         }
                     }
 
-                    Console.WriteLine("Token expired. Generating a new one.");
+                    log.LogInformation("Firebase access token expired — refreshing.");
                 }
 
                 // Generate new token from Firebase service account
@@ -283,7 +279,7 @@ namespace HcWebApi.Endpoints
 
                 if (!httpResponse.IsSuccessStatusCode)
                 {
-                    Console.WriteLine("Error: Failed to retrieve service account JSON from Azure Blob Storage.");
+                    log.LogError("Failed to retrieve Firebase service account JSON from Azure Blob Storage.");
                     return null;
                 }
 
@@ -310,7 +306,7 @@ namespace HcWebApi.Endpoints
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error retrieving Firebase access token: {ex.Message}");
+                log.LogError("Error retrieving Firebase access token: {Message}", ex.Message);
                 return null;
             }
         }
@@ -319,66 +315,19 @@ namespace HcWebApi.Endpoints
         {
             string connectionString = Environment.GetEnvironmentVariable("HcDbConnectionString")
                 ?? throw new InvalidOperationException("HcDbConnectionString is not set in the environment.");
-
-            // Initialize a list to hold the stored procedure results
-            List<Dictionary<string, object>> results = new List<Dictionary<string, object>>();
-
-            // Call the stored procedure and capture the results
             try
             {
-                using (SqlConnection conn = new SqlConnection(connectionString))
-                {
-                    await conn.OpenAsync();
-
-                    String procedureName = "[HC5].[hcinternalapi_removeStaleFcmToken]";
-
-                    using (SqlCommand cmd = new SqlCommand(procedureName, conn))
-                    {
-                        cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@fcmToken", fcmToken);
-
-                        // Execute the stored procedure and retrieve multiple result sets
-                        using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
-                        {
-                            try
-                            {
-                                // Process each result set
-                                do
-                                {
-                                    List<Dictionary<string, object>> resultSet = new List<Dictionary<string, object>>();
-
-                                    while (await reader.ReadAsync())
-                                    {
-                                        var row = new Dictionary<string, object>();
-                                        for (int i = 0; i < reader.FieldCount; i++)
-                                        {
-                                            string? name = reader.GetName(i);
-                                            object? value = reader.IsDBNull(i) ? null : reader.GetValue(i);
-
-                                            if ((name != null) && (value != null))
-                                            {
-                                                row[name] = value;
-                                            }
-
-                                        }
-                                        resultSet.Add(row);
-                                    }
-
-                                } while (await reader.NextResultAsync()); // Move to the next result set
-                            }
-
-                            catch (System.Exception ex)
-                            {
-                                Debug.Print(ex.ToString());
-                            }
-                        }
-                    }
-                }
-
+                using SqlConnection conn = new(connectionString);
+                await conn.OpenAsync();
+                using SqlCommand cmd = new("[HC6].[nonApi_deleteFcmToken]", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@fcmToken", fcmToken);
+                await cmd.ExecuteNonQueryAsync();
+                log.LogInformation("Stale FCM token cleared via HC6.nonApi_deleteFcmToken.");
             }
             catch (Exception ex)
             {
-                log.LogError($"Error executing stored procedure: {ex.Message}");
+                log.LogError("Error clearing stale FCM token: {Message}", ex.Message);
             }
         }
 

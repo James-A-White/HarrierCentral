@@ -1,0 +1,84 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_updatePhotoStatus",
+  "version": "1.0.0",
+  "description": "Allows an authorised reviewer (Hash Flash 0x20, GM 0x02, VGM 0x04, or RA 0x08) to action a photo. Works on photos of any current status — supports re-review from the Reviewed tab and initial review from the Pending tab. Action 1 soft-deletes by setting DeletedAt (Status is unchanged). Actions 2-6 clear DeletedAt and set the new Status, effectively restoring soft-deleted photos. Action 6 additionally propagates COALESCE(EditedBlobUrl, BlobUrl) to HC.Event.EventCoverPhotoUrl, preferring the cropped/edited version.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth for auth resolution."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token validated against DeviceSecret."
+    },
+    {
+      "name": "photoId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "KennelPhotos.id",
+      "description": "UUID of the photo to action. If no KennelPhotos row matches, a 'Photo not found' error is returned (errorCode 1333, errorType 13)."
+    },
+    {
+      "name": "action",
+      "type": "TINYINT",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Action to apply. 1=soft-delete (set DeletedAt, Status unchanged). 2=keep_private (Status=0, clear DeletedAt). 3=share (Status=2, clear DeletedAt). 4=run_gallery (Status=3, clear DeletedAt). 5=home_gallery (Status=4, clear DeletedAt). 6=event_cover (Status=5, clear DeletedAt, propagate COALESCE(EditedBlobUrl, BlobUrl) to Event.EventCoverPhotoUrl). Values outside 1-6 trigger a validation error (errorCode 1233, errorType 12)."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "Always present. On auth, validation, photo-not-found, or role check failure: success=0, errorCode and errorType set. On DB error: success=0, errorCode=1933, errorType=19. On success: success=1, errorCode=NULL, errorType=NULL.",
+      "columns": [
+        { "name": "success", "type": "INT", "nullable": false, "description": "1 on success, 0 on any failure." },
+        { "name": "errorCode", "type": "INT", "nullable": true, "description": "Numeric error code. NULL on success." },
+        { "name": "errorType", "type": "INT", "nullable": true, "description": "Error classification code. NULL on success." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ActionResult",
+      "description": "On success: the photo ID, the new resolved status, and the new DeletedAt value. On error: standard HC6 error detail rowset. These two shapes are mutually exclusive at index 1.",
+      "columns": [
+        { "name": "photoId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Echoed back from @photoId." },
+        { "name": "newStatus", "type": "TINYINT", "nullable": false, "description": "The status after the action. For action=1 (soft-delete), this is 0 (the CASE ELSE default) — note this is misleading since the row is soft-deleted, not truly private. For actions 2-6, this reflects the new explicit status." },
+        { "name": "deletedAt", "type": "DATETIME2", "nullable": true, "description": "The new DeletedAt value. Non-null (GETUTCDATE()) for action=1. NULL for actions 2-6." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Updates KennelPhotos.DeletedAt and KennelPhotos.UpdatedAt for action=1.",
+    "Updates KennelPhotos.Status, KennelPhotos.DeletedAt, and KennelPhotos.UpdatedAt for actions 2-6.",
+    "When action=6: updates HC.Event.EventCoverPhotoUrl with COALESCE(EditedBlobUrl, BlobUrl), preferring the edited/cropped version when one exists.",
+    "Writes to HC.ErrorLog on invalid action, photo-not-found, role check failure, or unhandled DB error."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "newStatus is misleading for action=1 (soft-delete)",
+      "detail": "The CASE expression that computes @newStatus defaults WHEN 1 THEN 0, so when action=1 (soft-delete), the returned newStatus is 0 (private) even though the photo is soft-deleted (DeletedAt is set). A caller reading newStatus=0 cannot distinguish a soft-deleted photo from a truly private one — they must inspect deletedAt."
+    },
+    {
+      "severity": "low",
+      "issue": "Role mask 0x002E excludes WebMeister — inconsistent with hcapp_batchUpdatePhotoStatus",
+      "detail": "This single-item action SP uses 0x002E. hcapp_batchUpdatePhotoStatus uses 0x102E (adds WebMeister 0x1000). A WebMeister can batch-action but not single-action photos."
+    },
+    {
+      "severity": "low",
+      "issue": "HcVersion hardcoded to '<unknown>' in all ErrorLog inserts",
+      "detail": "Consistent with other HC6 SPs but means the version is never captured in the error log."
+    }
+  ],
+  "breakingChanges": [
+    "New SP — no HC5 predecessor. No breaking changes from migration."
+  ]
+}

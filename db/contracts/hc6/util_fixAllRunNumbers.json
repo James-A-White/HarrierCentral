@@ -1,0 +1,83 @@
+{
+  "schema": "HC6",
+  "name": "util_fixAllRunNumbers",
+  "version": "1.0.0",
+  "description": "MAINTENANCE SP — run manually by the developer only, never called by the API or any automated process. Recalculates HC.Event.EventNumber for every qualifying event across all kennels in a single pass using the same island-group window function logic as nonApi_updateRunNumbers, but partitioned by KennelId so each kennel's numbering sequence is independent. Intended as a sweep to fix EventNumber = 0 or stale-number inconsistencies left by trigger timing gaps or bulk data operations. Returns two rowsets reporting what was changed.",
+  "parameters": [],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "PerKennelSummary",
+      "description": "One row per kennel where at least one EventNumber was corrected, ordered by KennelName. Empty when no corrections were needed. On CATCH block error: returns { Success = 0, ErrorMessage } instead.",
+      "columns": [
+        {
+          "name": "KennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "HC.Kennel.KennelName — display name of the kennel."
+        },
+        {
+          "name": "EventsFixed",
+          "type": "INT",
+          "nullable": false,
+          "description": "COUNT(*) of events whose EventNumber was changed in this kennel."
+        },
+        {
+          "name": "OldMin",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Minimum old EventNumber value among changed rows in this kennel."
+        },
+        {
+          "name": "OldMax",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Maximum old EventNumber value among changed rows in this kennel."
+        },
+        {
+          "name": "NewMin",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Minimum new EventNumber value among changed rows in this kennel."
+        },
+        {
+          "name": "NewMax",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Maximum new EventNumber value among changed rows in this kennel."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "TotalSummary",
+      "description": "Always exactly 1 row — the total count of events corrected across all kennels. Present only on success (no CATCH block).",
+      "columns": [
+        {
+          "name": "TotalEventsFixed",
+          "type": "INT",
+          "nullable": false,
+          "description": "Total COUNT(*) of events whose EventNumber was changed across all kennels."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATEs HC.Event.EventNumber and HC.Event.updatedAt (SYSDATETIMEOFFSET()) for all qualifying events across all kennels where NewEventNumber != current EventNumber.",
+    "All updates are wrapped in a single transaction — either all kennels are updated or none (on error, transaction is rolled back).",
+    "On CATCH: transaction is rolled back; returns { Success = 0, ErrorMessage } instead of the normal rowsets."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Updating updatedAt on all affected Event rows triggers trgRecalculateRunCounts for each row",
+      "detail": "The UPDATE writes updatedAt, which fires the trgRecalculateRunCounts trigger on every modified event row. The trigger checks IF UPDATE(IsCountedRun) OR UPDATE(AbsoluteEventNumber) — neither is changed here, so the run-number recursion branch does not fire. However, trigger overhead (even for no-op checks) multiplies by the number of corrected rows. For a full sweep affecting many events, this adds measurable overhead."
+    },
+    {
+      "severity": "low",
+      "issue": "No guard against running in production during peak hours",
+      "detail": "This is a developer-only maintenance SP that acquires row-level locks on HC.Event during the UPDATE. Running it during peak usage could cause lock contention with portal and app SPs that read/write HC.Event concurrently. Should be run only during low-traffic periods."
+    }
+  ],
+  "breakingChanges": []
+}

@@ -1,0 +1,97 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_getHcAdminPrivileges",
+  "version": "1.0.0",
+  "description": "Returns platform-admin privilege flags for the authenticated caller. Always returns exactly one row on success; all flags coalesce to 0 if the user has no HC.PlatformAdmin row or has been removed (removed=1). Service accounts (@callerType != 0) are explicitly rejected. The LEFT JOIN pattern guarantees a row is always returned rather than an empty result set.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Registered portal device UUID. Passed to HC6.ValidatePortalAuth for auth resolution."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived cryptographic token validated against device secret via HC6.ValidatePortalAuth."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on auth failure or service-account rejection. Mutually exclusive with PlatformAdminPrivileges. Auth failures (device not found, token invalid, etc.) propagate the ValidatePortalAuth error string. Service account callers (@callerType != 0) receive a distinct literal message.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error."
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(255)",
+          "nullable": true,
+          "description": "Human-readable error description. From ValidatePortalAuth output on auth failure; 'Service accounts may not call this endpoint' on callerType check failure."
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "PlatformAdminPrivileges",
+      "description": "Returned on successful auth (and only when @callerType = 0). Always exactly one row. All columns are 0 when the caller has no PlatformAdmin record or the record has removed=1. Mutually exclusive with ErrorEnvelope.",
+      "columns": [
+        {
+          "name": "CanViewMonitor",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "COALESCE(HC.PlatformAdmin.CanViewMonitor, 0). Table column is SMALLINT NOT NULL DEFAULT 0. Always 0 when no matching PlatformAdmin row exists."
+        },
+        {
+          "name": "CanManageNewsflash",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "COALESCE(HC.PlatformAdmin.CanManageNewsflash, 0). Table column is SMALLINT NOT NULL DEFAULT 0. Always 0 when no matching PlatformAdmin row exists."
+        },
+        {
+          "name": "CanEditKennel",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "COALESCE(HC.PlatformAdmin.CanEditKennel, 0). Table column is SMALLINT NOT NULL DEFAULT 0 (added via ALTER TABLE migration). Always 0 when no matching PlatformAdmin row exists."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Non-standard error envelope — not using ValidatePortalAuth StandardErrorResult",
+      "detail": "Portal SPs that call HC6.ValidatePortalAuth typically propagate the full StandardErrorResult rowset (errorId, errorType, errorTitle, errorUserMessage, debugMessage, errorProc) when auth fails. This SP returns a simplified 2-column envelope (Success=0, ErrorMessage) across all error paths, consistent with the other KennelPhotos-related SPs but inconsistent with the broader portal SP set. Callers cannot distinguish auth failure from a service-account rejection without inspecting ErrorMessage content."
+    },
+    {
+      "severity": "medium",
+      "issue": "HC.PlatformAdmin.removed is BIT, not SMALLINT",
+      "detail": "The PlatformAdmin table was created with 'removed BIT NOT NULL DEFAULT 0'. The project standard is SMALLINT for boolean columns; BIT is used here because it was the original table design. The WHERE clause 'pa.removed = 0' works due to implicit SQL Server conversion, but this is inconsistent with the project standard and would need to be addressed if the table is ever migrated."
+    },
+    {
+      "severity": "low",
+      "issue": "COALESCE on NOT NULL columns is redundant when PlatformAdmin row exists",
+      "detail": "CanViewMonitor, CanManageNewsflash, and CanEditKennel are all SMALLINT NOT NULL with DEFAULT 0. When a matching PlatformAdmin row is found, the COALESCE can never trigger for those columns. The COALESCE is meaningful only when no row is found (LEFT JOIN produces NULL), in which case it correctly returns 0. The intent is correct but a comment clarifying this would improve readability."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH wrapping the main SELECT",
+      "detail": "The SET XACT_ABORT ON and BEGIN TRY block are present, but the main SELECT query joins HC.PlatformAdmin without a transaction. A runtime error in the SELECT (e.g. a deadlock) would be caught by the CATCH block and return Success=0, ErrorMessage, which is the correct fallback shape. This is acceptable but worth noting — the CATCH output is Success/ErrorMessage not a structured StandardErrorResult."
+    }
+  ],
+  "breakingChanges": [
+    "Never remove a column from the PlatformAdminPrivileges rowset — callers expect exactly three flag columns.",
+    "Never change the guarantee that exactly one row is always returned on success — callers may not handle an empty result set.",
+    "Never change the COALESCE-to-0 behaviour — callers rely on 0 meaning 'no privilege' rather than NULL meaning 'unknown'.",
+    "Never allow service accounts (@callerType != 0) to call this SP without updating the caller matrix — service accounts should not be querying platform-admin flags."
+  ]
+}

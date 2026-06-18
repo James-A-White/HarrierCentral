@@ -1,0 +1,127 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getCurrentSong",
+  "version": "1.0.0",
+  "description": "Pull-on-open endpoint for the interactive songbook. Returns the most recently selected song for the given event if it was selected within the last 2 minutes AND the calling user is RSVP'd (RsvpState >= 2, Removed = 0). Returns an empty rowset (zero rows with typed NULL columns) when the user is not RSVP'd or no song has been selected recently — this is not an error. Read-only SP — error rowset is returned directly at index 0 (no compact envelope). New feature — no HC5 equivalent.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth for auth resolution."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token validated against DeviceSecret."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "SongSession.EventId",
+      "description": "Event to check for an active song. Required — null or zero-UUID triggers validation error (errorCode 1291, errorType 2). Note: error is returned as a direct StandardErrorResult rowset (no compact envelope) to match the read-only SP error pattern used by this SP."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Returned directly (no compact envelope) on auth failure or validation error. Mutually exclusive with the Song rowset. On auth failure, errorType is set by ValidateAppAuth."
+    },
+    {
+      "index": 0,
+      "name": "Song",
+      "description": "Zero or one row. One row: the most recently selected song within the last 2 minutes (TOP 1 ordered by SelectedAt DESC). Zero rows (WHERE 1=0 empty shape): caller is not RSVP'd to the event. Zero rows naturally: no song selected in the last 2 minutes. Mutually exclusive with StandardErrorResult rowset.",
+      "columns": [
+        {
+          "name": "songId",
+          "type": "NVARCHAR(40)",
+          "nullable": true,
+          "description": "HC.Song.id cast to lowercase NVARCHAR(40) via LOWER(CAST(...)). NULL when the rowset is empty (not RSVP'd case)."
+        },
+        {
+          "name": "songName",
+          "type": "NVARCHAR(120)",
+          "nullable": true,
+          "description": "HC.Song.SongName. NULL when the rowset is empty."
+        },
+        {
+          "name": "tuneOf",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "HC.Song.TuneOf — the tune the song is sung to. NULL when not set or rowset is empty."
+        },
+        {
+          "name": "lyrics",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "HC.Song.Lyrics. NULL when the rowset is empty."
+        },
+        {
+          "name": "bawdyRating",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "HC.Song.BawdyRating. NULL when the rowset is empty."
+        },
+        {
+          "name": "imageUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "HC.Song.ImageUrl. NULL when not set or rowset is empty."
+        },
+        {
+          "name": "audioUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "HC.Song.AudioUrl. NULL when not set or rowset is empty."
+        },
+        {
+          "name": "tags",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "HC.Song.Tags. NULL when not set or rowset is empty."
+        },
+        {
+          "name": "selectedByName",
+          "type": "NVARCHAR(200)",
+          "nullable": true,
+          "description": "Display name of the user who selected the song, derived via COALESCE(NULLIF(HashName,''), NULLIF(DisplayName,''), NULLIF(FirstName,''), 'Someone'). NULL when the rowset is empty."
+        },
+        {
+          "name": "selectedAt",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "HC.SongSession.SelectedAt converted to NVARCHAR(50) via CONVERT(NVARCHAR(50), CAST(SelectedAt AS DATETIME2)). Loses timezone offset. NULL when the rowset is empty."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "selectedAt loses timezone offset",
+      "detail": "SelectedAt is stored as DATETIMEOFFSET(7) in HC.SongSession but is converted via CAST(... AS DATETIME2) before CONVERT to NVARCHAR(50). This strips the UTC offset and returns a bare datetime string. Clients cannot determine whether this is UTC or server local time."
+    },
+    {
+      "severity": "medium",
+      "issue": "HC.SongSession.Removed is BIT, not SMALLINT",
+      "detail": "HC.SongSession.Removed is declared as BIT NOT NULL DEFAULT 0. The project standard is SMALLINT. The SP filters WHERE ss.Removed = 0, which implicitly converts the integer to BIT — harmless in SQL but documents a schema inconsistency."
+    },
+    {
+      "severity": "low",
+      "issue": "Error returned without compact envelope on this read-only SP",
+      "detail": "Unlike most mutation SPs, this SP returns errors as a direct StandardErrorResult rowset (no { success, errorCode, errorType } compact envelope at index 0 before it). Callers must detect the error case by checking whether the first column of the first row is 'errorId'. This is an inconsistent pattern within the HC6 app SP family."
+    },
+    {
+      "severity": "low",
+      "issue": "Variable named @procName_self instead of @procName",
+      "detail": "The local variable for OBJECT_NAME(@@PROCID) is named @procName_self rather than the standard @procName used across all other app SPs. Cosmetic inconsistency."
+    }
+  ],
+  "breakingChanges": []
+}

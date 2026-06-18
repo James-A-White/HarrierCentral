@@ -1,21 +1,21 @@
-CREATE OR ALTER PROCEDURE [HC].[nonApi_getUserInviteCodeByPublicHasherId]
-
+CREATE OR ALTER PROCEDURE [HC6].[nonApi_getUserInviteCodeByPublicHasherId]
     @publicHasherId UNIQUEIDENTIFIER
-
 AS
 -- =====================================================================
--- Procedure: HC.nonApi_getUserInviteCodeByPublicHasherId
--- Description: Server-side companion to HC.nonApi_getUserInviteCode.
---   Resolves a hasher's email address and invite code from their
---   public hasher ID so the EmailInviteCode Azure Function can send
---   an invite without exposing the email address to the client.
+-- Procedure: HC6.nonApi_getUserInviteCodeByPublicHasherId
+-- Description: Resolves a hasher's email address and invite code from
+--   their public hasher ID so the EmailInviteCode Azure Function can
+--   send an invite without exposing the email address to the client.
 --   Called only from the EmailInviteCode endpoint — never from the app.
 -- Parameters:
 --   @publicHasherId - HC.Hasher.PublicHasherId (from hcapp_findHashersByHashName)
 -- Returns:
 --   Single row: { Email, InviteCode } or empty set if not found / removed.
 -- Author: Harrier Central
--- Created: 2026-06-04
+-- Created: 2026-06-15
+-- HC5 Source: HC.nonApi_getUserInviteCodeByPublicHasherId
+-- Breaking Changes vs HC5 (HC schema):
+--   Moved from HC schema to HC6 schema.
 -- =====================================================================
 SET NOCOUNT ON;
 
@@ -24,4 +24,4 @@ SELECT
     REPLACE(h.ResetCode, 'URC:', '') AS InviteCode
 FROM HC.Hasher h
 WHERE h.PublicHasherId = @publicHasherId
-  AND h.Removed = 0;
+  AND h.Removed        = 0;

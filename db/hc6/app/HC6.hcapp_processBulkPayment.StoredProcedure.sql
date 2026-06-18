@@ -323,14 +323,14 @@ OPEN creditCursor;
 FETCH NEXT FROM creditCursor INTO @curUserId;
 WHILE @@FETCH_STATUS = 0
 BEGIN
-    EXEC HC.nonApi_updateKennelCreditByUser @userId = @curUserId, @kennelId = @kennelId;
+    EXEC HC6.nonApi_updateKennelCreditByUser @userId = @curUserId, @kennelId = @kennelId;
     FETCH NEXT FROM creditCursor INTO @curUserId;
 END
 CLOSE creditCursor;
 DEALLOCATE creditCursor;
 DROP TABLE #tempCreditUpdate;
 
-EXEC HC.nonApi_updateRunCountsForAllUsers @updatedSince = @queryStart;
+EXEC HC6.nonApi_updateRunCountsForAllUsers @updatedSince = @queryStart;
 
 SELECT 1 AS success, NULL AS errorCode, NULL AS errorType;
 

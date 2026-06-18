@@ -1,0 +1,118 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getRunPhotos",
+  "version": "1.0.0",
+  "description": "Returns photos for a run in two rowsets. Rowset 1 — own photos (all statuses, always fully returned, includes AssetId for device-local display). Rowset 2 — others' public photos (status >= 2, soft-deleted excluded, filterable by @afterUpdatedAt for incremental updates). Call on-demand when the map or photo UI is active; do not poll.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth for auth resolution."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token validated against DeviceSecret."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "KennelPhotos.EventId",
+      "description": "The run to fetch photos for. Null or zero-UUID triggers a validation error (errorCode 1232, errorType 12)."
+    },
+    {
+      "name": "afterUpdatedAt",
+      "type": "DATETIME2",
+      "nullable": true,
+      "mapsToColumn": "KennelPhotos.UpdatedAt",
+      "description": "Incremental watermark applied to others' public photos only (rowset 2). NULL = return all matching records (initial load). Non-null = return only records where UpdatedAt > @afterUpdatedAt. Own photos (rowset 1) always return fully regardless of this value. Defaults to NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "AuthErrorEnvelope",
+      "description": "Returned only on auth or validation failure. Contains {success, errorCode, errorType}. Not present on success.",
+      "columns": [
+        { "name": "success", "type": "INT", "nullable": false, "description": "Always 0 on this error path." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Numeric error code." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code." }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Returned only on auth or validation failure (paired with AuthErrorEnvelope at index 0). Not present on success."
+    },
+    {
+      "index": 1,
+      "name": "OwnPhotos",
+      "description": "On success: all photos uploaded by the authenticated user for this event, regardless of status (including private and soft-deleted). Always fully returned — @afterUpdatedAt does not apply. Includes AssetId for device-local display fallback. Zero rows if the user has no photos for this event. Mutually exclusive with StandardErrorResult at index 1.",
+      "columns": [
+        { "name": "photoId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "KennelPhotos.id." },
+        { "name": "EventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "KennelPhotos.EventId." },
+        { "name": "KennelId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "KennelPhotos.KennelId." },
+        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "KennelPhotos.UserId — always the authenticated user's ID in this rowset." },
+        { "name": "BlobUrl", "type": "NVARCHAR(500)", "nullable": false, "description": "KennelPhotos.BlobUrl — CDN URL of the original uploaded image." },
+        { "name": "EditedBlobUrl", "type": "NVARCHAR(500)", "nullable": true, "description": "KennelPhotos.EditedBlobUrl — CDN URL of the edited version, if any." },
+        { "name": "AssetId", "type": "NVARCHAR(500)", "nullable": true, "description": "KennelPhotos.AssetId — device-library identifier (iOS/Android). Only valid on the device that took the photo. NULL if the user had camera roll saving disabled." },
+        { "name": "Latitude", "type": "DECIMAL(9,6)", "nullable": false, "description": "KennelPhotos.Latitude." },
+        { "name": "Longitude", "type": "DECIMAL(9,6)", "nullable": false, "description": "KennelPhotos.Longitude." },
+        { "name": "Status", "type": "TINYINT", "nullable": false, "description": "KennelPhotos.Status — 0=private, 1=pending_review, 2=public, 3=run_gallery, 4=home_gallery, 5=event_cover." },
+        { "name": "Title", "type": "NVARCHAR(250)", "nullable": true, "description": "KennelPhotos.Title." },
+        { "name": "Description", "type": "NVARCHAR(MAX)", "nullable": true, "description": "KennelPhotos.Description." },
+        { "name": "CreatedAt", "type": "DATETIME2", "nullable": false, "description": "KennelPhotos.CreatedAt — UTC creation timestamp." },
+        { "name": "UpdatedAt", "type": "DATETIME2", "nullable": false, "description": "KennelPhotos.UpdatedAt — UTC last-modified timestamp." }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "OthersPublicPhotos",
+      "description": "On success: photos from other users where Status >= 2 and DeletedAt IS NULL, filtered by @afterUpdatedAt when non-null. Includes uploaderDisplayName for attribution. Zero rows if no qualifying others' photos exist (or none updated since @afterUpdatedAt). Not present on error paths.",
+      "columns": [
+        { "name": "photoId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "KennelPhotos.id." },
+        { "name": "EventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "KennelPhotos.EventId." },
+        { "name": "KennelId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "KennelPhotos.KennelId." },
+        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "KennelPhotos.UserId — the uploader's ID (never the authenticated user in this rowset)." },
+        { "name": "BlobUrl", "type": "NVARCHAR(500)", "nullable": false, "description": "KennelPhotos.BlobUrl — CDN URL of the original uploaded image." },
+        { "name": "EditedBlobUrl", "type": "NVARCHAR(500)", "nullable": true, "description": "KennelPhotos.EditedBlobUrl — CDN URL of the edited version, if any." },
+        { "name": "Latitude", "type": "DECIMAL(9,6)", "nullable": false, "description": "KennelPhotos.Latitude." },
+        { "name": "Longitude", "type": "DECIMAL(9,6)", "nullable": false, "description": "KennelPhotos.Longitude." },
+        { "name": "Status", "type": "TINYINT", "nullable": false, "description": "KennelPhotos.Status — always >= 2 in this rowset (filter predicate enforces it)." },
+        { "name": "Title", "type": "NVARCHAR(250)", "nullable": true, "description": "KennelPhotos.Title." },
+        { "name": "Description", "type": "NVARCHAR(MAX)", "nullable": true, "description": "KennelPhotos.Description." },
+        { "name": "CreatedAt", "type": "DATETIME2", "nullable": false, "description": "KennelPhotos.CreatedAt — UTC creation timestamp." },
+        { "name": "UpdatedAt", "type": "DATETIME2", "nullable": false, "description": "KennelPhotos.UpdatedAt — UTC last-modified timestamp. Used as the incremental watermark on the next call." },
+        { "name": "uploaderDisplayName", "type": "NVARCHAR(MAX)", "nullable": false, "description": "Hasher.DisplayName (persisted computed column) — the display name of the uploader." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Writes to HC.ErrorLog on eventId validation failure."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH around the main SELECTs",
+      "detail": "The SP has no TRY/CATCH block. An unexpected DB error (deadlock, timeout) will propagate as a raw SQL error rather than a structured error rowset."
+    },
+    {
+      "severity": "low",
+      "issue": "OthersPublicPhotos uses Status >= 2 not Status IN (2,3,4,5)",
+      "detail": "The filter uses kp.Status >= 2. This would include any future status values above 5 without an explicit review. A closed IN list would be more defensive, though currently Status only goes to 5."
+    },
+    {
+      "severity": "low",
+      "issue": "HcVersion hardcoded to '<unknown>' in all ErrorLog inserts",
+      "detail": "Consistent with other HC6 SPs but means the version is never captured in the error log."
+    }
+  ],
+  "breakingChanges": [
+    "New SP — no HC5 predecessor. No breaking changes from migration."
+  ]
+}

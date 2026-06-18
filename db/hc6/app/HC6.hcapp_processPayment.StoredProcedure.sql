@@ -456,12 +456,12 @@ BEGIN CATCH
 END CATCH;
 
 -- Post-commit: update kennel credit and run counts
-EXEC HC.nonApi_updateKennelCreditByUser @userId = @payer_userIdGuid, @kennelId = @kennelId;
+EXEC HC6.nonApi_updateKennelCreditByUser @userId = @payer_userIdGuid, @kennelId = @kennelId;
 SELECT @creditAvailable = hkm.KennelCredit FROM HC.HasherKennelMap hkm
 WHERE hkm.UserId = @payer_userIdGuid AND hkm.KennelId = @kennelId;
 
 IF (@userIdWhoPaid IS NOT NULL)
-    EXEC HC.nonApi_updateRunCountsByUser @userId = @userIdWhoPaid;
+    EXEC HC6.nonApi_updateRunCountsByUser @userId = @userIdWhoPaid;
 
 SELECT 1 AS success, NULL AS errorCode, NULL AS errorType;
 

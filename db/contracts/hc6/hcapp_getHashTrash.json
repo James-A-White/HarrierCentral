@@ -1,0 +1,99 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getHashTrash",
+  "version": "1.0.0",
+  "description": "Returns the HashTrash article for a run. Published articles (HashTrashStatus=1) are returned to any authenticated user. Draft articles (HashTrashStatus=0) are returned only to mismanagement roles: Hash Flash (0x20), WebMeister (0x1000), GM (0x02), VGM (0x04), or RA (0x08) — bitmask 0x102E. If the article does not exist or the caller lacks access to a draft, all three columns are NULL (success=1, no error). Callers treat NULL content as 'no article'. Read-only SP — no success envelope on the happy path. New feature — no HC5 equivalent.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth for auth resolution."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token validated against DeviceSecret."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Event.KennelId",
+      "description": "Kennel that owns the event. Required — null or zero-UUID triggers validation error."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Event.id",
+      "description": "Event to fetch HashTrash for. Required — null or zero-UUID triggers validation error."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Compact error envelope returned on auth or validation failure: { success=0, errorCode, errorType }. Followed by StandardErrorResult at index 1. Mutually exclusive with HashTrash rowset.",
+      "columns": [
+        { "name": "success", "type": "SMALLINT", "nullable": false, "description": "Always 0 on error." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Numeric error code." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "HashTrash",
+      "description": "Exactly one row always returned on success (the SELECT is a scalar read of HC.Event). All columns are NULL when: the event does not exist (deleted=1 or wrong kennelId), the article has not been written yet (HashTrashStatus IS NULL), or the article is a draft and the caller lacks mismanagement access. Mutually exclusive with ErrorEnvelope rowset.",
+      "columns": [
+        {
+          "name": "headline",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "HC.Event.HashTrashHeadline — the short article headline. NULL if no article exists or event not found. Note: the table column is derived from the HC6 migration — not present in the legacy HC5 Event table; nullable because it may not yet be set."
+        },
+        {
+          "name": "content",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "HC.Event.HashTrashContent — the markdown body. NULL when: no article exists, HashTrashStatus IS NULL, status=0 (draft) and caller lacks mismanagement access, or event not found."
+        },
+        {
+          "name": "status",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "HC.Event.HashTrashStatus — 0 = draft, 1 = published. NULL when content is NULL (same conditions). Never returns the raw status for a draft the caller cannot see."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Returned at index 1 alongside the ErrorEnvelope (index 0) on auth or validation errors."
+    }
+  ],
+  "sideEffects": [
+    "Writes to HC.ErrorLog on auth or validation errors."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Zero rows returned when event not found (vs one row of NULLs)",
+      "detail": "The SP queries HC.Event with WHERE e.id = @eventId AND e.KennelId = @kennelId AND e.deleted = 0. If the event does not exist or is deleted, the SELECT returns zero rows rather than one row of NULLs. The contract states all columns are NULL in this case, but callers that expect exactly one row will receive zero rows for a not-found event — an inconsistency. Should be documented clearly so callers handle both 0 and 1 row scenarios."
+    },
+    {
+      "severity": "low",
+      "issue": "Missing SET XACT_ABORT ON",
+      "detail": "The SP sets SET NOCOUNT ON but not SET XACT_ABORT ON. Since this is a read-only SP this is harmless but inconsistent with the HC6 SP standard."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH block",
+      "detail": "The main SELECT is not wrapped in TRY/CATCH. An unexpected DB error will propagate as a raw SQL error rather than a structured error rowset."
+    }
+  ],
+  "breakingChanges": []
+}

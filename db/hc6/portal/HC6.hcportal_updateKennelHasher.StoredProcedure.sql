@@ -53,7 +53,7 @@ AS
 --   - @firstName widened from NVARCHAR(150) to NVARCHAR(250) to match table
 --   - @lastName widened from NVARCHAR(150) to NVARCHAR(250) to match table
 --   - Membership "never expires" date changed from 2100-01-01 to 2999-12-31
---   - HC.nonApi_updateRunCountsByUser now called for haring updates too
+--   - nonApi_updateRunCountsByUser now called for haring updates too
 --     (was commented out in HC5)
 --   - All writes wrapped in a single transaction
 --   - Validation now short-circuits with RETURN on first error
@@ -258,7 +258,7 @@ BEGIN TRY
                 WHERE h.PublicHasherId = @hasherBeingEditedPublicId
                 AND k.PublicKennelId = @publicKennelId
 
-            EXEC [HC].[nonApi_updateRunCountsByUser]
+            EXEC [HC6].[nonApi_updateRunCountsByUser]
                 @userId = @hid
 
             SELECT  hkm.id as hkmId,
@@ -293,7 +293,7 @@ BEGIN TRY
 
             -- HC5 had this commented out -- re-enabled in HC6 so run counts
             -- are recalculated when haring is updated too
-            EXEC [HC].[nonApi_updateRunCountsByUser]
+            EXEC [HC6].[nonApi_updateRunCountsByUser]
                 @userId = @hid
 
             SELECT  hkm.id as hkmId,

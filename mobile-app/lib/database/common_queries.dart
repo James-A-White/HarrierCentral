@@ -129,6 +129,7 @@ class CommonQueries {
           AND ((julianday(${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) - julianday('now')) * 24) >= ${-ALLOW_AUTO_CHECKIN_HOURS_AFTER_EVENT}
           AND e.${tableModel.eventsTableHelper.colIsVisible} = 1
           AND e.${tableModel.eventsTableHelper.colRemoved} = 0
+          AND COALESCE(hem.${tableModel.hasherEventMapTableHelper.colRsvpState},0) != 1
           ''';
 
       if (eventId != null) {

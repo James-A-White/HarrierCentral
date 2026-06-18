@@ -127,11 +127,13 @@ namespace HcWebApi.Endpoints
             {
                 conn.Open();
 
-                var query = $"EXEC HC5.hcapp_getPaymentReport @deviceId = '{deviceId.ToString()}', @accessToken = '{accessToken}',@eventId = '{eventId.ToString()}'";
-
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (SqlCommand cmd = new SqlCommand("[HC6].[hcapp_getPaymentReport]", conn))
                 {
-                    // Execute the command and log the # rows affected.
+                    cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@deviceId",    deviceId);
+                    cmd.Parameters.AddWithValue("@accessToken", accessToken);
+                    cmd.Parameters.AddWithValue("@eventId",     eventId);
+
                     using (SqlDataReader rows = await cmd.ExecuteReaderAsync())
                     {
 

@@ -1,0 +1,124 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_addDownDown",
+  "version": "1.0.0",
+  "description": "Records a new DownDown charge for one or more hashers at a run. Any authenticated user with AttendenceState >= 20 on the event (i.e. physically attended) may submit. Creates one HC.DownDowns row and one HC.DownDownHashers row per hasher in @hasherIds. Returns the new DownDown ID on success via the adHocDataId pattern. New feature — no HC5 equivalent.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth for auth resolution."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token validated against DeviceSecret."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "DownDowns.KennelId",
+      "description": "Kennel that owns the event. Required — null or zero-UUID triggers validation error."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "DownDowns.EventId",
+      "description": "Event (run) the charge belongs to. Required — null or zero-UUID triggers validation error."
+    },
+    {
+      "name": "hasherIds",
+      "type": "NVARCHAR(MAX)",
+      "nullable": false,
+      "mapsToColumn": "DownDownHashers.HasherId",
+      "description": "Pipe-delimited list of hasher UUID strings to charge. Each valid UUID produces one DownDownHashers row. Invalid UUIDs are silently skipped via TRY_CAST. Required — empty string triggers validation error."
+    },
+    {
+      "name": "chargeText",
+      "type": "NVARCHAR(MAX)",
+      "nullable": false,
+      "mapsToColumn": "DownDowns.ChargeText",
+      "description": "Description of the charge. Required — empty or whitespace-only triggers validation error."
+    },
+    {
+      "name": "songChoice",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "DownDowns.SongChoice",
+      "description": "Optional suggested song name (free text). Stored as NULL if blank."
+    },
+    {
+      "name": "songId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "DownDowns.SongId",
+      "description": "Optional FK to HC.Song for the suggested song. NULL if not specified."
+    },
+    {
+      "name": "chargePhotoUrl",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "DownDowns.ChargePhotoUrl",
+      "description": "Optional blob URL of an attached charge photo. Stored as NULL if blank."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "AuthError",
+      "description": "Returned (as two rowsets at index 0 and 1) when HC6.ValidateAppAuth fails. Rowset 0 is the compact envelope { success=0, errorCode, errorType }; rowset 1 is the standard error detail. Mutually exclusive with all success rowsets."
+    },
+    {
+      "index": 0,
+      "name": "ValidationError",
+      "description": "Returned (as two rowsets at index 0 and 1) when required parameters are missing/blank or the caller did not attend the run (AttendenceState < 20). Rowset 0: { success=0, errorCode, errorType }. Rowset 1: standard error detail. Mutually exclusive with success rowset."
+    },
+    {
+      "index": 0,
+      "name": "Success",
+      "description": "Returned on successful insert. Single row containing the new DownDown ID. Mutually exclusive with error rowsets.",
+      "columns": [
+        {
+          "name": "downDownId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "The newly created HC.DownDowns.id (NEWID() generated inside the SP)."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Returned (at index 1) alongside the compact error envelope (index 0) on any auth, validation, or unhandled error."
+    }
+  ],
+  "sideEffects": [
+    "Inserts one row into HC.DownDowns.",
+    "Inserts one row into HC.DownDownHashers per valid UUID in @hasherIds.",
+    "Writes to HC.ErrorLog on validation or unhandled errors."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "IsDone and IsCancelled columns are BIT in the table, not SMALLINT",
+      "detail": "HC.DownDowns.IsDone and IsCancelled are declared as BIT NOT NULL. The project standard is SMALLINT. The SP inserts 0 (integer literal), which SQL Server implicitly converts to BIT. Dart callers must handle these as JSON booleans (true/false), not integers (1/0), because the .NET shim serialises BIT as JSON boolean."
+    },
+    {
+      "severity": "low",
+      "issue": "Silent skip of invalid hasher UUIDs",
+      "detail": "TRY_CAST in the INSERT ... SELECT silently discards any value in @hasherIds that is not a valid UUID. If the caller passes a malformed UUID no error is returned. This could silently produce fewer DownDownHashers rows than expected."
+    },
+    {
+      "severity": "low",
+      "issue": "No minimum hasher count enforcement",
+      "detail": "If @hasherIds contains only invalid UUIDs (all fail TRY_CAST), the DownDowns row is still inserted with zero DownDownHashers rows. The SP does not validate that at least one hasher was successfully inserted."
+    }
+  ],
+  "breakingChanges": []
+}

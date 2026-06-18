@@ -63,7 +63,8 @@ AS
 --   TRY/CATCH and transaction added (HC5 had neither).
 --   Success envelope added.
 --   Delegation targets updated to HC6 SPs.
---   HC3.vwMmByKennel retained but noted as smell (HC3 schema dependency).
+--   HC3.vwMmByKennel inlined: logic now expressed as a direct join against
+--     HC.HasherKennelMap, HC.Hasher, and DomainValues.MismanagementRoles.
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -231,11 +232,16 @@ BEGIN TRY
         END
 
         -- Update kennel mismanagement team string when roles change
-        -- Note: HC3.vwMmByKennel is a legacy view — should be migrated to HC schema
         IF (@mismanagementRoles IS NOT NULL)
         BEGIN
             DECLARE @mmRoles NVARCHAR(4000);
-            SELECT @mmRoles = MmRoles FROM HC3.vwMmByKennel WHERE KennelId = @kennelId;
+            SELECT @mmRoles = STRING_AGG(mr.RoleName + CHAR(9) + REPLACE(h.DisplayName, '"', '\"'), CHAR(13))
+                              WITHIN GROUP (ORDER BY mr.id)
+            FROM   HC.HasherKennelMap hkm
+            JOIN   HC.Hasher h                        ON h.id            = hkm.UserId
+            JOIN   DomainValues.MismanagementRoles mr ON (hkm.MismanagementRoles & mr.BitFlags) != 0
+            WHERE  hkm.KennelId = @kennelId
+              AND  mr.id        != 1;
 
             UPDATE HC.Kennel SET
                 KennelMismanagementTeam = @mmRoles,

@@ -1,0 +1,76 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_updatePhotoCaption",
+  "version": "1.0.0",
+  "description": "Allows an authorised reviewer (Hash Flash 0x20, GM 0x02, VGM 0x04, or RA 0x08) to add, edit, or clear the caption (Description) on a kennel photo. Works on photos of any status. Passing NULL for @description explicitly clears the existing caption. The role check is performed against the photo's kennel, which is resolved via a lookup — no @kennelId parameter is required from the caller.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth for auth resolution."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token validated against DeviceSecret."
+    },
+    {
+      "name": "photoId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "KennelPhotos.id",
+      "description": "UUID of the photo to update. If no KennelPhotos row exists with this ID, a 'Photo not found' error is returned (errorCode 1333, errorType 13)."
+    },
+    {
+      "name": "description",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "KennelPhotos.Description",
+      "description": "New caption text. NULL explicitly clears the existing caption. Empty string sets an empty caption (not the same as NULL). Defaults to NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "Always present. On auth, validation, or role check failure: success=0, errorCode and errorType set. On DB error: success=0, errorCode=1933, errorType=19. On success: success=1, errorCode=NULL, errorType=NULL.",
+      "columns": [
+        { "name": "success", "type": "INT", "nullable": false, "description": "1 on success, 0 on any failure." },
+        { "name": "errorCode", "type": "INT", "nullable": true, "description": "Numeric error code. NULL on success." },
+        { "name": "errorType", "type": "INT", "nullable": true, "description": "Error classification code. NULL on success." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "CaptionResult",
+      "description": "On success: the updated photoId and the new description value (which may be NULL if the caption was cleared). On error: standard HC6 error detail rowset. These two shapes are mutually exclusive at index 1.",
+      "columns": [
+        { "name": "photoId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Echoed back from @photoId." },
+        { "name": "description", "type": "NVARCHAR(MAX)", "nullable": true, "description": "The new caption value. NULL if @description was passed as NULL (caption cleared)." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Updates KennelPhotos.Description and KennelPhotos.UpdatedAt for the photo.",
+    "Writes to HC.ErrorLog on photo-not-found, role check failure, or unhandled DB error."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Role mask 0x002E excludes WebMeister — inconsistent with hcapp_batchUpdatePhotoStatus and hcapp_getRunAllPhotos",
+      "detail": "This SP uses 0x002E (Hash Flash | GM | VGM | RA). hcapp_batchUpdatePhotoStatus and hcapp_getRunAllPhotos use 0x102E which also includes WebMeister (0x1000). A WebMeister who can batch-approve photos cannot edit captions, which is likely an unintentional inconsistency."
+    },
+    {
+      "severity": "low",
+      "issue": "HcVersion hardcoded to '<unknown>' in all ErrorLog inserts",
+      "detail": "Consistent with other HC6 SPs but means the version is never captured in the error log."
+    }
+  ],
+  "breakingChanges": [
+    "New SP — no HC5 predecessor. No breaking changes from migration."
+  ]
+}

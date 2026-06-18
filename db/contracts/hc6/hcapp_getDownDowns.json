@@ -1,0 +1,161 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getDownDowns",
+  "version": "1.0.0",
+  "description": "Returns all DownDown charges for a run (including pending, done, and cancelled), with each charge's list of named hashers. Returns two result rowsets on success. Auth: GM (MismanagementRoles bit 0x02) or RA (0x08). Intended for the run admin / RA screen. Read-only SP — no success envelope. New feature — no HC5 equivalent.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth for auth resolution."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token validated against DeviceSecret."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "DownDowns.KennelId",
+      "description": "Kennel that owns the event. Required — null or zero-UUID triggers validation error."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "DownDowns.EventId",
+      "description": "Event to fetch DownDowns for. Required — null or zero-UUID triggers validation error."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Compact error envelope returned on auth, validation, or role failure: { success=0, errorCode, errorType }. Followed by StandardErrorResult at index 1. Mutually exclusive with DownDowns rowset.",
+      "columns": [
+        { "name": "success", "type": "SMALLINT", "nullable": false, "description": "Always 0 on error." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Numeric error code." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "DownDowns",
+      "description": "One row per DownDown charge for the event, ordered by CreatedAt ASC. Empty result set when no charges exist. Mutually exclusive with ErrorEnvelope rowset.",
+      "columns": [
+        {
+          "name": "downDownId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.DownDowns.id — primary key of the charge."
+        },
+        {
+          "name": "chargeText",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "HC.DownDowns.ChargeText — description of the charge."
+        },
+        {
+          "name": "isDone",
+          "type": "BIT",
+          "nullable": false,
+          "description": "HC.DownDowns.IsDone — column is BIT in the table; serialised as JSON boolean by the .NET shim. 1/true = delivered."
+        },
+        {
+          "name": "isCancelled",
+          "type": "BIT",
+          "nullable": false,
+          "description": "HC.DownDowns.IsCancelled — column is BIT in the table; serialised as JSON boolean by the .NET shim. 1/true = cancelled."
+        },
+        {
+          "name": "songChoice",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "HC.DownDowns.SongChoice — suggested song name, or NULL if not set."
+        },
+        {
+          "name": "songId",
+          "type": "NVARCHAR(40)",
+          "nullable": true,
+          "description": "HC.DownDowns.SongId cast to lowercase NVARCHAR(40) via LOWER(CAST(...)). NULL if not set."
+        },
+        {
+          "name": "chargePhotoUrl",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "HC.DownDowns.ChargePhotoUrl — blob URL of an attached charge photo, or NULL."
+        },
+        {
+          "name": "createdByDisplayName",
+          "type": "NVARCHAR(computed)",
+          "nullable": false,
+          "description": "HC.Hasher.DisplayName (persisted computed column) for the charge creator."
+        },
+        {
+          "name": "createdByPhoto",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "HC.Hasher.Photo for the charge creator — profile photo URL."
+        },
+        {
+          "name": "createdAt",
+          "type": "DATETIME2",
+          "nullable": false,
+          "description": "HC.DownDowns.CreatedAt — UTC datetime when the charge was created."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "DownDownHashers",
+      "description": "One row per charged hasher across all DownDowns returned in rowset 0. The client groups by downDownId to associate hashers with their charge. Empty when no DownDowns exist.",
+      "columns": [
+        {
+          "name": "downDownId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.DownDownHashers.DownDownId — FK linking back to rowset 0."
+        },
+        {
+          "name": "hasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.DownDownHashers.HasherId — FK to HC.Hasher.id."
+        },
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(computed)",
+          "nullable": false,
+          "description": "HC.Hasher.DisplayName (persisted computed column) for the charged hasher."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Returned at index 1 alongside the ErrorEnvelope (index 0) on auth, validation, or role errors. Mutually exclusive with DownDownHashers rowset."
+    }
+  ],
+  "sideEffects": [
+    "Writes to HC.ErrorLog on auth, validation, or role errors."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "IsDone and IsCancelled columns are BIT, not SMALLINT",
+      "detail": "HC.DownDowns.IsDone and IsCancelled are BIT NOT NULL. The .NET shim serialises BIT as JSON boolean (true/false). Dart callers must parse these as boolean, not as int: use json['isDone'] == true || json['isDone'] == 1."
+    },
+    {
+      "severity": "low",
+      "issue": "Missing SET XACT_ABORT ON",
+      "detail": "The SP sets SET NOCOUNT ON but not SET XACT_ABORT ON. Since this is a read-only SP this is harmless, but it is inconsistent with the HC6 SP standard which requires both."
+    }
+  ],
+  "breakingChanges": []
+}

@@ -70,7 +70,7 @@ namespace HcWebApi.Endpoints
                     // New path: look up email + invite code by publicHasherId — email stays server-side
                     using (SqlConnection conn = new SqlConnection(connectionStr))
                     {
-                        using (SqlCommand cmd = new SqlCommand("HC.nonApi_getUserInviteCodeByPublicHasherId", conn))
+                        using (SqlCommand cmd = new SqlCommand("[HC6].[nonApi_getUserInviteCodeByPublicHasherId]", conn))
                         {
                             cmd.CommandType = System.Data.CommandType.StoredProcedure;
                             cmd.Parameters.AddWithValue("@publicHasherId", Guid.Parse(publicHasherId));
@@ -109,7 +109,7 @@ namespace HcWebApi.Endpoints
                     // Existing path: look up invite code by email address
                     using (SqlConnection conn4 = new SqlConnection(connectionStr))
                     {
-                        using (SqlCommand updateCmd2 = new SqlCommand("HC.nonApi_getUserInviteCode", conn4))
+                        using (SqlCommand updateCmd2 = new SqlCommand("[HC6].[nonApi_getUserInviteCode]", conn4))
                         {
                             updateCmd2.CommandType = System.Data.CommandType.StoredProcedure;
                             updateCmd2.Parameters.AddWithValue("@email", email);
@@ -186,7 +186,7 @@ namespace HcWebApi.Endpoints
         {
             using (SqlConnection conn3 = new SqlConnection(connectionStr))
             {
-                using (SqlCommand updateCmd = new SqlCommand("HC.nonApi_logError", conn3))
+                using (SqlCommand updateCmd = new SqlCommand("[HC6].[nonApi_logError]", conn3))
                 {
                     updateCmd.CommandType = System.Data.CommandType.StoredProcedure;
                     updateCmd.Parameters.AddWithValue("@errorType", errorType);

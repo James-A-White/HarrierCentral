@@ -1,0 +1,50 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_logPortalError",
+  "version": "1.0.0",
+  "description": "Inserts an HC6 portal error entry into HC.ErrorLog. Called by PortalApiHC6.LogErrorAsync when an HC6 portal SP returns Success = 0 in its error envelope. Fire-and-forget — errors from this SP are swallowed by the caller.",
+  "parameters": [
+    {
+      "name": "errorName",
+      "type": "NVARCHAR(500)",
+      "nullable": false,
+      "mapsToColumn": "ErrorLog.ErrorName",
+      "description": "Short error label from the SP's error envelope. Table column is NVARCHAR(250) NULL — parameter is wider (500 vs 250); values longer than 250 will be silently truncated by SQL Server on insert."
+    },
+    {
+      "name": "errorDescription",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "ErrorLog.ErrorDescription",
+      "description": "Full error description from the SP's error envelope. Nullable — not all error paths include a description. Table column is NVARCHAR(2500) NULL — parameter is wider (MAX vs 2500); values longer than 2500 will be silently truncated on insert."
+    },
+    {
+      "name": "procName",
+      "type": "NVARCHAR(500)",
+      "nullable": false,
+      "mapsToColumn": "ErrorLog.ProcName",
+      "description": "Name of the HC6 SP that raised the error. Table column is NVARCHAR(250) NULL — parameter is wider (500 vs 250); values longer than 250 will be silently truncated."
+    },
+    {
+      "name": "userId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "ErrorLog.userId",
+      "description": "Device UUID stored as userId for audit trail. Nullable — portal auth may not always have a userId. Table column is UNIQUEIDENTIFIER NULL."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [
+    "Inserts 1 row into HC.ErrorLog with HcVersion = 'HC6-API', id = NEWID(), createdAt = SYSUTCDATETIME(), updatedAt = SYSUTCDATETIME()."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter types wider than target columns — silent truncation risk",
+      "detail": "@errorName is NVARCHAR(500) but HC.ErrorLog.ErrorName is NVARCHAR(250). @errorDescription is NVARCHAR(MAX) but HC.ErrorLog.ErrorDescription is NVARCHAR(2500). @procName is NVARCHAR(500) but HC.ErrorLog.ProcName is NVARCHAR(250). Values exceeding column lengths are silently truncated on insert. No runtime error is raised."
+    }
+  ],
+  "breakingChanges": [
+    "HC5 used inline SQL in PortalApiHC6.LogErrorAsync rather than a dedicated SP. HC6 extracts this into a named SP so the logging pattern is consistent and testable."
+  ]
+}

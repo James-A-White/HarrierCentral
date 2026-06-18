@@ -1,0 +1,109 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_markEventChatRead",
+  "version": "1.0.0",
+  "description": "Records that the calling user has read all current messages in an event chat. Snapshots the current message count and latest message ID from HC.EventMessage, then upserts HC.EventMessageBadgeCounts for the (eventId, userId) pair. Returns the count written (rowset 0) and FCM tokens for the user's other registered devices (rowset 1) so the API shim can fan-out a silent 'read_sync' push to zero their badge counts without showing a notification. The calling device is excluded from the fan-out.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "Calling device UUID. Default NULL. Used for auth via HC6.ValidateAppAuth (SP number 61, auth errorCode range 1161/1361) and excluded from the FCM fan-out rowset."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived auth token validated against DeviceSecret. @param = NULL (device-secret-only auth). Default NULL."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.id",
+      "description": "The event whose chat was read. Default NULL. NULL returns errorCode 1270, errorType 12."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "AuthOrValidationError",
+      "description": "Returned when HC6.ValidateAppAuth fails or @eventId is NULL. errorType from ValidateAppAuth on auth failure. errorType=12, errorCode=1270 for null eventId. Mutually exclusive with the success rowsets.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification (1=auth, 3=device not found, 12=validation)." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Specific error code." },
+        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short error title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
+        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "UnhandledError",
+      "description": "Returned from the CATCH block when an unexpected DB error occurs. errorCode=9999, errorType=5. Mutually exclusive with success rowsets and other error rowsets.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 5 (unhandled DB error)." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Always 9999." },
+        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Always 'Database error'." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "Always 'An unexpected error occurred.'." },
+        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "LastSequenceCount",
+      "description": "Returned on success. The message count written to HC.EventMessageBadgeCounts.LastSequenceCount. Mutually exclusive with error rowsets.",
+      "columns": [
+        {
+          "name": "LastSequenceCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Total count of non-removed messages in HC.EventMessage for this event at the time the SP ran. Written to EventMessageBadgeCounts.LastSequenceCount."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "FcmFanoutTokens",
+      "description": "Returned on success at rowset 1. FCM tokens for the authenticated user's other registered devices. The API shim sends a silent 'read_sync' push to each to zero their badge count. May be empty (zero rows) if the user has only one device or no other devices have an FcmToken.",
+      "columns": [
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Device.FcmToken — Firebase Cloud Messaging token for a device owned by the same user, excluding the calling device. Table column is NVARCHAR(500) NULL, but the WHERE clause filters to IS NOT NULL."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Upserts HC.EventMessageBadgeCounts (EventId, UserId) — sets LastSequenceCount, LastReadAt (SYSUTCDATETIME()), LastReadMessageId, updatedAt.",
+    "Writes to HC.ErrorLog on @eventId validation failure.",
+    "Writes to HC.ErrorLog on unhandled CATCH error (HcVersion=6, no userId on that INSERT)."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "CATCH block ErrorLog INSERT omits userId",
+      "detail": "The CATCH handler inserts into HC.ErrorLog with columns (id, HcVersion, ErrorName, ErrorDescription, ProcName, createdAt, updatedAt) — it does not include userId. At the point of the CATCH, @userId is already resolved (auth passed), so @userId should be included in the ErrorLog INSERT for proper traceability."
+    },
+    {
+      "severity": "low",
+      "issue": "Message count snapshot and MERGE are not atomic",
+      "detail": "The SELECT COUNT(*) and SELECT TOP 1 id for @lastMessageId are performed before BEGIN TRANSACTION. New messages could arrive between the count snapshot and the MERGE commit. The count written would then not reflect the true message count at commit time. In practice this race is harmless (count is slightly stale), but callers should treat LastSequenceCount as an approximate watermark rather than an exact value."
+    },
+    {
+      "severity": "low",
+      "issue": "MERGE does not filter on Removed=0 in ON clause for existing records",
+      "detail": "The MERGE ON clause checks target.Removed = 0. If a badge count row was soft-deleted (Removed=1), it would not match and a new row would be inserted instead of updating the existing soft-deleted row. This is unlikely in practice but could create duplicate rows per (EventId, UserId) over time."
+    }
+  ],
+  "breakingChanges": [
+    "errorType 12 is used for @eventId=NULL validation (not errorType 2 which is the HC6 standard validation code). Callers that branch on errorType=2 for validation errors will miss this case.",
+    "Success has no envelope rowset (success/errorCode/errorType at index 0) — unlike write SPs that follow the adHocData pattern. Callers must distinguish success vs error by column shape at rowset 0 (LastSequenceCount vs error columns)."
+  ]
+}
