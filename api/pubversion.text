@@ -1,4 +1,11 @@
 
+1.0.26+24
+    • Fix: ProxyReverseGeocode now calls Azure Maps directly using AzureMapsSubscriptionKey — removes stale HC_REVERSE_GEOCODE_URL upstream dependency that broke set-address-from-lat/lon in the portal
+    • Upgrade Send*Report endpoints (KennelRunStats, Payment, RunCounts) to HC6 SPs with parameterized calls
+    • Migrate invite code helpers (getUserInviteCode, getUserInviteCodeByPublicHasherId) to HC6
+    • Add HC6 logging/FCM helpers (logError, logPortalError, logPortalRequest, logPushBatch, deleteFcmToken); remove direct SQL from API shim
+    • Migrate nonApi_checkReminders to HC6
+
 1.0.25+23
     • selectSong: all song pushes now visible (no iOS throttling); data-only silent push path removed
     • selectSong: mute (3) users excluded from recipients unless physically at the run (attendanceState >=20 <40)

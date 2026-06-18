@@ -1,5 +1,19 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.10.3+1173 (2026-06-18)
+
+### New Features
+
+- **Location lookup in edit run screen**: Search button on the location description field opens a gazetteer (place search) bottom sheet. Pick a result to auto-fill street, city, region, postcode, and country fields, and re-centre the map.
+
+### Fixes / Improvements
+
+- **Multi-run check-in dialog**: Added save/cancel buttons; RSVP-No responses no longer shown in the list
+- **Service registrations**: Guarded against duplicate GetX service registrations on hot-restart
+- **Cleanup**: Removed dead Facebook visit-event asset
+
+---
+
 ## 2.10.2+1172 (2026-06-11)
 
 ### Improvements
