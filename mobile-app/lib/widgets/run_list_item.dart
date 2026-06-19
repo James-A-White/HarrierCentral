@@ -194,9 +194,19 @@ class RunListItem extends StatelessWidget {
       child: Card(
         elevation: 4.0,
         margin: const EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
-        color: Colors.white,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+        child: Obx(() {
+          final isFlashing = Get.isRegistered<FutureRunListPageController>()
+              ? Get.find<FutureRunListPageController>()
+                  .flashingRunIds
+                  .contains(normalizeUuid(futureRun.event.eventId))
+              : false;
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            color: isFlashing
+                ? themeButtonColors.withValues(alpha: 0.35)
+                : Colors.white,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             Row(
               children: <Widget>[
@@ -540,6 +550,8 @@ class RunListItem extends StatelessWidget {
             Obx(() => _getPaymentIconnsWidget()),
           ],
         ),
+          );
+        }),
       ),
     );
   }

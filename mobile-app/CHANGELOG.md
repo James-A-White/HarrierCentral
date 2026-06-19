@@ -1,5 +1,11 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.10.4+1174 (2026-06-19)
+
+### New Features
+
+- **Background sync UX**: Runs list now shows cached data immediately on launch (no loading screen if data exists). A banner slides in from the top when a background sync is in progress and slides away when complete. If new runs arrived above the current scroll position, a pill appears ("↑ N new runs") to scroll back to the top. Cards that change while on screen flash briefly with a tint overlay. Syncs trigger automatically when switching to the runs tab (1-min debounce) or when the app returns from the background.
+
 ## 2.10.3+1173 (2026-06-18)
 
 ### New Features

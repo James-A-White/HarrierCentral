@@ -19,13 +19,108 @@ class FutureRunsListPage extends StatelessWidget {
         child: GetBuilder<FutureRunListPageController>(
           id: 'runList',
           builder: (listController) {
-            return listController.allRuns == null
-                ? HcAppCircularProgressIndicator(key: UniqueKey())
-                : _buildListView(listController);
+            if (listController.allRuns == null) {
+              return HcAppCircularProgressIndicator(key: UniqueKey());
+            }
+            return Stack(
+              children: [
+                _buildListView(listController),
+                Positioned(top: 0, left: 0, right: 0, child: _syncBanner()),
+                Positioned(top: 0, left: 0, right: 0, child: _newRunsPill()),
+              ],
+            );
           },
         ),
       ),
     );
+  }
+
+  Widget _syncBanner() {
+    return Obx(() {
+      final visible = controller.isSyncing.value;
+      return AnimatedSlide(
+        offset: visible ? Offset.zero : const Offset(0, -1),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+        child: AnimatedOpacity(
+          opacity: visible ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 300),
+          child: Container(
+            color: themeButtonColors.withValues(alpha: 0.93),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: SafeArea(
+              bottom: false,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text('Updating run data...', style: ts_titleLarge),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _newRunsPill() {
+    return Obx(() {
+      final count = controller.newRunsAboveViewport.value;
+      final visible = count > 0;
+      return IgnorePointer(
+        ignoring: !visible,
+        child: AnimatedOpacity(
+          opacity: visible ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 250),
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: GestureDetector(
+                onTap: controller.dismissPill,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: themeButtonColors,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: const [
+                      BoxShadow(color: Colors.black26, blurRadius: 4),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.arrow_upward,
+                        color: Colors.white,
+                        size: 15,
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        '$count new ${count == 1 ? "run" : "runs"}',
+                        style: ts_titleLarge,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    });
   }
 
   // @override

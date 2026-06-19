@@ -19,6 +19,14 @@ class FutureRunListPageController extends GetxController {
   RxBool showRunToDisplaySpinner = false.obs;
   RxBool runsTimeScopeLoading = false.obs;
   RxBool showRunsTimeScopeSpinner = false.obs;
+
+  // Background sync state
+  final RxBool isSyncing = false.obs;
+  final RxInt newRunsAboveViewport = 0.obs;
+  final RxList<String> flashingRunIds = <String>[].obs;
+  bool _isSyncInProgress = false;
+  DateTime? _lastSyncCompleted;
+  Map<String, RunDetailsAggregate> _previousRuns = {};
   Rx<RunsTimeScope> runsTimeScope = RunsTimeScope.future.obs;
   Rx<DateTime> dateFilterStart = DateTime.now()
       .subtract(const Duration(days: 7))
@@ -52,6 +60,7 @@ class FutureRunListPageController extends GetxController {
     scrollController.dispose();
     searchController.dispose();
     searchFocusNode.dispose();
+    flashingRunIds.clear();
     super.onClose();
   }
 
@@ -527,6 +536,121 @@ class FutureRunListPageController extends GetxController {
         debugPrint('[FutureRunListPageController.clearTables] error: $e');
       }
     }
+  }
+
+  /// Background sync triggered by tab re-focus or app resume.
+  /// Shows the banner overlay, syncs events/HEM/payments, diffs the result,
+  /// then shows the pill or card flashes as appropriate.
+  Future<void> triggerBackgroundSync({bool ignoreDebounce = false}) async {
+    if (_isSyncInProgress) return;
+    if (!ignoreDebounce && _lastSyncCompleted != null) {
+      if (DateTime.now().difference(_lastSyncCompleted!).inSeconds < 60) return;
+    }
+
+    _isSyncInProgress = true;
+    isSyncing.value = true;
+
+    _previousRuns = {
+      for (final r in allRuns ?? <RunDetailsAggregate>[])
+        normalizeUuid(r.event.eventId): r,
+    };
+
+    try {
+      await tableModel.syncUserDataService.updateFromBackend(
+        EnumDataTables.hasherEventMap.flag |
+            EnumDataTables.payments.flag |
+            EnumDataTables.events.flag,
+        true,
+        debugText: 'background sync',
+      );
+    } catch (e) {
+      debugPrint('[SYNC] triggerBackgroundSync error: $e');
+    }
+
+    // Enforce minimum banner display time in parallel with the data load
+    final bannerTimer = Future.delayed(const Duration(milliseconds: 800));
+
+    final newAllRuns = await QueryRuns.getRunDetailsAggregates(
+      true,
+      runsTimeScope: runsTimeScope.value,
+      runsToDisplay: runsToDisplay.value,
+    );
+
+    _applyDataUpdate(newAllRuns);
+
+    await bannerTimer;
+    isSyncing.value = false;
+
+    // Show pill only after banner is gone to avoid overlap
+    _checkForNewRunsAboveViewport();
+
+    _lastSyncCompleted = DateTime.now();
+    _isSyncInProgress = false;
+  }
+
+  void _applyDataUpdate(List<RunDetailsAggregate>? newAllRuns) {
+    if (newAllRuns == null) return;
+
+    final changedIds = <String>{};
+    for (final run in newAllRuns) {
+      final id = normalizeUuid(run.event.eventId);
+      final prev = _previousRuns[id];
+      if (prev != null && _runHasChanged(prev, run)) {
+        changedIds.add(id);
+      }
+    }
+
+    allRuns = newAllRuns;
+    filterRuns(false);
+
+    if (changedIds.isNotEmpty) {
+      unawaited(_triggerFlash(changedIds));
+    }
+  }
+
+  Future<void> _triggerFlash(Set<String> ids) async {
+    flashingRunIds.addAll(ids);
+    await Future.delayed(const Duration(milliseconds: 450)); // 150ms in + 300ms hold
+    flashingRunIds.removeWhere(ids.contains);
+  }
+
+  void _checkForNewRunsAboveViewport() {
+    if (!scrollController.hasClients || scrollController.offset <= 0) {
+      newRunsAboveViewport.value = 0;
+      return;
+    }
+
+    final addedCount = filteredRuns.where((item) {
+      if (item is int) return false;
+      final id = normalizeUuid((item as RunDetailsAggregate).event.eventId);
+      return !_previousRuns.containsKey(id);
+    }).length;
+
+    newRunsAboveViewport.value = addedCount;
+  }
+
+  void dismissPill() {
+    newRunsAboveViewport.value = 0;
+    if (scrollController.hasClients) {
+      scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
+  bool _runHasChanged(RunDetailsAggregate old, RunDetailsAggregate next) {
+    // updatedAt is the most reliable indicator; fall back to key visible fields
+    final oldUpdated = old.event.updatedAt;
+    final newUpdated = next.event.updatedAt;
+    if (oldUpdated != null && newUpdated != null) {
+      return oldUpdated != newUpdated;
+    }
+    return old.event.eventName != next.event.eventName ||
+        old.event.eventStartDatetime != next.event.eventStartDatetime ||
+        old.event.locationOneLineDesc != next.event.locationOneLineDesc ||
+        old.event.eventImage != next.event.eventImage;
   }
 
   Future<void> refreshFromBackend({bool clearLocalTables = false}) async {

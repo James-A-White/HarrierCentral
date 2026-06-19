@@ -385,16 +385,26 @@ class MainNavigationController extends GetxController
   Future<void> onTabChanged(int index) async {
     currentPage.value = index;
     appBarText.value = tabTitles[index];
-    // Refresh runs on first tab
-    if (index == 0) {
-      if (Get.isRegistered<FutureRunListPageController>()) {
-        final ctrl = Get.find<FutureRunListPageController>();
-        await ctrl.refreshFromTable(true);
-      }
+    if (index == 0 && Get.isRegistered<FutureRunListPageController>()) {
+      final ctrl = Get.find<FutureRunListPageController>();
+      await ctrl.refreshFromTable(true); // instant local refresh
+      unawaited(ctrl.triggerBackgroundSync()); // background API sync (1-min debounce)
     }
     // Delay setState for map FAB
     if (!isFlipped.value && index == 2) {
       Future.delayed(const Duration(milliseconds: 250), () {});
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed &&
+        currentPage.value == 0 &&
+        Get.isRegistered<FutureRunListPageController>()) {
+      unawaited(
+        Get.find<FutureRunListPageController>()
+            .triggerBackgroundSync(ignoreDebounce: true),
+      );
     }
   }
 
