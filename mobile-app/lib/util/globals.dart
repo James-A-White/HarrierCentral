@@ -42,16 +42,14 @@ void showHcSnackbar(
 
 bool _createIndexes = false;
 
-Future<bool> setupDatabase(
+/// Opens (and migrates if needed) the local SQLite database and registers it
+/// with GetX. This is the fast, blocking part of boot — it must complete before
+/// any query. The heavy network sync is handled separately by
+/// [syncAllUserDataFromBackend] so it can be deferred to the background.
+Future<void> openAppDatabase(
   void Function(String)? informUser,
   String clientAppIdentifier,
 ) async {
-  // bool initialLoad = false;
-  // if (getIntPref(IntPrefsEnum.databaseVersion) != DB_VERSION) {
-  //   initialLoad = true;
-  // }
-
-  // print('******* > DB Setup step 1');
   appModel.dbStatus = EdbStatus.opening;
 
   if (Get.isRegistered<Database>()) {
@@ -59,7 +57,6 @@ Future<bool> setupDatabase(
   }
 
   await Get.putAsync<Database>(() async {
-    // _initTables();
     return DBProvider.openOrInitDb(
       DB_NAME,
       DB_VERSION,
@@ -71,9 +68,20 @@ Future<bool> setupDatabase(
     );
   }, permanent: true);
 
-  final Client client = Client();
+  appModel.dbStatus = EdbStatus.opened;
+}
 
-  // print('******* > DB Setup step 7');
+/// Full user-data sync from the backend. The local DB must already be open
+/// (call [openAppDatabase] first). Safe to run unawaited in the background after
+/// the UI is visible — any failure falls through to offline mode with whatever
+/// data is already cached locally. On success it stamps
+/// [DatePrefsEnum.lastSuccessfulUserDataFullSync], which the boot flow uses to
+/// decide whether a future launch can show cached data immediately.
+Future<void> syncAllUserDataFromBackend({
+  void Function(String)? informUser,
+  String clientAppIdentifier = 'PRO_APP',
+}) async {
+  final Client client = Client();
 
   try {
     await tableModel.syncUserDataService.updateFromBackend(
@@ -169,7 +177,7 @@ Future<bool> setupDatabase(
     // Log it and fall through — the app will open in offline mode with whatever
     // data was already cached locally.
     if (kDebugMode) {
-      debugPrint('setupDatabase error (continuing in offline mode): $e');
+      debugPrint('syncAllUserDataFromBackend error (continuing in offline mode): $e');
       debugPrint(stack.toString());
     }
   } finally {
@@ -214,12 +222,21 @@ Future<bool> setupDatabase(
   if (kDebugMode) {
     debugPrint('******* > DB Setup step 11');
   }
+}
 
-  appModel.dbStatus = EdbStatus.opened;
-  if (kDebugMode) {
-    debugPrint('******* > DB Setup step 12');
-  }
-
+/// Convenience wrapper: opens the DB and then runs the full backend sync,
+/// blocking until both complete. Used for the first-ever launch (no cached data
+/// yet). Returning users instead call [openAppDatabase] and defer
+/// [syncAllUserDataFromBackend] to the background so the runs page shows at once.
+Future<bool> setupDatabase(
+  void Function(String)? informUser,
+  String clientAppIdentifier,
+) async {
+  await openAppDatabase(informUser, clientAppIdentifier);
+  await syncAllUserDataFromBackend(
+    informUser: informUser,
+    clientAppIdentifier: clientAppIdentifier,
+  );
   return true;
 }
 

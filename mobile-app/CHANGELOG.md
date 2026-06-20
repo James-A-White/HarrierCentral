@@ -1,5 +1,22 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.10.5+1175 (2026-06-20)
+
+### Improvements
+
+- **Faster cold launch**: Returning users go straight to the runs list on app
+  start — the "Filling Your Mug" loading screen is now skipped entirely when
+  cached runs exist, with the full data sync running in the background. (First
+  launch with no cached data still shows the loading screen during initial sync.)
+- **Live-run GPS tiers retuned**: Power Saver is now 20 m / 15-min updates (was
+  30 m), Balanced is 10 m / 1-min updates (was 15 m / 15 s) — a clearer
+  battery-vs-accuracy progression across Best, Balanced and Power Saver on Android.
+
+### Fixes
+
+- **TestFlight export compliance**: Set `ITSAppUsesNonExemptEncryption` so new
+  builds skip the manual encryption-compliance prompt on upload.
+
 ## 2.10.4+1174 (2026-06-19)
 
 ### New Features

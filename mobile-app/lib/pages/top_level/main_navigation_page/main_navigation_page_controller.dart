@@ -137,6 +137,45 @@ class MainNavigationController extends GetxController
     final stopwatch = Stopwatch()..start();
     debugPrint('[BOOT] MainNavController: _onInitAsyncBody start: ${DateTime.now().millisecondsSinceEpoch}ms');
 
+    appBarText.value = tabTitles[0];
+
+    // Guard: DB_VERSION must have a matching entry at the end of migrationList.
+    // A mismatch means a developer bumped DB_VERSION without adding a migration.
+    Tables.migrationList.sort((a, b) => a.dbVersion.compareTo(b.dbVersion));
+    final int lastMigration = Tables.migrationList.last.dbVersion;
+    if (DB_VERSION != lastMigration) {
+      await Utilities.showAlert(
+        'Database Version Mismatch',
+        'DB_VERSION is $DB_VERSION but the last migration record is $lastMigration.\n\n'
+        'A migration record must be added to Tables.migrationList for every '
+        'DB_VERSION change. The app cannot start until this is fixed.',
+        'OK',
+      );
+      assert(DB_VERSION == lastMigration, 'DB_VERSION ($DB_VERSION) != last migration ($lastMigration) — add a MigrationsModel entry to Tables.migrationList.');
+      return;
+    }
+
+    // Open the local DB and find out whether we already have cached runs BEFORE
+    // deciding what to show. This is what lets returning users skip the
+    // "Filling Your Mug" screen entirely — instead of showing it and then hiding
+    // it once we discover there is cached data. "Cached data" = the local runs
+    // table already has rows we can paint. We check the actual table (not a pref)
+    // so this stays correct across the logout/reset paths that delete the DB
+    // without erasing prefs — a freshly-created/empty DB yields a count of 0 and
+    // still blocks on the first sync (which runs with a real progress callback).
+    debugPrint('[BOOT] MainNavController: openAppDatabase start: ${DateTime.now().millisecondsSinceEpoch}ms');
+    await openAppDatabase(informUser, 'PRO_APP');
+    final int cachedEventCount =
+        await CommonQueries.countRecords(EnumDataTables.events.commonTableName);
+    final bool hasCachedData = cachedEventCount > 0;
+    debugPrint('[BOOT] MainNavController: openAppDatabase done, cachedEventCount=$cachedEventCount, hasCachedData=$hasCachedData: ${DateTime.now().millisecondsSinceEpoch}ms');
+
+    // Choose what fills the screen until appContent is ready. Returning users get
+    // the blank app background (MainPageContent.initial, the default) — never the
+    // loading screen. First launch still shows "Filling Your Mug" during the
+    // blocking sync below. Version/promo splash sequences always show regardless.
+    final MainPageContent waitingContent =
+        hasCachedData ? MainPageContent.initial : MainPageContent.loading;
     if (Utilities.isConnected()) {
       hcCurrentVersion = _trimToMinorVersionString(
         getStringPref(StringPrefsEnum.harrierCentralVersion) ?? '',
@@ -161,7 +200,7 @@ class MainNavigationController extends GetxController
         debugPrint('[BOOT] MainNavController: preloadImages done, imgCount=$imgCount: ${DateTime.now().millisecondsSinceEpoch}ms');
         if (imgCount == 0) {
           // don't show any splah images if none have been loaded
-          mainScreenContent.value = MainPageContent.loading;
+          mainScreenContent.value = waitingContent;
         } else {
           mainScreenContent.value = MainPageContent.splashSequence;
         }
@@ -197,84 +236,75 @@ class MainNavigationController extends GetxController
             DateTime.now(),
           );
         } else {
-          mainScreenContent.value = MainPageContent.loading;
-          // getStringPref(StringPrefsEnum.bootType) != BOOT_TYPE_NORMAL
-          //     ? mainScreenContent.value = MainPageContent.loading
-          //     : mainScreenContent.value = MainPageContent.appContent;
+          mainScreenContent.value = waitingContent;
         }
       } else {
-        mainScreenContent.value = MainPageContent.loading;
-        // getStringPref(StringPrefsEnum.bootType) != BOOT_TYPE_NORMAL
-        //     ? mainScreenContent.value = MainPageContent.loading
-        //     : mainScreenContent.value = MainPageContent.appContent;
+        mainScreenContent.value = waitingContent;
       }
     } else {
       mainScreenContent.value = MainPageContent.appContent;
     }
     debugPrint('[BOOT] MainNavController: mainScreenContent=${mainScreenContent.value.name}: ${DateTime.now().millisecondsSinceEpoch}ms');
 
-    appBarText.value = tabTitles[0];
-
-    // Guard: DB_VERSION must have a matching entry at the end of migrationList.
-    // A mismatch means a developer bumped DB_VERSION without adding a migration.
-    Tables.migrationList.sort((a, b) => a.dbVersion.compareTo(b.dbVersion));
-    final int lastMigration = Tables.migrationList.last.dbVersion;
-    if (DB_VERSION != lastMigration) {
-      await Utilities.showAlert(
-        'Database Version Mismatch',
-        'DB_VERSION is $DB_VERSION but the last migration record is $lastMigration.\n\n'
-        'A migration record must be added to Tables.migrationList for every '
-        'DB_VERSION change. The app cannot start until this is fixed.',
-        'OK',
-      );
-      assert(DB_VERSION == lastMigration, 'DB_VERSION ($DB_VERSION) != last migration ($lastMigration) — add a MigrationsModel entry to Tables.migrationList.');
-      return;
+    // First launch (no cached data): block on the full sync while "Filling Your
+    // Mug" shows. Returning users skip this — they sync in the background below.
+    if (!hasCachedData) {
+      debugPrint('[BOOT] MainNavController: first launch — blocking full sync start: ${DateTime.now().millisecondsSinceEpoch}ms');
+      await syncAllUserDataFromBackend(informUser: informUser);
+      debugPrint('[BOOT] MainNavController: first-launch full sync done: ${DateTime.now().millisecondsSinceEpoch}ms');
     }
-
-    // Setup database
-    debugPrint('[BOOT] MainNavController: setupDatabase start: ${DateTime.now().millisecondsSinceEpoch}ms');
-    await setupDatabase(informUser, 'PRO_APP');
-    debugPrint('[BOOT] MainNavController: setupDatabase done: ${DateTime.now().millisecondsSinceEpoch}ms');
 
     // Drain any photos that were taken while offline.
     unawaited(KennelPhotoService().processPendingQueue());
 
-    // Create pages
+    // Create all pages up front — these are cheap synchronous constructors, and
+    // the IndexedStack needs every child present before we flip to appContent.
     debugPrint('[BOOT] MainNavController: creating pages: ${DateTime.now().millisecondsSinceEpoch}ms');
     futureRunsListPage = FutureRunsListPage();
-
-    mainScreenReady.value = true;
-
-    update([UpdateIds.appScaffold]);
-    debugPrint('[BOOT] MainNavController: mainScreenReady=true, scaffold updated: ${DateTime.now().millisecondsSinceEpoch}ms');
-
     kennelsListPage = KennelsListPage(key: kennelLocationsPageKey);
     historyListPage = HistoryListPage();
     runAndKennelMapPage = RunAndKennelMapPage(key: runAndKennelMapPageKey);
     songsPage = SongsPage();
-    debugPrint('[BOOT] MainNavController: all pages created: ${DateTime.now().millisecondsSinceEpoch}ms');
-
+    mainScreenReady.value = true;
     isLoadingData = false;
+    debugPrint('[BOOT] MainNavController: all pages created, mainScreenReady=true: ${DateTime.now().millisecondsSinceEpoch}ms');
 
+    // The minimum-splash gate only applies when we actually blocked on a sync
+    // (first launch). Returning users skip it so the runs page appears at once.
+    if (!hasCachedData) {
+      final elapsed = stopwatch.elapsedMilliseconds;
+      final remaining = 1500 - elapsed;
+      debugPrint('[BOOT] MainNavController: elapsed=${elapsed}ms, waiting ${remaining > 0 ? remaining : 0}ms to 1500ms gate: ${DateTime.now().millisecondsSinceEpoch}ms');
+      if (remaining > 0) {
+        await Future.delayed(Duration(milliseconds: remaining));
+      }
+      debugPrint('[BOOT] MainNavController: 1500ms gate passed: ${DateTime.now().millisecondsSinceEpoch}ms');
+    }
+
+    // Reveal the app as early as possible. For returning users nothing slow runs
+    // before this point (no blocking sync, no 1500ms gate, no permission
+    // round-trip), so the "Filling Your Mug" screen never gets a visible frame.
+    if (mainScreenContent.value != MainPageContent.splashSequence) {
+      mainScreenContent.value = MainPageContent.appContent;
+    }
+    update([UpdateIds.appScaffold]);
+    debugPrint('[BOOT] MainNavController: appContent shown: ${DateTime.now().millisecondsSinceEpoch}ms');
+
+    // --- everything below runs with the runs page already on screen ---
+
+    // Location permission is a platform round-trip with variable latency, so we
+    // check it AFTER the app is visible. Doing it before the flip is what let the
+    // loading screen paint a frame on slower launches (the occasional flash).
     final hasLoc = await _checkLocationPermissions();
     debugPrint('[BOOT] MainNavController: hasLoc=$hasLoc: ${DateTime.now().millisecondsSinceEpoch}ms');
     _startScreenListening();
 
-    // Calculate remaining time to reach 1500ms
-    final elapsed = stopwatch.elapsedMilliseconds;
-    final remaining = 1500 - elapsed;
-    debugPrint('[BOOT] MainNavController: elapsed=${elapsed}ms, waiting ${remaining > 0 ? remaining : 0}ms to 1500ms gate: ${DateTime.now().millisecondsSinceEpoch}ms');
-    if (remaining > 0) {
-      await Future.delayed(Duration(milliseconds: remaining));
+    // Returning users: the runs page is now visible with cached data. Run the
+    // full user-data sync in the background and refresh the runs list when the
+    // fresh data lands.
+    if (hasCachedData) {
+      unawaited(_runBackgroundFullSyncAndRefresh());
     }
-    debugPrint('[BOOT] MainNavController: 1500ms gate passed: ${DateTime.now().millisecondsSinceEpoch}ms');
-
-    if (mainScreenContent.value != MainPageContent.splashSequence) {
-      mainScreenContent.value = MainPageContent.appContent;
-    }
-
-    update([UpdateIds.appScaffold]);
-    debugPrint('[BOOT] MainNavController: appContent shown: ${DateTime.now().millisecondsSinceEpoch}ms');
 
     // Fire after app content is visible so the GPS wait loop (and any dialog)
     // never blocks the loading screen from clearing.
@@ -304,6 +334,26 @@ class MainNavigationController extends GetxController
       debugPrint('[BOOT] MainNavController: NotificationService.init done: ${DateTime.now().millisecondsSinceEpoch}ms');
     }
     debugPrint('[BOOT] MainNavController: _onInitAsyncBody COMPLETE: ${DateTime.now().millisecondsSinceEpoch}ms');
+  }
+
+  /// Returning-user boot path: runs the full user-data sync in the background
+  /// (after the runs page is already visible with cached data), then repaints
+  /// the runs list with the fresh results. Failures are swallowed so the app
+  /// stays usable on whatever data is cached.
+  Future<void> _runBackgroundFullSyncAndRefresh() async {
+    debugPrint('[BOOT] MainNavController: background full sync start: ${DateTime.now().millisecondsSinceEpoch}ms');
+    try {
+      await syncAllUserDataFromBackend();
+    } catch (e, stack) {
+      debugPrint('[BOOT] MainNavController: background full sync error: $e');
+      debugPrint(stack.toString());
+    }
+    debugPrint('[BOOT] MainNavController: background full sync done: ${DateTime.now().millisecondsSinceEpoch}ms');
+
+    if (Get.isRegistered<FutureRunListPageController>()) {
+      await Get.find<FutureRunListPageController>().refreshFromTable(true);
+      debugPrint('[BOOT] MainNavController: runs list refreshed after background sync: ${DateTime.now().millisecondsSinceEpoch}ms');
+    }
   }
 
   String _trimToMinorVersionString(String version) {

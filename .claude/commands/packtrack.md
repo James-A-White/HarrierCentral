@@ -155,8 +155,17 @@ A GetX service (`Get.find<LocationService>()`). Manages two modes:
 - Updates `deviceInfo.deviceLat/Lon` and persisted prefs
 
 **Run tracking mode** (when `joinRunTracking.value == true`):
-- Distance filter: 5m, accuracy: `bestForNavigation`, background: on
-- Points enqueued to `RunPointBuffer`, flushed every 60 seconds
+Distance filter and accuracy depend on the user's **`trackingQuality`** pref
+(`IntPrefsEnum.trackingQuality`, default Best), resolved by `_trackingDistanceFilter()`
+and `_trackingAccuracy()` at the top of `location_service.dart`:
+
+| `trackingQuality` | Mode | Distance | Accuracy | Android interval |
+|---|---|---|---|---|
+| 2 (default) | Best | 5m | `bestForNavigation` | 15s |
+| 1 | Balanced | 10m | `high` | 1min |
+| 0 | Power Saver | 20m | `medium` | 15min |
+
+- Background: on. Points enqueued to `RunPointBuffer`, flushed every 60 seconds
 - Android: foreground notification ("Tracking run in progress")
 - iOS: `ActivityType.fitness`, `allowBackgroundLocationUpdates: true`
 
@@ -300,3 +309,10 @@ successive `lastKnownPosition` updates using the `latlong2` `Distance` class.
 - **OIN terminates track rendering** — `_isOnInn` check in `_interpolatedTrackPoints`
   caps the polyline at the first On Inn marker. The remaining positions are still
   in the model but won't be drawn.
+- **Android interval is explicit per mode, not derived from distance** — `getLocSettings`
+  takes an `androidInterval` named param (default 15min). Tracking tiers pass
+  `_trackingAndroidInterval()` (Best 15s / Balanced 1min / Power Saver 15min); the pause
+  monitor passes 15s for responsive auto-resume; the idle/stopped streams (250m / 100m)
+  use the 15-minute default. Distance filter and interval are independent — set both
+  deliberately when adding or retuning a tier. iOS has no interval (distance-filter only),
+  so it's unaffected.

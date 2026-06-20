@@ -23,9 +23,20 @@ LocationAccuracy _trackingAccuracy() {
 
 int _trackingDistanceFilter() {
   switch (getIntPref(IntPrefsEnum.trackingQuality) ?? 2) {
-    case 0: return 30; // Power Saver: ~60s interval
-    case 1: return 15; // Balanced: ~30s interval
+    case 0: return 20; // Power Saver: coarse track
+    case 1: return 10; // Balanced: moderate
     default: return 5; // Best: fine-grained
+  }
+}
+
+// Android update interval per tracking tier. Set explicitly (rather than derived
+// from the distance filter) so the tiers get a real cadence progression
+// 15s → 1min → 15min instead of the old 15s / 15s / 15min.
+Duration _trackingAndroidInterval() {
+  switch (getIntPref(IntPrefsEnum.trackingQuality) ?? 2) {
+    case 0: return const Duration(minutes: 15); // Power Saver
+    case 1: return const Duration(minutes: 1); // Balanced
+    default: return const Duration(seconds: 15); // Best
   }
 }
 
@@ -105,6 +116,7 @@ class LocationService extends GetxService {
           _trackingAccuracy(),
           true,
           false,
+          androidInterval: _trackingAndroidInterval(),
         );
         await _geoLocationStreamSubscription?.cancel();
         _geoLocationStreamSubscription = Geolocator.getPositionStream(
@@ -125,6 +137,7 @@ class LocationService extends GetxService {
           LocationAccuracy.high,
           true,
           false,
+          androidInterval: const Duration(seconds: 15),
         );
         await _geoLocationStreamSubscription?.cancel();
         _geoLocationStreamSubscription = Geolocator.getPositionStream(
@@ -245,16 +258,16 @@ class LocationService extends GetxService {
     int distanceFilter,
     LocationAccuracy accuracy,
     bool allowBackgroundLocationUpdates,
-    bool pauseLocationUpdatesAutomatically,
-  ) {
+    bool pauseLocationUpdatesAutomatically, {
+    Duration androidInterval = const Duration(minutes: 15),
+  }) {
     final LocationSettings locationSettings;
     if (defaultTargetPlatform == TargetPlatform.android) {
-      // Best (5m) and Balanced (15m) use 15s Android intervals so the OS doesn't
-      // suppress sub-minute callbacks. Power Saver (30m) uses 15-minute intervals.
-      // Idle/pause modes always use the 15-minute interval.
-      final androidInterval = distanceFilter <= 20
-          ? const Duration(seconds: 15)
-          : const Duration(minutes: 15);
+      // Android update cadence is set explicitly per mode via the androidInterval
+      // param (not derived from distance). Tracking tiers use
+      // _trackingAndroidInterval() — Best 15s / Balanced 1min / Power Saver 15min;
+      // the pause monitor passes 15s for responsive auto-resume; idle/stopped
+      // streams use the 15-minute default to save battery.
       locationSettings = AndroidSettings(
         accuracy: accuracy,
         distanceFilter: distanceFilter,
