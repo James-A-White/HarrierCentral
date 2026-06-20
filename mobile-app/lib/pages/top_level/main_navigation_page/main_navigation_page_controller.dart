@@ -351,8 +351,8 @@ class MainNavigationController extends GetxController
     debugPrint('[BOOT] MainNavController: background full sync done: ${DateTime.now().millisecondsSinceEpoch}ms');
 
     if (Get.isRegistered<FutureRunListPageController>()) {
-      await Get.find<FutureRunListPageController>().refreshFromTable(true);
-      debugPrint('[BOOT] MainNavController: runs list refreshed after background sync: ${DateTime.now().millisecondsSinceEpoch}ms');
+      await Get.find<FutureRunListPageController>().reloadAndFlash();
+      debugPrint('[BOOT] MainNavController: runs list reloaded (with flash) after background sync: ${DateTime.now().millisecondsSinceEpoch}ms');
     }
   }
 

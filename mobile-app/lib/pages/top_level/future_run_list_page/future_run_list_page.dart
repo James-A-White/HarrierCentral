@@ -427,7 +427,10 @@ class FutureRunsListPage extends StatelessWidget {
         ];
       },
       body: RefreshIndicator(
-        onRefresh: () => controller.refreshFromBackend(clearLocalTables: true),
+        onRefresh: () => controller.refreshFromBackend(
+          clearLocalTables: true,
+          showOfflineMessage: true,
+        ),
         displacement: 40.0,
         child: Column(
           children: [
@@ -507,6 +510,9 @@ class FutureRunsListPage extends StatelessWidget {
                           itemBuilder: (BuildContext context, int index) {
                             if (listController.filteredRuns[index] is int) {
                               return Column(
+                                key: ValueKey(
+                                  'hdr-${listController.filteredRuns[index]}',
+                                ),
                                 children: <Widget>[
                                   Container(
                                     margin: const EdgeInsets.only(top: 10),
@@ -719,12 +725,16 @@ class FutureRunsListPage extends StatelessWidget {
                                 ],
                               );
                             } else {
+                              final run = listController.filteredRuns[index]
+                                  as RunDetailsAggregate;
                               return RunListItem(
-                                futureRun: listController.filteredRuns[index],
-
+                                key: ValueKey(
+                                  'run-${normalizeUuid(run.event.eventId)}',
+                                ),
+                                futureRun: run,
                                 onItemTapped: () async {
                                   await listController.openRun(
-                                    listController.filteredRuns[index],
+                                    run,
                                     openToTab: RunTab.details,
                                   );
                                 },

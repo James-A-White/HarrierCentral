@@ -29,7 +29,31 @@ class RunListItemController extends GetxController {
     }
   }
 
-  final RunDetailsAggregate futureRun;
+  // One controller is kept per run (keyed by event id) and reused across list
+  // rebuilds, instead of being rebuilt every time the list updates. Rebuilding
+  // re-ran initLiveRunTracking() / loadPendingPhotoSummary() on every frame,
+  // which caused the jitter. A reused controller is refreshed via [syncWithRun].
+  // The controllers hold no streams/listeners, so dropping them is plain GC.
+  static final Map<String, RunListItemController> _cache = {};
+
+  static RunListItemController forRun(RunDetailsAggregate run) {
+    final id = normalizeUuid(run.event.eventId);
+    final existing = _cache[id];
+    if (existing != null) {
+      existing.syncWithRun(run);
+      return existing;
+    }
+    final c = RunListItemController(run);
+    c.initLiveRunTracking();
+    _cache[id] = c;
+    return c;
+  }
+
+  /// Clears the cached per-run controllers (e.g. on logout). Bounded growth and
+  /// no listeners, so this is optional housekeeping rather than a leak fix.
+  static void clearCache() => _cache.clear();
+
+  RunDetailsAggregate futureRun;
 
   final Rx<int> rsvpState;
   final Rx<int> attendanceState;
@@ -68,6 +92,40 @@ class RunListItemController extends GetxController {
   }
 
   void setIsPaid(int state) => isPaid.value = state;
+
+  /// Refreshes this controller's reactive state from a (possibly updated) run.
+  /// Called when a cached controller is reused so the row reflects the latest
+  /// data. Rx setters no-op when the value is unchanged, so an unchanged run
+  /// costs nothing and never flickers. The live-run button is re-evaluated only
+  /// when a relevant field changes or the run is inside its live-run window, so
+  /// the button can still appear/disappear as the start time approaches without
+  /// re-running on every rebuild for the (majority) far-off runs.
+  void syncWithRun(RunDetailsAggregate run) {
+    final now = DateTime.now();
+    final eventStart = run.event.eventStartDatetime;
+    final nearLiveWindow =
+        now.isAfter(eventStart.subtract(const Duration(minutes: 30))) &&
+        now.isBefore(eventStart.add(const Duration(hours: 6)));
+    final relevantChanged =
+        futureRun.extensions.rsvpState != run.extensions.rsvpState ||
+        futureRun.extensions.attendenceState != run.extensions.attendenceState;
+
+    futureRun = run;
+    rsvpState.value = run.extensions.rsvpState;
+    attendanceState.value = run.extensions.attendenceState;
+    isHareState.value = run.extensions.isHare;
+    emailAlertPreference.value = run.extensions.emailAlertPreference;
+    notificationPreference.value =
+        NotificationState.fromInt(run.extensions.notificationPreference) ??
+        NotificationState.auto;
+    isPaid.value = run.extensions.isPaid;
+    hares.value = run.event.hares ?? '';
+    locationOneLineDesc.value = run.event.locationOneLineDesc ?? '';
+
+    if (relevantChanged || nearLiveWindow) {
+      unawaited(refreshLiveRunButton());
+    }
+  }
 
   Future<void> refreshLiveRunButton() async {
     try {
@@ -128,9 +186,7 @@ class RunListItemController extends GetxController {
 
 class RunListItem extends StatelessWidget {
   RunListItem({super.key, required this.futureRun, required this.onItemTapped})
-    : rliController = RunListItemController(futureRun) {
-    rliController.initLiveRunTracking();
-  }
+    : rliController = RunListItemController.forRun(futureRun);
 
   final RunDetailsAggregate futureRun;
   final Function onItemTapped;

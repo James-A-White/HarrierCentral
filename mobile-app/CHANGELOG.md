@@ -1,5 +1,19 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.10.6+1176 (2026-06-20)
+
+### Fixes
+
+- **Offline pull-to-refresh no longer empties the runs list**: refreshing with no
+  connection now shows a "No Connection" message and keeps your runs. A refresh
+  that reaches the network but fails partway also rolls the list back, so it is
+  never left empty.
+- **Runs-list jitter on update**: stable list keys plus a per-run controller
+  cache stop rows rebuilding/flickering each time the data refreshes.
+- **"Run changed" flash on background updates**: a run whose data changes via a
+  notification or the cold-start background sync now flashes its card, not just
+  on a tab switch.
+
 ## 2.10.5+1175 (2026-06-20)
 
 ### Improvements

@@ -157,8 +157,25 @@ class FutureRunListPageController extends GetxController {
   void _onDataChange(DataChangeEvent event) {
     if (event.type == DataChangeType.runUpdated ||
         event.type == DataChangeType.runCreated) {
-      unawaited(refreshFromTable(true));
+      unawaited(reloadAndFlash());
     }
+  }
+
+  /// Reloads runs from the local DB and flashes any rows whose data changed
+  /// since the current in-memory list. Use for background refreshes (data-change
+  /// events, boot/background sync) so the user can see which runs updated — the
+  /// plain [refreshFromTable] used on initial load has nothing to diff against.
+  Future<void> reloadAndFlash() async {
+    _previousRuns = {
+      for (final r in allRuns ?? <RunDetailsAggregate>[])
+        normalizeUuid(r.event.eventId): r,
+    };
+    final newAllRuns = await QueryRuns.getRunDetailsAggregates(
+      true,
+      runsTimeScope: runsTimeScope.value,
+      runsToDisplay: runsToDisplay.value,
+    );
+    _applyDataUpdate(newAllRuns);
   }
 
   void refreshRunListUi() {
@@ -653,34 +670,153 @@ class FutureRunListPageController extends GetxController {
         old.event.eventImage != next.event.eventImage;
   }
 
-  Future<void> refreshFromBackend({bool clearLocalTables = false}) async {
-    if (clearLocalTables) {
-      allRuns = null;
+  Future<void> refreshFromBackend({
+    bool clearLocalTables = false,
+    bool showOfflineMessage = false,
+  }) async {
+    // Offline guard. A manual refresh clears the local runs and re-fetches, so
+    // running it with no connection would wipe the list and leave it empty (the
+    // sync silently fails). Bail BEFORE clearing anything so the existing runs
+    // stay put; only surface a message when the user triggered the refresh.
+    if (!Utilities.isConnected(
+      showDialog: showOfflineMessage,
+      title: 'No Connection',
+      message:
+          "Can't refresh runs — you appear to be offline. Your runs are still "
+          "here; pull to refresh again once you're back online.",
+    )) {
+      return;
+    }
 
+    const runTables = [
+      EnumDataTables.events,
+      EnumDataTables.hasherEventMap,
+      EnumDataTables.payments,
+    ];
+    final int syncFlags = EnumDataTables.hasherEventMap.flag |
+        EnumDataTables.payments.flag |
+        EnumDataTables.events.flag;
+
+    if (clearLocalTables) {
+      // Full reload. Clearing resets each table's high-water mark (it is derived
+      // from MAX(updatedAt) of the local rows) so the sync re-fetches the lot —
+      // the clear therefore HAS to precede the fetch. To stay crash-safe we
+      // snapshot the tables first and roll back if the fetch fails; otherwise a
+      // failed fetch would leave the runs list empty.
+      if (!await _backupRunTables(runTables)) {
+        // Couldn't snapshot — abort rather than risk an unrecoverable clear.
+        if (showOfflineMessage) {
+          unawaited(
+            Utilities.showAlert(
+              'Refresh Failed',
+              'Could not refresh right now. Please try again.',
+              'OK',
+            ),
+          );
+        }
+        return;
+      }
+
+      allRuns = null;
       await clearTables(
         database: database,
         tableModel: tableModel,
         domain: AppDomainType.user,
-        tablesToClear: [
-          EnumDataTables.hasherEventMap,
-          EnumDataTables.payments,
-          EnumDataTables.events,
-        ],
+        tablesToClear: runTables,
+      );
+
+      bool fetchOk;
+      try {
+        fetchOk = await tableModel.syncUserDataService.updateFromBackend(
+          syncFlags,
+          true,
+          debugText: 'future_run_list_page: full reload (Events, HEM, Payments)',
+        );
+      } catch (e) {
+        debugPrint('[RUNS] refreshFromBackend full reload fetch threw: $e');
+        fetchOk = false;
+      }
+
+      if (fetchOk) {
+        await _dropRunTableBackups(runTables);
+      } else {
+        // Fetch failed after the clear — roll back so the user keeps their runs.
+        await _restoreRunTables(runTables);
+        if (showOfflineMessage) {
+          unawaited(
+            Utilities.showAlert(
+              'Refresh Failed',
+              "Couldn't reach the server, so your runs are unchanged. "
+                  'Pull to refresh to try again.',
+              'OK',
+            ),
+          );
+        }
+      }
+    } else {
+      // Non-destructive delta sync (e.g. returning from a run detail page).
+      // Upsert-only, so a failure can't empty the list — no snapshot needed.
+      await tableModel.syncUserDataService.updateFromBackend(
+        syncFlags,
+        true,
+        debugText: 'future_run_list_page: delta refresh (Events, HEM, Payments)',
       );
     }
 
-    await tableModel.syncUserDataService.updateFromBackend(
-      EnumDataTables.hasherEventMap.flag |
-          EnumDataTables.payments.flag |
-          EnumDataTables.events.flag,
-      true,
-      debugText: 'future_run_list_page: HEM, Events, Kennels',
-    );
-
     await refreshFromTable(true);
     update([UpdateIds.runList]);
+  }
 
-    //final String resultStr = result ? 'successfully' : 'unsuccessfully';
-    //print('Events user data synchronized $resultStr');
+  // Resolve a run table's physical name the same way clearTables does, so the
+  // snapshot/restore always targets exactly the tables that get cleared.
+  String _runTableName(EnumDataTables t) =>
+      t.helperFrom(tableModel).getTableName(AppDomainType.user);
+
+  String _runBackupName(String tableName) => '${tableName}_refresh_bak';
+
+  /// Snapshots the given common-domain tables into side tables so a failed full
+  /// reload can be rolled back. Returns false if any snapshot fails (the caller
+  /// should then abort the reload rather than risk an unrecoverable clear).
+  Future<bool> _backupRunTables(List<EnumDataTables> tables) async {
+    try {
+      for (final t in tables) {
+        final name = _runTableName(t);
+        final bak = _runBackupName(name);
+        await database.execute('DROP TABLE IF EXISTS $bak');
+        await database.execute('CREATE TABLE $bak AS SELECT * FROM $name');
+      }
+      return true;
+    } catch (e) {
+      debugPrint('[RUNS] _backupRunTables failed: $e');
+      await _dropRunTableBackups(tables); // clean any partial snapshots
+      return false;
+    }
+  }
+
+  /// Restores the given common-domain tables from their snapshots (and drops the
+  /// snapshots). Used when a full reload fetch fails after the clear.
+  Future<void> _restoreRunTables(List<EnumDataTables> tables) async {
+    for (final t in tables) {
+      final name = _runTableName(t);
+      final bak = _runBackupName(name);
+      try {
+        await database.execute('DELETE FROM $name');
+        await database.execute('INSERT INTO $name SELECT * FROM $bak');
+      } catch (e) {
+        debugPrint('[RUNS] _restoreRunTables: restore of $name failed: $e');
+      }
+    }
+    await _dropRunTableBackups(tables);
+  }
+
+  Future<void> _dropRunTableBackups(List<EnumDataTables> tables) async {
+    for (final t in tables) {
+      final bak = _runBackupName(_runTableName(t));
+      try {
+        await database.execute('DROP TABLE IF EXISTS $bak');
+      } catch (e) {
+        debugPrint('[RUNS] _dropRunTableBackups failed for ${t.name}: $e');
+      }
+    }
   }
 }
