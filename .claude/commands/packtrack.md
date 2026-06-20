@@ -6,7 +6,11 @@
 
 PackTrack records and displays GPS tracks for multiple hashers during a live run.
 Tracks are stored in **Azure Table Storage** (not SQL Server) and served via two
-anonymous Azure Function endpoints. No HC auth token is required for either endpoint.
+Azure Function endpoints. **GetPositions requires an `X-Api-Key` header
+(`GET_POSITIONS_API_KEY` in `constants.dart`); StorePositions is unauthenticated.**
+Tracks are keyed by the event's **internal id** (`HC.Event.id`, i.e. the mobile's
+`run.event.eventId`), **lowercased** — NOT `PublicEventId` (querying by the public
+id returns nothing). Azure Table partition keys are case-sensitive.
 
 ---
 
@@ -29,11 +33,14 @@ anonymous Azure Function endpoints. No HC auth token is required for either endp
 
 ## API Endpoints
 
-Both are on `harriercentralpublicapi.azurewebsites.net`. No auth required.
+Both are on `harriercentralpublicapi.azurewebsites.net`. **GetPositions requires the
+`X-Api-Key` header; StorePositions is unauthenticated.**
 
 ### POST /api/GetPositions (`GET_POSITIONS_URL`)
 
 Fetches all tracks for an event, optionally incremental.
+
+**Header:** `X-Api-Key: <GET_POSITIONS_API_KEY>` — required (the call fails without it).
 
 **Request body:**
 ```json
@@ -43,6 +50,7 @@ Fetches all tracks for an event, optionally incremental.
   "users": []
 }
 ```
+- `eventId` — the event's **internal id** (`HC.Event.id` / mobile `run.event.eventId`), **lowercased**. Not `PublicEventId`.
 - `AfterTimestamp` — 19-digit zero-padded epoch-ms string. Pass `"0000000000000000000"` for full fetch.
 - `users` — reserved, always pass `[]`
 
@@ -137,9 +145,28 @@ Continuous GPS positions have `type == null`. Deliberately placed trail marks ca
 | `OIN` | `onInn` | On Inn | *(see enum)* |
 | `CAU` | `caution` | Caution | *(see enum)* |
 
-Parse: `value.split('::')` — first part is key, optional second part is label text.
+Parse: `value.split('::')` — first part is the key, optional second part is label text.
 PNG icons live in `images/live_run_map_markers/<pngIcon>`.
 `HashRunPointTypes.fromKey(key)` resolves a key string to an enum value.
+
+### Two mark schemes coexist in the `type` field
+
+Production tracks contain **both** of the following (confirmed in live data — the
+2026-06-20 LH3 run had `I-NNN.png`, `I-400.png::historic icehouse`, and `PHO::<uuid>`):
+
+1. **`HashRunPointTypes` keys** (table above) — e.g. `CHK`, `DRK`, `CAU::watch the road`,
+   and **`PHO::<photoBlobId>`** for a run-photo marker (`PHO` is a value in the enum;
+   the suffix is the photo's blob id, rendered by `_buildPhotoMarker`).
+2. **New-style `TrailSlot` icon filenames** — defined in
+   `lib/data/models/trail_slot/trail_slot.dart`. Here the `type` is the **icon filename
+   itself**, e.g. `I-001.png` (Check), `I-100.png` (Short Cut), `I-400.png` (Label,
+   `action: addText`) → `I-400.png::historic icehouse`. `run_tracker_map_controller`
+   detects these ("new-style slot icon — use asset filename directly") and loads
+   `images/live_run_map_markers/<filename>` directly.
+
+So a `type` parser must handle: `null` (a normal GPS point), a `HashRunPointTypes`
+key (optionally `::label`), `PHO::<blobId>`, **or** an `I-NNN.png` slot icon
+(optionally `::label`).
 
 **`OIN` (On Inn) is a track terminator** — the controller stops drawing the polyline at
 the first `OIN` point. Do not continue the track past it.

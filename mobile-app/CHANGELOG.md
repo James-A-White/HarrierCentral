@@ -1,5 +1,17 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.10.7+1177 (2026-06-20)
+
+### Improvements
+
+- **Live run map — overlapping check markers merged**: when several runners mark
+  the same point (e.g. a check), the duplicate markers now collapse into one
+  instead of stacking.
+- **Live run map — tap a mark to see who reached it**: tapping a trail mark lists
+  every runner whose track passed within range of that point and when they got
+  there. Runners who "checked" — ran ≥50 m out from the mark and back — are
+  flagged with a 🔍 badge and sorted to the top.
+
 ## 2.10.6+1176 (2026-06-20)
 
 ### Fixes

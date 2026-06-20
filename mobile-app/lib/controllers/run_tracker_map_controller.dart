@@ -69,6 +69,18 @@ class RunTrackerMapController extends GetxController
   final RxBool isPlaying = false.obs;
   final RxnString selectedRunnerId = RxnString();
   final latlng.Distance _distanceCalculator = const latlng.Distance();
+
+  // Marks of the same type closer than this are treated as the same physical
+  // point (e.g. several runners marking one check) and collapsed to one marker.
+  static const double _markDedupeMeters = 25.0;
+
+  // A runner counts as having "reached" a mark if their track passed within this
+  // distance of it — used by the tap-a-mark "who got here, and when" dialog.
+  static const double _reachedMarkMeters = 20.0;
+
+  // A runner is "checking" if they reached a mark, ran at least this far away,
+  // then came back to it (an out-and-back excursion = solving the check).
+  static const double _checkExcursionMeters = 50.0;
   final String? _currentUserId = getStringPref(StringPrefsEnum.userId);
 
   // Reused across loadPositions() calls to avoid creating a new http.Client each time.
@@ -204,51 +216,213 @@ class RunTrackerMapController extends GetxController
     if (userPositions.isEmpty) return const [];
     final cutoff = timelineAvailable ? currentTimestampMs.value : null;
 
-    return userPositions
-        .expand((user) => user.positions)
-        .where((point) {
-          if ((point.type ?? '').trim().isEmpty) return false;
-          if (cutoff != null && point.timestampMs.toDouble() > cutoff) {
-            return false;
+    // Gather the mark points that belong on this layer (checkpoints vs photos).
+    final entries = <_MarkEntry>[];
+    for (final point in userPositions.expand((user) => user.positions)) {
+      final rawType = (point.type ?? '').trim();
+      if (rawType.isEmpty) continue;
+      if (cutoff != null && point.timestampMs.toDouble() > cutoff) continue;
+      final parsedType = _parseCheckpointType(point.type);
+      if (parsedType == null) continue;
+      final bool isPhoto = parsedType.type == HashRunPointTypes.photo;
+      if (photosOnly != isPhoto) continue;
+      entries.add((point: point, type: rawType, parsed: parsedType));
+    }
+
+    // When several runners mark the same physical point (e.g. a check), the
+    // marks land a few metres apart and stack up. Collapse same-type marks that
+    // are within _markDedupeMeters of an already-kept one. Photos are never
+    // collapsed — each is a distinct image.
+    final shown = photosOnly ? entries : _dedupeNearbyMarks(entries);
+
+    return shown.map((entry) {
+      final parsedType = entry.parsed;
+      final bool isPhoto = parsedType.type == HashRunPointTypes.photo;
+
+      final bool hasAttachedLabel =
+          (parsedType.customLabel?.isNotEmpty ?? false) &&
+          (parsedType.slotIcon != null ||
+              parsedType.type == HashRunPointTypes.customLabel ||
+              parsedType.type == HashRunPointTypes.caution);
+
+      const double baseIconSize = 72.0;
+      const double basePhotoSize = 144.0;
+      const double baseLabelWidth = 140.0;
+      const double baseLabelHeight = 140.0;
+
+      final double scale = isPhoto ? _photoMarkerScale() : _markerScale();
+      final double markerWidth = hasAttachedLabel
+          ? baseLabelWidth * scale
+          : (isPhoto ? basePhotoSize : baseIconSize) * scale;
+      final double markerHeight = hasAttachedLabel
+          ? baseLabelHeight * scale
+          : (isPhoto ? basePhotoSize : baseIconSize) * scale;
+
+      final markChild = _buildCheckpointMarker(parsedType);
+      return Marker(
+        width: markerWidth,
+        height: markerHeight,
+        point: latlng.LatLng(entry.point.lat, entry.point.lng),
+        alignment: Alignment.topCenter,
+        // Photos keep their own tap behaviour. Tap a trail mark to see which
+        // runners passed through that point during the run, and when.
+        child: isPhoto
+            ? markChild
+            : GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => _showRunnersAtMark(
+                  latlng.LatLng(entry.point.lat, entry.point.lng),
+                  parsedType,
+                ),
+                child: markChild,
+              ),
+      );
+    }).toList(growable: false);
+  }
+
+  /// Collapses marks of the same type that sit within [_markDedupeMeters] of an
+  /// already-kept mark, so multiple runners marking the same physical point
+  /// (e.g. a check) render as one marker instead of an overlapping stack. The
+  /// first mark of each cluster is kept.
+  List<_MarkEntry> _dedupeNearbyMarks(List<_MarkEntry> entries) {
+    final kept = <_MarkEntry>[];
+    for (final entry in entries) {
+      final bool isDuplicate = kept.any(
+        (k) =>
+            k.type == entry.type &&
+            _distanceCalculator.as(
+                  latlng.LengthUnit.Meter,
+                  latlng.LatLng(k.point.lat, k.point.lng),
+                  latlng.LatLng(entry.point.lat, entry.point.lng),
+                ) <=
+                _markDedupeMeters,
+      );
+      if (!isDuplicate) kept.add(entry);
+    }
+    return kept;
+  }
+
+  /// Tap-a-mark handler ("who passed through"): finds every runner whose track
+  /// came within [_reachedMarkMeters] of [location] — by each runner's closest
+  /// approach — and shows them earliest-first, with the time they were nearest.
+  void _showRunnersAtMark(
+    latlng.LatLng location,
+    _ParsedCheckpointType parsed,
+  ) {
+    final reached =
+        <({String userId, int timestampMs, double distance, int returns})>[];
+    for (final user in userPositions) {
+      int? arrivedTs; // first time this track entered the "reached" radius
+      double closest = double.infinity; // nearest the track ever got
+      int returns = 0; // out-and-back excursions of >= _checkExcursionMeters
+      bool everInside = false;
+      bool currentlyInside = false;
+      double peakAwaySinceInside = 0;
+      for (final p in user.positions) {
+        final d = _distanceCalculator.as(
+          latlng.LengthUnit.Meter,
+          location,
+          latlng.LatLng(p.lat, p.lng),
+        );
+        if (d < closest) closest = d;
+        final bool inside = d <= _reachedMarkMeters;
+        if (inside) {
+          arrivedTs ??= p.timestampMs;
+          // Re-entering the mark after running at least _checkExcursionMeters
+          // away counts as a check (they ran out a lead and came back).
+          if (everInside &&
+              !currentlyInside &&
+              peakAwaySinceInside >= _checkExcursionMeters) {
+            returns++;
           }
-          return true;
-        })
-        .map((point) {
-          final parsedType = _parseCheckpointType(point.type);
-          if (parsedType == null) return null;
+          everInside = true;
+          currentlyInside = true;
+          peakAwaySinceInside = 0;
+        } else if (everInside) {
+          currentlyInside = false;
+          if (d > peakAwaySinceInside) peakAwaySinceInside = d;
+        }
+      }
+      if (arrivedTs != null) {
+        reached.add((
+          userId: user.id,
+          timestampMs: arrivedTs,
+          distance: closest,
+          returns: returns,
+        ));
+      }
+    }
+    // Checkers (ran out >= _checkExcursionMeters and came back) sort to the top,
+    // most-active first; everyone else follows by arrival time.
+    reached.sort((a, b) {
+      final byChecks = b.returns.compareTo(a.returns);
+      return byChecks != 0 ? byChecks : a.timestampMs.compareTo(b.timestampMs);
+    });
 
-          final bool isPhoto = parsedType.type == HashRunPointTypes.photo;
-          if (photosOnly != isPhoto) return null;
+    final String title = (parsed.customLabel?.isNotEmpty ?? false)
+        ? 'Reached: ${parsed.customLabel}'
+        : 'Who reached this mark';
 
-          final bool hasAttachedLabel =
-              (parsedType.customLabel?.isNotEmpty ?? false) &&
-              (parsedType.slotIcon != null ||
-                  parsedType.type == HashRunPointTypes.customLabel ||
-                  parsedType.type == HashRunPointTypes.caution);
-
-          const double baseIconSize = 72.0;
-          const double basePhotoSize = 144.0;
-          const double baseLabelWidth = 140.0;
-          const double baseLabelHeight = 140.0;
-
-          final double scale = isPhoto ? _photoMarkerScale() : _markerScale();
-          final double markerWidth = hasAttachedLabel
-              ? baseLabelWidth * scale
-              : (isPhoto ? basePhotoSize : baseIconSize) * scale;
-          final double markerHeight = hasAttachedLabel
-              ? baseLabelHeight * scale
-              : (isPhoto ? basePhotoSize : baseIconSize) * scale;
-
-          return Marker(
-            width: markerWidth,
-            height: markerHeight,
-            point: latlng.LatLng(point.lat, point.lng),
-            alignment: Alignment.topCenter,
-            child: _buildCheckpointMarker(parsedType),
-          );
-        })
-        .whereType<Marker>()
-        .toList(growable: false);
+    unawaited(
+      Get.dialog(
+        AlertDialog(
+          title: Text(title),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: reached.isEmpty
+                ? Text(
+                    'No runner passed within '
+                    '${_reachedMarkMeters.toStringAsFixed(0)} m of this mark.',
+                  )
+                : ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: reached.length,
+                    itemBuilder: (context, i) {
+                      final r = reached[i];
+                      final name = userNames[r.userId]?.trim();
+                      final label =
+                          (name == null || name.isEmpty) ? 'Runner' : name;
+                      final bool checked = r.returns > 0;
+                      return ListTile(
+                        dense: true,
+                        leading: CircleAvatar(
+                          radius: 16,
+                          backgroundColor: _colorForUser(r.userId),
+                          child: Text(
+                            label[0].toUpperCase(),
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                        title: Text(
+                          label,
+                          style: TextStyle(
+                            fontWeight:
+                                checked ? FontWeight.bold : FontWeight.normal,
+                          ),
+                        ),
+                        subtitle: Text(
+                          checked
+                              ? '🔍 checked${r.returns > 1 ? ' ${r.returns}×' : ''} · nearest ${r.distance.toStringAsFixed(0)} m'
+                              : 'nearest ${r.distance.toStringAsFixed(0)} m',
+                        ),
+                        trailing: Text(
+                          _formatTimestamp(r.timestampMs.toDouble())
+                              .split(' ')
+                              .last,
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back<void>(),
+              child: const Text('Close'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   String get formattedTimelineLabel =>
@@ -1339,6 +1513,10 @@ class _InterpolatedPoint {
   final double lng;
   final double timestampMs;
 }
+
+/// A mark point paired with its parsed type and raw type string (the latter is
+/// the dedup key in [RunTrackerMapController._dedupeNearbyMarks]).
+typedef _MarkEntry = ({TrackPoint point, String type, _ParsedCheckpointType parsed});
 
 class _ParsedCheckpointType {
   const _ParsedCheckpointType({this.type, this.slotIcon, this.customLabel})
