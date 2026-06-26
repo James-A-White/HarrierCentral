@@ -1,5 +1,11 @@
 # public-web Changelog
 
+## 0.21.8 — 2026-06-26
+
+- New: PackTrack live run tracking on public run pages — animated GPS trails, per-runner playback, trail-mark icons
+- New: shareable full-screen PackTrack URL — /<slug>/<run>/packtrack (e.g. hashruns.org/lh3/2839/packtrack)
+- New: runner names resolved on PackTrack tracks (via publicWeb_getEventRunners)
+
 ## 0.21.7 — 2026-06-14
 
 - Fix: past runs not loading on hashruns.org — bucket date format mismatch (ISO string vs YYYY-MM-DD)

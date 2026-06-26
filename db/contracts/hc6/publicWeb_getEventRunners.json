@@ -1,0 +1,49 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getEventRunners",
+  "version": "1.0.0",
+  "description": "Resolves PackTrack runner ids (HC.Hasher.id) to public display names for the public-website run map. Unauthenticated.",
+  "parameters": [
+    {
+      "name": "publicEventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Event.PublicEventId",
+      "description": "The run's public-facing UUID; used as an existence guard so an empty name list is not treated as a 404."
+    },
+    {
+      "name": "userIds",
+      "type": "NVARCHAR(MAX)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Pipe-delimited ('|') list of HC.Hasher.id runner ids from the PackTrack position payload."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "EventExistence",
+      "description": "Single { EventFound = 1 } row when the event exists; 0 rows when not found (shim returns 404).",
+      "columns": [
+        { "name": "EventFound", "type": "INT", "nullable": false, "description": "Constant 1 when the event exists." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Runners",
+      "description": "One row per resolved runner; may be empty if no ids match a live hasher.",
+      "columns": [
+        { "name": "userId", "type": "NVARCHAR(36)", "nullable": false, "description": "Lowercased HC.Hasher.id." },
+        { "name": "displayName", "type": "NVARCHAR(250)", "nullable": false, "description": "Hasher's computed public DisplayName." }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never expose additional hasher PII (email, photo) without an explicit auth decision"
+  ]
+}

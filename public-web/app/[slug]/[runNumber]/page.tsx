@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Home } from "lucide-react";
-import { getKennelLandingData, getEvents, getPageLayout, type KennelLandingData, type RunEvent } from "@/lib/api";
+import { getKennelLandingData, getPageLayout } from "@/lib/api";
+import { isNumeric, resolveKennelAndEvent } from "@/lib/run-resolve";
 import { toKennelContext } from "@/lib/kennel-utils";
 import { StickyNav } from "@/components/StickyNav";
 import { KennelBackground } from "@/components/kennel/KennelBackground";
@@ -13,34 +14,6 @@ import { getIsCustomDomain } from "@/lib/server-utils";
 interface PageProps {
   params: Promise<{ slug: string; runNumber: string }>;
   searchParams: Promise<{ back?: string }>;
-}
-
-// ── Shared helpers ─────────────────────────────────────────────────────────────
-
-function isNumeric(s: string) { return /^\d+$/.test(s); }
-
-async function resolveKennelAndEvent(
-  slug: string,
-  runNumber: string
-): Promise<[KennelLandingData | null, RunEvent | null]> {
-  const kennelData = await getKennelLandingData(slug);
-  if (!kennelData) return [null, null];
-
-  const num = parseInt(runNumber, 10);
-  if (isNaN(num)) return [kennelData, null];
-
-  const [futureResult, pastResult] = await Promise.all([
-    getEvents(kennelData.PublicKennelId, { isFuture: true,  daysOffset: 365 }),
-    getEvents(kennelData.PublicKennelId, { isFuture: false, daysOffset: 730 }),
-  ]);
-
-  const allEvents = [
-    ...(futureResult?.events ?? []),
-    ...(pastResult?.events  ?? []),
-  ];
-
-  const event = allEvents.find((e) => e.EventNumber === num) ?? null;
-  return [kennelData, event];
 }
 
 // ── Metadata ───────────────────────────────────────────────────────────────────
@@ -209,7 +182,13 @@ export default async function RunDetailPage({ params, searchParams }: PageProps)
 
         {/* Detail content */}
         <main className="relative z-10 w-full px-4 pt-6 pb-32 md:px-8">
-          <RunDetail run={event} kennel={kennel} mapHeight={480} />
+          <RunDetail
+            run={event}
+            kennel={kennel}
+            mapHeight={480}
+            indentMap
+            packTrackHref={`/${slug}/${runNumber}/packtrack`}
+          />
         </main>
       </body>
     </html>

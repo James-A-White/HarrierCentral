@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import dynamic from "next/dynamic";
-import { Navigation, ExternalLink, Copy, Check } from "lucide-react";
+import { Navigation, ExternalLink, Copy, Check, Footprints } from "lucide-react";
 
 const PackTrackMap = dynamic(() => import("./PackTrackMap"), { ssr: false });
 
@@ -49,6 +50,20 @@ interface RunDetailProps {
   extraButtons?: React.ReactNode;
   /** Height of the embedded map in px. Defaults to 240. */
   mapHeight?: number;
+  /**
+   * Inset the map horizontally to align with the detail value column (mirrored
+   * on the right), on md+ screens. Use on full-bleed run pages; leave off inside
+   * narrow cards/panels where the extra inset would squash the map.
+   */
+  indentMap?: boolean;
+  /**
+   * When set, the "Open PackTrack" button navigates to this URL (the dedicated
+   * full-screen PackTrack page) instead of opening the in-place overlay. Use on
+   * the canonical run page so the full-screen view has a shareable URL; leave
+   * unset inside embedded panels (run list, global runs) where navigating away
+   * from the panel would be jarring.
+   */
+  packTrackHref?: string;
 }
 
 function SectionDivider() {
@@ -156,8 +171,10 @@ function parseW3w(json: string | null): string | null {
   } catch { return null; }
 }
 
-export function RunDetail({ run, kennel, canonicalPath, extraButtons, mapHeight = 240 }: RunDetailProps) {
+export function RunDetail({ run, kennel, canonicalPath, extraButtons, mapHeight = 240, indentMap = false, packTrackHref }: RunDetailProps) {
   const [copied, setCopied] = useState(false);
+  const [hasPackTrack, setHasPackTrack] = useState(false);
+  const [packTrackOpen, setPackTrackOpen] = useState(false);
   const { date, kennelTime, browserTime } = fmtRunTime(run);
   const mapsLink = mapsUrl(run.Latitude, run.Longitude, run.LocationOneLineDesc ?? run.EventName);
   const w3wLink = parseW3w(run.w3wJson);
@@ -267,12 +284,18 @@ export function RunDetail({ run, kennel, canonicalPath, extraButtons, mapHeight 
             {run.LocationRegion && <Row label="Region" value={run.LocationRegion} />}
             {run.LocationCountry && <Row label="Country" value={run.LocationCountry} />}
             {run.Latitude && run.Longitude && (
-              <PackTrackMap
-                lat={run.Latitude}
-                lon={run.Longitude}
-                eventId={run.EventId ?? run.PublicEventId}
-                height={mapHeight}
-              />
+              <div className={indentMap ? "md:px-32" : undefined}>
+                <PackTrackMap
+                  lat={run.Latitude}
+                  lon={run.Longitude}
+                  eventId={run.EventId ?? run.PublicEventId}
+                  publicEventId={run.PublicEventId}
+                  height={mapHeight}
+                  onTrackLoaded={setHasPackTrack}
+                  open={packTrackOpen}
+                  onClose={() => setPackTrackOpen(false)}
+                />
+              </div>
             )}
           </div>
         </>
@@ -283,6 +306,27 @@ export function RunDetail({ run, kennel, canonicalPath, extraButtons, mapHeight 
         <>
           <SectionDivider />
           <div className="flex flex-wrap justify-center gap-2 pb-2">
+            {hasPackTrack && (
+              packTrackHref ? (
+                <Link
+                  href={packTrackHref}
+                  className={actionBtnClass}
+                  style={{ backgroundColor: "var(--kennel-primary)", color: "var(--kennel-primary-fg)" }}
+                >
+                  <Footprints className="h-4 w-4" />
+                  Open PackTrack
+                </Link>
+              ) : (
+                <button
+                  onClick={() => setPackTrackOpen(true)}
+                  className={actionBtnClass}
+                  style={{ backgroundColor: "var(--kennel-primary)", color: "var(--kennel-primary-fg)" }}
+                >
+                  <Footprints className="h-4 w-4" />
+                  Open PackTrack
+                </button>
+              )
+            )}
             {mapsLink && (
               <a
                 href={mapsLink}
@@ -311,7 +355,7 @@ export function RunDetail({ run, kennel, canonicalPath, extraButtons, mapHeight 
                 className={actionBtnClass}
                 style={{ backgroundColor: "var(--kennel-primary)", color: "var(--kennel-primary-fg)" }}
               >
-                /// What3Words
+                {"/// What3Words"}
               </a>
             )}
             {run.EventUrl && (
