@@ -1093,85 +1093,12 @@ class KennelHashersController extends GetxController {
       update();
     });
 
-    if (columnsType != EKennelGridOptions.addNewMembers) {
-      final publicHasherIdCell =
-          event.row.cells['publicHasherId'];
-      final publicKennelIdCell =
-          event.row.cells['publicKennelId'];
-
-      final hasherBeingEditedPublicId =
-          publicHasherIdCell?.value?.toString() ?? '';
-      final publicKennelId =
-          publicKennelIdCell?.value?.toString() ?? '';
+    if (columnsType != EKennelGridOptions.addNewMembers &&
+        event.rowIdx < hashers.length) {
       final field = event.column.field;
       final newValue = event.value.toString();
-
-      final deviceId = box.get(HIVE_DEVICE_ID) as String;
-      final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
-      final accessToken = Utilities.generateToken(
-        deviceId,
-        'hcportal_updateKennelHasher',
-        paramString: '$deviceSecret:$hasherBeingEditedPublicId',
-      );
-
-      if ((field == 'firstName') ||
-          (field == 'lastName') ||
-          (field == 'hashName') ||
-          (field == 'eMail') ||
-          (field == 'status') ||
-          (field == 'emailAlerts') ||
-          (field == 'notifications') ||
-          (field == 'historicTotalRuns') ||
-          (field == 'discountAmount') ||
-          (field == 'discountPercent') ||
-          (field == 'discountDescription') ||
-          (field == 'historicCountsAreEstimates') ||
-          (field == 'historicHaring')) {
-        final body = <String, dynamic>{
-          'queryType': 'updateKennelHasher',
-          'deviceId': deviceId,
-          'accessToken': accessToken,
-          'hasherBeingEditedPublicId':
-              hasherBeingEditedPublicId,
-          'publicKennelId': publicKennelId,
-          field: newValue,
-        };
-
-        final hasherResult = await ServiceCommon
-            .sendHttpPostToHC6Api(body);
-        if (kDebugMode) debugPrint(hasherResult is ApiError
-            ? 'SP 20 [updateKennelHasher] called — FAILED'
-            : 'SP 20 [updateKennelHasher] called — success');
-        if (hasherResult case ApiSuccess(:final body)) {
-          final jsonItems =
-              json.decode(body) as List<dynamic>;
-          if (jsonItems.isNotEmpty) {
-            final item = ((jsonItems[0]) as List<dynamic>)[0]
-                as Map<String, dynamic>;
-            if (item['hkmId'] != null) {
-              final historicalTotalRunCount =
-                  item['HistoricalTotalRunCount'] as int;
-              final historicalHaringCount =
-                  item['HistoricalHaringCount'] as int;
-              final hcTotalRunCount =
-                  item['HcTotalRunCount'] as int;
-              final hcHaringCount =
-                  item['HcHaringCount'] as int;
-
-              hashers[event.rowIdx] =
-                  hashers[event.rowIdx].copyWith(
-                historicHaring: historicalHaringCount,
-                historicTotalRuns: historicalTotalRunCount,
-                hcHaringCount: hcHaringCount,
-                hcTotalRunCount: hcTotalRunCount,
-              );
-
-              updateTrinaRows();
-              gridKey = UniqueKey();
-              update();
-            }
-          }
-        }
+      if (editableHasherFields.contains(field)) {
+        await updateHasherField(hashers[event.rowIdx], field, newValue);
       }
     }
 
@@ -1180,6 +1107,78 @@ class KennelHashersController extends GetxController {
       isMinorUpdate = false;
       update();
     });
+  }
+
+  // Fields the server accepts for a single-field update (shared by the grid and
+  // the phone card list).
+  static const Set<String> editableHasherFields = {
+    'firstName',
+    'lastName',
+    'hashName',
+    'eMail',
+    'status',
+    'emailAlerts',
+    'notifications',
+    'historicTotalRuns',
+    'discountAmount',
+    'discountPercent',
+    'discountDescription',
+    'historicCountsAreEstimates',
+    'historicHaring',
+  };
+
+  // Persists a single field change for one hasher via updateKennelHasher. Used
+  // by both the desktop grid (onGridChanged) and the phone card editors so the
+  // save path is identical.
+  Future<void> updateHasherField(
+    KennelHashersModel hasher,
+    String field,
+    String newValue,
+  ) async {
+    final deviceId = box.get(HIVE_DEVICE_ID) as String;
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
+    final accessToken = Utilities.generateToken(
+      deviceId,
+      'hcportal_updateKennelHasher',
+      paramString: '$deviceSecret:${hasher.publicHasherId}',
+    );
+
+    final body = <String, dynamic>{
+      'queryType': 'updateKennelHasher',
+      'deviceId': deviceId,
+      'accessToken': accessToken,
+      'hasherBeingEditedPublicId': hasher.publicHasherId,
+      'publicKennelId': hasher.publicKennelId,
+      field: newValue,
+    };
+
+    final hasherResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+    if (kDebugMode) debugPrint(hasherResult is ApiError
+        ? 'SP 20 [updateKennelHasher] called — FAILED'
+        : 'SP 20 [updateKennelHasher] called — success');
+    if (hasherResult case ApiSuccess(:final body)) {
+      final jsonItems = json.decode(body) as List<dynamic>;
+      if (jsonItems.isNotEmpty) {
+        final item =
+            ((jsonItems[0]) as List<dynamic>)[0] as Map<String, dynamic>;
+        if (item['hkmId'] != null) {
+          final idx = hashers.indexWhere(
+            (h) => h.publicHasherId == hasher.publicHasherId,
+          );
+          if (idx >= 0) {
+            hashers[idx] = hashers[idx].copyWith(
+              historicHaring: item['HistoricalHaringCount'] as int,
+              historicTotalRuns: item['HistoricalTotalRunCount'] as int,
+              hcHaringCount: item['HcHaringCount'] as int,
+              hcTotalRunCount: item['HcTotalRunCount'] as int,
+            );
+            updateTrinaRows();
+            gridKey = UniqueKey();
+            update();
+          }
+        }
+      }
+    }
   }
 
   void onGridLoaded(TrinaGridOnLoadedEvent event) {
@@ -1358,32 +1357,45 @@ class KennelHashersPage extends StatelessWidget {
                 ),
               ),
               Expanded(
-                child: Stack(
-                  children: <Widget>[
-                    TrinaGrid(
-                      configuration: TrinaGridConfiguration(
-                        style: TrinaGridStyleConfig(
-                          rowHeight: c.columnsType == EKennelGridOptions.photos
-                              ? KennelHashersController.photoRowHeight
-                              : KennelHashersController.standardRowHeight,
-                        ),
+                // Phones get a card list (the grid is unusable at that width);
+                // the bulk "Add new Hashers" view keeps the grid even on narrow.
+                child: (narrow &&
+                        c.columnsType != EKennelGridOptions.addNewMembers)
+                    ? _buildMemberCards(c)
+                    : Stack(
+                        children: <Widget>[
+                          TrinaGrid(
+                            configuration: TrinaGridConfiguration(
+                              style: TrinaGridStyleConfig(
+                                rowHeight:
+                                    c.columnsType == EKennelGridOptions.photos
+                                        ? KennelHashersController.photoRowHeight
+                                        : KennelHashersController
+                                            .standardRowHeight,
+                              ),
+                            ),
+                            key: c.gridKey,
+                            columns: c.columns,
+                            rows: c.rows,
+                            onChanged: (event) async {
+                              await c.onGridChanged(event);
+                            },
+                            onLoaded: (event) {
+                              c.onGridLoaded(event);
+                            },
+                          ),
+                          if (c.isMajorUpdate) ...<Widget>[
+                            Container(
+                              color: Colors.white70,
+                              height: 10000,
+                              width: 10000,
+                            ),
+                            Center(
+                              child: SpinKitCircle(color: Colors.red.shade900),
+                            ),
+                          ],
+                        ],
                       ),
-                      key: c.gridKey,
-                      columns: c.columns,
-                      rows: c.rows,
-                      onChanged: (event) async { await c.onGridChanged(event); },
-                      onLoaded: (event) { c.onGridLoaded(event); },
-                    ),
-                    if (c.isMajorUpdate) ...<Widget>[
-                      Container(
-                        color: Colors.white70,
-                        height: 10000,
-                        width: 10000,
-                      ),
-                      Center(child: SpinKitCircle(color: Colors.red.shade900)),
-                    ],
-                  ],
-                ),
               ),
               if (c.columnsType == EKennelGridOptions.addNewMembers) ...<Widget>[
                 Padding(
@@ -1513,6 +1525,32 @@ class KennelHashersPage extends StatelessWidget {
     );
   }
 
+  // Phone card list — one card per member showing the fields for the current
+  // view, edited inline. Uses the same per-field save as the desktop grid.
+  Widget _buildMemberCards(KennelHashersController c) {
+    if (c.hashers.isEmpty) {
+      return Center(
+        child: Text(
+          c.isMajorUpdate ? 'Loading…' : 'No members to show',
+          style: const TextStyle(color: Color(0xFF64748B)),
+        ),
+      );
+    }
+    return ListView.separated(
+      padding: const EdgeInsets.only(top: 8, bottom: 24),
+      itemCount: c.hashers.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 8),
+      itemBuilder: (_, i) => _MemberCard(
+        key: ValueKey(
+          '${c.hashers[i].publicHasherId}_${c.columnsType.name}',
+        ),
+        hasher: c.hashers[i],
+        view: c.columnsType,
+        controller: c,
+      ),
+    );
+  }
+
   Widget _viewPill(
     KennelHashersController c,
     String label,
@@ -1528,6 +1566,252 @@ class KennelHashersPage extends StatelessWidget {
         await c.setColumnsType(type);
       },
       child: Text(label),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Phone member card — shows the current view's fields for one member, edited
+// inline. Saves each field via the controller's per-field updateHasherField,
+// the same path the desktop grid uses.
+// ---------------------------------------------------------------------------
+
+class _MemberCard extends StatefulWidget {
+  const _MemberCard({
+    required this.hasher,
+    required this.view,
+    required this.controller,
+    super.key,
+  });
+
+  final KennelHashersModel hasher;
+  final EKennelGridOptions view;
+  final KennelHashersController controller;
+
+  @override
+  State<_MemberCard> createState() => _MemberCardState();
+}
+
+class _MemberCardState extends State<_MemberCard> {
+  final Map<String, TextEditingController> _ctrls = {};
+  final Map<String, String> _committed = {};
+
+  TextEditingController _ctrlFor(String field, String initial) =>
+      _ctrls.putIfAbsent(field, () => TextEditingController(text: initial));
+
+  @override
+  void dispose() {
+    for (final ctrl in _ctrls.values) {
+      ctrl.dispose();
+    }
+    super.dispose();
+  }
+
+  Future<void> _save(String field, String value) =>
+      widget.controller.updateHasherField(widget.hasher, field, value);
+
+  String get _title {
+    final h = widget.hasher;
+    final dn = (h.displayName ?? '').trim();
+    if (dn.isNotEmpty) return dn;
+    final hn = (h.hashName ?? '').trim();
+    if (hn.isNotEmpty) return hn;
+    final full = '${h.firstName ?? ''} ${h.lastName ?? ''}'.trim();
+    return full.isNotEmpty ? full : '(no name)';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            _title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF0F172A),
+            ),
+          ),
+          const SizedBox(height: 10),
+          ..._fieldsForView(),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _fieldsForView() {
+    final h = widget.hasher;
+    switch (widget.view) {
+      case EKennelGridOptions.membership:
+        return [
+          _dropdown('status', 'Membership', h.status,
+              const ['Member', 'Following', 'None']),
+          _readonly('Following', h.isFollowing),
+        ];
+      case EKennelGridOptions.nonAppHashers:
+        return [
+          _text('firstName', 'First name', h.firstName ?? ''),
+          _text('lastName', 'Last name', h.lastName ?? ''),
+          _text('hashName', 'Hash name', h.hashName ?? ''),
+          _text('eMail', 'Email', h.eMail,
+              keyboardType: TextInputType.emailAddress),
+          _readonly('Invite code', h.inviteCode),
+        ];
+      case EKennelGridOptions.notificationAndEmail:
+        return [
+          _dropdown('notifications', 'Notifications', h.notifications,
+              const ['Auto', 'On', 'Off']),
+          _dropdown('emailAlerts', 'Email alerts', h.emailAlerts,
+              const ['Auto', 'On', 'Off']),
+        ];
+      case EKennelGridOptions.runCounts:
+        return [
+          _text('historicTotalRuns', 'Previous runs', '${h.historicTotalRuns}',
+              keyboardType: TextInputType.number),
+          _text('historicHaring', 'Previous harings', '${h.historicHaring}',
+              keyboardType: TextInputType.number),
+          _readonly('App runs', '${h.hcTotalRunCount}'),
+          _readonly('App harings', '${h.hcHaringCount}'),
+        ];
+      case EKennelGridOptions.photos:
+        return [_photo(h.photo)];
+      case EKennelGridOptions.hashCredit:
+        return [
+          _text('discountAmount', 'Discount amount', '${h.discountAmount}',
+              keyboardType: TextInputType.number),
+          _text('discountPercent', 'Discount percent', '${h.discountPercent}',
+              keyboardType: TextInputType.number),
+          _text('discountDescription', 'Discount description',
+              h.discountDescription ?? ''),
+        ];
+      case EKennelGridOptions.addNewMembers:
+      case EKennelGridOptions.allFields:
+        return const [];
+    }
+  }
+
+  Widget _fieldRow(String label, Widget field) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF64748B),
+            ),
+          ),
+          const SizedBox(height: 4),
+          field,
+        ],
+      ),
+    );
+  }
+
+  Widget _text(
+    String field,
+    String label,
+    String initial, {
+    TextInputType? keyboardType,
+  }) {
+    final ctrl = _ctrlFor(field, initial);
+    _committed.putIfAbsent(field, () => initial);
+    void commit() {
+      final v = ctrl.text.trim();
+      if (v != _committed[field]) {
+        _committed[field] = v;
+        unawaited(_save(field, v));
+      }
+    }
+
+    return _fieldRow(
+      label,
+      TextField(
+        controller: ctrl,
+        keyboardType: keyboardType,
+        decoration: const InputDecoration(
+          isDense: true,
+          border: OutlineInputBorder(),
+          contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        ),
+        onEditingComplete: commit,
+        onSubmitted: (_) => commit(),
+        onTapOutside: (_) {
+          FocusManager.instance.primaryFocus?.unfocus();
+          commit();
+        },
+      ),
+    );
+  }
+
+  Widget _dropdown(
+    String field,
+    String label,
+    String value,
+    List<String> options,
+  ) {
+    final current = options.contains(value) ? value : null;
+    return _fieldRow(
+      label,
+      DropdownButtonFormField<String>(
+        initialValue: current,
+        isExpanded: true,
+        decoration: const InputDecoration(
+          isDense: true,
+          border: OutlineInputBorder(),
+          contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        ),
+        items: [
+          for (final o in options) DropdownMenuItem(value: o, child: Text(o)),
+        ],
+        onChanged: (nv) {
+          if (nv != null && nv != value) {
+            unawaited(_save(field, nv));
+            setState(() {});
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _readonly(String label, String value) {
+    return _fieldRow(
+      label,
+      Text(
+        value.trim().isEmpty ? '—' : value,
+        style: const TextStyle(fontSize: 14, color: Color(0xFF0F172A)),
+      ),
+    );
+  }
+
+  Widget _photo(String url) {
+    if (!url.contains('http')) {
+      return _readonly('Photo', 'No photo');
+    }
+    return _fieldRow(
+      'Photo',
+      ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: HcNetworkImage(
+          url,
+          height: 160,
+          width: 160,
+          errorBuilder: (_, _, _) =>
+              const Icon(Icons.person, size: 80, color: Colors.grey),
+        ),
+      ),
     );
   }
 }

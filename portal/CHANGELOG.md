@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.32+665 — 2026-06-27
+
+- **Kennel Members on phones now shows a card list** instead of a sideways-scrolling grid: each member is a card with the current view's fields (Membership, Names & Email, Notifications, Run counts, Payment, Photos), edited inline and saved per field. Desktop keeps the data grid; the bulk "Add new Hashers" view keeps the grid on phones too.
+
+---
+
 ## 2.0.31+664 — 2026-06-27
 
 - **Kennel Members page usable on phones (first pass):** the tall stack of view buttons is replaced by a compact menu (a popup picker on phones matching the rest of the portal; pill tabs on wide screens), with reduced padding and heading size so the member grid has room.
