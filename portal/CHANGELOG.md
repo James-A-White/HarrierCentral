@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.26+659 — 2026-06-27
+
+- **Fixed: location Lookup did nothing on phones.** The lookup needs the full run list to suggest previous locations, but the phone only loads a recent detail window, so the list was empty and the button silently bailed. It now loads that list on demand when you open the lookup.
+
+---
+
 ## 2.0.25+658 — 2026-06-27
 
 - **Much faster phone load**: the phone now loads all upcoming runs plus the last ~4 months of past runs, instead of a full year. Older past runs lazy-load (4 months at a time) as you scroll down the Past list. (Future and past are fetched separately so all upcoming runs always show, regardless of how far out they are.)

@@ -1106,6 +1106,10 @@ class RunEditPageController extends TabUiController
         return; // controller not registered
       }
 
+      // On the phone/detail layout the summary list isn't loaded (only the
+      // detail window is), so load it on demand — otherwise the lookup has no
+      // previous-run locations and silently bails.
+      await runListController.ensureSummaryEventsLoaded();
       final events = runListController.allEvents;
       if (events.isEmpty) return;
 

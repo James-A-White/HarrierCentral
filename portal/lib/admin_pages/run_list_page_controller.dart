@@ -370,6 +370,42 @@ class RunListPageController extends GetxController
     }
   }
 
+  /// Ensures the lightweight summary list (`allEvents`, all history) is loaded.
+  /// The detail/phone layout only fills `allEventsDetails` for a recent window,
+  /// leaving `allEvents` empty — which the location lookup depends on. Called
+  /// on demand when the lookup opens so it has the full set of past locations.
+  Future<void> ensureSummaryEventsLoaded() async {
+    if (allEvents.isNotEmpty) return;
+
+    final deviceId = box.get(HIVE_DEVICE_ID) as String;
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
+    final accessToken = Utilities.generateToken(
+      deviceId,
+      'hcportal_getEvents',
+      paramString: deviceSecret,
+    );
+
+    final body = <String, dynamic>{
+      'queryType': 'getEvents',
+      'deviceId': deviceId,
+      'accessToken': accessToken,
+      'publicKennelIds': kennel.publicKennelId,
+      'fullDetails': 0,
+      'weeksToDisplay': 9999,
+      'pastOrFuture': 'all',
+    };
+
+    final apiResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+    if (apiResult case ApiSuccess(body: final jsonResult)) {
+      final jsonItems = json.decode(jsonResult) as List<dynamic>;
+      for (final raw in jsonItems[0] as List<dynamic>) {
+        final map = raw as Map<String, dynamic>;
+        map['eventChatMessageCount'] ??= 0;
+        allEvents.add(RunListModel.fromJson(map));
+      }
+    }
+  }
+
   Future<void> _getEvents({bool getAllEventDetails = false, int? weeks}) async {
     // The detail/phone layout uses its own loader (all future + paged past).
     if (getAllEventDetails) {
