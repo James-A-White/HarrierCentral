@@ -50,8 +50,9 @@ class RunListPageController extends GetxController
   // Past list. `_pastWeeksWindow` is how far back we currently fetch; each
   // "load more" adds another year. `hasMorePast` goes false once a wider fetch
   // returns nothing new.
-  static const int _pastWeeksIncrement = 52;
-  int _pastWeeksWindow = _pastWeeksIncrement;
+  static const int _pastWeeksInitial = 17; // ~4 months on first load
+  static const int _pastWeeksIncrement = 17; // load ~4 more months each time
+  int _pastWeeksWindow = _pastWeeksInitial;
   final RxBool isLoadingMorePast = false.obs;
   bool hasMorePast = true;
 
@@ -231,39 +232,152 @@ class RunListPageController extends GetxController
     }
   }
 
-  /// Lazy-load another year of past runs (narrow layout). Triggered when the
-  /// user scrolls near the bottom of the Past list. Widens the fetch window and
-  /// re-fetches without the full-screen loader, appending the older runs.
+  /// True when the runs UI shows the full-detail card list (phone, or the
+  /// detail-only display config) rather than the wide list+panel layout.
+  bool get _detailMode =>
+      isNarrowScreen.value ||
+      displayType.toLowerCase() == RUN_DISPLAY_TYPE_DETAIL_ONLY;
+
+  /// Lazy-load the next 4 months of older past runs (detail/phone layout).
+  /// Triggered when the user scrolls near the bottom of the Past list. Widens
+  /// the past window and re-fetches just the past set (keeping all future
+  /// runs), without the full-screen loader.
   Future<void> loadMorePastRuns() async {
-    if (!isNarrowScreen.value ||
+    if (!_detailMode ||
         isLoadingMorePast.value ||
         !hasMorePast ||
         displayRuns != EDisplayRuns.past) {
       return;
     }
     isLoadingMorePast.value = true;
-    final before = allEventsDetails.length;
     _pastWeeksWindow += _pastWeeksIncrement;
-    await _getEvents(getAllEventDetails: true, incremental: true);
-    // No new rows → we've reached the start of this kennel's history.
-    if (allEventsDetails.length <= before) hasMorePast = false;
+    final past = await _fetchDetailEvents('past', _pastWeeksWindow);
+    final before =
+        allEventsDetails.where((e) => _isPast(e.runDetails)).length;
+    // Replace the past portion (the wider window is a superset), keep future.
+    allEventsDetails
+      ..removeWhere((e) => _isPast(e.runDetails))
+      ..addAll(past);
+    _dedupeDetails();
+    // Nothing newer than what we already had → we've hit the start of history.
+    if (past.length <= before) hasMorePast = false;
+    setDisplayedEvents();
     isLoadingMorePast.value = false;
   }
 
-  Future<void> _getEvents({
-    bool getAllEventDetails = false,
-    int? weeks,
-    bool incremental = false,
-  }) async {
-    // Incremental (load-more) fetches keep the current screen up and show a
-    // small footer spinner instead of the full-screen loader.
-    if (!incremental) {
-      isLoaded.value = false;
-      _pastWeeksWindow = _pastWeeksIncrement;
-      hasMorePast = true;
+  bool _isPast(RunDetailsModel rd) =>
+      rd.eventStartDatetime.isBefore(getTodayAsDateOnly());
+
+  void _dedupeDetails() {
+    final seen = <String>{};
+    allEventsDetails.retainWhere(
+      (e) => seen.add(normalizeUuid(e.runDetails.publicEventId)),
+    );
+  }
+
+  /// Detail-layout loader: fetches ALL future runs plus a bounded window of
+  /// recent past runs (4 months by default). Fetching all history at once was
+  /// far too slow on the phone, so older past runs are lazy-loaded on scroll
+  /// (see [loadMorePastRuns]). Two calls are needed because the SP's window is
+  /// symmetric — a single 'all' call can't combine all-future with a short past.
+  Future<void> _loadDetailEvents() async {
+    isLoaded.value = false;
+    _pastWeeksWindow = _pastWeeksInitial;
+    hasMorePast = true;
+
+    eventForSingleEventDetailsView = EventDetailsResult.empty().obs;
+    displayedEvents.clear();
+    allEvents.clear();
+
+    final future = await _fetchDetailEvents('future', 999);
+    final past = await _fetchDetailEvents('past', _pastWeeksWindow);
+
+    allEventsDetails
+      ..clear()
+      ..addAll(future)
+      ..addAll(past);
+    _dedupeDetails();
+
+    displayRuns = EDisplayRuns.future;
+    setDisplayedEvents();
+
+    // If there are no upcoming runs, land on the most recent past runs instead
+    // of an empty screen.
+    if (displayedEventsDetails.isEmpty && allEventsDetails.isNotEmpty) {
+      displayRuns = EDisplayRuns.past;
+      tabController.animateTo(1);
+      setDisplayedEvents();
     }
 
-    final savedDisplayRuns = displayRuns;
+    isLoaded.value = true;
+    await _maybeShowNewsflashes();
+  }
+
+  /// One detail (fullDetails=1) fetch for a direction ('future'/'past') and a
+  /// week window. Returns the parsed events; does not mutate shared state apart
+  /// from badge-count bookkeeping.
+  Future<List<EventDetailsResult>> _fetchDetailEvents(
+    String pastOrFuture,
+    int weeks,
+  ) async {
+    final deviceId = box.get(HIVE_DEVICE_ID) as String;
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
+    final accessToken = Utilities.generateToken(
+      deviceId,
+      'hcportal_getEvents',
+      paramString: deviceSecret,
+    );
+
+    final body = <String, dynamic>{
+      'queryType': 'getEvents',
+      'deviceId': deviceId,
+      'accessToken': accessToken,
+      'publicKennelIds': kennel.publicKennelId,
+      'fullDetails': 1,
+      'weeksToDisplay': weeks,
+      'pastOrFuture': pastOrFuture,
+    };
+
+    final apiResult = await ServiceCommon.sendHttpPostToHC6Api(body);
+    if (kDebugMode) debugPrint(apiResult is ApiError
+        ? 'SP 10 [getEvents:$pastOrFuture] called — FAILED'
+        : 'SP 10 [getEvents:$pastOrFuture] called — success');
+
+    final out = <EventDetailsResult>[];
+    if (apiResult case ApiSuccess(body: final jsonResult)) {
+      final jsonItems = json.decode(jsonResult) as List<dynamic>;
+      for (final raw in jsonItems[0] as List<dynamic>) {
+        final ed = EventDetailsResult(
+          runDetails: RunDetailsModel.fromJson(raw as Map<String, dynamic>),
+          participants: [],
+        );
+        _prepareBadgeCounts(
+          ed.runDetails.publicEventId,
+          ed.runDetails.eventChatMessageCount,
+        );
+        out.add(ed);
+      }
+    }
+    return out;
+  }
+
+  Future<void> _maybeShowNewsflashes() async {
+    if (_newsflashShown) return;
+    _newsflashShown = true;
+    final pending = await queryPendingNewsflashes();
+    if (pending.isNotEmpty) {
+      await showPendingNewsflashes(pending);
+    }
+  }
+
+  Future<void> _getEvents({bool getAllEventDetails = false, int? weeks}) async {
+    // The detail/phone layout uses its own loader (all future + paged past).
+    if (getAllEventDetails) {
+      await _loadDetailEvents();
+      return;
+    }
+
+    isLoaded.value = false;
 
     final deviceId = box.get(HIVE_DEVICE_ID) as String;
     final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
@@ -273,27 +387,18 @@ class RunListPageController extends GetxController
       paramString: deviceSecret,
     );
 
-    // Fetch past+future together so the Future/Past toggle (and the
-    // no-future-runs fallback) can filter locally. The wide layout pulls all
-    // history (light list rows); the narrow layout pulls full detail, so it is
-    // bounded to a rolling window (_pastWeeksWindow) and lazy-loads older runs.
-    // setDisplayedEvents() then narrows to future (default) or past on demand.
+    // Wide layout pulls all history as light list rows and filters locally.
     displayRuns = EDisplayRuns.all;
-    final weeksToDisplay =
-        weeks ?? (getAllEventDetails ? _pastWeeksWindow : 9999);
+    final weeksToDisplay = weeks ?? 9999;
 
     final body = <String, dynamic>{
       'queryType': 'getEvents',
       'deviceId': deviceId,
       'accessToken': accessToken,
       'publicKennelIds': kennel.publicKennelId,
-      'fullDetails': getAllEventDetails ? 1 : 0,
+      'fullDetails': 0,
       'weeksToDisplay': weeksToDisplay,
-      'pastOrFuture': displayRuns == EDisplayRuns.future
-          ? 'future'
-          : displayRuns == EDisplayRuns.past
-          ? 'past'
-          : 'all',
+      'pastOrFuture': 'all',
     };
 
     final apiResult = await ServiceCommon.sendHttpPostToHC6Api(body);
@@ -306,82 +411,35 @@ class RunListPageController extends GetxController
     allEventsDetails.clear();
 
     if (apiResult case ApiSuccess(body: final jsonResult)) {
-      if (getAllEventDetails) {
-        final jsonItems = json.decode(jsonResult) as List<dynamic>;
-        for (var i = 0; i < (jsonItems[0] as List<dynamic>).length; i++) {
-          final eventDetails = EventDetailsResult(
-            runDetails: RunDetailsModel.fromJson(
-              (jsonItems[0] as List<dynamic>)[i] as Map<String, dynamic>,
-            ),
-            participants: [],
-          );
-
-          final publicEventId = eventDetails.runDetails.publicEventId;
-
-          _prepareBadgeCounts(
-            publicEventId,
-            eventDetails.runDetails.eventChatMessageCount,
-          );
-
-          allEventsDetails.add(eventDetails);
-        }
-      } else {
-        final jsonItems = json.decode(jsonResult) as List<dynamic>;
-        for (var i = 0; i < (jsonItems[0] as List<dynamic>).length; i++) {
-          final map =
-              (jsonItems[0] as List<dynamic>)[i] as Map<String, dynamic>;
-          map['eventChatMessageCount'] ??=
-              0; // removed in HC6 (was hardcoded 0)
-          final rlm = RunListModel.fromJson(map);
-          _prepareBadgeCounts(rlm.publicEventId, rlm.eventChatMessageCount);
-          allEvents.add(rlm);
-        }
+      final jsonItems = json.decode(jsonResult) as List<dynamic>;
+      for (var i = 0; i < (jsonItems[0] as List<dynamic>).length; i++) {
+        final map = (jsonItems[0] as List<dynamic>)[i] as Map<String, dynamic>;
+        map['eventChatMessageCount'] ??= 0; // removed in HC6 (was hardcoded 0)
+        final rlm = RunListModel.fromJson(map);
+        _prepareBadgeCounts(rlm.publicEventId, rlm.eventChatMessageCount);
+        allEvents.add(rlm);
       }
 
-      if (incremental) {
-        // Load-more: keep the user on whatever they were viewing (Past) and
-        // just widen the list with the newly fetched older runs.
-        displayRuns = savedDisplayRuns;
-        setDisplayedEvents();
-      } else {
-        setDisplayedEvents();
+      setDisplayedEvents();
 
-        // If there are no future events, fall back to past runs so the user
-        // isn't left with an empty screen. This applies to BOTH layouts: the
-        // wide list (allEvents) and the narrow detail list (allEventsDetails) —
-        // narrow uses getAllEventDetails == true, so it must be handled too.
-        final nothingShown = getAllEventDetails
-            ? displayedEventsDetails.isEmpty
-            : displayedEvents.isEmpty;
-        final haveAnyRuns = getAllEventDetails
-            ? allEventsDetails.isNotEmpty
-            : allEvents.isNotEmpty;
-        if (nothingShown && haveAnyRuns) {
-          displayRuns = EDisplayRuns.past;
-          tabController.animateTo(1);
-          setDisplayedEvents();
-        }
+      // If there are no future events, fall back to past runs so the user
+      // isn't left with an empty screen.
+      if (displayedEvents.isEmpty && allEvents.isNotEmpty) {
+        displayRuns = EDisplayRuns.past;
+        tabController.animateTo(1);
+        setDisplayedEvents();
+      }
 
-        if (!getAllEventDetails) {
-          // Auto-select the first displayed event so the detail panel populates.
-          if (displayedEvents.isNotEmpty) {
-            eventForSingleEventDetailsView.value = await querySingleEvent(
-              displayedEvents.first.publicEventId,
-            );
-          }
-        }
+      // Auto-select the first displayed event so the detail panel populates.
+      if (displayedEvents.isNotEmpty) {
+        eventForSingleEventDetailsView.value = await querySingleEvent(
+          displayedEvents.first.publicEventId,
+        );
       }
     }
 
-    if (!incremental) isLoaded.value = true;
-
-    if (!_newsflashShown) {
-      _newsflashShown = true;
-      final pending = await queryPendingNewsflashes();
-      if (pending.isNotEmpty) {
-        await showPendingNewsflashes(pending);
-      }
-    }
+    isLoaded.value = true;
+    await _maybeShowNewsflashes();
   }
 
   void resetBadgeCount(String publicEventId) {

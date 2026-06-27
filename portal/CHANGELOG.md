@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.25+658 — 2026-06-27
+
+- **Much faster phone load**: the phone now loads all upcoming runs plus the last ~4 months of past runs, instead of a full year. Older past runs lazy-load (4 months at a time) as you scroll down the Past list. (Future and past are fetched separately so all upcoming runs always show, regardless of how far out they are.)
+
+---
+
 ## 2.0.24+657 — 2026-06-27
 
 - **Faster phone runs load + lazy-loaded history**: the phone was fetching ~19 years of past runs at once (slow). It now loads the most recent year and lazy-loads another year of older runs each time you scroll near the bottom of the Past list, with a small spinner while more load. Past runs are now ordered most-recent first.
