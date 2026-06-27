@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.16+649 — 2026-06-27
+
+- Restored the app version number (dropped when the promo banner was removed): now a small, always-visible label in the top-right of the runs page app bar, on both wide and narrow layouts.
+
+---
+
 ## 2.0.15+648 — 2026-06-27
 
 - Removed the purple "Powered by Harrier Central" banner from the runs page (reclaims vertical space; the search bar stays).

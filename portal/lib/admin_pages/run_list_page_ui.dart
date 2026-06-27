@@ -176,13 +176,21 @@ class RunListPage extends StatelessWidget {
                     builder: (c) {
                       // Wide screens render the actions in the persistent left
                       // nav rail (see _navRail); narrow screens collapse them
-                      // into an overflow menu so nothing clips off the app bar.
-                      if (!formController.isNarrowScreen.value) {
-                        return const SizedBox.shrink();
-                      }
+                      // into an overflow menu. The version label lives here so
+                      // it is always visible (the app bar never scrolls).
+                      final narrow = formController.isNarrowScreen.value;
                       return Padding(
                         padding: const EdgeInsets.only(right: 12),
-                        child: _appBarActionsMenu(_appBarActions(c.kennel)),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _versionLabel(),
+                            if (narrow) ...[
+                              const SizedBox(width: 10),
+                              _appBarActionsMenu(_appBarActions(c.kennel)),
+                            ],
+                          ],
+                        ),
                       );
                     },
                   ),
@@ -234,6 +242,22 @@ class RunListPage extends StatelessWidget {
         ),
       );
     });
+  }
+
+  // Always-visible app version. Lives in the app-bar action area (which never
+  // scrolls) so it shows on both the wide rail layout and the narrow menu
+  // layout. Replaces the version line that used to sit in the removed banner.
+  Widget _versionLabel() {
+    final v = packageInfo.value?.version ?? '';
+    if (v.isEmpty) return const SizedBox.shrink();
+    return Text(
+      'v$v',
+      style: const TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+        color: Color(0xFF94A3B8),
+      ),
+    );
   }
 
   // ── Kennel picker strip ───────────────────────────────────────────────────
