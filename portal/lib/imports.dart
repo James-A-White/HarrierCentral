@@ -94,6 +94,8 @@ export 'package:hcportal/tabbed_ui/widgets/sidebar_hover_region.dart';
 export 'package:hcportal/tabbed_ui/widgets/tab_page_standard_layout.dart';
 export 'package:hcportal/tabbed_ui/widgets/tab_with_icon.dart';
 export 'package:hcportal/tabbed_ui/widgets/vertical_tab_rail.dart';
+export 'package:hcportal/tabbed_ui/widgets/tab_rail_scaffold.dart';
+export 'package:hcportal/tabbed_ui/tab_rail_palette.dart';
 export 'package:hcportal/tabbed_ui/widgets/text_dropdown_field.dart';
 export 'package:hcportal/test/login_controller.dart';
 export 'package:hcportal/test/login_form.dart';

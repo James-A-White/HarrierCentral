@@ -86,35 +86,33 @@ class EmailPage extends StatelessWidget {
                       length: c.allTabs.length,
                       child: Builder(
                         builder: (context) {
-                          return Column(
-                            children: <Widget>[
-                              Container(
-                                color: Colors.blue.shade600,
-                                padding: const EdgeInsets.only(top: 10),
-                                child: Form(
-                                  key: c.formKey,
-                                  child: TabBar(
-                                      controller: c.tabController,
-                                      labelColor: Colors.black,
-                                      unselectedLabelColor: Colors.white,
-                                      indicatorSize: TabBarIndicatorSize.label,
-                                      indicator: const BoxDecoration(
-                                        borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(10),
-                                          topRight: Radius.circular(10),
-                                        ),
-                                        color: Colors.white,
+                          return TabRailScaffold(
+                            controller: c,
+                            railColor: railColorEmail,
+                            narrowTabBar: Container(
+                              color: railColorEmail,
+                              padding: const EdgeInsets.only(top: 10),
+                              child: Form(
+                                key: c.formKey,
+                                child: TabBar(
+                                    controller: c.tabController,
+                                    labelColor: Colors.black,
+                                    unselectedLabelColor: Colors.white,
+                                    indicatorSize: TabBarIndicatorSize.label,
+                                    indicator: const BoxDecoration(
+                                      borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(10),
+                                        topRight: Radius.circular(10),
                                       ),
-                                      tabs: _getTabs()),
-                                ),
+                                      color: Colors.white,
+                                    ),
+                                    tabs: _getTabs()),
                               ),
-                              Expanded(
-                                child: TabBarView(
-                                  controller: c.tabController,
-                                  children: <Widget>[..._getTabBodies()],
-                                ),
-                              ),
-                            ],
+                            ),
+                            tabBarView: TabBarView(
+                              controller: c.tabController,
+                              children: <Widget>[..._getTabBodies()],
+                            ),
                           );
                         },
                       ),

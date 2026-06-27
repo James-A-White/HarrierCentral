@@ -154,42 +154,35 @@ class TestFormPage extends StatelessWidget {
                           //   });
                           // }
 
-                          return Column(
-                            children: <Widget>[
-                              Container(
-                                color: Colors.blue.shade600,
-                                padding: const EdgeInsets.only(top: 10),
-                                child: Form(
-                                  key: applicationGetxController.formKey,
-                                  child: TabBar(
-                                      controller: applicationGetxController
-                                          .tabController,
-                                      labelColor: Colors.black,
-                                      unselectedLabelColor: Colors.white,
-                                      indicatorSize: TabBarIndicatorSize.label,
-                                      indicator: const BoxDecoration(
-                                        borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(10),
-                                          topRight: Radius.circular(10),
-                                        ),
-                                        color: Colors.white,
+                          return TabRailScaffold(
+                            controller: applicationGetxController,
+                            railColor: railColorApplicationForm,
+                            narrowTabBar: Container(
+                              color: railColorApplicationForm,
+                              padding: const EdgeInsets.only(top: 10),
+                              child: Form(
+                                key: applicationGetxController.formKey,
+                                child: TabBar(
+                                    controller: applicationGetxController
+                                        .tabController,
+                                    labelColor: Colors.black,
+                                    unselectedLabelColor: Colors.white,
+                                    indicatorSize: TabBarIndicatorSize.label,
+                                    indicator: const BoxDecoration(
+                                      borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(10),
+                                        topRight: Radius.circular(10),
                                       ),
-                                      tabs: _getTabs()),
-                                ),
+                                      color: Colors.white,
+                                    ),
+                                    tabs: _getTabs()),
                               ),
-                              Expanded(
-                                child: TabBarView(
-                                  controller:
-                                      applicationGetxController.tabController,
-                                  children: <Widget>[
-                                    // if (widget.userData.isSuperAdmin ||
-                                    //     widget.userData.canManageInnovator ||
-                                    //     true)
-                                    ..._getTabBodies()
-                                  ],
-                                ),
-                              ),
-                            ],
+                            ),
+                            tabBarView: TabBarView(
+                              controller:
+                                  applicationGetxController.tabController,
+                              children: <Widget>[..._getTabBodies()],
+                            ),
                           );
                         },
                       ),

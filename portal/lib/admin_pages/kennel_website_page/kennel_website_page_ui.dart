@@ -98,20 +98,18 @@ class _WebsiteScaffold extends StatelessWidget {
   Widget _buildBody() {
     return DefaultTabController(
       length: KennelWebsiteTabType.values.length,
-      child: Column(
-        children: [
-          ResponsiveTabBar<KennelWebsiteController>(
-            controller: controller,
-            formKey: controller.formKey,
-            tabBarColor: Colors.teal.shade600,
-          ),
-          Expanded(
-            child: TabBarView(
-              controller: controller.tabController,
-              children: _buildTabBodies(),
-            ),
-          ),
-        ],
+      child: TabRailScaffold(
+        controller: controller,
+        railColor: railColorKennelWebsite,
+        narrowTabBar: ResponsiveTabBar<KennelWebsiteController>(
+          controller: controller,
+          formKey: controller.formKey,
+          tabBarColor: railColorKennelWebsite,
+        ),
+        tabBarView: TabBarView(
+          controller: controller.tabController,
+          children: _buildTabBodies(),
+        ),
       ),
     );
   }

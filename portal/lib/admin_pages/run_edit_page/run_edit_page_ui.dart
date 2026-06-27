@@ -122,11 +122,11 @@ class _RunFormScaffold extends StatelessWidget {
   Widget _buildBody() {
     return DefaultTabController(
       length: RunTabType.values.length,
-      child: Column(
-        children: [
-          _RunTabBar(controller: controller),
-          Expanded(child: _RunTabBarView(controller: controller)),
-        ],
+      child: TabRailScaffold(
+        controller: controller,
+        railColor: railColorRunEdit,
+        narrowTabBar: _RunTabBar(controller: controller),
+        tabBarView: _RunTabBarView(controller: controller),
       ),
     );
   }

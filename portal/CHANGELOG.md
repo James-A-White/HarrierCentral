@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.11+644 — 2026-06-27
+
+- Rolled the vertical tab rail out to the remaining editors (Run Edit, Kennel Website, Application Form, Email) via a shared `TabRailScaffold`. Each editor's rail has its own distinct colour — same saturation/luminance as the kennel blue, hue-rotated (green / teal / violet / crimson). Narrow screens keep each editor's existing tab bar.
+
+---
+
 ## 2.0.10+643 — 2026-06-27
 
 - Kennel Editor navigation now follows the new grouped tab order: reordered the underlying tabs to match the rail, so Back/Next walk the visible sequence, the slide animation goes the right way, and the rail highlight no longer jumps. Back is hidden on the first tab and Next on the last.
