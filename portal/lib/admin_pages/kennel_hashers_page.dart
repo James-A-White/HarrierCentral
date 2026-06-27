@@ -1320,289 +1320,21 @@ class KennelHashersPage extends StatelessWidget {
             ),
           ),
         ),
-        body: Container(
-          padding: const EdgeInsets.all(30),
+        body: Builder(builder: (context) {
+          final narrow = Get.width < 600;
+          return Container(
+          padding: EdgeInsets.all(narrow ? 12 : 30),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              // SizedBox(
-              //     height: 20,
-              //     width: 200,
-              //     child: Text(
-              //       (c.isMinorUpdate || c.isMajorUpdate) ? 'Updating' : '',
-              //       textAlign: TextAlign.left,
-              //     )),
-              OverflowBar(
-                alignment: MainAxisAlignment.start,
-                spacing: 10,
-                overflowSpacing: 10,
-                children: <Widget>[
-                  // ElevatedButton(
-                  //   child: const Text('All fields'),
-                  //   onPressed: () async {
-                  //     await c.setColumnsType(EKennelGridOptions.allFields);
-                  //   },
-                  // ),
-
-                  if (c.kennel.canManageMembers) ...[
-                    ElevatedButton(
-                      style: c.columnsType != EKennelGridOptions.addNewMembers
-                          ? ButtonStyle(
-                              backgroundColor:
-                                  WidgetStateProperty.resolveWith<Color>(
-                                (Set<WidgetState> states) {
-                                  if (states.contains(WidgetState.hovered)) {
-                                    return const Color.fromARGB(
-                                      255,
-                                      120,
-                                      0,
-                                      0,
-                                    ); // Hover color
-                                  }
-                                  return Colors.red.shade900; // Default color
-                                },
-                              ),
-                              foregroundColor:
-                                  WidgetStateProperty.all<Color>(Colors.white),
-                            )
-                          : ButtonStyle(
-                              backgroundColor: WidgetStateProperty.all<Color>(
-                                Colors.blue.shade900,
-                              ),
-                              foregroundColor:
-                                  WidgetStateProperty.all<Color>(Colors.white),
-                            ),
-                      onPressed: () async {
-                        await c.setColumnsType(EKennelGridOptions.addNewMembers);
-                      },
-                      child: const Text(
-                        'Add new Hashers',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                    ElevatedButton(
-                      style: c.columnsType != EKennelGridOptions.nonAppHashers
-                          ? ButtonStyle(
-                              backgroundColor:
-                                  WidgetStateProperty.resolveWith<Color>(
-                                (Set<WidgetState> states) {
-                                  if (states.contains(WidgetState.hovered)) {
-                                    return const Color.fromARGB(
-                                      255,
-                                      120,
-                                      0,
-                                      0,
-                                    ); // Hover color
-                                  }
-                                  return Colors.red.shade900; // Default color
-                                },
-                              ),
-                              foregroundColor:
-                                  WidgetStateProperty.all<Color>(Colors.white),
-                            )
-                          : ButtonStyle(
-                              backgroundColor: WidgetStateProperty.all<Color>(
-                                Colors.blue.shade900,
-                              ),
-                              foregroundColor:
-                                  WidgetStateProperty.all<Color>(Colors.white),
-                            ),
-                      onPressed: () async {
-                        await c.setColumnsType(EKennelGridOptions.nonAppHashers);
-                      },
-                      child: const Text(
-                        'Non-app Hashers',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                    ElevatedButton(
-                      style: c.columnsType != EKennelGridOptions.membership
-                          ? ButtonStyle(
-                              backgroundColor:
-                                  WidgetStateProperty.resolveWith<Color>(
-                                (Set<WidgetState> states) {
-                                  if (states.contains(WidgetState.hovered)) {
-                                    return const Color.fromARGB(
-                                      255,
-                                      120,
-                                      0,
-                                      0,
-                                    ); // Hover color
-                                  }
-                                  return Colors.red.shade900; // Default color
-                                },
-                              ),
-                              foregroundColor:
-                                  WidgetStateProperty.all<Color>(Colors.white),
-                            )
-                          : ButtonStyle(
-                              backgroundColor: WidgetStateProperty.all<Color>(
-                                Colors.blue.shade900,
-                              ),
-                              foregroundColor:
-                                  WidgetStateProperty.all<Color>(Colors.white),
-                            ),
-                      onPressed: () async {
-                        await c.setColumnsType(EKennelGridOptions.membership);
-                      },
-                      child: const Text(
-                        'Membership',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                    ElevatedButton(
-                      style: c.columnsType != EKennelGridOptions.runCounts
-                          ? ButtonStyle(
-                              backgroundColor:
-                                  WidgetStateProperty.resolveWith<Color>(
-                                (Set<WidgetState> states) {
-                                  if (states.contains(WidgetState.hovered)) {
-                                    return const Color.fromARGB(
-                                      255,
-                                      120,
-                                      0,
-                                      0,
-                                    ); // Hover color
-                                  }
-                                  return Colors.red.shade900; // Default color
-                                },
-                              ),
-                              foregroundColor:
-                                  WidgetStateProperty.all<Color>(Colors.white),
-                            )
-                          : ButtonStyle(
-                              backgroundColor: WidgetStateProperty.all<Color>(
-                                Colors.blue.shade900,
-                              ),
-                              foregroundColor:
-                                  WidgetStateProperty.all<Color>(Colors.white),
-                            ),
-                      onPressed: () async {
-                        await c.setColumnsType(EKennelGridOptions.runCounts);
-                      },
-                      child: const Text(
-                        'Run counts',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                    ElevatedButton(
-                      style: c.columnsType !=
-                              EKennelGridOptions.notificationAndEmail
-                          ? ButtonStyle(
-                              backgroundColor:
-                                  WidgetStateProperty.resolveWith<Color>(
-                                (Set<WidgetState> states) {
-                                  if (states.contains(WidgetState.hovered)) {
-                                    return const Color.fromARGB(
-                                      255,
-                                      120,
-                                      0,
-                                      0,
-                                    ); // Hover color
-                                  }
-                                  return Colors.red.shade900; // Default color
-                                },
-                              ),
-                              foregroundColor:
-                                  WidgetStateProperty.all<Color>(Colors.white),
-                            )
-                          : ButtonStyle(
-                              backgroundColor: WidgetStateProperty.all<Color>(
-                                Colors.blue.shade900,
-                              ),
-                              foregroundColor:
-                                  WidgetStateProperty.all<Color>(Colors.white),
-                            ),
-                      onPressed: () async {
-                        await c.setColumnsType(
-                          EKennelGridOptions.notificationAndEmail,
-                        );
-                      },
-                      child: const Text(
-                        'Notifications & Email',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                    ElevatedButton(
-                      style: c.columnsType != EKennelGridOptions.photos
-                          ? ButtonStyle(
-                              backgroundColor:
-                                  WidgetStateProperty.resolveWith<Color>(
-                                (Set<WidgetState> states) {
-                                  if (states.contains(WidgetState.hovered)) {
-                                    return const Color.fromARGB(
-                                      255,
-                                      120,
-                                      0,
-                                      0,
-                                    ); // Hover color
-                                  }
-                                  return Colors.red.shade900; // Default color
-                                },
-                              ),
-                              foregroundColor:
-                                  WidgetStateProperty.all<Color>(Colors.white),
-                            )
-                          : ButtonStyle(
-                              backgroundColor: WidgetStateProperty.all<Color>(
-                                Colors.blue.shade900,
-                              ),
-                              foregroundColor:
-                                  WidgetStateProperty.all<Color>(Colors.white),
-                            ),
-                      onPressed: () async {
-                        await c.setColumnsType(EKennelGridOptions.photos);
-                      },
-                      child: const Text(
-                        'Photos',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ],
-                  ElevatedButton(
-                    style: c.columnsType != EKennelGridOptions.hashCredit
-                        ? ButtonStyle(
-                            backgroundColor:
-                                WidgetStateProperty.resolveWith<Color>(
-                              (Set<WidgetState> states) {
-                                if (states.contains(WidgetState.hovered)) {
-                                  return const Color.fromARGB(
-                                    255,
-                                    120,
-                                    0,
-                                    0,
-                                  ); // Hover color
-                                }
-                                return Colors.red.shade900; // Default color
-                              },
-                            ),
-                            foregroundColor:
-                                WidgetStateProperty.all<Color>(Colors.white),
-                          )
-                        : ButtonStyle(
-                            backgroundColor: WidgetStateProperty.all<Color>(
-                              Colors.blue.shade900,
-                            ),
-                            foregroundColor:
-                                WidgetStateProperty.all<Color>(Colors.white),
-                          ),
-                    onPressed: () async {
-                      await c.setColumnsType(EKennelGridOptions.hashCredit);
-                    },
-                    child: const Text(
-                      'Payment Info',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
+              _buildViewMenu(context, c),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 15),
+                padding: EdgeInsets.symmetric(vertical: narrow ? 10 : 15),
                 child: Text(
                   c.descriptionText,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'AvenirNext',
-                    fontSize: 16,
+                    fontSize: narrow ? 13 : 16,
                     color: Colors.black,
                     fontWeight: FontWeight.bold,
                   ),
@@ -1610,15 +1342,15 @@ class KennelHashersPage extends StatelessWidget {
               ),
               Container(
                 color: Colors.blue.shade900,
-                width: 10000,
-                height: 40,
+                width: double.infinity,
+                height: narrow ? 34 : 40,
                 child: Center(
                   child: Text(
                     c.tableHeadingText +
                         ((c.isMinorUpdate || c.isMajorUpdate) ? ' (Updating)' : ''),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'AvenirNextBold',
-                      fontSize: 24,
+                      fontSize: narrow ? 16 : 24,
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
@@ -1678,8 +1410,124 @@ class KennelHashersPage extends StatelessWidget {
               ],
             ],
           ),
+          );
+        }),
+      ),
+    );
+  }
+
+  // ── View menu (responsive) ──────────────────────────────────────────────
+  // Wide: a row of pill tabs. Narrow/phone: a single bar with the current view
+  // and a popup menu — matching the editors' hamburger-menu pattern — instead of
+  // a tall stack of buttons that consumed the whole screen.
+  Widget _buildViewMenu(BuildContext context, KennelHashersController c) {
+    final canManage = c.kennel.canManageMembers;
+    final options = <(String, EKennelGridOptions)>[
+      if (canManage) ('Add new Hashers', EKennelGridOptions.addNewMembers),
+      if (canManage) ('Non-app Hashers', EKennelGridOptions.nonAppHashers),
+      if (canManage) ('Membership', EKennelGridOptions.membership),
+      if (canManage) ('Run counts', EKennelGridOptions.runCounts),
+      if (canManage)
+        ('Notifications & Email', EKennelGridOptions.notificationAndEmail),
+      if (canManage) ('Photos', EKennelGridOptions.photos),
+      ('Payment Info', EKennelGridOptions.hashCredit),
+    ];
+
+    if (Get.width >= 600) {
+      return Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        children: [for (final o in options) _viewPill(c, o.$1, o.$2)],
+      );
+    }
+
+    final current = options.firstWhere(
+      (o) => o.$2 == c.columnsType,
+      orElse: () => options.first,
+    );
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.red.shade900,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: PopupMenuButton<EKennelGridOptions>(
+        tooltip: 'Select view',
+        color: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        offset: const Offset(0, 48),
+        onSelected: (t) async {
+          await c.setColumnsType(t);
+        },
+        itemBuilder: (context) => [
+          for (final o in options)
+            PopupMenuItem<EKennelGridOptions>(
+              value: o.$2,
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 28,
+                    child: o.$2 == c.columnsType
+                        ? Icon(Icons.check,
+                            size: 18, color: Colors.blue.shade700)
+                        : null,
+                  ),
+                  Expanded(
+                    child: Text(
+                      o.$1,
+                      style: TextStyle(
+                        fontWeight: o.$2 == c.columnsType
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        color: o.$2 == c.columnsType
+                            ? Colors.blue.shade700
+                            : Colors.black87,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            children: [
+              const Icon(Icons.menu, color: Colors.white, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  current.$1,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const Icon(Icons.arrow_drop_down, color: Colors.white),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _viewPill(
+    KennelHashersController c,
+    String label,
+    EKennelGridOptions type,
+  ) {
+    final selected = c.columnsType == type;
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: selected ? Colors.blue.shade900 : Colors.red.shade900,
+        foregroundColor: Colors.white,
+      ),
+      onPressed: () async {
+        await c.setColumnsType(type);
+      },
+      child: Text(label),
     );
   }
 }

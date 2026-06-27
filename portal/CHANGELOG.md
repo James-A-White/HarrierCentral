@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.31+664 — 2026-06-27
+
+- **Kennel Members page usable on phones (first pass):** the tall stack of view buttons is replaced by a compact menu (a popup picker on phones matching the rest of the portal; pill tabs on wide screens), with reduced padding and heading size so the member grid has room.
+
+---
+
 ## 2.0.30+663 — 2026-06-27
 
 - **Trail Symbols editor fits phones.** Each slot's Name and Action fields were squished into unusable slivers on a narrow screen; on phones the slot now stacks (number + icon + purpose on top, full-width Name and Action below). Wide layout unchanged.
