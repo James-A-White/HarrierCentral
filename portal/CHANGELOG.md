@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.13+646 — 2026-06-27
+
+- Runs list top bar no longer clips on small screens: the action buttons collapse into a single overflow (⋮) menu on narrow widths, the "Runs & Events" label is dropped, and the kennel badge truncates.
+
+---
+
 ## 2.0.12+645 — 2026-06-27
 
 - Same-device login: the portal now accepts an `?authCode=` in the URL (used by the mobile app's "Admin Portal" button) and logs in without a QR scan.

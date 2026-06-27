@@ -123,168 +123,185 @@ class RunListPage extends StatelessWidget {
                     )
                   else
                     const SizedBox(width: 16),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        'Runs & Events',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF0F172A),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      _kennelBadge(),
-                    ],
+                  Expanded(
+                    child: Obx(() {
+                      // Narrow screens: drop the redundant "Runs & Events"
+                      // label and let the kennel badge truncate, so the row
+                      // never overflows before the actions menu.
+                      final narrow = formController.isNarrowScreen.value;
+                      return Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (!narrow) ...[
+                            const Text(
+                              'Runs & Events',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF0F172A),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                          ],
+                          Flexible(child: _kennelBadge()),
+                        ],
+                      );
+                    }),
                   ),
-                  const Spacer(),
                   GetBuilder<RunListPageController>(
                     id: 'appBar',
                     builder: (c) {
                       final k = c.kennel;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 12),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (k.isAdmin) ...[
-                              if (k.canManageMembers ||
-                                  k.canManageHashCash) ...[
-                                _appBarBtn(
-                                  'Print Check-in',
-                                  onPressed: () async {
-                                    await Get.to<CheckinSheetPage>(
-                                      () => CheckinSheetPage(
-                                        publicKennelId: k.publicKennelId,
-                                        kennelName: k.kennelName,
-                                        kennelLogo: k.kennelLogo,
-                                      ),
-                                    );
-                                  },
-                                ),
-                                const SizedBox(width: 8),
-                                _appBarBtn(
-                                  'Manage Hashers',
-                                  onPressed: () async {
-                                    await Get.to<KennelHashersPage>(
-                                      () => KennelHashersPage(k),
-                                    );
-                                  },
-                                ),
-                                const SizedBox(width: 8),
-                              ],
-                              if (k.canManageKennel || k.canManageHashCash) ...[
-                                _appBarBtn(
-                                  'Edit Kennel',
-                                  onPressed: () async {
-                                    final kennel =
-                                        await _getKennel(k.publicKennelId);
-                                    if (kennel != null) {
-                                      await Get.to<KennelEditPage>(
-                                        () => KennelEditPage(
-                                          key: UniqueKey(),
-                                          kennelData: kennel,
-                                          appAccessFlags: k.appAccessFlags,
-                                          canEditKennelStatus:
-                                              formController.canEditKennel,
-                                        ),
-                                      );
-                                      await Get.delete<
-                                          KennelPageFormController>(
-                                        force: true,
-                                      );
-                                    }
-                                  },
-                                ),
-                                const SizedBox(width: 8),
-                              ],
-                              if (k.canManagePublicWebContent || k.isAdmin) ...[
-                                _appBarBtn(
-                                  'Edit Website',
-                                  onPressed: () async {
-                                    final websiteData = await _getKennelWebsite(
-                                      k.publicKennelId,
-                                    );
-                                    if (websiteData != null) {
-                                      await Get.to<KennelWebsiteEditPage>(
-                                        () => KennelWebsiteEditPage(
-                                          key: UniqueKey(),
-                                          websiteData: websiteData,
-                                          publicKennelId: k.publicKennelId,
-                                          kennelName: k.kennelName,
-                                          kennelUniqueShortName:
-                                              k.kennelUniqueShortName,
-                                        ),
-                                      );
-                                      await Get.delete<KennelWebsiteController>(
-                                        force: true,
-                                      );
-                                    }
-                                  },
-                                ),
-                                const SizedBox(width: 8),
-                                _appBarBtn(
-                                  'Design Website',
-                                  onPressed: () => _openWebsiteDesigner(
-                                    k.kennelUniqueShortName,
+                      final actions =
+                          <({String label, VoidCallback onTap, bool isPrimary})>[
+                        if (k.isAdmin) ...[
+                          if (k.canManageMembers || k.canManageHashCash) ...[
+                            (
+                              label: 'Print Check-in',
+                              isPrimary: false,
+                              onTap: () async {
+                                await Get.to<CheckinSheetPage>(
+                                  () => CheckinSheetPage(
+                                    publicKennelId: k.publicKennelId,
+                                    kennelName: k.kennelName,
+                                    kennelLogo: k.kennelLogo,
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                              ],
-                              if (k.canManageRuns) ...[
-                                _appBarBtn(
-                                  '+ Add Run',
-                                  isPrimary: true,
-                                  onPressed: () async {
-                                    var lastRunDate = DateTime.now();
-                                    for (final run
-                                        in formController.allEvents) {
-                                      if (run.eventStartDatetime
-                                          .isAfter(lastRunDate)) {
-                                        lastRunDate = run.eventStartDatetime;
-                                      }
-                                    }
-                                    await Get.to<RunEditPage>(
-                                      () => RunEditPage(
-                                        runData: RunDetailsModel.empty(),
-                                        kennelData: k,
-                                        isAddMode: true,
-                                        lastRunDate: lastRunDate,
-                                      ),
-                                    );
-                                    await formController.refreshEvents();
-                                  },
-                                ),
-                                const SizedBox(width: 8),
-                              ],
-                            ],
-                            if (formController.hasAnyPlatformAdminPrivilege) ...[
-                              _appBarBtn(
-                                'HC Admin Tools',
-                                onPressed: () async {
-                                  await Get.to<HcAdminToolsPage>(
-                                    () => HcAdminToolsPage(
-                                      allKennels: allKennels,
-                                      canViewMonitor:
-                                          formController.canViewMonitor,
-                                      canManageNewsflash:
-                                          formController.canManageNewsflash,
-                                    ),
-                                  );
-                                },
-                              ),
-                              const SizedBox(width: 8),
-                            ],
-                            _appBarBtn(
-                              'Log out',
-                              onPressed: () async {
-                                await box.clear();
-                                web.window.location.reload();
+                                );
+                              },
+                            ),
+                            (
+                              label: 'Manage Hashers',
+                              isPrimary: false,
+                              onTap: () async {
+                                await Get.to<KennelHashersPage>(
+                                  () => KennelHashersPage(k),
+                                );
                               },
                             ),
                           ],
+                          if (k.canManageKennel || k.canManageHashCash)
+                            (
+                              label: 'Edit Kennel',
+                              isPrimary: false,
+                              onTap: () async {
+                                final kennel =
+                                    await _getKennel(k.publicKennelId);
+                                if (kennel != null) {
+                                  await Get.to<KennelEditPage>(
+                                    () => KennelEditPage(
+                                      key: UniqueKey(),
+                                      kennelData: kennel,
+                                      appAccessFlags: k.appAccessFlags,
+                                      canEditKennelStatus:
+                                          formController.canEditKennel,
+                                    ),
+                                  );
+                                  await Get.delete<KennelPageFormController>(
+                                    force: true,
+                                  );
+                                }
+                              },
+                            ),
+                          if (k.canManagePublicWebContent || k.isAdmin) ...[
+                            (
+                              label: 'Edit Website',
+                              isPrimary: false,
+                              onTap: () async {
+                                final websiteData =
+                                    await _getKennelWebsite(k.publicKennelId);
+                                if (websiteData != null) {
+                                  await Get.to<KennelWebsiteEditPage>(
+                                    () => KennelWebsiteEditPage(
+                                      key: UniqueKey(),
+                                      websiteData: websiteData,
+                                      publicKennelId: k.publicKennelId,
+                                      kennelName: k.kennelName,
+                                      kennelUniqueShortName:
+                                          k.kennelUniqueShortName,
+                                    ),
+                                  );
+                                  await Get.delete<KennelWebsiteController>(
+                                    force: true,
+                                  );
+                                }
+                              },
+                            ),
+                            (
+                              label: 'Design Website',
+                              isPrimary: false,
+                              onTap: () =>
+                                  _openWebsiteDesigner(k.kennelUniqueShortName),
+                            ),
+                          ],
+                          if (k.canManageRuns)
+                            (
+                              label: '+ Add Run',
+                              isPrimary: true,
+                              onTap: () async {
+                                var lastRunDate = DateTime.now();
+                                for (final run in formController.allEvents) {
+                                  if (run.eventStartDatetime
+                                      .isAfter(lastRunDate)) {
+                                    lastRunDate = run.eventStartDatetime;
+                                  }
+                                }
+                                await Get.to<RunEditPage>(
+                                  () => RunEditPage(
+                                    runData: RunDetailsModel.empty(),
+                                    kennelData: k,
+                                    isAddMode: true,
+                                    lastRunDate: lastRunDate,
+                                  ),
+                                );
+                                await formController.refreshEvents();
+                              },
+                            ),
+                        ],
+                        if (formController.hasAnyPlatformAdminPrivilege)
+                          (
+                            label: 'HC Admin Tools',
+                            isPrimary: false,
+                            onTap: () async {
+                              await Get.to<HcAdminToolsPage>(
+                                () => HcAdminToolsPage(
+                                  allKennels: allKennels,
+                                  canViewMonitor: formController.canViewMonitor,
+                                  canManageNewsflash:
+                                      formController.canManageNewsflash,
+                                ),
+                              );
+                            },
+                          ),
+                        (
+                          label: 'Log out',
+                          isPrimary: false,
+                          onTap: () async {
+                            await box.clear();
+                            web.window.location.reload();
+                          },
                         ),
+                      ];
+
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        // Narrow screens collapse the action buttons into a
+                        // single overflow menu so nothing clips off the edge.
+                        child: formController.isNarrowScreen.value
+                            ? _appBarActionsMenu(actions)
+                            : Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  for (var i = 0; i < actions.length; i++) ...[
+                                    _appBarBtn(
+                                      actions[i].label,
+                                      isPrimary: actions[i].isPrimary,
+                                      onPressed: actions[i].onTap,
+                                    ),
+                                    if (i != actions.length - 1)
+                                      const SizedBox(width: 8),
+                                  ],
+                                ],
+                              ),
                       );
                     },
                   ),
@@ -320,12 +337,16 @@ class RunListPage extends StatelessWidget {
               leftPadding: 0,
               rightPadding: 6,
             ),
-            Text(
-              k.kennelName,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFFB91C1C),
+            Flexible(
+              child: Text(
+                k.kennelName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFFB91C1C),
+                ),
               ),
             ),
           ],
@@ -647,6 +668,36 @@ class RunListPage extends StatelessWidget {
       logoHeight: 72,
       leftPadding: 0,
       rightPadding: 0,
+    );
+  }
+
+  /// Narrow-screen overflow menu: the app-bar actions as a single ⋮ button.
+  Widget _appBarActionsMenu(
+    List<({String label, VoidCallback onTap, bool isPrimary})> actions,
+  ) {
+    return PopupMenuButton<int>(
+      icon: const Icon(Icons.more_vert, color: Color(0xFF0F172A)),
+      tooltip: 'Actions',
+      color: Colors.white,
+      position: PopupMenuPosition.under,
+      onSelected: (i) => actions[i].onTap(),
+      itemBuilder: (context) => [
+        for (var i = 0; i < actions.length; i++)
+          PopupMenuItem<int>(
+            value: i,
+            child: Text(
+              actions[i].label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight:
+                    actions[i].isPrimary ? FontWeight.w700 : FontWeight.w500,
+                color: actions[i].isPrimary
+                    ? const Color(0xFFB91C1C)
+                    : const Color(0xFF0F172A),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
