@@ -80,8 +80,6 @@ class _TrailSlotRowState extends State<_TrailSlotRow> {
     ));
   }
 
-  bool get _isFixed => kFixedSlotPurposes.containsKey(widget.slot.slot);
-
   Widget _buildPurposeWidget() {
     final slot = widget.slot.slot;
     if (kFixedSlotPurposes.containsKey(slot)) {
@@ -124,6 +122,9 @@ class _TrailSlotRowState extends State<_TrailSlotRow> {
 
   @override
   Widget build(BuildContext context) {
+    // On a phone the single horizontal row can't fit the Name + Action fields
+    // (they collapse to unusable slivers), so stack the slot vertically.
+    final narrow = Get.width < 600;
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -132,89 +133,120 @@ class _TrailSlotRowState extends State<_TrailSlotRow> {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.grey.shade300),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Slot number
-          SizedBox(
-            width: 28,
-            child: Text(
-              '${widget.slot.slot}',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const SizedBox(width: 8),
+      child: narrow ? _buildNarrow(context) : _buildWide(context),
+    );
+  }
 
-          // Purpose — fixed text for slots 1–5, dropdown for 6–12
-          SizedBox(width: 150, child: _buildPurposeWidget()),
-          const SizedBox(width: 8),
+  // Wide: number · purpose · icon · name · action all on one line.
+  Widget _buildWide(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        _numberBox(),
+        const SizedBox(width: 8),
+        SizedBox(width: 150, child: _buildPurposeWidget()),
+        const SizedBox(width: 8),
+        _iconButton(context),
+        const SizedBox(width: 8),
+        Expanded(flex: 3, child: _nameField()),
+        const SizedBox(width: 8),
+        Expanded(flex: 2, child: _actionDropdown()),
+      ],
+    );
+  }
 
-          // Symbol picker button — shows current PNG or empty placeholder
-          GestureDetector(
-            onTap: () => _pickIcon(context),
-            child: Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey.shade400),
-              ),
-              child: _selectedIcon != null
-                  ? Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: Image.asset(
-                        'images/trail_symbols/$_selectedIcon',
-                        fit: BoxFit.contain,
-                      ),
-                    )
-                  : const Icon(Icons.add, color: Colors.grey),
-            ),
-          ),
-          const SizedBox(width: 8),
+  // Narrow (phone): number + icon + purpose on top, then full-width Name and
+  // Action fields stacked below so they're usable.
+  Widget _buildNarrow(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            _numberBox(),
+            const SizedBox(width: 8),
+            _iconButton(context),
+            const SizedBox(width: 12),
+            Expanded(child: _buildPurposeWidget()),
+          ],
+        ),
+        const SizedBox(height: 10),
+        _nameField(),
+        const SizedBox(height: 10),
+        _actionDropdown(),
+      ],
+    );
+  }
 
-          // Name field — always editable
-          Expanded(
-            flex: 3,
-            child: TextField(
-              controller: _nameCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Name',
-                isDense: true,
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              ),
-              onChanged: (_) => _notify(),
-            ),
-          ),
-          const SizedBox(width: 8),
-
-          // Action dropdown — always editable
-          Expanded(
-            flex: 2,
-            child: DropdownButtonFormField<String?>(
-              value: _selectedAction,
-              isExpanded: true,
-              decoration: const InputDecoration(
-                labelText: 'Action',
-                isDense: true,
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              ),
-              items: const [
-                DropdownMenuItem(value: null,      child: Text('None')),
-                DropdownMenuItem(value: 'addText', child: Text('Add Text')),
-                DropdownMenuItem(value: 'endRun',  child: Text('End Run')),
-              ],
-              onChanged: (v) {
-                setState(() => _selectedAction = v);
-                _notify();
-              },
-            ),
-          ),
-        ],
+  Widget _numberBox() {
+    return SizedBox(
+      width: 28,
+      child: Text(
+        '${widget.slot.slot}',
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+        textAlign: TextAlign.center,
       ),
+    );
+  }
+
+  // Symbol picker button — shows current PNG or empty placeholder.
+  Widget _iconButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _pickIcon(context),
+      child: Container(
+        width: 52,
+        height: 52,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey.shade400),
+        ),
+        child: _selectedIcon != null
+            ? Padding(
+                padding: const EdgeInsets.all(4),
+                child: Image.asset(
+                  'images/trail_symbols/$_selectedIcon',
+                  fit: BoxFit.contain,
+                ),
+              )
+            : const Icon(Icons.add, color: Colors.grey),
+      ),
+    );
+  }
+
+  Widget _nameField() {
+    return TextField(
+      controller: _nameCtrl,
+      decoration: const InputDecoration(
+        labelText: 'Name',
+        isDense: true,
+        border: OutlineInputBorder(),
+        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      ),
+      onChanged: (_) => _notify(),
+    );
+  }
+
+  Widget _actionDropdown() {
+    return DropdownButtonFormField<String?>(
+      value: _selectedAction,
+      isExpanded: true,
+      decoration: const InputDecoration(
+        labelText: 'Action',
+        isDense: true,
+        border: OutlineInputBorder(),
+        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      ),
+      items: const [
+        DropdownMenuItem(value: null, child: Text('None')),
+        DropdownMenuItem(value: 'addText', child: Text('Add Text')),
+        DropdownMenuItem(value: 'endRun', child: Text('End Run')),
+      ],
+      onChanged: (v) {
+        setState(() => _selectedAction = v);
+        _notify();
+      },
     );
   }
 }

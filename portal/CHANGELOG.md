@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.30+663 — 2026-06-27
+
+- **Trail Symbols editor fits phones.** Each slot's Name and Action fields were squished into unusable slivers on a narrow screen; on phones the slot now stacks (number + icon + purpose on top, full-width Name and Action below). Wide layout unchanged.
+
+---
+
 ## 2.0.29+662 — 2026-06-27
 
 - **Fixed: Menu button missing on first open (phone).** The app-bar actions weren't reacting to the narrow-screen flag flipping after load, so the Menu button didn't appear until something else refreshed the bar. It now shows immediately.
