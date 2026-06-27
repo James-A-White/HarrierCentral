@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.33+666 — 2026-06-28
+
+- **Kennel Members page now uses the standard tabbed-UI navigation** like the editors: a vertical tab rail on desktop and a hamburger menu on phones (the 7 views are now tabs). Desktop shows the data grid; phones show the member card list. Replaces the old custom button menu.
+
+---
+
 ## 2.0.32+665 — 2026-06-27
 
 - **Kennel Members on phones now shows a card list** instead of a sideways-scrolling grid: each member is a card with the current view's fields (Membership, Names & Email, Notifications, Run counts, Payment, Photos), edited inline and saved per field. Desktop keeps the data grid; the bulk "Add new Hashers" view keeps the grid on phones too.

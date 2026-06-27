@@ -13,10 +13,17 @@ enum EKennelGridOptions {
   addNewMembers,
 }
 
-class KennelHashersController extends GetxController {
+class KennelHashersController extends TabUiController
+    with GetSingleTickerProviderStateMixin {
   KennelHashersController(this.kennel);
 
   final HasherKennelsModel kennel;
+
+  /// Form key for the narrow hamburger tab bar (ResponsiveTabBar requires one).
+  final GlobalKey<FormState> hashersFormKey = GlobalKey<FormState>();
+
+  /// The grid views shown as tabs, in display order (gated by permission).
+  late final List<EKennelGridOptions> visibleViews;
 
   TrinaGridStateManager? stateManager;
   bool isMinorUpdate = false;
@@ -769,22 +776,142 @@ class KennelHashersController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    unawaited(_init());
+
+    visibleViews = <EKennelGridOptions>[
+      if (kennel.canManageMembers) ...[
+        EKennelGridOptions.addNewMembers,
+        EKennelGridOptions.nonAppHashers,
+        EKennelGridOptions.membership,
+        EKennelGridOptions.runCounts,
+        EKennelGridOptions.notificationAndEmail,
+        EKennelGridOptions.photos,
+      ],
+      EKennelGridOptions.hashCredit,
+    ];
+
+    initTabs(
+      vsync: this,
+      tabs: _buildTabDefinitions(),
+      tabKeyBuilder: (index) => visibleViews[index].name,
+      onTabIndexChanged: _onTabChanged,
+    );
+    initTabStateBundle(
+      length: visibleViews.length,
+      initialLockState: TabLocked.tabUnlocked,
+    );
+    // No per-tab validation on this page → clear the rail/hamburger status icons.
+    for (final s in tabStatus) {
+      s.value = TabStatus.unknown;
+    }
+
+    setScreenSize();
+    ever(width, (_) => setScreenSize());
+
+    unawaited(_loadInitialView());
   }
 
-  Future<void> _init() async {
+  Future<void> _loadInitialView() async {
     await Future<void>.delayed(const Duration(milliseconds: 300));
-
-    if (kennel.canManageMembers) {
-      await setColumnsType(EKennelGridOptions.membership);
-    } else if (kennel.canManageHashCash) {
-      await setColumnsType(EKennelGridOptions.hashCredit);
+    final initialView = kennel.canManageMembers
+        ? EKennelGridOptions.membership
+        : EKennelGridOptions.hashCredit;
+    final initialIndex =
+        visibleViews.indexOf(initialView).clamp(0, visibleViews.length - 1);
+    if (tabController.index != initialIndex) {
+      // Fires the tab listener → _onTabChanged → loads that view.
+      tabController.index = initialIndex;
     } else {
-      final error = ArgumentError(
-        'Membership screen should only be accessible by users that have Manage Members or Manage Hash Cash permissions.',
-      );
-      throw (error);
+      await setColumnsType(visibleViews[initialIndex]);
     }
+  }
+
+  // Switches the grid/cards to the view for the newly-selected tab.
+  void _onTabChanged() {
+    final i = currentIndex.value;
+    if (i >= 0 && i < visibleViews.length) {
+      unawaited(setColumnsType(visibleViews[i]));
+    }
+  }
+
+  List<TabDefinitionData> _buildTabDefinitions() {
+    return [
+      for (var i = 0; i < visibleViews.length; i++)
+        TabDefinitionData(
+          key: visibleViews[i].name,
+          title: viewTitle(visibleViews[i]),
+          tabIndex: i,
+          hasCustomTabStatusFunction: false,
+          showTabInSubmitSummary: false,
+          isTabLockable: false,
+          sidebarData: SideBarData(
+            viewTitle(visibleViews[i]),
+            _viewIcon(visibleViews[i]),
+            '',
+          ),
+        ),
+    ];
+  }
+
+  static String viewTitle(EKennelGridOptions v) {
+    switch (v) {
+      case EKennelGridOptions.addNewMembers:
+        return 'Add new Hashers';
+      case EKennelGridOptions.nonAppHashers:
+        return 'Non-app Hashers';
+      case EKennelGridOptions.membership:
+        return 'Membership';
+      case EKennelGridOptions.runCounts:
+        return 'Run counts';
+      case EKennelGridOptions.notificationAndEmail:
+        return 'Notifications & Email';
+      case EKennelGridOptions.photos:
+        return 'Photos';
+      case EKennelGridOptions.hashCredit:
+        return 'Payment Info';
+      case EKennelGridOptions.allFields:
+        return 'All fields';
+    }
+  }
+
+  IconData _viewIcon(EKennelGridOptions v) {
+    switch (v) {
+      case EKennelGridOptions.addNewMembers:
+        return Icons.person_add_alt_1_outlined;
+      case EKennelGridOptions.nonAppHashers:
+        return Icons.badge_outlined;
+      case EKennelGridOptions.membership:
+        return Icons.groups_outlined;
+      case EKennelGridOptions.runCounts:
+        return Icons.directions_run_outlined;
+      case EKennelGridOptions.notificationAndEmail:
+        return Icons.notifications_outlined;
+      case EKennelGridOptions.photos:
+        return Icons.photo_library_outlined;
+      case EKennelGridOptions.hashCredit:
+        return Icons.payments_outlined;
+      case EKennelGridOptions.allFields:
+        return Icons.table_chart_outlined;
+    }
+  }
+
+  // ── TabUiController required overrides ──────────────────────────────────────
+  // No-ops: this page commits each field immediately via updateHasherField,
+  // so there's no form-level save/undo/validation cycle.
+  @override
+  void checkIfFormIsDirty() {}
+
+  @override
+  void undoChanges() {}
+
+  @override
+  void populateTextControllers() {}
+
+  @override
+  Future<void> save(bool showDialog) async {}
+
+  @override
+  Future<void> close() async {
+    Get.back<void>();
   }
 
   Future<void> getRowData() async {
@@ -1305,51 +1432,93 @@ class KennelHashersPage extends StatelessWidget {
     return GetBuilder<KennelHashersController>(
       init: KennelHashersController(kennel),
       builder: (c) => Scaffold(
+        backgroundColor: const Color(0xFFF1F5F9),
         appBar: AppBar(
           title: Text(
             'Kennel Members and Followers for ${c.kennel.kennelName}',
           ),
           leading: GestureDetector(
-            onTap: () {
-              Get.back<void>();
-            },
+            onTap: () => Get.back<void>(),
             child: const Icon(
               MaterialCommunityIcons.arrow_left,
               color: Colors.black,
             ),
           ),
         ),
-        body: Builder(builder: (context) {
-          final narrow = Get.width < 600;
-          return Container(
-          padding: EdgeInsets.all(narrow ? 12 : 30),
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            c.updateSizeWithDebounce(constraints.maxWidth, constraints.maxHeight);
+            // Same infra as the editors: vertical rail (wide) / hamburger
+            // (narrow) drives the selected view; content sits beside/below it.
+            return TabRailScaffold<KennelHashersController>(
+              controller: c,
+              railColor: railColorKennelHashers,
+              narrowTabBar: ResponsiveTabBar<KennelHashersController>(
+                controller: c,
+                formKey: c.hashersFormKey,
+                tabBarColor: railColorKennelHashers,
+              ),
+              tabBarView: _KennelHashersContent(controller: c),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// Content shown beside the rail (wide) / below the hamburger (narrow): the
+// heading plus the data grid (wide) or member card list (narrow) for the
+// currently selected view.
+class _KennelHashersContent extends StatelessWidget {
+  const _KennelHashersContent({required this.controller});
+
+  final KennelHashersController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return GetBuilder<KennelHashersController>(
+      builder: (c) => Obx(() {
+        final useCards =
+            c.screenSize.value != EScreenSize.isNormalScreen &&
+                c.columnsType != EKennelGridOptions.addNewMembers;
+        return Container(
+          color: const Color(0xFFF1F5F9),
+          padding: EdgeInsets.fromLTRB(
+            useCards ? 10 : 16,
+            12,
+            useCards ? 10 : 16,
+            8,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              _buildViewMenu(context, c),
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: narrow ? 10 : 15),
-                child: Text(
-                  c.descriptionText,
-                  style: TextStyle(
-                    fontFamily: 'AvenirNext',
-                    fontSize: narrow ? 13 : 16,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
+              if (c.descriptionText.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Text(
+                    c.descriptionText,
+                    style: TextStyle(
+                      fontFamily: 'AvenirNext',
+                      fontSize: useCards ? 13 : 15,
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              ),
               Container(
                 color: Colors.blue.shade900,
                 width: double.infinity,
-                height: narrow ? 34 : 40,
+                height: useCards ? 34 : 40,
                 child: Center(
                   child: Text(
                     c.tableHeadingText +
-                        ((c.isMinorUpdate || c.isMajorUpdate) ? ' (Updating)' : ''),
+                        ((c.isMinorUpdate || c.isMajorUpdate)
+                            ? ' (Updating)'
+                            : ''),
                     style: TextStyle(
                       fontFamily: 'AvenirNextBold',
-                      fontSize: narrow ? 16 : 24,
+                      fontSize: useCards ? 16 : 22,
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
@@ -1357,21 +1526,17 @@ class KennelHashersPage extends StatelessWidget {
                 ),
               ),
               Expanded(
-                // Phones get a card list (the grid is unusable at that width);
-                // the bulk "Add new Hashers" view keeps the grid even on narrow.
-                child: (narrow &&
-                        c.columnsType != EKennelGridOptions.addNewMembers)
+                child: useCards
                     ? _buildMemberCards(c)
                     : Stack(
                         children: <Widget>[
                           TrinaGrid(
                             configuration: TrinaGridConfiguration(
                               style: TrinaGridStyleConfig(
-                                rowHeight:
-                                    c.columnsType == EKennelGridOptions.photos
-                                        ? KennelHashersController.photoRowHeight
-                                        : KennelHashersController
-                                            .standardRowHeight,
+                                rowHeight: c.columnsType ==
+                                        EKennelGridOptions.photos
+                                    ? KennelHashersController.photoRowHeight
+                                    : KennelHashersController.standardRowHeight,
                               ),
                             ),
                             key: c.gridKey,
@@ -1408,13 +1573,9 @@ class KennelHashersPage extends StatelessWidget {
                           'Save',
                           style: TextStyle(color: Colors.white),
                         ),
-                        // in order to make sure the value of the current cell
-                        // being edited is committed, we have to change the
-                        // current cell and also put in a little delay to
-                        // give the grid a chance to "catch up".
-                        // This is a bit of a hack and we need to find
-                        // a better way to handle this.
-                        onPressed: () async { await c.saveBulkHashers(); },
+                        onPressed: () async {
+                          await c.saveBulkHashers();
+                        },
                       ),
                     ],
                   ),
@@ -1422,111 +1583,11 @@ class KennelHashersPage extends StatelessWidget {
               ],
             ],
           ),
-          );
-        }),
-      ),
+        );
+      }),
     );
   }
 
-  // ── View menu (responsive) ──────────────────────────────────────────────
-  // Wide: a row of pill tabs. Narrow/phone: a single bar with the current view
-  // and a popup menu — matching the editors' hamburger-menu pattern — instead of
-  // a tall stack of buttons that consumed the whole screen.
-  Widget _buildViewMenu(BuildContext context, KennelHashersController c) {
-    final canManage = c.kennel.canManageMembers;
-    final options = <(String, EKennelGridOptions)>[
-      if (canManage) ('Add new Hashers', EKennelGridOptions.addNewMembers),
-      if (canManage) ('Non-app Hashers', EKennelGridOptions.nonAppHashers),
-      if (canManage) ('Membership', EKennelGridOptions.membership),
-      if (canManage) ('Run counts', EKennelGridOptions.runCounts),
-      if (canManage)
-        ('Notifications & Email', EKennelGridOptions.notificationAndEmail),
-      if (canManage) ('Photos', EKennelGridOptions.photos),
-      ('Payment Info', EKennelGridOptions.hashCredit),
-    ];
-
-    if (Get.width >= 600) {
-      return Wrap(
-        spacing: 10,
-        runSpacing: 10,
-        children: [for (final o in options) _viewPill(c, o.$1, o.$2)],
-      );
-    }
-
-    final current = options.firstWhere(
-      (o) => o.$2 == c.columnsType,
-      orElse: () => options.first,
-    );
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.red.shade900,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: PopupMenuButton<EKennelGridOptions>(
-        tooltip: 'Select view',
-        color: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        offset: const Offset(0, 48),
-        onSelected: (t) async {
-          await c.setColumnsType(t);
-        },
-        itemBuilder: (context) => [
-          for (final o in options)
-            PopupMenuItem<EKennelGridOptions>(
-              value: o.$2,
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 28,
-                    child: o.$2 == c.columnsType
-                        ? Icon(Icons.check,
-                            size: 18, color: Colors.blue.shade700)
-                        : null,
-                  ),
-                  Expanded(
-                    child: Text(
-                      o.$1,
-                      style: TextStyle(
-                        fontWeight: o.$2 == c.columnsType
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                        color: o.$2 == c.columnsType
-                            ? Colors.blue.shade700
-                            : Colors.black87,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          child: Row(
-            children: [
-              const Icon(Icons.menu, color: Colors.white, size: 20),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  current.$1,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              const Icon(Icons.arrow_drop_down, color: Colors.white),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Phone card list — one card per member showing the fields for the current
-  // view, edited inline. Uses the same per-field save as the desktop grid.
   Widget _buildMemberCards(KennelHashersController c) {
     if (c.hashers.isEmpty) {
       return Center(
@@ -1548,24 +1609,6 @@ class KennelHashersPage extends StatelessWidget {
         view: c.columnsType,
         controller: c,
       ),
-    );
-  }
-
-  Widget _viewPill(
-    KennelHashersController c,
-    String label,
-    EKennelGridOptions type,
-  ) {
-    final selected = c.columnsType == type;
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: selected ? Colors.blue.shade900 : Colors.red.shade900,
-        foregroundColor: Colors.white,
-      ),
-      onPressed: () async {
-        await c.setColumnsType(type);
-      },
-      child: Text(label),
     );
   }
 }

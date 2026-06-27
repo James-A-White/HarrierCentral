@@ -14,3 +14,4 @@ final Color railColorRunEdit = _railHue(140); // green
 final Color railColorKennelWebsite = _railHue(182); // teal
 final Color railColorApplicationForm = _railHue(275); // violet
 final Color railColorEmail = _railHue(340); // crimson
+final Color railColorKennelHashers = _railHue(22); // orange
