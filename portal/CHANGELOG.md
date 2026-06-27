@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.29+662 — 2026-06-27
+
+- **Fixed: Menu button missing on first open (phone).** The app-bar actions weren't reacting to the narrow-screen flag flipping after load, so the Menu button didn't appear until something else refreshed the bar. It now shows immediately.
+
+---
+
 ## 2.0.28+661 — 2026-06-27
 
 - **Fixed: phone runs page blank when there are no upcoming runs.** It auto-switched to Past runs but rendered nothing until a pull-to-refresh — caused by the layout flag being set after the data load instead of before. Past runs now show immediately.

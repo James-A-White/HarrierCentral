@@ -178,20 +178,25 @@ class RunListPage extends StatelessWidget {
                       // nav rail (see _navRail); narrow screens collapse them
                       // into an overflow menu. The version label lives here so
                       // it is always visible (the app bar never scrolls).
-                      final narrow = formController.isNarrowScreen.value;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 12),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _versionLabel(),
-                            if (narrow) ...[
-                              const SizedBox(width: 10),
-                              _appBarActionsMenu(_appBarActions(c.kennel)),
+                      // Obx so the Menu reacts to isNarrowScreen flipping true
+                      // after first load — GetBuilder alone isn't reactive to it,
+                      // which left the Menu button missing on initial open.
+                      return Obx(() {
+                        final narrow = formController.isNarrowScreen.value;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 12),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _versionLabel(),
+                              if (narrow) ...[
+                                const SizedBox(width: 10),
+                                _appBarActionsMenu(_appBarActions(c.kennel)),
+                              ],
                             ],
-                          ],
-                        ),
-                      );
+                          ),
+                        );
+                      });
                     },
                   ),
                 ],
