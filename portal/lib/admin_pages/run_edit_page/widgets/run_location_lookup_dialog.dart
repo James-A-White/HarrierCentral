@@ -746,11 +746,18 @@ class RunLocationLookupDialog extends StatelessWidget {
       final isSelected = index == c.gazetteerSelectedIndex.value;
       final address = result.address;
       final name = result.poi?.name ?? address?.freeformAddress ?? 'Unknown';
-      final subtitle = <String?>[
+      // Prefer the full street address so near-identical POIs (e.g. several
+      // "Starbucks" in the same city) are distinguishable. Fall back to the
+      // municipality/region/country line, and avoid repeating the title.
+      final fullAddress = address?.freeformAddress?.trim() ?? '';
+      final regionLine = <String?>[
         address?.municipality,
         address?.countrySubdivision,
         address?.country,
       ].where((s) => s != null && s.isNotEmpty).join(', ');
+      final subtitle = (fullAddress.isNotEmpty && fullAddress != name)
+          ? fullAddress
+          : regionLine;
 
       final narrow = _isNarrow;
       return ListTile(
@@ -776,7 +783,7 @@ class RunLocationLookupDialog extends StatelessWidget {
         subtitle: subtitle.isNotEmpty
             ? Text(
                 subtitle,
-                maxLines: 1,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: narrow ? const TextStyle(fontSize: 11.5) : null,
               )

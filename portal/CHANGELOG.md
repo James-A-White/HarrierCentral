@@ -2,6 +2,13 @@
 
 ---
 
+## 2.0.28+661 — 2026-06-27
+
+- **Fixed: phone runs page blank when there are no upcoming runs.** It auto-switched to Past runs but rendered nothing until a pull-to-refresh — caused by the layout flag being set after the data load instead of before. Past runs now show immediately.
+- **Location Lookup: street address per result.** Search Places rows now show the full street address (not just city/region), so near-identical results (e.g. several "Starbucks" in one city) are distinguishable.
+
+---
+
 ## 2.0.27+660 — 2026-06-27
 
 - **Location Lookup fits phones now**: on narrow screens the lookup shows a full-width results list (the side map and fixed-width panel that pushed the Search button off-screen are dropped), with smaller text and tighter rows.

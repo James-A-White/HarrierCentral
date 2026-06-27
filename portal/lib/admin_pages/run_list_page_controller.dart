@@ -103,11 +103,16 @@ class RunListPageController extends GetxController
       _isDebounceRunning = true;
       try {
         final narrow = Get.mediaQuery.size.width < NARROW_SCREEN_WIDTH;
-        if (firstLoad || (isNarrowScreen.value != narrow)) {
+        final changed = firstLoad || (isNarrowScreen.value != narrow);
+        // Set BEFORE fetching: _getEvents → setDisplayedEvents() branches on
+        // isNarrowScreen to decide which list to fill. If it's still stale here,
+        // the detail list never populates and the page renders blank until a
+        // pull-to-refresh (which sets isNarrowScreen first).
+        isNarrowScreen.value = narrow;
+        if (changed) {
           await _getEvents(getAllEventDetails: narrow);
           firstLoad = false;
         }
-        isNarrowScreen.value = narrow;
       } catch (e) {
         if (kDebugMode) {
           debugPrint('RunListPageController debounce error: $e');
