@@ -93,6 +93,7 @@ export 'package:hcportal/tabbed_ui/widgets/row_column.dart';
 export 'package:hcportal/tabbed_ui/widgets/sidebar_hover_region.dart';
 export 'package:hcportal/tabbed_ui/widgets/tab_page_standard_layout.dart';
 export 'package:hcportal/tabbed_ui/widgets/tab_with_icon.dart';
+export 'package:hcportal/tabbed_ui/widgets/vertical_tab_rail.dart';
 export 'package:hcportal/tabbed_ui/widgets/text_dropdown_field.dart';
 export 'package:hcportal/test/login_controller.dart';
 export 'package:hcportal/test/login_form.dart';

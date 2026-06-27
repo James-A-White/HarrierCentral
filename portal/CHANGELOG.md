@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.8+641 — 2026-06-27
+
+- Change: the Kennel Editor now uses a vertical tab rail down the left on wide screens (the horizontal tab bar was clipping as tabs grew). Selection, validation icons, and the per-tab info sidebar are unchanged; narrow/mobile keep the hamburger menu.
+
+---
+
 ## 2.0.7+640 — 2026-06-27
 
 - New: **Trail Types** kennel editor — rename or hide the five built-in lanes (Walkers / Short / Normal / Long / Ballbreaker) or add your own custom ones with an emoji. Drives PackTrack trail selection and run-map filtering. "Normal" can be renamed but never hidden.

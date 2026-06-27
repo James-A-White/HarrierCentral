@@ -119,16 +119,36 @@ class _KennelFormScaffold extends StatelessWidget {
     );
   }
 
-  /// Builds the main body with tab bar and tab views.
+  /// Builds the main body. Wide screens use a vertical tab rail down the left
+  /// (scales past the point where a horizontal bar clips); narrow/mobile keep
+  /// the hamburger menu above the content.
   Widget _buildBody() {
     return DefaultTabController(
       length: controller.visibleTabs.length,
-      child: Column(
-        children: [
-          _KennelTabBar(controller: controller),
-          Expanded(child: _KennelTabBarView(controller: controller)),
-        ],
-      ),
+      child: Obx(() {
+        final isWide =
+            controller.screenSize.value == EScreenSize.isNormalScreen;
+        if (isWide) {
+          return Row(
+            children: [
+              Form(
+                key: controller.formKey,
+                child: VerticalTabRail<KennelPageFormController>(
+                  controller: controller,
+                  railColor: Colors.blue.shade600,
+                ),
+              ),
+              Expanded(child: _KennelTabBarView(controller: controller)),
+            ],
+          );
+        }
+        return Column(
+          children: [
+            _KennelTabBar(controller: controller),
+            Expanded(child: _KennelTabBarView(controller: controller)),
+          ],
+        );
+      }),
     );
   }
 }
