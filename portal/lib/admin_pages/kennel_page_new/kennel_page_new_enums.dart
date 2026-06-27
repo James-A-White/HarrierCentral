@@ -62,35 +62,6 @@ enum KennelTabType {
     isPlatformAdminOnly: false,
   ),
 
-  /// Other settings (sharing, integrations, preferences).
-  other(
-    key: 'other',
-    title: 'Other',
-    description: 'Additional items you can set for your Kennel.\n\n'
-        'Configure default run times, sharing options, calendar integrations, '
-        'and other miscellaneous settings.',
-    icon: FontAwesome5Solid.cog,
-    isTabLockable: true,
-    hasCustomTabStatusFunction: false,
-    showTabInSubmitSummary: true,
-    isPlatformAdminOnly: false,
-  ),
-
-  /// Developer tools and API access.
-  developer(
-    key: 'developer',
-    title: 'Developer',
-    description:
-        'Access developer tools, API keys, and integration options.\n\n'
-        'Use these resources to integrate your kennel data with external '
-        'websites and applications.',
-    icon: FontAwesome5Solid.code,
-    isTabLockable: true,
-    hasCustomTabStatusFunction: true,
-    showTabInSubmitSummary: false,
-    isPlatformAdminOnly: false,
-  ),
-
   /// Hash cash and payment settings.
   hashCash(
     key: 'hashCash',
@@ -99,6 +70,34 @@ enum KennelTabType {
         'Configure pricing for members and non-members, and manage '
         'payment-related settings.',
     icon: FontAwesome5Solid.money_bill_wave,
+    isTabLockable: true,
+    hasCustomTabStatusFunction: false,
+    showTabInSubmitSummary: true,
+    isPlatformAdminOnly: false,
+  ),
+
+  /// Kennel logo upload.
+  kennelLogo(
+    key: 'kennelLogo',
+    title: 'Logo',
+    description: 'Upload a logo image for your kennel.\n\n'
+        'This image is displayed on the Harrier Central map and in run listings. '
+        'A square image with a transparent background works best.',
+    icon: FontAwesome5Solid.image,
+    isTabLockable: true,
+    hasCustomTabStatusFunction: false,
+    showTabInSubmitSummary: true,
+    isPlatformAdminOnly: false,
+  ),
+
+  /// Other settings (sharing, integrations, preferences).
+  other(
+    key: 'other',
+    title: 'Other',
+    description: 'Additional items you can set for your Kennel.\n\n'
+        'Configure default run times, sharing options, calendar integrations, '
+        'and other miscellaneous settings.',
+    icon: FontAwesome5Solid.cog,
     isTabLockable: true,
     hasCustomTabStatusFunction: false,
     showTabInSubmitSummary: true,
@@ -116,20 +115,6 @@ enum KennelTabType {
     isTabLockable: false,
     hasCustomTabStatusFunction: true,
     showTabInSubmitSummary: false,
-    isPlatformAdminOnly: false,
-  ),
-
-  /// Kennel logo upload.
-  kennelLogo(
-    key: 'kennelLogo',
-    title: 'Logo',
-    description: 'Upload a logo image for your kennel.\n\n'
-        'This image is displayed on the Harrier Central map and in run listings. '
-        'A square image with a transparent background works best.',
-    icon: FontAwesome5Solid.image,
-    isTabLockable: true,
-    hasCustomTabStatusFunction: false,
-    showTabInSubmitSummary: true,
     isPlatformAdminOnly: false,
   ),
 
@@ -160,6 +145,21 @@ enum KennelTabType {
     icon: MaterialCommunityIcons.run,
     isTabLockable: true,
     hasCustomTabStatusFunction: false,
+    showTabInSubmitSummary: false,
+    isPlatformAdminOnly: false,
+  ),
+
+  /// Developer tools and API access.
+  developer(
+    key: 'developer',
+    title: 'Developer',
+    description:
+        'Access developer tools, API keys, and integration options.\n\n'
+        'Use these resources to integrate your kennel data with external '
+        'websites and applications.',
+    icon: FontAwesome5Solid.code,
+    isTabLockable: true,
+    hasCustomTabStatusFunction: true,
     showTabInSubmitSummary: false,
     isPlatformAdminOnly: false,
   ),

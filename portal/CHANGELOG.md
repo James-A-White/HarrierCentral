@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.10+643 — 2026-06-27
+
+- Kennel Editor navigation now follows the new grouped tab order: reordered the underlying tabs to match the rail, so Back/Next walk the visible sequence, the slide animation goes the right way, and the rail highlight no longer jumps. Back is hidden on the first tab and Next on the last.
+
+---
+
 ## 2.0.9+642 — 2026-06-27
 
 - Kennel Editor tab rail: grouped tabs with hairline dividers (general / run content / developer / super admin), active tab now matches the off-white content background, and "Platform Admin" renamed to "Super Admin" (shown only to platform admins).

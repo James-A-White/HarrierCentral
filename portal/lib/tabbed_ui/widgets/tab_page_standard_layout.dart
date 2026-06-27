@@ -195,6 +195,14 @@ class TabPageStandardLayoutState extends State<TabPageStandardLayout>
           (screenSize.value == EScreenSize.isNarrowScreen) ||
               (screenSize.value == EScreenSize.isMobileScreen);
 
+      // First/last reflect the *current* tab's position (the button bar is only
+      // visible on the active tab), so Back is hidden on the first tab and Next
+      // on the last — independent of tab order or grouping.
+      final currentIdx = widget.formController.currentIndex.value;
+      final atFirstTab = currentIdx <= 0;
+      final atLastTab =
+          currentIdx >= widget.formController.allTabs.length - 1;
+
       // Build the content area - either scrollable or as-is
       final contentWidget = handlesOwnScrolling
           ? Expanded(child: child)
@@ -216,8 +224,8 @@ class TabPageStandardLayoutState extends State<TabPageStandardLayout>
               onNext: onNext,
               onSave: onSave,
               onUndo: onUndo,
-              isFirstPage: isFirstPage,
-              isLastPage: isLastPage,
+              isFirstPage: atFirstTab,
+              isLastPage: atLastTab,
             ),
           ],
         ),
