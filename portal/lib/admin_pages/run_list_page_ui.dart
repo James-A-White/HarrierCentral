@@ -1391,12 +1391,17 @@ class RunListPage extends StatelessWidget {
   }
 
   Widget _renderRunDetail(EventDetailsResult edr) {
+    final canEdit = formController.kennel.canManageRuns ||
+        formController.kennel.canManageHashCash;
     return RunDetailWidget(
       rdm: edr.runDetails,
       participants: edr.participants,
       textThemeIsLight: formController.textThemeIsLight,
       isNarrowScreen: formController.isNarrowScreen.value,
       backgroundColor: formController.backgroundColor,
+      onEdit: canEdit
+          ? () => _editRunFromList(edr.runDetails.publicEventId ?? '')
+          : null,
     );
   }
 }

@@ -12,6 +12,7 @@ class RunDetailWidget extends StatelessWidget {
     required this.isNarrowScreen,
     super.key,
     this.backgroundColor,
+    this.onEdit,
   });
 
   final RunDetailsModel rdm;
@@ -19,6 +20,11 @@ class RunDetailWidget extends StatelessWidget {
   final bool textThemeIsLight;
   final bool isNarrowScreen;
   final String? backgroundColor;
+
+  /// When non-null an "Edit Run" button is shown near the top of the detail.
+  /// Supplied by the parent only when the user has run-management permission.
+  /// This is the phone/narrow layout's only edit path, so it must be present.
+  final VoidCallback? onEdit;
 
   static const int flexLeft = 30;
   static const int flexRight = 70;
@@ -276,6 +282,38 @@ class RunDetailWidget extends StatelessWidget {
                 : titleStyle.copyWith(color: Colors.blue.shade900),
             textAlign: TextAlign.center,
             maxLines: 4,
+          ),
+        ],
+        if (onEdit != null) ...<Widget>[
+          Padding(
+            padding: EdgeInsets.only(
+              top: 24,
+              left: isNarrowScreen ? 20.0 : 80.0,
+              right: isNarrowScreen ? 20.0 : 80.0,
+            ),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: onEdit,
+                icon: const Icon(Icons.edit_outlined,
+                    size: 18, color: Colors.white),
+                label: const Text(
+                  'Edit Run',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFB91C1C),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
         Padding(

@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.19+652 — 2026-06-27
+
+- **Edit Run on phones**: the phone/narrow run view (a separate widget from the desktop layout) had no edit button at all — now it shows a prominent **Edit Run** button right under the run title. This is the layout that was actually being used on mobile; the earlier edit affordances (2.0.17/2.0.18) only appeared on the wide desktop layout.
+
+---
+
 ## 2.0.18+651 — 2026-06-27
 
 - The run detail view now has a prominent **Edit Run** button right at the top (previously the only way in was a button buried at the far end of the bottom action bar, which on a phone was pushed off-screen). The remaining actions in the bottom bar now wrap onto a second line on narrow screens instead of overflowing.
