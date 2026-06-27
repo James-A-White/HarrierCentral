@@ -261,16 +261,19 @@ class TabPageStandardLayoutState extends State<TabPageStandardLayout>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Back button
+          // Back button. On narrow the placeholder collapses to nothing so the
+          // four buttons (Back/Undo/Save/Next) have room to fit without the
+          // Next button overflowing off the right edge.
           if (!isFirstPage)
             _ModernNavButton(
               label: 'Back',
               icon: Icons.arrow_back_rounded,
               onPressed: onBack,
               isBack: true,
+              compact: isNarrowOrMobile,
             )
           else
-            const SizedBox(width: 80),
+            SizedBox(width: isNarrowOrMobile ? 0 : 80),
 
           // Center buttons (Undo/Save) - only on narrow/mobile
           if (isNarrowOrMobile)
@@ -283,8 +286,9 @@ class TabPageStandardLayoutState extends State<TabPageStandardLayout>
                   onPressed:
                       (isFormDirty || !allFieldsAreValid) ? onUndo : null,
                   activeColor: Colors.red.shade600,
+                  compact: true,
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
                 _ModernActionButton(
                   label: 'Save',
                   icon: Icons.save_rounded,
@@ -292,6 +296,7 @@ class TabPageStandardLayoutState extends State<TabPageStandardLayout>
                       ? () => onSave!(true)
                       : null,
                   activeColor: Colors.green.shade600,
+                  compact: true,
                 ),
               ],
             )
@@ -305,9 +310,10 @@ class TabPageStandardLayoutState extends State<TabPageStandardLayout>
               icon: Icons.arrow_forward_rounded,
               onPressed: onNext,
               isBack: false,
+              compact: isNarrowOrMobile,
             )
           else
-            const SizedBox(width: 80),
+            SizedBox(width: isNarrowOrMobile ? 0 : 80),
         ],
       ),
     );
@@ -321,6 +327,7 @@ class _ModernNavButton extends StatelessWidget {
     required this.icon,
     required this.onPressed,
     required this.isBack,
+    this.compact = false,
   });
 
   final String label;
@@ -328,8 +335,14 @@ class _ModernNavButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool isBack;
 
+  /// Tightens padding / icon / font so the bar fits on a phone without the
+  /// Next button overflowing off the right edge.
+  final bool compact;
+
   @override
   Widget build(BuildContext context) {
+    final gap = compact ? 6.0 : 8.0;
+    final iconSize = compact ? 16.0 : 18.0;
     return Material(
       color: Colors.blue.shade600,
       borderRadius: BorderRadius.circular(10),
@@ -337,25 +350,28 @@ class _ModernNavButton extends StatelessWidget {
         onTap: onPressed,
         borderRadius: BorderRadius.circular(10),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: EdgeInsets.symmetric(
+            horizontal: compact ? 12 : 20,
+            vertical: 12,
+          ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (isBack) ...[
-                Icon(icon, color: Colors.white, size: 18),
-                const SizedBox(width: 8),
+                Icon(icon, color: Colors.white, size: iconSize),
+                SizedBox(width: gap),
               ],
               Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 15,
+                  fontSize: compact ? 14 : 15,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               if (!isBack) ...[
-                const SizedBox(width: 8),
-                Icon(icon, color: Colors.white, size: 18),
+                SizedBox(width: gap),
+                Icon(icon, color: Colors.white, size: iconSize),
               ],
             ],
           ),
@@ -372,12 +388,16 @@ class _ModernActionButton extends StatelessWidget {
     required this.icon,
     required this.onPressed,
     this.activeColor,
+    this.compact = false,
   });
 
   final String label;
   final IconData icon;
   final VoidCallback? onPressed;
   final Color? activeColor;
+
+  /// Tightens padding so Undo/Save take less room on a phone.
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -396,7 +416,10 @@ class _ModernActionButton extends StatelessWidget {
         onTap: onPressed,
         borderRadius: BorderRadius.circular(10),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: EdgeInsets.symmetric(
+            horizontal: compact ? 10 : 16,
+            vertical: 10,
+          ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
             border: Border.all(

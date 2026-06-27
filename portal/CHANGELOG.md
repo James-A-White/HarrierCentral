@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.20+653 — 2026-06-27
+
+- **Editor bottom bar fits on phones**: the Back / Undo / Save / Next bar in the run (and other) editors was overflowing on narrow screens, pushing the **Next** button off the right edge. The buttons now use compact padding on phones and the empty placeholder no longer reserves wasted space, so the whole bar fits.
+
+---
+
 ## 2.0.19+652 — 2026-06-27
 
 - **Edit Run on phones**: the phone/narrow run view (a separate widget from the desktop layout) had no edit button at all — now it shows a prominent **Edit Run** button right under the run title. This is the layout that was actually being used on mobile; the earlier edit affordances (2.0.17/2.0.18) only appeared on the wide desktop layout.
