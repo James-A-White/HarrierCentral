@@ -26,6 +26,15 @@ const String TEXT_ONE_YEAR = 'One year';
 const String TEXT_ALL_RUNS_EVENTS = 'All runs / events';
 
 
+/// A kennel/admin action surfaced in the runs-page nav (left rail on wide
+/// screens, overflow menu on narrow).
+typedef _BarAction = ({
+  String label,
+  IconData icon,
+  VoidCallback onTap,
+  bool isPrimary,
+});
+
 class RunListPage extends StatelessWidget {
   RunListPage(
     this.kennel, {
@@ -62,9 +71,10 @@ class RunListPage extends StatelessWidget {
           backgroundColor: const Color(0xFFF1F5F9),
           appBar: _buildAppBar(context),
           body: Obx(() {
+            final Widget content;
             if (formController.allEvents.isEmpty &&
                 formController.allEventsDetails.isEmpty) {
-              return formController.isLoaded.value
+              content = formController.isLoaded.value
                   ? _noRunsState(context)
                   : Center(
                       child: Text(
@@ -75,15 +85,28 @@ class RunListPage extends StatelessWidget {
                         ),
                       ),
                     );
+            } else if (!formController.isLoaded.value) {
+              content = HcCircularProgressIndicator(key: UniqueKey());
+            } else {
+              content = (formController.isNarrowScreen.value ||
+                      formController.displayType.toLowerCase() ==
+                          RUN_DISPLAY_TYPE_DETAIL_ONLY)
+                  ? _getDetailOnly()
+                  : _getFullPageListLayout();
             }
-            if (!formController.isLoaded.value) {
-              return HcCircularProgressIndicator(key: UniqueKey());
+
+            // Wide screens: persistent left nav rail beside the content.
+            // Narrow screens (and the no-kennel case) keep the top app bar.
+            if (formController.isNarrowScreen.value || allKennels.isEmpty) {
+              return content;
             }
-            return (formController.isNarrowScreen.value ||
-                    formController.displayType.toLowerCase() ==
-                        RUN_DISPLAY_TYPE_DETAIL_ONLY)
-                ? _getDetailOnly()
-                : _getFullPageListLayout();
+            return Row(
+              children: [
+                _navRail(),
+                const VerticalDivider(width: 1, color: Color(0xFFE2E8F0)),
+                Expanded(child: content),
+              ],
+            );
           }),
         );
       },
@@ -151,157 +174,15 @@ class RunListPage extends StatelessWidget {
                   GetBuilder<RunListPageController>(
                     id: 'appBar',
                     builder: (c) {
-                      final k = c.kennel;
-                      final actions =
-                          <({String label, VoidCallback onTap, bool isPrimary})>[
-                        if (k.isAdmin) ...[
-                          if (k.canManageMembers || k.canManageHashCash) ...[
-                            (
-                              label: 'Print Check-in',
-                              isPrimary: false,
-                              onTap: () async {
-                                await Get.to<CheckinSheetPage>(
-                                  () => CheckinSheetPage(
-                                    publicKennelId: k.publicKennelId,
-                                    kennelName: k.kennelName,
-                                    kennelLogo: k.kennelLogo,
-                                  ),
-                                );
-                              },
-                            ),
-                            (
-                              label: 'Manage Hashers',
-                              isPrimary: false,
-                              onTap: () async {
-                                await Get.to<KennelHashersPage>(
-                                  () => KennelHashersPage(k),
-                                );
-                              },
-                            ),
-                          ],
-                          if (k.canManageKennel || k.canManageHashCash)
-                            (
-                              label: 'Edit Kennel',
-                              isPrimary: false,
-                              onTap: () async {
-                                final kennel =
-                                    await _getKennel(k.publicKennelId);
-                                if (kennel != null) {
-                                  await Get.to<KennelEditPage>(
-                                    () => KennelEditPage(
-                                      key: UniqueKey(),
-                                      kennelData: kennel,
-                                      appAccessFlags: k.appAccessFlags,
-                                      canEditKennelStatus:
-                                          formController.canEditKennel,
-                                    ),
-                                  );
-                                  await Get.delete<KennelPageFormController>(
-                                    force: true,
-                                  );
-                                }
-                              },
-                            ),
-                          if (k.canManagePublicWebContent || k.isAdmin) ...[
-                            (
-                              label: 'Edit Website',
-                              isPrimary: false,
-                              onTap: () async {
-                                final websiteData =
-                                    await _getKennelWebsite(k.publicKennelId);
-                                if (websiteData != null) {
-                                  await Get.to<KennelWebsiteEditPage>(
-                                    () => KennelWebsiteEditPage(
-                                      key: UniqueKey(),
-                                      websiteData: websiteData,
-                                      publicKennelId: k.publicKennelId,
-                                      kennelName: k.kennelName,
-                                      kennelUniqueShortName:
-                                          k.kennelUniqueShortName,
-                                    ),
-                                  );
-                                  await Get.delete<KennelWebsiteController>(
-                                    force: true,
-                                  );
-                                }
-                              },
-                            ),
-                            (
-                              label: 'Design Website',
-                              isPrimary: false,
-                              onTap: () =>
-                                  _openWebsiteDesigner(k.kennelUniqueShortName),
-                            ),
-                          ],
-                          if (k.canManageRuns)
-                            (
-                              label: '+ Add Run',
-                              isPrimary: true,
-                              onTap: () async {
-                                var lastRunDate = DateTime.now();
-                                for (final run in formController.allEvents) {
-                                  if (run.eventStartDatetime
-                                      .isAfter(lastRunDate)) {
-                                    lastRunDate = run.eventStartDatetime;
-                                  }
-                                }
-                                await Get.to<RunEditPage>(
-                                  () => RunEditPage(
-                                    runData: RunDetailsModel.empty(),
-                                    kennelData: k,
-                                    isAddMode: true,
-                                    lastRunDate: lastRunDate,
-                                  ),
-                                );
-                                await formController.refreshEvents();
-                              },
-                            ),
-                        ],
-                        if (formController.hasAnyPlatformAdminPrivilege)
-                          (
-                            label: 'HC Admin Tools',
-                            isPrimary: false,
-                            onTap: () async {
-                              await Get.to<HcAdminToolsPage>(
-                                () => HcAdminToolsPage(
-                                  allKennels: allKennels,
-                                  canViewMonitor: formController.canViewMonitor,
-                                  canManageNewsflash:
-                                      formController.canManageNewsflash,
-                                ),
-                              );
-                            },
-                          ),
-                        (
-                          label: 'Log out',
-                          isPrimary: false,
-                          onTap: () async {
-                            await box.clear();
-                            web.window.location.reload();
-                          },
-                        ),
-                      ];
-
+                      // Wide screens render the actions in the persistent left
+                      // nav rail (see _navRail); narrow screens collapse them
+                      // into an overflow menu so nothing clips off the app bar.
+                      if (!formController.isNarrowScreen.value) {
+                        return const SizedBox.shrink();
+                      }
                       return Padding(
                         padding: const EdgeInsets.only(right: 12),
-                        // Narrow screens collapse the action buttons into a
-                        // single overflow menu so nothing clips off the edge.
-                        child: formController.isNarrowScreen.value
-                            ? _appBarActionsMenu(actions)
-                            : Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  for (var i = 0; i < actions.length; i++) ...[
-                                    _appBarBtn(
-                                      actions[i].label,
-                                      isPrimary: actions[i].isPrimary,
-                                      onPressed: actions[i].onTap,
-                                    ),
-                                    if (i != actions.length - 1)
-                                      const SizedBox(width: 8),
-                                  ],
-                                ],
-                              ),
+                        child: _appBarActionsMenu(_appBarActions(c.kennel)),
                       );
                     },
                   ),
@@ -672,9 +553,207 @@ class RunListPage extends StatelessWidget {
   }
 
   /// Narrow-screen overflow menu: the app-bar actions as a single ⋮ button.
-  Widget _appBarActionsMenu(
-    List<({String label, VoidCallback onTap, bool isPrimary})> actions,
-  ) {
+  /// The kennel/admin actions for the current kennel, gated by permissions.
+  /// Shared by the left nav rail (wide) and the overflow menu (narrow).
+  List<_BarAction> _appBarActions(HasherKennelsModel k) {
+    return [
+      if (k.isAdmin) ...[
+        if (k.canManageMembers || k.canManageHashCash) ...[
+          (
+            label: 'Print Check-in',
+            icon: Icons.fact_check_outlined,
+            isPrimary: false,
+            onTap: () async {
+              await Get.to<CheckinSheetPage>(
+                () => CheckinSheetPage(
+                  publicKennelId: k.publicKennelId,
+                  kennelName: k.kennelName,
+                  kennelLogo: k.kennelLogo,
+                ),
+              );
+            },
+          ),
+          (
+            label: 'Manage Hashers',
+            icon: Icons.groups_outlined,
+            isPrimary: false,
+            onTap: () async {
+              await Get.to<KennelHashersPage>(() => KennelHashersPage(k));
+            },
+          ),
+        ],
+        if (k.canManageKennel || k.canManageHashCash)
+          (
+            label: 'Edit Kennel',
+            icon: Icons.settings_outlined,
+            isPrimary: false,
+            onTap: () async {
+              final kennel = await _getKennel(k.publicKennelId);
+              if (kennel != null) {
+                await Get.to<KennelEditPage>(
+                  () => KennelEditPage(
+                    key: UniqueKey(),
+                    kennelData: kennel,
+                    appAccessFlags: k.appAccessFlags,
+                    canEditKennelStatus: formController.canEditKennel,
+                  ),
+                );
+                await Get.delete<KennelPageFormController>(force: true);
+              }
+            },
+          ),
+        if (k.canManagePublicWebContent || k.isAdmin) ...[
+          (
+            label: 'Edit Website',
+            icon: Icons.language_outlined,
+            isPrimary: false,
+            onTap: () async {
+              final websiteData = await _getKennelWebsite(k.publicKennelId);
+              if (websiteData != null) {
+                await Get.to<KennelWebsiteEditPage>(
+                  () => KennelWebsiteEditPage(
+                    key: UniqueKey(),
+                    websiteData: websiteData,
+                    publicKennelId: k.publicKennelId,
+                    kennelName: k.kennelName,
+                    kennelUniqueShortName: k.kennelUniqueShortName,
+                  ),
+                );
+                await Get.delete<KennelWebsiteController>(force: true);
+              }
+            },
+          ),
+          (
+            label: 'Design Website',
+            icon: Icons.brush_outlined,
+            isPrimary: false,
+            onTap: () => _openWebsiteDesigner(k.kennelUniqueShortName),
+          ),
+        ],
+        if (k.canManageRuns)
+          (
+            label: '+ Add Run',
+            icon: Icons.add_circle_outline,
+            isPrimary: true,
+            onTap: () async {
+              var lastRunDate = DateTime.now();
+              for (final run in formController.allEvents) {
+                if (run.eventStartDatetime.isAfter(lastRunDate)) {
+                  lastRunDate = run.eventStartDatetime;
+                }
+              }
+              await Get.to<RunEditPage>(
+                () => RunEditPage(
+                  runData: RunDetailsModel.empty(),
+                  kennelData: k,
+                  isAddMode: true,
+                  lastRunDate: lastRunDate,
+                ),
+              );
+              await formController.refreshEvents();
+            },
+          ),
+      ],
+      if (formController.hasAnyPlatformAdminPrivilege)
+        (
+          label: 'HC Admin Tools',
+          icon: Icons.admin_panel_settings_outlined,
+          isPrimary: false,
+          onTap: () async {
+            await Get.to<HcAdminToolsPage>(
+              () => HcAdminToolsPage(
+                allKennels: allKennels,
+                canViewMonitor: formController.canViewMonitor,
+                canManageNewsflash: formController.canManageNewsflash,
+              ),
+            );
+          },
+        ),
+      (
+        label: 'Log out',
+        icon: Icons.logout,
+        isPrimary: false,
+        onTap: () async {
+          await box.clear();
+          web.window.location.reload();
+        },
+      ),
+    ];
+  }
+
+  /// Persistent left navigation rail (wide screens): kennel context header +
+  /// the kennel/admin actions as nav items.
+  Widget _navRail() {
+    return GetBuilder<RunListPageController>(
+      id: 'appBar',
+      builder: (c) {
+        final k = c.kennel;
+        final actions = _appBarActions(k);
+        return Container(
+          width: 232,
+          color: Colors.white,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                child: Row(
+                  children: [
+                    KennelLogo(
+                      kennelLogoUrl: k.kennelLogo,
+                      kennelShortName: k.kennelShortName,
+                      logoHeight: 28,
+                      leftPadding: 0,
+                      rightPadding: 8,
+                    ),
+                    Expanded(
+                      child: Text(
+                        k.kennelName,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1, color: Color(0xFFE2E8F0)),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  children: [for (final a in actions) _navItem(a)],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _navItem(_BarAction a) {
+    final color =
+        a.isPrimary ? const Color(0xFFB91C1C) : const Color(0xFF334155);
+    return ListTile(
+      dense: true,
+      leading: Icon(a.icon, size: 20, color: color),
+      title: Text(
+        a.label,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: a.isPrimary ? FontWeight.w700 : FontWeight.w500,
+          color: color,
+        ),
+      ),
+      onTap: a.onTap,
+    );
+  }
+
+  Widget _appBarActionsMenu(List<_BarAction> actions) {
     return PopupMenuButton<int>(
       icon: const Icon(Icons.more_vert, color: Color(0xFF0F172A)),
       tooltip: 'Actions',
@@ -685,16 +764,28 @@ class RunListPage extends StatelessWidget {
         for (var i = 0; i < actions.length; i++)
           PopupMenuItem<int>(
             value: i,
-            child: Text(
-              actions[i].label,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight:
-                    actions[i].isPrimary ? FontWeight.w700 : FontWeight.w500,
-                color: actions[i].isPrimary
-                    ? const Color(0xFFB91C1C)
-                    : const Color(0xFF0F172A),
-              ),
+            child: Row(
+              children: [
+                Icon(
+                  actions[i].icon,
+                  size: 18,
+                  color: actions[i].isPrimary
+                      ? const Color(0xFFB91C1C)
+                      : const Color(0xFF475569),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  actions[i].label,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight:
+                        actions[i].isPrimary ? FontWeight.w700 : FontWeight.w500,
+                    color: actions[i].isPrimary
+                        ? const Color(0xFFB91C1C)
+                        : const Color(0xFF0F172A),
+                  ),
+                ),
+              ],
             ),
           ),
       ],

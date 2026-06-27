@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.14+647 — 2026-06-27
+
+- Runs page now uses a persistent left navigation rail on wide screens (kennel context + admin actions as nav items), freeing the top bar. Narrow screens keep the overflow menu.
+
+---
+
 ## 2.0.13+646 — 2026-06-27
 
 - Runs list top bar no longer clips on small screens: the action buttons collapse into a single overflow (⋮) menu on narrow widths, the "Runs & Events" label is dropped, and the kennel badge truncates.
