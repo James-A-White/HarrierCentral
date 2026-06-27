@@ -979,53 +979,35 @@ class RunListPage extends StatelessWidget {
                           backgroundColor: const Color(0xFFF1F5F9),
                           automaticallyImplyLeading: false,
                           bottom: PreferredSize(
-                            preferredSize: const Size.fromHeight(64),
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: <Widget>[
-                                Container(
-                                  padding: const EdgeInsets.only(
-                                    top: 10,
-                                    bottom: 10,
-                                  ),
-                                  child: Column(
-                                    children: <Widget>[
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                          //color: formController.backgroundColor == null ? Colors.transparent : HexColor(formController.backgroundColor!),
-                                          color: Colors.white,
-                                          border: Border.all(
-                                            color: Colors.white,
-                                            width:
-                                                2, //                   <--- border width here
-                                          ),
-                                        ),
-                                        margin: const EdgeInsets.only(
-                                          left: 20,
-                                          right: 20,
-                                        ),
-                                        child: _searchBar(),
+                            preferredSize: const Size.fromHeight(112),
+                            child: Container(
+                              padding: const EdgeInsets.only(
+                                top: 10,
+                                bottom: 10,
+                              ),
+                              child: Column(
+                                children: <Widget>[
+                                  _futurePastToggle(),
+                                  const SizedBox(height: 10),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8),
+                                      color: Colors.white,
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 2,
                                       ),
-                                    ],
+                                    ),
+                                    margin: const EdgeInsets.only(
+                                      left: 20,
+                                      right: 20,
+                                    ),
+                                    child: _searchBar(),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
-
-                          // TabBar(
-                          //   tabs: <Widget>[
-                          //     Tab(
-                          //       child: Text("Colors"),
-                          //     ),
-                          //     Tab(
-                          //       child: Text("Chats"),
-                          //     ),
-                          //   ],
-                          //   //controller: _tabController,
-                          // ),
                         ),
                       ];
                     },
@@ -1092,6 +1074,72 @@ class RunListPage extends StatelessWidget {
         // ),
         //const SizedBox(height: 25.0),
       ],
+    );
+  }
+
+  // Future / Past segmented toggle for the narrow (phone) layout. The wide
+  // layout has this as a TabBar in _runList(); narrow had no way to switch, so
+  // a kennel with only past runs (or a user wanting history) was stuck.
+  Widget _futurePastToggle() {
+    final isFuture = formController.displayRuns != EDisplayRuns.past;
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE2E8F0),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _toggleSegment(
+              TEXT_FUTURE_RUNS,
+              selected: isFuture,
+              onTap: () => _setDisplayRuns(EDisplayRuns.future),
+            ),
+          ),
+          Expanded(
+            child: _toggleSegment(
+              TEXT_PAST_RUNS,
+              selected: !isFuture,
+              onTap: () => _setDisplayRuns(EDisplayRuns.past),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _setDisplayRuns(EDisplayRuns which) {
+    formController.displayRuns = which;
+    formController.tabController.animateTo(which == EDisplayRuns.future ? 0 : 1);
+    formController.setDisplayedEvents();
+  }
+
+  Widget _toggleSegment(
+    String label, {
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        height: 34,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: selected ? Colors.red.shade900 : Colors.transparent,
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: selected ? Colors.white : const Color(0xFF64748B),
+          ),
+        ),
+      ),
     );
   }
 

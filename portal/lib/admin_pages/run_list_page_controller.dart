@@ -298,14 +298,23 @@ class RunListPageController extends GetxController
 
       setDisplayedEvents();
 
-      if (!getAllEventDetails) {
-        // If there are no future events, fall back to the most recent past run.
-        if (displayedEvents.isEmpty && allEvents.isNotEmpty) {
-          displayRuns = EDisplayRuns.past;
-          tabController.animateTo(1);
-          setDisplayedEvents();
-        }
+      // If there are no future events, fall back to past runs so the user
+      // isn't left with an empty screen. This applies to BOTH layouts: the
+      // wide list (allEvents) and the narrow detail list (allEventsDetails) —
+      // narrow uses getAllEventDetails == true, so it must be handled here too.
+      final nothingShown = getAllEventDetails
+          ? displayedEventsDetails.isEmpty
+          : displayedEvents.isEmpty;
+      final haveAnyRuns = getAllEventDetails
+          ? allEventsDetails.isNotEmpty
+          : allEvents.isNotEmpty;
+      if (nothingShown && haveAnyRuns) {
+        displayRuns = EDisplayRuns.past;
+        tabController.animateTo(1);
+        setDisplayedEvents();
+      }
 
+      if (!getAllEventDetails) {
         // Auto-select the first displayed event so the detail panel is populated.
         if (displayedEvents.isNotEmpty) {
           eventForSingleEventDetailsView.value = await querySingleEvent(

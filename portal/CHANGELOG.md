@@ -2,6 +2,13 @@
 
 ---
 
+## 2.0.21+654 — 2026-06-27
+
+- **Phone runs view no longer blank for kennels with no upcoming runs**: the "fall back to past runs" behaviour now applies to the phone/narrow layout too (it was previously wide-screen only), so you see the most recent runs instead of an empty screen.
+- **Future / Past toggle on phones**: added the Future runs / Past runs switch to the narrow layout (it only existed on the wide desktop layout before), so you can browse past runs on mobile.
+
+---
+
 ## 2.0.20+653 — 2026-06-27
 
 - **Editor bottom bar fits on phones**: the Back / Undo / Save / Next bar in the run (and other) editors was overflowing on narrow screens, pushing the **Next** button off the right edge. The buttons now use compact padding on phones and the empty placeholder no longer reserves wasted space, so the whole bar fits.
