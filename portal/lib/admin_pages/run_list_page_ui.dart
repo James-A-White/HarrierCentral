@@ -755,10 +755,32 @@ class RunListPage extends StatelessWidget {
 
   Widget _appBarActionsMenu(List<_BarAction> actions) {
     return PopupMenuButton<int>(
-      icon: const Icon(Icons.more_vert, color: Color(0xFF0F172A)),
-      tooltip: 'Actions',
+      tooltip: 'Menu',
       color: Colors.white,
       position: PopupMenuPosition.under,
+      // A labelled pill reads as a button far more clearly than a bare kebab.
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1D4ED8),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.menu, size: 18, color: Colors.white),
+            SizedBox(width: 6),
+            Text(
+              'Menu',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
       onSelected: (i) => actions[i].onTap(),
       itemBuilder: (context) => [
         for (var i = 0; i < actions.length; i++)
@@ -930,11 +952,10 @@ class RunListPage extends StatelessWidget {
                         (BuildContext context, bool boxIsScrolled) {
                       return <Widget>[
                         SliverAppBar(
-                          backgroundColor:
-                              const Color.fromARGB(255, 196, 165, 246),
+                          backgroundColor: const Color(0xFFF1F5F9),
                           automaticallyImplyLeading: false,
                           bottom: PreferredSize(
-                            preferredSize: const Size.fromHeight(120),
+                            preferredSize: const Size.fromHeight(64),
                             child: Stack(
                               alignment: Alignment.center,
                               children: <Widget>[
@@ -945,51 +966,6 @@ class RunListPage extends StatelessWidget {
                                   ),
                                   child: Column(
                                     children: <Widget>[
-                                      Linkify(
-                                        textAlign: TextAlign.center,
-                                        maxLines: 4,
-                                        text:
-                                            'Powered by Harrier Central.\r\nSign your Kennel up for FREE today!\r\nhttps://www.harriercentral.com',
-                                        style: TextStyle(
-                                          color: formController.textThemeIsLight
-                                              ? Colors.white
-                                              : Colors.black,
-                                          fontSize: 18,
-                                        ),
-                                        linkStyle: TextStyle(
-                                          color: formController.textThemeIsLight
-                                              ? Colors.yellow
-                                              : Colors.blue.shade800,
-                                          fontSize: 18,
-                                        ),
-                                        onOpen: (LinkableElement link) async {
-                                          if (Uri.parse(link.url).isAbsolute) {
-                                            openWindow(link.url, '_blank');
-                                            // js.context.callMethod(
-                                            //   'open',
-                                            //   <String>[link.url],
-                                            // );
-                                          } else {
-                                            await CoreUtilities.showAlert(
-                                              'Unable to open link',
-                                              'Harrier Central was unable to open ${link.url}',
-                                              'OK',
-                                            );
-                                          }
-                                        },
-                                      ),
-                                      const SizedBox(height: 5),
-                                      Text(
-                                        'Version: ${packageInfo.value?.version ?? '<unknown>,'}',
-                                        style: footnoteSmall.copyWith(
-                                          color: formController.textThemeIsLight
-                                              ? Colors.white
-                                                  .withValues(alpha: 0.8)
-                                              : Colors.black
-                                                  .withValues(alpha: 0.8),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 5),
                                       Container(
                                         decoration: BoxDecoration(
                                           borderRadius:

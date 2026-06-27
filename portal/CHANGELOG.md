@@ -2,6 +2,13 @@
 
 ---
 
+## 2.0.15+648 — 2026-06-27
+
+- Removed the purple "Powered by Harrier Central" banner from the runs page (reclaims vertical space; the search bar stays).
+- The narrow-screen actions menu is now a clear blue "Menu" button instead of a bare three-dot icon.
+
+---
+
 ## 2.0.14+647 — 2026-06-27
 
 - Runs page now uses a persistent left navigation rail on wide screens (kennel context + admin actions as nav items), freeing the top bar. Narrow screens keep the overflow menu.
