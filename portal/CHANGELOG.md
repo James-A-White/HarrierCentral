@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.22+655 — 2026-06-27
+
+- **Fixed: Future / Past toggle on phones wasn't tappable.** It lived inside a floating sliver header that swallowed taps; it's now a fixed header above the runs list (always visible, reliably clickable).
+
+---
+
 ## 2.0.21+654 — 2026-06-27
 
 - **Phone runs view no longer blank for kennels with no upcoming runs**: the "fall back to past runs" behaviour now applies to the phone/narrow layout too (it was previously wide-screen only), so you see the most recent runs instead of an empty screen.

@@ -954,9 +954,31 @@ class RunListPage extends StatelessWidget {
   }
 
   Widget _getDetailOnly() {
+    // Fixed header (toggle + search) above a plain scrolling list. The previous
+    // NestedScrollView/SliverAppBar floating header swallowed taps on the
+    // toggle, so it's kept out of the slivers and pinned here where gestures
+    // are reliable — and it stays visible while the list scrolls.
     return Column(
       children: <Widget>[
-        //if (formController.isNarrowScreen.value) ...<Widget>[const SizedBox(height: 40.0)],
+        Container(
+          color: const Color(0xFFF1F5F9),
+          padding: const EdgeInsets.only(top: 10, bottom: 10),
+          child: Column(
+            children: <Widget>[
+              _futurePastToggle(),
+              const SizedBox(height: 10),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.white,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                margin: const EdgeInsets.only(left: 20, right: 20),
+                child: _searchBar(),
+              ),
+            ],
+          ),
+        ),
         Expanded(
           child: Scrollbar(
             thumbVisibility: true,
@@ -964,115 +986,53 @@ class RunListPage extends StatelessWidget {
             child: SafeArea(
               top: false,
               bottom: false,
-              child: Builder(
-                // This Builder is needed to provide a BuildContext that is "inside"
-                // the NestedScrollView, so that sliverOverlapAbsorberHandleFor() can
-                // find the NestedScrollView.
-                builder: (BuildContext context) {
-                  return NestedScrollView(
-                    floatHeaderSlivers: true,
-                    controller: _listScrollController,
-                    headerSliverBuilder:
-                        (BuildContext context, bool boxIsScrolled) {
-                      return <Widget>[
-                        SliverAppBar(
-                          backgroundColor: const Color(0xFFF1F5F9),
-                          automaticallyImplyLeading: false,
-                          bottom: PreferredSize(
-                            preferredSize: const Size.fromHeight(112),
-                            child: Container(
-                              padding: const EdgeInsets.only(
-                                top: 10,
-                                bottom: 10,
-                              ),
-                              child: Column(
-                                children: <Widget>[
-                                  _futurePastToggle(),
-                                  const SizedBox(height: 10),
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(8),
-                                      color: Colors.white,
-                                      border: Border.all(
-                                        color: Colors.white,
-                                        width: 2,
-                                      ),
-                                    ),
-                                    margin: const EdgeInsets.only(
-                                      left: 20,
-                                      right: 20,
-                                    ),
-                                    child: _searchBar(),
-                                  ),
-                                ],
-                              ),
-                            ),
+              child: ListView.separated(
+                controller: _listScrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: formController.displayedEventsDetails.length + 1,
+                padding: const EdgeInsets.only(top: 5),
+                separatorBuilder: (BuildContext context, int index) =>
+                    const SizedBox(height: 5),
+                itemBuilder: (BuildContext context, int index) {
+                  return index == formController.displayedEventsDetails.length
+                      ? const SizedBox(height: 100)
+                      : Card(
+                          margin: EdgeInsets.only(
+                            right: formController.isNarrowScreen.value
+                                ? 15.0
+                                : 40.0,
+                            left: formController.isNarrowScreen.value
+                                ? 15.0
+                                : 40.0,
+                            top: 30,
+                            bottom: 10,
                           ),
-                        ),
-                      ];
-                    },
-                    body: ListView.separated(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      itemCount:
-                          formController.displayedEventsDetails.length + 1,
-                      padding: const EdgeInsets.only(top: 5),
-                      separatorBuilder: (BuildContext context, int index) =>
-                          const SizedBox(height: 5),
-                      itemBuilder: (BuildContext context, int index) {
-                        return index ==
-                                formController.displayedEventsDetails.length
-                            ? const SizedBox(height: 100)
-                            : Card(
-                                margin: EdgeInsets.only(
-                                  right: formController.isNarrowScreen.value
-                                      ? 15.0
-                                      : 40.0,
-                                  left: formController.isNarrowScreen.value
-                                      ? 15.0
-                                      : 40.0,
-                                  top: 30,
-                                  bottom: 10,
+                          elevation: 5,
+                          color: formController.textThemeIsLight
+                              ? HexColor.darken(
+                                  HexColor(formController.backgroundColor),
+                                )
+                              : HexColor.lighten(
+                                  HexColor(formController.backgroundColor),
                                 ),
-                                elevation: 5,
-
-                                //formController.backgroundColor == null ? Colors.transparent : HexColor(formController.backgroundColor!)
-                                //color: index.isEven ? Colors.black26 : Colors.white30,
-                                color: formController.textThemeIsLight
-                                    ? HexColor.darken(
-                                        HexColor(
-                                          formController.backgroundColor,
-                                        ),
-                                      )
-                                    : HexColor.lighten(
-                                        HexColor(
-                                          formController.backgroundColor,
-                                        ),
-                                      ),
-                                shape: RoundedRectangleBorder(
-                                  side: BorderSide(
-                                    color: formController.textThemeIsLight
-                                        ? Colors.black38
-                                        : Colors.white38,
-                                    width: 2,
-                                  ),
-                                  borderRadius: BorderRadius.circular(25),
-                                ),
-                                child: _renderRunDetail(
-                                  formController.displayedEventsDetails[index],
-                                ),
-                              );
-                      },
-                    ),
-                  );
+                          shape: RoundedRectangleBorder(
+                            side: BorderSide(
+                              color: formController.textThemeIsLight
+                                  ? Colors.black38
+                                  : Colors.white38,
+                              width: 2,
+                            ),
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          child: _renderRunDetail(
+                            formController.displayedEventsDetails[index],
+                          ),
+                        );
                 },
               ),
             ),
           ),
         ),
-        // const SizedBox(
-        //   height: 5.0,
-        // ),
-        //const SizedBox(height: 25.0),
       ],
     );
   }
