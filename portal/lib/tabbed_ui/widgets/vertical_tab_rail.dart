@@ -13,22 +13,56 @@ class VerticalTabRail<T extends TabUiController> extends StatelessWidget {
     required this.controller,
     this.width = 210,
     this.railColor,
+    this.groups,
   });
 
   final T controller;
   final double width;
   final Color? railColor;
 
+  /// Optional grouping: each inner list is tab indices (in display order) for
+  /// one group, and a hairline divider is drawn between groups. When null the
+  /// rail renders every tab flat in [TabUiController.allTabs] order.
+  final List<List<int>>? groups;
+
   @override
   Widget build(BuildContext context) {
+    final children = <Widget>[];
+    if (groups != null) {
+      for (var g = 0; g < groups!.length; g++) {
+        if (g > 0) children.add(const _RailDivider());
+        for (final idx in groups![g]) {
+          children.add(_RailItem<T>(controller: controller, tabIndex: idx));
+        }
+      }
+    } else {
+      for (var i = 0; i < controller.allTabs.length; i++) {
+        children.add(_RailItem<T>(controller: controller, tabIndex: i));
+      }
+    }
+
     return Container(
       width: width,
       color: railColor ?? Colors.blue.shade600,
-      child: ListView.builder(
+      child: ListView(
         padding: const EdgeInsets.only(top: 10),
-        itemCount: controller.allTabs.length,
-        itemBuilder: (context, i) =>
-            _RailItem<T>(controller: controller, tabIndex: i),
+        children: children,
+      ),
+    );
+  }
+}
+
+/// Hairline divider between tab groups.
+class _RailDivider extends StatelessWidget {
+  const _RailDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+      child: Container(
+        height: 1,
+        color: Colors.white.withValues(alpha: 0.35),
       ),
     );
   }
@@ -58,9 +92,10 @@ class _RailItem<T extends TabUiController> extends StatelessWidget {
             margin: const EdgeInsets.only(left: 8),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
             decoration: BoxDecoration(
-              // Selected row reads as the active "page" — white tab pulled out
-              // of the blue rail, matching the horizontal bar's selected look.
-              color: isSelected ? Colors.white : Colors.transparent,
+              // Selected row reads as the active "page" — pulled out of the blue
+              // rail in the off-white content colour (scaffold background) so it
+              // blends seamlessly into the content area to its right.
+              color: isSelected ? Colors.brown.shade50 : Colors.transparent,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(10),
                 bottomLeft: Radius.circular(10),

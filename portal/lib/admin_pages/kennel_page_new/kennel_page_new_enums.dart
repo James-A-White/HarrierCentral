@@ -168,7 +168,7 @@ enum KennelTabType {
   /// with the CanEditKennel platform-admin privilege.
   platformAdmin(
     key: 'platformAdmin',
-    title: 'Platform Admin',
+    title: 'Super Admin',
     description: 'Platform-level administration settings for this kennel.\n\n'
         'Only accessible to Harrier Central platform administrators.',
     icon: MaterialCommunityIcons.shield_account,

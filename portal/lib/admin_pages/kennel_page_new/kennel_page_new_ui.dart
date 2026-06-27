@@ -136,6 +136,7 @@ class _KennelFormScaffold extends StatelessWidget {
                 child: VerticalTabRail<KennelPageFormController>(
                   controller: controller,
                   railColor: Colors.blue.shade600,
+                  groups: _kennelTabGroups(controller),
                 ),
               ),
               Expanded(child: _KennelTabBarView(controller: controller)),
@@ -151,6 +152,33 @@ class _KennelFormScaffold extends StatelessWidget {
       }),
     );
   }
+}
+
+/// The Kennel Editor's grouped tab order for the vertical rail, with hairline
+/// dividers between groups. Uses enum indices, which equal tab positions
+/// because the only conditionally-hidden tab (Super Admin) is last. The Super
+/// Admin group is shown only for platform-admin users.
+List<List<int>> _kennelTabGroups(KennelPageFormController controller) {
+  return [
+    [
+      KennelTabType.kennelInfo.index, // Description
+      KennelTabType.kennelLocation.index, // Location
+      KennelTabType.tags.index, // Run Tags
+      KennelTabType.hashCash.index, // Hash Cash
+      KennelTabType.kennelLogo.index, // Logo
+      KennelTabType.other.index, // Other
+    ],
+    [
+      KennelTabType.songs.index, // Songs
+      KennelTabType.trailSymbols.index, // Trail Symbols
+      KennelTabType.trailTypes.index, // Trail Types
+    ],
+    [
+      KennelTabType.developer.index, // Developer
+    ],
+    if (controller.canEditKennelStatus)
+      [KennelTabType.platformAdmin.index], // Super Admin
+  ];
 }
 
 // ---------------------------------------------------------------------------

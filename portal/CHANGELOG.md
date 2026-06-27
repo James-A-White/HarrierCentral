@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.9+642 — 2026-06-27
+
+- Kennel Editor tab rail: grouped tabs with hairline dividers (general / run content / developer / super admin), active tab now matches the off-white content background, and "Platform Admin" renamed to "Super Admin" (shown only to platform admins).
+
+---
+
 ## 2.0.8+641 — 2026-06-27
 
 - Change: the Kennel Editor now uses a vertical tab rail down the left on wide screens (the horizontal tab bar was clipping as tabs grew). Selection, validation icons, and the per-tab info sidebar are unchanged; narrow/mobile keep the hamburger menu.
