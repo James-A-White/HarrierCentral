@@ -233,12 +233,13 @@ class RunListPageController extends GetxController
       paramString: deviceSecret,
     );
 
-    if (!getAllEventDetails) {
-      displayRuns = EDisplayRuns.all;
-    } else {
-      displayRuns = EDisplayRuns.future;
-      weeksToDisplay = 52;
-    }
+    // Fetch the full past+future set in BOTH layouts so the Future/Past toggle
+    // (and the no-future-runs fallback) can filter locally. Narrow previously
+    // fetched only the next 52 weeks of future runs, so switching to Past — or
+    // a kennel with no upcoming runs — showed nothing. setDisplayedEvents()
+    // then narrows this to future (default) or past on demand.
+    displayRuns = EDisplayRuns.all;
+    weeksToDisplay = weeks ?? 9999;
 
     final body = <String, dynamic>{
       'queryType': 'getEvents',

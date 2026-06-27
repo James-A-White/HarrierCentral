@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.23+656 — 2026-06-27
+
+- **Fixed: Past runs empty on phones.** The phone layout only fetched upcoming runs, so switching to "Past runs" (and the no-future-runs fallback) had nothing to show. It now fetches the full past+future set like the desktop layout and filters locally, so past runs appear instantly when you toggle.
+
+---
+
 ## 2.0.22+655 — 2026-06-27
 
 - **Fixed: Future / Past toggle on phones wasn't tappable.** It lived inside a floating sliver header that swallowed taps; it's now a fixed header above the runs list (always visible, reliably clickable).
