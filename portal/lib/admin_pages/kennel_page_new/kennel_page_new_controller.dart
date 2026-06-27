@@ -23,6 +23,7 @@ part 'pages/kennel_hash_cash_page/controls.dart';
 part 'pages/kennel_songs_page/controls.dart';
 part 'pages/kennel_logo_page/controls.dart';
 part 'pages/kennel_trail_symbols_page/controls.dart';
+part 'pages/kennel_trail_types_page/controls.dart';
 
 // ---------------------------------------------------------------------------
 // Controller
@@ -171,6 +172,10 @@ class KennelPageFormController extends TabUiController
 
   /// Reactive list of the 12 trail slot configs for the trail symbols tab.
   final RxList<TrailSlotConfig> _trailSlots = <TrailSlotConfig>[].obs;
+
+  /// Reactive list of trail-type configs for the trail types tab
+  /// (built-ins 1–5 merged with kennel customisations).
+  final RxList<TrailTypeConfig> _trailTypes = <TrailTypeConfig>[].obs;
 
   // ---------------------------------------------------------------------------
   // State - Platform Admin Tab Settings
@@ -372,6 +377,7 @@ class KennelPageFormController extends TabUiController
     initKennelSongsControls();
     initKennelLogoControls();
     initTrailSymbolsControls();
+    initTrailTypesControls();
 
     populateTextControllers();
   }

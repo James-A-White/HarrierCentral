@@ -148,6 +148,22 @@ enum KennelTabType {
     isPlatformAdminOnly: false,
   ),
 
+  /// Per-kennel PackTrack trail types (the lanes runners pick + filter by).
+  trailTypes(
+    key: 'trailTypes',
+    title: 'Trail Types',
+    description: 'Configure the trails runners choose from when tracking, and '
+        'filter by on the run map (e.g. Walkers, Short, Normal, Long, '
+        'Ballbreaker).\n\n'
+        'Rename or hide the built-in five, or add your own. "Normal" can be '
+        'renamed but never hidden.',
+    icon: MaterialCommunityIcons.run,
+    isTabLockable: true,
+    hasCustomTabStatusFunction: false,
+    showTabInSubmitSummary: false,
+    isPlatformAdminOnly: false,
+  ),
+
   /// Platform-level admin settings (kennel status). Only visible to users
   /// with the CanEditKennel platform-admin privilege.
   platformAdmin(

@@ -382,6 +382,15 @@ class Tables {
       appliedAtInt: 0,
     ),
 
+    // MIGRATION 523 — Per-kennel PackTrack trail-type configuration
+    MigrationsModel(
+      dbVersion: 523,
+      migrationText: '''
+        ALTER TABLE ${EnumDataTables.kennels.commonTableName} ADD COLUMN ${tableModel.kennelsTableHelper.colTrailTypesConfigJson} TEXT;
+      ''',
+      appliedAtInt: 0,
+    ),
+
   ];
 
   static Future<void> createTables(

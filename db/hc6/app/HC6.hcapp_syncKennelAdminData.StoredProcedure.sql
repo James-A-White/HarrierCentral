@@ -207,6 +207,7 @@ BEGIN
         k.KennelPaymentMemberSurcharge3                                     AS kennelPaymentMemberSurcharge3,
         k.KennelPaymentNonMemberSurcharge3                                  AS kennelPaymentNonMemberSurcharge3,
         k.TrailSymbolsConfigJson                                            AS trailSymbolsConfigJson,
+        k.TrailTypesConfigJson                                              AS trailTypesConfigJson,
         k.removed                                                           AS removed,
         CONVERT(NVARCHAR(50), CAST(k.updatedAt AS DATETIME2))               AS updatedAt
     FROM HC.Kennel k WITH (INDEX(IX_AllSyncKennels))

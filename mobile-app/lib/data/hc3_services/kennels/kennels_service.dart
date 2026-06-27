@@ -78,6 +78,7 @@ class KennelsTableHelper extends BaseTableHelper<AppDomainType>
   final String colKennelMismanagementTeam = 'kennelMismanagementTeam';
   final String colDistancePreference = 'distancePreference';
   final String colTrailSymbolsConfigJson = 'trailSymbolsConfigJson';
+  final String colTrailTypesConfigJson = 'trailTypesConfigJson';
 
   @override
   Future<dynamic> createTable(
@@ -145,6 +146,7 @@ class KennelsTableHelper extends BaseTableHelper<AppDomainType>
             $colKennelMismanagementTeam TEXT,
             $colDistancePreference INT,
             $colTrailSymbolsConfigJson TEXT,
+            $colTrailTypesConfigJson TEXT,
             $colUpdatedAt TEXT NOT NULL,
             $colRemoved INT NOT NULL,
             $colUpdatedAtValue INT NULL

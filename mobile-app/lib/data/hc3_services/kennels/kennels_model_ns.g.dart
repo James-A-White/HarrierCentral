@@ -82,6 +82,7 @@ _KennelsModel _$KennelsModelFromJson(
   kennelMismanagementTeam: json['kennelMismanagementTeam'] as String?,
   distancePreference: (json['distancePreference'] as num?)?.toInt(),
   trailSymbolsConfigJson: json['trailSymbolsConfigJson'] as String?,
+  trailTypesConfigJson: json['trailTypesConfigJson'] as String?,
   updatedAt: json['updatedAt'] == null
       ? null
       : DateTime.parse(json['updatedAt'] as String),
@@ -150,6 +151,7 @@ Map<String, dynamic> _$KennelsModelToJson(
   'kennelMismanagementTeam': instance.kennelMismanagementTeam,
   'distancePreference': instance.distancePreference,
   'trailSymbolsConfigJson': instance.trailSymbolsConfigJson,
+  'trailTypesConfigJson': instance.trailTypesConfigJson,
   'updatedAt': instance.updatedAt?.toIso8601String(),
   'removed': instance.removed,
 };

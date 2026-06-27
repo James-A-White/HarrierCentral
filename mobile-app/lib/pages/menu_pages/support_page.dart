@@ -32,10 +32,17 @@ class SupportPageState extends State<SupportPage> {
   @override
   void initState() {
     super.initState();
+    _loadSecretCode();
+  }
+
+  // qrSecretCode now lives in the keychain (async) — load it after first frame.
+  Future<void> _loadSecretCode() async {
+    final String code = await getQrSecretCode() ?? '';
+    if (mounted) setState(() => _userSecretCode = code);
   }
 
   final _userName = getStringPref(StringPrefsEnum.displayName) ?? '';
-  final _userSecretCode = getStringPref(StringPrefsEnum.qrSecretCode) ?? '';
+  String _userSecretCode = '';
   final String _supportCode = getStringPref(StringPrefsEnum.supportCode) ?? '';
 
   bool isLoading = false;

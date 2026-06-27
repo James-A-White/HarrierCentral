@@ -15,7 +15,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$UserPositionsPayload {
 
- String get eventId; String? get latestServerTimestampMs; List<UserTrack> get users;
+ String get eventId; String? get latestServerTimestampMs;// Per-kennel PackTrack trail-type config JSON, bundled by GetPositions on
+// the full fetch only (null on incremental polls — the client caches it).
+ String? get trailTypesConfigJson; List<UserTrack> get users;
 /// Create a copy of UserPositionsPayload
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +30,16 @@ $UserPositionsPayloadCopyWith<UserPositionsPayload> get copyWith => _$UserPositi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserPositionsPayload&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.latestServerTimestampMs, latestServerTimestampMs) || other.latestServerTimestampMs == latestServerTimestampMs)&&const DeepCollectionEquality().equals(other.users, users));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserPositionsPayload&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.latestServerTimestampMs, latestServerTimestampMs) || other.latestServerTimestampMs == latestServerTimestampMs)&&(identical(other.trailTypesConfigJson, trailTypesConfigJson) || other.trailTypesConfigJson == trailTypesConfigJson)&&const DeepCollectionEquality().equals(other.users, users));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,eventId,latestServerTimestampMs,const DeepCollectionEquality().hash(users));
+int get hashCode => Object.hash(runtimeType,eventId,latestServerTimestampMs,trailTypesConfigJson,const DeepCollectionEquality().hash(users));
 
 @override
 String toString() {
-  return 'UserPositionsPayload(eventId: $eventId, latestServerTimestampMs: $latestServerTimestampMs, users: $users)';
+  return 'UserPositionsPayload(eventId: $eventId, latestServerTimestampMs: $latestServerTimestampMs, trailTypesConfigJson: $trailTypesConfigJson, users: $users)';
 }
 
 
@@ -48,7 +50,7 @@ abstract mixin class $UserPositionsPayloadCopyWith<$Res>  {
   factory $UserPositionsPayloadCopyWith(UserPositionsPayload value, $Res Function(UserPositionsPayload) _then) = _$UserPositionsPayloadCopyWithImpl;
 @useResult
 $Res call({
- String eventId, String? latestServerTimestampMs, List<UserTrack> users
+ String eventId, String? latestServerTimestampMs, String? trailTypesConfigJson, List<UserTrack> users
 });
 
 
@@ -65,10 +67,11 @@ class _$UserPositionsPayloadCopyWithImpl<$Res>
 
 /// Create a copy of UserPositionsPayload
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? eventId = null,Object? latestServerTimestampMs = freezed,Object? users = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? eventId = null,Object? latestServerTimestampMs = freezed,Object? trailTypesConfigJson = freezed,Object? users = null,}) {
   return _then(_self.copyWith(
 eventId: null == eventId ? _self.eventId : eventId // ignore: cast_nullable_to_non_nullable
 as String,latestServerTimestampMs: freezed == latestServerTimestampMs ? _self.latestServerTimestampMs : latestServerTimestampMs // ignore: cast_nullable_to_non_nullable
+as String?,trailTypesConfigJson: freezed == trailTypesConfigJson ? _self.trailTypesConfigJson : trailTypesConfigJson // ignore: cast_nullable_to_non_nullable
 as String?,users: null == users ? _self.users : users // ignore: cast_nullable_to_non_nullable
 as List<UserTrack>,
   ));
@@ -155,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String eventId,  String? latestServerTimestampMs,  List<UserTrack> users)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String eventId,  String? latestServerTimestampMs,  String? trailTypesConfigJson,  List<UserTrack> users)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _UserPositionsPayload() when $default != null:
-return $default(_that.eventId,_that.latestServerTimestampMs,_that.users);case _:
+return $default(_that.eventId,_that.latestServerTimestampMs,_that.trailTypesConfigJson,_that.users);case _:
   return orElse();
 
 }
@@ -176,10 +179,10 @@ return $default(_that.eventId,_that.latestServerTimestampMs,_that.users);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String eventId,  String? latestServerTimestampMs,  List<UserTrack> users)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String eventId,  String? latestServerTimestampMs,  String? trailTypesConfigJson,  List<UserTrack> users)  $default,) {final _that = this;
 switch (_that) {
 case _UserPositionsPayload():
-return $default(_that.eventId,_that.latestServerTimestampMs,_that.users);case _:
+return $default(_that.eventId,_that.latestServerTimestampMs,_that.trailTypesConfigJson,_that.users);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -196,10 +199,10 @@ return $default(_that.eventId,_that.latestServerTimestampMs,_that.users);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String eventId,  String? latestServerTimestampMs,  List<UserTrack> users)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String eventId,  String? latestServerTimestampMs,  String? trailTypesConfigJson,  List<UserTrack> users)?  $default,) {final _that = this;
 switch (_that) {
 case _UserPositionsPayload() when $default != null:
-return $default(_that.eventId,_that.latestServerTimestampMs,_that.users);case _:
+return $default(_that.eventId,_that.latestServerTimestampMs,_that.trailTypesConfigJson,_that.users);case _:
   return null;
 
 }
@@ -211,11 +214,14 @@ return $default(_that.eventId,_that.latestServerTimestampMs,_that.users);case _:
 @JsonSerializable()
 
 class _UserPositionsPayload implements UserPositionsPayload {
-  const _UserPositionsPayload({required this.eventId, this.latestServerTimestampMs, required final  List<UserTrack> users}): _users = users;
+  const _UserPositionsPayload({required this.eventId, this.latestServerTimestampMs, this.trailTypesConfigJson, required final  List<UserTrack> users}): _users = users;
   factory _UserPositionsPayload.fromJson(Map<String, dynamic> json) => _$UserPositionsPayloadFromJson(json);
 
 @override final  String eventId;
 @override final  String? latestServerTimestampMs;
+// Per-kennel PackTrack trail-type config JSON, bundled by GetPositions on
+// the full fetch only (null on incremental polls — the client caches it).
+@override final  String? trailTypesConfigJson;
  final  List<UserTrack> _users;
 @override List<UserTrack> get users {
   if (_users is EqualUnmodifiableListView) return _users;
@@ -237,16 +243,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserPositionsPayload&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.latestServerTimestampMs, latestServerTimestampMs) || other.latestServerTimestampMs == latestServerTimestampMs)&&const DeepCollectionEquality().equals(other._users, _users));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserPositionsPayload&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.latestServerTimestampMs, latestServerTimestampMs) || other.latestServerTimestampMs == latestServerTimestampMs)&&(identical(other.trailTypesConfigJson, trailTypesConfigJson) || other.trailTypesConfigJson == trailTypesConfigJson)&&const DeepCollectionEquality().equals(other._users, _users));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,eventId,latestServerTimestampMs,const DeepCollectionEquality().hash(_users));
+int get hashCode => Object.hash(runtimeType,eventId,latestServerTimestampMs,trailTypesConfigJson,const DeepCollectionEquality().hash(_users));
 
 @override
 String toString() {
-  return 'UserPositionsPayload(eventId: $eventId, latestServerTimestampMs: $latestServerTimestampMs, users: $users)';
+  return 'UserPositionsPayload(eventId: $eventId, latestServerTimestampMs: $latestServerTimestampMs, trailTypesConfigJson: $trailTypesConfigJson, users: $users)';
 }
 
 
@@ -257,7 +263,7 @@ abstract mixin class _$UserPositionsPayloadCopyWith<$Res> implements $UserPositi
   factory _$UserPositionsPayloadCopyWith(_UserPositionsPayload value, $Res Function(_UserPositionsPayload) _then) = __$UserPositionsPayloadCopyWithImpl;
 @override @useResult
 $Res call({
- String eventId, String? latestServerTimestampMs, List<UserTrack> users
+ String eventId, String? latestServerTimestampMs, String? trailTypesConfigJson, List<UserTrack> users
 });
 
 
@@ -274,10 +280,11 @@ class __$UserPositionsPayloadCopyWithImpl<$Res>
 
 /// Create a copy of UserPositionsPayload
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? eventId = null,Object? latestServerTimestampMs = freezed,Object? users = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? eventId = null,Object? latestServerTimestampMs = freezed,Object? trailTypesConfigJson = freezed,Object? users = null,}) {
   return _then(_UserPositionsPayload(
 eventId: null == eventId ? _self.eventId : eventId // ignore: cast_nullable_to_non_nullable
 as String,latestServerTimestampMs: freezed == latestServerTimestampMs ? _self.latestServerTimestampMs : latestServerTimestampMs // ignore: cast_nullable_to_non_nullable
+as String?,trailTypesConfigJson: freezed == trailTypesConfigJson ? _self.trailTypesConfigJson : trailTypesConfigJson // ignore: cast_nullable_to_non_nullable
 as String?,users: null == users ? _self._users : users // ignore: cast_nullable_to_non_nullable
 as List<UserTrack>,
   ));

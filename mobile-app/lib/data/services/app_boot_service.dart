@@ -8,38 +8,6 @@ import 'package:harrier_central/imports.dart';
 /// know which path was taken.
 class AppBootService {
   // ---------------------------------------------------------------------------
-  // Credential prefs that survive a BOOT_TYPE_RELOAD_DATA wipe. Add new
-  // identity/auth prefs here rather than to the individual read/write calls.
-  // ---------------------------------------------------------------------------
-
-  static const List<StringPrefsEnum> _credentialStringPrefs = [
-    StringPrefsEnum.userId,
-    StringPrefsEnum.publicHasherId,
-    StringPrefsEnum.deviceId,
-    StringPrefsEnum.resetCode,
-    StringPrefsEnum.deviceSecret,
-    StringPrefsEnum.displayName,
-    StringPrefsEnum.profilePhotoUrl,
-    StringPrefsEnum.betaFeaturesEnabled,
-    StringPrefsEnum.thirdPartyAccessToken,
-    StringPrefsEnum.thirdPartyAuthorizationCode,
-    StringPrefsEnum.thirdPartyEmail,
-    StringPrefsEnum.thirdPartyForceTokenRefresh,
-    StringPrefsEnum.thirdPartyLoginEmail,
-    StringPrefsEnum.thirdPartyLoginType,
-    StringPrefsEnum.thirdPartyUserId,
-  ];
-
-  static const List<IntPrefsEnum> _credentialIntPrefs = [
-    IntPrefsEnum.timeWindow,
-  ];
-
-  static const List<DatePrefsEnum> _credentialDatePrefs = [
-    DatePrefsEnum.thirdPartyTokenLastUpdated,
-    DatePrefsEnum.thirdPartyTokenExpires,
-  ];
-
-  // ---------------------------------------------------------------------------
   // Main entry point
   // ---------------------------------------------------------------------------
 
@@ -53,11 +21,6 @@ class AppBootService {
     // new session log and start persisting errors to the pref.
     await _sendPreviousSessionErrors();
     _startErrorPersistence();
-
-    if (getStringPref(StringPrefsEnum.bootType) == BOOT_TYPE_RELOAD_DATA) {
-      await _handleReloadData();
-      return;
-    }
 
     final String? userId = await _resolveUserId();
     final String? deviceId = getStringPref(StringPrefsEnum.deviceId);
@@ -74,10 +37,29 @@ class AppBootService {
       return;
     }
 
-    // No registered device — drop into guest discovery mode instead of forcing
-    // the user through the intro slider immediately. They can browse runs and
-    // choose to log in or create an account when ready.
+    // No registered device. If the reset code survived in the keychain, this is
+    // a wiped/reset device that can re-authorise itself with no user input
+    // (self-healing recovery — see resetAndReboot). Otherwise, guest discovery.
     if (deviceId == null || deviceId.isEmpty) {
+      final String? recoveryCode = await getResetCode();
+      if (recoveryCode != null && recoveryCode.isNotEmpty) {
+        final bool reauthorized = await _autoReauthorize(recoveryCode);
+        if (reauthorized) {
+          await Get.off(() => MainNavigationPage(), routeName: '/main');
+          return;
+        }
+        // Never brick — fall back to a manual login.
+        await Utilities.showAlert(
+          'Reconnection Needed',
+          'We couldn\'t reconnect this device automatically.\r\n\r\nPlease log '
+          'in with your QR code or reset code to continue.',
+          'Continue',
+        );
+        await Navigator.of(
+          navigatorKey.currentContext!,
+        ).pushReplacementNamed(RouteNames.INTRO_SLIDER.toString());
+        return;
+      }
       await Get.off(
         () => const GuestDiscoveryPage(),
         routeName: RouteNames.GUEST_DISCOVERY.toString(),
@@ -186,44 +168,69 @@ class AppBootService {
   // Boot paths
   // ---------------------------------------------------------------------------
 
-  /// Preserve credentials, wipe all other prefs and the local DB, then restart
-  /// the app shell. Used when the user triggers a full data reload from settings.
-  Future<void> _handleReloadData() async {
-    final Map<StringPrefsEnum, String?> strings = {
-      for (final k in _credentialStringPrefs) k: getStringPref(k),
-    };
-    final Map<IntPrefsEnum, int?> ints = {
-      for (final k in _credentialIntPrefs) k: getIntPref(k),
-    };
-    final Map<DatePrefsEnum, DateTime?> dates = {
-      for (final k in _credentialDatePrefs) k: getDatePref(k),
-    };
+  /// Unified reset: wipe everything (GetStorage, keychain, local DB) and reboot.
+  ///
+  /// [keepResetCode] true  → recovery / full reload: the reset code is preserved
+  ///   in the keychain so boot can self-heal (auto re-authorise). Guarded by a
+  ///   full backend connectivity check — we never wipe if we can't re-authorise
+  ///   afterwards.
+  /// [keepResetCode] false → log out: the reset code is wiped too, so boot lands
+  ///   on guest discovery / login.
+  static Future<void> resetAndReboot({required bool keepResetCode}) async {
+    // A recovery reset must be able to re-authorise afterwards — verify the full
+    // path through to the DB before wiping anything.
+    if (keepResetCode) {
+      final bool reachable = await Utilities.checkHcServer()
+          .timeout(const Duration(seconds: 15), onTimeout: () => false);
+      if (!reachable) {
+        await Utilities.showAlert(
+          'No Connection',
+          'A full reload needs a connection to Harrier Central so the app can '
+          'reload your data afterwards.\r\n\r\nPlease reconnect and try again.',
+          'OK',
+        );
+        return; // aborted — nothing wiped
+      }
+    }
 
-    Get.reset();
+    // Hold the recovery key (if we're keeping it) before wiping.
+    final String? recoveryCode = keepResetCode ? await getResetCode() : null;
+
+    // Wipe everything.
     await clearPrefs();
+    await deleteAllSecure();
     await DBProvider.deleteDb(DB_NAME);
-    await Future.delayed(const Duration(milliseconds: 500));
+    appModel.dbStatus = EdbStatus.uninitialized;
 
-    // Second reset clears runtime state from the GetMaterialApp we are
-    // about to destroy. Credentials are restored AFTER initPrefs so
-    // GetStorage is fully re-initialised from disk before we write to it —
-    // restoring before this point risks the write being lost if GetStorage's
-    // in-memory state is cleared by the reset.
-    Get.reset();
-    await initPrefs();
-
-    for (final entry in strings.entries) {
-      await setStringPref(entry.key, entry.value);
-    }
-    for (final entry in ints.entries) {
-      await setIntPref(entry.key, entry.value);
-    }
-    for (final entry in dates.entries) {
-      await setDatePref(entry.key, entry.value);
+    // Restore only the recovery key, into the keychain, so boot can self-heal.
+    if (keepResetCode && recoveryCode != null && recoveryCode.isNotEmpty) {
+      await saveResetCode(recoveryCode);
     }
 
     await initServices();
     restartKey.currentState?.restartApp();
+  }
+
+  /// Self-healing re-authorisation. After a reset/wipe the device has no auth
+  /// bundle, but the reset code survives in the keychain — use it to mint a fresh
+  /// device bundle (new deviceId + device secret) and reload. Returns true on
+  /// success; never throws, so callers can always fall back to a manual login and
+  /// the app can't brick.
+  Future<bool> _autoReauthorize(String resetCode) async {
+    try {
+      await DBProvider.deleteDb(DB_NAME);
+      appModel.dbStatus = EdbStatus.uninitialized;
+      final AuthorizeDeviceService srv = AuthorizeDeviceService();
+      final Map<String, String> result =
+          await srv.authorizeDevice(scanText: resetCode.toUpperCase());
+      if (result['result'] != 'success') return false;
+      // The empty DB is reloaded by the normal post-login sync; mark it current
+      // so _handleExistingUser does a normal boot, not another upgrade/wipe.
+      await setIntPref(IntPrefsEnum.databaseVersion, DB_VERSION);
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   /// 1.x → 2.x migration: register this device and reboot into the entry page
@@ -317,6 +324,13 @@ class AppBootService {
       return;
     }
 
+    // Fresh 2.x installs persist sensitive credentials to GetStorage during
+    // authorizeDevice; historically only the 1.x→2.x migration promoted them to
+    // the keychain, so fresh installs ran on (and were labelled) "legacy"
+    // storage forever. Promote them here so every registered device ends up
+    // encrypted. Idempotent — a no-op once already in secure storage.
+    await ensureCredentialsEncrypted();
+
     await setStringPref(StringPrefsEnum.bootType, BOOT_TYPE_NORMAL);
     debugPrint('[BOOT] Get.off(MainNavigationPage) start: ${DateTime.now().millisecondsSinceEpoch}ms');
     await Get.off(() => MainNavigationPage(), routeName: '/main');
@@ -349,13 +363,27 @@ class AppBootService {
       await setStringPref(StringPrefsEnum.bootType, BOOT_TYPE_UPGRADE_DB);
     }
 
-    // ── Step 1: Read resetCode ───────────────────────────────────────────────
-    // Prefer secure storage (already migrated devices) over plain GetStorage.
-    final String? secureCode = await readSecureResetCode();
-    final bool readFromSecure = secureCode != null && secureCode.isNotEmpty;
-    final String resetCode =
-        readFromSecure ? secureCode : (getStringPref(StringPrefsEnum.resetCode) ?? '');
+    // ── Step 0: Connectivity guard ───────────────────────────────────────────
+    // We're about to wipe and re-authorise — without the backend we'd wipe and
+    // be unable to recover. Keep the old DB and retry on the next online boot.
+    final bool reachable = await Utilities.checkHcServer()
+        .timeout(const Duration(seconds: 15), onTimeout: () => false);
+    if (!reachable) {
+      await Utilities.showAlert(
+        'Update Postponed',
+        'Harrier Central needs a connection to finish updating your data.\r\n\r\n'
+        'We\'ll try again next time you open the app while connected.',
+        'Continue',
+      );
+      await Get.off(
+        () => const GuestDiscoveryPage(),
+        routeName: RouteNames.GUEST_DISCOVERY.toString(),
+      );
+      return;
+    }
 
+    // ── Step 1: Read resetCode (keychain-first) ──────────────────────────────
+    final String resetCode = (await getResetCode()) ?? '';
     if (resetCode.isEmpty) {
       await Get.off(() => MainNavigationPage(), routeName: '/main');
       return;
@@ -684,7 +712,7 @@ class AppBootService {
       barrierDismissible: false,
     );
 
-    final String resetCode = getStringPref(StringPrefsEnum.resetCode) ?? '';
+    final String resetCode = (await getResetCode()) ?? '';
     await _clearStaleDeviceAuthPrefs();
 
     if (resetCode.isEmpty) {

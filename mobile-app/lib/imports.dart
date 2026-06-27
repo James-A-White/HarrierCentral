@@ -41,6 +41,7 @@ export 'package:freezed_annotation/freezed_annotation.dart';
 // export 'package:get_it/get_it.dart';
 export 'package:get_storage/get_storage.dart';
 export 'package:harrier_central/util/secure_storage.dart';
+export 'package:harrier_central/util/secure_credentials.dart';
 export 'package:harrier_central/bindings/initial_bindings.dart';
 export 'package:harrier_central/controllers/run_tracker_map_controller.dart';
 export 'package:harrier_central/data/hc3_services/cities/cities_model_ns.dart';
@@ -82,6 +83,7 @@ export 'package:harrier_central/data/models/run_history/run_history_queries.dart
 export 'package:harrier_central/data/models/run_query_extensions/run_query_extensions_model.dart';
 export 'package:harrier_central/data/models/single_result/single_result_model.dart';
 export 'package:harrier_central/data/models/trail_slot/trail_slot.dart';
+export 'package:harrier_central/data/models/trail_type/trail_type.dart';
 export 'package:harrier_central/data/models/user_event_location/user_event_location.dart';
 export 'package:harrier_central/data/models/user_positions/user_positions.dart';
 export 'package:harrier_central/data/models/user_run_history/user_run_history_model.dart';

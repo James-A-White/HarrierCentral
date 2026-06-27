@@ -2043,16 +2043,11 @@ class HasherProfilePageState extends State<HasherProfilePage> {
                                                         bool? result,
                                                       ) async {
                                                         if (result ?? false) {
-                                                          await clearPrefs();
-                                                          await deleteAllSecure();
-
-                                                          await DBProvider.deleteDb(
-                                                            DB_NAME,
-                                                          );
-
-                                                          await initServices();
-                                                          restartKey.currentState
-                                                              ?.restartApp();
+                                                          await AppBootService
+                                                              .resetAndReboot(
+                                                                keepResetCode:
+                                                                    false,
+                                                              );
                                                         }
                                                       });
                                                     },
@@ -2431,9 +2426,10 @@ class HasherProfilePageState extends State<HasherProfilePage> {
   }
 
   Future<void> _reloadData() async {
-    await setStringPref(StringPrefsEnum.bootType, BOOT_TYPE_RELOAD_DATA);
-    _isReloading = true;
-    await Get.offAll(() => AppEntryPage());
+    if (mounted) setState(() => _isReloading = true);
+    await AppBootService.resetAndReboot(keepResetCode: true);
+    // Reached only if the reset was aborted (e.g. offline) — clear the spinner.
+    if (mounted) setState(() => _isReloading = false);
   }
 
   Future<void> _enableLocationServices() async {

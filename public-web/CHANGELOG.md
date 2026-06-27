@@ -1,5 +1,9 @@
 # public-web Changelog
 
+## 0.21.9 — 2026-06-27
+
+- New: filter PackTrack playback by trail type — chips for the trail types present on a run, with a per-runner trail emoji badge (track colours still mark runner identity)
+
 ## 0.21.8 — 2026-06-26
 
 - New: PackTrack live run tracking on public run pages — animated GPS trails, per-runner playback, trail-mark icons

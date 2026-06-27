@@ -9,6 +9,9 @@ abstract class UserPositionsPayload with _$UserPositionsPayload {
   const factory UserPositionsPayload({
     required String eventId,
     String? latestServerTimestampMs,
+    // Per-kennel PackTrack trail-type config JSON, bundled by GetPositions on
+    // the full fetch only (null on incremental polls — the client caches it).
+    String? trailTypesConfigJson,
     required List<UserTrack> users,
   }) = _UserPositionsPayload;
 

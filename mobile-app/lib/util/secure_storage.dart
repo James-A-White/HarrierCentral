@@ -1,34 +1,50 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-// Key used to persist the device reset code in the secure enclave.
-// Prefixed to avoid collisions with any future secure-storage entries.
+// Keychain keys. Prefixed to avoid collisions with any other secure entries.
 const _kResetCodeKey = 'hc_resetCode';
+const _kQrSecretCodeKey = 'hc_qrSecretCode';
 
 const _storage = FlutterSecureStorage(
   aOptions: AndroidOptions(encryptedSharedPreferences: true),
 );
 
-/// Reads the reset code from secure storage.
-/// Returns null if not present or if the platform throws (e.g. locked keystore).
-Future<String?> readSecureResetCode() async {
+// ── Generic helpers ──────────────────────────────────────────────────────────
+
+/// Reads a value from secure storage. Returns null if not present or if the
+/// platform throws (e.g. a locked keystore).
+Future<String?> _readSecure(String key) async {
   try {
-    return await _storage.read(key: _kResetCodeKey);
+    return await _storage.read(key: key);
   } catch (_) {
     return null;
   }
 }
 
-/// Writes the reset code to secure storage.
-/// Retries once on failure. Returns true if the write succeeded.
-Future<bool> writeSecureResetCode(String resetCode) async {
+/// Writes a value to secure storage. Retries once on failure. Returns true on
+/// success.
+Future<bool> _writeSecure(String key, String value) async {
   for (int attempt = 0; attempt < 2; attempt++) {
     try {
-      await _storage.write(key: _kResetCodeKey, value: resetCode);
+      await _storage.write(key: key, value: value);
       return true;
     } catch (_) {}
   }
   return false;
 }
+
+// ── Reset code (durable recovery key) ────────────────────────────────────────
+
+Future<String?> readSecureResetCode() => _readSecure(_kResetCodeKey);
+Future<bool> writeSecureResetCode(String resetCode) =>
+    _writeSecure(_kResetCodeKey, resetCode);
+
+// ── QR secret code ───────────────────────────────────────────────────────────
+
+Future<String?> readSecureQrSecretCode() => _readSecure(_kQrSecretCodeKey);
+Future<bool> writeSecureQrSecretCode(String code) =>
+    _writeSecure(_kQrSecretCodeKey, code);
+
+// ── Wipe ─────────────────────────────────────────────────────────────────────
 
 /// Wipes all entries from secure storage. Swallows any platform exceptions.
 Future<void> deleteAllSecure() async {

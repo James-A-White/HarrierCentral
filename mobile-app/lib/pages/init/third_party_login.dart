@@ -457,14 +457,8 @@ class LoginPageState extends State<ThirdPartyLogin> {
                       StringPrefsEnum.supportCode,
                       result[0]['supportCode'],
                     );
-                    await setStringPref(
-                      StringPrefsEnum.resetCode,
-                      result[0]['resetCode'],
-                    );
-                    await setStringPref(
-                      StringPrefsEnum.qrSecretCode,
-                      result[0]['qrSecretCode'],
-                    );
+                    await saveResetCode(result[0]['resetCode']);
+                    await saveQrSecretCode(result[0]['qrSecretCode']);
                     await setStringPref(
                       StringPrefsEnum.userId,
                       result[0]['hasherId'],

@@ -76,7 +76,8 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_editKennel]
 	@excludeFromLeaderboard SMALLINT = NULL,
 	@notificationMinutesBeforeRunForChatPushNotifications SMALLINT = NULL,
 	@notificationMinutesBeforeRunForCheckinReminder SMALLINT = NULL,
-	@trailSymbolsConfigJson NVARCHAR(4000) = NULL
+	@trailSymbolsConfigJson NVARCHAR(4000) = NULL,
+	@trailTypesConfigJson NVARCHAR(4000) = NULL
 
 AS
 -- =====================================================================
@@ -92,6 +93,8 @@ AS
 --             ~60 optional kennel settings via COALESCE pattern
 --             @trailSymbolsConfigJson (nullable) — per-kennel trail symbol
 --               config JSON; NULL = leave unchanged (app uses defaults)
+--             @trailTypesConfigJson (nullable) — per-kennel PackTrack trail-type
+--               config JSON; NULL = leave unchanged (clients use defaults)
 -- Returns: SuccessResult rowset (result, resultCode) or error envelope
 -- Author: Harrier Central
 -- Created: 2026-03-15
@@ -288,6 +291,7 @@ BEGIN TRY
 		NotificationMinutesBeforeRunForChatPushNotifications = COALESCE(@notificationMinutesBeforeRunForChatPushNotifications, NotificationMinutesBeforeRunForChatPushNotifications),
 		NotificationMinutesBeforeRunForCheckinReminder = COALESCE(@notificationMinutesBeforeRunForCheckinReminder, NotificationMinutesBeforeRunForCheckinReminder),
 		TrailSymbolsConfigJson = COALESCE(@trailSymbolsConfigJson, TrailSymbolsConfigJson),
+		TrailTypesConfigJson = COALESCE(@trailTypesConfigJson, TrailTypesConfigJson),
 		updatedAt = SYSUTCDATETIME()
 	WHERE id = @kennelId;
 

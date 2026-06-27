@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.7+640 — 2026-06-27
+
+- New: **Trail Types** kennel editor — rename or hide the five built-in lanes (Walkers / Short / Normal / Long / Ballbreaker) or add your own custom ones with an emoji. Drives PackTrack trail selection and run-map filtering. "Normal" can be renamed but never hidden.
+
+---
+
 ## 2.0.6+639 — 2026-06-18
 
 ### Fixes

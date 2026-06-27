@@ -1,4 +1,7 @@
 
+1.0.27+25
+    • GetPositions returns the owning kennel's PackTrack trail-type config on the full fetch (powers app + web trail filtering)
+
 1.0.26+24
     • Fix: ProxyReverseGeocode now calls Azure Maps directly using AzureMapsSubscriptionKey — removes stale HC_REVERSE_GEOCODE_URL upstream dependency that broke set-address-from-lat/lon in the portal
     • Upgrade Send*Report endpoints (KennelRunStats, Payment, RunCounts) to HC6 SPs with parameterized calls

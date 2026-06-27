@@ -315,14 +315,8 @@ class CreateNewAccountPageContentState
                                   StringPrefsEnum.supportCode,
                                   result['supportCode'],
                                 );
-                                await setStringPref(
-                                  StringPrefsEnum.resetCode,
-                                  result['resetCode'],
-                                );
-                                await setStringPref(
-                                  StringPrefsEnum.qrSecretCode,
-                                  result['qrSecretCode'],
-                                );
+                                await saveResetCode(result['resetCode']);
+                                await saveQrSecretCode(result['qrSecretCode']);
                                 await setStringPref(
                                   StringPrefsEnum.userId,
                                   result['hasherId'],

@@ -4,10 +4,12 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Data;
 using Azure.Data.Tables;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -122,6 +124,18 @@ namespace HcWebApi.Endpoints
                     })
                     .ToList()
             };
+
+            // On the full fetch (no / zero afterTimestamp), bundle the owning
+            // kennel's PackTrack trail-type config so the playback payload is
+            // self-describing — labels resolve on app and web even for viewers
+            // who don't follow the kennel. Config doesn't change mid-run, so
+            // incremental polls omit it and the client caches it from this
+            // first response.
+            bool isFullFetch = afterTimestampBoundary is null || afterTimestampBoundary.Value == 0;
+            if (isFullFetch)
+            {
+                response.TrailTypesConfigJson = await TryGetTrailTypesConfigAsync(request.EventId);
+            }
 
             string json = JsonConvert.SerializeObject(
                 response,
@@ -346,6 +360,52 @@ namespace HcWebApi.Endpoints
         private static double RoundCoordinate(double value)
             => Math.Round(value, 5, MidpointRounding.AwayFromZero);
 
+        // Fetches the owning kennel's PackTrack trail-type config JSON for this
+        // event (via [HC6].[publicWeb_getEventTrailTypes]). Best-effort: any
+        // failure — unparseable event id, missing connection string, SQL error,
+        // event not found, or no kennel customisation — logs and returns null so
+        // the positions payload is never blocked by config resolution (clients
+        // fall back to built-in defaults). Reuses the same SQL connection the
+        // PublicWebApi shim uses.
+        private async Task<string?> TryGetTrailTypesConfigAsync(string eventId)
+        {
+            if (!Guid.TryParse(eventId, out Guid eventGuid))
+            {
+                return null;
+            }
+
+            string? connectionString = Environment.GetEnvironmentVariable("HcDbConnectionString");
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                _log.LogWarning("GetPositions: HcDbConnectionString not set — trail-type config omitted.");
+                return null;
+            }
+
+            try
+            {
+                using SqlConnection conn = new(connectionString);
+                await conn.OpenAsync();
+
+                using SqlCommand cmd = new("[HC6].[publicWeb_getEventTrailTypes]", conn)
+                {
+                    CommandType = CommandType.StoredProcedure,
+                    CommandTimeout = 5
+                };
+                cmd.Parameters.Add("@eventId", SqlDbType.UniqueIdentifier).Value = eventGuid;
+
+                // First column of the first row is trailTypesConfigJson (NULL when
+                // the kennel has no customisation). Anything non-string (DBNull,
+                // or the Success=0 envelope on an empty guid) resolves to null.
+                object? result = await cmd.ExecuteScalarAsync();
+                return result is string s && !string.IsNullOrWhiteSpace(s) ? s : null;
+            }
+            catch (Exception ex)
+            {
+                _log.LogWarning("GetPositions: failed to fetch trail-type config for event {EventId}: {Message}", eventId, ex.Message);
+                return null;
+            }
+        }
+
         private static byte[] CompressToGzip(string content)
         {
             byte[] payloadBytes = Encoding.UTF8.GetBytes(content);
@@ -370,6 +430,7 @@ namespace HcWebApi.Endpoints
         {
             [JsonProperty("eventId")] public string EventId { get; set; } = string.Empty;
             [JsonProperty("latestServerTimestampMs", NullValueHandling = NullValueHandling.Ignore)] public string? LatestServerTimestamp { get; set; }
+            [JsonProperty("trailTypesConfigJson", NullValueHandling = NullValueHandling.Ignore)] public string? TrailTypesConfigJson { get; set; }
             [JsonProperty("users")] public List<UserPositionsResponse> Users { get; set; } = new();
         }
 

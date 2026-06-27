@@ -1,0 +1,32 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getEventTrailTypes",
+  "version": "1.0.0",
+  "description": "Returns the owning kennel's PackTrack trail-type config JSON for an event, so the GetPositions function can bundle it into the position payload (full fetch only). Unauthenticated; no PII.",
+  "parameters": [
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Event.id",
+      "description": "Internal HC.Event.id (the id PackTrack keys positions by), not PublicEventId."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "TrailTypesConfig",
+      "description": "Single row with the kennel's trail-type config JSON; the value is NULL when the kennel has no customisation (clients fall back to built-in defaults). 0 rows when the event is not found. A { Success = 0, ErrorMessage } envelope is returned only when @eventId is null/empty.",
+      "columns": [
+        { "name": "trailTypesConfigJson", "type": "NVARCHAR(4000)", "nullable": true, "description": "Per-kennel merge-by-value trail-type config JSON (HC.Kennel.TrailTypesConfigJson), or NULL." }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type"
+  ]
+}

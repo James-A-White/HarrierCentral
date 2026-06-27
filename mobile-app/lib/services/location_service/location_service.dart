@@ -362,7 +362,7 @@ class LocationService extends GetxService {
     );
   }
 
-  Future<void> markSlot(TrailSlot slot, {String? label}) async {
+  Future<void> markSlot(TrailSlot slot, {String? label, String? debugTag}) async {
     final position = await Geolocator.getCurrentPosition(
       locationSettings: const LocationSettings(accuracy: LocationAccuracy.best),
     );
@@ -371,7 +371,31 @@ class LocationService extends GetxService {
       forceFlush: true,
       slotIcon: slot.icon,
       label: label,
+      debugTag: debugTag,
     );
+  }
+
+  /// Emits a trail-type declaration point (`TRL::<value>`) at the current
+  /// position, tagging the runner's track with the lane they're running.
+  /// One-shot and force-flushed. Like other typed marks it is never drawn or
+  /// counted toward distance — it's metadata the map reads to label/filter the
+  /// track. No-ops if tracking isn't active (the point would have nowhere to go).
+  Future<void> declareTrailType(int trailValue) async {
+    try {
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings:
+            const LocationSettings(accuracy: LocationAccuracy.best),
+      );
+      await updateDeviceLocation(
+        position,
+        forceFlush: true,
+        rawType: 'TRL::$trailValue',
+      );
+    } catch (e) {
+      // Non-fatal: a missed declaration just means the track falls back to
+      // Normal on read. Never let a fire-and-forget call crash the caller.
+      if (kDebugMode) debugPrint('declareTrailType failed: $e');
+    }
   }
 
   /// Places a single track point with an explicit [timestampMs] — used for
@@ -425,7 +449,9 @@ class LocationService extends GetxService {
     bool forceFlush = false,
     HashRunPointTypes? pointType,
     String? slotIcon,
+    String? rawType,
     String? label,
+    String? debugTag,
   }) async {
     final lat = position.latitude.toDouble();
     final lon = position.longitude.toDouble();
@@ -488,7 +514,10 @@ class LocationService extends GetxService {
 
       String? pointStr;
 
-      if (pointType != null) {
+      if (rawType != null) {
+        // Already a fully-formed type string (e.g. 'TRL::3') — used verbatim.
+        pointStr = rawType;
+      } else if (pointType != null) {
         pointStr = pointType.key;
         if (label != null) {
           pointStr += '::$label';
@@ -498,6 +527,16 @@ class LocationService extends GetxService {
         if (label != null) {
           pointStr += '::$label';
         }
+      }
+
+      // PackTrack diagnostic (debug users only): ride the per-tap id in the label
+      // slot so "one tap → many marks" is visible in the server data. Kept in the
+      // label segment (after '::') so the icon still parses — the map splits the
+      // type on '::'. Strip once the mark-multiplication bug is resolved.
+      if (pointStr != null &&
+          debugTag != null &&
+          getBoolPref(BoolPrefsEnum.debugHarvestEnabled) == true) {
+        pointStr += pointStr.contains('::') ? '~$debugTag' : '::~$debugTag';
       }
 
       if (pointStr != null) {

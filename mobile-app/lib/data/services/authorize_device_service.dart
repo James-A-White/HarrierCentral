@@ -122,11 +122,8 @@ class AuthorizeDeviceService {
             StringPrefsEnum.supportCode,
             items['supportCode'],
           );
-          await setStringPref(StringPrefsEnum.resetCode, items['resetCode']);
-          await setStringPref(
-            StringPrefsEnum.qrSecretCode,
-            items['qrSecretCode'],
-          );
+          await saveResetCode(items['resetCode']);
+          await saveQrSecretCode(items['qrSecretCode']);
           await setStringPref(StringPrefsEnum.userId, items['hasherId']);
           await setStringPref(
             StringPrefsEnum.publicHasherId,

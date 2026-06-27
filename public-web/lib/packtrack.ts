@@ -14,6 +14,8 @@ export interface UserTrack {
 export interface PackTrackPayload {
   eventId: string;
   latestServerTimestampMs?: string;
+  /** Per-kennel trail-type config JSON, bundled by GetPositions on the full fetch. */
+  trailTypesConfigJson?: string;
   users: UserTrack[];
 }
 
@@ -67,6 +69,9 @@ export function parseMark(rawType: string | null | undefined): ParsedMark | null
   const labelRaw = parts.length > 1 ? parts.slice(1).join("::").trim() : "";
   const label = labelRaw.length > 0 ? labelRaw : null;
 
+  // Trail-type declaration — metadata, not a drawable mark.
+  if (key === "TRL") return null;
+
   // New-style slot icon — the key is the icon filename itself.
   if (key.startsWith("I-")) {
     return { iconUrl: `${ICON_BASE}/${key}`, label, isOnInn: false, isCaution: false, isPhoto: false };
@@ -91,6 +96,98 @@ export function parseMark(rawType: string | null | undefined): ParsedMark | null
 /** True when this point ends the drawn track (On Inn). */
 export function isOnInn(rawType: string | null | undefined): boolean {
   return parseMark(rawType)?.isOnInn ?? false;
+}
+
+// ── Trail types ──────────────────────────────────────────────────────────────
+// A runner declares which trail they ran; it rides on the track as a
+// `TRL::<value>` point. Built-ins are values 1–5; kennel-custom start at 100.
+// Resolution is merge-by-value over the defaults (mirrors the Dart TrailType).
+
+export interface TrailType {
+  value: number;
+  label: string;
+  emoji: string;
+  hidden: boolean;
+  sortOrder?: number;
+}
+
+/** Undeclared / legacy tracks resolve to this lane. Permanent — never hidden. */
+export const TRAIL_NORMAL_VALUE = 3;
+
+const TRAIL_DEFAULTS: TrailType[] = [
+  { value: 1, label: "Walkers", emoji: "🚶", hidden: false },
+  { value: 2, label: "Short", emoji: "🐔", hidden: false },
+  { value: 3, label: "Normal", emoji: "🏃", hidden: false },
+  { value: 4, label: "Long", emoji: "🐂", hidden: false },
+  { value: 5, label: "Ballbreaker", emoji: "💥", hidden: false },
+];
+
+function defaultsMap(): Map<number, TrailType> {
+  return new Map(TRAIL_DEFAULTS.map(t => [t.value, { ...t }]));
+}
+
+/** Full value→type map after merging the kennel config over the defaults
+ *  (includes hidden lanes; guarantees Normal present & not hidden). */
+export function resolveTrailTypeMap(configJson: string | null | undefined): Map<number, TrailType> {
+  const byValue = defaultsMap();
+
+  if (configJson && configJson.trim()) {
+    try {
+      const list = JSON.parse(configJson) as Array<Record<string, unknown>>;
+      for (const raw of list) {
+        if (typeof raw.value !== "number") continue;
+        const value = raw.value;
+        const label = typeof raw.label === "string" ? raw.label : undefined;
+        const emoji = typeof raw.emoji === "string" ? raw.emoji : undefined;
+        const hidden =
+          raw.hidden === true || raw.hidden === 1 ? true
+          : raw.hidden === false || raw.hidden === 0 ? false
+          : undefined;
+        const sortOrder = typeof raw.sortOrder === "number" ? raw.sortOrder : undefined;
+
+        const existing = byValue.get(value);
+        if (existing) {
+          byValue.set(value, {
+            ...existing,
+            ...(label !== undefined ? { label } : {}),
+            ...(emoji !== undefined ? { emoji } : {}),
+            ...(hidden !== undefined ? { hidden } : {}),
+            ...(sortOrder !== undefined ? { sortOrder } : {}),
+          });
+        } else {
+          if (!label) continue; // custom types need a label
+          byValue.set(value, { value, label, emoji: emoji ?? "", hidden: hidden ?? false, sortOrder });
+        }
+      }
+    } catch {
+      return defaultsMap();
+    }
+  }
+
+  const normal = byValue.get(TRAIL_NORMAL_VALUE);
+  if (!normal) byValue.set(TRAIL_NORMAL_VALUE, { ...TRAIL_DEFAULTS[2] });
+  else if (normal.hidden) byValue.set(TRAIL_NORMAL_VALUE, { ...normal, hidden: false });
+
+  return byValue;
+}
+
+/** A single lane's display type, falling back to Normal for unknown values. */
+export function resolveTrailTypeOne(value: number, configJson: string | null | undefined): TrailType {
+  const map = resolveTrailTypeMap(configJson);
+  return map.get(value) ?? map.get(TRAIL_NORMAL_VALUE)!;
+}
+
+/** The lane a runner declared (latest `TRL::` point), or Normal if none. */
+export function trailValueForTrack(positions: TrackPoint[]): number {
+  let latest: number | null = null;
+  for (const p of positions) {
+    const t = (p.type ?? "").trim();
+    if (!t.startsWith("TRL::")) continue;
+    const body = t.slice(5).split("::")[0].split("~")[0].trim();
+    const v = parseInt(body, 10);
+    if (!Number.isNaN(v)) latest = v;
+  }
+  return latest ?? TRAIL_NORMAL_VALUE;
 }
 
 // ── Geometry / formatting (ported from run_tracker_map_controller) ───────────────

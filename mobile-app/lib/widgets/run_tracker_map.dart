@@ -159,6 +159,7 @@ class RunTrackerMap extends StatelessWidget {
                 ],
               ),
               _buildTimelineSlider(context, controller),
+              _buildTrailFilterChips(controller),
             ],
           );
         });
@@ -291,8 +292,66 @@ class RunTrackerMap extends StatelessWidget {
     );
   }
 
+  Widget _buildTrailFilterChips(RunTrackerMapController controller) {
+    final present = controller.presentTrailValues;
+    // Only worth showing when there's an actual choice between lanes.
+    if (present.length < 2) return const SizedBox.shrink();
+    return Positioned(
+      top: 8,
+      left: 8,
+      right: 8,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            for (final v in present) ...[
+              _trailFilterChip(controller, v),
+              const SizedBox(width: 6),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _trailFilterChip(RunTrackerMapController controller, int value) {
+    final type = controller.trailTypeFor(value);
+    final selected = controller.selectedTrailValues.contains(value);
+    return GestureDetector(
+      onTap: () => controller.toggleTrailFilter(value),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? Colors.blue.shade700 : Colors.black54,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: selected ? Colors.white : Colors.white30,
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (type.emoji.isNotEmpty) ...[
+              Text(type.emoji, style: const TextStyle(fontSize: 14)),
+              const SizedBox(width: 4),
+            ],
+            Text(
+              type.label,
+              style: TextStyle(
+                color: selected ? Colors.white : Colors.white70,
+                fontSize: 13,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildRunnerPicker(RunTrackerMapController controller) {
-    final runners = controller.userPositions;
+    final runners = controller.visibleRunners;
     if (runners.isEmpty) return const SizedBox.shrink();
 
     return SizedBox(
@@ -315,7 +374,12 @@ class RunTrackerMap extends StatelessWidget {
         children: runners
             .map((runner) {
               final isSelected = controller.selectedRunnerId.value == runner.id;
-              final name = controller.userNames[runner.id] ?? 'Runner';
+              final baseName = controller.userNames[runner.id] ?? 'Runner';
+              // Prefix the runner's trail-lane emoji as a lightweight badge
+              // (track colour still carries runner identity).
+              final emoji =
+                  controller.trailTypeFor(controller.trailValueForRunner(runner)).emoji;
+              final name = emoji.isNotEmpty ? '$emoji $baseName' : baseName;
               final color = controller.runnerColor(runner.id);
               final logo = controller.userLogos[runner.id];
               return Stack(

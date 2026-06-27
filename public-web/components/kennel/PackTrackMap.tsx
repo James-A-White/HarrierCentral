@@ -8,16 +8,21 @@ import { Play, Pause, X, LocateFixed } from "lucide-react";
 import {
   fetchPackTrack, fetchRunnerNames, parseMark, trackUpTo, sumDistanceMeters,
   haversineMeters, formatTrackTimestamp, formatDistanceLabel, filterAndInterpolate,
-  MARK_DEDUPE_METERS,
+  MARK_DEDUPE_METERS, resolveTrailTypeMap, trailValueForTrack,
 } from "@/lib/packtrack";
 import type { UserTrack, TrackPoint } from "@/lib/packtrack";
 
 // ── Constants matching the mobile app ─────────────────────────────────────────
 
+// Playback duration scales with the trail's length, not a fixed wall-clock time:
+// the zoomed-out rate is 1 s/km (a 28 km run plays in 28 s, a 5 km run in 5 s),
+// and zooming in slows that down toward 8 s/km so detail is watchable. The rate
+// is interpolated by zoom between ZOOM_FAST and ZOOM_SLOW.
 const ZOOM_FAST = 15;
 const ZOOM_SLOW = 22;
-const DURATION_FAST_MS = 10_000;   // real ms for full playback at zoom ≤ 15
-const DURATION_SLOW_MS = 480_000;  // real ms for full playback at zoom ≥ 22
+const MS_PER_KM_FAST = 1_000;   // 1 s/km — fully zoomed out (zoom ≤ 15)
+const MS_PER_KM_SLOW = 8_000;   // 8 s/km — fully zoomed in (zoom ≥ 22)
+const MIN_DURATION_MS = 3_000;  // floor so a very short trail doesn't flash past
 
 const TRACK_COLORS = [
   "#ef4444", "#3b82f6", "#22c55e", "#f59e0b",
@@ -34,9 +39,11 @@ const PIN_ICON = L.icon({
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function durationForZoom(zoom: number): number {
+function durationFor(zoom: number, trailMeters: number): number {
+  const km = trailMeters / 1000;
   const t = Math.max(0, Math.min(1, (zoom - ZOOM_FAST) / (ZOOM_SLOW - ZOOM_FAST)));
-  return DURATION_FAST_MS + t * (DURATION_SLOW_MS - DURATION_FAST_MS);
+  const msPerKm = MS_PER_KM_FAST + t * (MS_PER_KM_SLOW - MS_PER_KM_FAST);
+  return Math.max(MIN_DURATION_MS, km * msPerKm);
 }
 
 // Icons are cached by their visual identity. Playback re-renders ~60×/s; without
@@ -202,13 +209,88 @@ interface PackTrackViewProps {
   hasTrack: boolean;
   /** Lowercased userId → display name. Missing ids fall back to "Runner N". */
   names: Record<string, string>;
+  /** Per-kennel trail-type config JSON (from the packtrack payload), or null. */
+  trailTypesConfigJson?: string | null;
 }
 
-function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names }: PackTrackViewProps) {
+function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, trailTypesConfigJson }: PackTrackViewProps) {
   const [progress, setProgress] = useState(0);    // 0.0 → 1.0
   const [playing, setPlaying] = useState(false);
   const [pickedId, setPickedId] = useState<string | null>(null);
   const [follow, setFollow] = useState(true);
+
+  // ── Trail-type filtering ──────────────────────────────────────────────────
+  const trailTypeMap = useMemo(
+    () => resolveTrailTypeMap(trailTypesConfigJson),
+    [trailTypesConfigJson],
+  );
+  // Stable per-runner colour & lane keyed by id, so filtering never reshuffles
+  // colours (track colour = runner identity).
+  const colorById = useMemo(() => {
+    const m = new Map<string, string>();
+    users.forEach((u, i) => m.set(u.id, TRACK_COLORS[i % TRACK_COLORS.length]));
+    return m;
+  }, [users]);
+  const laneById = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const u of users) m.set(u.id, trailValueForTrack(u.positions));
+    return m;
+  }, [users]);
+  // Distinct lanes present in the data, ordered by the kennel's trail order.
+  const presentLanes = useMemo(() => {
+    const present = new Set<number>(laneById.values());
+    const order = new Map<number, number>();
+    let i = 0;
+    for (const t of [...trailTypeMap.values()].sort(
+      (a, b) => (a.sortOrder ?? a.value) - (b.sortOrder ?? b.value),
+    )) order.set(t.value, i++);
+    return [...present].sort(
+      (a, b) => (order.get(a) ?? 1000 + a) - (order.get(b) ?? 1000 + b),
+    );
+  }, [laneById, trailTypeMap]);
+
+  // Selected lanes: all present by default; newly-appearing lanes default on,
+  // user deselections persist. Mirrors the app's _refreshTrailFilter.
+  const [selectedLanes, setSelectedLanes] = useState<Set<number>>(new Set());
+  const knownLanesRef = useRef<Set<number>>(new Set());
+  const [filterWarn, setFilterWarn] = useState(false);
+  useEffect(() => {
+    setSelectedLanes(prev => {
+      let changed = false;
+      const next = new Set(prev);
+      for (const v of presentLanes) {
+        if (!knownLanesRef.current.has(v)) {
+          knownLanesRef.current.add(v);
+          next.add(v);
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [presentLanes]);
+
+  function toggleLane(value: number) {
+    setSelectedLanes(prev => {
+      if (prev.has(value)) {
+        if (prev.size <= 1) {
+          setFilterWarn(true);
+          window.setTimeout(() => setFilterWarn(false), 2500);
+          return prev;
+        }
+        const next = new Set(prev);
+        next.delete(value);
+        return next;
+      }
+      const next = new Set(prev);
+      next.add(value);
+      return next;
+    });
+  }
+
+  const visibleUsers = useMemo(
+    () => users.filter(u => selectedLanes.size === 0 || selectedLanes.has(laneById.get(u.id) ?? 3)),
+    [users, selectedLanes, laneById],
+  );
 
   // Refs used inside rAF loop — updated without triggering re-renders
   const progressRef = useRef(0);
@@ -216,9 +298,27 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names }: PackT
   const zoomRef     = useRef(15);
   const rafIdRef    = useRef<number | null>(null);
   const lastRafTs   = useRef<number | null>(null);
+  const trailMetersRef = useRef(0);
 
-  // Selected runner defaults to the first one until the user picks another.
-  const selectedId = pickedId ?? users[0]?.id ?? null;
+  // Selected runner: the picked one if still visible under the filter, else the
+  // first visible runner (never points the camera at a hidden track).
+  const selectedId =
+    (pickedId && visibleUsers.some(u => u.id === pickedId))
+      ? pickedId
+      : (visibleUsers[0]?.id ?? null);
+
+  // Total trail length = the longest single runner's full track (OIN-terminated).
+  // Drives playback duration (1 s/km zoomed out → 8 s/km zoomed in) and is stable
+  // regardless of which runner is selected. Mirrored into a ref for the rAF loop.
+  const trailMeters = useMemo(() => {
+    let max = 0;
+    for (const u of users) {
+      const d = sumDistanceMeters(trackUpTo(u.positions, Infinity));
+      if (d > max) max = d;
+    }
+    return max;
+  }, [users]);
+  useEffect(() => { trailMetersRef.current = trailMeters; }, [trailMeters]);
 
   const currentTs = minTs + (maxTs - minTs) * progress;
 
@@ -234,7 +334,7 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names }: PackT
       if (!playingRef.current) return;
       if (lastRafTs.current !== null) {
         const elapsed = rafTime - lastRafTs.current;
-        const duration = durationForZoom(zoomRef.current);
+        const duration = durationFor(zoomRef.current, trailMetersRef.current);
         const next = Math.min(progressRef.current + elapsed / duration, 1);
         progressRef.current = next;
         setProgress(next);
@@ -271,11 +371,12 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names }: PackT
     : [[lat, lon]];
 
   // Per-runner visible track (capped at On Inn), current position, colour.
-  const runnerTracks = useMemo(() => users.map((u, idx) => {
+  // Iterates the filtered set; colour is keyed by id so it stays stable.
+  const runnerTracks = useMemo(() => visibleUsers.map((u) => {
     const pts = trackUpTo(u.positions, currentTs);
     const last = pts[pts.length - 1] ?? null;
-    return { id: u.id, color: TRACK_COLORS[idx % TRACK_COLORS.length], pts, last };
-  }), [users, currentTs]);
+    return { id: u.id, color: colorById.get(u.id) ?? TRACK_COLORS[0], pts, last };
+  }), [visibleUsers, currentTs, colorById]);
 
   const marks = useMemo(() => visibleMarks(users, currentTs), [users, currentTs]);
 
@@ -288,7 +389,10 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names }: PackT
 
   const selectedIdx = selected ? users.findIndex(u => u.id === selected.id) : -1;
 
-  const runnerName = (id: string, idx: number) => names[id.toLowerCase()] ?? `Runner ${idx + 1}`;
+  const runnerName = (id: string) =>
+    names[id.toLowerCase()] ?? `Runner ${users.findIndex(u => u.id === id) + 1}`;
+  const runnerEmoji = (id: string) =>
+    (trailTypeMap.get(laneById.get(id) ?? 3)?.emoji) ?? "";
 
   return (
     <>
@@ -361,10 +465,11 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names }: PackT
           style={{ background: "rgba(0,0,0,0.65)" }}
         >
           {/* Runner selector */}
-          {users.length > 1 && (
+          {visibleUsers.length > 1 && (
             <div className="flex items-center justify-center gap-2 flex-wrap pb-1.5">
-              {users.map((u, i) => {
+              {visibleUsers.map((u) => {
                 const active = u.id === selectedId;
+                const emoji = runnerEmoji(u.id);
                 return (
                   <button
                     key={u.id}
@@ -376,17 +481,48 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names }: PackT
                     <span
                       className="w-3.5 h-3.5 rounded-full border"
                       style={{
-                        backgroundColor: TRACK_COLORS[i % TRACK_COLORS.length],
+                        backgroundColor: colorById.get(u.id) ?? TRACK_COLORS[0],
                         borderColor: active ? "#fff" : "rgba(255,255,255,0.4)",
                         borderWidth: active ? 2 : 1,
                       }}
                     />
                     <span className="text-xs font-semibold max-w-[10rem] truncate" style={{ color: active ? "#fff" : "rgba(255,255,255,0.6)" }}>
-                      {runnerName(u.id, i)}
+                      {emoji ? `${emoji} ` : ""}{runnerName(u.id)}
                     </span>
                   </button>
                 );
               })}
+            </div>
+          )}
+
+          {/* Trail-type filter chips — present lanes only; can't clear all */}
+          {presentLanes.length > 1 && (
+            <div className="flex items-center justify-center gap-1.5 flex-wrap pb-1.5">
+              {presentLanes.map((v) => {
+                const t = trailTypeMap.get(v);
+                const on = selectedLanes.has(v);
+                return (
+                  <button
+                    key={`lane-${v}`}
+                    onClick={() => toggleLane(v)}
+                    aria-pressed={on}
+                    className="flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold transition-colors border"
+                    style={{
+                      background: on ? "#1d4ed8" : "rgba(255,255,255,0.08)",
+                      borderColor: on ? "#fff" : "rgba(255,255,255,0.2)",
+                      color: on ? "#fff" : "rgba(255,255,255,0.6)",
+                    }}
+                  >
+                    {t?.emoji ? <span>{t.emoji}</span> : null}
+                    <span>{t?.label ?? `Trail ${v}`}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          {filterWarn && (
+            <div className="text-center text-amber-300 text-xs pb-1.5">
+              Please select at least one trail type
             </div>
           )}
 
@@ -513,6 +649,7 @@ export default function PackTrackMap({
   const [loading, setLoading] = useState(true);
   const [hasTrack, setHasTrack] = useState(false);
   const [names, setNames] = useState<Record<string, string>>({});
+  const [trailCfg, setTrailCfg] = useState<string | null>(null);
 
   const onTrackLoadedRef = useRef(onTrackLoaded);
   useEffect(() => { onTrackLoadedRef.current = onTrackLoaded; });
@@ -538,6 +675,7 @@ export default function PackTrackMap({
       setMaxTs(mx);
       setHasTrack(true);
       setLoading(false);
+      if (data?.trailTypesConfigJson) setTrailCfg(data.trailTypesConfigJson);
       onTrackLoadedRef.current?.(true);
 
       // Resolve runner display names (optional — failures fall back to "Runner N").
@@ -547,7 +685,7 @@ export default function PackTrackMap({
     });
   }, [eventId, publicEventId]);
 
-  const viewProps: PackTrackViewProps = { lat, lon, users, minTs, maxTs, hasTrack, names };
+  const viewProps: PackTrackViewProps = { lat, lon, users, minTs, maxTs, hasTrack, names, trailTypesConfigJson: trailCfg };
 
   // Standalone full-viewport page (dedicated PackTrack route). Fills the screen
   // with the playback view; the close button hands control back to the caller.

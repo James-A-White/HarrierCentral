@@ -25,6 +25,7 @@ part 'pages/kennel_songs_page/layout.dart';
 part 'pages/kennel_logo_page/layout.dart';
 part 'pages/kennel_platform_admin_page/layout.dart';
 part 'pages/kennel_trail_symbols_page/layout.dart';
+part 'pages/kennel_trail_types_page/layout.dart';
 part 'pages/kennel_page_new_widgets.dart';
 
 // ---------------------------------------------------------------------------
@@ -299,6 +300,8 @@ class _KennelTabBarView extends StatelessWidget {
         return KennelPlatformAdminTabContent(controller: controller);
       case KennelTabType.trailSymbols:
         return KennelTrailSymbolsTabContent(controller: controller);
+      case KennelTabType.trailTypes:
+        return KennelTrailTypesTabContent(controller: controller);
     }
   }
 }

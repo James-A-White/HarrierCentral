@@ -32,8 +32,14 @@ class RunTrackerMapController extends GetxController
 
   static const double _zoomFastThreshold = 15.0;
   static const double _zoomSlowThreshold = 22.0;
-  static const Duration _playbackFastDuration = Duration(seconds: 10);
-  static const Duration _playbackSlowDuration = Duration(seconds: 480);
+  // Playback duration scales with the trail's length, not a fixed wall-clock
+  // time: the zoomed-out rate is 1 s/km (a 28 km run plays in 28 s, a 5 km run
+  // in 5 s), and zooming in slows that down toward 8 s/km so detail is
+  // watchable. The rate is interpolated by zoom between the two thresholds.
+  static const double _msPerKmFast = 1000.0; // 1 s/km — fully zoomed out (≤ 15)
+  static const double _msPerKmSlow = 8000.0; // 8 s/km — fully zoomed in (≥ 22)
+  static const Duration _minPlaybackDuration =
+      Duration(seconds: 3); // floor so a very short trail doesn't flash past
   static const Duration _autoUpdateInterval = Duration(seconds: 15);
 
   final MapController mapController = MapController();
@@ -68,6 +74,14 @@ class RunTrackerMapController extends GetxController
   final RxnDouble currentTimestampMs = RxnDouble();
   final RxBool isPlaying = false.obs;
   final RxnString selectedRunnerId = RxnString();
+
+  // Trail-type filtering: the kennel's config (bundled by GetPositions on the
+  // full fetch), the set of lanes currently shown, and the lanes ever seen so
+  // newly-appearing lanes default to visible while user deselections persist.
+  final RxnString trailTypesConfigJson = RxnString();
+  final RxSet<int> selectedTrailValues = <int>{}.obs;
+  final Set<int> _knownTrailValues = {};
+
   final latlng.Distance _distanceCalculator = const latlng.Distance();
 
   // Marks of the same type closer than this are treated as the same physical
@@ -143,7 +157,7 @@ class RunTrackerMapController extends GetxController
     final bool hasSelection = selectedId != null;
     final double baseAlpha = hasSelection ? 0.6 : 1.0;
 
-    return userPositions
+    return visibleRunners
         .where((user) => !hasSelection || user.id != selectedId)
         .map((user) => _buildPolylineForUser(user, cutoff, alpha: baseAlpha))
         .whereType<Polyline>()
@@ -152,7 +166,7 @@ class RunTrackerMapController extends GetxController
 
   Polyline? get highlightedPolyline {
     final runner = _runnerById(selectedRunnerId.value);
-    if (runner == null) return null;
+    if (runner == null || !isRunnerVisible(runner)) return null;
     final cutoff = timelineAvailable ? currentTimestampMs.value : null;
     return _buildPolylineForUser(runner, cutoff, alpha: 1.0, strokeWidth: 6.0);
   }
@@ -176,7 +190,7 @@ class RunTrackerMapController extends GetxController
 
     final hasSelection = selectedId != null;
 
-    for (final user in userPositions) {
+    for (final user in visibleRunners) {
       final interpolated = _interpolatedPosition(user, cutoff);
       if (interpolated == null) continue;
       final logo = userLogos[user.id];
@@ -574,6 +588,11 @@ class RunTrackerMapController extends GetxController
         latestClientTimestampMs: _afterTimestampMs ?? '0000000000000000000',
       );
       _afterTimestampMs = data.latestServerTimestampMs;
+      // Trail-type config arrives on the full fetch only; cache it (incremental
+      // polls return null, so don't clobber the cached value).
+      if (data.trailTypesConfigJson != null) {
+        trailTypesConfigJson.value = data.trailTypesConfigJson;
+      }
       _startAutoUpdateTimer();
       await _hydrateLogos(data.users);
 
@@ -598,6 +617,7 @@ class RunTrackerMapController extends GetxController
       }).toList();
 
       userPositions.assignAll(cleanedUsers);
+      _refreshTrailFilter();
       _initializeTimelineBounds();
       _ensureSelection();
       syncRunnerPickerToSelection(onlyIfMismatch: true, animated: false);
@@ -605,6 +625,87 @@ class RunTrackerMapController extends GetxController
       debugPrint('Error fetching positions: $error');
       BootLogger.logError('[RunTrackerMapController.loadPositions] eventId=${event.eventId}', error, s);
     }
+  }
+
+  // ── Trail-type filtering ──────────────────────────────────────────────────
+
+  /// The trail lane a runner declared, from their latest `TRL::<value>` point.
+  /// Defaults to Normal when none was declared (legacy / undeclared tracks).
+  int trailValueForRunner(UserTrack user) {
+    int? latest;
+    for (final p in user.positions) {
+      final t = (p.type ?? '').trim();
+      if (!t.startsWith('TRL::')) continue;
+      // Strip any trailing '::...' or diagnostic '~tag' before parsing the int.
+      final body = t.substring(5).split('::').first.split('~').first.trim();
+      final v = int.tryParse(body);
+      if (v != null) latest = v; // positions are time-ordered → last wins
+    }
+    return latest ?? TrailType.normalValue;
+  }
+
+  /// Resolves a lane value to its display type (label + emoji) for this kennel.
+  TrailType trailTypeFor(int value) =>
+      TrailType.resolveOne(value, trailTypesConfigJson.value);
+
+  /// Distinct lanes present in the loaded data, ordered by the kennel's order.
+  List<int> get presentTrailValues {
+    final present = userPositions.map(trailValueForRunner).toSet();
+    final visible = TrailType.resolveVisible(trailTypesConfigJson.value);
+    final order = <int, int>{};
+    for (var i = 0; i < visible.length; i++) {
+      order[visible[i].value] = i;
+    }
+    final list = present.toList()
+      ..sort((a, b) => (order[a] ?? 1000 + a).compareTo(order[b] ?? 1000 + b));
+    return list;
+  }
+
+  bool isRunnerVisible(UserTrack user) =>
+      selectedTrailValues.isEmpty ||
+      selectedTrailValues.contains(trailValueForRunner(user));
+
+  /// Runners passing the active trail-type filter.
+  List<UserTrack> get visibleRunners =>
+      userPositions.where(isRunnerVisible).toList(growable: false);
+
+  /// Adds newly-seen lanes to the selection so new runners show by default,
+  /// while keeping any deselections the user has already made.
+  void _refreshTrailFilter() {
+    for (final v in presentTrailValues) {
+      if (_knownTrailValues.add(v)) selectedTrailValues.add(v);
+    }
+  }
+
+  /// Toggles a lane in the filter. Refuses to clear the last one (a runner must
+  /// always be visible) and nudges the user with a toast.
+  void toggleTrailFilter(int value) {
+    if (selectedTrailValues.contains(value)) {
+      if (selectedTrailValues.length <= 1) {
+        Get.snackbar(
+          'Trail filter',
+          'Please select at least one trail type',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+      selectedTrailValues.remove(value);
+    } else {
+      selectedTrailValues.add(value);
+    }
+    _ensureSelectionVisible();
+  }
+
+  /// If the selected runner is filtered out, moves selection to the first
+  /// still-visible runner so follow/camera never points at a hidden track.
+  void _ensureSelectionVisible() {
+    final sel = selectedRunnerId.value;
+    if (sel != null) {
+      final runner = _runnerById(sel);
+      if (runner != null && isRunnerVisible(runner)) return;
+    }
+    final firstVisible = userPositions.firstWhereOrNull(isRunnerVisible);
+    selectRunner(firstVisible?.id, recenter: false, syncPicker: true);
   }
 
   void setVisible(bool visible) {
@@ -778,6 +879,11 @@ class RunTrackerMapController extends GetxController
 
     final parts = value.split('::');
     final typeKey = parts.first.trim();
+
+    // Trail-type declarations ride in the type field but are metadata, not
+    // checkpoints — never draw them.
+    if (typeKey == 'TRL') return null;
+
     final customLabel = parts.length > 1
         ? parts.sublist(1).join('::').trim()
         : null;
@@ -1046,11 +1152,30 @@ class RunTrackerMapController extends GetxController
       return;
     }
     timestamps.sort();
-    minTimestampMs.value = timestamps.first.toDouble();
-    maxTimestampMs.value = timestamps.last.toDouble();
-    currentTimestampMs.value = maxTimestampMs.value;
+    final double newMin = timestamps.first.toDouble();
+    final double newMax = timestamps.last.toDouble();
+    final double? previousMax = maxTimestampMs.value;
+    final double? current = currentTimestampMs.value;
+    minTimestampMs.value = newMin;
+    maxTimestampMs.value = newMax;
+
+    // On the first load (no position yet) jump to the latest point. On later
+    // reloads — notably the 15s auto-update for a run that isn't 24h-stale yet —
+    // do NOT snap the scrubber to the end: preserve where the user parked it so
+    // they can review the run. Only keep following the live edge if they were
+    // already sitting at the end.
+    final double resolved;
+    if (current == null || (previousMax != null && current >= previousMax)) {
+      resolved = newMax;
+    } else {
+      resolved = current.clamp(newMin, newMax).toDouble();
+    }
+    currentTimestampMs.value = resolved;
     pausePlayback();
-    _playbackController.value = 1.0;
+    final double span = newMax - newMin;
+    _playbackController.value = span <= 0
+        ? 1.0
+        : ((resolved - newMin) / span).clamp(0.0, 1.0).toDouble();
   }
 
   void _ensureSelection() {
@@ -1164,8 +1289,11 @@ class RunTrackerMapController extends GetxController
   }
 
   int? _runnerIndex(String userId) {
-    for (var i = 0; i < userPositions.length; i++) {
-      if (userPositions[i].id == userId) return i;
+    // Indexes into the *visible* list so the picker wheel and selection stay in
+    // sync with what the trail-type filter is actually showing.
+    final list = visibleRunners;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id == userId) return i;
     }
     return null;
   }
@@ -1437,8 +1565,27 @@ class RunTrackerMapController extends GetxController
   }
 
   Duration _durationForZoom(double zoom) {
+    final km = _trailDistanceMeters() / 1000.0;
     final t = _zoomProgress(zoom);
-    return _lerpDuration(_playbackFastDuration, _playbackSlowDuration, t);
+    final msPerKm = _msPerKmFast + (_msPerKmSlow - _msPerKmFast) * t;
+    final ms = (km * msPerKm).round();
+    return ms > _minPlaybackDuration.inMilliseconds
+        ? Duration(milliseconds: ms)
+        : _minPlaybackDuration;
+  }
+
+  /// Total trail length in meters = the longest single runner's full track
+  /// (OIN-terminated). Drives playback duration and is stable regardless of
+  /// which runner is selected. Returns 0 before any track has loaded, which
+  /// floors the duration; it is recomputed when playback starts (see
+  /// [togglePlayback] → [_applyPlaybackDurationFromZoom]).
+  double _trailDistanceMeters() {
+    double max = 0.0;
+    for (final runner in userPositions) {
+      final d = _sumInterpolatedDistance(_interpolatedTrackPoints(runner, null));
+      if (d > max) max = d;
+    }
+    return max;
   }
 
   double _currentPlaybackProgress() {
@@ -1492,13 +1639,6 @@ class RunTrackerMapController extends GetxController
     final timeLabel =
         '${twoDigits(dt.hour)}:${twoDigits(dt.minute)}:${twoDigits(dt.second)}';
     return '$dateLabel $timeLabel';
-  }
-
-  Duration _lerpDuration(Duration a, Duration b, double t) {
-    final lerpedMs =
-        (a.inMilliseconds + ((b.inMilliseconds - a.inMilliseconds) * t))
-            .round();
-    return Duration(milliseconds: lerpedMs);
   }
 }
 

@@ -1,5 +1,32 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.11.0+1179 (2026-06-27)
+
+### New Features
+- **PackTrack trail types**: pick which trail you're running (Walkers / Short / Normal / Long / Ballbreaker, or your kennel's own) when you start tracking, and filter the run-map playback by trail type.
+
+### Improvements
+- Run-map playback speed now scales with the trail's length — 1 s/km zoomed out (a 28 km run plays in 28 s), slowing toward 8 s/km as you zoom in.
+
+## 2.11.0+1178 (2026-06-21)
+
+### Security & Reliability
+
+- **Sensitive credentials moved to secure storage**: the device **reset code** and
+  **qrSecretCode** now live in the iOS Keychain / Android encrypted storage instead
+  of plain app storage. Existing installs are promoted automatically on first boot
+  (the imprint "Storage" line now reads *encrypted*). _Non-sensitive configuration
+  stays in standard storage for speed; the device secret follows in a 2.11.x update._
+- **Self-healing recovery**: a reset keeps only the reset code (the recovery key)
+  in the keychain; on reboot the app re-authorises itself automatically — fresh
+  device registration and a clean data reload — with no user input. A full reload
+  is now a reliable way to recover from data corruption.
+- **One unified reset flow**: *Reload data*, *Log out* and the major-DB-upgrade path
+  now share a single wipe-and-reboot routine.
+- **Wipe guard**: a full reload is blocked unless the backend is reachable all the
+  way to the database, so the app can never wipe itself into an unrecoverable state.
+  Re-authorisation failures always fall back to a manual login — the app can't brick.
+
 ## 2.10.7+1177 (2026-06-20)
 
 ### Improvements

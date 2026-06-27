@@ -62,6 +62,7 @@ abstract class KennelsModel with _$KennelsModel implements BaseModel {
     String? kennelMismanagementTeam,
     int? distancePreference,
     String? trailSymbolsConfigJson,
+    String? trailTypesConfigJson,
     DateTime? updatedAt,
     int? removed,
   }) = _KennelsModel;

@@ -17,6 +17,15 @@ class LiveRunGeneralController extends GetxController {
   final Rx<Duration> elapsed = const Duration().obs;
   final Rx<Position?> lastPosition = Rx<Position?>(null);
 
+  /// The trail lane the runner declares they're running. Rides on the track as
+  /// `TRL::<value>`. Defaults to Normal (#3) — always one of the kennel's
+  /// visible types since Normal can never be hidden.
+  final RxInt selectedTrailValue = TrailType.normalValue.obs;
+
+  /// Visible, ordered trail types for this run's kennel (built-ins merged with
+  /// the kennel's customisations). Always includes Normal.
+  List<TrailType> get trailTypes => run.kennel.trailTypes;
+
   // Exposes LocationService.isPaused directly so the UI Obx can observe it.
   RxBool get isPaused => _locationService.isPaused;
 
@@ -103,8 +112,22 @@ class LiveRunGeneralController extends GetxController {
 
     _locationService.joinRunTracking.value = newValue;
 
-    if (!newValue) {
+    if (newValue) {
+      // Tag the new track with the declared lane so playback can label/filter
+      // it. Fire-and-forget — joinRunTracking is true so the point is buffered.
+      unawaited(_locationService.declareTrailType(selectedTrailValue.value));
+    } else {
       _stopElapsedTicker();
+    }
+  }
+
+  /// Sets the runner's declared trail lane. If tracking is already underway,
+  /// re-declares immediately (last declaration wins) so the change is recorded.
+  void selectTrailType(int value) {
+    if (selectedTrailValue.value == value) return;
+    selectedTrailValue.value = value;
+    if (isTracking.value) {
+      unawaited(_locationService.declareTrailType(value));
     }
   }
 
@@ -125,8 +148,8 @@ class LiveRunGeneralController extends GetxController {
     _stopElapsedTicker();
   }
 
-  Future<void> markSlot(TrailSlot slot, {String? label}) async {
-    await _locationService.markSlot(slot, label: label);
+  Future<void> markSlot(TrailSlot slot, {String? label, String? debugTag}) async {
+    await _locationService.markSlot(slot, label: label, debugTag: debugTag);
   }
 
   /// Returns the timestamp (epoch ms) that should be stamped on the GPS track
@@ -249,6 +272,7 @@ class LiveRunGeneralPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildTopButtons(context),
+                    _buildTrailTypePicker(context),
                     const SizedBox(height: 12),
                     _buildStatsRow(),
                     const SizedBox(height: 12),
@@ -553,6 +577,71 @@ class LiveRunGeneralPage extends StatelessWidget {
     });
   }
 
+  Widget _buildTrailTypePicker(BuildContext context) {
+    final types = controller.trailTypes;
+    // Nothing to choose when the kennel exposes a single lane (e.g. only
+    // Normal): the default declaration still fires on start; just no picker.
+    if (types.length <= 1) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Your trail',
+            style: ts_button.copyWith(color: Colors.yellow, fontSize: 14),
+          ),
+          const SizedBox(height: 6),
+          Obx(() {
+            final selected = controller.selectedTrailValue.value;
+            return Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final t in types)
+                  _trailTypeChip(t, isSelected: t.value == selected),
+              ],
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _trailTypeChip(TrailType type, {required bool isSelected}) {
+    return InkWell(
+      onTap: () => controller.selectTrailType(type.value),
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: isSelected ? hc_blue : Colors.white.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? Colors.white : Colors.white24,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (type.emoji.isNotEmpty) ...[
+              Text(type.emoji, style: const TextStyle(fontSize: 16)),
+              const SizedBox(width: 6),
+            ],
+            Text(
+              type.label,
+              style: ts_button.copyWith(
+                fontSize: 14,
+                color: isSelected ? Colors.white : Colors.white70,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildMarkerGrid(BuildContext context) {
     final slots = run.kennel.trailSlots;
 
@@ -604,6 +693,11 @@ class LiveRunGeneralPage extends StatelessWidget {
   Widget _buildSlotButton(BuildContext context, TrailSlot slot) {
     return InkWell(
       onTap: () async {
+        // PackTrack diagnostic: a per-tap id, embedded in the mark data (only when
+        // debugHarvestEnabled) so "one tap → many marks" is visible in the server
+        // data. See LocationService.updateDeviceLocation. Strip when resolved.
+        final String tapId =
+            DateTime.now().millisecondsSinceEpoch.toString().substring(7);
         String? label;
 
         if (slot.parsedAction == TrailSlotAction.addText) {
@@ -628,7 +722,7 @@ class LiveRunGeneralPage extends StatelessWidget {
         if (!context.mounted) return;
         unawaited(_showSlotFlash(context, slot, label));
 
-        await controller.markSlot(slot, label: label);
+        await controller.markSlot(slot, label: label, debugTag: tapId);
 
         if (slot.parsedAction == TrailSlotAction.endRun) {
           controller.stopTracking();

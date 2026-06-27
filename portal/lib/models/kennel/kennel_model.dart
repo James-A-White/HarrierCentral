@@ -109,6 +109,7 @@ abstract class KennelModel with _$KennelModel {
     int? distancePreference,
     String? kennelSearchTags,
     String? trailSymbolsConfigJson,
+    String? trailTypesConfigJson,
   }) = _KennelModel;
 
   factory KennelModel.empty() => KennelModel(
