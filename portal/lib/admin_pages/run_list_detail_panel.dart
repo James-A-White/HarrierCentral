@@ -69,6 +69,10 @@ class RunListDetailPanel extends StatelessWidget {
               children: [
                 _heroImage(),
                 _eventHeaderCard(),
+                if (_canEditRun) ...[
+                  const SizedBox(height: 14),
+                  _editRunCta(context),
+                ],
                 const SizedBox(height: 14),
                 _infoGrid(),
                 if (_latLon(edr.runDetails) != null) ...[
@@ -655,37 +659,67 @@ class RunListDetailPanel extends StatelessWidget {
     );
   }
 
+  // ── Edit Run ───────────────────────────────────────────────────────────────
+
+  bool get _canEditRun =>
+      controller.kennel.canManageRuns || controller.kennel.canManageHashCash;
+
+  // Prominent, always-visible primary action at the top of the detail so
+  // "how do I edit this run" is answered immediately — the bottom action bar
+  // is easy to miss (and used to push this button off-screen on a phone).
+  Widget _editRunCta(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: TextButton.icon(
+        onPressed: () => _onEditRun(context),
+        icon: const Icon(Icons.edit_outlined, size: 18),
+        label: const Text('Edit Run'),
+        style: TextButton.styleFrom(
+          backgroundColor: _kRed,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _onEditRun(BuildContext context) async {
+    final rdm = edr.runDetails;
+    await Get.to<RunEditPage>(
+      () => RunEditPage(
+        runData: rdm,
+        kennelData: controller.kennel,
+        isAddMode: false,
+      ),
+    );
+    // Refresh the sidebar list and the detail panel concurrently. refreshEvents()
+    // re-fetches allEvents so the run's name/date/etc. in the list item reflect
+    // any edits made in RunEditPage.
+    unawaited(controller.refreshEvents());
+    controller.eventForSingleEventDetailsView.value =
+        await querySingleEvent(rdm.publicEventId ?? '');
+  }
+
   // ── Action bar ─────────────────────────────────────────────────────────────
 
   Widget _actionBar(BuildContext context) {
     final rdm = edr.runDetails;
+    // Wrap (not Row) so the secondary actions flow onto a second line on a
+    // phone instead of overflowing off the right edge. Edit Run lives at the
+    // top of the detail (_editRunCta), so it is intentionally not repeated here.
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(top: BorderSide(color: _kBorder)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Row(
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
         children: [
-          if (controller.kennel.canManageRuns)
-            _btn(
-              'Delete',
-              Icons.delete_outline,
-              style: _Btn.danger,
-              onPressed: () async {
-                final confirm = await CoreUtilities.showAlert(
-                      'Delete Run',
-                      'Would you like to delete "${rdm.eventName}"?',
-                      'Delete run',
-                      showCancelButton: true,
-                    ) ??
-                    false;
-                if (confirm && rdm.publicEventId != null) {
-                  await controller.deleteEvent(rdm.publicEventId);
-                }
-              },
-            ),
-          const Spacer(),
           if (rdm.publicEventId != null)
             _btn(
               'Copy link',
@@ -705,7 +739,6 @@ class RunListDetailPanel extends StatelessWidget {
                 );
               },
             ),
-          const SizedBox(width: 8),
           if (_mapUrl(rdm).isNotEmpty)
             _btn(
               'Map',
@@ -715,7 +748,6 @@ class RunListDetailPanel extends StatelessWidget {
                 if (Uri.parse(url).isAbsolute) _openWindow(url, '_blank');
               },
             ),
-          const SizedBox(width: 8),
           _btn(
             'Trail Chat',
             Icons.chat_bubble_outline,
@@ -731,15 +763,13 @@ class RunListDetailPanel extends StatelessWidget {
               controller.resetBadgeCount(rdm.publicEventId!);
             },
           ),
-          const SizedBox(width: 8),
           _btn(
             'Email',
             Icons.email_outlined,
             onPressed: () async => Get.to<EmailModel>(EmailPage.new),
           ),
           if (controller.kennel.canManagePublicWebContent ||
-              controller.kennel.isAdmin) ...[
-            const SizedBox(width: 8),
+              controller.kennel.isAdmin)
             _btn(
               'Review Photos',
               Icons.photo_library_outlined,
@@ -757,31 +787,24 @@ class RunListDetailPanel extends StatelessWidget {
                 );
               },
             ),
-          ],
-          if (controller.kennel.canManageRuns ||
-              controller.kennel.canManageHashCash) ...[
-            const SizedBox(width: 8),
+          if (controller.kennel.canManageRuns)
             _btn(
-              'Edit Run',
-              Icons.edit_outlined,
-              style: _Btn.primary,
+              'Delete',
+              Icons.delete_outline,
+              style: _Btn.danger,
               onPressed: () async {
-                await Get.to<RunEditPage>(
-                  () => RunEditPage(
-                    runData: rdm,
-                    kennelData: controller.kennel,
-                    isAddMode: false,
-                  ),
-                );
-                // Refresh the sidebar list and the detail panel concurrently.
-                // refreshEvents() re-fetches allEvents so the run's name/date/etc.
-                // in the list item reflect any edits made in RunEditPage.
-                unawaited(controller.refreshEvents());
-                controller.eventForSingleEventDetailsView.value =
-                    await querySingleEvent(rdm.publicEventId ?? '');
+                final confirm = await CoreUtilities.showAlert(
+                      'Delete Run',
+                      'Would you like to delete "${rdm.eventName}"?',
+                      'Delete run',
+                      showCancelButton: true,
+                    ) ??
+                    false;
+                if (confirm && rdm.publicEventId != null) {
+                  await controller.deleteEvent(rdm.publicEventId);
+                }
               },
             ),
-          ],
         ],
       ),
     );

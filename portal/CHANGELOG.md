@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.18+651 — 2026-06-27
+
+- The run detail view now has a prominent **Edit Run** button right at the top (previously the only way in was a button buried at the far end of the bottom action bar, which on a phone was pushed off-screen). The remaining actions in the bottom bar now wrap onto a second line on narrow screens instead of overflowing.
+
+---
+
 ## 2.0.17+650 — 2026-06-27
 
 - Editing a run is now obvious: every run card has a visible **Edit** button (shown to users who can manage runs) that opens the editor directly — no need to tap into the detail panel and hunt for the button. Run cards also now show a pointer cursor so they clearly read as clickable.
