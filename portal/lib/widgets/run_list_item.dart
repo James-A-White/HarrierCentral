@@ -5,6 +5,7 @@ class RunListItem extends StatelessWidget {
   const RunListItem({
     required this.event,
     required this.onTap,
+    this.onEdit,
     this.isSelected = false,
     this.chatCount = 0,
     super.key,
@@ -12,6 +13,12 @@ class RunListItem extends StatelessWidget {
 
   final RunListModel event;
   final VoidCallback? onTap;
+
+  /// When non-null the card shows an explicit "Edit" affordance that jumps
+  /// straight into the run editor. Supplied by the parent only when the user
+  /// has run-management permission, so gating stays where the kennel context
+  /// lives. Null → no edit button (read-only viewers).
+  final VoidCallback? onEdit;
   final bool isSelected;
   final int chatCount;
 
@@ -55,9 +62,20 @@ class RunListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
+    // MouseRegion gives a pointer cursor on the web so the card visibly reads
+    // as interactive — the old bare GestureDetector gave no such hint, which
+    // is why "how do I open / edit a run" wasn't obvious.
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        child: _card(),
+      ),
+    );
+  }
+
+  Widget _card() {
+    return Container(
         decoration: BoxDecoration(
           color: _isVisible ? Colors.white : const Color(0xFFF1F5F9),
           borderRadius: BorderRadius.circular(_radius),
@@ -85,7 +103,6 @@ class RunListItem extends StatelessWidget {
             _buildBody(),
           ],
         ),
-      ),
     );
   }
 
@@ -123,7 +140,47 @@ class RunListItem extends StatelessWidget {
               const SizedBox(width: 8),
               _runNumBadge(),
             ],
+            if (onEdit != null) ...[
+              const SizedBox(width: 8),
+              _editButton(),
+            ],
           ],
+        ),
+      ),
+    );
+  }
+
+  // Explicit, always-visible edit affordance on the run card. Sits in the
+  // coloured header so it reads at a glance on every run. Its own tap handler
+  // wins over the card's GestureDetector, so it edits without first opening
+  // the detail panel.
+  Widget _editButton() {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: Material(
+        color: Colors.white.withValues(alpha: 0.22),
+        borderRadius: BorderRadius.circular(20),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onEdit,
+          child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.edit_outlined, size: 13, color: Colors.white),
+                SizedBox(width: 4),
+                Text(
+                  'Edit',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

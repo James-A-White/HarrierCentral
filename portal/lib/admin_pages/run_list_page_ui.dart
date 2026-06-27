@@ -1237,6 +1237,8 @@ class RunListPage extends StatelessWidget {
                   return GetBuilder<RunListPageController>(
                     id: 'chatCountBadge',
                     builder: (controller) {
+                      final canEdit = formController.kennel.canManageRuns ||
+                          formController.kennel.canManageHashCash;
                       return RunListItem(
                         event: event,
                         isSelected: isSelected,
@@ -1247,6 +1249,9 @@ class RunListPage extends StatelessWidget {
                           formController.eventForSingleEventDetailsView.value =
                               await querySingleEvent(event.publicEventId);
                         },
+                        onEdit: canEdit
+                            ? () => _editRunFromList(event.publicEventId)
+                            : null,
                       );
                     },
                   );
@@ -1257,6 +1262,24 @@ class RunListPage extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  // Opens the run editor straight from a list card's "Edit" button. Fetches the
+  // full run details (the editor needs the rich RunDetailsModel, not the lighter
+  // list model), then mirrors the detail panel's post-edit refresh so the list
+  // and any open detail view reflect the changes.
+  Future<void> _editRunFromList(String publicEventId) async {
+    final edr = await querySingleEvent(publicEventId);
+    await Get.to<RunEditPage>(
+      () => RunEditPage(
+        runData: edr.runDetails,
+        kennelData: formController.kennel,
+        isAddMode: false,
+      ),
+    );
+    unawaited(formController.refreshEvents());
+    formController.eventForSingleEventDetailsView.value =
+        await querySingleEvent(publicEventId);
   }
 
   Future<KennelModel?> _getKennel(String publicKennelId) async {

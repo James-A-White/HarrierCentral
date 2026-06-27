@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.17+650 — 2026-06-27
+
+- Editing a run is now obvious: every run card has a visible **Edit** button (shown to users who can manage runs) that opens the editor directly — no need to tap into the detail panel and hunt for the button. Run cards also now show a pointer cursor so they clearly read as clickable.
+
+---
+
 ## 2.0.16+649 — 2026-06-27
 
 - Restored the app version number (dropped when the promo banner was removed): now a small, always-visible label in the top-right of the runs page app bar, on both wide and narrow layouts.
