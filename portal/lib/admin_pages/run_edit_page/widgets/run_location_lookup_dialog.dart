@@ -359,10 +359,16 @@ class RunLocationLookupDialog extends StatelessWidget {
 
   final RunLocationLookupController controller;
 
+  // Phone-sized layout: drop the side map, full-width panel, compact text.
+  bool get _isNarrow => Get.width < 600;
+
   @override
   Widget build(BuildContext context) {
     final c = controller;
     return Dialog(
+      insetPadding: _isNarrow
+          ? const EdgeInsets.symmetric(horizontal: 10, vertical: 24)
+          : const EdgeInsets.all(24),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 900, maxHeight: 700),
         child: Column(
@@ -388,19 +394,28 @@ class RunLocationLookupDialog extends StatelessWidget {
   // ── Header ────────────────────────────────────────────────────────────────
 
   Widget _buildHeader(RunLocationLookupController c) {
+    final narrow = _isNarrow;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: narrow ? 12 : 16, vertical: 8),
       color: Colors.grey.shade200,
       child: Row(
         children: [
-          Icon(FontAwesome5Solid.map_marker_alt, color: Colors.red[800]),
-          const SizedBox(width: 12),
+          Icon(
+            FontAwesome5Solid.map_marker_alt,
+            color: Colors.red[800],
+            size: narrow ? 16 : null,
+          ),
+          SizedBox(width: narrow ? 8 : 12),
           Text(
             'Location Lookup',
-            style: buttonLabelStyleMedium.copyWith(color: Colors.black),
+            style: buttonLabelStyleMedium.copyWith(
+              color: Colors.black,
+              fontSize: narrow ? 14 : null,
+            ),
           ),
           const Spacer(),
           IconButton(
+            visualDensity: narrow ? VisualDensity.compact : null,
             onPressed: () => Get.back(),
             icon: const Icon(Icons.close, color: Colors.black54),
           ),
@@ -414,8 +429,12 @@ class RunLocationLookupDialog extends StatelessWidget {
   Widget _buildTabBar(RunLocationLookupController c) {
     return Container(
       color: Colors.grey.shade200,
-      padding:
-          const EdgeInsets.only(left: 16, right: 16, bottom: 12, top: 4),
+      padding: EdgeInsets.only(
+        left: _isNarrow ? 12 : 16,
+        right: _isNarrow ? 12 : 16,
+        bottom: _isNarrow ? 8 : 12,
+        top: 4,
+      ),
       child: AnimatedBuilder(
         animation: c.tabController,
         builder: (context, _) => LayoutBuilder(
@@ -475,23 +494,29 @@ class RunLocationLookupDialog extends StatelessWidget {
     required String label,
   }) {
     final isSelected = c.tabController.index == index;
+    final narrow = _isNarrow;
     return Expanded(
       child: GestureDetector(
         onTap: () => c.tabController.animateTo(index),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          padding: EdgeInsets.symmetric(vertical: narrow ? 8 : 10),
           color: Colors.transparent,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(icon,
-                  size: 15,
+                  size: narrow ? 13 : 15,
                   color: isSelected ? Colors.white : Colors.black87),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: buttonLabelStyleMedium.copyWith(
-                  color: isSelected ? Colors.white : Colors.black,
+              SizedBox(width: narrow ? 6 : 8),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: buttonLabelStyleMedium.copyWith(
+                    color: isSelected ? Colors.white : Colors.black,
+                    fontSize: narrow ? 12.5 : null,
+                  ),
                 ),
               ),
             ],
@@ -504,6 +529,8 @@ class RunLocationLookupDialog extends StatelessWidget {
   // ── Tab 1 — Previous Runs ─────────────────────────────────────────────────
 
   Widget _buildPreviousRunsTab(RunLocationLookupController c) {
+    // Phone: list only (no side map, no fixed-width panel that would overflow).
+    if (_isNarrow) return _buildSearchPanel(c);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -567,20 +594,25 @@ class RunLocationLookupDialog extends StatelessWidget {
       Obx(() {
         final isSelected = index == c.selectedIndex.value;
         final loc = c.filteredLocations[index];
+        final narrow = _isNarrow;
         return ListTile(
           key: c.itemKeys[index],
           selected: isSelected,
           selectedTileColor: Colors.blue.shade50,
-          leading: CircleAvatar(
-            backgroundColor: isSelected ? Colors.green : Colors.red[800],
-            child: Text(
-              '${index + 1}',
-              style: const TextStyle(color: Colors.white),
-            ),
-          ),
+          dense: narrow,
+          visualDensity: narrow ? VisualDensity.compact : null,
+          contentPadding: narrow
+              ? const EdgeInsets.symmetric(horizontal: 10, vertical: 2)
+              : null,
+          horizontalTitleGap: narrow ? 8 : null,
+          leading: _tileBadge('${index + 1}',
+              isSelected ? Colors.green : Colors.red[800]!, narrow),
           title: Text(
             loc.label,
-            style: bodyStyleBlack.copyWith(fontWeight: FontWeight.bold),
+            style: bodyStyleBlack.copyWith(
+              fontWeight: FontWeight.bold,
+              fontSize: narrow ? 13.5 : null,
+            ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -588,14 +620,10 @@ class RunLocationLookupDialog extends StatelessWidget {
             loc.run.eventCityAndCountry,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
+            style: narrow ? const TextStyle(fontSize: 11.5) : null,
           ),
-          trailing: isSelected
-              ? ElevatedButton(
-                  onPressed: () => c.confirmSelection(index),
-                  style: defaultButtonStyle,
-                  child: Text('Use', style: textStyleButton),
-                )
-              : const Icon(Icons.chevron_right),
+          trailing: _tileTrailing(isSelected, () => c.confirmSelection(index),
+              narrow),
           onTap: () => c.selectLocation(index),
           onLongPress: () => c.confirmSelection(index),
         );
@@ -607,6 +635,8 @@ class RunLocationLookupDialog extends StatelessWidget {
   // ── Tab 2 — Gazetteer Search ──────────────────────────────────────────────
 
   Widget _buildGazetteerTab(RunLocationLookupController c) {
+    // Phone: list only (no side map, no fixed-width panel that would overflow).
+    if (_isNarrow) return _buildGazetteerPanel(c);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -722,36 +752,75 @@ class RunLocationLookupDialog extends StatelessWidget {
         address?.country,
       ].where((s) => s != null && s.isNotEmpty).join(', ');
 
+      final narrow = _isNarrow;
       return ListTile(
         selected: isSelected,
         selectedTileColor: Colors.blue.shade50,
-        leading: CircleAvatar(
-          backgroundColor: isSelected ? Colors.green : Colors.blue[700],
-          child: Text(
-            '${index + 1}',
-            style: const TextStyle(color: Colors.white),
-          ),
-        ),
+        dense: narrow,
+        visualDensity: narrow ? VisualDensity.compact : null,
+        contentPadding: narrow
+            ? const EdgeInsets.symmetric(horizontal: 10, vertical: 2)
+            : null,
+        horizontalTitleGap: narrow ? 8 : null,
+        leading: _tileBadge('${index + 1}',
+            isSelected ? Colors.green : Colors.blue[700]!, narrow),
         title: Text(
           name,
-          style: bodyStyleBlack.copyWith(fontWeight: FontWeight.bold),
+          style: bodyStyleBlack.copyWith(
+            fontWeight: FontWeight.bold,
+            fontSize: narrow ? 13.5 : null,
+          ),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
         subtitle: subtitle.isNotEmpty
-            ? Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis)
-            : null,
-        trailing: isSelected
-            ? ElevatedButton(
-                onPressed: () => c.confirmGazetteerSelection(index),
-                style: defaultButtonStyle,
-                child: Text('Use', style: textStyleButton),
+            ? Text(
+                subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: narrow ? const TextStyle(fontSize: 11.5) : null,
               )
-            : const Icon(Icons.chevron_right),
+            : null,
+        trailing: _tileTrailing(
+            isSelected, () => c.confirmGazetteerSelection(index), narrow),
         onTap: () => c.selectGazetteerResult(index),
         onLongPress: () => c.confirmGazetteerSelection(index),
       );
     });
+  }
+
+  // Shared compact tile bits so phone rows fit without clipping.
+  Widget _tileBadge(String n, Color color, bool narrow) {
+    return CircleAvatar(
+      radius: narrow ? 13 : 20,
+      backgroundColor: color,
+      child: Text(
+        n,
+        style: TextStyle(color: Colors.white, fontSize: narrow ? 11 : null),
+      ),
+    );
+  }
+
+  Widget _tileTrailing(bool isSelected, VoidCallback onUse, bool narrow) {
+    if (!isSelected) {
+      return Icon(Icons.chevron_right, size: narrow ? 18 : null);
+    }
+    return ElevatedButton(
+      onPressed: onUse,
+      style: narrow
+          ? ElevatedButton.styleFrom(
+              backgroundColor: Colors.red.shade800,
+              foregroundColor: Colors.white,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            )
+          : defaultButtonStyle,
+      child: narrow
+          ? const Text('Use', style: TextStyle(fontSize: 12.5))
+          : Text('Use', style: textStyleButton),
+    );
   }
 }
 

@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.27+660 — 2026-06-27
+
+- **Location Lookup fits phones now**: on narrow screens the lookup shows a full-width results list (the side map and fixed-width panel that pushed the Search button off-screen are dropped), with smaller text and tighter rows.
+
+---
+
 ## 2.0.26+659 — 2026-06-27
 
 - **Fixed: location Lookup did nothing on phones.** The lookup needs the full run list to suggest previous locations, but the phone only loads a recent detail window, so the list was empty and the button silently bailed. It now loads that list on demand when you open the lookup.
