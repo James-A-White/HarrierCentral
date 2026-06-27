@@ -1,5 +1,10 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.11.0+1180 (2026-06-27)
+
+### New Features
+- **Admin Portal**: admins get an "Admin Portal" item in the menu that opens the web portal already logged in (no QR scan needed).
+
 ## 2.11.0+1179 (2026-06-27)
 
 ### New Features

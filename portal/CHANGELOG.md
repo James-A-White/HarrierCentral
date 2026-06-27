@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.12+645 — 2026-06-27
+
+- Same-device login: the portal now accepts an `?authCode=` in the URL (used by the mobile app's "Admin Portal" button) and logs in without a QR scan.
+
+---
+
 ## 2.0.11+644 — 2026-06-27
 
 - Rolled the vertical tab rail out to the remaining editors (Run Edit, Kennel Website, Application Form, Email) via a shared `TabRailScaffold`. Each editor's rail has its own distinct colour — same saturation/luminance as the kennel blue, hue-rotated (green / teal / violet / crimson). Narrow screens keep each editor's existing tab bar.

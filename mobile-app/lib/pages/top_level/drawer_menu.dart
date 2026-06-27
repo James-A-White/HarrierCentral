@@ -29,6 +29,41 @@ class DrawerMenuState extends State<DrawerMenu> {
 
   final String _userId = currentUserId;
 
+  // Whether to show the "Admin Portal" item (admins of any kennel only).
+  bool _isAdmin = false;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_loadAdminStatus());
+  }
+
+  Future<void> _loadAdminStatus() async {
+    final isAdmin = await QueryKennels.isUserAdminOfAnyKennel();
+    if (mounted) setState(() => _isAdmin = isAdmin);
+  }
+
+  /// Same-device portal login: register a one-time auth code, then open the
+  /// portal at `…/?authCode=<code>` so it logs in without scanning a QR.
+  Future<void> _openAdminPortal() async {
+    Navigator.pop(context);
+    final authCode = const Uuid().v4();
+    final result =
+        await AuthenticateWebPortalService().authenticateWebPortal(authCode);
+    if (result?.result == 'Success') {
+      await launchUrl(
+        Uri.parse('$PORTAL_URL/?authCode=$authCode'),
+        mode: LaunchMode.externalApplication,
+      );
+    } else {
+      Get.snackbar(
+        'Admin Portal',
+        'Could not start a portal session. Please check your connection and try again.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return TextScaleFactorClamper(
@@ -122,6 +157,15 @@ class DrawerMenuState extends State<DrawerMenu> {
                       );
                     },
                   ),
+                  if (_isAdmin)
+                    ListTile(
+                      leading: const Icon(
+                        Icons.admin_panel_settings,
+                        color: textColor,
+                      ),
+                      title: Text('Admin Portal', style: _style),
+                      onTap: _openAdminPortal,
+                    ),
                   ListTile(
                     leading: const Icon(Icons.person, color: textColor),
                     title: Text('My Profile', style: _style),

@@ -104,6 +104,11 @@ const String EMAIL_RUN_REPORT_API_URL =
 const String STORE_POSITIONS_URL = 'https://$BASE_AF_URL/api/StorePositions';
 const String GET_POSITIONS_URL = 'https://$BASE_AF_URL/api/GetPositions';
 
+// Admin web portal — opened from the drawer for admin users. The app registers
+// a one-time auth code and opens `$PORTAL_URL/?authCode=<code>` so the portal
+// logs in without a QR scan (same-device login).
+const String PORTAL_URL = 'https://portal.harriercentral.com';
+
 // API key required by GetPositions (X-Api-Key header). Matches the ApiKey
 // environment variable in Azure App Service. StorePositions is unauthenticated.
 const String GET_POSITIONS_API_KEY =

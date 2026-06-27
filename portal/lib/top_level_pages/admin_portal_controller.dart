@@ -6,7 +6,20 @@ import 'package:hcportal/imports.dart';
 import 'package:web/web.dart' as web;
 
 class AdminPortalController extends GetxController {
-  final String authCode = const Uuid().v4();
+  // Same-device login from the mobile app: the app registers an auth code and
+  // opens the portal at `…/?authCode=<code>`. When present we use it directly
+  // (the app has already approved it), so the poll below authenticates without
+  // the user scanning a QR. Otherwise we generate a fresh code for the QR flow.
+  final String authCode = _resolveAuthCode();
+
+  static String _resolveAuthCode() {
+    final fromUrl = Uri.base.queryParameters['authCode']?.trim() ?? '';
+    return fromUrl.length >= 10 ? fromUrl : const Uuid().v4();
+  }
+
+  /// True when [authCode] came from the URL (mobile-app same-device login).
+  bool get isAppLogin =>
+      (Uri.base.queryParameters['authCode']?.trim().length ?? 0) >= 10;
 
   String firstName = '';
   String lastName = '';

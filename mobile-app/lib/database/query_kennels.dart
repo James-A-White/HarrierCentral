@@ -93,6 +93,25 @@ enum EnumKennelQueryContext { user, kennelAdmin }
 class QueryKennels {
   // the variable below is there to suppress a warning about defining classes with only static members
   int? unusedVariableToSuppressWarning;
+
+  /// True if the current user has admin (or super-admin) access on any kennel.
+  /// Used to gate admin-only UI (e.g. the "Admin Portal" drawer item).
+  static Future<bool> isUserAdminOfAnyKennel() async {
+    try {
+      final helper = tableModel.hasherKennelMapTableHelper;
+      final results = await database.rawQuery(
+        'SELECT COUNT(*) AS c '
+        'FROM ${EnumDataTables.hasherKennelMap.commonTableName} '
+        'WHERE ${helper.colUserId} = ? AND (${helper.colAppAccessFlags} & ?) != 0',
+        [currentUserId, authIsAdmin | authIsSuperAdmin],
+      );
+      final count = (results.first['c'] as int?) ?? 0;
+      return count > 0;
+    } catch (e) {
+      if (kDebugMode) debugPrint('isUserAdminOfAnyKennel error: $e');
+      return false;
+    }
+  }
   // it is important to have the beginning and end of the search field have a space
   // character to ensure that searches run properly.
 

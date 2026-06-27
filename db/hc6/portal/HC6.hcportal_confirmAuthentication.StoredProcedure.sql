@@ -64,11 +64,16 @@ BEGIN TRY
         RETURN;
     END
 
-    -- Check for matching auth request
+    -- Check for matching auth request. Hardening: ignore requests that have
+    -- already been consumed (Removed = 1) or that are older than the TTL, so a
+    -- scanData / auth code is single-use and short-lived.
     DECLARE @count int = 0
+    DECLARE @ttlMinutes int = 5
 
     SELECT @count = COUNT(*) FROM HC.WebPortalAuthenticationRequests w
     WHERE trim(lower(scanData)) = trim(lower(@qrCodeData))
+      AND ISNULL(w.Removed, 0) = 0
+      AND w.updatedAt > DATEADD(MINUTE, -@ttlMinutes, SYSDATETIMEOFFSET())
 
     -- If no matching auth request exists, return silently (no rowset)
     IF (@count = 0)
@@ -97,6 +102,8 @@ BEGIN TRY
                 FROM HC.WebPortalAuthenticationRequests w
                 INNER JOIN HC.Hasher h on w.hasherId = h.id
                 WHERE trim(lower(scanData)) = trim(lower(@qrCodeData))
+                  AND ISNULL(w.Removed, 0) = 0
+                  AND w.updatedAt > DATEADD(MINUTE, -@ttlMinutes, SYSDATETIMEOFFSET())
 
             IF (@hasherId IS NOT NULL)
             BEGIN
@@ -137,6 +144,13 @@ BEGIN TRY
     FROM HC.WebPortalAuthenticationRequests w
     INNER JOIN HC.Hasher h on w.hasherId = h.id
     WHERE trim(lower(scanData)) = trim(lower(@qrCodeData))
+      AND ISNULL(w.Removed, 0) = 0
+      AND w.updatedAt > DATEADD(MINUTE, -@ttlMinutes, SYSDATETIMEOFFSET());
+
+    -- Single-use: consume the request so the auth code cannot be replayed.
+    UPDATE HC.WebPortalAuthenticationRequests
+    SET Removed = 1
+    WHERE trim(lower(scanData)) = trim(lower(@qrCodeData));
 
 END TRY
 BEGIN CATCH
