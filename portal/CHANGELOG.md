@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.24+657 — 2026-06-27
+
+- **Faster phone runs load + lazy-loaded history**: the phone was fetching ~19 years of past runs at once (slow). It now loads the most recent year and lazy-loads another year of older runs each time you scroll near the bottom of the Past list, with a small spinner while more load. Past runs are now ordered most-recent first.
+
+---
+
 ## 2.0.23+656 — 2026-06-27
 
 - **Fixed: Past runs empty on phones.** The phone layout only fetched upcoming runs, so switching to "Past runs" (and the no-future-runs fallback) had nothing to show. It now fetches the full past+future set like the desktop layout and filters locally, so past runs appear instantly when you toggle.

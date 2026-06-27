@@ -986,17 +986,27 @@ class RunListPage extends StatelessWidget {
             child: SafeArea(
               top: false,
               bottom: false,
-              child: ListView.separated(
-                controller: _listScrollController,
-                physics: const AlwaysScrollableScrollPhysics(),
-                itemCount: formController.displayedEventsDetails.length + 1,
-                padding: const EdgeInsets.only(top: 5),
-                separatorBuilder: (BuildContext context, int index) =>
-                    const SizedBox(height: 5),
-                itemBuilder: (BuildContext context, int index) {
-                  return index == formController.displayedEventsDetails.length
-                      ? const SizedBox(height: 100)
-                      : Card(
+              child: NotificationListener<ScrollNotification>(
+                // Lazy-load older past runs as the user nears the bottom.
+                // loadMorePastRuns() self-guards (past mode only, not already
+                // loading, more available), so firing often is harmless.
+                onNotification: (ScrollNotification n) {
+                  if (n.metrics.pixels >= n.metrics.maxScrollExtent - 400) {
+                    unawaited(formController.loadMorePastRuns());
+                  }
+                  return false;
+                },
+                child: ListView.separated(
+                  controller: _listScrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: formController.displayedEventsDetails.length + 1,
+                  padding: const EdgeInsets.only(top: 5),
+                  separatorBuilder: (BuildContext context, int index) =>
+                      const SizedBox(height: 5),
+                  itemBuilder: (BuildContext context, int index) {
+                    return index == formController.displayedEventsDetails.length
+                        ? _pastListFooter()
+                        : Card(
                           margin: EdgeInsets.only(
                             right: formController.isNarrowScreen.value
                                 ? 15.0
@@ -1028,13 +1038,34 @@ class RunListPage extends StatelessWidget {
                             formController.displayedEventsDetails[index],
                           ),
                         );
-                },
+                  },
+                ),
               ),
             ),
           ),
         ),
       ],
     );
+  }
+
+  // Footer below the runs list: shows a spinner while older past runs are being
+  // lazy-loaded; otherwise just bottom spacing.
+  Widget _pastListFooter() {
+    return Obx(() {
+      if (formController.isLoadingMorePast.value) {
+        return const Padding(
+          padding: EdgeInsets.symmetric(vertical: 20),
+          child: Center(
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2.5),
+            ),
+          ),
+        );
+      }
+      return const SizedBox(height: 100);
+    });
   }
 
   // Future / Past segmented toggle for the narrow (phone) layout. The wide

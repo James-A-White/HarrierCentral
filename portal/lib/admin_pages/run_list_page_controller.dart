@@ -44,6 +44,17 @@ class RunListPageController extends GetxController
 
   EDisplayRuns displayRuns = EDisplayRuns.future;
 
+  // Lazy loading of past runs on the narrow (phone) layout. The phone fetches a
+  // bounded window of past runs (1 year at a time) — fetching all history was
+  // far too slow — and expands it as the user scrolls to the bottom of the
+  // Past list. `_pastWeeksWindow` is how far back we currently fetch; each
+  // "load more" adds another year. `hasMorePast` goes false once a wider fetch
+  // returns nothing new.
+  static const int _pastWeeksIncrement = 52;
+  int _pastWeeksWindow = _pastWeeksIncrement;
+  final RxBool isLoadingMorePast = false.obs;
+  bool hasMorePast = true;
+
   String get publicHasherId => box.get(HIVE_HASHER_ID) as String;
   bool get canViewMonitor =>
       (box.get(HIVE_PLATFORM_ADMIN_CAN_VIEW_MONITOR) as bool?) ?? false;
@@ -220,10 +231,39 @@ class RunListPageController extends GetxController
     }
   }
 
-  Future<void> _getEvents({bool getAllEventDetails = false, int? weeks}) async {
-    isLoaded.value = false;
+  /// Lazy-load another year of past runs (narrow layout). Triggered when the
+  /// user scrolls near the bottom of the Past list. Widens the fetch window and
+  /// re-fetches without the full-screen loader, appending the older runs.
+  Future<void> loadMorePastRuns() async {
+    if (!isNarrowScreen.value ||
+        isLoadingMorePast.value ||
+        !hasMorePast ||
+        displayRuns != EDisplayRuns.past) {
+      return;
+    }
+    isLoadingMorePast.value = true;
+    final before = allEventsDetails.length;
+    _pastWeeksWindow += _pastWeeksIncrement;
+    await _getEvents(getAllEventDetails: true, incremental: true);
+    // No new rows → we've reached the start of this kennel's history.
+    if (allEventsDetails.length <= before) hasMorePast = false;
+    isLoadingMorePast.value = false;
+  }
 
-    var weeksToDisplay = weeks ?? 9999;
+  Future<void> _getEvents({
+    bool getAllEventDetails = false,
+    int? weeks,
+    bool incremental = false,
+  }) async {
+    // Incremental (load-more) fetches keep the current screen up and show a
+    // small footer spinner instead of the full-screen loader.
+    if (!incremental) {
+      isLoaded.value = false;
+      _pastWeeksWindow = _pastWeeksIncrement;
+      hasMorePast = true;
+    }
+
+    final savedDisplayRuns = displayRuns;
 
     final deviceId = box.get(HIVE_DEVICE_ID) as String;
     final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
@@ -233,13 +273,14 @@ class RunListPageController extends GetxController
       paramString: deviceSecret,
     );
 
-    // Fetch the full past+future set in BOTH layouts so the Future/Past toggle
-    // (and the no-future-runs fallback) can filter locally. Narrow previously
-    // fetched only the next 52 weeks of future runs, so switching to Past — or
-    // a kennel with no upcoming runs — showed nothing. setDisplayedEvents()
-    // then narrows this to future (default) or past on demand.
+    // Fetch past+future together so the Future/Past toggle (and the
+    // no-future-runs fallback) can filter locally. The wide layout pulls all
+    // history (light list rows); the narrow layout pulls full detail, so it is
+    // bounded to a rolling window (_pastWeeksWindow) and lazy-loads older runs.
+    // setDisplayedEvents() then narrows to future (default) or past on demand.
     displayRuns = EDisplayRuns.all;
-    weeksToDisplay = weeks ?? 9999;
+    final weeksToDisplay =
+        weeks ?? (getAllEventDetails ? _pastWeeksWindow : 9999);
 
     final body = <String, dynamic>{
       'queryType': 'getEvents',
@@ -297,35 +338,42 @@ class RunListPageController extends GetxController
         }
       }
 
-      setDisplayedEvents();
-
-      // If there are no future events, fall back to past runs so the user
-      // isn't left with an empty screen. This applies to BOTH layouts: the
-      // wide list (allEvents) and the narrow detail list (allEventsDetails) —
-      // narrow uses getAllEventDetails == true, so it must be handled here too.
-      final nothingShown = getAllEventDetails
-          ? displayedEventsDetails.isEmpty
-          : displayedEvents.isEmpty;
-      final haveAnyRuns = getAllEventDetails
-          ? allEventsDetails.isNotEmpty
-          : allEvents.isNotEmpty;
-      if (nothingShown && haveAnyRuns) {
-        displayRuns = EDisplayRuns.past;
-        tabController.animateTo(1);
+      if (incremental) {
+        // Load-more: keep the user on whatever they were viewing (Past) and
+        // just widen the list with the newly fetched older runs.
+        displayRuns = savedDisplayRuns;
         setDisplayedEvents();
-      }
+      } else {
+        setDisplayedEvents();
 
-      if (!getAllEventDetails) {
-        // Auto-select the first displayed event so the detail panel is populated.
-        if (displayedEvents.isNotEmpty) {
-          eventForSingleEventDetailsView.value = await querySingleEvent(
-            displayedEvents.first.publicEventId,
-          );
+        // If there are no future events, fall back to past runs so the user
+        // isn't left with an empty screen. This applies to BOTH layouts: the
+        // wide list (allEvents) and the narrow detail list (allEventsDetails) —
+        // narrow uses getAllEventDetails == true, so it must be handled too.
+        final nothingShown = getAllEventDetails
+            ? displayedEventsDetails.isEmpty
+            : displayedEvents.isEmpty;
+        final haveAnyRuns = getAllEventDetails
+            ? allEventsDetails.isNotEmpty
+            : allEvents.isNotEmpty;
+        if (nothingShown && haveAnyRuns) {
+          displayRuns = EDisplayRuns.past;
+          tabController.animateTo(1);
+          setDisplayedEvents();
+        }
+
+        if (!getAllEventDetails) {
+          // Auto-select the first displayed event so the detail panel populates.
+          if (displayedEvents.isNotEmpty) {
+            eventForSingleEventDetailsView.value = await querySingleEvent(
+              displayedEvents.first.publicEventId,
+            );
+          }
         }
       }
     }
 
-    isLoaded.value = true;
+    if (!incremental) isLoaded.value = true;
 
     if (!_newsflashShown) {
       _newsflashShown = true;
@@ -423,12 +471,15 @@ class RunListPageController extends GetxController
               })
               as Iterable<EventDetailsResult>,
         )
-        ..sort(
-          (EventDetailsResult a, EventDetailsResult b) =>
-              (a.runDetails.eventStartDatetime).compareTo(
-                b.runDetails.eventStartDatetime,
-              ),
-        );
+        ..sort((EventDetailsResult a, EventDetailsResult b) {
+          // Future: soonest first (ascending). Past: most recent first
+          // (descending) so lazy-loaded older runs append at the bottom.
+          final da = a.runDetails.eventStartDatetime;
+          final db = b.runDetails.eventStartDatetime;
+          return displayRuns == EDisplayRuns.past
+              ? db.compareTo(da)
+              : da.compareTo(db);
+        });
     } else {
       displayedEvents.addAll(
         // ignore: avoid_dynamic_calls
