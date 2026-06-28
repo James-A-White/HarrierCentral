@@ -78,10 +78,7 @@ END
 
 SELECT
     e.id                                                                     AS eventId,
-    CASE WHEN e.UseFbRunDetails = 1
-         THEN CONVERT(DATETIME2, e.FbEventStartDatetime)
-         ELSE CONVERT(DATETIME2, e.EventStartDatetime)
-    END                                                                      AS eventStartDatetime,
+    CONVERT(DATETIME2, e.EventStartDatetime)                                                                      AS eventStartDatetime,
     e.EventEndDatetime                                                       AS eventEndDatetime,
     CASE WHEN e.UseFbRunDetails = 1 THEN e.FbEventName ELSE e.EventName END AS eventName,
     e.EventNumber                                                            AS eventNumber,
@@ -110,7 +107,4 @@ WHERE e.KennelId        = @kennelId
   AND e.IsVisible      = 1
   AND e.IsCountedRun   = 1
 ORDER BY
-    CASE WHEN e.UseFbRunDetails = 1
-         THEN CONVERT(DATETIME2, e.FbEventStartDatetime)
-         ELSE CONVERT(DATETIME2, e.EventStartDatetime)
-    END DESC;
+    CONVERT(DATETIME2, e.EventStartDatetime) DESC;

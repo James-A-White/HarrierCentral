@@ -29,9 +29,7 @@ BEGIN
     SELECT
         h.DisplayName                                                                      AS Display_name,
         CASE WHEN e.UseFbRunDetails = 1 THEN e.FbEventName    ELSE e.EventName    END     AS Event_name,
-        CASE WHEN e.UseFbRunDetails = 1
-             THEN CONVERT(datetime2, e.FbEventStartDatetime)
-             ELSE CONVERT(datetime2, e.EventStartDatetime)    END                         AS Event_date,
+        CONVERT(datetime2, e.EventStartDatetime)                         AS Event_date,
         e.EventNumber                                                                      AS Run_number,
         h.id                                                                               AS hid,
         e.id                                                                               AS eid,
@@ -69,9 +67,7 @@ BEGIN
     SELECT
         'Visitors & Virgins',
         CASE WHEN e.UseFbRunDetails = 1 THEN e.FbEventName ELSE e.EventName END,
-        CASE WHEN e.UseFbRunDetails = 1
-             THEN CONVERT(datetime2, e.FbEventStartDatetime)
-             ELSE CONVERT(datetime2, e.EventStartDatetime) END,
+        CONVERT(datetime2, e.EventStartDatetime),
         e.EventNumber,
         h.id,
         e.id,
@@ -79,9 +75,7 @@ BEGIN
         99999,
         0,
         (SELECT TOP 1 Total_hashers FROM #rpt t
-         WHERE t.Event_date = CASE WHEN e.UseFbRunDetails = 1
-                                   THEN CONVERT(datetime2, e.FbEventStartDatetime)
-                                   ELSE CONVERT(datetime2, e.EventStartDatetime) END)
+         WHERE t.Event_date = CONVERT(datetime2, e.EventStartDatetime))
     FROM HC.HasherEventMap hem
     JOIN HC.Event e  ON e.id = hem.EventId
     JOIN HC.Hasher h ON h.id = hem.UserId
@@ -92,8 +86,7 @@ BEGIN
       AND e.KennelId           = h.id
     GROUP BY
         CASE WHEN e.UseFbRunDetails = 1 THEN e.FbEventName    ELSE e.EventName    END,
-        CASE WHEN e.UseFbRunDetails = 1 THEN CONVERT(datetime2, e.FbEventStartDatetime)
-                                         ELSE CONVERT(datetime2, e.EventStartDatetime) END,
+        CONVERT(datetime2, e.EventStartDatetime),
         e.EventNumber, h.id, e.id;
 
     -- Summary sentinel rows (sorted to bottom via future dates)

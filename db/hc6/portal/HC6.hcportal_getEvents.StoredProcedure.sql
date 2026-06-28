@@ -185,8 +185,8 @@ BEGIN TRY
 			, evt.Hares AS hares
 			, CASE WHEN (evt.UseFbRunDetails = 1) THEN evt.FbEventName ELSE evt.EventName END AS eventName
 			-- TODO: Return DATETIMEOFFSET alongside DATETIME2 for timezone migration
-			, CASE WHEN (evt.UseFbRunDetails = 1) THEN CONVERT(datetime2, evt.FbEventStartDatetime) ELSE CONVERT(datetime2, evt.EventStartDatetime) END AS eventStartDatetime
-			, DATEDIFF(DAY, GETDATE(), CASE WHEN (evt.UseFbRunDetails = 1) THEN CONVERT(datetime2, evt.FbEventStartDatetime) ELSE CONVERT(datetime2, evt.EventStartDatetime) END) AS daysUntilEvent
+			, CONVERT(datetime2, evt.EventStartDatetime) AS eventStartDatetime
+			, DATEDIFF(DAY, GETDATE(), CONVERT(datetime2, evt.EventStartDatetime)) AS daysUntilEvent
 
 			, '~'
 			+ ' ' + COALESCE(evt.EventName, '')
@@ -371,7 +371,7 @@ BEGIN TRY
 
 			, CASE WHEN (evt.UseFbRunDetails = 1) THEN evt.FbEventName ELSE evt.EventName END AS eventName
 			-- TODO: Return DATETIMEOFFSET alongside DATETIME2 for timezone migration
-			, CASE WHEN (evt.UseFbRunDetails = 1) THEN CONVERT(datetime2, evt.FbEventStartDatetime) ELSE CONVERT(datetime2, evt.EventStartDatetime) END AS eventStartDatetime
+			, CONVERT(datetime2, evt.EventStartDatetime) AS eventStartDatetime
 			, COALESCE(CASE WHEN (evt.UseFbRunDetails = 1) THEN evt.FbEventDescription ELSE evt.EventDescription END, '') AS eventDescription
 			, CASE WHEN (evt.UseFbRunDetails = 1) THEN evt.FbLocationOneLineDesc ELSE evt.LocationOneLineDesc END AS locationOneLineDesc
 
@@ -410,7 +410,7 @@ BEGIN TRY
 			, city.Longitude AS cityLongitude
 			, COALESCE(ken.DigitsAfterDecimal, n.DigitsAfterDecimal) AS digitsAfterDecimal
 			, COALESCE(ken.CurrencySymbol, n.CurrencySymbol) AS currencySymbol
-			, DATEDIFF(DAY, GETDATE(), CASE WHEN (evt.UseFbRunDetails = 1) THEN CONVERT(datetime2, evt.FbEventStartDatetime) ELSE CONVERT(datetime2, evt.EventStartDatetime) END) AS daysUntilEvent
+			, DATEDIFF(DAY, GETDATE(), CONVERT(datetime2, evt.EventStartDatetime)) AS daysUntilEvent
 
 			, '~'
 			+ ' ' + COALESCE(evt.EventName, '')

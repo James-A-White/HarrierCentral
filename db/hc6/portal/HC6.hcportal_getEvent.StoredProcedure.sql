@@ -186,7 +186,7 @@ BEGIN TRY
 		, evt.EventName AS eventName
 
 		-- TODO: Return DATETIMEOFFSET alongside DATETIME2 for timezone migration
-		, CONVERT(datetime2, evt.FbEventStartDatetime) AS extEventStartDatetime
+		, CONVERT(datetime2, evt.EventStartDatetime) AS extEventStartDatetime
 		, CONVERT(datetime2, evt.EventStartDatetime) AS eventStartDatetime
 		, CONVERT(datetime2, evt.EventEndDatetime) AS eventEndDatetime
 

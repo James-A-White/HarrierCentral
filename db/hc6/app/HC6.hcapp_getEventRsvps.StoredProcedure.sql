@@ -146,7 +146,7 @@ BEGIN
         NULL                                                                AS phoneNumber,
         evt.EventNumber                                                     AS hemEventNumber,
         CASE WHEN evt.UseFbRunDetails = 1 THEN evt.FbEventName  ELSE evt.EventName  END AS hemEventName,
-        CASE WHEN evt.UseFbRunDetails = 1 THEN CONVERT(DATETIME2, evt.FbEventStartDatetime) ELSE CONVERT(DATETIME2, evt.EventStartDatetime) END AS hemEventStartDatetime,
+        CONVERT(DATETIME2, evt.EventStartDatetime) AS hemEventStartDatetime,
         COALESCE(evt.EventStartDatetimeGmt, evt.EventStartDatetime)        AS hemEventStartDatetimeGmt,
         evt.CanEditRunAttendence                                            AS hemCanEditRunAttendence,
         CASE WHEN evt.IsCountedRun != 0 AND evt.IsVisible != 0 THEN 1 ELSE 0 END AS hemEventIsCountedAndVisible,
