@@ -251,9 +251,6 @@ enum RunOtherField {
   /// Maximum participants allowed.
   maximumParticipation,
 
-  /// Country for statistics.
-  country,
-
   /// Auto-import from external source.
   autoImport,
 }

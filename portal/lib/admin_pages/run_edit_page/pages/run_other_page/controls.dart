@@ -19,7 +19,6 @@ extension OtherControlsExtension on RunEditPageController {
     _registerLimitParticipationControl(tabKey, tabIndex);
     _registerMinimumParticipationControl(tabKey, tabIndex);
     _registerMaximumParticipationControl(tabKey, tabIndex);
-    _registerCountrySelectControl(tabKey, tabIndex);
   }
 
   // ---------------------------------------------------------------------------
@@ -148,30 +147,4 @@ extension OtherControlsExtension on RunEditPageController {
     );
   }
 
-  void _registerCountrySelectControl(String tabKey, int tabIndex) {
-    final fieldKey = '${tabKey}_${RunOtherField.country.name}';
-
-    uiControls[fieldKey] = UiControlDefinition(
-      controlType: UiControlType.dropdown,
-      sidebarEntryKey: fieldKey,
-      sidebarExitKey: '${tabKey}_generic',
-      sidebarData: const SideBarData(
-        'Country',
-        FontAwesome5Solid.flag,
-        'Select the country for statistics purposes.\n\n'
-            'This helps categorize the run in regional statistics.',
-      ),
-      editedFieldValue: country.value,
-      originalFieldValue: originalData.countryName,
-      globalKey: GlobalKey<FormFieldState>(),
-      label: 'Country (for statistics)',
-      tabIndex: tabIndex,
-      updateEditedValue: (dynamic value) {
-        if (value is String?) {
-          country.value = value;
-          uiControls[fieldKey]?.editedFieldValue = value;
-        }
-      },
-    );
-  }
 }
