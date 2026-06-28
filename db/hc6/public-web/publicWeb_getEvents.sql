@@ -181,14 +181,14 @@ BEGIN TRY
       AND  e.deleted   = 0
       AND  e.removed   = 0
       AND  (   (@IsFuture = 1
-                    AND COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) >= @FutureCutoff)
+                    AND (e.EventStartDateTimeGmt >= @FutureCutoff OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime >= @FutureCutoff)))
             OR (@IsFuture = 0
-                    AND COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) < @UtcNow))
+                    AND (e.EventStartDateTimeGmt < @UtcNow OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime < @UtcNow))))
       AND  (   @BoundaryDate IS NULL
             OR (@IsFuture = 1
-                    AND COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) <= @BoundaryDate)
+                    AND (e.EventStartDateTimeGmt <= @BoundaryDate OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime <= @BoundaryDate)))
             OR (@IsFuture = 0
-                    AND COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) >= @BoundaryDate));
+                    AND (e.EventStartDateTimeGmt >= @BoundaryDate OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime >= @BoundaryDate))));
 
     -- ── Rowset 1: events ─────────────────────────────────────────────────────
 
@@ -267,14 +267,14 @@ BEGIN TRY
       AND  e.deleted   = 0
       AND  e.removed   = 0
       AND  (   (@IsFuture = 1
-                    AND COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) >= @FutureCutoff)
+                    AND (e.EventStartDateTimeGmt >= @FutureCutoff OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime >= @FutureCutoff)))
             OR (@IsFuture = 0
-                    AND COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) < @UtcNow))
+                    AND (e.EventStartDateTimeGmt < @UtcNow OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime < @UtcNow))))
       AND  (   @BoundaryDate IS NULL
             OR (@IsFuture = 1
-                    AND COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) <= @BoundaryDate)
+                    AND (e.EventStartDateTimeGmt <= @BoundaryDate OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime <= @BoundaryDate)))
             OR (@IsFuture = 0
-                    AND COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) >= @BoundaryDate))
+                    AND (e.EventStartDateTimeGmt >= @BoundaryDate OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime >= @BoundaryDate))))
     ORDER BY
         -- Upcoming: earliest first; past: most recent first.
         -- Only one branch is active per call; the other evaluates to NULL

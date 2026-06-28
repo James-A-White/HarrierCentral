@@ -270,11 +270,11 @@ BEGIN TRY
 			WHERE evt.removed = 0 AND
 			evt.IsVisible = 1 AND
 			(
-				(@pastOrFuture = 'future' AND (CASE WHEN (evt.UseFbRunDetails = 1) THEN CONVERT(datetime2, evt.FbEventStartDatetime) ELSE CONVERT(datetime2, evt.EventStartDatetime) END BETWEEN DATEADD(DAY, -1, GETDATE()) AND DATEADD(WEEK, @weeksToDisplay, GETDATE())))
+				(@pastOrFuture = 'future' AND (evt.EventStartLocal BETWEEN DATEADD(DAY, -1, GETDATE()) AND DATEADD(WEEK, @weeksToDisplay, GETDATE())))
 				OR
-				(@pastOrFuture = 'past' AND (CASE WHEN (evt.UseFbRunDetails = 1) THEN CONVERT(datetime2, evt.FbEventStartDatetime) ELSE CONVERT(datetime2, evt.EventStartDatetime) END BETWEEN DATEADD(WEEK, -@weeksToDisplay, GETDATE()) AND DATEADD(DAY, 1, GETDATE())))
+				(@pastOrFuture = 'past' AND (evt.EventStartLocal BETWEEN DATEADD(WEEK, -@weeksToDisplay, GETDATE()) AND DATEADD(DAY, 1, GETDATE())))
 				OR
-				(@pastOrFuture = 'all' AND (CASE WHEN (evt.UseFbRunDetails = 1) THEN CONVERT(datetime2, evt.FbEventStartDatetime) ELSE CONVERT(datetime2, evt.EventStartDatetime) END BETWEEN DATEADD(WEEK, -@weeksToDisplay, GETDATE()) AND DATEADD(WEEK, @weeksToDisplay, GETDATE())))
+				(@pastOrFuture = 'all' AND (evt.EventStartLocal BETWEEN DATEADD(WEEK, -@weeksToDisplay, GETDATE()) AND DATEADD(WEEK, @weeksToDisplay, GETDATE())))
 			)
 			AND
 			(((@publicKennelIds IS NOT NULL) AND (ken.PublicKennelId IN (SELECT CAST(value AS UNIQUEIDENTIFIER) FROM STRING_SPLIT(@publicKennelIds, ','))))
@@ -479,11 +479,11 @@ BEGIN TRY
 			WHERE evt.removed = 0 AND
 			evt.IsVisible = 1 AND
 			(
-				(@pastOrFuture = 'future' AND (CASE WHEN (evt.UseFbRunDetails = 1) THEN CONVERT(datetime2, evt.FbEventStartDatetime) ELSE CONVERT(datetime2, evt.EventStartDatetime) END BETWEEN DATEADD(DAY, -1, GETDATE()) AND DATEADD(WEEK, @weeksToDisplay, GETDATE())))
+				(@pastOrFuture = 'future' AND (evt.EventStartLocal BETWEEN DATEADD(DAY, -1, GETDATE()) AND DATEADD(WEEK, @weeksToDisplay, GETDATE())))
 				OR
-				(@pastOrFuture = 'past' AND (CASE WHEN (evt.UseFbRunDetails = 1) THEN CONVERT(datetime2, evt.FbEventStartDatetime) ELSE CONVERT(datetime2, evt.EventStartDatetime) END BETWEEN DATEADD(WEEK, -@weeksToDisplay, GETDATE()) AND DATEADD(DAY, 1, GETDATE())))
+				(@pastOrFuture = 'past' AND (evt.EventStartLocal BETWEEN DATEADD(WEEK, -@weeksToDisplay, GETDATE()) AND DATEADD(DAY, 1, GETDATE())))
 				OR
-				(@pastOrFuture = 'all' AND (CASE WHEN (evt.UseFbRunDetails = 1) THEN CONVERT(datetime2, evt.FbEventStartDatetime) ELSE CONVERT(datetime2, evt.EventStartDatetime) END BETWEEN DATEADD(WEEK, -@weeksToDisplay, GETDATE()) AND DATEADD(WEEK, @weeksToDisplay, GETDATE())))
+				(@pastOrFuture = 'all' AND (evt.EventStartLocal BETWEEN DATEADD(WEEK, -@weeksToDisplay, GETDATE()) AND DATEADD(WEEK, @weeksToDisplay, GETDATE())))
 			)
 			AND
 			(((@publicKennelIds IS NOT NULL) AND (ken.PublicKennelId IN (SELECT CAST(value AS UNIQUEIDENTIFIER) FROM STRING_SPLIT(@publicKennelIds, ','))))
