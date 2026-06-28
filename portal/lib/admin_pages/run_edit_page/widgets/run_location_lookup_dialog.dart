@@ -71,18 +71,18 @@ class RunLocationLookupController extends GetxController
     with GetSingleTickerProviderStateMixin {
   RunLocationLookupController({
     required this.events,
-    required this.kennelLat,
-    required this.kennelLon,
-    required this.kennelCountryCodes,
+    required this.centerLat,
+    required this.centerLon,
+    required this.countryCodes,
     this.initialPlaceDescription,
   });
 
   // ── Constructor params ────────────────────────────────────────────────────
 
   final List<RunListModel> events;
-  final double kennelLat;
-  final double kennelLon;
-  final String kennelCountryCodes;
+  final double centerLat;
+  final double centerLon;
+  final String countryCodes;
   final String? initialPlaceDescription;
 
   // ── Shared ────────────────────────────────────────────────────────────────
@@ -121,11 +121,11 @@ class RunLocationLookupController extends GetxController
     _buildUniqueLocations();
     filteredLocations.assignAll(_allLocations);
     mapController = geo_map.MapController(
-      location: LatLng(Angle.degree(kennelLat), Angle.degree(kennelLon)),
+      location: LatLng(Angle.degree(centerLat), Angle.degree(centerLon)),
       zoom: 11,
     );
     gazetteerMapController = geo_map.MapController(
-      location: LatLng(Angle.degree(kennelLat), Angle.degree(kennelLon)),
+      location: LatLng(Angle.degree(centerLat), Angle.degree(centerLon)),
       zoom: 11,
     );
     _applyInitialSearch();
@@ -188,8 +188,13 @@ class RunLocationLookupController extends GetxController
     final desc = initialPlaceDescription?.trim() ?? '';
     if (desc.isEmpty) return;
 
+    // Seed BOTH search boxes so the value is present whichever tab the user
+    // lands on (the gazetteer box used to be filled only on the no-match path).
     searchController.text = desc;
     searchText.value = desc;
+    gazetteerSearchController.text = desc;
+    gazetteerSearchText.value = desc;
+
     final query = desc.toLowerCase();
     final matches = _allLocations
         .where((loc) => loc.label.toLowerCase().contains(query))
@@ -205,8 +210,7 @@ class RunLocationLookupController extends GetxController
         mapController.zoom = 14;
       }
     } else if (filteredLocations.isEmpty) {
-      gazetteerSearchController.text = desc;
-      gazetteerSearchText.value = desc;
+      // No previous-run match → jump to the gazetteer and search automatically.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         tabController.animateTo(1);
         unawaited(performGazetteerSearch());
@@ -291,10 +295,10 @@ class RunLocationLookupController extends GetxController
     try {
       final params = <String, String>{
         'q': searchText,
-        'lat': kennelLat.toString(),
-        'lon': kennelLon.toString(),
+        'lat': centerLat.toString(),
+        'lon': centerLon.toString(),
       };
-      if (kennelCountryCodes.isNotEmpty) params['countryCodes'] = kennelCountryCodes;
+      if (countryCodes.isNotEmpty) params['countryCodes'] = countryCodes;
       final url = Uri.parse(PORTAL_GEOCODE_PLACE_TO_ADDRESS_API_URL).replace(
         queryParameters: params,
       );

@@ -3,6 +3,7 @@
 // import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:hcportal/imports.dart';
+import 'package:timezone/data/latest.dart' as tzdata;
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -29,6 +30,10 @@ class MyCustomScrollBehavior extends MaterialScrollBehavior {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Load the IANA timezone database so we can show zone abbreviations
+  // (e.g. EST/EDT) derived from a city's IANA name.
+  tzdata.initializeTimeZones();
 
   await Hive.openBox<dynamic>('HCPortal');
 

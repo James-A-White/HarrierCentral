@@ -19,6 +19,7 @@ import 'package:http/http.dart' as http;
 import 'package:latlng/latlng.dart';
 import 'package:map/map.dart' as geo_map;
 import 'widgets/run_location_lookup_dialog.dart';
+import 'widgets/set_location_dialog.dart';
 
 part 'pages/run_basic_info_page/controls.dart';
 part 'pages/run_location_page/controls.dart';
@@ -213,6 +214,27 @@ class RunEditPageController extends TabUiController
   final RxBool isLoadingRegions = false.obs;
   final RxBool isLoadingCities = false.obs;
 
+  /// Read-only timezone(s) for the selected city (Standard, + Daylight if the
+  /// zone observes DST). Empty when no city is selected.
+  final RxList<CityTimezone> cityTimezones = <CityTimezone>[].obs;
+
+  /// Manual timezone override (DomainValues.Timezone.id) for free-text
+  /// "Other" locations; null when the zone is derived from a structured city.
+  final RxnInt timezoneId = RxnInt();
+
+  /// Whether region/city is a free-text "Other" value (no structured id). When
+  /// region is Other, city is forced to free-text too (no city list).
+  final RxBool regionIsOther = false.obs;
+  final RxBool cityIsOther = false.obs;
+
+  /// Manual-timezone options {id: label} for the current geography, shown when
+  /// region/city is "Other".
+  final RxMap<int, String> timezoneOptions = <int, String>{}.obs;
+  final RxBool isLoadingTimezones = false.obs;
+
+  /// Dropdown sentinel for the "Other…" entry in the region/city pickers.
+  static const String locationOtherKey = '__other__';
+
   // ---------------------------------------------------------------------------
   // State - Image Upload
   // ---------------------------------------------------------------------------
@@ -290,9 +312,98 @@ class RunEditPageController extends TabUiController
     if (countryId.value != null) {
       await loadRegionOptions(countryId.value!);
     }
-    if (regionId.value != null) {
+    if (!regionIsOther.value && regionId.value != null) {
       await loadCityOptions(regionId.value!);
     }
+    if (regionIsOther.value || cityIsOther.value) {
+      await loadTimezoneOptions();
+    }
+    // Read-only timezone display uses the EFFECTIVE zone: the override city's,
+    // else the manual override, else the inherited kennel city's.
+    if (cityId.value != null) {
+      await loadCityTimezones(cityId.value!);
+    } else if (timezoneId.value != null) {
+      await loadCityTimezonesByZone(timezoneId.value!);
+    } else {
+      final kennelCityId = _normId(kennelData.cityId);
+      if (kennelCityId != null) await loadCityTimezones(kennelCityId);
+    }
+  }
+
+  /// Derives the region/city "Other" flags from stored data: a null structured
+  /// id paired with a non-empty name means a free-text ("Other") value.
+  void _initLocationOtherFlags() {
+    regionIsOther.value = _normId(originalData.regionId) == null &&
+        (originalData.regionName ?? '').trim().isNotEmpty;
+    cityIsOther.value = _normId(originalData.cityId) == null &&
+        (originalData.cityName ?? '').trim().isNotEmpty;
+  }
+
+  /// Fetches the read-only timezone(s) for [forCityId] into [cityTimezones].
+  Future<void> loadCityTimezones(String forCityId) async {
+    cityTimezones.value = await queryCityTimezones(cityId: forCityId);
+  }
+
+  /// Fetches the read-only timezone(s) for a manually-chosen [zoneId].
+  Future<void> loadCityTimezonesByZone(int zoneId) async {
+    cityTimezones.value = await queryCityTimezones(timezoneId: zoneId);
+  }
+
+  /// Opens the Set-Location dialog seeded with the run's effective location
+  /// (event override if present, else the kennel default) and applies the
+  /// chosen selection. Hitting Save is an explicit override, so the event's
+  /// fields are written even if they match the kennel default.
+  Future<void> openSetLocationDialog() async {
+    final dlg = Get.put(SetLocationController(
+      initialCountryId: countryId.value ?? kennelData.countryId,
+      initialRegionId: regionId.value ?? kennelData.provinceStateId,
+      initialRegionName: region.value ?? kennelData.regionName,
+      initialCityId: cityId.value ?? kennelData.cityId,
+      initialCityName: city.value ?? kennelData.cityName,
+      initialTimezoneId: timezoneId.value,
+    ));
+    try {
+      final result = await Get.dialog<LocationSelection>(
+        SetLocationDialog(controller: dlg),
+        barrierDismissible: true,
+      );
+      if (result != null) applyLocationSelection(result);
+    } finally {
+      unawaited(Get.delete<SetLocationController>(force: true));
+    }
+  }
+
+  /// Applies a [LocationSelection] to the run's structured location state and
+  /// denormalises the names into the free-text address fields. Refreshes the
+  /// read-only timezone display from the structured city or the manual zone.
+  void applyLocationSelection(LocationSelection sel) {
+    countryId.value = _normId(sel.countryId);
+    country.value = sel.countryName;
+    regionId.value = _normId(sel.regionId);
+    region.value = sel.regionName;
+    cityId.value = _normId(sel.cityId);
+    city.value = sel.cityName;
+    timezoneId.value = sel.timezoneId;
+    // A null id with a non-empty name means "Other" — keep the inline Address
+    // tab in sync so it renders the free-text field, not an empty dropdown.
+    regionIsOther.value =
+        regionId.value == null && (sel.regionName ?? '').trim().isNotEmpty;
+    cityIsOther.value =
+        cityId.value == null && (sel.cityName ?? '').trim().isNotEmpty;
+
+    // Denormalise names into the free-text address fields (keeps existing
+    // displays / public-web working).
+    editedData.value = editedData.value.copyWith(
+      locationCountry: sel.countryName,
+      locationRegion: sel.regionName,
+      locationCity: sel.cityName,
+    );
+
+    // Reload option lists + the read-only timezone display so the Address-tab
+    // dropdowns reflect the selection.
+    cityTimezones.clear();
+    unawaited(_loadLocationSelectors());
+    checkIfFormIsDirty();
   }
 
   /// Fetches regions for [forCountryId] into [regionOptions].
@@ -309,6 +420,28 @@ class RunEditPageController extends TabUiController
     isLoadingCities.value = false;
   }
 
+  /// Fetches the manual-timezone options for the current geography.
+  Future<void> loadTimezoneOptions() async {
+    final c = countryId.value;
+    if (c == null) return;
+    isLoadingTimezones.value = true;
+    timezoneOptions.value = await queryTimezonesForGeography(
+      c,
+      regionId: regionIsOther.value ? null : regionId.value,
+    );
+    isLoadingTimezones.value = false;
+  }
+
+  /// Denormalises the current structured/typed names into the free-text
+  /// address fields so existing displays / public-web keep working.
+  void _denormalizeLocationNames() {
+    editedData.value = editedData.value.copyWith(
+      locationCountry: country.value,
+      locationRegion: region.value,
+      locationCity: city.value,
+    );
+  }
+
   /// Country chosen: set id/name, clear region + city (cascade), reload regions.
   Future<void> onCountrySelected(String? newCountryId) async {
     final id = _normId(newCountryId);
@@ -316,36 +449,145 @@ class RunEditPageController extends TabUiController
     country.value = id == null ? null : countryOptions[id];
     region.value = null;
     regionId.value = null;
+    regionIsOther.value = false;
     city.value = null;
     cityId.value = null;
+    cityIsOther.value = false;
+    timezoneId.value = null;
     regionOptions.clear();
     cityOptions.clear();
+    timezoneOptions.clear();
+    cityTimezones.clear();
+    _denormalizeLocationNames();
     checkIfFormIsDirty();
     if (id != null) {
       await loadRegionOptions(id);
     }
   }
 
-  /// Region chosen: set id/name, clear city (cascade), reload cities.
-  Future<void> onRegionSelected(String? newRegionId) async {
-    final id = _normId(newRegionId);
-    regionId.value = id;
-    region.value = id == null ? null : regionOptions[id];
+  /// Region chosen. The "Other" sentinel switches to a free-text region and
+  /// forces the city to free-text too (no city list); a real id reloads cities.
+  Future<void> onRegionSelected(String? value) async {
     city.value = null;
     cityId.value = null;
+    timezoneId.value = null;
     cityOptions.clear();
-    checkIfFormIsDirty();
-    if (id != null) {
-      await loadCityOptions(id);
+    timezoneOptions.clear();
+    cityTimezones.clear();
+    if (value == locationOtherKey) {
+      regionIsOther.value = true;
+      regionId.value = null;
+      region.value = null;
+      cityIsOther.value = true;
+      _denormalizeLocationNames();
+      checkIfFormIsDirty();
+      await loadTimezoneOptions();
+    } else {
+      regionIsOther.value = false;
+      cityIsOther.value = false;
+      final id = _normId(value);
+      regionId.value = id;
+      region.value = id == null ? null : regionOptions[id];
+      _denormalizeLocationNames();
+      checkIfFormIsDirty();
+      if (id != null) {
+        await loadCityOptions(id);
+      }
     }
   }
 
-  /// City chosen: set id/name.
-  void onCitySelected(String? newCityId) {
-    final id = _normId(newCityId);
-    cityId.value = id;
-    city.value = id == null ? null : cityOptions[id];
+  /// City chosen. The "Other" sentinel switches to a free-text city (manual
+  /// timezone required); a real id derives the timezone from the city.
+  Future<void> onCitySelected(String? value) async {
+    timezoneId.value = null;
+    timezoneOptions.clear();
+    cityTimezones.clear();
+    if (value == locationOtherKey) {
+      cityIsOther.value = true;
+      cityId.value = null;
+      city.value = null;
+      _denormalizeLocationNames();
+      checkIfFormIsDirty();
+      await loadTimezoneOptions();
+    } else {
+      cityIsOther.value = false;
+      final id = _normId(value);
+      cityId.value = id;
+      city.value = id == null ? null : cityOptions[id];
+      _denormalizeLocationNames();
+      checkIfFormIsDirty();
+      if (id != null) {
+        await loadCityTimezones(id);
+      }
+    }
+  }
+
+  /// Free-text region name typed in the "Other" field.
+  void setRegionOtherText(String value) {
+    region.value = value;
+    _denormalizeLocationNames();
     checkIfFormIsDirty();
+  }
+
+  /// Free-text city name typed in the "Other" field.
+  void setCityOtherText(String value) {
+    city.value = value;
+    _denormalizeLocationNames();
+    checkIfFormIsDirty();
+  }
+
+  /// Manual timezone chosen (the "Other"-location case).
+  Future<void> onTimezoneSelected(int? id) async {
+    timezoneId.value = id;
+    cityTimezones.clear();
+    if (id != null) {
+      await loadCityTimezonesByZone(id);
+    }
+    checkIfFormIsDirty();
+  }
+
+  /// Best-effort maps reverse-geocoded names onto the structured dropdowns.
+  /// Country should always match (full list); region/city fall back to "Other"
+  /// + free text when not found in the gazetteer.
+  Future<void> matchReverseGeocodedLocation({
+    String? countryName,
+    String? regionName,
+    String? cityName,
+  }) async {
+    if (countryName == null || countryName.trim().isEmpty) return;
+    final cId = _findOptionByName(countryOptions, countryName);
+    if (cId == null) return; // country list is authoritative; bail if unknown
+    await onCountrySelected(cId); // loads regions
+
+    if (regionName == null || regionName.trim().isEmpty) return;
+    final rId = _findOptionByName(regionOptions, regionName);
+    if (rId != null) {
+      await onRegionSelected(rId); // loads cities
+      if (cityName != null && cityName.trim().isNotEmpty) {
+        final cityMatch = _findOptionByName(cityOptions, cityName);
+        if (cityMatch != null) {
+          await onCitySelected(cityMatch);
+        } else {
+          await onCitySelected(locationOtherKey);
+          setCityOtherText(cityName.trim());
+        }
+      }
+    } else {
+      // Region not in the list → free-text region (forces free-text city).
+      await onRegionSelected(locationOtherKey);
+      setRegionOtherText(regionName.trim());
+      if (cityName != null && cityName.trim().isNotEmpty) {
+        setCityOtherText(cityName.trim());
+      }
+    }
+  }
+
+  String? _findOptionByName(Map<String, String> options, String name) {
+    final target = name.trim().toLowerCase();
+    for (final e in options.entries) {
+      if (e.value.trim().toLowerCase() == target) return e.key;
+    }
+    return null;
   }
 
   // ---------------------------------------------------------------------------
@@ -511,6 +753,8 @@ class RunEditPageController extends TabUiController
     regionId.value = _normId(originalData.regionId);
     city.value = originalData.cityName;
     cityId.value = _normId(originalData.cityId);
+    timezoneId.value = originalData.timezoneId;
+    _initLocationOtherFlags();
 
     // Load the cascading location option lists (async, fire-and-forget).
     unawaited(_loadLocationSelectors());
@@ -707,6 +951,8 @@ class RunEditPageController extends TabUiController
     regionId.value = _normId(originalData.regionId);
     city.value = originalData.cityName;
     cityId.value = _normId(originalData.cityId);
+    timezoneId.value = originalData.timezoneId;
+    _initLocationOtherFlags();
     unawaited(_loadLocationSelectors());
 
     // Reset uploaded image
@@ -751,6 +997,7 @@ class RunEditPageController extends TabUiController
         countryId.value != _normId(originalData.countryId) ||
         regionId.value != _normId(originalData.regionId) ||
         cityId.value != _normId(originalData.cityId) ||
+        timezoneId.value != originalData.timezoneId ||
         useExtRunDetails.value != (originalData.useFbRunDetails != 0) ||
         useExtLocation.value != (originalData.useFbLocation != 0) ||
         useExtLatLon.value != (originalData.useFbLatLon != 0) ||
@@ -891,6 +1138,11 @@ class RunEditPageController extends TabUiController
     }
     if (cityId.value != _normId(original.cityId)) {
       changes['cityId'] = cityId.value ?? GUID_EMPTY;
+    }
+    // Manual timezone override. 0 = clear sentinel (e.g. a structured city now
+    // supplies the zone); a real id sets the manual override.
+    if (timezoneId.value != original.timezoneId) {
+      changes['timezoneId'] = timezoneId.value ?? 0;
     }
 
     // -------------------------------------------------------------------------
@@ -1231,15 +1483,64 @@ class RunEditPageController extends TabUiController
       final events = runListController.allEvents;
       if (events.isEmpty) return;
 
-      // Determine kennel centre for map
-      final kd = kennelData;
-      final lat = kd.kennelLat ?? kd.cityLat;
-      final lon = kd.kennelLon ?? kd.cityLon;
+      // Ensure no stale lookup controller lingers from a previous open — a
+      // reused instance keeps its old search boxes (onInit wouldn't re-run).
+      if (Get.isRegistered<RunLocationLookupController>()) {
+        await Get.delete<RunLocationLookupController>(force: true);
+      }
 
-      // Get the current place description to pre-select a match
+      // Determine the gazetteer search centre + country filter. Prefer the
+      // run's overridden location (geocoded from its name); fall back to the
+      // kennel. This is what makes the lookup follow an overridden city.
+      final kd = kennelData;
+      var lat = kd.kennelLat ?? kd.cityLat;
+      var lon = kd.kennelLon ?? kd.cityLon;
+      var countryCodes = kd.kennelCountryCodes;
+
+      final hasLocationOverride = cityId.value != null ||
+          cityIsOther.value ||
+          regionId.value != null ||
+          regionIsOther.value ||
+          _normId(countryId.value) != _normId(kd.countryId);
+      if (hasLocationOverride) {
+        final parts = <String?>[
+          city.value ?? kd.cityName,
+          region.value ?? kd.regionName,
+          country.value ?? kd.countryName,
+        ].where((p) => p != null && p.trim().isNotEmpty).cast<String>().toList();
+        if (parts.isNotEmpty) {
+          final geo = await _geocodePlace(parts.join(', '));
+          if (geo != null) {
+            lat = geo.lat;
+            lon = geo.lon;
+          }
+        }
+        // For an override to a different country, use THAT country's neighbour
+        // codes (cached from getCountries) instead of the kennel's.
+        final overrideCountry = _normId(countryId.value);
+        if (overrideCountry != null &&
+            overrideCountry != _normId(kd.countryId)) {
+          countryCodes = countryNeighborCodesFor(overrideCountry);
+        }
+      }
+
+      // Seed the lookup from the Place Description on the first page. Fall back
+      // to the effective location (City / Region / Country) only if the Place
+      // Description is empty. The fresh-instance guard above ensures the
+      // current value is applied (no stale carry-over from a previous open).
       final placeKey =
           '${RunTabType.basicInfo.key}_${RunBasicInfoField.placeDescription.name}';
-      final currentPlaceDesc = textControllers[placeKey]?.text;
+      var currentPlaceDesc = (textControllers[placeKey]?.text ?? '').trim();
+      if (currentPlaceDesc.isEmpty) {
+        currentPlaceDesc = <String?>[
+          city.value ?? kd.cityName,
+          region.value ?? kd.regionName,
+          country.value ?? kd.countryName,
+        ]
+            .where((p) => p != null && p.trim().isNotEmpty)
+            .cast<String>()
+            .join(', ');
+      }
 
       // Allow the UI to show the loading state before opening dialog
       await Future<void>.delayed(Duration.zero);
@@ -1248,9 +1549,9 @@ class RunEditPageController extends TabUiController
       // Deleted in finally so it's always cleaned up, even on exception.
       lookupController = Get.put(RunLocationLookupController(
         events: events,
-        kennelLat: lat,
-        kennelLon: lon,
-        kennelCountryCodes: kd.kennelCountryCodes,
+        centerLat: lat,
+        centerLon: lon,
+        countryCodes: countryCodes,
         initialPlaceDescription: currentPlaceDesc,
       ));
 
@@ -1273,6 +1574,31 @@ class RunEditPageController extends TabUiController
       }
       isLookupLoading.value = false;
     }
+  }
+
+  /// Forward-geocodes a free-text place (e.g. "Boston, Massachusetts, United
+  /// States") to coordinates via the Azure place search. Returns null on
+  /// failure so the caller can fall back to the kennel centre.
+  Future<({double lat, double lon})?> _geocodePlace(String text) async {
+    try {
+      final url = Uri.parse(PORTAL_GEOCODE_PLACE_TO_ADDRESS_API_URL)
+          .replace(queryParameters: {'q': text});
+      final resp = await http.get(url, headers: {'Accept': '*/*'});
+      if (resp.statusCode >= 200 && resp.statusCode < 300) {
+        final place =
+            AzurePlace.fromJson(jsonDecode(resp.body) as Map<String, dynamic>);
+        final results = place.results ?? [];
+        if (results.isNotEmpty) {
+          final pos = results.first.position;
+          if (pos?.lat != null && pos?.lon != null) {
+            return (lat: pos!.lat!, lon: pos.lon!);
+          }
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('geocodePlace failed: $e');
+    }
+    return null;
   }
 
   /// Helper to update a single address field.
@@ -1460,14 +1786,15 @@ class RunEditPageController extends TabUiController
           if (address != null) {
             _updateAddressField(
                 RunLocationField.street, _buildStreetAddress(address));
-            _updateAddressField(
-                RunLocationField.city, address.municipality ?? '');
             _updateAddressField(RunLocationField.postcode,
                 address.extendedPostalCode ?? address.postalCode ?? '');
-            _updateAddressField(
-                RunLocationField.region, address.countrySubdivision ?? '');
-            _updateAddressField(
-                RunLocationField.country, address.country ?? '');
+            // Country/Region/City are structured dropdowns now — best-effort
+            // match the geocoded names to ids, falling back to "Other".
+            await matchReverseGeocodedLocation(
+              countryName: address.country,
+              regionName: address.countrySubdivision,
+              cityName: address.municipality,
+            );
           }
         }
       }

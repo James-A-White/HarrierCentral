@@ -41,6 +41,14 @@ abstract class RunDetailsModel with _$RunDetailsModel {
     String? regionName,
     String? cityId,
     String? cityName,
+    // Manual timezone override (DomainValues.Timezone.id) for free-text
+    // "Other" locations; null when derived from a structured city.
+    int? timezoneId,
+    // Selected city's coordinates + event country's neighbour codes — gazetteer
+    // search hints (null when no structured city/country override).
+    double? eventCityLatitude,
+    double? eventCityLongitude,
+    String? eventCountryCodes,
     String? publicEventId,
     int? evtDisseminationAudience,
     int? evtDisseminateAllowWebLinks,

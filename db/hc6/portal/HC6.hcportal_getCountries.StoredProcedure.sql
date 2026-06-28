@@ -11,7 +11,7 @@ AS
 --              alphabetically by CountryName. Used for populating country
 --              dropdowns in the portal.
 -- Parameters: @deviceId, @accessToken (auth)
--- Returns: Single rowset: id, CountryName
+-- Returns: Single rowset: id, CountryName, NeighboringCountries
 -- Author: Harrier Central
 -- Created: 2026-03-15
 -- HC5 Source: HC5.hcportal_getCountries
@@ -45,7 +45,7 @@ BEGIN TRY
 	END
 
 	-- Main query
-	SELECT c.id, c.CountryName
+	SELECT c.id, c.CountryName, c.NeighboringCountries
 	FROM HC.Country c
 	ORDER BY c.CountryName
 

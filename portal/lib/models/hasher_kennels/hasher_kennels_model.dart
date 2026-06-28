@@ -37,6 +37,11 @@ abstract class HasherKennelsModel with _$HasherKennelsModel {
     required double defaultEventPriceForNonMembers,
     String? cityName,
     String? regionName,
+    // Kennel's default structured location ids (from getKennel) — used as the
+    // inherited default for a run's Timezone-group Country/Region/City and as
+    // the gazetteer fallback. provinceStateId is the kennel's region id.
+    String? cityId,
+    String? provinceStateId,
     String? continentName,
     DateTime? membershipExpirationDate,
     double? kennelLat,

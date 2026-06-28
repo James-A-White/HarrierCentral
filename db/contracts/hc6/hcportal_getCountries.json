@@ -45,6 +45,12 @@
           "type": "NVARCHAR(250)",
           "nullable": false,
           "description": "Country display name (from HC.Country)"
+        },
+        {
+          "name": "NeighboringCountries",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "Comma-separated ISO country codes for this country + its neighbours; used as the gazetteer countryCodes filter when a run overrides its country."
         }
       ]
     }

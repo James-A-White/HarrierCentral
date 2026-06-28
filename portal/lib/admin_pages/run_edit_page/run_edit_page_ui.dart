@@ -352,6 +352,12 @@ class RunBasicInfoTabContent extends StatelessWidget {
           ],
         ),
 
+        // City line (effective Country, Region, City — event override or
+        // kennel default) with a "Set" button to override. Drives timezone +
+        // gazetteer hints; placed before Place Description so it's set first.
+        const SizedBox(height: 16),
+        _buildLocationSummaryLine(),
+
         const SizedBox(height: 16),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -456,6 +462,44 @@ class RunBasicInfoTabContent extends StatelessWidget {
   }
 
   /// Builds the "Lookup" button that opens the location lookup dialog.
+  /// Read-only "City" line showing the run's effective Country, Region, City
+  /// (event override if set, otherwise the kennel default), with a "Set"
+  /// button that opens the cascading Set-Location dialog.
+  Widget _buildLocationSummaryLine() {
+    return Obx(() {
+      final k = controller.kennelData;
+      final parts = <String?>[
+        controller.country.value ?? k.countryName,
+        controller.region.value ?? k.regionName,
+        controller.city.value ?? k.cityName,
+      ].where((p) => p != null && p.trim().isNotEmpty).cast<String>().toList();
+      final summary = parts.isEmpty ? 'Not set' : parts.join(', ');
+      return Row(
+        children: [
+          Expanded(
+            child: InputDecorator(
+              decoration: const InputDecoration(
+                labelText: 'City (for timezone & address lookups)',
+                border: OutlineInputBorder(),
+                isDense: true,
+              ),
+              child: Text(
+                summary,
+                style: const TextStyle(color: Color(0xFF0F172A)),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          OutlinedButton.icon(
+            onPressed: controller.openSetLocationDialog,
+            icon: const Icon(Icons.edit_location_alt, size: 18),
+            label: const Text('Set'),
+          ),
+        ],
+      );
+    });
+  }
+
   Widget _buildLookupButton() {
     final uiControl = controller.uiControls[basicInfoLookupButtonKey];
     if (uiControl == null) return const SizedBox.shrink();
@@ -1097,33 +1141,8 @@ class RunOtherTabContent extends StatelessWidget {
             ),
           ],
 
-          // Country Section
-          HelperWidgets().categoryLabelWidget('Location (for statistics)'),
-          _buildLocationDropdown(
-            label: 'Country',
-            valueId: controller.countryId,
-            options: controller.countryOptions,
-            onChanged: controller.onCountrySelected,
-            isEnabled: () => true,
-          ),
-          const SizedBox(height: 12),
-          _buildLocationDropdown(
-            label: 'Region / State',
-            valueId: controller.regionId,
-            options: controller.regionOptions,
-            onChanged: controller.onRegionSelected,
-            isEnabled: () => controller.countryId.value != null,
-            loading: controller.isLoadingRegions,
-          ),
-          const SizedBox(height: 12),
-          _buildLocationDropdown(
-            label: 'City',
-            valueId: controller.cityId,
-            options: controller.cityOptions,
-            onChanged: controller.onCitySelected,
-            isEnabled: () => controller.regionId.value != null,
-            loading: controller.isLoadingCities,
-          ),
+          // (Country / Region / City + timezone moved to the Location tab and
+          // the Basic Info "Set" dialog.)
 
           // Integration Section (if applicable)
           if (controller.inboundIntegrationId.value != 0) ...[
@@ -1224,59 +1243,6 @@ class RunOtherTabContent extends StatelessWidget {
         ));
   }
 
-  /// One dropdown in the cascading Country -> Region -> City selector.
-  ///
-  /// [valueId] / [options] are the selected lower-cased UUID and the {id: name}
-  /// option map (both reactive). [isEnabled] gates the control on its parent
-  /// selection; [loading] (optional) shows a spinner while the dependent list
-  /// is fetched. The current value is coerced to null if it isn't in [options]
-  /// so the form field never throws on a stale/absent selection.
-  Widget _buildLocationDropdown({
-    required String label,
-    required RxnString valueId,
-    required RxMap<String, String> options,
-    required void Function(String?) onChanged,
-    required bool Function() isEnabled,
-    RxBool? loading,
-  }) {
-    return Obx(() {
-      final enabled = isEnabled();
-      final current =
-          options.containsKey(valueId.value) ? valueId.value : null;
-      final isLoading = loading?.value ?? false;
-      return SizedBox(
-        width: 300,
-        child: DropdownButtonFormField<String>(
-          initialValue: current,
-          isExpanded: true,
-          decoration: InputDecoration(
-            labelText: label,
-            fillColor:
-                enabled ? Colors.yellow.shade100 : Colors.grey.shade200,
-            filled: true,
-            suffixIcon: isLoading
-                ? const Padding(
-                    padding: EdgeInsets.all(10),
-                    child: SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  )
-                : null,
-          ),
-          items: [
-            for (final entry in options.entries)
-              DropdownMenuItem<String>(
-                value: entry.key,
-                child: Text(entry.value),
-              ),
-          ],
-          onChanged: enabled ? onChanged : null,
-        ),
-      );
-    });
-  }
 }
 
 /// Content widget for the Payment tab.

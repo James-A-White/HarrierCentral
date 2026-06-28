@@ -2,6 +2,23 @@
 
 ---
 
+## 2.0.41+674 — 2026-06-28
+
+### New Features
+- Run editor — full Country → Region → City location selector driving timezone
+  & gazetteer: inline dropdowns on the Location tab ("Other" free-text + manual
+  timezone picker), a "Set" dialog + summary line on Basic Info, and a read-only
+  panel showing the IANA zone, abbreviation (e.g. EST/EDT) and standard/daylight
+  UTC offsets.
+- Address "Find Location" now biases to the run's overridden location (geocoded
+  centre + the override country's neighbour codes), falling back to the kennel;
+  reverse-geocode best-effort matches results into the dropdowns.
+
+### Improvements
+- Set Location dialog buttons match the standard portal style.
+
+---
+
 ## 2.0.40+673 — 2026-06-28
 
 ### New Features

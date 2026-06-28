@@ -13,6 +13,7 @@ const String HIVE_DEVICE_ID = 'deviceId';
 const String HIVE_DEVICE_SECRET = 'deviceSecret';
 
 const String HIVE_COUNTRY_LIST = 'countryList';
+const String HIVE_COUNTRY_NEIGHBORS = 'countryNeighbors';
 
 const String HIVE_FCM_TOKEN = 'fcmToken';
 const String HIVE_FCM_TOKEN_DATE = 'fcmTokenDate';
