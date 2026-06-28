@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.37+670 — 2026-06-28
+
+- **Same-device login hardening.** The one-time login code now arrives in the URL **fragment** (`#authCode=`) instead of the query string, so it's never sent to or logged by any server; it's **stripped from the URL** immediately on read (no history/back-button residue). Added `Referrer-Policy: no-referrer` so the URL can't leak via the `Referer` header. (Backward-compatible: still accepts the legacy `?authCode=` from older app builds.) The DB-side login-code TTL was also tightened from 5 minutes to 90 seconds.
+
+---
+
 ## 2.0.36+669 — 2026-06-28
 
 - **Fixed the ~10-second Kennel Members load.** The loader waited up to 100×100ms (10s) for the desktop data grid's state manager to appear — but on the phone the grid isn't rendered (card list instead), so that wait always ran the full 10 seconds before giving up. Removed the poll; members now appear as soon as the data returns (~instant for small kennels).

@@ -68,12 +68,14 @@ BEGIN TRY
     -- already been consumed (Removed = 1) or that are older than the TTL, so a
     -- scanData / auth code is single-use and short-lived.
     DECLARE @count int = 0
-    DECLARE @ttlMinutes int = 5
+    -- The login code is inserted then consumed within seconds (app-login) or on
+    -- the next 1s poll after a QR scan, so a short TTL is safe and limits replay.
+    DECLARE @ttlSeconds int = 90
 
     SELECT @count = COUNT(*) FROM HC.WebPortalAuthenticationRequests w
     WHERE trim(lower(scanData)) = trim(lower(@qrCodeData))
       AND ISNULL(w.Removed, 0) = 0
-      AND w.updatedAt > DATEADD(MINUTE, -@ttlMinutes, SYSDATETIMEOFFSET())
+      AND w.updatedAt > DATEADD(SECOND, -@ttlSeconds, SYSDATETIMEOFFSET())
 
     -- If no matching auth request exists, return silently (no rowset)
     IF (@count = 0)
@@ -103,7 +105,7 @@ BEGIN TRY
                 INNER JOIN HC.Hasher h on w.hasherId = h.id
                 WHERE trim(lower(scanData)) = trim(lower(@qrCodeData))
                   AND ISNULL(w.Removed, 0) = 0
-                  AND w.updatedAt > DATEADD(MINUTE, -@ttlMinutes, SYSDATETIMEOFFSET())
+                  AND w.updatedAt > DATEADD(SECOND, -@ttlSeconds, SYSDATETIMEOFFSET())
 
             IF (@hasherId IS NOT NULL)
             BEGIN
@@ -145,7 +147,7 @@ BEGIN TRY
     INNER JOIN HC.Hasher h on w.hasherId = h.id
     WHERE trim(lower(scanData)) = trim(lower(@qrCodeData))
       AND ISNULL(w.Removed, 0) = 0
-      AND w.updatedAt > DATEADD(MINUTE, -@ttlMinutes, SYSDATETIMEOFFSET());
+      AND w.updatedAt > DATEADD(SECOND, -@ttlSeconds, SYSDATETIMEOFFSET());
 
     -- Single-use: consume the request so the auth code cannot be replayed.
     UPDATE HC.WebPortalAuthenticationRequests

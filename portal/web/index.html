@@ -18,6 +18,9 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <!-- Never leak the URL (which may briefly carry the same-device login code)
+       to third parties via the Referer header. -->
+  <meta name="referrer" content="no-referrer">
   <meta name="description" content="A new Flutter project.">
 
   <!-- iOS meta tags & icons -->

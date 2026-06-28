@@ -44,7 +44,9 @@ class DrawerMenuState extends State<DrawerMenu> {
   }
 
   /// Same-device portal login: register a one-time auth code, then open the
-  /// portal at `…/?authCode=<code>` so it logs in without scanning a QR.
+  /// portal at `…/#authCode=<code>` so it logs in without scanning a QR.
+  /// The code is passed in the URL *fragment* (not the query string) so it is
+  /// never transmitted to — or logged by — any server.
   Future<void> _openAdminPortal() async {
     Navigator.pop(context);
     final authCode = const Uuid().v4();
@@ -52,7 +54,7 @@ class DrawerMenuState extends State<DrawerMenu> {
         await AuthenticateWebPortalService().authenticateWebPortal(authCode);
     if (result?.result == 'Success') {
       await launchUrl(
-        Uri.parse('$PORTAL_URL/?authCode=$authCode'),
+        Uri.parse('$PORTAL_URL/#authCode=$authCode'),
         mode: LaunchMode.externalApplication,
       );
     } else {

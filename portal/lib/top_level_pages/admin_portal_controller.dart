@@ -7,19 +7,52 @@ import 'package:web/web.dart' as web;
 
 class AdminPortalController extends GetxController {
   // Same-device login from the mobile app: the app registers an auth code and
-  // opens the portal at `…/?authCode=<code>`. When present we use it directly
+  // opens the portal at `…/#authCode=<code>`. When present we use it directly
   // (the app has already approved it), so the poll below authenticates without
   // the user scanning a QR. Otherwise we generate a fresh code for the QR flow.
   final String authCode = _resolveAuthCode();
 
-  static String _resolveAuthCode() {
-    final fromUrl = Uri.base.queryParameters['authCode']?.trim() ?? '';
-    return fromUrl.length >= 10 ? fromUrl : const Uuid().v4();
-  }
+  // Captured at construction (before the code is stripped from the URL) so the
+  // QR-vs-app-login branch still knows which path we are on.
+  static bool _isAppLogin = false;
 
   /// True when [authCode] came from the URL (mobile-app same-device login).
-  bool get isAppLogin =>
-      (Uri.base.queryParameters['authCode']?.trim().length ?? 0) >= 10;
+  bool get isAppLogin => _isAppLogin;
+
+  static String _resolveAuthCode() {
+    final code = _codeFromUrl();
+    if (code.length >= 10) {
+      _isAppLogin = true;
+      // Remove the code from the address bar/history immediately (defence in
+      // depth — it is single-use, but this stops it lingering).
+      _stripCodeFromUrl();
+      return code;
+    }
+    return const Uuid().v4();
+  }
+
+  /// Reads the login code from the URL **fragment** (`#authCode=…`, which the
+  /// browser never sends to any server, so it stays out of access logs) and
+  /// falls back to the legacy query string (`?authCode=…`) for older app builds.
+  static String _codeFromUrl() {
+    final fromFragment =
+        Uri.splitQueryString(Uri.base.fragment)['authCode']?.trim() ?? '';
+    if (fromFragment.length >= 10) return fromFragment;
+    return Uri.base.queryParameters['authCode']?.trim() ?? '';
+  }
+
+  /// Strips any `?query`/`#fragment` from the browser URL, leaving just the
+  /// path — so the auth code is not left in history, the back button, the
+  /// address bar, or a `Referer` header.
+  static void _stripCodeFromUrl() {
+    try {
+      final path = web.window.location.pathname;
+      web.window.history
+          .replaceState(null, '', path.isEmpty ? '/' : path);
+    } catch (_) {
+      // Non-web / unsupported — nothing to strip.
+    }
+  }
 
   String firstName = '';
   String lastName = '';
