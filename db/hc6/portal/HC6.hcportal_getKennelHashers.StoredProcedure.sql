@@ -69,6 +69,9 @@ BEGIN TRY
 		RETURN;
 	END
 
+	-- Evaluate "now" once and reuse for every time comparison below.
+	DECLARE @now DATETIME = GETDATE();
+
 	-- Authorization: check AppAccessFlags permission bitmask
 	-- 0x40000019 = authIsSuperAdmin | authCanManageMembers | authCanManageHashCash | authIsAdmin
 	DECLARE @appAccessFlags INT,
@@ -105,7 +108,7 @@ BEGIN TRY
 		@lastEventDate = evt.EventStartDatetime
 	FROM HC.Event evt
 	WHERE evt.KennelId = @kennelId AND evt.IsCountedRun = 1
-	AND evt.EventStartDatetime < GETDATE()
+	AND evt.EventStartDatetime < @now
 	ORDER BY evt.EventStartDatetime DESC
 
 	SELECT TOP 1
@@ -115,7 +118,7 @@ BEGIN TRY
 	FROM HC.Event evt
 	WHERE evt.KennelId = @kennelId AND evt.IsCountedRun = 1
 	AND evt.id != @lastEventId
-	AND evt.EventStartDatetime < GETDATE()
+	AND evt.EventStartDatetime < @now
 	ORDER BY evt.EventStartDatetime DESC
 
 	SELECT TOP 1
@@ -131,19 +134,19 @@ BEGIN TRY
 		SELECT
 			  h.PublicHasherId as publicHasherId
 			, h.id as hasherId
-			, k.PublicKennelId as publicKennelId
+			, @publicKennelId as publicKennelId
 			, h.HashName as hashName
 			, h.FirstName as firstName
 			, h.LastName as lastName
 			, h.DisplayName as displayName
-			, CASE WHEN hkm.MembershipExpirationDate > GETDATE() THEN h.Email ELSE '<hidden>' END as eMail
+			, CASE WHEN hkm.MembershipExpirationDate > @now THEN h.Email ELSE '<hidden>' END as eMail
 			, COALESCE(h.Photo, 'bundle://avatar-1') as photo
 			, h.LastLoginDateTime as lastLoginDateTime
 			, CASE WHEN LastLoginDateTime IS NULL THEN REPLACE(h.ResetCode, 'URC:', '') ELSE '' END as inviteCode
 			, CASE WHEN hkm.kennelId = h.HomeKennelId THEN 'Yes' ELSE 'No' END as isHomeKennel
 			, CASE WHEN hkm.Following = 1 THEN 'Yes' ELSE 'No' END as isFollowing
-			, CASE WHEN hkm.MembershipExpirationDate > GETDATE() THEN 'Yes' ELSE 'No' END as isMember
-			, CASE WHEN hkm.MembershipExpirationDate > GETDATE() THEN 'Member'
+			, CASE WHEN hkm.MembershipExpirationDate > @now THEN 'Yes' ELSE 'No' END as isMember
+			, CASE WHEN hkm.MembershipExpirationDate > @now THEN 'Member'
 				   WHEN hkm.Following = 1 THEN 'Following' ELSE 'None' END as status
 			, CASE WHEN hkm.KennelNotificationPreference = 0 THEN 'Auto' WHEN hkm.KennelNotificationPreference = 1 THEN 'On' WHEN hkm.KennelNotificationPreference = 2 THEN 'Off' ELSE 'Unknown' END as notifications
 			, CASE WHEN hkm.KennelEmailAlertPreference = 0 THEN 'Auto' WHEN hkm.KennelEmailAlertPreference = 1 THEN 'On' WHEN hkm.KennelEmailAlertPreference = 2 THEN 'Off' ELSE 'Unknown' END as emailAlerts
@@ -159,12 +162,11 @@ BEGIN TRY
 			, hkm.DiscountPercent as discountPercent
 			, hkm.DiscountDescription as discountDescription
 			, COALESCE(kc.currentBalance, 0) as hashCredit
-		FROM HC.Kennel k
-		INNER JOIN HC.HasherKennelMap hkm on hkm.KennelId = k.id
+		FROM HC.HasherKennelMap hkm
 		INNER JOIN HC.Hasher h on hkm.UserId = h.id
-		LEFT OUTER JOIN HC.KennelCredit kc on kc.kennelId = k.id AND kc.userId = h.id
-		WHERE k.PublicKennelId = @publicKennelId
-		AND (hkm.MembershipExpirationDate > GETDATE() OR hkm.Following = 1)
+		LEFT OUTER JOIN HC.KennelCredit kc on kc.kennelId = @kennelId AND kc.userId = h.id
+		WHERE hkm.KennelId = @kennelId
+		AND (hkm.MembershipExpirationDate > @now OR hkm.Following = 1)
 	),
 	cte2 AS (
 		SELECT
