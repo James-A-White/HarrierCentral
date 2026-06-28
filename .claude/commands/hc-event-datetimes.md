@@ -23,9 +23,9 @@ single most important rule:
 |---|---|---|---|
 | `EventStartDatetime` | `datetimeoffset` **NOT NULL** | Local wall-time. **Its offset is frequently a spurious `+00:00`** (see gotcha). | Wall-clock display (CAST to `datetime2(7)` to strip the `+00:00`). Per-kennel ordering (within one kennel, order is consistent). **NEVER for instant compare/sort across kennels.** |
 | `EventStartDateTimeGmt` | `datetimeoffset` **NOT NULL** (since 2026-06-28, `DEFAULT '1900-01-01…+00:00'`) | **TRUE UTC instant** — computed from the wall-clock via Kennel→City→Timezone by trigger. | **All instant/chronological filter + sort**: future/past, "now-relative", cross-kennel ordering. |
-| `EventStartLocal` | `datetime2` PERSISTED computed | FB-aware local wall-clock (= `SyncEventStartDatetime` cast to `datetime2`). | Local-clock ordering & bucketing: run-numbering, stats, YEAR/DATEDIFF buckets. |
+| `EventStartLocal` | `datetime2` PERSISTED computed | Local wall-clock = `CONVERT(datetime2, EventStartDatetime)` (FB-effective time is baked into `EventStartDatetime`; no longer FB-aware). | Local-clock ordering & bucketing: run-numbering, stats, YEAR/DATEDIFF buckets. |
 | `EventStartLocalDate` | `date` PERSISTED computed | Local calendar date = `CONVERT(date, EventStartDatetime)`. | Grouping/filtering by local calendar date (global calendar). |
-| `SyncEventStartDatetime` | `datetimeoffset` PERSISTED computed | FB-aware effective start: `FbEventStartDatetime` when `UseFbRunDetails=1`, else `EventStartDatetime`. | Source for the computed columns above. **Unreferenced directly in HC6 SPs.** |
+| `SyncEventStartDatetime` | `datetimeoffset` PERSISTED computed | Legacy FB-aware effective start. **Not used in HC6** (HC5-only); FB retired. Drop at legacy retirement. | — |
 | `EventStartDatetimeIndexed` | `datetimeoffset`, trigger-maintained | FB-aware local wall-clock with offset zeroed to `+00:00` (legacy). | **HC5 only.** HC6 moved to `EventStartLocal`. Drop at HC5 retirement — see `/db` notes / `project_retire_hc5_todos`. |
 
 Also: `EventEndDatetime` (`datetimeoffset`), `FbEventStartDatetime` (`datetimeoffset`, the
@@ -81,13 +81,16 @@ SET EventStartDateTimeGmt =
 
 ---
 
-## Facebook override
+## Facebook (retired)
 
-`SyncEventStartDatetime` / `EventStartLocal` / `EventStartDatetimeIndexed` are all **FB-aware**:
-when `UseFbRunDetails = 1` they use `FbEventStartDatetime`, else the manual `EventStartDatetime`.
-`EventStartDateTimeGmt` is computed from the *manual* wall-clock (not FB) — if you need the
-FB-aware instant, that's a known gap; today the feeds display via Gmt + IANA timezone and the
-FB override is reflected in the Local columns. Don't assume Gmt tracks the FB time.
+FB integration is retired. The FB-effective start time was **baked into `EventStartDatetime`**
+(the FB value copied wherever it differed, 2026-06-28), so `EventStartDatetime` is the single
+source of truth and **HC6 no longer reads `FbEventStartDatetime`** (SPs, the `EventStartLocal`
+computed column, and the active triggers were all de-FB'd). The `FbEventStartDatetime` COLUMN is
+**KEPT** — it's still read by ~40 legacy objects across HC/HC3/HC3W/HC4/HC5/HC_BACKUP/DEV — but
+must not be referenced from HC6. `UseFbRunDetails` and `FbEventName` (non-datetime FB fields) are
+retained. `SyncEventStartDatetime` is now HC5-only and slated for removal at legacy retirement.
+**Do not reintroduce FB-datetime references in HC6.**
 
 ---
 
