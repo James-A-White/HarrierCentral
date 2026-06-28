@@ -56,7 +56,7 @@ BEGIN TRY
 	DECLARE @futureRunCount INT;
 	SELECT @futureRunCount = COUNT(*)
 	FROM HC.Event WITH (NOLOCK)
-	WHERE EventStartDatetimeIndexed > GETDATE();
+	WHERE EventStartLocal > GETDATE();
 
 	-- Result Set 1: Version data (iOS vs Android usage)
 	;WITH LatestLogins AS (
@@ -399,7 +399,7 @@ BEGIN TRY
 			evt.PublicEventId AS publicEventId
 		FROM HC.Event evt WITH (NOLOCK)
 		INNER JOIN HC.Kennel k WITH (NOLOCK) ON evt.KennelId = k.id
-		WHERE evt.EventStartDatetimeIndexed > DATEADD(MINUTE, -2880, GETDATE())
+		WHERE evt.EventStartLocal > DATEADD(MINUTE, -2880, GETDATE())
 			AND evt.IsVisible = 1
 		ORDER BY evt.updatedAt DESC
 	),
@@ -419,7 +419,7 @@ BEGIN TRY
 			evt.PublicEventId AS publicEventId
 		FROM HC.Event evt WITH (NOLOCK)
 		INNER JOIN HC.Kennel k WITH (NOLOCK) ON evt.KennelId = k.id
-		WHERE evt.EventStartDatetimeIndexed > DATEADD(MINUTE, -2880, GETDATE())
+		WHERE evt.EventStartLocal > DATEADD(MINUTE, -2880, GETDATE())
 			AND evt.IsVisible = 1
 			AND EXISTS (
 				SELECT 1

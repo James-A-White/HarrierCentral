@@ -487,7 +487,7 @@ BEGIN
     FROM HC.Event evt
     WHERE evt.updatedAt > @ua
       AND (
-          evt.EventStartDatetimeIndexed > DATEADD(DAY, -@DAYS_PAST, GETDATE())
+          evt.EventStartLocal > DATEADD(DAY, -@DAYS_PAST, GETDATE())
           OR evt.KennelId IN (SELECT hkm2.KennelId FROM HC.HasherKennelMap hkm2 WHERE hkm2.UserId = @userId AND hkm2.Following = 1)
           OR evt.id IN (SELECT hem2.EventId FROM HC.HasherEventMap hem2 WHERE hem2.UserId = @userId AND hem2.AttendenceState >= 3)
       )
@@ -595,7 +595,7 @@ BEGIN
     FROM HC.Event evt
     WHERE evt.KennelId = @forceKennelId
       AND (
-          evt.EventStartDatetimeIndexed > DATEADD(DAY, -@DAYS_PAST, GETDATE())
+          evt.EventStartLocal > DATEADD(DAY, -@DAYS_PAST, GETDATE())
           OR evt.KennelId IN (SELECT hkm2.KennelId FROM HC.HasherKennelMap hkm2 WHERE hkm2.UserId = @userId AND hkm2.Following = 1)
           OR evt.id IN (SELECT hem2.EventId FROM HC.HasherEventMap hem2 WHERE hem2.UserId = @userId AND hem2.AttendenceState >= 3)
       )

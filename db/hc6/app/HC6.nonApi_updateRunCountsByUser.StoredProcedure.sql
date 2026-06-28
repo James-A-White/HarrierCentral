@@ -93,22 +93,22 @@ BEGIN
             hem.id AS hemId,
             hem.isHare,
             ROW_NUMBER() OVER (PARTITION BY hem.userId
-                               ORDER BY evt.EventStartDatetimeIndexed, evt.KennelId, evt.EventNumber, evt.id)
+                               ORDER BY evt.EventStartLocal, evt.KennelId, evt.EventNumber, evt.id)
                 AS totalRuns,
             ROW_NUMBER() OVER (PARTITION BY hem.userId, hem.isHare
-                               ORDER BY evt.EventStartDatetimeIndexed, evt.KennelId, evt.EventNumber, evt.id)
+                               ORDER BY evt.EventStartLocal, evt.KennelId, evt.EventNumber, evt.id)
                 AS totalHaring,
             ROW_NUMBER() OVER (PARTITION BY hem.userId, evt.KennelId
-                               ORDER BY evt.EventStartDatetimeIndexed, evt.KennelId, evt.EventNumber, evt.id)
+                               ORDER BY evt.EventStartLocal, evt.KennelId, evt.EventNumber, evt.id)
                 AS totalRunsThisKennel,
             ROW_NUMBER() OVER (PARTITION BY hem.userId, evt.KennelId, hem.isHare
-                               ORDER BY evt.EventStartDatetimeIndexed, evt.KennelId, evt.EventNumber, evt.id)
+                               ORDER BY evt.EventStartLocal, evt.KennelId, evt.EventNumber, evt.id)
                 AS totalHaringThisKennel,
-            ROW_NUMBER() OVER (PARTITION BY hem.userId, evt.KennelId, DATEPART(YEAR, evt.EventStartDatetimeIndexed)
-                               ORDER BY evt.EventStartDatetimeIndexed, evt.KennelId, evt.EventNumber, evt.id)
+            ROW_NUMBER() OVER (PARTITION BY hem.userId, evt.KennelId, DATEPART(YEAR, evt.EventStartLocal)
+                               ORDER BY evt.EventStartLocal, evt.KennelId, evt.EventNumber, evt.id)
                 AS ytdTotalRunsThisKennel,
-            ROW_NUMBER() OVER (PARTITION BY hem.userId, evt.KennelId, hem.isHare, DATEPART(YEAR, evt.EventStartDatetimeIndexed)
-                               ORDER BY evt.EventStartDatetimeIndexed, evt.KennelId, evt.EventNumber, evt.id)
+            ROW_NUMBER() OVER (PARTITION BY hem.userId, evt.KennelId, hem.isHare, DATEPART(YEAR, evt.EventStartLocal)
+                               ORDER BY evt.EventStartLocal, evt.KennelId, evt.EventNumber, evt.id)
                 AS ytdHaringThisKennel
         FROM   HC.HasherEventMap hem  WITH (INDEX = IX_HemRunCount)
         JOIN   HC.Event evt           WITH (INDEX = IX_EvtRunCount) ON evt.id = hem.EventId
@@ -177,11 +177,11 @@ BEGIN
         SELECT
             COALESCE(MAX(hem.TotalRunsThisKennel),  0) AS maxHcTotalRunCount,
             COALESCE(MAX(hem.TotalHaringThisKennel), 0) AS maxHcHaringCount,
-            COALESCE(MAX(CASE WHEN DATEPART(YEAR, evt.EventStartDatetimeIndexed) = @thisYear
+            COALESCE(MAX(CASE WHEN DATEPART(YEAR, evt.EventStartLocal) = @thisYear
                               THEN hem.YtdTotalRunsThisKennel ELSE NULL END), 0) AS maxYtdTotalRunCount,
-            COALESCE(MAX(CASE WHEN DATEPART(YEAR, evt.EventStartDatetimeIndexed) = @thisYear
+            COALESCE(MAX(CASE WHEN DATEPART(YEAR, evt.EventStartLocal) = @thisYear
                               THEN hem.YtdHaringThisKennel    ELSE NULL END), 0) AS maxYtdHaringCount,
-            MAX(evt.EventStartDatetimeIndexed) AS dateOfLastRun,
+            MAX(evt.EventStartLocal) AS dateOfLastRun,
             hkm.UserId,
             hkm.KennelId
         FROM   HC.HasherKennelMap hkm
@@ -224,16 +224,16 @@ BEGIN
             hem.UserId,
             evt.KennelId,
             hem.isHare,
-            ((DATEDIFF(day, DATEADD(month, -6, GETDATE()), evt.EventStartDatetimeIndexed)) / 182) AS bucket,
+            ((DATEDIFF(day, DATEADD(month, -6, GETDATE()), evt.EventStartLocal)) / 182) AS bucket,
             ROW_NUMBER() OVER (
                 PARTITION BY hem.userId, evt.KennelId,
-                             ((DATEDIFF(day, DATEADD(month, -6, GETDATE()), evt.EventStartDatetimeIndexed)) / 182)
-                ORDER BY     evt.EventStartDatetimeIndexed, evt.KennelId
+                             ((DATEDIFF(day, DATEADD(month, -6, GETDATE()), evt.EventStartLocal)) / 182)
+                ORDER BY     evt.EventStartLocal, evt.KennelId
             ) AS rollingTotal,
             ROW_NUMBER() OVER (
                 PARTITION BY hem.userId, evt.KennelId, hem.isHare,
-                             ((DATEDIFF(day, DATEADD(month, -6, GETDATE()), evt.EventStartDatetimeIndexed)) / 182)
-                ORDER BY     evt.EventStartDatetimeIndexed, evt.KennelId
+                             ((DATEDIFF(day, DATEADD(month, -6, GETDATE()), evt.EventStartLocal)) / 182)
+                ORDER BY     evt.EventStartLocal, evt.KennelId
             ) AS rollingHaring
         FROM   HC.HasherEventMap hem  WITH (INDEX = IX_HemRunCount)
         JOIN   HC.Event evt           WITH (INDEX = IX_EvtRunCount) ON evt.id = hem.EventId

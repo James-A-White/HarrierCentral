@@ -41,11 +41,11 @@ BEGIN
                 evt.KennelId,
                 evt.AbsoluteEventNumber,
                 evt.EventNumber,
-                evt.EventStartDatetimeIndexed,
+                evt.EventStartLocal,
                 SUM(CASE WHEN evt.AbsoluteEventNumber IS NOT NULL THEN 1 ELSE 0 END)
                     OVER (
                         PARTITION BY evt.KennelId
-                        ORDER BY     evt.EventStartDatetimeIndexed ASC, evt.id ASC
+                        ORDER BY     evt.EventStartLocal ASC, evt.id ASC
                         ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
                     )                           AS grp
             FROM   HC.Event evt
@@ -53,7 +53,7 @@ BEGIN
               AND  evt.IsVisible                 = 1
               AND  evt.removed                   = 0
               AND  evt.deleted                   = 0
-              AND  evt.EventStartDatetimeIndexed IS NOT NULL
+              AND  evt.EventStartLocal IS NOT NULL
         ),
         -- Compute the correct EventNumber for every row.
         --   Anchor rows:     keep their AbsoluteEventNumber directly.
@@ -69,7 +69,7 @@ BEGIN
                     CAST(
                         ROW_NUMBER() OVER (
                             PARTITION BY n.KennelId, n.grp
-                            ORDER BY     n.EventStartDatetimeIndexed ASC, n.EventId ASC
+                            ORDER BY     n.EventStartLocal ASC, n.EventId ASC
                         ) - 1
                         + COALESCE(
                             MAX(n.AbsoluteEventNumber) OVER (PARTITION BY n.KennelId, n.grp),

@@ -24,7 +24,7 @@ BEGIN
     -- marker (RowNum = 1) used to derive the current kennel balance.
     ;WITH pays AS (
         SELECT pay.UserId, pay.KennelId, pay.id AS payId, pay.NetPayment, evt.id AS EventId,
-               evt.EventStartDatetimeIndexed
+               evt.EventStartLocal
         FROM   HC.Payment pay WITH (INDEX ([IX_CreditBalance]))
         JOIN   HC.Event evt ON evt.id = pay.EventId
         WHERE  pay.isCancelled = 0
@@ -32,15 +32,15 @@ BEGIN
           AND  (@kennelId IS NULL OR pay.KennelId = @kennelId)
     )
     SELECT
-        UserId, KennelId, payId, EventId, EventStartDatetimeIndexed,
+        UserId, KennelId, payId, EventId, EventStartLocal,
         SUM(NetPayment) OVER (
             PARTITION BY UserId, KennelId
-            ORDER BY     EventStartDatetimeIndexed
+            ORDER BY     EventStartLocal
             ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
         ) AS Balance,
         ROW_NUMBER() OVER (
             PARTITION BY UserId, KennelId
-            ORDER BY     EventStartDatetimeIndexed DESC
+            ORDER BY     EventStartLocal DESC
         ) AS RowNum
     INTO #bal
     FROM pays;

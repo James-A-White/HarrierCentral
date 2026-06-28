@@ -156,7 +156,7 @@ BEGIN TRY
 			evt.InboundIntegrationId AS inboundIntegrationId,
 			ken.KennelName AS kennelName,
 			evt.EventNumber AS eventNumber,
-			evt.EventStartDatetimeIndexed AS eventStartDatetime,
+			CONVERT(datetimeoffset(7), evt.EventStartLocal) AS eventStartDatetime,
 			evt.EventName AS eventName
 		FROM HC.Event evt WITH (NOLOCK)
 		INNER JOIN HC.Kennel ken WITH (NOLOCK) ON evt.KennelId = ken.id
