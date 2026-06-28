@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.38+671 — 2026-06-28
+
+- **Two-flow login TTL.** The QR-scan login keeps its full **5-minute** window (so users have time to find their phone and scan), while the same-device app-login uses the tighter **90-second** window from the previous release. The portal tells the server which flow it's in; the TTL is decided server-side.
+
+---
+
 ## 2.0.37+670 — 2026-06-28
 
 - **Same-device login hardening.** The one-time login code now arrives in the URL **fragment** (`#authCode=`) instead of the query string, so it's never sent to or logged by any server; it's **stripped from the URL** immediately on read (no history/back-button residue). Added `Referrer-Policy: no-referrer` so the URL can't leak via the `Referer` header. (Backward-compatible: still accepts the legacy `?authCode=` from older app builds.) The DB-side login-code TTL was also tightened from 5 minutes to 90 seconds.

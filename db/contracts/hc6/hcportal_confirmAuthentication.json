@@ -38,6 +38,13 @@
       "nullable": true,
       "mapsToColumn": "Device.DeviceData",
       "description": "JSON device info for the browser session. Stored in HC.Device.DeviceData when provisioning a new device."
+    },
+    {
+      "name": "isQrFlow",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Selects the auth-request TTL: 1 = QR-scan flow (5 min, user needs time to scan an on-screen code), 0/default = same-device app-login flow (90 s, code rides in the URL so the replay window is kept tight). Server-decided so the caller cannot widen the app-login window."
     }
   ],
   "rowsets": [

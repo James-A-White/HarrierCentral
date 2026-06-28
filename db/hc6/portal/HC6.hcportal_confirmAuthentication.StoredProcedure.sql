@@ -5,7 +5,11 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_confirmAuthentication]
 @newDeviceId uniqueidentifier = NULL,
 @accessToken nvarchar(1000) = NULL,
 @qrCodeData nvarchar(250) = NULL,
-@deviceInfo nvarchar(4000) = NULL
+@deviceInfo nvarchar(4000) = NULL,
+-- 1 = QR-scan flow (code shown on screen; user may take minutes to scan, so a
+-- longer TTL is fine — there is no URL exposure). 0 (default) = same-device
+-- app-login flow (code rides in the URL, so a tight TTL limits replay).
+@isQrFlow smallint = 0
 
 AS
 -- =====================================================================
@@ -68,9 +72,11 @@ BEGIN TRY
     -- already been consumed (Removed = 1) or that are older than the TTL, so a
     -- scanData / auth code is single-use and short-lived.
     DECLARE @count int = 0
-    -- The login code is inserted then consumed within seconds (app-login) or on
-    -- the next 1s poll after a QR scan, so a short TTL is safe and limits replay.
-    DECLARE @ttlSeconds int = 90
+    -- Flow-specific TTL: 5 minutes for the QR flow (user needs time to find
+    -- their phone and scan), 90 seconds for the same-device app-login flow
+    -- (code is in the URL, consumed within seconds — keep the replay window
+    -- tight). Server-decided, so the caller can't widen the app-login window.
+    DECLARE @ttlSeconds int = IIF(@isQrFlow = 1, 300, 90)
 
     SELECT @count = COUNT(*) FROM HC.WebPortalAuthenticationRequests w
     WHERE trim(lower(scanData)) = trim(lower(@qrCodeData))

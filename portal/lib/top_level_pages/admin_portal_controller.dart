@@ -211,6 +211,9 @@ class AdminPortalController extends GetxController {
             'accessToken': accessToken,
             'qrCodeData': authCode,
             'deviceInfo': allInfo,
+            // QR flow (code shown on screen) gets the 5-minute TTL; same-device
+            // app-login (code from the URL) gets the tighter 90s window.
+            'isQrFlow': isAppLogin ? '0' : '1',
           };
 
           final authResult =
