@@ -128,20 +128,20 @@ BEGIN TRY
       AND  e.deleted   = 0
       AND  e.removed   = 0
       AND  (   (@IsFuture = 1
-                    AND e.EventStartDatetime >= @FutureCutoff)
+                    AND e.EventStartDateTimeGmt >= @FutureCutoff)
             OR (@IsFuture = 0
-                    AND e.EventStartDatetime < @UtcNow))
+                    AND e.EventStartDateTimeGmt < @UtcNow))
       AND  (   @BoundaryDate IS NULL
             OR (@IsFuture = 1
-                    AND e.EventStartDatetime <= @BoundaryDate)
+                    AND e.EventStartDateTimeGmt <= @BoundaryDate)
             OR (@IsFuture = 0
-                    AND e.EventStartDatetime >= @BoundaryDate));
+                    AND e.EventStartDateTimeGmt >= @BoundaryDate));
 
     -- ── Rowset 1: events with kennel context ─────────────────────────────────
 
 -- Split by direction so a plain ORDER BY can be served by an index
-    -- (no Sort operator). Filter/order by raw EventStartDatetime: it is NOT NULL
-    -- and its instant == EventStartDateTimeGmt, so results are identical but the seek is sort-free. WHERE pruned per branch.
+    -- (no Sort operator). Filter/order by EventStartDateTimeGmt — the true UTC instant,
+    -- now guaranteed non-null by trigger — so no NULL-fallback is needed and the seek is sort-free. WHERE pruned per branch.
     IF @IsFuture = 1
     SELECT TOP (@TopN)
 
@@ -206,9 +206,9 @@ BEGIN TRY
     WHERE e.IsVisible = 1
       AND e.deleted   = 0
       AND e.removed   = 0
-      AND e.EventStartDatetime >= @FutureCutoff
-      AND (@BoundaryDate IS NULL OR e.EventStartDatetime <= @BoundaryDate)
-    ORDER BY e.EventStartDatetime ASC;
+      AND e.EventStartDateTimeGmt >= @FutureCutoff
+      AND (@BoundaryDate IS NULL OR e.EventStartDateTimeGmt <= @BoundaryDate)
+    ORDER BY e.EventStartDateTimeGmt ASC;
     ELSE
     SELECT TOP (@TopN)
 
@@ -273,9 +273,9 @@ BEGIN TRY
     WHERE e.IsVisible = 1
       AND e.deleted   = 0
       AND e.removed   = 0
-      AND e.EventStartDatetime < @UtcNow
-      AND (@BoundaryDate IS NULL OR e.EventStartDatetime >= @BoundaryDate)
-    ORDER BY e.EventStartDatetime DESC;
+      AND e.EventStartDateTimeGmt < @UtcNow
+      AND (@BoundaryDate IS NULL OR e.EventStartDateTimeGmt >= @BoundaryDate)
+    ORDER BY e.EventStartDateTimeGmt DESC;
 
     DROP TABLE #ValidKennels;
 
