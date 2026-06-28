@@ -161,10 +161,12 @@ BEGIN TRY
 			, hkm.DiscountAmount as discountAmount
 			, hkm.DiscountPercent as discountPercent
 			, hkm.DiscountDescription as discountDescription
-			, COALESCE(kc.currentBalance, 0) as hashCredit
+			-- hashCredit now sourced from HasherKennelMap.KennelCredit (kept current
+			-- by nonApi_updateKennelCreditByUser). The legacy HC.KennelCredit table
+			-- is no longer read here (it is a redundant copy, marked for retirement).
+			, COALESCE(hkm.KennelCredit, 0) as hashCredit
 		FROM HC.HasherKennelMap hkm
 		INNER JOIN HC.Hasher h on hkm.UserId = h.id
-		LEFT OUTER JOIN HC.KennelCredit kc on kc.kennelId = @kennelId AND kc.userId = h.id
 		WHERE hkm.KennelId = @kennelId
 		AND (hkm.MembershipExpirationDate > @now OR hkm.Following = 1)
 	),
