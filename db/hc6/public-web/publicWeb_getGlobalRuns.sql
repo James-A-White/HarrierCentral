@@ -89,10 +89,10 @@ BEGIN TRY
       AND  k.deleted   = 0
       AND  k.removed   = 0
       AND  (   (@IsFuture = 1
-                    AND COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) >= @FutureCutoff)
+                    AND (e.EventStartDateTimeGmt >= @FutureCutoff OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime >= @FutureCutoff)))
             OR (@IsFuture = 0
                     AND (@MinEventDate IS NULL OR e.EventStartDatetime >= @MinEventDate)
-                    AND COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) < ISNULL(@MaxEventDate, @UtcNow)));
+                    AND (e.EventStartDateTimeGmt < ISNULL(@MaxEventDate, @UtcNow) OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime < ISNULL(@MaxEventDate, @UtcNow)))));
 
     -- ── Rowset 1: events with kennel context ─────────────────────────────────
 
@@ -195,10 +195,10 @@ BEGIN TRY
       AND  k.deleted   = 0
       AND  k.removed   = 0
       AND  (   (@IsFuture = 1
-                    AND COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) >= @FutureCutoff)
+                    AND (e.EventStartDateTimeGmt >= @FutureCutoff OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime >= @FutureCutoff)))
             OR (@IsFuture = 0
                     AND (@MinEventDate IS NULL OR e.EventStartDatetime >= @MinEventDate)
-                    AND COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) < ISNULL(@MaxEventDate, @UtcNow)))
+                    AND (e.EventStartDateTimeGmt < ISNULL(@MaxEventDate, @UtcNow) OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime < ISNULL(@MaxEventDate, @UtcNow)))))
     ORDER BY
         -- Conditional sort: only one branch is active per call.
         -- The inactive branch evaluates to NULL for every row and
