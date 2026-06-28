@@ -261,19 +261,22 @@ class TabPageStandardLayoutState extends State<TabPageStandardLayout>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Back button. On narrow the placeholder collapses to nothing so the
-          // four buttons (Back/Undo/Save/Next) have room to fit without the
-          // Next button overflowing off the right edge.
-          if (!isFirstPage)
-            _ModernNavButton(
+          // Always reserve the Back button's exact footprint — it's just made
+          // invisible on the first page — so the Undo/Save buttons don't shift
+          // when Back appears/disappears between pages.
+          Visibility(
+            visible: !isFirstPage,
+            maintainSize: true,
+            maintainAnimation: true,
+            maintainState: true,
+            child: _ModernNavButton(
               label: 'Back',
               icon: Icons.arrow_back_rounded,
               onPressed: onBack,
               isBack: true,
               compact: isNarrowOrMobile,
-            )
-          else
-            SizedBox(width: isNarrowOrMobile ? 0 : 80),
+            ),
+          ),
 
           // Center buttons (Undo/Save) - only on narrow/mobile
           if (isNarrowOrMobile)
@@ -303,17 +306,21 @@ class TabPageStandardLayoutState extends State<TabPageStandardLayout>
           else
             const Spacer(),
 
-          // Next button
-          if (!isLastPage)
-            _ModernNavButton(
+          // Likewise reserve the Next button's exact footprint — invisible on
+          // the last page — so the layout doesn't shift on the final step.
+          Visibility(
+            visible: !isLastPage,
+            maintainSize: true,
+            maintainAnimation: true,
+            maintainState: true,
+            child: _ModernNavButton(
               label: 'Next',
               icon: Icons.arrow_forward_rounded,
               onPressed: onNext,
               isBack: false,
               compact: isNarrowOrMobile,
-            )
-          else
-            SizedBox(width: isNarrowOrMobile ? 0 : 80),
+            ),
+          ),
         ],
       ),
     );

@@ -1,5 +1,13 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.11.1+1181 (2026-06-28)
+
+### Improvements
+- **Admin Portal**: moved to the bottom of the side menu.
+
+### Security
+- **Same-device portal login**: the one-time login code is now passed in the URL fragment (never sent to or logged by a server) instead of the query string.
+
 ## 2.11.0+1180 (2026-06-27)
 
 ### New Features

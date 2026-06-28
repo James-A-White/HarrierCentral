@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.39+672 — 2026-06-28
+
+- Editor bottom bar: the Back/Next buttons now reserve their space when hidden (first/last page), so the Undo/Save buttons no longer shift between steps.
+
+---
+
 ## 2.0.38+671 — 2026-06-28
 
 - **Two-flow login TTL.** The QR-scan login keeps its full **5-minute** window (so users have time to find their phone and scan), while the same-device app-login uses the tighter **90-second** window from the previous release. The portal tells the server which flow it's in; the TTL is decided server-side.

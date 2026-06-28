@@ -159,15 +159,6 @@ class DrawerMenuState extends State<DrawerMenu> {
                       );
                     },
                   ),
-                  if (_isAdmin)
-                    ListTile(
-                      leading: const Icon(
-                        Icons.admin_panel_settings,
-                        color: textColor,
-                      ),
-                      title: Text('Admin Portal', style: _style),
-                      onTap: _openAdminPortal,
-                    ),
                   ListTile(
                     leading: const Icon(Icons.person, color: textColor),
                     title: Text('My Profile', style: _style),
@@ -379,6 +370,16 @@ class DrawerMenuState extends State<DrawerMenu> {
                       );
                     },
                   ),
+                  // Admin Portal sits at the bottom of the menu (admins only).
+                  if (_isAdmin)
+                    ListTile(
+                      leading: const Icon(
+                        Icons.admin_panel_settings,
+                        color: textColor,
+                      ),
+                      title: Text('Admin Portal', style: _style),
+                      onTap: _openAdminPortal,
+                    ),
                   // ListTile(
                   //   leading: const Icon(Icons.integration_instructions, color: textColor),
                   //   title: Text('Data integrations', style: style),
