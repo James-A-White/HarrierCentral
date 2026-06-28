@@ -121,8 +121,7 @@ BEGIN
           AND  evt.IsCountedRun   = 1
           AND  evt.IsVisible      = 1
           AND  evt.removed        = 0
-          AND  (CAST(evt.EventStartDatetime AS datetime) AT TIME ZONE tz.Timezone)
-               AT TIME ZONE 'UTC' < GETDATE()
+          AND  evt.EventStartDateTimeGmt < GETDATE()
     )
     UPDATE hem
     SET    hem.TotalRuns              = c.totalRuns,
@@ -246,8 +245,7 @@ BEGIN
           AND  evt.IsCountedRun   = 1
           AND  evt.IsVisible      = 1
           AND  evt.removed        = 0
-          AND  (CAST(evt.EventStartDatetime AS datetime) AT TIME ZONE tz.Timezone)
-               AT TIME ZONE 'UTC' < GETDATE()
+          AND  evt.EventStartDateTimeGmt < GETDATE()
     ),
     rollingAgg AS (
         SELECT

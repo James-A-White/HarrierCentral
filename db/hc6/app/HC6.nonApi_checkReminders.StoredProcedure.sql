@@ -44,7 +44,7 @@ DECLARE @radiusKm             INT = 100;
 -- -----------------------------------------------------------------------
 SELECT
     DATEDIFF(minute, GETDATE(),
-             (CAST(evt.EventStartDatetime AS DATETIME) AT TIME ZONE tz.Timezone) AT TIME ZONE 'UTC')
+             evt.EventStartDateTimeGmt)
                             AS minutesToEvent,
     ken.KennelName,
     ken.id                  AS KennelId,
@@ -60,10 +60,11 @@ FROM HC.Event evt
 JOIN HC.Kennel ken         ON ken.id  = evt.KennelId
 JOIN HC.City c             ON c.id    = ken.CityId
 JOIN DomainValues.Timezone tz ON tz.id = c.TimezoneId
-WHERE (CAST(evt.EventStartDatetime AS DATETIME) AT TIME ZONE tz.Timezone) AT TIME ZONE 'UTC'
+WHERE evt.EventStartDateTimeGmt
       BETWEEN DATEADD(minute, -(@checkInWindowMinutes + 1), GETDATE())
           AND DATEADD(minute,  (@checkInWindowMinutes + 1), GETDATE())
-  AND evt.IsVisible           != 0
+  AND evt.IsVisible           = 1
+  AND evt.deleted              = 0
   AND evt.removed              = 0
   AND evt.CheckInReminderSent IS NULL
 
@@ -71,7 +72,7 @@ UNION ALL
 
 SELECT
     DATEDIFF(minute, GETDATE(),
-             (CAST(evt.EventStartDatetime AS DATETIME) AT TIME ZONE tz.Timezone) AT TIME ZONE 'UTC'),
+             evt.EventStartDateTimeGmt),
     ken.KennelName,
     ken.id,
     evt.PublicEventId,
@@ -85,11 +86,13 @@ FROM HC.Event evt
 JOIN HC.Kennel ken         ON ken.id  = evt.KennelId
 JOIN HC.City c             ON c.id    = ken.CityId
 JOIN DomainValues.Timezone tz ON tz.id = c.TimezoneId
-WHERE (CAST(evt.EventStartDatetime AS DATETIME) AT TIME ZONE tz.Timezone) AT TIME ZONE 'UTC'
+WHERE evt.EventStartDateTimeGmt
       BETWEEN DATEADD(minute, -(@rsvpWindowMinutes + 1), GETDATE())
           AND DATEADD(minute,  (@rsvpWindowMinutes + 1), GETDATE())
   AND evt.RsvpReminderSent IS NULL
-  AND evt.IsVisible        != 0
+  AND evt.IsVisible        = 1
+  AND evt.deleted          = 0
+  AND evt.removed          = 0
   AND evt.removed           = 0;
 
 -- -----------------------------------------------------------------------

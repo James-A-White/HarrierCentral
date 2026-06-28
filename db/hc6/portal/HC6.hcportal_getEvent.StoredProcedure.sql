@@ -89,7 +89,7 @@ BEGIN TRY
 			WHERE
 				ken.KennelUniqueShortName = @kennelUniqueShortName AND
 				evt.removed = 0 AND
-				DATEADD(HOUR, 4, (CAST(evt.EventStartDatetime AS DATETIME) AT TIME ZONE tz.Timezone) AT TIME ZONE 'UTC') > GETUTCDATE()
+				evt.EventStartDateTimeGmt > DATEADD(HOUR, -4, GETUTCDATE())
 		)
 		SELECT @kennelId = cte.kennelId, @eventId = cte.evtId FROM cte WHERE RowNumber = 1
 	END
@@ -107,7 +107,7 @@ BEGIN TRY
 			WHERE
 				ken.KennelUniqueShortName = @kennelUniqueShortName AND
 				evt.removed = 0 AND
-				DATEADD(HOUR, 4, (CAST(evt.EventStartDatetime AS DATETIME) AT TIME ZONE tz.Timezone) AT TIME ZONE 'UTC') > GETUTCDATE()
+				evt.EventStartDateTimeGmt > DATEADD(HOUR, -4, GETUTCDATE())
 		)
 		SELECT @kennelId = cte.kennelId, @eventId = cte.evtId FROM cte WHERE RowNumber = 1
 	END
