@@ -1,0 +1,65 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_getTimezonesForGeography",
+  "version": "1.0.0",
+  "description": "Returns the distinct timezones used by cities in a given country (optionally narrowed to a region). Powers the manual timezone dropdown shown when a run's location is entered as free text ('Other' region/city) with no structured city to derive a timezone from. Requires standard portal authentication.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "countryId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Country.id",
+      "description": "Required filter: only timezones used by cities in this country are returned."
+    },
+    {
+      "name": "regionId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Region.id",
+      "description": "Optional filter: when provided, narrows the result to timezones used by cities in this region."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "TimezonesForGeographyResult",
+      "description": "Distinct timezones used by cities in the geography, ordered by displayName. Empty if the geography has no cities/timezones.",
+      "columns": [
+        { "name": "id", "type": "INT", "nullable": false, "description": "DomainValues.Timezone.id — store this in Event.TimezoneId" },
+        { "name": "displayName", "type": "NVARCHAR(303)", "nullable": false, "description": "DomainValues.Timezone.FullTimezone, e.g. 'GMT Standard Time (London)'" },
+        { "name": "ianaTimeZone", "type": "NVARCHAR(300)", "nullable": true, "description": "IANA zone name, e.g. 'Europe/London' (may be null)" },
+        { "name": "utcOffset", "type": "NVARCHAR(20)", "nullable": false, "description": "Standard-time offset hint, formatted 'UTC±HH:MM'" }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning"
+  ]
+}

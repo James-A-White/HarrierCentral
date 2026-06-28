@@ -339,6 +339,13 @@
       "nullable": true,
       "mapsToColumn": "Event.CityId",
       "description": "Statistics city reference (cascades from region). NULL = no change (keeps existing). The empty GUID 00000000-0000-0000-0000-000000000000 is the explicit clear sentinel (used when the country/region changes and invalidates the city)."
+    },
+    {
+      "name": "timezoneId",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "Event.TimezoneId",
+      "description": "Manual timezone override (DomainValues.Timezone.id) for free-text 'Other' locations. NULL = no change (keeps existing). 0 is the explicit clear sentinel — sent when a structured city is chosen so the manual override is dropped (the city's zone takes over). Real ids are >= 10."
     }
   ],
   "rowsets": [

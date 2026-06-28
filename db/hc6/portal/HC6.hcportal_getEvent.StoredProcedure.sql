@@ -232,6 +232,14 @@ BEGIN TRY
 		, evtReg.RegionName AS regionName
 		, evt.CityId AS cityId
 		, evtCity.CityName AS cityName
+		-- Selected city's coordinates — gazetteer search centre when set.
+		, evtCity.Latitude AS eventCityLatitude
+		, evtCity.Longitude AS eventCityLongitude
+		-- Manual timezone override (Event.TimezoneId) for free-text locations.
+		, evt.TimezoneId AS timezoneId
+		-- Event country's neighbour codes — gazetteer country filter when the
+		-- event country is set (mirrors kennelCountryCodes below).
+		, c4s.NeighboringCountries AS eventCountryCodes
 		, ken.Latitude AS kenLatitude
 		, ken.Longitude AS kenLongitude
 		, city.Latitude AS cityLatitude

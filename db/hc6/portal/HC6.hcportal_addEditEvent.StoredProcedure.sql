@@ -50,7 +50,8 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_addEditEvent]
 @evtDisseminateOnGlobalGoogleCalendar smallint = null,
 @countryId uniqueidentifier = null,
 @regionId uniqueidentifier = null,
-@cityId uniqueidentifier = null
+@cityId uniqueidentifier = null,
+@timezoneId int = null
 
 AS
 -- =====================================================================
@@ -278,7 +279,11 @@ DECLARE @resultInt int;
                         -- caller changed the country, invalidating region/city).
                         -- NULL means "no change" (COALESCE keeps existing).
                         RegionId = CASE WHEN @regionId = '00000000-0000-0000-0000-000000000000' THEN NULL ELSE COALESCE(@regionId, RegionId) END,
-                        CityId = CASE WHEN @cityId = '00000000-0000-0000-0000-000000000000' THEN NULL ELSE COALESCE(@cityId, CityId) END
+                        CityId = CASE WHEN @cityId = '00000000-0000-0000-0000-000000000000' THEN NULL ELSE COALESCE(@cityId, CityId) END,
+                        -- Manual timezone override. 0 = explicit clear (e.g. a
+                        -- structured city was chosen, so the override is dropped);
+                        -- NULL = no change. Real ids are >= 10 (IDENTITY(10,10)).
+                        TimezoneId = CASE WHEN @timezoneId = 0 THEN NULL ELSE COALESCE(@timezoneId, TimezoneId) END
                 WHERE id = @eventId;
 
                 -- Verify the update succeeded
@@ -371,7 +376,7 @@ DECLARE @resultInt int;
                                 MaximumParticipantsAllowed, MinimumParticipantsRequired,
                                 EvtDisseminationAudience, EvtDisseminateAllowWebLinks,
                                 EvtDisseminateHashRunsDotOrg, DisseminateOnGlobalGoogleCalendar,
-                                deleted, updatedAt, EventSource, CountryId, RegionId, CityId
+                                deleted, updatedAt, EventSource, CountryId, RegionId, CityId, TimezoneId
                         )
                         VALUES
                         (
@@ -431,7 +436,8 @@ DECLARE @resultInt int;
                                 COALESCE(@countryId, @countryIdFromKennel),
                                 -- Treat the empty-GUID clear sentinel as NULL on insert too.
                                 CASE WHEN @regionId = '00000000-0000-0000-0000-000000000000' THEN NULL ELSE @regionId END,
-                                CASE WHEN @cityId = '00000000-0000-0000-0000-000000000000' THEN NULL ELSE @cityId END
+                                CASE WHEN @cityId = '00000000-0000-0000-0000-000000000000' THEN NULL ELSE @cityId END,
+                                CASE WHEN @timezoneId = 0 THEN NULL ELSE @timezoneId END
                         );
 
                         SET @resultStr = 'Run added to Harrier Central';
