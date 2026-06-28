@@ -46,14 +46,18 @@ BEGIN TRY
     -- website row are still included — logo and colour will be NULL and the
     -- frontend falls back to an initial-letter placeholder.
     --
-    -- Date filtering uses CAST on EventStartDatetime so the local event date
-    -- (as stored in the datetimeoffset value) is used for grouping, which is
-    -- consistent with what the SELECT returns in EventDate.
+    -- Date filtering uses EventStartLocalDate, a PERSISTED computed column
+    -- holding CAST(EventStartDatetime AS DATE) — the LOCAL event date as
+    -- stored in the datetimeoffset value. Filtering/grouping on the stored
+    -- column (rather than CAST() inline) is sargable, so the filtered index
+    -- IX_Event_LocalDate_Visible serves this query as a seek instead of a
+    -- full scan of HC.Event. Day-boundary semantics are identical to the
+    -- previous CAST(EventStartDatetime AS DATE).
     -- GROUP BY instead of DISTINCT so we can expose EventNumber.
     -- When a kennel has multiple events on the same day, MIN(EventNumber)
     -- picks the first counted run for the link target.
     SELECT
-        CAST(e.EventStartDatetime AS DATE)  AS EventDate,
+        e.EventStartLocalDate               AS EventDate,
         k.KennelUniqueShortName             AS KennelSlug,
         k.KennelName,
         k.KennelLogo                        AS KennelLogo,
@@ -63,15 +67,15 @@ BEGIN TRY
     FROM  HC.Event         e
     JOIN  HC.Kennel        k  ON k.id        = e.KennelId
     LEFT JOIN HC.KennelWebsite kw ON kw.KennelId = k.id
-    WHERE CAST(e.EventStartDatetime AS DATE) >= @fromDate
-      AND CAST(e.EventStartDatetime AS DATE)  < DATEADD(DAY, @daysLimit, @fromDate)
+    WHERE e.EventStartLocalDate >= @fromDate
+      AND e.EventStartLocalDate  < DATEADD(DAY, @daysLimit, @fromDate)
       AND e.deleted   = 0
       AND e.removed   = 0
       AND e.IsVisible = 1
       AND k.deleted   = 0
       AND k.removed   = 0
     GROUP BY
-        CAST(e.EventStartDatetime AS DATE),
+        e.EventStartLocalDate,
         k.KennelUniqueShortName,
         k.KennelName,
         k.KennelLogo,
