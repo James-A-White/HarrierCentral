@@ -127,9 +127,9 @@
         },
         {
           "name": "notifications",
-          "type": "VARCHAR(7)",
+          "type": "VARCHAR(12)",
           "nullable": false,
-          "description": "Notification preference derived from HC.HasherKennelMap.KennelNotificationPreference: 0='Auto', 1='On', 2='Off', else='Unknown'"
+          "description": "Kennel-level notification preference derived from HC.HasherKennelMap.KennelNotificationPreference: 2='Off', 3='Silver Bell' (silent/in-app only), 4='6 hrs before' (push only within the 6-hour window before the run), else (0 'auto' or 1 'on')='On'. 'Auto' is not surfaced at kennel level — it only applies at the event level, where it falls back to this kennel default."
         },
         {
           "name": "emailAlerts",

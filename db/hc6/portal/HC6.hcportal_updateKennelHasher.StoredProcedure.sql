@@ -200,6 +200,8 @@ BEGIN TRY
                 hkm.KennelNotificationPreference = case when @notifications is null then hkm.KennelNotificationPreference
                                                         when lower(@notifications) = 'on' then 1
                                                         when lower(@notifications) = 'off' then 2
+                                                        when lower(@notifications) = 'silver bell' then 3
+                                                        when lower(@notifications) = '6 hrs before' then 4
                                                         when lower(@notifications) = 'auto' then 0
                                                         else hkm.KennelNotificationPreference end,
                 hkm.KennelEmailAlertPreference = case when @emailAlerts is null then hkm.KennelEmailAlertPreference

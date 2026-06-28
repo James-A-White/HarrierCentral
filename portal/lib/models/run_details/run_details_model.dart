@@ -35,6 +35,12 @@ abstract class RunDetailsModel with _$RunDetailsModel {
     required int kenDisseminationAudience,
     required String countryId,
     required String countryName,
+    // Event-level statistics region/city (nullable — cascade from country).
+    // Distinct from the kennel's city used for cityLatitude/cityLongitude.
+    String? regionId,
+    String? regionName,
+    String? cityId,
+    String? cityName,
     String? publicEventId,
     int? evtDisseminationAudience,
     int? evtDisseminateAllowWebLinks,

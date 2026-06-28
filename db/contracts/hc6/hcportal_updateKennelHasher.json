@@ -86,7 +86,7 @@
       "type": "NVARCHAR(50)",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "String value ('on', 'off', 'auto') to set push notification preference. Maps to HasherKennelMap.KennelNotificationPreference: 'on'=1, 'off'=2, 'auto'=0."
+      "description": "String value to set kennel-level push notification preference. Maps to HasherKennelMap.KennelNotificationPreference (case-insensitive): 'on'=1, 'off'=2, 'silver bell'=3 (silent/in-app only), '6 hrs before'=4 (push only within the 6-hour window before the run), 'auto'=0. Unrecognised values leave the existing preference unchanged."
     },
     {
       "name": "discountPercent",
@@ -256,7 +256,7 @@
     "Never rename a parameter",
     "Never change a parameter type",
     "Never change a sentinel value meaning",
-    "Never change the string values for @isMember ('yes'), @status ('member'), @emailAlerts ('on'/'off'/'auto'), @notifications ('on'/'off'/'auto'), @historicCountsAreEstimates ('yes'/'no') without updating all callers",
+    "Never change the string values for @isMember ('yes'), @status ('member'), @emailAlerts ('on'/'off'/'auto'), @notifications ('on'/'off'/'silver bell'/'6 hrs before'/'auto'), @historicCountsAreEstimates ('yes'/'no') without updating all callers",
     "Never change the '2999-12-31' never-expires sentinel date without updating all callers"
   ]
 }

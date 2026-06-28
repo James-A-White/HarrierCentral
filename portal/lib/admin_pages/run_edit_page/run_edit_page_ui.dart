@@ -1098,8 +1098,32 @@ class RunOtherTabContent extends StatelessWidget {
           ],
 
           // Country Section
-          HelperWidgets().categoryLabelWidget('Country (for statistics)'),
-          _buildCountryDropdown(),
+          HelperWidgets().categoryLabelWidget('Location (for statistics)'),
+          _buildLocationDropdown(
+            label: 'Country',
+            valueId: controller.countryId,
+            options: controller.countryOptions,
+            onChanged: controller.onCountrySelected,
+            isEnabled: () => true,
+          ),
+          const SizedBox(height: 12),
+          _buildLocationDropdown(
+            label: 'Region / State',
+            valueId: controller.regionId,
+            options: controller.regionOptions,
+            onChanged: controller.onRegionSelected,
+            isEnabled: () => controller.countryId.value != null,
+            loading: controller.isLoadingRegions,
+          ),
+          const SizedBox(height: 12),
+          _buildLocationDropdown(
+            label: 'City',
+            valueId: controller.cityId,
+            options: controller.cityOptions,
+            onChanged: controller.onCitySelected,
+            isEnabled: () => controller.regionId.value != null,
+            loading: controller.isLoadingCities,
+          ),
 
           // Integration Section (if applicable)
           if (controller.inboundIntegrationId.value != 0) ...[
@@ -1200,52 +1224,58 @@ class RunOtherTabContent extends StatelessWidget {
         ));
   }
 
-  Widget _buildCountryDropdown() {
-    return Obx(() => SizedBox(
-          width: 300,
-          child: DropdownButtonFormField<String>(
-            initialValue: controller.country.value,
-            decoration: InputDecoration(
-              labelText: 'Country',
-              fillColor: Colors.yellow.shade100,
-              filled: true,
-            ),
-            items: _getCountryItems(),
-            onChanged: (value) {
-              controller.country.value = value;
-              if (value != null) {
-                controller.countryId.value = _getCountryIdByName(value);
-              }
-              controller.checkIfFormIsDirty();
-            },
+  /// One dropdown in the cascading Country -> Region -> City selector.
+  ///
+  /// [valueId] / [options] are the selected lower-cased UUID and the {id: name}
+  /// option map (both reactive). [isEnabled] gates the control on its parent
+  /// selection; [loading] (optional) shows a spinner while the dependent list
+  /// is fetched. The current value is coerced to null if it isn't in [options]
+  /// so the form field never throws on a stale/absent selection.
+  Widget _buildLocationDropdown({
+    required String label,
+    required RxnString valueId,
+    required RxMap<String, String> options,
+    required void Function(String?) onChanged,
+    required bool Function() isEnabled,
+    RxBool? loading,
+  }) {
+    return Obx(() {
+      final enabled = isEnabled();
+      final current =
+          options.containsKey(valueId.value) ? valueId.value : null;
+      final isLoading = loading?.value ?? false;
+      return SizedBox(
+        width: 300,
+        child: DropdownButtonFormField<String>(
+          initialValue: current,
+          isExpanded: true,
+          decoration: InputDecoration(
+            labelText: label,
+            fillColor:
+                enabled ? Colors.yellow.shade100 : Colors.grey.shade200,
+            filled: true,
+            suffixIcon: isLoading
+                ? const Padding(
+                    padding: EdgeInsets.all(10),
+                    child: SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                : null,
           ),
-        ));
-  }
-
-  List<DropdownMenuItem<String>> _getCountryItems() {
-    final countryList = box.get(HIVE_COUNTRY_LIST);
-    if (countryList == null) return [];
-
-    final countryMap = Map<String, String>.from(countryList as Map);
-    return countryMap.values
-        .map((name) => DropdownMenuItem<String>(
-              value: name,
-              child: Text(name),
-            ))
-        .toList();
-  }
-
-  String _getCountryIdByName(String countryName) {
-    final countryList = box.get(HIVE_COUNTRY_LIST);
-    if (countryList == null) return '';
-
-    final countryMap = Map<String, String>.from(countryList as Map);
-    return countryMap.entries
-        .firstWhere(
-          (entry) => entry.value == countryName,
-          orElse: () => const MapEntry('', ''),
-        )
-        .key;
+          items: [
+            for (final entry in options.entries)
+              DropdownMenuItem<String>(
+                value: entry.key,
+                child: Text(entry.value),
+              ),
+          ],
+          onChanged: enabled ? onChanged : null,
+        ),
+      );
+    });
   }
 }
 

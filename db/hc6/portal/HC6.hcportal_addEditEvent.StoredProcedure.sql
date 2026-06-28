@@ -48,7 +48,9 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_addEditEvent]
 @evtDisseminateAllowWebLinks smallint = null,
 @evtDisseminateHashRunsDotOrg smallint = null,
 @evtDisseminateOnGlobalGoogleCalendar smallint = null,
-@countryId uniqueidentifier = null
+@countryId uniqueidentifier = null,
+@regionId uniqueidentifier = null,
+@cityId uniqueidentifier = null
 
 AS
 -- =====================================================================
@@ -271,7 +273,12 @@ DECLARE @resultInt int;
                         DisseminateOnGlobalGoogleCalendar = CASE WHEN @evtDisseminateOnGlobalGoogleCalendar = -2 THEN NULL ELSE COALESCE(@evtDisseminateOnGlobalGoogleCalendar, DisseminateOnGlobalGoogleCalendar) END,
                         EventLastUpdatedSource = 'HC Portal',
                         EventLastUpdatedBy = @hasherId,
-                        CountryId = COALESCE(@countryId, CountryId)
+                        CountryId = COALESCE(@countryId, CountryId),
+                        -- Empty GUID is the explicit "clear" sentinel (e.g. the
+                        -- caller changed the country, invalidating region/city).
+                        -- NULL means "no change" (COALESCE keeps existing).
+                        RegionId = CASE WHEN @regionId = '00000000-0000-0000-0000-000000000000' THEN NULL ELSE COALESCE(@regionId, RegionId) END,
+                        CityId = CASE WHEN @cityId = '00000000-0000-0000-0000-000000000000' THEN NULL ELSE COALESCE(@cityId, CityId) END
                 WHERE id = @eventId;
 
                 -- Verify the update succeeded
@@ -364,7 +371,7 @@ DECLARE @resultInt int;
                                 MaximumParticipantsAllowed, MinimumParticipantsRequired,
                                 EvtDisseminationAudience, EvtDisseminateAllowWebLinks,
                                 EvtDisseminateHashRunsDotOrg, DisseminateOnGlobalGoogleCalendar,
-                                deleted, updatedAt, EventSource, CountryId
+                                deleted, updatedAt, EventSource, CountryId, RegionId, CityId
                         )
                         VALUES
                         (
@@ -421,7 +428,10 @@ DECLARE @resultInt int;
                                 0, -- deleted defaults to 0
                                 GETDATE(),
                                 'HC Portal',
-                                COALESCE(@countryId, @countryIdFromKennel)
+                                COALESCE(@countryId, @countryIdFromKennel),
+                                -- Treat the empty-GUID clear sentinel as NULL on insert too.
+                                CASE WHEN @regionId = '00000000-0000-0000-0000-000000000000' THEN NULL ELSE @regionId END,
+                                CASE WHEN @cityId = '00000000-0000-0000-0000-000000000000' THEN NULL ELSE @cityId END
                         );
 
                         SET @resultStr = 'Run added to Harrier Central';

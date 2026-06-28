@@ -1,0 +1,66 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_getCities",
+  "version": "1.0.0",
+  "description": "Returns the cities for a given region from HC.City, ordered alphabetically by CityName. Used to populate the cascading Country -> Region -> City selector in the run editor. Requires standard portal authentication.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "regionId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "City.RegionId",
+      "description": "Filter: only cities whose RegionId matches are returned."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "CitiesResult",
+      "description": "List of cities for the given region, ordered alphabetically by CityName. Only returned on successful authentication.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "City unique identifier (PK from HC.City)"
+        },
+        {
+          "name": "CityName",
+          "type": "NVARCHAR(100)",
+          "nullable": false,
+          "description": "City display name (from HC.City)"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning"
+  ]
+}

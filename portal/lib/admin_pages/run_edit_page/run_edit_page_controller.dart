@@ -192,8 +192,26 @@ class RunEditPageController extends TabUiController
   /// Selected country name.
   final RxnString country = RxnString();
 
-  /// Selected country ID.
+  /// Selected country ID (normalised lower-case UUID).
   final RxnString countryId = RxnString();
+
+  /// Selected region name / ID (cascades from country; ID is lower-case UUID).
+  final RxnString region = RxnString();
+  final RxnString regionId = RxnString();
+
+  /// Selected city name / ID (cascades from region; ID is lower-case UUID).
+  final RxnString city = RxnString();
+  final RxnString cityId = RxnString();
+
+  /// Reactive {id: name} option maps backing the cascading dropdowns.
+  /// IDs are lower-case so they match the normalised selected values.
+  final RxMap<String, String> countryOptions = <String, String>{}.obs;
+  final RxMap<String, String> regionOptions = <String, String>{}.obs;
+  final RxMap<String, String> cityOptions = <String, String>{}.obs;
+
+  /// Spinners shown while a dependent list is being fetched.
+  final RxBool isLoadingRegions = false.obs;
+  final RxBool isLoadingCities = false.obs;
 
   // ---------------------------------------------------------------------------
   // State - Image Upload
@@ -253,6 +271,81 @@ class RunEditPageController extends TabUiController
     _autoSaveTimer?.cancel();
     _disposeTextControllers();
     super.onClose();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Location selectors (cascading Country -> Region -> City)
+  // ---------------------------------------------------------------------------
+
+  /// Normalises a UUID string to lower-case, mapping null/empty to null so the
+  /// value matches the lower-cased option-map keys (or is cleanly unset).
+  String? _normId(String? id) =>
+      (id == null || id.isEmpty) ? null : normalizeUuid(id);
+
+  /// Loads the option lists for the current selection on page init:
+  /// countries always, then regions (if a country is set) and cities (if a
+  /// region is set) so the dropdowns are pre-populated for an existing run.
+  Future<void> _loadLocationSelectors() async {
+    countryOptions.value = await queryCountries();
+    if (countryId.value != null) {
+      await loadRegionOptions(countryId.value!);
+    }
+    if (regionId.value != null) {
+      await loadCityOptions(regionId.value!);
+    }
+  }
+
+  /// Fetches regions for [forCountryId] into [regionOptions].
+  Future<void> loadRegionOptions(String forCountryId) async {
+    isLoadingRegions.value = true;
+    regionOptions.value = await queryRegions(forCountryId);
+    isLoadingRegions.value = false;
+  }
+
+  /// Fetches cities for [forRegionId] into [cityOptions].
+  Future<void> loadCityOptions(String forRegionId) async {
+    isLoadingCities.value = true;
+    cityOptions.value = await queryCities(forRegionId);
+    isLoadingCities.value = false;
+  }
+
+  /// Country chosen: set id/name, clear region + city (cascade), reload regions.
+  Future<void> onCountrySelected(String? newCountryId) async {
+    final id = _normId(newCountryId);
+    countryId.value = id;
+    country.value = id == null ? null : countryOptions[id];
+    region.value = null;
+    regionId.value = null;
+    city.value = null;
+    cityId.value = null;
+    regionOptions.clear();
+    cityOptions.clear();
+    checkIfFormIsDirty();
+    if (id != null) {
+      await loadRegionOptions(id);
+    }
+  }
+
+  /// Region chosen: set id/name, clear city (cascade), reload cities.
+  Future<void> onRegionSelected(String? newRegionId) async {
+    final id = _normId(newRegionId);
+    regionId.value = id;
+    region.value = id == null ? null : regionOptions[id];
+    city.value = null;
+    cityId.value = null;
+    cityOptions.clear();
+    checkIfFormIsDirty();
+    if (id != null) {
+      await loadCityOptions(id);
+    }
+  }
+
+  /// City chosen: set id/name.
+  void onCitySelected(String? newCityId) {
+    final id = _normId(newCityId);
+    cityId.value = id;
+    city.value = id == null ? null : cityOptions[id];
+    checkIfFormIsDirty();
   }
 
   // ---------------------------------------------------------------------------
@@ -410,9 +503,17 @@ class RunEditPageController extends TabUiController
     // Initialize run tags from bit flags (for the new chip-based UI)
     initializeRunTagsFromBitFlags();
 
-    // Initialize country
+    // Initialize country/region/city (IDs normalised to lower-case so they
+    // match the dropdown option keys).
     country.value = originalData.countryName;
-    countryId.value = originalData.countryId;
+    countryId.value = _normId(originalData.countryId);
+    region.value = originalData.regionName;
+    regionId.value = _normId(originalData.regionId);
+    city.value = originalData.cityName;
+    cityId.value = _normId(originalData.cityId);
+
+    // Load the cascading location option lists (async, fire-and-forget).
+    unawaited(_loadLocationSelectors());
 
     // Initialize map controller for location tab
     initializeMapController();
@@ -599,9 +700,14 @@ class RunEditPageController extends TabUiController
     // Reset run tag selection status (for chip-based UI)
     resetRunTagsToOriginal();
 
-    // Reset country
+    // Reset country/region/city and reload their option lists.
     country.value = originalData.countryName;
-    countryId.value = originalData.countryId;
+    countryId.value = _normId(originalData.countryId);
+    region.value = originalData.regionName;
+    regionId.value = _normId(originalData.regionId);
+    city.value = originalData.cityName;
+    cityId.value = _normId(originalData.cityId);
+    unawaited(_loadLocationSelectors());
 
     // Reset uploaded image
     uploadedImage.value = null;
@@ -642,7 +748,9 @@ class RunEditPageController extends TabUiController
         tags2.value != originalData.tags2 ||
         tags3.value != originalData.tags3 ||
         uploadedImage.value != null ||
-        countryId.value != originalData.countryId ||
+        countryId.value != _normId(originalData.countryId) ||
+        regionId.value != _normId(originalData.regionId) ||
+        cityId.value != _normId(originalData.cityId) ||
         useExtRunDetails.value != (originalData.useFbRunDetails != 0) ||
         useExtLocation.value != (originalData.useFbLocation != 0) ||
         useExtLatLon.value != (originalData.useFbLatLon != 0) ||
@@ -770,9 +878,19 @@ class RunEditPageController extends TabUiController
       changes['hcLongitude'] = edited.hcLongitude;
     }
 
-    // Country ID
-    if (countryId.value != original.countryId) {
+    // Country / Region / City IDs (statistics location). Compare against the
+    // normalised originals so a case-only difference isn't treated as a change.
+    if (countryId.value != _normId(original.countryId)) {
       changes['countryId'] = countryId.value;
+    }
+    // Region/City can be cleared (e.g. country changed). A null selection that
+    // was previously set is sent as GUID_EMPTY — the SP's explicit "clear"
+    // sentinel — because the SP otherwise treats null as "no change".
+    if (regionId.value != _normId(original.regionId)) {
+      changes['regionId'] = regionId.value ?? GUID_EMPTY;
+    }
+    if (cityId.value != _normId(original.cityId)) {
+      changes['cityId'] = cityId.value ?? GUID_EMPTY;
     }
 
     // -------------------------------------------------------------------------

@@ -148,7 +148,12 @@ BEGIN TRY
 			, CASE WHEN hkm.MembershipExpirationDate > @now THEN 'Yes' ELSE 'No' END as isMember
 			, CASE WHEN hkm.MembershipExpirationDate > @now THEN 'Member'
 				   WHEN hkm.Following = 1 THEN 'Following' ELSE 'None' END as status
-			, CASE WHEN hkm.KennelNotificationPreference = 0 THEN 'Auto' WHEN hkm.KennelNotificationPreference = 1 THEN 'On' WHEN hkm.KennelNotificationPreference = 2 THEN 'Off' ELSE 'Unknown' END as notifications
+			-- Kennel-level preference. 'Auto' (0) is not a valid kennel default
+			-- (auto only applies at the event level, falling back to this value),
+			-- so legacy 0 and 1 both surface as 'On'. 2=Off, 3=Silver Bell
+			-- (silent/in-app only), 4=6 hrs before (push only within the 6-hour
+			-- window before the run).
+			, CASE WHEN hkm.KennelNotificationPreference = 2 THEN 'Off' WHEN hkm.KennelNotificationPreference = 3 THEN 'Silver Bell' WHEN hkm.KennelNotificationPreference = 4 THEN '6 hrs before' ELSE 'On' END as notifications
 			, CASE WHEN hkm.KennelEmailAlertPreference = 0 THEN 'Auto' WHEN hkm.KennelEmailAlertPreference = 1 THEN 'On' WHEN hkm.KennelEmailAlertPreference = 2 THEN 'Off' ELSE 'Unknown' END as emailAlerts
 			, COALESCE(hkm.historicalHaringCount, 0) as historicHaring
 			, COALESCE(hkm.historicalTotalRunCount, 0) as historicTotalRuns

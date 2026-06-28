@@ -1,0 +1,66 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_getRegions",
+  "version": "1.0.0",
+  "description": "Returns the regions for a given country from HC.Region, ordered alphabetically by RegionName. Used to populate the cascading Country -> Region -> City selector in the run editor. Requires standard portal authentication.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived cryptographic token validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "countryId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Region.CountryId",
+      "description": "Filter: only regions whose CountryId matches are returned."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "RegionsResult",
+      "description": "List of regions for the given country, ordered alphabetically by RegionName. Only returned on successful authentication.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Region unique identifier (PK from HC.Region)"
+        },
+        {
+          "name": "RegionName",
+          "type": "NVARCHAR(100)",
+          "nullable": false,
+          "description": "Region display name (from HC.Region)"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning"
+  ]
+}

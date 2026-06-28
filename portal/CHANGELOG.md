@@ -2,6 +2,27 @@
 
 ---
 
+## 2.0.40+673 — 2026-06-28
+
+### New Features
+- **Run editor — cascading location selector**: the Country dropdown now works
+  (it was permanently empty — the country list was never fetched) and is joined
+  by dependent **Region** and **City** dropdowns. Selecting a country loads its
+  regions; selecting a region loads its cities. Selections are stored per run
+  (new nullable `RegionId`/`CityId` on `HC.Event`).
+
+### Improvements
+- **Kennel Members — notification options**: the Notifications column now offers
+  the full set of kennel-level preferences — **On**, **Off**, **Silver Bell**
+  (silent / in-app only) and **6 hrs before** (push only within the 6-hour
+  window before a run) — instead of just Auto/On/Off.
+- **Vertical tab rails**: darkened to a uniform luminance and the labels are now
+  bolder/larger so the white text reads clearly on every editor colour.
+- **Kennel Members**: removed the redundant inline description text (it remains
+  available behind the (i) info button).
+
+---
+
 ## 2.0.39+672 — 2026-06-28
 
 - Editor bottom bar: the Back/Next buttons now reserve their space when hidden (first/last page), so the Undo/Save buttons no longer shift between steps.

@@ -325,6 +325,20 @@
       "nullable": true,
       "mapsToColumn": "Event.CountryId",
       "description": "Statistics country reference. Falls back to kennel's CountryId on insert if not provided."
+    },
+    {
+      "name": "regionId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.RegionId",
+      "description": "Statistics region reference (cascades from country). NULL = no change (keeps existing). The empty GUID 00000000-0000-0000-0000-000000000000 is the explicit clear sentinel (used when the country changes and invalidates the region)."
+    },
+    {
+      "name": "cityId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.CityId",
+      "description": "Statistics city reference (cascades from region). NULL = no change (keeps existing). The empty GUID 00000000-0000-0000-0000-000000000000 is the explicit clear sentinel (used when the country/region changes and invalidates the city)."
     }
   ],
   "rowsets": [

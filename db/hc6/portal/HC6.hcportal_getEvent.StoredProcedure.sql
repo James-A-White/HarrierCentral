@@ -228,6 +228,10 @@ BEGIN TRY
 		, evt.FbLongitude AS fbLongitude
 		, evt.CountryId AS countryId
 		, c4s.CountryName AS countryName
+		, evt.RegionId AS regionId
+		, evtReg.RegionName AS regionName
+		, evt.CityId AS cityId
+		, evtCity.CityName AS cityName
 		, ken.Latitude AS kenLatitude
 		, ken.Longitude AS kenLongitude
 		, city.Latitude AS cityLatitude
@@ -242,6 +246,8 @@ BEGIN TRY
 	INNER JOIN HC.City city ON ken.cityId = city.id
 	INNER JOIN HC.Country cn ON cn.id = ken.CountryId
 	INNER JOIN HC.Country c4s ON c4s.id = evt.CountryId
+	LEFT JOIN HC.Region evtReg ON evtReg.id = evt.RegionId
+	LEFT JOIN HC.City evtCity ON evtCity.id = evt.CityId
 	WHERE evt.id = @eventId
 
 	-- Rowset 1: Attendee List (only for non-service-account callers)

@@ -166,7 +166,8 @@ class KennelHashersController extends TabUiController
     TrinaColumn(
       title: 'Notifications',
       field: 'notifications',
-      type: TrinaColumnType.select(<dynamic>['Auto', 'On', 'Off']),
+      type: TrinaColumnType.select(
+          <dynamic>['On', 'Off', 'Silver Bell', '6 hrs before']),
     ),
     TrinaColumn(
       title: 'Email Alerts',
@@ -250,7 +251,12 @@ class KennelHashersController extends TabUiController
     TrinaColumn(
       title: 'Notifications',
       field: 'notifications',
-      type: TrinaColumnType.select(<dynamic>['Auto', 'On', 'Off']),
+      // Kennel-level preference — no 'Auto' (auto only applies at the event
+      // level, where it falls back to this kennel default). On=1, Off=2,
+      // Silver Bell=3 (silent/in-app only), 6 hrs before=4 (push only within
+      // the 6-hour window before the run).
+      type: TrinaColumnType.select(
+          <dynamic>['On', 'Off', 'Silver Bell', '6 hrs before']),
       renderer: (TrinaColumnRendererContext rendererContext) {
         return Text(
           rendererContext.cell.value.toString(),
@@ -1572,21 +1578,9 @@ class _KennelHashersContent extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              // Wide screens keep the description inline (there's room); narrow
-              // screens move it into the info dialog (the (i) button below).
-              if (!useCards && c.descriptionText.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Text(
-                    c.descriptionText,
-                    style: const TextStyle(
-                      fontFamily: 'AvenirNext',
-                      fontSize: 15,
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+              // The description is no longer shown inline on any screen size —
+              // it lives behind the (i) info button on the heading bar below
+              // (James' request).
               Container(
                 color: Colors.blue.shade900,
                 width: double.infinity,
@@ -1876,7 +1870,7 @@ class _MemberCardState extends State<_MemberCard> {
       case EKennelGridOptions.notificationAndEmail:
         return [
           _dropdown('notifications', 'Notifications', h.notifications,
-              const ['Auto', 'On', 'Off']),
+              const ['On', 'Off', 'Silver Bell', '6 hrs before']),
           _dropdown('emailAlerts', 'Email alerts', h.emailAlerts,
               const ['Auto', 'On', 'Off']),
         ];

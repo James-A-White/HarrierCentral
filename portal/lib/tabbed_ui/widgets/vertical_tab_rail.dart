@@ -119,9 +119,12 @@ class _RailItem<T extends TabUiController> extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontFamily: isSelected ? 'AvenirNextBold' : 'AvenirNext',
+                        // Bold in both states so the labels stay legible against
+                        // the rail colour (James' request).
+                        fontFamily: 'AvenirNextBold',
+                        fontWeight: FontWeight.bold,
                         color: isSelected ? Colors.black : Colors.white,
-                        fontSize: 15,
+                        fontSize: 17,
                       ),
                     ),
                   ),

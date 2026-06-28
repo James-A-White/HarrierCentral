@@ -2,14 +2,17 @@ import 'package:hcportal/imports.dart';
 
 /// Per-editor vertical-rail background colours.
 ///
-/// All share the saturation and luminance of the kennel-editor blue
-/// (`Colors.blue.shade600` ≈ HSL 208°, 79%, 51%) and only rotate the hue around
-/// the wheel, so each editor reads as a distinct colour at the same visual
-/// weight. The yellow band (~60°) is avoided — it reads too light at this
-/// luminance. Kennel keeps the original blue (208°).
+/// All share the same saturation (0.793) and luminance and only rotate the hue
+/// around the wheel, so each editor reads as a distinct colour at the same
+/// visual weight. The yellow band (~60°) is avoided — it reads too light at
+/// this luminance. Kennel keeps the original blue hue (208°).
+///
+/// Luminance is held at 0.27 (deepened from the original 0.508) so the white
+/// rail labels read clearly against every hue (James' request).
 Color _railHue(double hue) =>
-    HSLColor.fromAHSL(1, hue, 0.793, 0.508).toColor();
+    HSLColor.fromAHSL(1, hue, 0.793, 0.27).toColor();
 
+final Color railColorKennelEditor = _railHue(208); // blue
 final Color railColorRunEdit = _railHue(140); // green
 final Color railColorKennelWebsite = _railHue(182); // teal
 final Color railColorApplicationForm = _railHue(275); // violet

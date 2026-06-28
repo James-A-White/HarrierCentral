@@ -135,7 +135,7 @@ class _KennelFormScaffold extends StatelessWidget {
                 key: controller.formKey,
                 child: VerticalTabRail<KennelPageFormController>(
                   controller: controller,
-                  railColor: Colors.blue.shade600,
+                  railColor: railColorKennelEditor,
                   groups: _kennelTabGroups(controller),
                 ),
               ),
@@ -289,7 +289,7 @@ class _KennelTabBar extends StatelessWidget {
     return ResponsiveTabBar<KennelPageFormController>(
       controller: controller,
       formKey: controller.formKey,
-      tabBarColor: Colors.blue.shade600,
+      tabBarColor: railColorKennelEditor,
     );
   }
 }
