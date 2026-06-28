@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.35+668 — 2026-06-28
+
+- Kennel Members loads faster: the full member list is fetched once and cached, so switching between views (Membership, Run counts, etc.) no longer re-queries the server each time (it re-filters locally and refetches only after edits). Paired with backend query + index optimizations to the underlying member lookup.
+
+---
+
 ## 2.0.34+667 — 2026-06-28
 
 - Kennel Members: an info (ⓘ) button on the view heading opens that view's description; on phones the long description moves into this dialog to free up space.

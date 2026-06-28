@@ -33,6 +33,12 @@ class KennelHashersController extends TabUiController
   Timer? _searchDebounce;
   final List<KennelHashersModel> displayedHashers = <KennelHashersModel>[];
 
+  /// Cache of the full member set. The SP returns everyone regardless of view,
+  /// so we fetch once and filter locally per tab instead of re-hitting the SP
+  /// on every view switch. Invalidated after edits / bulk add.
+  final List<KennelHashersModel> _allFetched = <KennelHashersModel>[];
+  bool _hashersFresh = false;
+
   bool _matchesSearch(KennelHashersModel h) {
     final q = searchTerm.trim().toLowerCase();
     if (q.isEmpty) return true;
@@ -964,6 +970,30 @@ class KennelHashersController extends TabUiController
   }
 
   Future<void> getRowData() async {
+    if (!_hashersFresh) {
+      await _fetchAllHashers();
+    }
+    _applyViewFilter();
+
+    var i = 0;
+
+    do {
+      if (stateManager != null) {
+        stateManager!.notifyListeners();
+        break;
+      } else {
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      }
+      i++;
+    } while (i < 100);
+
+    isLoading = false;
+    update();
+  }
+
+  // Fetches the full member/follower set once and caches it. Tab switches then
+  // filter the cache (see _applyViewFilter) instead of re-hitting the SP.
+  Future<void> _fetchAllHashers() async {
     final deviceId = box.get(HIVE_DEVICE_ID) as String;
     final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
     final accessToken = Utilities.generateToken(
@@ -983,57 +1013,50 @@ class KennelHashersController extends TabUiController
     if (kDebugMode) debugPrint(apiResult is ApiError
         ? 'SP 12a (a-b) [getKennelHashers] called — FAILED'
         : 'SP 12a (a-b) [getKennelHashers] called — success');
-    hashers.clear();
-    rows.clear();
-    newHashers.clear();
+    _allFetched.clear();
     if (apiResult case ApiSuccess(body: final jsonString)) {
       final decodedJson = json.decode(jsonString) as List<dynamic>;
       final jsonGroup = (decodedJson[0] as List)
           .map<Map<String, dynamic>>((e) => e as Map<String, dynamic>)
           .toList();
       for (final jsonItem in jsonGroup) {
-        final item = KennelHashersModel.fromJson(jsonItem);
-        var doAddRow = false;
+        _allFetched.add(KennelHashersModel.fromJson(jsonItem));
+      }
+      _hashersFresh = true;
+    }
+  }
 
-        if ((columnsType == EKennelGridOptions.nonAppHashers) &&
-            item.isHomeKennel.toLowerCase() == 'yes' &&
-            item.inviteCode.trim().isNotEmpty) {
-          doAddRow = true;
-        } else if ((columnsType == EKennelGridOptions.allFields) ||
-            (columnsType == EKennelGridOptions.runCounts) ||
-            (columnsType == EKennelGridOptions.membership)) {
-          doAddRow = true;
-        } else if ((columnsType == EKennelGridOptions.photos) &&
-            (item.photo.contains('http'))) {
-          doAddRow = true;
-        } else if (((columnsType == EKennelGridOptions.hashCredit) ||
-                (columnsType == EKennelGridOptions.notificationAndEmail)) &&
-            item.isMember.toLowerCase() == 'yes') {
-          doAddRow = true;
-        }
+  // Builds the current view's [hashers] list from the cached full set.
+  void _applyViewFilter() {
+    hashers.clear();
+    rows.clear();
+    newHashers.clear();
+    for (final item in _allFetched) {
+      var doAddRow = false;
 
-        if (doAddRow) {
-          hashers.add(item);
-        }
+      if ((columnsType == EKennelGridOptions.nonAppHashers) &&
+          item.isHomeKennel.toLowerCase() == 'yes' &&
+          item.inviteCode.trim().isNotEmpty) {
+        doAddRow = true;
+      } else if ((columnsType == EKennelGridOptions.allFields) ||
+          (columnsType == EKennelGridOptions.runCounts) ||
+          (columnsType == EKennelGridOptions.membership)) {
+        doAddRow = true;
+      } else if ((columnsType == EKennelGridOptions.photos) &&
+          (item.photo.contains('http'))) {
+        doAddRow = true;
+      } else if (((columnsType == EKennelGridOptions.hashCredit) ||
+              (columnsType == EKennelGridOptions.notificationAndEmail)) &&
+          item.isMember.toLowerCase() == 'yes') {
+        doAddRow = true;
       }
 
-      updateTrinaRows();
+      if (doAddRow) {
+        hashers.add(item);
+      }
     }
 
-    var i = 0;
-
-    do {
-      if (stateManager != null) {
-        stateManager!.notifyListeners();
-        break;
-      } else {
-        await Future<void>.delayed(const Duration(milliseconds: 100));
-      }
-      i++;
-    } while (i < 100);
-
-    isLoading = false;
-    update();
+    updateTrinaRows();
   }
 
   void updateTrinaRows() {
@@ -1362,6 +1385,8 @@ class KennelHashersController extends TabUiController
         }
       }
     }
+    // A field changed server-side → cache is stale; next view load refetches.
+    _hashersFresh = false;
   }
 
   void onGridLoaded(TrinaGridOnLoadedEvent event) {
@@ -1473,6 +1498,8 @@ class KennelHashersController extends TabUiController
 
       await prepareGridForAddingNewMembers();
     }
+    // New members were added → other views must refetch to include them.
+    _hashersFresh = false;
     isMajorUpdate = false;
     update();
   }
