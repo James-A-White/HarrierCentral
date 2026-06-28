@@ -2,6 +2,12 @@
 
 ---
 
+## 2.0.36+669 — 2026-06-28
+
+- **Fixed the ~10-second Kennel Members load.** The loader waited up to 100×100ms (10s) for the desktop data grid's state manager to appear — but on the phone the grid isn't rendered (card list instead), so that wait always ran the full 10 seconds before giving up. Removed the poll; members now appear as soon as the data returns (~instant for small kennels).
+
+---
+
 ## 2.0.35+668 — 2026-06-28
 
 - Kennel Members loads faster: the full member list is fetched once and cached, so switching between views (Membership, Run counts, etc.) no longer re-queries the server each time (it re-filters locally and refetches only after edits). Paired with backend query + index optimizations to the underlying member lookup.

@@ -975,20 +975,16 @@ class KennelHashersController extends TabUiController
     }
     _applyViewFilter();
 
-    var i = 0;
-
-    do {
-      if (stateManager != null) {
-        stateManager!.notifyListeners();
-        break;
-      } else {
-        await Future<void>.delayed(const Duration(milliseconds: 100));
-      }
-      i++;
-    } while (i < 100);
-
     isLoading = false;
     update();
+
+    // Refresh the grid in place if it's already mounted. (This previously polled
+    // for stateManager up to 100×100ms = 10s. On the phone/card layout the
+    // TrinaGrid is never built, so onGridLoaded never fires and stateManager
+    // stays null — the loop then waited the FULL 10 seconds on every load. The
+    // grid is rebuilt with fresh rows via its changing gridKey anyway, so a
+    // one-shot notify is all that's needed.)
+    stateManager?.notifyListeners();
   }
 
   // Fetches the full member/follower set once and caches it. Tab switches then
