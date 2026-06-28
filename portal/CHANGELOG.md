@@ -2,6 +2,15 @@
 
 ---
 
+## 2.0.41+676 — 2026-06-28
+
+### Fixes
+- Location lookup & Set Location dialogs now build a brand-new controller on
+  every open (unique GetX tag), guaranteeing the search box / selection reflect
+  current data instead of stale values from a previous open.
+
+---
+
 ## 2.0.41+675 — 2026-06-28
 
 ### Fixes

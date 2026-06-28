@@ -354,20 +354,20 @@ class RunEditPageController extends TabUiController
   /// chosen selection. Hitting Save is an explicit override, so the event's
   /// fields are written even if they match the kennel default.
   Future<void> openSetLocationDialog() async {
-    // Ensure no stale controller lingers from a previous open — a reused
-    // instance keeps its old selection/option lists (onInit wouldn't re-run),
-    // which then leaks stale data into the location and the Lookup dialog.
-    if (Get.isRegistered<SetLocationController>()) {
-      await Get.delete<SetLocationController>(force: true);
-    }
-    final dlg = Get.put(SetLocationController(
-      initialCountryId: countryId.value ?? kennelData.countryId,
-      initialRegionId: regionId.value ?? kennelData.provinceStateId,
-      initialRegionName: region.value ?? kennelData.regionName,
-      initialCityId: cityId.value ?? kennelData.cityId,
-      initialCityName: city.value ?? kennelData.cityName,
-      initialTimezoneId: timezoneId.value,
-    ));
+    // Unique tag per open → GetX always builds a BRAND-NEW instance, so the
+    // dialog never reuses a previous open's stale selection/option lists.
+    final tag = 'setLocation_${DateTime.now().microsecondsSinceEpoch}';
+    final dlg = Get.put(
+      SetLocationController(
+        initialCountryId: countryId.value ?? kennelData.countryId,
+        initialRegionId: regionId.value ?? kennelData.provinceStateId,
+        initialRegionName: region.value ?? kennelData.regionName,
+        initialCityId: cityId.value ?? kennelData.cityId,
+        initialCityName: city.value ?? kennelData.cityName,
+        initialTimezoneId: timezoneId.value,
+      ),
+      tag: tag,
+    );
     try {
       final result = await Get.dialog<LocationSelection>(
         SetLocationDialog(controller: dlg),
@@ -375,7 +375,7 @@ class RunEditPageController extends TabUiController
       );
       if (result != null) applyLocationSelection(result);
     } finally {
-      await Get.delete<SetLocationController>(force: true);
+      await Get.delete<SetLocationController>(tag: tag, force: true);
     }
   }
 
@@ -1472,6 +1472,10 @@ class RunEditPageController extends TabUiController
   Future<void> openLocationLookupDialog() async {
     isLookupLoading.value = true;
     RunLocationLookupController? lookupController;
+    // Unique tag per open → GetX always builds a BRAND-NEW instance (avoids
+    // Get.put's putIfAbsent silently reusing a stale controller, which left the
+    // search box showing the previous open's value).
+    final lookupTag = 'lookup_${DateTime.now().microsecondsSinceEpoch}';
 
     try {
       // Get all events from the parent run list controller
@@ -1488,12 +1492,6 @@ class RunEditPageController extends TabUiController
       await runListController.ensureSummaryEventsLoaded();
       final events = runListController.allEvents;
       if (events.isEmpty) return;
-
-      // Ensure no stale lookup controller lingers from a previous open — a
-      // reused instance keeps its old search boxes (onInit wouldn't re-run).
-      if (Get.isRegistered<RunLocationLookupController>()) {
-        await Get.delete<RunLocationLookupController>(force: true);
-      }
 
       // Determine the gazetteer search centre + country filter. Prefer the
       // run's overridden location (geocoded from its name); fall back to the
@@ -1553,13 +1551,16 @@ class RunEditPageController extends TabUiController
 
       // Create the dialog controller with all params before showing the dialog.
       // Deleted in finally so it's always cleaned up, even on exception.
-      lookupController = Get.put(RunLocationLookupController(
-        events: events,
-        centerLat: lat,
-        centerLon: lon,
-        countryCodes: countryCodes,
-        initialPlaceDescription: currentPlaceDesc,
-      ));
+      lookupController = Get.put(
+        RunLocationLookupController(
+          events: events,
+          centerLat: lat,
+          centerLon: lon,
+          countryCodes: countryCodes,
+          initialPlaceDescription: currentPlaceDesc,
+        ),
+        tag: lookupTag,
+      );
 
       final result = await Get.dialog<LocationLookupResult>(
         RunLocationLookupDialog(controller: lookupController!),
@@ -1576,7 +1577,8 @@ class RunEditPageController extends TabUiController
       }
     } finally {
       if (lookupController != null) {
-        await Get.delete<RunLocationLookupController>(force: true);
+        await Get.delete<RunLocationLookupController>(
+            tag: lookupTag, force: true);
       }
       isLookupLoading.value = false;
     }
