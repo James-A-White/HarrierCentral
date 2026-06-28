@@ -2,6 +2,14 @@
 
 ---
 
+## 2.0.34+667 — 2026-06-28
+
+- Kennel Members: an info (ⓘ) button on the view heading opens that view's description; on phones the long description moves into this dialog to free up space.
+- Added member search (by real name or hash name) on all screens — filters both the desktop grid and the phone cards.
+- Added loading spinners while member data loads (no longer briefly shows "no members" during a load).
+
+---
+
 ## 2.0.33+666 — 2026-06-28
 
 - **Kennel Members page now uses the standard tabbed-UI navigation** like the editors: a vertical tab rail on desktop and a hamburger menu on phones (the 7 views are now tabs). Desktop shows the data grid; phones show the member card list. Replaces the old custom button menu.

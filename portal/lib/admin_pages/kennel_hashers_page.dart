@@ -25,9 +25,51 @@ class KennelHashersController extends TabUiController
   /// The grid views shown as tabs, in display order (gated by permission).
   late final List<EKennelGridOptions> visibleViews;
 
+  /// Search (by hash name or real name). [displayedHashers] is the filtered
+  /// subset actually shown — used by the grid rows, the phone cards, and
+  /// onGridChanged's row indexing so they all stay in sync.
+  final TextEditingController searchController = TextEditingController();
+  String searchTerm = '';
+  Timer? _searchDebounce;
+  final List<KennelHashersModel> displayedHashers = <KennelHashersModel>[];
+
+  bool _matchesSearch(KennelHashersModel h) {
+    final q = searchTerm.trim().toLowerCase();
+    if (q.isEmpty) return true;
+    return [
+      h.hashName,
+      h.displayName,
+      h.firstName,
+      h.lastName,
+      '${h.firstName ?? ''} ${h.lastName ?? ''}',
+    ].any((s) => (s ?? '').toLowerCase().contains(q));
+  }
+
+  void onSearchChanged(String term) {
+    searchTerm = term;
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+      updateTrinaRows();
+      gridKey = UniqueKey();
+      update();
+    });
+  }
+
+  void clearSearch() {
+    searchController.clear();
+    searchTerm = '';
+    _searchDebounce?.cancel();
+    updateTrinaRows();
+    gridKey = UniqueKey();
+    update();
+  }
+
   TrinaGridStateManager? stateManager;
   bool isMinorUpdate = false;
   bool isMajorUpdate = false;
+  // True while a view's data is being fetched/built. Starts true so the very
+  // first render shows a spinner rather than a false "no members" message.
+  bool isLoading = true;
   String descriptionText = '';
   String tableHeadingText = '';
 
@@ -914,6 +956,13 @@ class KennelHashersController extends TabUiController
     Get.back<void>();
   }
 
+  @override
+  void onClose() {
+    _searchDebounce?.cancel();
+    searchController.dispose();
+    super.onClose();
+  }
+
   Future<void> getRowData() async {
     final deviceId = box.get(HIVE_DEVICE_ID) as String;
     final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
@@ -983,14 +1032,18 @@ class KennelHashersController extends TabUiController
       i++;
     } while (i < 100);
 
+    isLoading = false;
     update();
   }
 
   void updateTrinaRows() {
     rows.clear();
+    displayedHashers
+      ..clear()
+      ..addAll(hashers.where(_matchesSearch));
 
-    for (var i = 0; i < hashers.length; i++) {
-      final item = hashers[i];
+    for (var i = 0; i < displayedHashers.length; i++) {
+      final item = displayedHashers[i];
       final pr = TrinaRow<dynamic>(
         cells: <String, TrinaCell>{
           'publicHasherId': TrinaCell(value: item.publicHasherId),
@@ -1094,10 +1147,13 @@ class KennelHashersController extends TabUiController
       i++;
     } while (i < 100);
 
+    isLoading = false;
     update();
   }
 
   Future<void> setColumnsType(EKennelGridOptions columnsType) async {
+    isLoading = true;
+    update();
     gridKey = UniqueKey();
     this.columnsType = columnsType;
     rows.clear();
@@ -1221,11 +1277,11 @@ class KennelHashersController extends TabUiController
     });
 
     if (columnsType != EKennelGridOptions.addNewMembers &&
-        event.rowIdx < hashers.length) {
+        event.rowIdx < displayedHashers.length) {
       final field = event.column.field;
       final newValue = event.value.toString();
       if (editableHasherFields.contains(field)) {
-        await updateHasherField(hashers[event.rowIdx], field, newValue);
+        await updateHasherField(displayedHashers[event.rowIdx], field, newValue);
       }
     }
 
@@ -1493,14 +1549,16 @@ class _KennelHashersContent extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              if (c.descriptionText.isNotEmpty)
+              // Wide screens keep the description inline (there's room); narrow
+              // screens move it into the info dialog (the (i) button below).
+              if (!useCards && c.descriptionText.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: Text(
                     c.descriptionText,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontFamily: 'AvenirNext',
-                      fontSize: useCards ? 13 : 15,
+                      fontSize: 15,
                       color: Colors.black,
                       fontWeight: FontWeight.bold,
                     ),
@@ -1509,22 +1567,67 @@ class _KennelHashersContent extends StatelessWidget {
               Container(
                 color: Colors.blue.shade900,
                 width: double.infinity,
-                height: useCards ? 34 : 40,
-                child: Center(
-                  child: Text(
-                    c.tableHeadingText +
-                        ((c.isMinorUpdate || c.isMajorUpdate)
-                            ? ' (Updating)'
-                            : ''),
-                    style: TextStyle(
-                      fontFamily: 'AvenirNextBold',
-                      fontSize: useCards ? 16 : 22,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                height: useCards ? 38 : 44,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Row(
+                  children: [
+                    const SizedBox(width: 36),
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          c.tableHeadingText +
+                              ((c.isMinorUpdate || c.isMajorUpdate)
+                                  ? ' (Updating)'
+                                  : ''),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: 'AvenirNextBold',
+                            fontSize: useCards ? 16 : 22,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 36,
+                      child: c.descriptionText.isEmpty
+                          ? null
+                          : IconButton(
+                              padding: EdgeInsets.zero,
+                              visualDensity: VisualDensity.compact,
+                              tooltip: 'About this view',
+                              icon: const Icon(Icons.info_outline,
+                                  color: Colors.white, size: 22),
+                              onPressed: () => _showInfoDialog(context, c),
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+              if (c.columnsType != EKennelGridOptions.addNewMembers)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: TextField(
+                    controller: c.searchController,
+                    onChanged: c.onSearchChanged,
+                    decoration: InputDecoration(
+                      isDense: true,
+                      hintText: 'Search by name or hash name…',
+                      prefixIcon: const Icon(Icons.search, size: 20),
+                      suffixIcon: c.searchController.text.isEmpty
+                          ? null
+                          : IconButton(
+                              icon: const Icon(Icons.clear, size: 18),
+                              onPressed: c.clearSearch,
+                            ),
+                      border: const OutlineInputBorder(),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
                     ),
                   ),
                 ),
-              ),
               Expanded(
                 child: useCards
                     ? _buildMemberCards(c)
@@ -1549,7 +1652,7 @@ class _KennelHashersContent extends StatelessWidget {
                               c.onGridLoaded(event);
                             },
                           ),
-                          if (c.isMajorUpdate) ...<Widget>[
+                          if (c.isMajorUpdate || c.isLoading) ...<Widget>[
                             Container(
                               color: Colors.white70,
                               height: 10000,
@@ -1588,24 +1691,62 @@ class _KennelHashersContent extends StatelessWidget {
     );
   }
 
+  void _showInfoDialog(BuildContext context, KennelHashersController c) {
+    unawaited(showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(KennelHashersController.viewTitle(c.columnsType)),
+        content: SingleChildScrollView(
+          child: Text(
+            c.descriptionText,
+            style: const TextStyle(fontSize: 15, height: 1.4),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    ));
+  }
+
+  Widget _loadingState(String message) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SpinKitCircle(color: Colors.red.shade900, size: 40),
+          const SizedBox(height: 16),
+          Text(message, style: const TextStyle(color: Color(0xFF64748B))),
+        ],
+      ),
+    );
+  }
+
   Widget _buildMemberCards(KennelHashersController c) {
-    if (c.hashers.isEmpty) {
+    final list = c.displayedHashers;
+    if (c.isLoading || c.isMajorUpdate) {
+      return _loadingState('Loading members…');
+    }
+    if (list.isEmpty) {
       return Center(
         child: Text(
-          c.isMajorUpdate ? 'Loading…' : 'No members to show',
+          c.searchTerm.trim().isNotEmpty
+              ? 'No matches for "${c.searchTerm.trim()}"'
+              : 'No members to show',
           style: const TextStyle(color: Color(0xFF64748B)),
         ),
       );
     }
     return ListView.separated(
       padding: const EdgeInsets.only(top: 8, bottom: 24),
-      itemCount: c.hashers.length,
+      itemCount: list.length,
       separatorBuilder: (_, _) => const SizedBox(height: 8),
       itemBuilder: (_, i) => _MemberCard(
-        key: ValueKey(
-          '${c.hashers[i].publicHasherId}_${c.columnsType.name}',
-        ),
-        hasher: c.hashers[i],
+        key: ValueKey('${list[i].publicHasherId}_${c.columnsType.name}'),
+        hasher: list[i],
         view: c.columnsType,
         controller: c,
       ),
