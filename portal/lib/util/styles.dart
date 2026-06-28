@@ -34,6 +34,31 @@ ButtonStyle defaultButtonStyle = ButtonStyle(
   ),
 );
 
+// ── Standard dialog action buttons ──────────────────────────────────────────
+// Every portal dialog's buttons must be IDENTICAL in shape, size and
+// typography and differ ONLY by background colour. Use an ElevatedButton with
+// hcDialogButtonStyle(...) for BOTH the primary and the cancel button (do NOT
+// mix ElevatedButton/TextButton — they render with inconsistent theme styling).
+// A disabled primary (onPressed: null) goes grey automatically.
+const Color hcDialogPrimaryColor = Color(0xFFC62828); // red 800 — primary action
+const Color hcDialogCancelColor = Color(0xFF546E7A); // blueGrey 600 — cancel
+
+ButtonStyle hcDialogButtonStyle(Color background) => ElevatedButton.styleFrom(
+      backgroundColor: background,
+      foregroundColor: Colors.white,
+      disabledBackgroundColor: Colors.grey,
+      disabledForegroundColor: Colors.white,
+      elevation: 0,
+      minimumSize: const Size(120, 44),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      textStyle: const TextStyle(
+        fontFamily: 'AvenirNextDemiBold',
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+      ),
+    );
+
 TextStyle listLabelStyle = const TextStyle(
   color: Colors.yellow,
   fontFamily: 'AvenirNextRegular',

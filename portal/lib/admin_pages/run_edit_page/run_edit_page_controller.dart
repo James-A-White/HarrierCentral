@@ -354,6 +354,12 @@ class RunEditPageController extends TabUiController
   /// chosen selection. Hitting Save is an explicit override, so the event's
   /// fields are written even if they match the kennel default.
   Future<void> openSetLocationDialog() async {
+    // Ensure no stale controller lingers from a previous open — a reused
+    // instance keeps its old selection/option lists (onInit wouldn't re-run),
+    // which then leaks stale data into the location and the Lookup dialog.
+    if (Get.isRegistered<SetLocationController>()) {
+      await Get.delete<SetLocationController>(force: true);
+    }
     final dlg = Get.put(SetLocationController(
       initialCountryId: countryId.value ?? kennelData.countryId,
       initialRegionId: regionId.value ?? kennelData.provinceStateId,
@@ -369,7 +375,7 @@ class RunEditPageController extends TabUiController
       );
       if (result != null) applyLocationSelection(result);
     } finally {
-      unawaited(Get.delete<SetLocationController>(force: true));
+      await Get.delete<SetLocationController>(force: true);
     }
   }
 
@@ -1570,7 +1576,7 @@ class RunEditPageController extends TabUiController
       }
     } finally {
       if (lookupController != null) {
-        unawaited(Get.delete<RunLocationLookupController>(force: true));
+        await Get.delete<RunLocationLookupController>(force: true);
       }
       isLookupLoading.value = false;
     }

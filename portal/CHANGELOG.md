@@ -2,6 +2,18 @@
 
 ---
 
+## 2.0.41+675 — 2026-06-28
+
+### Fixes
+- Set Location dialog: Cancel and Save buttons are now physically identical
+  (shape, height, corner radius, typography), differing only by colour, via a
+  shared `hcDialogButtonStyle`.
+- Set Location dialog no longer shows stale data when reopened after changing
+  the city (the controller is now recreated fresh each open, so the Lookup
+  dialog seeds from current data).
+
+---
+
 ## 2.0.41+674 — 2026-06-28
 
 ### New Features
