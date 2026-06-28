@@ -128,17 +128,21 @@ BEGIN TRY
       AND  e.deleted   = 0
       AND  e.removed   = 0
       AND  (   (@IsFuture = 1
-                    AND (e.EventStartDateTimeGmt >= @FutureCutoff OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime >= @FutureCutoff)))
+                    AND e.EventStartDatetime >= @FutureCutoff)
             OR (@IsFuture = 0
-                    AND (e.EventStartDateTimeGmt < @UtcNow OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime < @UtcNow))))
+                    AND e.EventStartDatetime < @UtcNow))
       AND  (   @BoundaryDate IS NULL
             OR (@IsFuture = 1
-                    AND (e.EventStartDateTimeGmt <= @BoundaryDate OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime <= @BoundaryDate)))
+                    AND e.EventStartDatetime <= @BoundaryDate)
             OR (@IsFuture = 0
-                    AND (e.EventStartDateTimeGmt >= @BoundaryDate OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime >= @BoundaryDate))));
+                    AND e.EventStartDatetime >= @BoundaryDate));
 
     -- ── Rowset 1: events with kennel context ─────────────────────────────────
 
+-- Split by direction so a plain ORDER BY can be served by an index
+    -- (no Sort operator). Filter/order by raw EventStartDatetime: it is NOT NULL
+    -- and its instant == EventStartDateTimeGmt, so results are identical but the seek is sort-free. WHERE pruned per branch.
+    IF @IsFuture = 1
     SELECT TOP (@TopN)
 
         -- Kennel context (for badges in mixed-kennel lists)
@@ -202,18 +206,76 @@ BEGIN TRY
     WHERE e.IsVisible = 1
       AND e.deleted   = 0
       AND e.removed   = 0
-      AND (   (@IsFuture = 1
-                   AND (e.EventStartDateTimeGmt >= @FutureCutoff OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime >= @FutureCutoff)))
-           OR (@IsFuture = 0
-                   AND (e.EventStartDateTimeGmt < @UtcNow OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime < @UtcNow))))
-      AND (   @BoundaryDate IS NULL
-           OR (@IsFuture = 1
-                   AND (e.EventStartDateTimeGmt <= @BoundaryDate OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime <= @BoundaryDate)))
-           OR (@IsFuture = 0
-                   AND (e.EventStartDateTimeGmt >= @BoundaryDate OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime >= @BoundaryDate))))
-    ORDER BY
-        CASE WHEN @IsFuture = 1 THEN e.EventStartDatetime END ASC,
-        CASE WHEN @IsFuture = 0 THEN e.EventStartDatetime END DESC;
+      AND e.EventStartDatetime >= @FutureCutoff
+      AND (@BoundaryDate IS NULL OR e.EventStartDatetime <= @BoundaryDate)
+    ORDER BY e.EventStartDatetime ASC;
+    ELSE
+    SELECT TOP (@TopN)
+
+        -- Kennel context (for badges in mixed-kennel lists)
+        vk.KennelSlug,
+        vk.KennelName,
+        vk.KennelShortName,
+        vk.KennelLogo,
+        vk.PrimaryColor  AS KennelPrimaryColor,
+        vk.AccentColor   AS KennelAccentColor,
+
+        -- Identity
+        e.id            AS EventId,
+        e.PublicEventId,
+        e.EventNumber,
+        e.EventName,
+
+        -- Timing
+        CAST(e.EventStartDatetime AS datetime2(7)) AS EventStartDatetime,
+        CAST(e.EventEndDatetime   AS datetime2(7)) AS EventEndDatetime,
+        e.EventStartDatetimeGmt,
+        vk.IANATimezone                            AS KennelIANATimezone,
+
+        -- Event type
+        ett.EventEnumName AS EventTypeName,
+
+        -- Fees (event-level overrides kennel default)
+        COALESCE(e.EventPriceForMembers,    vk.DefaultPriceForMembers)    AS EventPriceForMembers,
+        COALESCE(e.EventPriceForNonMembers, vk.DefaultPriceForNonMembers) AS EventPriceForNonMembers,
+        COALESCE(e.EventCurrencyType,       vk.DefaultCurrencyType)       AS EventCurrencyType,
+
+        -- People
+        e.Hares,
+
+        -- Location
+        e.LocationOneLineDesc,
+        e.SyncLocationStreet   AS LocationStreet,
+        e.SyncLocationCity     AS LocationCity,
+        e.SyncLocationPostCode AS LocationPostCode,
+        e.SyncLocationRegion   AS LocationRegion,
+        e.SyncLocationCountry  AS LocationCountry,
+        e.SyncLatitude         AS Latitude,
+        e.SyncLongitude        AS Longitude,
+        NULL                   AS w3wJson,
+        NULL                   AS EventDescription,
+        e.EventImage,
+        NULL                   AS EventUrl,
+
+        -- Tags (raw bitflags — decoded client-side)
+        e.Tags1,
+        e.Tags2,
+        e.Tags3,
+
+        -- Metadata
+        e.IsCountedRun,
+        e.IsPromotedEvent,
+        e.EventGeographicScope
+
+    FROM  HC.Event e
+    JOIN  #ValidKennels vk ON vk.KennelId = e.KennelId
+    LEFT JOIN DomainValues.EventThemeType ett ON ett.EventEnumId = e.ThemeRunType
+    WHERE e.IsVisible = 1
+      AND e.deleted   = 0
+      AND e.removed   = 0
+      AND e.EventStartDatetime < @UtcNow
+      AND (@BoundaryDate IS NULL OR e.EventStartDatetime >= @BoundaryDate)
+    ORDER BY e.EventStartDatetime DESC;
 
     DROP TABLE #ValidKennels;
 

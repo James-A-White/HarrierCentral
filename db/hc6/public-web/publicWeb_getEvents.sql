@@ -181,17 +181,21 @@ BEGIN TRY
       AND  e.deleted   = 0
       AND  e.removed   = 0
       AND  (   (@IsFuture = 1
-                    AND (e.EventStartDateTimeGmt >= @FutureCutoff OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime >= @FutureCutoff)))
+                    AND e.EventStartDatetime >= @FutureCutoff)
             OR (@IsFuture = 0
-                    AND (e.EventStartDateTimeGmt < @UtcNow OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime < @UtcNow))))
+                    AND e.EventStartDatetime < @UtcNow))
       AND  (   @BoundaryDate IS NULL
             OR (@IsFuture = 1
-                    AND (e.EventStartDateTimeGmt <= @BoundaryDate OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime <= @BoundaryDate)))
+                    AND e.EventStartDatetime <= @BoundaryDate)
             OR (@IsFuture = 0
-                    AND (e.EventStartDateTimeGmt >= @BoundaryDate OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime >= @BoundaryDate))));
+                    AND e.EventStartDatetime >= @BoundaryDate));
 
     -- ── Rowset 1: events ─────────────────────────────────────────────────────
 
+-- Split by direction so a plain ORDER BY can be served by an index
+    -- (no Sort operator). Filter/order by raw EventStartDatetime: it is NOT NULL
+    -- and its instant == EventStartDateTimeGmt, so results are identical but the seek is sort-free. WHERE pruned per branch.
+    IF @IsFuture = 1
     SELECT TOP (@TopN)
 
         -- Identity
@@ -266,21 +270,87 @@ BEGIN TRY
       AND  e.IsVisible = 1
       AND  e.deleted   = 0
       AND  e.removed   = 0
-      AND  (   (@IsFuture = 1
-                    AND (e.EventStartDateTimeGmt >= @FutureCutoff OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime >= @FutureCutoff)))
-            OR (@IsFuture = 0
-                    AND (e.EventStartDateTimeGmt < @UtcNow OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime < @UtcNow))))
-      AND  (   @BoundaryDate IS NULL
-            OR (@IsFuture = 1
-                    AND (e.EventStartDateTimeGmt <= @BoundaryDate OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime <= @BoundaryDate)))
-            OR (@IsFuture = 0
-                    AND (e.EventStartDateTimeGmt >= @BoundaryDate OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime >= @BoundaryDate))))
-    ORDER BY
-        -- Upcoming: earliest first; past: most recent first.
-        -- Only one branch is active per call; the other evaluates to NULL
-        -- for every row and contributes nothing to the sort.
-        CASE WHEN @IsFuture = 1 THEN e.EventStartDatetime END ASC,
-        CASE WHEN @IsFuture = 0 THEN e.EventStartDatetime END DESC;
+      AND e.EventStartDatetime >= @FutureCutoff
+      AND (@BoundaryDate IS NULL OR e.EventStartDatetime <= @BoundaryDate)
+    ORDER BY e.EventStartDatetime ASC;
+    ELSE
+    SELECT TOP (@TopN)
+
+        -- Identity
+        e.id            AS EventId,
+        e.PublicEventId,
+        e.EventNumber,
+        e.EventName,
+
+        -- Timing
+        -- EventStartDatetime cast to datetime2(7): strips the spurious +00:00 stored
+        -- by SQL Server when the portal inserts local time without an offset. The
+        -- browser uses EventStartDatetimeGmt + KennelIANATimezone for display.
+        CAST(e.EventStartDatetime AS datetime2(7)) AS EventStartDatetime,
+        CAST(e.EventEndDatetime   AS datetime2(7)) AS EventEndDatetime,
+        -- COALESCE: use stored GMT value when available (trigger-populated).
+        -- Fall back to computing it on-the-fly via AT TIME ZONE for older runs
+        -- where the trigger had not yet run (EventStartDatetimeGmt IS NULL).
+        COALESCE(
+            e.EventStartDatetimeGmt,
+            CASE WHEN @WindowsTimezone IS NOT NULL
+                 THEN CAST(
+                          (CAST(e.EventStartDatetime AS datetime)
+                               AT TIME ZONE @WindowsTimezone)
+                          AT TIME ZONE 'UTC'
+                      AS datetimeoffset(7))
+                 ELSE NULL
+            END
+        )                                          AS EventStartDatetimeGmt,
+        @IANATimezone                              AS KennelIANATimezone,
+
+        -- Event type display name (NULL when ThemeRunType has no matching row)
+        ett.EventEnumName        AS EventTypeName,
+
+        -- Fees: event-level value overrides the kennel default; fall back to
+        -- kennel default when the event has no explicit fee set (NULL).
+        COALESCE(e.EventPriceForMembers,    @DefaultPriceForMembers)    AS EventPriceForMembers,
+        COALESCE(e.EventPriceForNonMembers, @DefaultPriceForNonMembers) AS EventPriceForNonMembers,
+        COALESCE(e.EventCurrencyType,       @DefaultCurrencyType)       AS EventCurrencyType,
+
+        -- People
+        e.Hares,
+
+        -- Location — Sync* computed columns handle the Facebook data override
+        e.LocationOneLineDesc,
+        e.SyncLocationStreet     AS LocationStreet,
+        e.SyncLocationCity       AS LocationCity,
+        e.SyncLocationPostCode   AS LocationPostCode,
+        e.SyncLocationRegion     AS LocationRegion,
+        e.SyncLocationCountry    AS LocationCountry,
+        e.SyncLatitude           AS Latitude,
+        e.SyncLongitude          AS Longitude,
+        CASE WHEN @SummaryOnly = 1 THEN NULL ELSE e.w3wJson           END AS w3wJson,
+
+        -- Content (heavy fields nulled when @SummaryOnly = 1)
+        CASE WHEN @SummaryOnly = 1 THEN NULL ELSE e.SyncDescription  END AS EventDescription,
+        e.EventImage,
+        CASE WHEN @SummaryOnly = 1 THEN NULL ELSE e.EventUrl          END AS EventUrl,
+
+        -- Tags (raw bitflags — decoded on the client using the RunTag enum)
+        e.Tags1,
+        e.Tags2,
+        e.Tags3,
+
+        -- Metadata
+        e.IsCountedRun,
+        e.IsPromotedEvent,
+        e.EventGeographicScope
+
+    FROM  HC.Event e
+    LEFT JOIN DomainValues.EventThemeType ett ON ett.EventEnumId = e.ThemeRunType
+    WHERE  e.KennelId  = @KennelId
+      AND  e.IsVisible = 1
+      AND  e.deleted   = 0
+      AND  e.removed   = 0
+      AND e.EventStartDatetime < @UtcNow
+      AND (@BoundaryDate IS NULL OR e.EventStartDatetime >= @BoundaryDate)
+    ORDER BY e.EventStartDatetime DESC;
 
 END TRY
 BEGIN CATCH
