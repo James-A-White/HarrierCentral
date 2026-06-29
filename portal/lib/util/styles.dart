@@ -13,51 +13,84 @@ const double detailsFontSize = 16;
 const double detailLineSpace = 1;
 const double detailLineSpaceForBold = 1.1;
 
-ButtonStyle defaultButtonStyle = ButtonStyle(
-  backgroundColor: WidgetStateProperty.resolveWith<Color>(
-    (Set<WidgetState> states) {
-      if (states.contains(WidgetState.disabled)) {
-        return Colors.grey; // Grey background when disabled
-      }
-      return Colors.red[800]!; // Dark red background when enabled
-    },
-  ),
-  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-    RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(8), // 8px corner radius
-    ),
-  ),
-  foregroundColor: WidgetStateProperty.all<Color>(Colors.white), // White text
-  padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
-    const EdgeInsets.symmetric(
-        vertical: 12, horizontal: 16), // Optional padding
-  ),
-);
+// ═══════════════════════════════════════════════════════════════════════════
+// PORTAL BUTTON SYSTEM — single source of truth.
+// Roles: primary / secondary / destructive / text / outlined (+ IconButton).
+// Every FILLED role shares geometry & typography; only the colour differs.
+// Prefer the `HcButton` widget (widgets/hc_button.dart); these ButtonStyles
+// back it and the app theme. See docs/portal_button_strategy.md.
+// ═══════════════════════════════════════════════════════════════════════════
 
-// ── Standard dialog action buttons ──────────────────────────────────────────
-// Every portal dialog's buttons must be IDENTICAL in shape, size and
-// typography and differ ONLY by background colour. Use an ElevatedButton with
-// hcDialogButtonStyle(...) for BOTH the primary and the cancel button (do NOT
-// mix ElevatedButton/TextButton — they render with inconsistent theme styling).
-// A disabled primary (onPressed: null) goes grey automatically.
-const Color hcDialogPrimaryColor = Color(0xFFC62828); // red 800 — primary action
-const Color hcDialogCancelColor = Color(0xFF546E7A); // blueGrey 600 — cancel
+class HcButtonTokens {
+  const HcButtonTokens._();
+  static const double radius = 8;
+  static const double minHeight = 44;
+  static const double minWidth = 88;
+  static const EdgeInsets padding =
+      EdgeInsets.symmetric(vertical: 12, horizontal: 20);
+  static const TextStyle textStyle = TextStyle(
+    fontFamily: 'AvenirNextDemiBold',
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+  );
+  // Role colours
+  static const Color primary = Color(0xFFC62828); // red 800
+  static const Color secondary = Color(0xFF546E7A); // blueGrey 600
+  static const Color destructive = Color(0xFFB71C1C); // red 900
+  static const Color disabled = Color(0xFFBDBDBD); // grey 400
+  static const Color onFilled = Colors.white;
+}
 
-ButtonStyle hcDialogButtonStyle(Color background) => ElevatedButton.styleFrom(
+/// Filled-button style for a given background (primary/secondary/destructive).
+ButtonStyle hcFilledButtonStyle(Color background) => ElevatedButton.styleFrom(
       backgroundColor: background,
-      foregroundColor: Colors.white,
-      disabledBackgroundColor: Colors.grey,
+      foregroundColor: HcButtonTokens.onFilled,
+      disabledBackgroundColor: HcButtonTokens.disabled,
       disabledForegroundColor: Colors.white,
       elevation: 0,
-      minimumSize: const Size(120, 44),
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      textStyle: const TextStyle(
-        fontFamily: 'AvenirNextDemiBold',
-        fontSize: 16,
-        fontWeight: FontWeight.w600,
-      ),
+      minimumSize: const Size(HcButtonTokens.minWidth, HcButtonTokens.minHeight),
+      padding: HcButtonTokens.padding,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(HcButtonTokens.radius)),
+      textStyle: HcButtonTokens.textStyle,
     );
+
+ButtonStyle get hcPrimaryButtonStyle =>
+    hcFilledButtonStyle(HcButtonTokens.primary);
+ButtonStyle get hcSecondaryButtonStyle =>
+    hcFilledButtonStyle(HcButtonTokens.secondary);
+ButtonStyle get hcDestructiveButtonStyle =>
+    hcFilledButtonStyle(HcButtonTokens.destructive);
+
+/// Low-emphasis flat text button (links / tertiary). No background.
+ButtonStyle get hcTextButtonStyle => TextButton.styleFrom(
+      foregroundColor: HcButtonTokens.primary,
+      minimumSize: const Size(0, HcButtonTokens.minHeight),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      textStyle: HcButtonTokens.textStyle,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(HcButtonTokens.radius)),
+    );
+
+/// Outlined secondary (in-page alternative to the filled secondary).
+ButtonStyle get hcOutlinedButtonStyle => OutlinedButton.styleFrom(
+      foregroundColor: HcButtonTokens.secondary,
+      side: const BorderSide(color: HcButtonTokens.secondary),
+      minimumSize: const Size(HcButtonTokens.minWidth, HcButtonTokens.minHeight),
+      padding: HcButtonTokens.padding,
+      textStyle: HcButtonTokens.textStyle,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(HcButtonTokens.radius)),
+    );
+
+// ── Legacy aliases (existing call sites converge automatically) ──────────────
+// `defaultButtonStyle` is the primary style; `hcDialogButtonStyle(colour)` is
+// the filled style. Prefer HcButton / the named styles above in new code.
+ButtonStyle get defaultButtonStyle => hcPrimaryButtonStyle;
+ButtonStyle hcDialogButtonStyle(Color background) =>
+    hcFilledButtonStyle(background);
+const Color hcDialogPrimaryColor = HcButtonTokens.primary;
+const Color hcDialogCancelColor = HcButtonTokens.secondary;
 
 TextStyle listLabelStyle = const TextStyle(
   color: Colors.yellow,
@@ -137,10 +170,12 @@ TextStyle formHintStyle = TextStyle(
 //     fontSize: 30.0,
 //     height: 1.0);
 
+// Button label text — aligned to the button system (16 DemiBold). Call sites
+// that pass this to a button child now match HcButtonTokens.textStyle.
 TextStyle textStyleButton = const TextStyle(
   fontFamily: 'AvenirNextDemiBold',
   fontStyle: FontStyle.normal,
-  fontSize: 22,
+  fontSize: 16,
   color: Colors.white,
 );
 

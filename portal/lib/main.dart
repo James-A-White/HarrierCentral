@@ -56,29 +56,14 @@ void main() async {
         primaryColorLight: Colors.grey.shade400,
         bottomAppBarTheme: BottomAppBarThemeData(color: Colors.grey.shade700),
         highlightColor: Colors.yellow,
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red.shade900,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            textStyle: const TextStyle(color: Colors.white),
-            shadowColor: Colors.transparent,
-            elevation: 0,
-          ),
-        ),
-        textButtonTheme: TextButtonThemeData(
-          //     style: TextButton.styleFrom(
-          //   backgroundColor: Colors.red.shade900,
-          //   primary
-          //   textStyle: const TextStyle(color: Colors.white),
-          // )
-          style: ButtonStyle(
-            backgroundColor:
-                WidgetStateProperty.all<Color>(Colors.red.shade900),
-            foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
-          ),
-        ),
+        // Portal button system (see lib/util/styles.dart). Bare buttons now get
+        // the consistent look by default; TextButtons are FLAT (no red fill —
+        // the old textButtonTheme made every Cancel look like a primary button).
+        elevatedButtonTheme:
+            ElevatedButtonThemeData(style: hcPrimaryButtonStyle),
+        textButtonTheme: TextButtonThemeData(style: hcTextButtonStyle),
+        outlinedButtonTheme:
+            OutlinedButtonThemeData(style: hcOutlinedButtonStyle),
         iconTheme: const IconThemeData(color: Colors.white, size: 30),
         scaffoldBackgroundColor: Colors.brown.shade50,
       ),

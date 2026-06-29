@@ -81,6 +81,7 @@ export 'package:hcportal/tabbed_ui/classes/sidebar_data.dart';
 export 'package:hcportal/tabbed_ui/classes/tab_definition_data.dart';
 export 'package:hcportal/tabbed_ui/classes/ui_control_definition.dart';
 export 'package:hcportal/tabbed_ui/controller/tab_ui_controller.dart';
+export 'package:hcportal/tabbed_ui/widgets/hc_button.dart';
 export 'package:hcportal/tabbed_ui/widgets/editable_color_field.dart';
 export 'package:hcportal/tabbed_ui/widgets/editable_dropdown_field.dart';
 export 'package:hcportal/tabbed_ui/widgets/document_manager_field.dart';
