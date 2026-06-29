@@ -351,7 +351,7 @@ class _ModernNavButton extends StatelessWidget {
     final gap = compact ? 6.0 : 8.0;
     final iconSize = compact ? 16.0 : 18.0;
     return Material(
-      color: Colors.blue.shade600,
+      color: HcButtonTokens.navigation, // unified nav colour (blue)
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
         onTap: onPressed,

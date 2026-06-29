@@ -226,29 +226,21 @@ extension ApplicationProposal on TestFormPage {
               children: [
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: ElevatedButton(
-                    style: defaultButtonStyle,
-                    onPressed: () {
-                      applicationGetxController.tabController.index--;
-                    },
-                    child: Text(
-                      'Back',
-                      style: buttonLabelStyleMedium,
-                    ),
+                  child: HcButton.navigation(
+                    label: 'Back',
+                    icon: Icons.arrow_back_rounded,
+                    onPressed: () =>
+                        applicationGetxController.tabController.index--,
                   ),
                 ),
                 Expanded(child: Container()),
                 Align(
                   alignment: Alignment.centerRight,
-                  child: ElevatedButton(
-                    style: defaultButtonStyle,
-                    onPressed: () {
-                      applicationGetxController.tabController.index++;
-                    },
-                    child: Text(
-                      'Next',
-                      style: buttonLabelStyleMedium,
-                    ),
+                  child: HcButton.navigation(
+                    label: 'Next',
+                    icon: Icons.arrow_forward_rounded,
+                    onPressed: () =>
+                        applicationGetxController.tabController.index++,
                   ),
                 ),
               ],

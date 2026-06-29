@@ -424,7 +424,7 @@ extension ApplicationCvs on TestFormPage {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: ElevatedButton(
-                    style: defaultButtonStyle,
+                    style: hcNavigationButtonStyle,
                     onPressed: () {
                       applicationGetxController.tabController.index--;
                     },
@@ -438,7 +438,7 @@ extension ApplicationCvs on TestFormPage {
                 Align(
                   alignment: Alignment.centerRight,
                   child: ElevatedButton(
-                    style: defaultButtonStyle,
+                    style: hcNavigationButtonStyle,
                     onPressed: () {
                       applicationGetxController.tabController.index++;
                     },

@@ -60,7 +60,7 @@ extension ApplicationDetails on TestFormPage {
                 Align(
                   alignment: Alignment.centerRight,
                   child: ElevatedButton(
-                    style: defaultButtonStyle,
+                    style: hcNavigationButtonStyle,
                     onPressed: () {
                       applicationGetxController.tabController.index++;
                     },

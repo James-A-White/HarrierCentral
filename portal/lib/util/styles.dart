@@ -34,8 +34,9 @@ class HcButtonTokens {
     fontWeight: FontWeight.w600,
   );
   // Role colours
-  static const Color primary = Color(0xFFC62828); // red 800
-  static const Color secondary = Color(0xFF546E7A); // blueGrey 600
+  static const Color primary = Color(0xFFC62828); // red 800 — active action
+  static const Color secondary = Color(0xFF546E7A); // blueGrey 600 — cancel
+  static const Color navigation = Color(0xFF1E88E5); // blue 600 — next/back
   static const Color destructive = Color(0xFFB71C1C); // red 900
   static const Color disabled = Color(0xFFBDBDBD); // grey 400
   static const Color onFilled = Colors.white;
@@ -59,6 +60,8 @@ ButtonStyle get hcPrimaryButtonStyle =>
     hcFilledButtonStyle(HcButtonTokens.primary);
 ButtonStyle get hcSecondaryButtonStyle =>
     hcFilledButtonStyle(HcButtonTokens.secondary);
+ButtonStyle get hcNavigationButtonStyle =>
+    hcFilledButtonStyle(HcButtonTokens.navigation);
 ButtonStyle get hcDestructiveButtonStyle =>
     hcFilledButtonStyle(HcButtonTokens.destructive);
 

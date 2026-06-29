@@ -5,8 +5,11 @@ enum HcButtonVariant {
   /// Main action (Save, Submit, Confirm). Filled brand red.
   primary,
 
-  /// Alternative / Cancel / Back. Filled neutral (blueGrey).
+  /// Alternative / Cancel. Filled neutral (blueGrey).
   secondary,
+
+  /// Wizard / tab navigation (Next, Back). Filled blue.
+  navigation,
 
   /// Irreversible action (Delete, Clear, Regenerate). Filled deep red.
   destructive,
@@ -52,6 +55,15 @@ class HcButton extends StatelessWidget {
     this.expand = false,
   }) : variant = HcButtonVariant.secondary;
 
+  const HcButton.navigation({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.icon,
+    this.loading = false,
+    this.expand = false,
+  }) : variant = HcButtonVariant.navigation;
+
   const HcButton.destructive({
     super.key,
     required this.label,
@@ -89,6 +101,7 @@ class HcButton extends StatelessWidget {
   bool get _isFilled =>
       variant == HcButtonVariant.primary ||
       variant == HcButtonVariant.secondary ||
+      variant == HcButtonVariant.navigation ||
       variant == HcButtonVariant.destructive;
 
   @override
@@ -120,6 +133,8 @@ class HcButton extends StatelessWidget {
         ElevatedButton(onPressed: onTap, style: hcPrimaryButtonStyle, child: child),
       HcButtonVariant.secondary => ElevatedButton(
           onPressed: onTap, style: hcSecondaryButtonStyle, child: child),
+      HcButtonVariant.navigation => ElevatedButton(
+          onPressed: onTap, style: hcNavigationButtonStyle, child: child),
       HcButtonVariant.destructive => ElevatedButton(
           onPressed: onTap, style: hcDestructiveButtonStyle, child: child),
       HcButtonVariant.outlined => OutlinedButton(

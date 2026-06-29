@@ -77,11 +77,16 @@ One source of truth (design tokens + a widget set). Five roles, nothing more:
 
 | Role | When | Look |
 |---|---|---|
-| **Primary** | the main action (Save, Submit, Confirm, Next) | filled brand red, white text |
-| **Secondary** | the alternative / Cancel / Back | filled neutral (blueGrey) **or** outlined |
-| **Destructive** | irreversible (Delete, Clear, Regenerate) | filled deep red, optional leading icon |
+| **Primary** | the main active action on a screen (Save, Submit, Confirm) | filled brand **red** (`0xFFC62828`) |
+| **Secondary** | Cancel / the alternative | filled **blueGrey** (`0xFF546E7A`) |
+| **Navigation** | wizard / tab Next & Back | filled **blue** (`0xFF1E88E5`) |
+| **Destructive** | irreversible (Delete, Clear, Regenerate) | filled **deep red** (`0xFFB71C1C`) |
 | **Text** | low-emphasis inline link-style | flat, brand-coloured text, **no background** |
 | **Icon** | toolbar / compact actions | `IconButton`, standard size + tooltip |
+
+> James' rule (2026-06-29): **all navigation (Next/Back) = one colour, all
+> Cancel = one colour, all primary-active = one colour.** Encoded as the
+> Primary / Navigation / Secondary roles above.
 
 **Shared tokens (every filled button identical except colour):**
 - Corner radius: **8**

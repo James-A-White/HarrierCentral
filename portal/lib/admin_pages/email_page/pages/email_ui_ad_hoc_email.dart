@@ -164,7 +164,7 @@ class EmailPageSendAdHocEmail extends StatelessWidget {
               Align(
                 alignment: Alignment.centerRight,
                 child: ElevatedButton(
-                  style: defaultButtonStyle,
+                  style: hcNavigationButtonStyle,
                   onPressed: () {
                     controller.tabController.index++;
                   },

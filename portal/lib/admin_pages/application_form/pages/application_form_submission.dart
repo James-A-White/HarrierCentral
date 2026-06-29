@@ -178,7 +178,7 @@ extension ApplicationSubmission on TestFormPage {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: ElevatedButton(
-                          style: defaultButtonStyle,
+                          style: hcNavigationButtonStyle,
                           onPressed: () {
                             applicationGetxController.tabController.index--;
                           },
