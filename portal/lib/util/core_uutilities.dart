@@ -45,23 +45,13 @@ class CoreUtilities {
       ),
       actions: <Widget>[
         if (showCancelButton)
-          TextButton(
-            child: Text(
-              cancelButtonText,
-              style: ts_button,
-            ),
-            onPressed: () {
-              Get.back(result: false);
-            },
+          HcButton.secondary(
+            label: cancelButtonText,
+            onPressed: () => Get.back(result: false),
           ),
-        TextButton(
-          child: Text(
-            buttonText,
-            style: ts_button,
-          ),
-          onPressed: () {
-            Get.back(result: true);
-          },
+        HcButton.primary(
+          label: buttonText,
+          onPressed: () => Get.back(result: true),
         ),
       ],
     );

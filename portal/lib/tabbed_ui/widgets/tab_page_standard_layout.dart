@@ -98,7 +98,7 @@ class TabPageStandardLayoutState extends State<TabPageStandardLayout>
                     () => Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        _ModernActionButton(
+                        HcButton.primary(
                           label: 'Save',
                           icon: Icons.save_rounded,
                           onPressed: (widget.formController.isFormDirty.value &&
@@ -107,10 +107,9 @@ class TabPageStandardLayoutState extends State<TabPageStandardLayout>
                                   await widget.formController.save(true);
                                 }
                               : null,
-                          activeColor: Colors.green.shade600,
                         ),
                         const SizedBox(width: 12),
-                        _ModernActionButton(
+                        HcButton.secondary(
                           label: 'Undo',
                           icon: Icons.undo_rounded,
                           onPressed: (widget.formController.isFormDirty.value ||
@@ -118,7 +117,6 @@ class TabPageStandardLayoutState extends State<TabPageStandardLayout>
                                       .formController.allFieldsAreValid.value)
                               ? widget.formController.undoChanges
                               : null,
-                          activeColor: Colors.red.shade600,
                         ),
                       ],
                     ),
@@ -283,23 +281,19 @@ class TabPageStandardLayoutState extends State<TabPageStandardLayout>
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _ModernActionButton(
+                HcButton.secondary(
                   label: 'Undo',
                   icon: Icons.undo_rounded,
                   onPressed:
                       (isFormDirty || !allFieldsAreValid) ? onUndo : null,
-                  activeColor: Colors.red.shade600,
-                  compact: true,
                 ),
                 const SizedBox(width: 8),
-                _ModernActionButton(
+                HcButton.primary(
                   label: 'Save',
                   icon: Icons.save_rounded,
                   onPressed: (isFormDirty && allFieldsAreValid)
                       ? () => onSave!(true)
                       : null,
-                  activeColor: Colors.green.shade600,
-                  compact: true,
                 ),
               ],
             )
@@ -380,73 +374,6 @@ class _ModernNavButton extends StatelessWidget {
                 SizedBox(width: gap),
                 Icon(icon, color: Colors.white, size: iconSize),
               ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Modern action button (Undo/Save).
-class _ModernActionButton extends StatelessWidget {
-  const _ModernActionButton({
-    required this.label,
-    required this.icon,
-    required this.onPressed,
-    this.activeColor,
-    this.compact = false,
-  });
-
-  final String label;
-  final IconData icon;
-  final VoidCallback? onPressed;
-  final Color? activeColor;
-
-  /// Tightens padding so Undo/Save take less room on a phone.
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    final isEnabled = onPressed != null;
-    final color = isEnabled
-        ? (activeColor ?? Colors.grey.shade700)
-        : Colors.grey.shade400;
-    final borderColor = isEnabled
-        ? (activeColor ?? Colors.grey.shade400)
-        : Colors.grey.shade300;
-
-    return Material(
-      color: isEnabled ? color.withValues(alpha: 0.1) : Colors.grey.shade100,
-      borderRadius: BorderRadius.circular(10),
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(10),
-        child: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: compact ? 10 : 16,
-            vertical: 10,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: borderColor,
-              width: 1.5,
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, color: color, size: 16),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: TextStyle(
-                  color: color,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
             ],
           ),
         ),

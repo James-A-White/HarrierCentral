@@ -2,6 +2,24 @@
 
 ---
 
+## 2.0.42+677 — 2026-06-29
+
+### Improvements
+- **Unified button system**: new `HcButton` widget + token-based styles give
+  every button consistent size, shape, typography and disabled/loading states
+  across all roles (primary / secondary / navigation / destructive / outlined /
+  text). Dialog, ad-hoc, wizard-navigation and tab-group buttons migrated onto it.
+- Next/Back navigation buttons unified to a single blue.
+- Tab-group Save/Undo adopt the system: Save = red primary, Undo = blueGrey
+  secondary (matching the dialog OK/Cancel pairing).
+
+### Fixes
+- Dialog OK/Cancel buttons (`showAlert`, incl. the Notifications dialog) were
+  invisible after the button-theme change — white text on a flat dialog. Now
+  filled red/blueGrey and clearly visible.
+
+---
+
 ## 2.0.41+676 — 2026-06-28
 
 ### Fixes
