@@ -135,13 +135,14 @@ class NewsflashManagementPage extends StatelessWidget {
       title: 'Delete Newsflash',
       content: Text('Delete "${nf.title}"? This cannot be undone.'),
       actions: [
-        TextButton(
-            onPressed: () => Get.back(result: false),
-            child: const Text('Cancel')),
-        TextButton(
-            onPressed: () => Get.back(result: true),
-            child:
-                const Text('Delete', style: TextStyle(color: Colors.white))),
+        HcButton.secondary(
+          label: 'Cancel',
+          onPressed: () => Get.back(result: false),
+        ),
+        HcButton.destructive(
+          label: 'Delete',
+          onPressed: () => Get.back(result: true),
+        ),
       ],
     );
     if (confirmed == true) {
@@ -472,14 +473,14 @@ class _NewsflashForm extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              TextButton(
+              HcButton.secondary(
+                label: 'Cancel',
                 onPressed: () => Get.back<void>(),
-                child: const Text('Cancel'),
               ),
               const SizedBox(width: 8),
-              FilledButton(
+              HcButton.primary(
+                label: isEditing ? 'Save changes' : 'Create',
                 onPressed: onSave,
-                child: Text(isEditing ? 'Save changes' : 'Create'),
               ),
             ],
           ),

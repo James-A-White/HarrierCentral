@@ -248,9 +248,9 @@ class _CategoryDetailDialogState extends State<CategoryDetailDialog> {
             const SizedBox(height: 8),
             Align(
               alignment: Alignment.centerRight,
-              child: TextButton(
+              child: HcButton.secondary(
+                label: 'Close',
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Close'),
               ),
             ),
           ],

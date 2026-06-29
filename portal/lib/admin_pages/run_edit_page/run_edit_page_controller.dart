@@ -1042,13 +1042,13 @@ class RunEditPageController extends TabUiController
           content: const Text(
               'You have unsaved changes. Are you sure you want to leave?'),
           actions: [
-            TextButton(
+            HcButton.secondary(
+              label: 'Stay',
               onPressed: () => Get.back<bool>(result: false),
-              child: const Text('Stay'),
             ),
-            TextButton(
+            HcButton.destructive(
+              label: 'Leave',
               onPressed: () => Get.back<bool>(result: true),
-              child: const Text('Leave'),
             ),
           ],
         ),

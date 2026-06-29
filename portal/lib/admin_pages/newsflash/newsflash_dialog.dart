@@ -114,14 +114,14 @@ class _NewsflashDialog extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(
+                  HcButton.secondary(
+                    label: 'Read Later',
                     onPressed: onReadLater,
-                    child: const Text('Read Later'),
                   ),
                   const SizedBox(width: 8),
-                  FilledButton(
+                  HcButton.primary(
+                    label: "I've read it",
                     onPressed: onDismissed,
-                    child: const Text("I've read it"),
                   ),
                 ],
               ),

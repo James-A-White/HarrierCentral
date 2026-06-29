@@ -286,20 +286,17 @@ class SetLocationDialog extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    ElevatedButton(
+                    HcButton.secondary(
+                      label: 'Cancel',
                       onPressed: () => Get.back<LocationSelection>(),
-                      style: hcDialogButtonStyle(hcDialogCancelColor),
-                      child: const Text('Cancel'),
                     ),
                     const SizedBox(width: 12),
-                    ElevatedButton(
+                    HcButton.primary(
+                      label: 'Save',
                       onPressed: controller.canSave
-                          ? () =>
-                              Get.back<LocationSelection>(
-                                  result: controller.buildResult())
+                          ? () => Get.back<LocationSelection>(
+                              result: controller.buildResult())
                           : null,
-                      style: hcDialogButtonStyle(hcDialogPrimaryColor),
-                      child: const Text('Save'),
                     ),
                   ],
                 ),

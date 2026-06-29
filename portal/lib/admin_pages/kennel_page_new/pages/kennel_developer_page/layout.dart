@@ -99,16 +99,13 @@ class KennelDeveloperTabContent extends StatelessWidget {
           'using the old key will stop working. Continue?',
         ),
         actions: [
-          TextButton(
+          HcButton.secondary(
+            label: 'Cancel',
             onPressed: () => Get.back(result: false),
-            child: const Text('Cancel'),
           ),
-          FilledButton(
+          HcButton.destructive(
+            label: 'Regenerate',
             onPressed: () => Get.back(result: true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.red.shade600,
-            ),
-            child: const Text('Regenerate'),
           ),
         ],
       ),

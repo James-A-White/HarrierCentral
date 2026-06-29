@@ -301,21 +301,13 @@ class _SymbolPickerDialog extends StatelessWidget {
         ),
       ),
       actions: [
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red.shade700,
-            foregroundColor: Colors.white,
-          ),
+        HcButton.destructive(
+          label: 'Clear slot',
           onPressed: () => Navigator.of(context).pop(''),
-          child: const Text('Clear slot'),
         ),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue.shade700,
-            foregroundColor: Colors.white,
-          ),
+        HcButton.secondary(
+          label: 'Cancel',
           onPressed: () => Navigator.of(context).pop(null),
-          child: const Text('Cancel'),
         ),
       ],
     );

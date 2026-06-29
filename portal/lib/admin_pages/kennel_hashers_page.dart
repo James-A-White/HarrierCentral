@@ -1720,9 +1720,9 @@ class _KennelHashersContent extends StatelessWidget {
           ),
         ),
         actions: [
-          TextButton(
+          HcButton.secondary(
+            label: 'Close',
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Close'),
           ),
         ],
       ),

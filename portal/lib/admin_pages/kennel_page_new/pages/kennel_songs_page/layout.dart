@@ -512,14 +512,14 @@ class _SongDetailPanel extends StatelessWidget {
               Expanded(
                 child: Text('Add New Song', style: headingStyleBlack),
               ),
-              TextButton(
+              HcButton.secondary(
+                label: 'Cancel',
                 onPressed: controller.cancelAddNewSong,
-                child: const Text('Cancel'),
               ),
               const SizedBox(width: 8),
-              FilledButton(
+              HcButton.primary(
+                label: 'Save Song',
                 onPressed: controller.saveNewSong,
-                child: const Text('Save Song'),
               ),
             ],
           ),
@@ -647,14 +647,14 @@ class _SongDetailPanel extends StatelessWidget {
               Expanded(
                 child: Text('Edit Song', style: headingStyleBlack),
               ),
-              TextButton(
+              HcButton.secondary(
+                label: 'Cancel',
                 onPressed: controller.cancelEditSong,
-                child: const Text('Cancel'),
               ),
               const SizedBox(width: 8),
-              FilledButton(
+              HcButton.primary(
+                label: 'Save Changes',
                 onPressed: controller.saveEditedSong,
-                child: const Text('Save Changes'),
               ),
             ],
           ),
