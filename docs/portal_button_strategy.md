@@ -1,7 +1,42 @@
 # Portal Button Consistency Strategy
 
-_Audit + proposal, 2026-06-28. Read, then tell me which decisions you want and
-I'll implement it in phased commits._
+_Audit + proposal, 2026-06-28._
+
+---
+
+## ✅ IMPLEMENTATION STATUS (2026-06-29) — committed locally, NOT pushed/deployed
+
+Implemented with the recommended decisions (red800 primary, blueGrey secondary,
+deep-red destructive, 8px / 44h / 16 DemiBold, `HcButton` widget). Three commits
+on `master` (`948b0750`, `77463066`, + this doc) — **not pushed**, so you can run
+it locally (`flutter run -d chrome`) and eyeball before shipping. `flutter
+analyze` is clean.
+
+- **Phase 1 — foundation + theme (done).** `HcButtonTokens` + `hcPrimary/
+  Secondary/Destructive/Text/Outlined` styles + the `HcButton` widget in
+  `lib/util/styles.dart` / `lib/tabbed_ui/widgets/hc_button.dart`. `ThemeData`
+  fixed: `elevatedButtonTheme` → primary, `textButtonTheme` now **flat** (killed
+  the red-fill-on-Cancel bug), added `outlinedButtonTheme`. `defaultButtonStyle`
+  & `hcDialogButtonStyle` now alias the system; `textStyleButton` 22 → 16.
+- **Phase 2/3 — migrations (done).** Removed all ad-hoc one-off styles and
+  converted dialog action buttons to `HcButton` (Set Location, trail-symbols,
+  developer, kennel-members Close, login-history/category-detail Close, songs
+  add/edit, unsaved-leave Stay/Leave, newsflash dialog/delete/edit).
+- **Phase 4 — tappables (reviewed, intentionally left).** The 49 `GestureDetector`
+  + 12 `InkWell` are custom interactions (map pins, photo tiles, tappable cards/
+  rows, colour swatches), **not** buttons — converting them would break layout/
+  behaviour. Left as-is by design.
+
+**Deliberately left** (not buttons): the stateful segmented toggles in the run
+list / run detail / photo review (they use dynamic `bg/fg` per selection), and
+the chat bottom-sheet options list.
+
+**To finish:** review in the running app, then push `master` (CI deploys) or
+tell me to ship. If you want a different secondary treatment (e.g. outlined
+instead of filled blueGrey for in-page secondaries), it's a one-line token/style
+change now that everything routes through the system.
+
+---
 
 ---
 
