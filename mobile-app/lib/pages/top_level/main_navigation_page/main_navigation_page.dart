@@ -656,11 +656,15 @@ class MainNavigationPage extends StatelessWidget {
 
     final listController = Get.find<FutureRunListPageController>();
 
-    await listController.scrollController.animateTo(
-      0.0,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-    );
+    // Re-tapping the runs tab returns to the most-relevant position — the
+    // "Past Runs" divider / next run — not the very top (oldest past run).
+    if (listController.itemScrollController.isAttached) {
+      await listController.itemScrollController.scrollTo(
+        index: listController.initialScrollIndex,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   /// Opens the interactive songbook for the RSVP'd event closest to now.

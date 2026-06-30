@@ -1,5 +1,13 @@
 import 'package:harrier_central/imports.dart';
 
+/// Marker item inserted into the displayed run list to separate the user's
+/// attended past runs (above) from their upcoming/future runs (below).
+/// Rendered as the "Past Runs" divider. Kept as a dedicated type rather than a
+/// magic int so it never collides with the run-classification header ints.
+class PastRunsDivider {
+  const PastRunsDivider();
+}
+
 class FutureRunListPageController extends GetxController {
   FutureRunListPageController();
 
@@ -12,6 +20,15 @@ class FutureRunListPageController extends GetxController {
   List<RunDetailsAggregate>? allRuns;
   RxList<RunDetailsAggregate> preFilteredRuns = <RunDetailsAggregate>[].obs;
   RxList<dynamic> filteredRuns = [].obs;
+
+  /// Raw attended past runs (AttendenceState >= 3), loaded from the common
+  /// domain alongside [allRuns]. Source for the inline "Past Runs" section.
+  List<RunDetailsAggregate>? allPastAttendedRuns;
+
+  /// Search-filtered attended past runs, sorted oldest -> newest so the most
+  /// recent past run sits just above the divider. Merged ahead of
+  /// [filteredRuns] at display time — see [displayRuns].
+  RxList<RunDetailsAggregate> pastAttendedRuns = <RunDetailsAggregate>[].obs;
   RxInt resultCount = 0.obs;
   RxString searchRunsText = ''.obs;
   Rx<RunsToDisplay> runsToDisplay = RunsToDisplay.allRuns.obs;
@@ -34,9 +51,41 @@ class FutureRunListPageController extends GetxController {
   Rx<DateTime> dateFilterEnd = DateTime.now().add(const Duration(days: 7)).obs;
   RxBool multiYearDateFilter = false.obs;
 
-  final ScrollController scrollController = ScrollController(
-    initialScrollOffset: 0.0,
-  );
+  // The run list is rendered with a ScrollablePositionedList so it can open
+  // anchored on the "Past Runs" divider (index-based) with the user's attended
+  // past runs scrollable above it. That list manages its own controllers, so we
+  // use ItemScrollController/ItemPositionsListener instead of a ScrollController.
+  final ItemScrollController itemScrollController = ItemScrollController();
+  final ItemPositionsListener itemPositionsListener =
+      ItemPositionsListener.create();
+
+  /// True only for the main "All Runs" + future view, where the attended past
+  /// runs are shown inline above the divider. Other views (range, My Runs,
+  /// Events, map, chats) keep their existing single-list behaviour.
+  bool get showsInlinePast =>
+      runsToDisplay.value == RunsToDisplay.allRuns &&
+      runsTimeScope.value == RunsTimeScope.future;
+
+  /// The list actually rendered: attended past (oldest -> newest) + divider +
+  /// future. Falls back to [filteredRuns] when the inline-past section doesn't
+  /// apply or there are no past attended runs.
+  List<dynamic> get displayRuns {
+    if (!showsInlinePast || pastAttendedRuns.isEmpty) {
+      return filteredRuns;
+    }
+    return <dynamic>[
+      ...pastAttendedRuns,
+      const PastRunsDivider(),
+      ...filteredRuns,
+    ];
+  }
+
+  /// Index the list should open at: the divider, so the next run sits just
+  /// below it and the past runs are scrollable above. 0 when there's no past.
+  int get initialScrollIndex =>
+      (showsInlinePast && pastAttendedRuns.isNotEmpty)
+      ? pastAttendedRuns.length
+      : 0;
 
   LatLngBounds? mapBounds;
 
@@ -57,7 +106,6 @@ class FutureRunListPageController extends GetxController {
     _displayLoadingWorker?.dispose();
     _timeScopeLoadingWorker?.dispose();
     _dataChangeSub?.cancel();
-    scrollController.dispose();
     searchController.dispose();
     searchFocusNode.dispose();
     flashingRunIds.clear();
@@ -175,6 +223,7 @@ class FutureRunListPageController extends GetxController {
       runsTimeScope: runsTimeScope.value,
       runsToDisplay: runsToDisplay.value,
     );
+    await _loadPastAttendedRuns();
     _applyDataUpdate(newAllRuns);
   }
 
@@ -387,11 +436,30 @@ class FutureRunListPageController extends GetxController {
         runsToDisplay: runsToDisplay.value,
       );
       debugPrint('[BOOT] refreshFromTable: getRunDetailsAggregates done: ${DateTime.now().millisecondsSinceEpoch}ms — ${allRuns?.length ?? 0} runs');
+      await _loadPastAttendedRuns();
       debugPrint('[BOOT] refreshFromTable: calling filterRuns: ${DateTime.now().millisecondsSinceEpoch}ms');
       filterRuns(false);
       debugPrint('[BOOT] refreshFromTable: filterRuns done: ${DateTime.now().millisecondsSinceEpoch}ms — filteredRuns=${filteredRuns.length}');
     }
     return;
+  }
+
+  /// Loads the user's attended past runs (AttendenceState >= 3) from the common
+  /// domain. These are always fully synced locally (HEM + events), so no backend
+  /// trip is needed. Only relevant for the All Runs view; cleared otherwise.
+  Future<void> _loadPastAttendedRuns() async {
+    if (runsToDisplay.value != RunsToDisplay.allRuns) {
+      allPastAttendedRuns = <RunDetailsAggregate>[];
+      return;
+    }
+    final past = await QueryRuns.getRunDetailsAggregates(
+      true,
+      runsTimeScope: RunsTimeScope.past,
+      runsToDisplay: RunsToDisplay.allRuns,
+    );
+    allPastAttendedRuns = past
+        .where((RunDetailsAggregate r) => r.extensions.attendenceState >= 3)
+        .toList();
   }
 
   /// filterRuns() provides a complex filtering (search) option
@@ -531,6 +599,23 @@ class FutureRunListPageController extends GetxController {
       resultCount.value = filteredRuns.length;
     }
 
+    // Build the inline attended-past list (All Runs / future view only). Apply
+    // the same search-text filter as the future list, then sort oldest -> newest
+    // so the most recent past run sits just above the divider.
+    if (showsInlinePast) {
+      final past = QueryRuns.doRunsSearchTextFilter(
+        searchRunsText.value,
+        allPastAttendedRuns ?? <RunDetailsAggregate>[],
+      ).whereType<RunDetailsAggregate>().toList();
+      past.sort(
+        (a, b) =>
+            a.event.eventStartDatetime.compareTo(b.event.eventStartDatetime),
+      );
+      pastAttendedRuns.value = past;
+    } else if (pastAttendedRuns.isNotEmpty) {
+      pastAttendedRuns.clear();
+    }
+
     debugPrint('[BOOT] filterRuns: update(runList) start: ${DateTime.now().millisecondsSinceEpoch}ms');
     update([UpdateIds.runList]);
     debugPrint('[BOOT] filterRuns: COMPLETE: ${DateTime.now().millisecondsSinceEpoch}ms');
@@ -593,6 +678,7 @@ class FutureRunListPageController extends GetxController {
       runsToDisplay: runsToDisplay.value,
     );
 
+    await _loadPastAttendedRuns();
     _applyDataUpdate(newAllRuns);
 
     await bannerTimer;
@@ -632,25 +718,39 @@ class FutureRunListPageController extends GetxController {
   }
 
   void _checkForNewRunsAboveViewport() {
-    if (!scrollController.hasClients || scrollController.offset <= 0) {
+    final positions = itemPositionsListener.itemPositions.value;
+    if (positions.isEmpty) {
       newRunsAboveViewport.value = 0;
       return;
     }
 
-    final addedCount = filteredRuns.where((item) {
-      if (item is int) return false;
-      final id = normalizeUuid((item as RunDetailsAggregate).event.eventId);
-      return !_previousRuns.containsKey(id);
-    }).length;
+    // Index of the topmost visible item; anything before it is "above viewport".
+    final firstVisible = positions
+        .map((p) => p.index)
+        .reduce((a, b) => a < b ? a : b);
+    if (firstVisible <= 0) {
+      newRunsAboveViewport.value = 0;
+      return;
+    }
+
+    final items = displayRuns;
+    int addedCount = 0;
+    for (int i = 0; i < firstVisible && i < items.length; i++) {
+      final item = items[i];
+      if (item is RunDetailsAggregate) {
+        final id = normalizeUuid(item.event.eventId);
+        if (!_previousRuns.containsKey(id)) addedCount++;
+      }
+    }
 
     newRunsAboveViewport.value = addedCount;
   }
 
   void dismissPill() {
     newRunsAboveViewport.value = 0;
-    if (scrollController.hasClients) {
-      scrollController.animateTo(
-        0,
+    if (itemScrollController.isAttached) {
+      itemScrollController.scrollTo(
+        index: initialScrollIndex,
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
       );

@@ -1,5 +1,10 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.11.2+1182 (2026-06-30)
+
+### New Features
+- **Runs list — My past runs**: the runs list now opens at your next run with a "My past runs" divider just above it; scroll up to browse the runs you've attended. The old future/past toggle is replaced by an always-available date-range filter.
+
 ## 2.11.1+1181 (2026-06-28)
 
 ### Improvements

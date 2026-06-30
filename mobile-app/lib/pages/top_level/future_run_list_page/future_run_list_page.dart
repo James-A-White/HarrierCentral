@@ -24,7 +24,7 @@ class FutureRunsListPage extends StatelessWidget {
             }
             return Stack(
               children: [
-                _buildListView(listController),
+                _buildListView(listController, context),
                 Positioned(top: 0, left: 0, right: 0, child: _syncBanner()),
                 Positioned(top: 0, left: 0, right: 0, child: _newRunsPill()),
               ],
@@ -287,10 +287,14 @@ class FutureRunsListPage extends StatelessWidget {
                         RunsToDisplay.unreadChats)
                       SizedBox(width: 42, child: _showResetChatCountsButton()),
 
+                    // Date-range filter (replaces the old future/past toggle).
                     ((controller.runsToDisplay.value != RunsToDisplay.onMap) &&
                             (controller.runsToDisplay.value !=
                                 RunsToDisplay.unreadChats))
-                        ? SizedBox(width: 42, child: _futurePastButton())
+                        ? SizedBox(
+                            width: 42,
+                            child: _showCalendarButton(context),
+                          )
                         : SizedBox.shrink(),
                     SizedBox(width: 5),
                     if (controller.runsTimeScope.value != RunsTimeScope.range)
@@ -309,8 +313,9 @@ class FutureRunsListPage extends StatelessWidget {
                         ),
                       ),
 
+                    // Clear an active date range and return to the default view.
                     if (controller.runsTimeScope.value == RunsTimeScope.range)
-                      SizedBox(width: 42, child: _showCalendarButton(context)),
+                      SizedBox(width: 42, child: _clearRangeButton()),
                     SizedBox(width: 10),
                   ],
                 ),
@@ -361,7 +366,10 @@ class FutureRunsListPage extends StatelessWidget {
     );
   }
 
-  Widget _buildListView(FutureRunListPageController listController) {
+  Widget _buildListView(
+    FutureRunListPageController listController,
+    BuildContext context,
+  ) {
     String noRunsTitle = 'No Runs available';
     String noRunsDescription =
         'If you have set a date range or search text, you may want to clear those to see all available runs.';
@@ -394,45 +402,39 @@ class FutureRunsListPage extends StatelessWidget {
         break;
     }
 
+    // The merged list actually rendered: attended past + divider + future
+    // (or just the future list when the inline-past section doesn't apply).
+    final List<dynamic> items = listController.displayRuns;
+
     bool noRunsAvaiable = false;
 
-    if (controller.filteredRuns.isEmpty) {
+    if (items.isEmpty) {
       noRunsAvaiable = true;
     }
 
-    // Check if every element in the non-empty list is an integer
-    if (controller.filteredRuns.every((element) => element is int)) {
+    // No actual runs — only header/divider markers, no run rows.
+    if (items.every(
+      (element) => element is int || element is PastRunsDivider,
+    )) {
       noRunsAvaiable = true;
     }
 
-    return NestedScrollView(
-      controller: controller.scrollController,
-      floatHeaderSlivers: true,
-      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-        return <Widget>[
-          // SliverList(
-          //   delegate: SliverChildListDelegate(<Widget>[_searchBar()]),
-          // ),
-          SliverAppBar(
-            expandedHeight: 131,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            surfaceTintColor: Colors.transparent,
-            floating: true,
-            pinned: false,
-            toolbarHeight: 131, // 👈 your desired height
-            titleSpacing: 0.0,
-            flexibleSpace: _searchBar(context),
-          ),
-        ];
-      },
-      body: RefreshIndicator(
-        onRefresh: () => controller.refreshFromBackend(
-          clearLocalTables: true,
-          showOfflineMessage: true,
-        ),
-        displacement: 40.0,
-        child: Column(
+    // Fixed (non-floating) search header above an index-anchored list. The list
+    // uses a ScrollablePositionedList so it can open on the "Past Runs" divider
+    // with the user's attended past runs scrollable above it; that widget drives
+    // its own controllers, so the old NestedScrollView/floating SliverAppBar
+    // (which relied on a shared ScrollController) is replaced with a fixed header.
+    return Column(
+      children: [
+        _searchBar(context),
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: () => controller.refreshFromBackend(
+              clearLocalTables: true,
+              showOfflineMessage: true,
+            ),
+            displacement: 40.0,
+            child: Column(
           children: [
             // if (controller.showOnlyEventsWithMessages.value)
             //   Container(
@@ -496,22 +498,28 @@ class FutureRunsListPage extends StatelessWidget {
                             // ),
                           ],
                         )
-                      : ListView.builder(
+                      : ScrollablePositionedList.builder(
+                          itemScrollController:
+                              listController.itemScrollController,
+                          itemPositionsListener:
+                              listController.itemPositionsListener,
+                          initialScrollIndex:
+                              listController.initialScrollIndex,
                           padding: const EdgeInsets.only(
                             left: 10,
                             right: 10,
-                            //top: 50,
                             bottom: 50,
                           ),
                           physics: const AlwaysScrollableScrollPhysics(),
-                          //padding: const EdgeInsets.only( bottom: 40.0),
-                          itemCount: listController.filteredRuns.length,
-                          //itemCount: 5,
+                          itemCount: items.length,
                           itemBuilder: (BuildContext context, int index) {
-                            if (listController.filteredRuns[index] is int) {
+                            if (items[index] is PastRunsDivider) {
+                              return _pastRunsDivider();
+                            }
+                            if (items[index] is int) {
                               return Column(
                                 key: ValueKey(
-                                  'hdr-${listController.filteredRuns[index]}',
+                                  'hdr-${items[index]}',
                                 ),
                                 children: <Widget>[
                                   Container(
@@ -538,7 +546,7 @@ class FutureRunsListPage extends StatelessWidget {
                                           Widget
                                         >[const SizedBox(width: 36.0)],
                                         Text(
-                                          listController.filteredRuns[index] ==
+                                          items[index] ==
                                                   1
                                               ? listController
                                                         .showRsvpInstructions
@@ -707,9 +715,9 @@ class FutureRunsListPage extends StatelessWidget {
                                     ),
                                   ),
                                   // add some text if no runs are found within the distance filter
-                                  if ((listController.filteredRuns[index] ==
+                                  if ((items[index] ==
                                           2) &&
-                                      (listController.filteredRuns[index + 1] ==
+                                      (items[index + 1] ==
                                           3)) ...<Widget>[
                                     Padding(
                                       padding: const EdgeInsets.only(
@@ -725,7 +733,7 @@ class FutureRunsListPage extends StatelessWidget {
                                 ],
                               );
                             } else {
-                              final run = listController.filteredRuns[index]
+                              final run = items[index]
                                   as RunDetailsAggregate;
                               return RunListItem(
                                 key: ValueKey(
@@ -747,62 +755,51 @@ class FutureRunsListPage extends StatelessWidget {
             ),
           ],
         ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Divider separating the user's attended past runs (above) from upcoming
+  /// runs (below). The list opens anchored on this row.
+  Widget _pastRunsDivider() {
+    return Container(
+      key: const ValueKey('past-runs-divider'),
+      margin: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.symmetric(vertical: 2.0),
+      color: themeButtonColors,
+      height: 40.0,
+      alignment: Alignment.center,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          const Icon(Icons.arrow_upward, color: Colors.white, size: 18),
+          const SizedBox(width: 8),
+          Text('My past runs', style: ts_titleLarge),
+          const SizedBox(width: 8),
+          const Icon(Icons.arrow_upward, color: Colors.white, size: 18),
+        ],
       ),
     );
   }
 
-  Widget _futurePastButton() {
-    return Obx(() {
-      return !controller.runsToDisplay.value.showFuturePastToggle
-          ? SizedBox(height: 48)
-          : controller.showRunsTimeScopeSpinner.value
-          ? SizedBox(
-              height: 49,
-              width: 70,
-              child: Center(
-                child: HcAppCircularProgressIndicator(
-                  key: UniqueKey(),
-                  color1: Colors.white,
-                  color2: Colors.blue.shade300,
-                  size: 35,
-                ),
-              ),
-            )
-          : ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
-              ),
-              onPressed: () async {
-                controller.runsTimeScope.value =
-                    RunsTimeScope.values[(controller.runsTimeScope.value.next)];
-                controller.runsTimeScopeLoading.value = true;
-                await controller.refreshFromTable(true);
-                controller.runsTimeScopeLoading.value = false;
-              },
-              child: Padding(
-                padding: const EdgeInsets.only(left: 0, right: 0, top: 0),
-                child: controller.runsTimeScope.value == RunsTimeScope.range
-                    ? Padding(
-                        padding: const EdgeInsets.only(left: 5.0),
-                        child: Transform.scale(
-                          scaleX: -1,
-                          child: Icon(
-                            Entypo.back_in_time,
-                            color: Colors.white,
-                            size: 30.0,
-                          ),
-                        ),
-                      )
-                    : controller.runsTimeScope.value == RunsTimeScope.future
-                    ? Icon(Entypo.back_in_time, color: Colors.white, size: 30.0)
-                    : Icon(
-                        Ionicons.calendar_outline,
-                        color: Colors.white,
-                        size: 28.0,
-                      ),
-              ),
-            );
-    });
+  /// Clears an active date-range filter and returns to the default (future)
+  /// view with the inline attended-past section.
+  Widget _clearRangeButton() {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
+      ),
+      onPressed: () async {
+        controller.runsTimeScope.value = RunsTimeScope.future;
+        await controller.refreshFromTable(true);
+      },
+      child: const Padding(
+        padding: EdgeInsets.only(left: 0, right: 0, top: 0, bottom: 0),
+        child: Icon(Icons.close, color: Colors.white, size: 30.0),
+      ),
+    );
   }
 
   Widget _showResetChatCountsButton() {
@@ -907,14 +904,15 @@ class FutureRunsListPage extends StatelessWidget {
 
                 var results = await _showCalendarDialog(context);
 
-                if (results.length == 1) {
+                if (results.isNotEmpty) {
                   controller.dateFilterStart.value = results[0];
-                  controller.dateFilterEnd.value = results[0];
-                  controller.filterRuns(false);
-                } else if (results.length == 2) {
-                  controller.dateFilterStart.value = results[0];
-                  controller.dateFilterEnd.value = results[1];
-                  controller.filterRuns(false);
+                  controller.dateFilterEnd.value = results.length == 2
+                      ? results[1]
+                      : results[0];
+                  // Entering range from the future view: reload so allRuns
+                  // includes past dates, then the date filter is applied.
+                  controller.runsTimeScope.value = RunsTimeScope.range;
+                  await controller.refreshFromTable(true);
                 }
               },
               child: Padding(
