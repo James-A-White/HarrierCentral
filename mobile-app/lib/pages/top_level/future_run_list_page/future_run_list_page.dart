@@ -537,14 +537,12 @@ class FutureRunsListPage extends StatelessWidget {
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: <Widget>[
-                                        if ((listController
-                                                    .filteredRuns[index] ==
+                                        if ((items[index] ==
                                                 2) &&
                                             (Utilities.isConnected())) ...<
                                           Widget
                                         >[const SizedBox(width: 36.0)],
-                                        if ((listController
-                                                    .filteredRuns[index] ==
+                                        if ((items[index] ==
                                                 1) &&
                                             listController
                                                 .showRsvpInstructions) ...<
@@ -557,14 +555,12 @@ class FutureRunsListPage extends StatelessWidget {
                                                         .showRsvpInstructions
                                                     ? 'Learn about RSVPs →'
                                                     : 'My upcoming runs'
-                                              : listController
-                                                        .filteredRuns[index] ==
+                                              : items[index] ==
                                                     2
                                               ? _getDistancePreferenceString(
                                                   'Runs within ',
                                                 )
-                                              : listController
-                                                        .filteredRuns[index] ==
+                                              : items[index] ==
                                                     3
                                               ? 'Runs from Kennels I follow'
                                               : 'All other upcoming runs',
@@ -572,8 +568,7 @@ class FutureRunsListPage extends StatelessWidget {
                                           //textScaleFactor: deviceInfo.textClamp15,
                                           style: ts_titleLarge,
                                         ),
-                                        if ((listController
-                                                    .filteredRuns[index] ==
+                                        if ((items[index] ==
                                                 1) &&
                                             listController
                                                 .showRsvpInstructions) ...<
@@ -598,8 +593,7 @@ class FutureRunsListPage extends StatelessWidget {
                                             ),
                                           ),
                                         ],
-                                        if ((listController
-                                                    .filteredRuns[index] ==
+                                        if ((items[index] ==
                                                 2) &&
                                             (Utilities.isConnected())) ...<
                                           Widget
@@ -720,10 +714,9 @@ class FutureRunsListPage extends StatelessWidget {
                                     ),
                                   ),
                                   // add some text if no runs are found within the distance filter
-                                  if ((items[index] ==
-                                          2) &&
-                                      (items[index + 1] ==
-                                          3)) ...<Widget>[
+                                  if ((items[index] == 2) &&
+                                      (index + 1 < items.length) &&
+                                      (items[index + 1] == 3)) ...<Widget>[
                                     Padding(
                                       padding: const EdgeInsets.only(
                                         top: 22.0,

@@ -1,5 +1,10 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.11.4+1184 (2026-06-30)
+
+### Fixes
+- **Runs list**: fixed the future runs below the "My past runs" divider rendering as a blank grey area. The run-list header cells were indexing the wrong list after the past/future merge and threw while building (which paints blank in a release build); all rows now render correctly.
+
 ## 2.11.3+1183 (2026-06-30)
 
 ### Fixes
