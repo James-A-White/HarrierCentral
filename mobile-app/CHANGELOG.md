@@ -1,5 +1,10 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.11.3+1183 (2026-06-30)
+
+### Fixes
+- **Runs list**: fixed the future runs below the "My past runs" divider showing as an empty grey area — the list now fills the screen and renders all runs.
+
 ## 2.11.2+1182 (2026-06-30)
 
 ### New Features

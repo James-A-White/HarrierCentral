@@ -451,6 +451,11 @@ class FutureRunsListPage extends StatelessWidget {
             //   ),
             Expanded(
               child: Stack(
+                // Tight constraints so the ScrollablePositionedList fills the
+                // viewport. Without this it gets loose constraints from the
+                // Stack and collapses to the height of the few items it builds,
+                // leaving everything below as empty background.
+                fit: StackFit.expand,
                 children: [
                   noRunsAvaiable
                       ? Column(
