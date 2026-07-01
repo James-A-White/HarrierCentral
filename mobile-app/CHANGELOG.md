@@ -1,5 +1,12 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.11.6+1186 (2026-07-01)
+
+### New Features / Improvements
+- **Filter chips**: the runs list view-switcher is replaced by three stackable filter buttons — **My**, **Events** (★), and **Map** — that can be combined in any way. The heading describes the current selection (e.g. "My Events on Map"); tap it for help.
+- **Past runs**: the list now shows all past runs for kennels you follow; turning on **My** narrows both past (attended) and upcoming (RSVP'd) to your own runs.
+- Switching filters re-anchors the list on the "My past runs" divider.
+
 ## 2.11.5+1185 (2026-07-01)
 
 ### New Features / Improvements

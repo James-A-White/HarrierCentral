@@ -21,14 +21,15 @@ class FutureRunListPageController extends GetxController {
   RxList<RunDetailsAggregate> preFilteredRuns = <RunDetailsAggregate>[].obs;
   RxList<dynamic> filteredRuns = [].obs;
 
-  /// Raw attended past runs (AttendenceState >= 3), loaded from the common
-  /// domain alongside [allRuns]. Source for the inline "Past Runs" section.
-  List<RunDetailsAggregate>? allPastAttendedRuns;
+  /// All past runs in the local common domain (followed-kennel history +
+  /// attended), loaded alongside [allRuns]. Source for the inline past section;
+  /// the "My" chip narrows it to the user's own runs.
+  List<RunDetailsAggregate>? allPastRuns;
 
-  /// Search-filtered attended past runs, sorted oldest -> newest so the most
-  /// recent past run sits just above the divider. Merged ahead of
-  /// [filteredRuns] at display time — see [displayRuns].
-  RxList<RunDetailsAggregate> pastAttendedRuns = <RunDetailsAggregate>[].obs;
+  /// Chip- and search-filtered past runs, sorted oldest -> newest so the most
+  /// recent sits just above the divider. Merged ahead of [filteredRuns] at
+  /// display time — see [displayRuns].
+  RxList<RunDetailsAggregate> pastRuns = <RunDetailsAggregate>[].obs;
   RxInt resultCount = 0.obs;
   RxString searchRunsText = ''.obs;
   Rx<RunsToDisplay> runsToDisplay = RunsToDisplay.allRuns.obs;
@@ -51,6 +52,15 @@ class FutureRunListPageController extends GetxController {
   Rx<DateTime> dateFilterEnd = DateTime.now().add(const Duration(days: 7)).obs;
   RxBool multiYearDateFilter = false.obs;
 
+  // ── Filter chips (stackable) ───────────────────────────────────────────────
+  // Independent on/off filters layered over the combined past+future list:
+  //   My     = only the user's runs (RSVP'd upcoming / attended past)
+  //   Events = only special events (geographic scope >= local event)
+  //   Map    = only runs within the Explore map's visible bounds
+  final RxBool filterMy = false.obs;
+  final RxBool filterEvents = false.obs;
+  final RxBool filterMap = false.obs;
+
   // The run list is rendered with a ScrollablePositionedList so it can open
   // anchored on the "Past Runs" divider (index-based) with the user's attended
   // past runs scrollable above it. That list manages its own controllers, so we
@@ -59,30 +69,71 @@ class FutureRunListPageController extends GetxController {
   final ItemPositionsListener itemPositionsListener =
       ItemPositionsListener.create();
 
-  /// Views that show the inline attended-past section (past above the divider,
-  /// future below): the main All Runs list and its Events and Runs-on-Map
-  /// filtered variants. Chats/My Runs keep their single-list behaviour.
-  static bool displaySupportsInlinePast(RunsToDisplay d) =>
-      d == RunsToDisplay.allRuns ||
-      d == RunsToDisplay.events ||
-      d == RunsToDisplay.onMap;
+  /// Chats mode is the only non-chip list mode (reached via the top-bar chat
+  /// badge); it shows unread-chat runs across all time. Otherwise the list is
+  /// driven by the My/Events/Map chips.
+  bool get isChatsMode => runsToDisplay.value == RunsToDisplay.unreadChats;
 
-  /// True when the current view shows the inline attended-past section. Requires
-  /// the future scope (so the future half loads); a date range disables it and
-  /// filters across everything instead.
+  /// True when the combined past+future list (with the "My past runs" divider)
+  /// is shown — i.e. normal chip mode in future scope. A date range or chats
+  /// mode disables it and shows a single flat list instead.
   bool get showsInlinePast =>
-      displaySupportsInlinePast(runsToDisplay.value) &&
-      runsTimeScope.value == RunsTimeScope.future;
+      !isChatsMode && runsTimeScope.value == RunsTimeScope.future;
+
+  bool _isMyRun(RunDetailsAggregate a) =>
+      a.extensions.rsvpState >= 2 || a.extensions.attendenceState >= 3;
+
+  /// Applies the active chip filters (Events, Map, My) to [runs], reusing the
+  /// existing per-view predicates for Events/Map. Map is skipped while the map
+  /// bounds aren't known yet (nothing to filter against — the View Map button
+  /// lets the user set them).
+  List<RunDetailsAggregate> _applyChipFilters(List<RunDetailsAggregate> runs) {
+    var r = runs;
+    if (filterEvents.value) {
+      r = QueryRuns.applyDisplayScopeFilter(r, RunsToDisplay.events);
+    }
+    if (filterMap.value && mapBounds != null) {
+      r = QueryRuns.applyDisplayScopeFilter(
+        r,
+        RunsToDisplay.onMap,
+        mapBounds: mapBounds,
+      );
+    }
+    if (filterMy.value) {
+      r = r.where(_isMyRun).toList();
+    }
+    return r;
+  }
+
+  // ── Titles derived from the active chips ───────────────────────────────────
+  String get _chipNoun => filterEvents.value ? 'Events' : 'Runs';
+  String get _chipMapSuffix => filterMap.value ? ' on Map' : '';
+
+  /// Upcoming-half title, e.g. "All Runs", "My Events", "My Runs on Map".
+  String get futureSectionTitle =>
+      '${filterMy.value ? 'My' : 'All'} $_chipNoun$_chipMapSuffix';
+
+  /// Past-half title, e.g. "Past Runs", "My past Events". Also the divider label.
+  String get pastSectionTitle =>
+      '${filterMy.value ? 'My past' : 'Past'} $_chipNoun$_chipMapSuffix';
+
+  /// The middle description text: chats label, or the section the user is
+  /// scrolled into (mirrors the divider label when in the past section).
+  String get barTitle {
+    if (isChatsMode) return 'Unseen Chats';
+    if (showsInlinePast && isViewingPastSection.value) return pastSectionTitle;
+    return futureSectionTitle;
+  }
 
   /// The list actually rendered: attended past (oldest -> newest) + divider +
   /// future. Falls back to [filteredRuns] when the inline-past section doesn't
   /// apply or there are no past attended runs.
   List<dynamic> get displayRuns {
-    if (!showsInlinePast || pastAttendedRuns.isEmpty) {
+    if (!showsInlinePast || pastRuns.isEmpty) {
       return filteredRuns;
     }
     return <dynamic>[
-      ...pastAttendedRuns,
+      ...pastRuns,
       const PastRunsDivider(),
       ...filteredRuns,
     ];
@@ -91,22 +142,40 @@ class FutureRunListPageController extends GetxController {
   /// Index the list should open at: the divider, so the next run sits just
   /// below it and the past runs are scrollable above. 0 when there's no past.
   int get initialScrollIndex =>
-      (showsInlinePast && pastAttendedRuns.isNotEmpty)
-      ? pastAttendedRuns.length
+      (showsInlinePast && pastRuns.isNotEmpty)
+      ? pastRuns.length
       : 0;
 
-  /// The time scope to load when switching to [display]. Unseen Chats spans
-  /// ALL synced runs (past + future) so unread chats surface across the user's
-  /// full history, not just recent/upcoming; other views default per
-  /// [RunsToDisplay.defaultViewIsFuture].
-  RunsTimeScope scopeForDisplay(RunsToDisplay display) {
-    if (display == RunsToDisplay.unreadChats) return RunsTimeScope.all;
-    // Inline-past views load the future half in future scope; the attended-past
-    // half is loaded separately. (Runs-on-Map used to load in past scope.)
-    if (displaySupportsInlinePast(display)) return RunsTimeScope.future;
-    return display.defaultViewIsFuture
-        ? RunsTimeScope.future
-        : RunsTimeScope.past;
+  /// Toggles a filter chip and re-filters. In normal mode the chips are pure
+  /// in-memory filters over already-loaded data, so this just re-filters and
+  /// re-anchors on the divider. Toggling a chip while in chats mode leaves it
+  /// (which changes scope all -> future), so a reload is needed there.
+  Future<void> toggleChip(RxBool chip) async {
+    final wasChatsMode = isChatsMode;
+    if (wasChatsMode) {
+      runsToDisplay.value = RunsToDisplay.allRuns;
+      runsTimeScope.value = RunsTimeScope.future;
+    }
+    chip.value = !chip.value;
+    if (wasChatsMode) {
+      await refreshFromTable(true);
+    } else {
+      filterRuns(false);
+    }
+    scrollToInitialAnchor();
+  }
+
+  /// Jumps the list to the "My past runs" divider (or the top when there's no
+  /// past section) after the next frame. Used when switching views so the
+  /// divider lands at the top of the viewport with the next run just below —
+  /// [initialScrollIndex] only auto-applies on the list's first build, not on
+  /// later view switches where the widget's state persists.
+  void scrollToInitialAnchor() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (itemScrollController.isAttached) {
+        itemScrollController.jumpTo(index: initialScrollIndex);
+      }
+    });
   }
 
   /// Whether the topmost visible row is in the attended-past section (above the
@@ -118,7 +187,7 @@ class FutureRunListPageController extends GetxController {
   /// Updates [isViewingPastSection] from the list's current item positions.
   /// Cheap and guarded so it only flips state when the boundary is crossed.
   void _updateViewingSection() {
-    if (!showsInlinePast || pastAttendedRuns.isEmpty) {
+    if (!showsInlinePast || pastRuns.isEmpty) {
       if (isViewingPastSection.value) isViewingPastSection.value = false;
       return;
     }
@@ -127,8 +196,8 @@ class FutureRunListPageController extends GetxController {
     final firstVisible = positions
         .map((p) => p.index)
         .reduce((a, b) => a < b ? a : b);
-    // Indices below the divider (pastAttendedRuns.length) are past runs.
-    final viewingPast = firstVisible < pastAttendedRuns.length;
+    // Indices below the divider (pastRuns.length) are past runs.
+    final viewingPast = firstVisible < pastRuns.length;
     if (isViewingPastSection.value != viewingPast) {
       isViewingPastSection.value = viewingPast;
     }
@@ -273,7 +342,7 @@ class FutureRunListPageController extends GetxController {
       runsTimeScope: runsTimeScope.value,
       runsToDisplay: runsToDisplay.value,
     );
-    await _loadPastAttendedRuns();
+    await _loadPastRuns();
     _applyDataUpdate(newAllRuns);
   }
 
@@ -486,7 +555,7 @@ class FutureRunListPageController extends GetxController {
         runsToDisplay: runsToDisplay.value,
       );
       debugPrint('[BOOT] refreshFromTable: getRunDetailsAggregates done: ${DateTime.now().millisecondsSinceEpoch}ms — ${allRuns?.length ?? 0} runs');
-      await _loadPastAttendedRuns();
+      await _loadPastRuns();
       debugPrint('[BOOT] refreshFromTable: calling filterRuns: ${DateTime.now().millisecondsSinceEpoch}ms');
       filterRuns(false);
       debugPrint('[BOOT] refreshFromTable: filterRuns done: ${DateTime.now().millisecondsSinceEpoch}ms — filteredRuns=${filteredRuns.length}');
@@ -494,22 +563,19 @@ class FutureRunListPageController extends GetxController {
     return;
   }
 
-  /// Loads the user's attended past runs (AttendenceState >= 3) from the common
-  /// domain. These are always fully synced locally (HEM + events), so no backend
-  /// trip is needed. Only relevant for the All Runs view; cleared otherwise.
-  Future<void> _loadPastAttendedRuns() async {
-    if (!displaySupportsInlinePast(runsToDisplay.value)) {
-      allPastAttendedRuns = <RunDetailsAggregate>[];
+  /// Loads all past runs in the local common domain (no attendance filter — the
+  /// "My" chip does that narrowing). Fully synced locally, so no backend trip.
+  /// Cleared in chats mode (which shows its own all-time list).
+  Future<void> _loadPastRuns() async {
+    if (isChatsMode) {
+      allPastRuns = <RunDetailsAggregate>[];
       return;
     }
-    final past = await QueryRuns.getRunDetailsAggregates(
+    allPastRuns = await QueryRuns.getRunDetailsAggregates(
       true,
       runsTimeScope: RunsTimeScope.past,
       runsToDisplay: RunsToDisplay.allRuns,
     );
-    allPastAttendedRuns = past
-        .where((RunDetailsAggregate r) => r.extensions.attendenceState >= 3)
-        .toList();
   }
 
   /// filterRuns() provides a complex filtering (search) option
@@ -537,16 +603,28 @@ class FutureRunListPageController extends GetxController {
       }
 
       debugPrint('[BOOT] filterRuns: doRunsFilter start: ${DateTime.now().millisecondsSinceEpoch}ms');
-      preFilteredRuns.value = QueryRuns.doRunsFilter(
-        allRuns ?? <RunDetailsAggregate>[],
-        runsToDisplay.value,
-        runsTimeScope.value,
-        mapBounds: mapBounds,
-        unseenChats: unseenChats,
-        dateRangeStart: dateFilterStart.value,
-        dateRangeEnd: dateFilterEnd.value,
-        useDatesForAllYears: multiYearDateFilter.value,
-      );
+      if (isChatsMode) {
+        // Chats: keep the dedicated unread-chats predicate over all-time runs.
+        preFilteredRuns.value = QueryRuns.doRunsFilter(
+          allRuns ?? <RunDetailsAggregate>[],
+          RunsToDisplay.unreadChats,
+          runsTimeScope.value,
+          mapBounds: mapBounds,
+          unseenChats: unseenChats,
+        );
+      } else {
+        // Normal: doRunsFilter does the time/date-range filter only (allRuns
+        // view = no view predicate), then the chips are layered on top.
+        final timeFiltered = QueryRuns.doRunsFilter(
+          allRuns ?? <RunDetailsAggregate>[],
+          RunsToDisplay.allRuns,
+          runsTimeScope.value,
+          dateRangeStart: dateFilterStart.value,
+          dateRangeEnd: dateFilterEnd.value,
+          useDatesForAllYears: multiYearDateFilter.value,
+        );
+        preFilteredRuns.value = _applyChipFilters(timeFiltered);
+      }
       debugPrint('[BOOT] filterRuns: doRunsFilter done: ${DateTime.now().millisecondsSinceEpoch}ms — preFiltered=${preFilteredRuns.length}');
     }
 
@@ -649,30 +727,24 @@ class FutureRunListPageController extends GetxController {
       resultCount.value = filteredRuns.length;
     }
 
-    // Build the inline attended-past list (All Runs / future view only). Apply
-    // the same search-text filter as the future list, then sort oldest -> newest
-    // so the most recent past run sits just above the divider.
+    // Build the inline past section. Apply the SAME chip filters as the future
+    // list (Events / Map / My), then search, then sort oldest -> newest so the
+    // most recent sits just above the divider.
     if (showsInlinePast) {
-      // Filter the attended-past section by the SAME view predicate as the
-      // future list (Events -> event scope, Runs-on-Map -> map bounds), then
-      // search-filter, then sort oldest -> newest so the most recent sits just
-      // above the divider.
-      final viewFiltered = QueryRuns.applyDisplayScopeFilter(
-        allPastAttendedRuns ?? <RunDetailsAggregate>[],
-        runsToDisplay.value,
-        mapBounds: mapBounds,
+      final chipFiltered = _applyChipFilters(
+        allPastRuns ?? <RunDetailsAggregate>[],
       );
       final past = QueryRuns.doRunsSearchTextFilter(
         searchRunsText.value,
-        viewFiltered,
+        chipFiltered,
       ).whereType<RunDetailsAggregate>().toList();
       past.sort(
         (a, b) =>
             a.event.eventStartDatetime.compareTo(b.event.eventStartDatetime),
       );
-      pastAttendedRuns.value = past;
-    } else if (pastAttendedRuns.isNotEmpty) {
-      pastAttendedRuns.clear();
+      pastRuns.value = past;
+    } else if (pastRuns.isNotEmpty) {
+      pastRuns.clear();
     }
 
     debugPrint('[BOOT] filterRuns: update(runList) start: ${DateTime.now().millisecondsSinceEpoch}ms');
@@ -737,7 +809,7 @@ class FutureRunListPageController extends GetxController {
       runsToDisplay: runsToDisplay.value,
     );
 
-    await _loadPastAttendedRuns();
+    await _loadPastRuns();
     _applyDataUpdate(newAllRuns);
 
     await bannerTimer;
@@ -798,8 +870,8 @@ class FutureRunListPageController extends GetxController {
     // in _previousRuns, which holds future runs only), so start counting after
     // the divider. When anchored on the divider this is 0 — the pill only fires
     // once genuinely new upcoming runs land above the user's position.
-    final int futureStart = (showsInlinePast && pastAttendedRuns.isNotEmpty)
-        ? pastAttendedRuns.length + 1
+    final int futureStart = (showsInlinePast && pastRuns.isNotEmpty)
+        ? pastRuns.length + 1
         : 0;
     int addedCount = 0;
     for (int i = futureStart; i < firstVisible && i < items.length; i++) {

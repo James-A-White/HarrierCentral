@@ -227,40 +227,37 @@ class FutureRunsListPage extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SizedBox(width: 10),
-                    _runsToDisplayButton(),
+                    const SizedBox(width: 8),
+                    // Left: stackable filter chips.
+                    _filterChip(state: controller.filterMy, label: 'My'),
+                    const SizedBox(width: 6),
+                    _filterChip(
+                      state: controller.filterEvents,
+                      icon: MaterialCommunityIcons.star,
+                    ),
+                    const SizedBox(width: 6),
+                    // Middle: description text; tap for filter help (self-
+                    // describing, so no separate info button).
                     Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 7.0),
-                        child: Center(
+                      child: GestureDetector(
+                        onTap: _showFilterHelp,
+                        behavior: HitTestBehavior.opaque,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 7.0),
+                          child: Center(
                           child: Column(
                             children: [
                               // Obx so the title repaints on scroll (when
                               // isViewingPastSection flips) — the rest of the
                               // header only rebuilds via GetBuilder.
+                              // Filter-state description; when scrolled into the
+                              // past section it mirrors the divider label.
                               Obx(
                                 () => AutoSizeText(
+                                  controller.barTitle,
                                   minFontSize: 5,
                                   maxFontSize: 24,
                                   maxLines: 1,
-                                  // In the inline-past view the title tracks
-                                  // which section the user has scrolled into;
-                                  // otherwise the standard "<scope> Runs" label.
-                                  // Section-aware title only on the main All Runs
-                                  // view; Events / Runs-on-Map keep their own
-                                  // labels (the divider already marks the past
-                                  // section there).
-                                  (controller.runsToDisplay.value ==
-                                              RunsToDisplay.allRuns &&
-                                          controller.showsInlinePast)
-                                      ? (controller.isViewingPastSection.value
-                                            ? 'My past runs'
-                                            : 'Future Runs')
-                                      : controller.runsToDisplay.value.label
-                                            .replaceAll(
-                                              '~',
-                                              '${controller.runsTimeScope.value.label} ',
-                                            ),
                                   style: ts_titleLarge,
                                 ),
                               ),
@@ -298,44 +295,40 @@ class FutureRunsListPage extends StatelessWidget {
                           ),
                         ),
                       ),
-                    ),
-                    if (controller.runsToDisplay.value == RunsToDisplay.onMap)
-                      SizedBox(width: 42, child: _showMapButton()),
-
-                    if (controller.runsToDisplay.value ==
-                        RunsToDisplay.unreadChats)
-                      SizedBox(width: 42, child: _showResetChatCountsButton()),
-
-                    // Date-range filter (replaces the old future/past toggle).
-                    ((controller.runsToDisplay.value != RunsToDisplay.onMap) &&
-                            (controller.runsToDisplay.value !=
-                                RunsToDisplay.unreadChats))
-                        ? SizedBox(
-                            width: 42,
-                            child: _showCalendarButton(context),
-                          )
-                        : SizedBox.shrink(),
-                    SizedBox(width: 5),
-                    if (controller.runsTimeScope.value != RunsTimeScope.range)
-                      GestureDetector(
-                        onTap: () async {
-                          await Utilities.showAlert(
-                            controller.runsToDisplay.value.helpTitle,
-                            controller.runsToDisplay.value.helpText,
-                            'OK',
-                          );
-                        },
-                        child: SizedBox(
-                          height: 33,
-                          width: 42,
-                          child: Image.asset('images/icons/info_button.png'),
-                        ),
                       ),
-
-                    // Clear an active date range and return to the default view.
-                    if (controller.runsTimeScope.value == RunsTimeScope.range)
-                      SizedBox(width: 42, child: _clearRangeButton()),
-                    SizedBox(width: 10),
+                    ),
+                    const SizedBox(width: 6),
+                    // Right: View Map (only when the Map chip is on), Map chip,
+                    // and the date filter (or a chats "mark read" button).
+                    Obx(
+                      () => controller.filterMap.value
+                          ? Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child: SizedBox(
+                                width: 42,
+                                child: _showMapButton(),
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                    _filterChip(state: controller.filterMap, label: 'Map'),
+                    const SizedBox(width: 6),
+                    Obx(() {
+                      if (controller.isChatsMode) {
+                        return SizedBox(
+                          width: 42,
+                          child: _showResetChatCountsButton(),
+                        );
+                      }
+                      return controller.runsTimeScope.value ==
+                              RunsTimeScope.range
+                          ? SizedBox(width: 42, child: _clearRangeButton())
+                          : SizedBox(
+                              width: 42,
+                              child: _showCalendarButton(context),
+                            );
+                    }),
+                    const SizedBox(width: 8),
                   ],
                 ),
                 // SizedBox(height: 5.0),
@@ -781,10 +774,13 @@ class FutureRunsListPage extends StatelessWidget {
   /// Divider separating the user's attended past runs (above) from upcoming
   /// runs (below). The list opens anchored on this row.
   Widget _pastRunsDivider() {
+    // Styling kept byte-for-byte identical to the run-classification header
+    // bars (margin/padding/color/height/alignment) so it reads as the same
+    // element type.
     return Container(
       key: const ValueKey('past-runs-divider'),
       margin: const EdgeInsets.only(top: 10),
-      padding: const EdgeInsets.symmetric(vertical: 2.0),
+      padding: const EdgeInsets.only(top: 2.0),
       color: themeButtonColors,
       height: 40.0,
       alignment: Alignment.center,
@@ -793,7 +789,8 @@ class FutureRunsListPage extends StatelessWidget {
         children: <Widget>[
           const Icon(Icons.arrow_upward, color: Colors.white, size: 18),
           const SizedBox(width: 8),
-          Text('My past runs', style: ts_titleLarge),
+          // Mirrors the middle description text (e.g. "My past Events").
+          Text(controller.pastSectionTitle, style: ts_titleLarge),
           const SizedBox(width: 8),
           const Icon(Icons.arrow_upward, color: Colors.white, size: 18),
         ],
@@ -949,30 +946,49 @@ class FutureRunsListPage extends StatelessWidget {
     });
   }
 
-  Widget _runsToDisplayButton() {
-    return Center(
-      child: PillArrowButtons(
-        onLeftPressed: () async {
-          controller.runsToDisplay.value =
-              RunsToDisplay.values[(controller.runsToDisplay.value.previous)];
-          controller.runsTimeScope.value = controller.scopeForDisplay(
-            controller.runsToDisplay.value,
-          );
-          controller.runsToDisplayLoading.value = true;
-          await controller.refreshFromTable(true);
-          controller.runsToDisplayLoading.value = false;
-        },
-        onRightPressed: () async {
-          controller.runsToDisplay.value =
-              RunsToDisplay.values[(controller.runsToDisplay.value.next)];
-          controller.runsTimeScope.value = controller.scopeForDisplay(
-            controller.runsToDisplay.value,
-          );
-          controller.runsToDisplayLoading.value = true;
-          await controller.refreshFromTable(true);
-          controller.runsToDisplayLoading.value = false;
-        },
-      ),
+  /// A stackable filter chip. Filled with [themeButtonColors] when on, outlined
+  /// when off. Shows [label] text or [icon]. Tapping toggles it via the
+  /// controller (which re-filters and re-anchors).
+  Widget _filterChip({
+    required RxBool state,
+    String? label,
+    IconData? icon,
+  }) {
+    return Obx(() {
+      final on = state.value;
+      return GestureDetector(
+        onTap: () => controller.toggleChip(state),
+        child: Container(
+          height: 40,
+          constraints: const BoxConstraints(minWidth: 42),
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          decoration: BoxDecoration(
+            color: on ? themeButtonColors : Colors.white24,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: on ? Colors.white : Colors.white54,
+              width: 1.0,
+            ),
+          ),
+          alignment: Alignment.center,
+          child: label != null
+              ? Text(label, style: ts_titleLarge)
+              : Icon(icon, color: Colors.white, size: 22),
+        ),
+      );
+    });
+  }
+
+  /// Explains the filter chips (shown when the description text is tapped).
+  Future<void> _showFilterHelp() async {
+    await Utilities.showAlert(
+      'Filtering runs',
+      'Tap the buttons to narrow the list — they stack, so you can combine them:\n\n'
+          '• My — only your runs (upcoming ones you\'ve RSVP\'d to, plus past ones you attended).\n'
+          '• ★ Events — only special events.\n'
+          '• Map — only runs within the area shown on the Explore map.\n\n'
+          'The heading shows what\'s currently selected.',
+      'OK',
     );
   }
 
