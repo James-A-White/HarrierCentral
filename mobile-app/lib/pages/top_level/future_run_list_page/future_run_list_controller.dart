@@ -59,11 +59,19 @@ class FutureRunListPageController extends GetxController {
   final ItemPositionsListener itemPositionsListener =
       ItemPositionsListener.create();
 
-  /// True only for the main "All Runs" + future view, where the attended past
-  /// runs are shown inline above the divider. Other views (range, My Runs,
-  /// Events, map, chats) keep their existing single-list behaviour.
+  /// Views that show the inline attended-past section (past above the divider,
+  /// future below): the main All Runs list and its Events and Runs-on-Map
+  /// filtered variants. Chats/My Runs keep their single-list behaviour.
+  static bool displaySupportsInlinePast(RunsToDisplay d) =>
+      d == RunsToDisplay.allRuns ||
+      d == RunsToDisplay.events ||
+      d == RunsToDisplay.onMap;
+
+  /// True when the current view shows the inline attended-past section. Requires
+  /// the future scope (so the future half loads); a date range disables it and
+  /// filters across everything instead.
   bool get showsInlinePast =>
-      runsToDisplay.value == RunsToDisplay.allRuns &&
+      displaySupportsInlinePast(runsToDisplay.value) &&
       runsTimeScope.value == RunsTimeScope.future;
 
   /// The list actually rendered: attended past (oldest -> newest) + divider +
@@ -87,6 +95,45 @@ class FutureRunListPageController extends GetxController {
       ? pastAttendedRuns.length
       : 0;
 
+  /// The time scope to load when switching to [display]. Unseen Chats spans
+  /// ALL synced runs (past + future) so unread chats surface across the user's
+  /// full history, not just recent/upcoming; other views default per
+  /// [RunsToDisplay.defaultViewIsFuture].
+  RunsTimeScope scopeForDisplay(RunsToDisplay display) {
+    if (display == RunsToDisplay.unreadChats) return RunsTimeScope.all;
+    // Inline-past views load the future half in future scope; the attended-past
+    // half is loaded separately. (Runs-on-Map used to load in past scope.)
+    if (displaySupportsInlinePast(display)) return RunsTimeScope.future;
+    return display.defaultViewIsFuture
+        ? RunsTimeScope.future
+        : RunsTimeScope.past;
+  }
+
+  /// Whether the topmost visible row is in the attended-past section (above the
+  /// divider). Drives the page title — "Past Runs" while scrolled into history,
+  /// "Future Runs" otherwise. Maintained by [_updateViewingSection]; only
+  /// meaningful when [showsInlinePast].
+  final RxBool isViewingPastSection = false.obs;
+
+  /// Updates [isViewingPastSection] from the list's current item positions.
+  /// Cheap and guarded so it only flips state when the boundary is crossed.
+  void _updateViewingSection() {
+    if (!showsInlinePast || pastAttendedRuns.isEmpty) {
+      if (isViewingPastSection.value) isViewingPastSection.value = false;
+      return;
+    }
+    final positions = itemPositionsListener.itemPositions.value;
+    if (positions.isEmpty) return;
+    final firstVisible = positions
+        .map((p) => p.index)
+        .reduce((a, b) => a < b ? a : b);
+    // Indices below the divider (pastAttendedRuns.length) are past runs.
+    final viewingPast = firstVisible < pastAttendedRuns.length;
+    if (isViewingPastSection.value != viewingPast) {
+      isViewingPastSection.value = viewingPast;
+    }
+  }
+
   LatLngBounds? mapBounds;
 
   //RxBool showOnlyEventsWithMessages = false.obs;
@@ -106,6 +153,7 @@ class FutureRunListPageController extends GetxController {
     _displayLoadingWorker?.dispose();
     _timeScopeLoadingWorker?.dispose();
     _dataChangeSub?.cancel();
+    itemPositionsListener.itemPositions.removeListener(_updateViewingSection);
     searchController.dispose();
     searchFocusNode.dispose();
     flashingRunIds.clear();
@@ -115,6 +163,8 @@ class FutureRunListPageController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+
+    itemPositionsListener.itemPositions.addListener(_updateViewingSection);
 
     _searchWorker = debounce<String>(
       searchRunsText,
@@ -448,7 +498,7 @@ class FutureRunListPageController extends GetxController {
   /// domain. These are always fully synced locally (HEM + events), so no backend
   /// trip is needed. Only relevant for the All Runs view; cleared otherwise.
   Future<void> _loadPastAttendedRuns() async {
-    if (runsToDisplay.value != RunsToDisplay.allRuns) {
+    if (!displaySupportsInlinePast(runsToDisplay.value)) {
       allPastAttendedRuns = <RunDetailsAggregate>[];
       return;
     }
@@ -603,9 +653,18 @@ class FutureRunListPageController extends GetxController {
     // the same search-text filter as the future list, then sort oldest -> newest
     // so the most recent past run sits just above the divider.
     if (showsInlinePast) {
+      // Filter the attended-past section by the SAME view predicate as the
+      // future list (Events -> event scope, Runs-on-Map -> map bounds), then
+      // search-filter, then sort oldest -> newest so the most recent sits just
+      // above the divider.
+      final viewFiltered = QueryRuns.applyDisplayScopeFilter(
+        allPastAttendedRuns ?? <RunDetailsAggregate>[],
+        runsToDisplay.value,
+        mapBounds: mapBounds,
+      );
       final past = QueryRuns.doRunsSearchTextFilter(
         searchRunsText.value,
-        allPastAttendedRuns ?? <RunDetailsAggregate>[],
+        viewFiltered,
       ).whereType<RunDetailsAggregate>().toList();
       past.sort(
         (a, b) =>
@@ -734,8 +793,16 @@ class FutureRunListPageController extends GetxController {
     }
 
     final items = displayRuns;
+    // Only the future section feeds the "new runs above" pill. The attended-past
+    // section above the divider is never "new" (and its baseline isn't tracked
+    // in _previousRuns, which holds future runs only), so start counting after
+    // the divider. When anchored on the divider this is 0 — the pill only fires
+    // once genuinely new upcoming runs land above the user's position.
+    final int futureStart = (showsInlinePast && pastAttendedRuns.isNotEmpty)
+        ? pastAttendedRuns.length + 1
+        : 0;
     int addedCount = 0;
-    for (int i = 0; i < firstVisible && i < items.length; i++) {
+    for (int i = futureStart; i < firstVisible && i < items.length; i++) {
       final item = items[i];
       if (item is RunDetailsAggregate) {
         final id = normalizeUuid(item.event.eventId);

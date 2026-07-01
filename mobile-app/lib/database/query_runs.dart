@@ -232,51 +232,12 @@ class QueryRuns {
       timeFilteredRuns = allRuns.toList();
     }
 
-    List<RunDetailsAggregate> scopeFilteredRuns = <RunDetailsAggregate>[];
-
-    switch (runsToDisplay) {
-      case RunsToDisplay.allRuns:
-        scopeFilteredRuns = timeFilteredRuns.toList();
-        break;
-      case RunsToDisplay.myRuns:
-        scopeFilteredRuns = timeFilteredRuns
-            .where((RunDetailsAggregate a) => a.extensions.rsvpState >= 2)
-            .toList();
-        break;
-      case RunsToDisplay.unreadChats:
-        if (unseenChats != null) {
-          scopeFilteredRuns = timeFilteredRuns.where((run) {
-            final count = unseenChats[run.event.publicEventId]?.value ?? 0;
-            return count > 0;
-          }).toList();
-        } else {
-          scopeFilteredRuns = timeFilteredRuns.toList();
-        }
-        break;
-      case RunsToDisplay.events:
-        scopeFilteredRuns = timeFilteredRuns
-            .where(
-              (RunDetailsAggregate a) =>
-                  a.event.eventGeographicScope >= EventType.localEvent.index,
-            )
-            .toList();
-        break;
-      case RunsToDisplay.onMap:
-        scopeFilteredRuns = timeFilteredRuns.where((RunDetailsAggregate a) {
-          if (mapBounds != null &&
-              a.extensions.evtLat != null &&
-              a.extensions.evtLon != null) {
-            return a.extensions.evtLat! >= mapBounds.south &&
-                a.extensions.evtLat! <= mapBounds.north &&
-                a.extensions.evtLon! >= mapBounds.west &&
-                a.extensions.evtLon! <= mapBounds.east;
-          }
-          return false;
-        }).toList();
-        break;
-    }
-
-    return scopeFilteredRuns;
+    return applyDisplayScopeFilter(
+      timeFilteredRuns,
+      runsToDisplay,
+      mapBounds: mapBounds,
+      unseenChats: unseenChats,
+    );
 
     // List<RunDetailsAggregate> searchTextFilteredRuns = <RunDetailsAggregate>[];
 
@@ -336,6 +297,52 @@ class QueryRuns {
       input.minute,
       input.second,
     );
+  }
+
+  /// Applies only the [runsToDisplay] view filter (no time filter) to [runs].
+  /// Extracted from [doRunsFilter] so the same predicate can also filter the
+  /// inline attended-past section to match the current view (events / on-map).
+  static List<RunDetailsAggregate> applyDisplayScopeFilter(
+    List<RunDetailsAggregate> runs,
+    RunsToDisplay runsToDisplay, {
+    LatLngBounds? mapBounds,
+    Map<String, RxInt>? unseenChats,
+  }) {
+    switch (runsToDisplay) {
+      case RunsToDisplay.allRuns:
+        return runs.toList();
+      case RunsToDisplay.myRuns:
+        return runs
+            .where((RunDetailsAggregate a) => a.extensions.rsvpState >= 2)
+            .toList();
+      case RunsToDisplay.unreadChats:
+        if (unseenChats != null) {
+          return runs.where((run) {
+            final count = unseenChats[run.event.publicEventId]?.value ?? 0;
+            return count > 0;
+          }).toList();
+        }
+        return runs.toList();
+      case RunsToDisplay.events:
+        return runs
+            .where(
+              (RunDetailsAggregate a) =>
+                  a.event.eventGeographicScope >= EventType.localEvent.index,
+            )
+            .toList();
+      case RunsToDisplay.onMap:
+        return runs.where((RunDetailsAggregate a) {
+          if (mapBounds != null &&
+              a.extensions.evtLat != null &&
+              a.extensions.evtLon != null) {
+            return a.extensions.evtLat! >= mapBounds.south &&
+                a.extensions.evtLat! <= mapBounds.north &&
+                a.extensions.evtLon! >= mapBounds.west &&
+                a.extensions.evtLon! <= mapBounds.east;
+          }
+          return false;
+        }).toList();
+    }
   }
 
   static List<dynamic> doRunsSearchTextFilter(

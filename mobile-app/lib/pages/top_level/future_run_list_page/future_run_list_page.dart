@@ -235,15 +235,34 @@ class FutureRunsListPage extends StatelessWidget {
                         child: Center(
                           child: Column(
                             children: [
-                              AutoSizeText(
-                                minFontSize: 5,
-                                maxFontSize: 24,
-                                maxLines: 1,
-                                controller.runsToDisplay.value.label.replaceAll(
-                                  '~',
-                                  '${controller.runsTimeScope.value.label} ',
+                              // Obx so the title repaints on scroll (when
+                              // isViewingPastSection flips) — the rest of the
+                              // header only rebuilds via GetBuilder.
+                              Obx(
+                                () => AutoSizeText(
+                                  minFontSize: 5,
+                                  maxFontSize: 24,
+                                  maxLines: 1,
+                                  // In the inline-past view the title tracks
+                                  // which section the user has scrolled into;
+                                  // otherwise the standard "<scope> Runs" label.
+                                  // Section-aware title only on the main All Runs
+                                  // view; Events / Runs-on-Map keep their own
+                                  // labels (the divider already marks the past
+                                  // section there).
+                                  (controller.runsToDisplay.value ==
+                                              RunsToDisplay.allRuns &&
+                                          controller.showsInlinePast)
+                                      ? (controller.isViewingPastSection.value
+                                            ? 'My past runs'
+                                            : 'Future Runs')
+                                      : controller.runsToDisplay.value.label
+                                            .replaceAll(
+                                              '~',
+                                              '${controller.runsTimeScope.value.label} ',
+                                            ),
+                                  style: ts_titleLarge,
                                 ),
-                                style: ts_titleLarge,
                               ),
                               if (controller.runsTimeScope.value ==
                                   RunsTimeScope.range)
@@ -936,9 +955,9 @@ class FutureRunsListPage extends StatelessWidget {
         onLeftPressed: () async {
           controller.runsToDisplay.value =
               RunsToDisplay.values[(controller.runsToDisplay.value.previous)];
-          controller.runsToDisplay.value.defaultViewIsFuture
-              ? controller.runsTimeScope.value = RunsTimeScope.future
-              : controller.runsTimeScope.value = RunsTimeScope.past;
+          controller.runsTimeScope.value = controller.scopeForDisplay(
+            controller.runsToDisplay.value,
+          );
           controller.runsToDisplayLoading.value = true;
           await controller.refreshFromTable(true);
           controller.runsToDisplayLoading.value = false;
@@ -946,9 +965,9 @@ class FutureRunsListPage extends StatelessWidget {
         onRightPressed: () async {
           controller.runsToDisplay.value =
               RunsToDisplay.values[(controller.runsToDisplay.value.next)];
-          controller.runsToDisplay.value.defaultViewIsFuture
-              ? controller.runsTimeScope.value = RunsTimeScope.future
-              : controller.runsTimeScope.value = RunsTimeScope.past;
+          controller.runsTimeScope.value = controller.scopeForDisplay(
+            controller.runsToDisplay.value,
+          );
           controller.runsToDisplayLoading.value = true;
           await controller.refreshFromTable(true);
           controller.runsToDisplayLoading.value = false;

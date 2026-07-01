@@ -21,7 +21,9 @@ class RunAndKennelMapController extends GetxController {
   // ---------------------------------------------------------------------------
   // Reactive state
   // ---------------------------------------------------------------------------
-  final viewMode = RunLocationsViewMode.recent.obs;
+  // Open on "all" so the map shows every run — including runs the user has
+  // attended in the past — not just the recent/upcoming window.
+  final viewMode = RunLocationsViewMode.all.obs;
   final mapCenterOption = centerOnCurrentLocation.value.obs;
   final homeKennelLat = RxnDouble();
   final homeKennelLon = RxnDouble();

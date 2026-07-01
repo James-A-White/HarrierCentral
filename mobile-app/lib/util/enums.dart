@@ -314,13 +314,16 @@ enum RunsToDisplay {
   allRuns(
     0,
     '~Runs',
-    1,
+    2, // next: skip myRuns (removed from the cycle) → unreadChats
     4,
     true,
     true,
     'All Runs View',
     'Welcome to the default view! Here you’ll find all upcoming Hash runs from across the globe, sorted so it’s easy to spot what’s happening near you — at home or while traveling.\r\n\r\nSwitch to past runs to browse your Kennels’ history: you’ll see every run from the Kennels you follow, plus the last 30 days of runs from all others. Use the search tool to dig even deeper into your Hashing adventures!',
   ),
+  // myRuns is retained as a value (to avoid shifting ids/ordinals used for
+  // values[] lookups) but is ORPHANED from the left/right cycle — nothing
+  // navigates to it. The main All Runs view + inline "My past runs" cover it.
   myRuns(
     1,
     'My ~Runs',
@@ -335,7 +338,7 @@ enum RunsToDisplay {
     2,
     'Unseen Chats',
     3,
-    1,
+    0, // previous: skip myRuns → allRuns
     false,
     false,
     'Unread Chats View',

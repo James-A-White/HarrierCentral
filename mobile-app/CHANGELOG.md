@@ -1,5 +1,16 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.11.5+1185 (2026-07-01)
+
+### New Features / Improvements
+- **Runs list — inline past runs everywhere**: the Events and Runs-on-Map views now show your attended past runs above a "My past runs" divider with upcoming runs below, matching the main Runs list. The page title tracks which section you're scrolled into.
+- **Map opens on all runs**: the Explore map now opens showing every run — including runs you've attended in the past — instead of only the recent/upcoming window.
+- **Unseen Chats across all your runs**: the Unseen Chats view now surfaces unread chats for your full run history (past and future), not just recent/upcoming.
+- **Simpler view switcher**: removed the separate "My Runs" view (now covered by the main list + inline past runs).
+
+### Fixes
+- **Runs list**: fixed a false "N new runs" indicator that was counting your past runs each time the app came to the foreground.
+
 ## 2.11.4+1184 (2026-06-30)
 
 ### Fixes
