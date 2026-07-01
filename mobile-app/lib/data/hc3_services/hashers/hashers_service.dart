@@ -276,10 +276,12 @@ class HashersService extends BaseService {
           // there is also a kennelId
           await tableModel.syncEventAdminService
               .updateSqlTablesWithResultsFromBackendApiCall(responseBody);
+          await _syncHashersIntoCommon();
         } else if ((kennelId != null) && (kennelId != GUID_EMPTY)) {
           // if we get here, we have a kennelId but no eventId, which means we are editing kennel members
           await tableModel.syncKennelAdminService
               .updateSqlTablesWithResultsFromBackendApiCall(responseBody);
+          await _syncHashersIntoCommon();
         } else {
           // TODO(James): handle this error, we should never arrive at this point in the code
         }
@@ -288,6 +290,19 @@ class HashersService extends BaseService {
 
     // callers checked and they are handling the error
     return responseBody;
+  }
+
+  /// The event/kennel admin syncs deliberately skip the hashers table (it is a
+  /// common-domain table), so a hasher added or edited through those flows never
+  /// reaches `common_hashers` until a full resync — which leaves a newly added
+  /// member invisible in member/user lists (they read `common_hashers`). Pull
+  /// hashers into `common_hashers` now, scoped by the watermark so it's cheap.
+  Future<void> _syncHashersIntoCommon() async {
+    await tableModel.syncUserDataService.updateFromBackend(
+      EnumDataTables.hashers.flag,
+      true,
+      debugText: 'addEditUser: sync new/edited hasher into common_hashers',
+    );
   }
 
   static Future<String> sendInviteCodeByEmail(String email) async {

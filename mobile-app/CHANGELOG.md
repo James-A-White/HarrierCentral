@@ -1,5 +1,12 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.11.8+1188 (2026-07-01)
+
+### Fixes
+- **New members appear immediately**: adding a member (or a new person on a run) now syncs the Hasher record into the local database right away, so they show up in member/user lists without needing a full resync.
+- **Reload Data**: fixed the false "No Connection" dialog (and skewed online/offline detection) — the connection ping response wasn't being parsed correctly.
+- **Past runs**: runs you RSVP'd No or Maybe to (and didn't attend) are no longer shown in your past runs.
+
 ## 2.11.7+1187 (2026-07-01)
 
 ### Improvements
