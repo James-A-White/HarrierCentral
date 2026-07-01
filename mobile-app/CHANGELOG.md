@@ -1,5 +1,10 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.11.10+1190 (2026-07-01)
+
+### Fixes
+- **Chat opened from Unseen Chats**: added a back button and fixed the message box being hidden behind the keyboard (the chat now has its own screen with an app bar and resizes for the keyboard).
+
 ## 2.11.9+1189 (2026-07-01)
 
 ### Fixes
