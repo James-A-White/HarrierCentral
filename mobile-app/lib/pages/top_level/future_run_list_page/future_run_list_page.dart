@@ -827,8 +827,22 @@ class FutureRunsListPage extends StatelessWidget {
         ),
         onTap: () async {
           if (s.eventId == null) return;
+          // ChatPage is normally a tab body inside RunDetailsPage, which
+          // supplies the app bar (back) and keyboard-safe Scaffold. Opened
+          // standalone from here it needs its own Scaffold + AppBar so there's
+          // a back button and the input stays above the keyboard.
           await Get.to(
-            () => ChatPage(eventId: s.eventId!, publicEventId: s.publicEventId),
+            () => Scaffold(
+              appBar: AppBar(
+                title: Text(title),
+                backgroundColor: themeButtonColors,
+                foregroundColor: Colors.white,
+              ),
+              body: ChatPage(
+                eventId: s.eventId!,
+                publicEventId: s.publicEventId,
+              ),
+            ),
           );
           // Refresh unread counts after leaving the chat so the badge and this
           // list update.
