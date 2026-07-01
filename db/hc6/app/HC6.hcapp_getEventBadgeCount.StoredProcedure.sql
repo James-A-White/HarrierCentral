@@ -29,7 +29,12 @@ AS
 --   @resetAllBadgeCounts - 1 = reset ALL event badge counts to current max
 -- Returns:
 --   Read SP (no success envelope — always returns a count row).
---   On success (rowset 0): { BadgeCount, PublicEventId }
+--   Modes 1 & 2 (rowset 0): { BadgeCount, PublicEventId }
+--   Mode 3 all-events (rowset 0): one row per event with unread messages —
+--     { BadgeCount, PublicEventId, EventId, EventName, EventNumber,
+--       EventStartDatetimeGmt, EventImage, KennelId, KennelShortName,
+--       KennelLogo }. Extra columns let the app render the Unseen Chats list
+--     for events that aren't locally synced. First two columns unchanged.
 --   On error (rowset 0): standard HC6 error detail
 -- Author: Harrier Central
 -- Created: 2026-05-10
@@ -139,11 +144,33 @@ END
 
 -- ---------------------------------------------------------------
 -- Mode 3: all events (no specific event, no reset)
+-- Returns one row per event that has unread messages (BadgeCount > 0),
+-- with enough event/kennel display fields for the app to render the
+-- "Unseen Chats" list WITHOUT the event being locally synced — so a run
+-- with an unread chat always appears even if the user doesn't follow the
+-- kennel and hasn't attended. BadgeCount/PublicEventId stay first for
+-- back-compat with callers that only read those two columns.
 -- ---------------------------------------------------------------
 SELECT
-    MAX(em.MessageSequenceCount) - embc.LastSequenceCount AS BadgeCount,
-    em.PublicEventId
-FROM HC.EventMessageBadgeCounts embc
-INNER JOIN HC.EventMessage em ON em.EventId = embc.EventId
-WHERE embc.UserId = @userId
-GROUP BY embc.LastSequenceCount, em.PublicEventId;
+    unread.BadgeCount,
+    e.PublicEventId,
+    e.id                    AS EventId,
+    e.EventName,
+    e.EventNumber,
+    e.EventStartDatetimeGmt,
+    e.EventImage,
+    e.KennelId,
+    k.KennelShortName,
+    k.KennelLogo
+FROM (
+    SELECT
+        embc.EventId                                          AS EventId,
+        MAX(em.MessageSequenceCount) - embc.LastSequenceCount AS BadgeCount
+    FROM HC.EventMessageBadgeCounts embc
+    INNER JOIN HC.EventMessage em ON em.EventId = embc.EventId
+    WHERE embc.UserId = @userId
+    GROUP BY embc.EventId, embc.LastSequenceCount
+) AS unread
+INNER JOIN HC.Event  e ON e.id = unread.EventId
+INNER JOIN HC.Kennel k ON k.id = e.KennelId
+WHERE unread.BadgeCount > 0;

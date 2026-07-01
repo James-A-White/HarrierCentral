@@ -75,10 +75,18 @@
     {
       "index": 0,
       "name": "AllEventBadgeCounts",
-      "description": "Returned when @publicEventId is NULL and @resetAllBadgeCounts=0. One row per event where the user has a badge count row (INNER JOIN — events with no badge count record are excluded).",
+      "description": "Returned when @publicEventId is NULL and @resetAllBadgeCounts=0. One row per event that has UNREAD messages (BadgeCount > 0), joined to HC.Event and HC.Kennel for display. Carries enough fields for the app to render the Unseen Chats list even when the event isn't locally synced. First two columns (BadgeCount, PublicEventId) unchanged for back-compat.",
       "columns": [
-        { "name": "BadgeCount",    "type": "INT",              "nullable": false, "description": "Computed as MAX(MessageSequenceCount) - LastSequenceCount. Non-null because INNER JOIN guarantees both sides exist." },
-        { "name": "PublicEventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The event's public UUID." }
+        { "name": "BadgeCount",            "type": "INT",                 "nullable": false, "description": "Computed as MAX(MessageSequenceCount) - LastSequenceCount. Only rows > 0 are returned." },
+        { "name": "PublicEventId",         "type": "UNIQUEIDENTIFIER",    "nullable": false, "description": "The event's public UUID." },
+        { "name": "EventId",               "type": "UNIQUEIDENTIFIER",    "nullable": false, "description": "HC.Event.id — used to open the chat (ChatPage needs eventId + publicEventId)." },
+        { "name": "EventName",             "type": "NVARCHAR(250)",       "nullable": false, "description": "HC.Event.EventName." },
+        { "name": "EventNumber",           "type": "SMALLINT",            "nullable": false, "description": "HC.Event.EventNumber." },
+        { "name": "EventStartDatetimeGmt", "type": "DATETIMEOFFSET(7)",   "nullable": false, "description": "HC.Event.EventStartDatetimeGmt — reliable instant for display/sort." },
+        { "name": "EventImage",            "type": "NVARCHAR(500)",       "nullable": true,  "description": "HC.Event.EventImage (event artwork)." },
+        { "name": "KennelId",              "type": "UNIQUEIDENTIFIER",    "nullable": false, "description": "HC.Event.KennelId." },
+        { "name": "KennelShortName",       "type": "NVARCHAR(25)",        "nullable": false, "description": "HC.Kennel.KennelShortName." },
+        { "name": "KennelLogo",            "type": "NVARCHAR(500)",       "nullable": false, "description": "HC.Kennel.KennelLogo (may be 'bundle://defaultKennelLogo')." }
       ]
     }
   ],

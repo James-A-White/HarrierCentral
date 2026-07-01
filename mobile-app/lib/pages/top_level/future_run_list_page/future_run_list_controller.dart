@@ -600,39 +600,45 @@ class FutureRunListPageController extends GetxController {
     debugPrint('[BOOT] filterRuns: start, searchTextChanged=$searchTextChanged, allRuns=${allRuns?.length ?? "null"}: ${DateTime.now().millisecondsSinceEpoch}ms');
     showRsvpInstructions = true;
 
+    // Chats mode is server-driven: render the runs the badge SP returned
+    // (which includes runs the user hasn't synced locally) as lightweight chat
+    // rows, so the list always matches the unread-chat badge.
+    if (isChatsMode) {
+      final all = Get.isRegistered<NotificationService>()
+          ? Get.find<NotificationService>().unreadChatRuns.toList()
+          : <EventChatSummary>[];
+      final q = searchRunsText.value.trim().toLowerCase();
+      final list = q.isEmpty
+          ? all
+          : all
+                .where(
+                  (s) =>
+                      (s.kennelShortName ?? '').toLowerCase().contains(q) ||
+                      (s.eventName ?? '').toLowerCase().contains(q) ||
+                      (s.eventNumber?.toString() ?? '').contains(q),
+                )
+                .toList();
+      filteredRuns.value = List<dynamic>.from(list);
+      resultCount.value = filteredRuns.length;
+      if (pastRuns.isNotEmpty) pastRuns.clear();
+      update([UpdateIds.runList]);
+      return;
+    }
+
     // if we are only changing the search text, then we don't need to
     // re-filter the runs by time scope and runs to display
     if (!searchTextChanged) {
-      Map<String, RxInt> unseenChats = {};
-
-      if (Get.isRegistered<NotificationService>()) {
-        final controller = Get.find<NotificationService>();
-        unseenChats = controller.unreadEventCounts;
-      }
-
-      debugPrint('[BOOT] filterRuns: doRunsFilter start: ${DateTime.now().millisecondsSinceEpoch}ms');
-      if (isChatsMode) {
-        // Chats: keep the dedicated unread-chats predicate over all-time runs.
-        preFilteredRuns.value = QueryRuns.doRunsFilter(
-          allRuns ?? <RunDetailsAggregate>[],
-          RunsToDisplay.unreadChats,
-          runsTimeScope.value,
-          mapBounds: mapBounds,
-          unseenChats: unseenChats,
-        );
-      } else {
-        // Normal: doRunsFilter does the time/date-range filter only (allRuns
-        // view = no view predicate), then the chips are layered on top.
-        final timeFiltered = QueryRuns.doRunsFilter(
-          allRuns ?? <RunDetailsAggregate>[],
-          RunsToDisplay.allRuns,
-          runsTimeScope.value,
-          dateRangeStart: dateFilterStart.value,
-          dateRangeEnd: dateFilterEnd.value,
-          useDatesForAllYears: multiYearDateFilter.value,
-        );
-        preFilteredRuns.value = _applyChipFilters(timeFiltered);
-      }
+      // doRunsFilter does the time/date-range filter only (allRuns view = no
+      // view predicate), then the chips are layered on top.
+      final timeFiltered = QueryRuns.doRunsFilter(
+        allRuns ?? <RunDetailsAggregate>[],
+        RunsToDisplay.allRuns,
+        runsTimeScope.value,
+        dateRangeStart: dateFilterStart.value,
+        dateRangeEnd: dateFilterEnd.value,
+        useDatesForAllYears: multiYearDateFilter.value,
+      );
+      preFilteredRuns.value = _applyChipFilters(timeFiltered);
       debugPrint('[BOOT] filterRuns: doRunsFilter done: ${DateTime.now().millisecondsSinceEpoch}ms — preFiltered=${preFilteredRuns.length}');
     }
 

@@ -1,5 +1,10 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.11.9+1189 (2026-07-01)
+
+### Fixes
+- **Unseen Chats now always shows the runs behind the badge**: if the chat badge has a number, the run appears in the Unseen Chats list — even for a run you don't follow and haven't attended (previously the list could be empty while the badge showed unread messages). These rows come straight from the server and tap directly into the chat.
+
 ## 2.11.8+1188 (2026-07-01)
 
 ### Fixes

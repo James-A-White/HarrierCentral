@@ -7,6 +7,11 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   // Map to track the unread count for each Public Event ID.
   // Key: PublicEventId, Value: Unread Message Count
   final RxMap<String, RxInt> unreadEventCounts = <String, RxInt>{}.obs;
+
+  /// The full set of runs that currently have unread chat messages, as returned
+  /// by the server (Mode 3), carrying enough display data to render the Unseen
+  /// Chats list even for runs that aren't locally synced. Sorted newest-first.
+  final RxList<EventChatSummary> unreadChatRuns = <EventChatSummary>[].obs;
   // final Map<String, int> clientChatCounts = <String, int>{};
 
   // Derived RxInt for the *Global* App Icon Badge Count (sum of all events)
@@ -116,6 +121,19 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
         for (final summary in serverChatSummary)
           summary.publicEventId: summary.badgeCount.obs,
       };
+
+      // Keep the display-bearing rows (those that carry event data) for the
+      // Unseen Chats list, newest-first.
+      final withData =
+          serverChatSummary
+              .where((s) => s.badgeCount > 0 && s.eventId != null)
+              .toList()
+            ..sort(
+              (a, b) => (b.eventStartDatetimeGmt ?? '').compareTo(
+                a.eventStartDatetimeGmt ?? '',
+              ),
+            );
+      unreadChatRuns.value = withData;
     }
 
     if (Get.isRegistered<FutureRunListPageController>()) {

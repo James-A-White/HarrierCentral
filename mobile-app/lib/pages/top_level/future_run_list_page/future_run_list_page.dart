@@ -727,6 +727,10 @@ class FutureRunsListPage extends StatelessWidget {
                                   ],
                                 ],
                               );
+                            } else if (items[index] is EventChatSummary) {
+                              return _chatRunRow(
+                                items[index] as EventChatSummary,
+                              );
                             } else {
                               final run = items[index]
                                   as RunDetailsAggregate;
@@ -764,6 +768,75 @@ class FutureRunsListPage extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  /// Lightweight row for the server-driven "Unseen Chats" list — kennel logo,
+  /// run name/number, date, and the unread-message count. Taps straight into the
+  /// chat, so it works even for runs that aren't synced locally.
+  Widget _chatRunRow(EventChatSummary s) {
+    final String title = (s.kennelShortName != null && s.eventNumber != null)
+        ? '${s.kennelShortName} #${s.eventNumber}'
+        : (s.eventName ?? 'Run');
+    String dateStr = '';
+    final gmt = s.eventStartDatetimeGmt;
+    if (gmt != null && gmt.isNotEmpty) {
+      final dt = DateTime.tryParse(gmt);
+      if (dt != null) {
+        dateStr = DateFormat('EEE, d MMM yyyy').format(dt.toLocal());
+      }
+    }
+    return Card(
+      elevation: 3,
+      margin: const EdgeInsets.only(top: 10.0),
+      child: ListTile(
+        leading: KennelLogo(
+          kennelId: s.kennelId,
+          kennelLogoUrl: s.kennelLogo,
+          kennelShortName: s.kennelShortName ?? '',
+          logoHeight: 44,
+        ),
+        title: Text(title, style: ts_tileText),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            if ((s.eventName ?? '').isNotEmpty)
+              Text(
+                s.eventName!,
+                style: ts_footnoteBlack,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            if (dateStr.isNotEmpty)
+              Text(dateStr, style: ts_footnoteBlack),
+          ],
+        ),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+          decoration: BoxDecoration(
+            color: Colors.red,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Text(
+            '${s.badgeCount}',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        onTap: () async {
+          if (s.eventId == null) return;
+          await Get.to(
+            () => ChatPage(eventId: s.eventId!, publicEventId: s.publicEventId),
+          );
+          // Refresh unread counts after leaving the chat so the badge and this
+          // list update.
+          if (Get.isRegistered<NotificationService>()) {
+            await Get.find<NotificationService>().getEventChatMessageCounts();
+          }
+        },
+      ),
     );
   }
 
@@ -1348,12 +1421,43 @@ class EventChatSummary {
   final String publicEventId;
   final int badgeCount;
 
-  EventChatSummary({required this.publicEventId, required this.badgeCount});
+  // Display fields — populated only by the all-events (Mode 3) response so the
+  // "Unseen Chats" list can render runs that aren't locally synced. Null for the
+  // single-event / reset responses (Modes 1 & 2).
+  final String? eventId;
+  final String? eventName;
+  final int? eventNumber;
+  final String? eventStartDatetimeGmt;
+  final String? eventImage;
+  final String? kennelId;
+  final String? kennelShortName;
+  final String? kennelLogo;
+
+  EventChatSummary({
+    required this.publicEventId,
+    required this.badgeCount,
+    this.eventId,
+    this.eventName,
+    this.eventNumber,
+    this.eventStartDatetimeGmt,
+    this.eventImage,
+    this.kennelId,
+    this.kennelShortName,
+    this.kennelLogo,
+  });
 
   factory EventChatSummary.fromJson(Map<String, dynamic> json) {
     return EventChatSummary(
       publicEventId: json['PublicEventId'] as String,
-      badgeCount: json[BADGE_COUNT_JSON_KEY] as int,
+      badgeCount: (json[BADGE_COUNT_JSON_KEY] as num?)?.toInt() ?? 0,
+      eventId: json['EventId'] as String?,
+      eventName: json['EventName'] as String?,
+      eventNumber: (json['EventNumber'] as num?)?.toInt(),
+      eventStartDatetimeGmt: json['EventStartDatetimeGmt'] as String?,
+      eventImage: json['EventImage'] as String?,
+      kennelId: json['KennelId'] as String?,
+      kennelShortName: json['KennelShortName'] as String?,
+      kennelLogo: json['KennelLogo'] as String?,
     );
   }
 
