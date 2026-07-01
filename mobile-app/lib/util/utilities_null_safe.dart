@@ -789,14 +789,20 @@ class Utilities {
 
       if (!responseBody.startsWith(ERROR_PREFIX)) {
         final decoded = jsonDecode(responseBody);
-        if (decoded is! List || decoded.isEmpty) return false;
-        final row0 = decoded[0];
-        if (row0 is! List || row0.isEmpty) return false;
-        final result = (row0[0] as Map<String, dynamic>?)?['result'];
-        if (result == 'Connected') {
-          //appModel.connectionStatus = EnumConnectionStatus2.connected;
-          //print('HC server check successful, connected');
+        // Current API short-circuits the checkConnection ping and returns
+        // {"connected": true} without touching the SP.
+        if (decoded is Map && decoded['connected'] == true) {
           return true; // ✅ success
+        }
+        // Back-compat: older SP-shaped response [[{"result":"Connected"}]].
+        if (decoded is List && decoded.isNotEmpty) {
+          final row0 = decoded[0];
+          if (row0 is List && row0.isNotEmpty) {
+            final result = (row0[0] as Map<String, dynamic>?)?['result'];
+            if (result == 'Connected') {
+              return true; // ✅ success
+            }
+          }
         }
       } else {
         // print(
