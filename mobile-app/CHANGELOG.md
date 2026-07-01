@@ -1,5 +1,10 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.11.7+1187 (2026-07-01)
+
+### Improvements
+- **Filter bar polish**: all filter buttons are now one uniform size; the Map filter uses a map icon (word removed); the heading no longer includes "past"/"future" wording (more room). The date-filter button keeps its calendar icon and just highlights while a range is active. The "View Map" button moved out of the bar to float over the top-right of the list when the Map filter is on.
+
 ## 2.11.6+1186 (2026-07-01)
 
 ### New Features / Improvements

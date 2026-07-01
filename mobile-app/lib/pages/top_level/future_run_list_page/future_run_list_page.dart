@@ -298,36 +298,21 @@ class FutureRunsListPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 6),
-                    // Right: View Map (only when the Map chip is on), Map chip,
-                    // and the date filter (or a chats "mark read" button).
-                    Obx(
-                      () => controller.filterMap.value
-                          ? Padding(
-                              padding: const EdgeInsets.only(right: 6),
-                              child: SizedBox(
-                                width: 42,
-                                child: _showMapButton(),
-                              ),
-                            )
-                          : const SizedBox.shrink(),
+                    // Right: Map chip (map icon) + date filter. The "View Map"
+                    // button now floats over the list (see build()), not here.
+                    _filterChip(
+                      state: controller.filterMap,
+                      icon: MaterialCommunityIcons.map_search,
                     ),
-                    _filterChip(state: controller.filterMap, label: 'Map'),
                     const SizedBox(width: 6),
-                    Obx(() {
-                      if (controller.isChatsMode) {
-                        return SizedBox(
-                          width: 42,
-                          child: _showResetChatCountsButton(),
-                        );
-                      }
-                      return controller.runsTimeScope.value ==
-                              RunsTimeScope.range
-                          ? SizedBox(width: 42, child: _clearRangeButton())
-                          : SizedBox(
-                              width: 42,
-                              child: _showCalendarButton(context),
-                            );
-                    }),
+                    Obx(
+                      () => controller.isChatsMode
+                          ? SizedBox(
+                              width: 46,
+                              child: _showResetChatCountsButton(),
+                            )
+                          : _dateFilterButton(context),
+                    ),
                     const SizedBox(width: 8),
                   ],
                 ),
@@ -760,6 +745,17 @@ class FutureRunsListPage extends StatelessWidget {
                             }
                           },
                         ),
+                  // Floating "View Map" over the top-right of the scrolling
+                  // list, shown while the Map chip is on.
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Obx(
+                      () => controller.filterMap.value
+                          ? _viewMapFloatingButton()
+                          : const SizedBox.shrink(),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -798,24 +794,6 @@ class FutureRunsListPage extends StatelessWidget {
     );
   }
 
-  /// Clears an active date-range filter and returns to the default (future)
-  /// view with the inline attended-past section.
-  Widget _clearRangeButton() {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
-      ),
-      onPressed: () async {
-        controller.runsTimeScope.value = RunsTimeScope.future;
-        await controller.refreshFromTable(true);
-      },
-      child: const Padding(
-        padding: EdgeInsets.only(left: 0, right: 0, top: 0, bottom: 0),
-        child: Icon(Icons.close, color: Colors.white, size: 30.0),
-      ),
-    );
-  }
-
   Widget _showResetChatCountsButton() {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
@@ -838,145 +816,88 @@ class FutureRunsListPage extends StatelessWidget {
     );
   }
 
-  Widget _showMapButton() {
-    return Obx(() {
-      return !controller.runsToDisplay.value.showFuturePastToggle
-          ? SizedBox(height: 0)
-          : controller.showRunsTimeScopeSpinner.value
-          ? SizedBox(
-              height: 49,
-              width: 70,
-              child: Center(
-                child: HcAppCircularProgressIndicator(
-                  key: UniqueKey(),
-                  color1: Colors.white,
-                  color2: Colors.blue.shade300,
-                  size: 35,
-                ),
-              ),
-            )
-          : ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
-                // minimumSize: const Size(0, 0), // remove min size constraints
-                // tapTargetSize:
-                //     MaterialTapTargetSize.shrinkWrap, // tighter hitbox
-              ),
-              onPressed: () async {
-                controller.openMap();
-              },
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  left: 0,
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                ),
-                child: Icon(
-                  MaterialCommunityIcons.map_search,
-                  color: Colors.white,
-                  size: 30.0,
-                ),
-              ),
-            );
-    });
-  }
-
-  Widget _showCalendarButton(BuildContext context) {
-    return Obx(() {
-      return !controller.runsToDisplay.value.showFuturePastToggle
-          ? SizedBox(height: 0)
-          : ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.only(top: 0.0, bottom: 0.0),
-                // minimumSize: const Size(0, 0), // remove min size constraints
-                // tapTargetSize:
-                //     MaterialTapTargetSize.shrinkWrap, // tighter hitbox
-              ),
-              onPressed: () async {
-                // var results = await calendar.showCalendarDatePicker2Dialog(
-                //   context: context,
-                //   config: calendar.CalendarDatePicker2WithActionButtonsConfig(
-                //     firstDayOfWeek: 1,
-                //     calendarType: calendar.CalendarDatePicker2Type.range,
-                //     selectedDayTextStyle: TextStyle(
-                //       color: Colors.white,
-                //       fontWeight: FontWeight.w700,
-                //     ),
-                //     selectedDayHighlightColor: Colors.purple[800],
-                //     centerAlignModePicker: true,
-                //     customModePickerIcon: SizedBox(),
-                //     calendarViewMode: calendar.CalendarDatePicker2Mode.scroll,
-                //   ),
-                //   dialogSize: Size(Get.width - 30, Get.height - 200),
-                //   value: [
-                //     controller.dateFilterStart.value,
-                //     controller.dateFilterEnd.value,
-                //   ],
-                //   borderRadius: BorderRadius.circular(15),
-                // );
-
-                var results = await _showCalendarDialog(context);
-
-                if (results.isNotEmpty) {
-                  controller.dateFilterStart.value = results[0];
-                  controller.dateFilterEnd.value = results.length == 2
-                      ? results[1]
-                      : results[0];
-                  // Entering range from the future view: reload so allRuns
-                  // includes past dates, then the date filter is applied.
-                  controller.runsTimeScope.value = RunsTimeScope.range;
-                  await controller.refreshFromTable(true);
-                }
-              },
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  left: 0,
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                ),
-                child: Icon(
-                  MaterialCommunityIcons.calendar_search,
-                  color: Colors.white,
-                  size: 30.0,
-                ),
-              ),
-            );
-    });
-  }
-
-  /// A stackable filter chip. Filled with [themeButtonColors] when on, outlined
-  /// when off. Shows [label] text or [icon]. Tapping toggles it via the
-  /// controller (which re-filters and re-anchors).
-  Widget _filterChip({
-    required RxBool state,
-    String? label,
-    IconData? icon,
-  }) {
-    return Obx(() {
-      final on = state.value;
-      return GestureDetector(
-        onTap: () => controller.toggleChip(state),
-        child: Container(
-          height: 40,
-          constraints: const BoxConstraints(minWidth: 42),
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          decoration: BoxDecoration(
-            color: on ? themeButtonColors : Colors.white24,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: on ? Colors.white : Colors.white54,
-              width: 1.0,
-            ),
-          ),
-          alignment: Alignment.center,
-          child: label != null
-              ? Text(label, style: ts_titleLarge)
-              : Icon(icon, color: Colors.white, size: 22),
+  /// Uniform pill shared by every filter button (chips + date filter) so they
+  /// all match the star chip's size. Filled with [themeButtonColors] when [on],
+  /// outlined when off. Shows [label] text or [icon].
+  Widget _chipBody({required bool on, String? label, IconData? icon}) {
+    return Container(
+      width: 46,
+      height: 40,
+      decoration: BoxDecoration(
+        color: on ? themeButtonColors : Colors.white24,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: on ? Colors.white : Colors.white54,
+          width: 1.0,
         ),
+      ),
+      alignment: Alignment.center,
+      child: label != null
+          ? Text(label, style: ts_titleLarge)
+          : Icon(icon, color: Colors.white, size: 22),
+    );
+  }
+
+  /// A stackable filter chip backed by an [RxBool]. Tapping toggles it via the
+  /// controller (which re-filters and re-anchors).
+  Widget _filterChip({required RxBool state, String? label, IconData? icon}) {
+    return Obx(
+      () => GestureDetector(
+        onTap: () => controller.toggleChip(state),
+        child: _chipBody(on: state.value, label: label, icon: icon),
+      ),
+    );
+  }
+
+  /// Date-range filter button: the same calendar icon always, background
+  /// highlighted while a range is active. Tap opens the picker; tap while active
+  /// clears the range and returns to the default view.
+  Widget _dateFilterButton(BuildContext context) {
+    return Obx(() {
+      final on = controller.runsTimeScope.value == RunsTimeScope.range;
+      return GestureDetector(
+        onTap: () async {
+          if (on) {
+            controller.runsTimeScope.value = RunsTimeScope.future;
+            await controller.refreshFromTable(true);
+            controller.scrollToInitialAnchor();
+            return;
+          }
+          final results = await _showCalendarDialog(context);
+          if (results.isNotEmpty) {
+            controller.dateFilterStart.value = results[0];
+            controller.dateFilterEnd.value = results.length == 2
+                ? results[1]
+                : results[0];
+            controller.runsTimeScope.value = RunsTimeScope.range;
+            await controller.refreshFromTable(true);
+          }
+        },
+        child: _chipBody(on: on, icon: MaterialCommunityIcons.calendar_search),
       );
     });
+  }
+
+  /// Floating button to open the Explore map, shown over the top-right of the
+  /// scrolling list while the Map chip is on.
+  Widget _viewMapFloatingButton() {
+    return Material(
+      color: themeButtonColors,
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: () => controller.openMap(),
+        child: const Padding(
+          padding: EdgeInsets.all(9.0),
+          child: Icon(
+            MaterialCommunityIcons.map_search,
+            color: Colors.white,
+            size: 24,
+          ),
+        ),
+      ),
+    );
   }
 
   /// Explains the filter chips (shown when the description text is tapped).

@@ -117,11 +117,10 @@ class FutureRunListPageController extends GetxController {
   String get pastSectionTitle =>
       '${filterMy.value ? 'My past' : 'Past'} $_chipNoun$_chipMapSuffix';
 
-  /// The middle description text: chats label, or the section the user is
-  /// scrolled into (mirrors the divider label when in the past section).
+  /// The middle description text: the current filter state (no past/future
+  /// wording — not enough room in the bar), or the chats label.
   String get barTitle {
     if (isChatsMode) return 'Unseen Chats';
-    if (showsInlinePast && isViewingPastSection.value) return pastSectionTitle;
     return futureSectionTitle;
   }
 
