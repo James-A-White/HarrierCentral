@@ -1,5 +1,10 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.11.13+1193 (2026-07-02)
+
+### Fixes
+- **Hash Flash grid**: selection check marks now toggle when tapping photos; the bulk action buttons stay visible (greyed) when nothing is selected; and the jungle background extends to the bottom of the page.
+
 ## 2.11.12+1192 (2026-07-02)
 
 ### Improvements
