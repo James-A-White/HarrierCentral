@@ -202,6 +202,11 @@ class PhotoReviewController extends GetxController {
   final RxInt currentIndex = 0.obs;
   final RxMap<String, int> decisions = <String, int>{}.obs;
 
+  // ── Grid + multi-select ────────────────────────────────────────────────────
+  final RxBool gridMode = false.obs;
+  final RxBool selectMode = false.obs;
+  final RxSet<String> selectedIds = <String>{}.obs;
+
   // Pending writes: photoId → queued action
   final Map<String, _QueuedAction> _queue = {};
 
@@ -275,6 +280,96 @@ class PhotoReviewController extends GetxController {
   }
 
   int? decisionFor(String photoId) => decisions[photoId];
+
+  // ── Grid + multi-select ────────────────────────────────────────────────────
+
+  void toggleGridMode() {
+    gridMode.value = !gridMode.value;
+    if (!gridMode.value) exitSelectMode();
+  }
+
+  void exitSelectMode() {
+    selectMode.value = false;
+    selectedIds.clear();
+  }
+
+  bool isSelected(String photoId) => selectedIds.contains(photoId);
+
+  void toggleSelect(String photoId) {
+    if (!selectedIds.remove(photoId)) selectedIds.add(photoId);
+    selectMode.value = selectedIds.isNotEmpty;
+  }
+
+  void selectAllVisible() {
+    selectedIds.addAll(visiblePhotos.map((p) => p.photoId));
+    selectMode.value = selectedIds.isNotEmpty;
+  }
+
+  /// A grid thumbnail tapped while NOT selecting → open it in the swipe view
+  /// for detailed review.
+  void openInSwipe(String photoId) {
+    final idx = visiblePhotos.indexWhere((p) => p.photoId == photoId);
+    if (idx < 0) return;
+    currentIndex.value = idx;
+    gridMode.value = false;
+    exitSelectMode();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (pageController.hasClients) pageController.jumpToPage(idx);
+    });
+  }
+
+  /// Applies one action to every selected photo, then flushes to the server
+  /// (reuses the same queue/batch path as single-photo review).
+  Future<void> bulkAction(int action) async {
+    if (selectedIds.isEmpty || isSaving.value) return;
+    final ids = selectedIds.toList();
+
+    if (action == photoActionDelete) {
+      final ctx = navigatorKey.currentContext;
+      if (ctx == null || !ctx.mounted) return;
+      final confirmed = await showDialog<bool>(
+        context: ctx,
+        barrierDismissible: false,
+        builder: (_) => AlertDialog(
+          title: Text(
+            'Delete ${ids.length} photo${ids.length == 1 ? '' : 's'}?',
+            style: ts_alertDialogTitle,
+          ),
+          content: Text(
+            'They will be hidden from the run. You can restore them at any '
+            'time from the Reviewed tab.',
+            style: ts_alertDialogBody,
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey.shade600,
+                foregroundColor: Colors.white,
+              ),
+              child: Text('Cancel', style: ts_button),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: hc_red,
+                foregroundColor: Colors.white,
+              ),
+              child: Text('Delete', style: ts_button),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
+    }
+
+    for (final id in ids) {
+      _enqueue(photoId: id, action: action);
+      decisions[id] = action;
+    }
+    exitSelectMode();
+    await _flushQueue();
+  }
 
   void _goToNext() {
     final list = visiblePhotos;
@@ -739,6 +834,20 @@ class PhotoReviewPage extends StatelessWidget {
           iconTheme: const IconThemeData(color: Colors.white),
           title: Text('Review Photos', style: ts_appBarTitle),
           actions: [
+            Obx(
+              () => IconButton(
+                icon: Icon(
+                  controller.gridMode.value
+                      ? Icons.view_carousel_outlined
+                      : Icons.grid_view,
+                  color: Colors.white,
+                ),
+                tooltip: controller.gridMode.value
+                    ? 'Single photo view'
+                    : 'Grid view',
+                onPressed: controller.toggleGridMode,
+              ),
+            ),
             IconButton(
               icon: const Icon(Icons.refresh, color: Colors.white),
               onPressed: controller.loadPhotos,
@@ -1030,6 +1139,10 @@ class _PhotoBody extends StatelessWidget {
         );
       }
 
+      if (page.controller.gridMode.value) {
+        return _PhotoGrid(controller: page.controller);
+      }
+
       return Column(
         children: [
           _PhotoCounter(controller: page.controller),
@@ -1038,6 +1151,229 @@ class _PhotoBody extends StatelessWidget {
         ],
       );
     });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Thumbnail grid + multi-select
+// ---------------------------------------------------------------------------
+
+/// Short status tag + colour for a photo, shown as a corner chip in the grid.
+({String label, Color color}) _photoStatusTag(KennelPendingPhoto photo) {
+  if (photo.isDeleted) return (label: 'Deleted', color: Colors.grey.shade700);
+  switch (photo.status) {
+    case 1:
+      return (label: 'Pending', color: Colors.orange.shade800);
+    case 0:
+      return (label: 'Private', color: Colors.blueGrey.shade600);
+    case 2:
+      return (label: 'Shared', color: Colors.blue.shade700);
+    case 3:
+      return (label: 'Gallery', color: Colors.green.shade700);
+    case 4:
+      return (label: 'Home', color: Colors.teal.shade700);
+    case 5:
+      return (label: 'Cover', color: Colors.amber.shade800);
+    default:
+      return (label: '', color: Colors.black54);
+  }
+}
+
+class _PhotoGrid extends StatelessWidget {
+  const _PhotoGrid({required this.controller});
+  final PhotoReviewController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final photos = controller.visiblePhotos;
+      final selecting = controller.selectMode.value;
+      return Column(
+        children: [
+          if (!selecting)
+            Container(
+              width: double.infinity,
+              color: Colors.black38,
+              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+              child: Text(
+                'Tap a photo to open it · long-press to select',
+                style: ts_bodySmall.copyWith(color: Colors.white70),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          Expanded(
+            child: GridView.builder(
+              padding: const EdgeInsets.all(8),
+              gridDelegate:
+                  const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                mainAxisSpacing: 6,
+                crossAxisSpacing: 6,
+              ),
+              itemCount: photos.length,
+              itemBuilder: (context, i) {
+                final p = photos[i];
+                return GestureDetector(
+                  onTap: () => selecting
+                      ? controller.toggleSelect(p.photoId)
+                      : controller.openInSwipe(p.photoId),
+                  onLongPress: () => controller.toggleSelect(p.photoId),
+                  child: _GridThumb(
+                    photo: p,
+                    selecting: selecting,
+                    selected: controller.isSelected(p.photoId),
+                  ),
+                );
+              },
+            ),
+          ),
+          if (selecting) _BulkActionBar(controller: controller),
+        ],
+      );
+    });
+  }
+}
+
+class _GridThumb extends StatelessWidget {
+  const _GridThumb({
+    required this.photo,
+    required this.selecting,
+    required this.selected,
+  });
+  final KennelPendingPhoto photo;
+  final bool selecting;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final tag = _photoStatusTag(photo);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          CachedNetworkImage(
+            imageUrl: photo.effectiveUrl,
+            fit: BoxFit.cover,
+            placeholder: (_, _) => Container(color: Colors.black26),
+            errorWidget: (_, _, _) => Container(
+              color: Colors.black26,
+              child: const Icon(Icons.broken_image, color: Colors.white38),
+            ),
+          ),
+          if (tag.label.isNotEmpty)
+            Positioned(
+              left: 4,
+              top: 4,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: tag.color.withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  tag.label,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          if (selecting) ...[
+            if (selected)
+              Container(color: hc_blue.withValues(alpha: 0.35)),
+            Positioned(
+              right: 4,
+              top: 4,
+              child: Icon(
+                selected
+                    ? Icons.check_circle
+                    : Icons.radio_button_unchecked,
+                color: selected ? hc_blue : Colors.white,
+                size: 22,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _BulkActionBar extends StatelessWidget {
+  const _BulkActionBar({required this.controller});
+  final PhotoReviewController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final count = controller.selectedIds.length;
+      return Container(
+        color: Colors.black87,
+        padding: const EdgeInsets.fromLTRB(10, 8, 10, 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Text(
+                  '$count selected',
+                  style: ts_button.copyWith(color: Colors.white),
+                ),
+                const Spacer(),
+                TextButton(
+                  onPressed: controller.selectAllVisible,
+                  child: Text('Select all', style: ts_button),
+                ),
+                TextButton(
+                  onPressed: controller.exitSelectMode,
+                  child: Text(
+                    'Cancel',
+                    style: ts_button.copyWith(color: Colors.white70),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              alignment: WrapAlignment.center,
+              children: [
+                _bulkBtn(Icons.delete_outline, 'Delete', hc_red,
+                    photoActionDelete),
+                _bulkBtn(Icons.lock_outline, 'Private', Colors.blueGrey.shade600,
+                    photoActionKeepPrivate),
+                _bulkBtn(Icons.public, 'Share', Colors.blue.shade700,
+                    photoActionShare),
+                _bulkBtn(Icons.photo_library_outlined, 'Gallery',
+                    Colors.green.shade700, photoActionAddToGallery),
+                _bulkBtn(Icons.home_outlined, 'Home', Colors.teal.shade700,
+                    photoActionAddToHomeGallery),
+              ],
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _bulkBtn(IconData icon, String label, Color color, int action) {
+    return ElevatedButton.icon(
+      onPressed: controller.selectedIds.isEmpty
+          ? null
+          : () => controller.bulkAction(action),
+      icon: Icon(icon, size: 18, color: Colors.white),
+      label: Text(label, style: ts_button),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      ),
+    );
   }
 }
 
