@@ -1,5 +1,13 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.11.12+1192 (2026-07-02)
+
+### Improvements
+- **Hash Flash grid polish**: tap now selects a photo (green check, photo stays fully visible); long-press opens it for detailed review. The bulk action buttons are always visible in grid view, the grid/carousel toggle moved next to the Pending/Reviewed pills, and leaving the grid with photos still selected warns you first.
+
+### Fixes
+- **Hash Flash**: switching between Pending and Reviewed no longer carries a hidden photo selection across tabs.
+
 ## 2.11.11+1191 (2026-07-02)
 
 ### New Features / Improvements
