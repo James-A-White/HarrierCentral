@@ -80,14 +80,20 @@ class FutureRunListPageController extends GetxController {
   bool get showsInlinePast =>
       !isChatsMode && runsTimeScope.value == RunsTimeScope.future;
 
+  // "My" = runs the user is actually part of: RSVP'd Yes (going), or attended.
+  // NOTE: "attended" means attendenceState >= attendenceAtHash (20). Lower
+  // values are NOT attendance — attendenceNo (10) means the opposite — so a
+  // simple ">= 3" wrongly counts a "did not attend" row as attended.
   bool _isMyRun(RunDetailsAggregate a) =>
-      a.extensions.rsvpState >= 2 || a.extensions.attendenceState >= 3;
+      a.extensions.rsvpState >= rsvpYes.value ||
+      a.extensions.attendenceState >= attendenceAtHash.value;
 
   /// Whether a past run should appear in the past section. Excludes runs the
   /// user declined (RSVP No) or was unsure about (RSVP Maybe) — unless they
-  /// actually attended, in which case it's kept regardless of the stale RSVP.
+  /// actually attended (attendenceState >= attendenceAtHash), in which case it's
+  /// kept regardless of the stale RSVP.
   bool _keepPastRun(RunDetailsAggregate a) {
-    if (a.extensions.attendenceState >= 3) return true;
+    if (a.extensions.attendenceState >= attendenceAtHash.value) return true;
     final rsvp = a.extensions.rsvpState;
     return rsvp != rsvpNo.value && rsvp != rsvpMaybe.value;
   }
