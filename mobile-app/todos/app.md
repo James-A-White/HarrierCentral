@@ -161,3 +161,46 @@ always start from the original `BlobUrl`.
 - [x] **D5** Mutation retry audit — verify whether `sendHttpPost` actually has a `noRetries` param before implementing Session 2 item 9 above.
 - [x] **D6** `MainNavigationController permanent: true` — holds significant memory; evaluate whether `permanent: false` + `fenix: true` is viable.
 - [x] **D7** 4x bare `print()` calls not wrapped in `kDebugMode`: `hasher_event_map_service.dart:357,373`, `run_list_item.dart:1198`, `run_tabs.dart:1460`.
+
+---
+
+## 3.0 STABILIZATION — review of this session's changes (2026-07-02)
+
+The runs-list / chat / photo work this session (v2.11.2 → 2.11.11, ~16 commits)
+shipped to TestFlight verified only by `flutter analyze`, not on device. The
+Session 1/2 audit above is complete; this section tracks the hardening pass.
+
+### Code-review findings
+- [x] **Grid multi-select persisted across tabs** — `PhotoReviewController.switchTab`
+  didn't clear the selection, so a bulk action after switching Pending↔Reviewed
+  could target now-hidden photos. Fixed: `switchTab` → `exitSelectMode()`.
+- [ ] **Unseen Chats uses cached counts on entry** — the chat-badge tap renders
+  `NotificationService.unreadChatRuns` from the last fetch; it's not refreshed on
+  entry. Usually fresh (boot + push + after opening a chat), but a stale/empty
+  cache would show an empty list under a non-zero badge. Fire
+  `getEventChatMessageCounts()` when entering chats mode (it re-runs the list on
+  completion). Low risk.
+- [ ] **Unseen Chats SP includes deleted/invisible events** —
+  `HC6.hcapp_getEventBadgeCount` Mode 3 joins HC.Event/HC.Kennel with no
+  `e.deleted = 0` / `e.IsVisible <> 0` guard, so a deleted run with unread chats
+  could surface. Add the guard (+ redeploy SP). Low.
+
+### Device-verify checklist (on current TestFlight 1191)
+- [ ] Runs list opens anchored on the "My past runs" divider; scroll up = past runs.
+- [ ] Chips My / Events / Map — every combo filters correctly; heading matches
+  (e.g. "My Events on Map"); Map's floating View-Map button appears over the list.
+- [ ] "My" excludes past No/Maybe (non-attended) and future non-Yes (fixed in 1191).
+- [ ] Date-filter button highlights while a range is active; second tap clears it.
+- [ ] Unseen Chats: badge count == list length; rows tap into chat; back button +
+  keyboard-safe input both work.
+- [ ] New member added via Manage Members appears without a full resync.
+- [ ] Reload Data no longer shows a false "No Connection".
+- [ ] Hash Flash grid: tap opens the right photo; long-press → multi-select → bulk
+  action saves and actioned photos leave the Pending grid; 5-button bulk bar lays
+  out on a narrow phone.
+
+### Still to do for production
+- [ ] Decide App Store submission for the 3.0 build once TestFlight verification
+  passes (all builds so far are TestFlight only).
+- [ ] Consider reviving the commented-out test infra (sqflite_ffi) for regression
+  safety — see project_mobile_test_plan.

@@ -257,6 +257,9 @@ class PhotoReviewController extends GetxController {
     if (activeTab.value == tab) return;
     activeTab.value = tab;
     currentIndex.value = 0;
+    // Multi-selection is per-tab — clear it so a bulk action can't target
+    // now-hidden photos from the other tab.
+    exitSelectMode();
     if (pageController.hasClients) {
       pageController.jumpToPage(0);
     }
