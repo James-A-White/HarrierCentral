@@ -1263,9 +1263,14 @@ class _PhotoGrid extends StatelessWidget {
                 return GestureDetector(
                   onTap: () => controller.toggleSelect(p.photoId),
                   onLongPress: () => controller.openInSwipe(p.photoId),
-                  child: _GridThumb(
-                    photo: p,
-                    selected: controller.isSelected(p.photoId),
+                  // Per-item Obx: GridView builds items lazily during layout,
+                  // OUTSIDE the enclosing Obx's tracking scope — without this
+                  // the check indicators never rebuild on selection changes.
+                  child: Obx(
+                    () => _GridThumb(
+                      photo: p,
+                      selected: controller.isSelected(p.photoId),
+                    ),
                   ),
                 );
               },
@@ -1350,7 +1355,8 @@ class _BulkActionBar extends StatelessWidget {
     return Obx(() {
       final count = controller.selectedIds.length;
       return Container(
-        color: Colors.black87,
+        // Transparent so the jungle background runs to the bottom of the page.
+        color: Colors.transparent,
         padding: const EdgeInsets.fromLTRB(10, 8, 10, 12),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1400,15 +1406,19 @@ class _BulkActionBar extends StatelessWidget {
   }
 
   Widget _bulkBtn(IconData icon, String label, Color color, int action) {
+    final bool enabled = controller.selectedIds.isNotEmpty;
+    final Color fg = enabled ? Colors.white : Colors.grey.shade700;
     return ElevatedButton.icon(
-      onPressed: controller.selectedIds.isEmpty
-          ? null
-          : () => controller.bulkAction(action),
-      icon: Icon(icon, size: 18, color: Colors.white),
-      label: Text(label, style: ts_button),
+      onPressed: enabled ? () => controller.bulkAction(action) : null,
+      icon: Icon(icon, size: 18, color: fg),
+      label: Text(label, style: ts_button.copyWith(color: fg)),
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
         foregroundColor: Colors.white,
+        // Keep the buttons visible (light grey, dark grey text) when nothing
+        // is selected instead of fading to invisible-with-white-text.
+        disabledBackgroundColor: Colors.grey.shade300,
+        disabledForegroundColor: Colors.grey.shade700,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ),
     );
