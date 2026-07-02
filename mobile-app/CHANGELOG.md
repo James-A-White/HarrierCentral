@@ -1,5 +1,13 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.11.11+1191 (2026-07-02)
+
+### New Features / Improvements
+- **Hash Flash — grid & bulk review**: the photo reviewer now has a grid/carousel toggle. In grid view you see thumbnails (with a status tag on each); tap one to open it, or long-press to multi-select and bulk **Delete / Keep Private / Share / Add to Gallery / Home Gallery** many photos at once.
+
+### Fixes
+- **"My" filter**: past runs you RSVP'd No/Maybe to but didn't attend no longer appear under "My" (the "attended" check was too loose).
+
 ## 2.11.10+1190 (2026-07-01)
 
 ### Fixes
