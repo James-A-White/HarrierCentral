@@ -203,8 +203,9 @@ class PhotoReviewController extends GetxController {
   final RxMap<String, int> decisions = <String, int>{}.obs;
 
   // ── Grid + multi-select ────────────────────────────────────────────────────
+  // The grid IS the multi-select surface: tapping a thumb toggles selection and
+  // the bulk bar is always visible. Long-press opens a photo in the carousel.
   final RxBool gridMode = false.obs;
-  final RxBool selectMode = false.obs;
   final RxSet<String> selectedIds = <String>{}.obs;
 
   // Pending writes: photoId → queued action
@@ -259,7 +260,7 @@ class PhotoReviewController extends GetxController {
     currentIndex.value = 0;
     // Multi-selection is per-tab — clear it so a bulk action can't target
     // now-hidden photos from the other tab.
-    exitSelectMode();
+    clearSelection();
     if (pageController.hasClients) {
       pageController.jumpToPage(0);
     }
@@ -286,36 +287,76 @@ class PhotoReviewController extends GetxController {
 
   // ── Grid + multi-select ────────────────────────────────────────────────────
 
-  void toggleGridMode() {
-    gridMode.value = !gridMode.value;
-    if (!gridMode.value) exitSelectMode();
+  /// Warns that the current selection will be discarded (selections are only
+  /// processed via the bulk action buttons). Returns true to proceed.
+  /// Cancel = default button colour (keeps selection); Switch = secondary.
+  Future<bool> _confirmDiscardSelection() async {
+    if (selectedIds.isEmpty) return true;
+    final ctx = navigatorKey.currentContext;
+    if (ctx == null || !ctx.mounted) return false;
+    final proceed = await showDialog<bool>(
+      context: ctx,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        title: Text('Photos still selected', style: ts_alertDialogTitle),
+        content: Text(
+          'You have ${selectedIds.length} selected '
+          'photo${selectedIds.length == 1 ? '' : 's'}. Your selections will '
+          'not be processed until you make a choice using one of the '
+          'buttons.\n\nSwitch to single photo view anyway?',
+          style: ts_alertDialogBody,
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            // Default button colour — Cancel keeps the selection.
+            child: Text('Cancel', style: ts_button),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.grey.shade600,
+              foregroundColor: Colors.white,
+            ),
+            child: Text('Switch', style: ts_button),
+          ),
+        ],
+      ),
+    );
+    if (proceed == true) {
+      clearSelection();
+      return true;
+    }
+    return false;
   }
 
-  void exitSelectMode() {
-    selectMode.value = false;
-    selectedIds.clear();
+  /// Grid ⇄ carousel. Leaving the grid with photos still selected warns first —
+  /// selections are only processed via the bulk action buttons.
+  Future<void> toggleGridMode() async {
+    if (gridMode.value && !await _confirmDiscardSelection()) return;
+    gridMode.value = !gridMode.value;
   }
+
+  void clearSelection() => selectedIds.clear();
 
   bool isSelected(String photoId) => selectedIds.contains(photoId);
 
   void toggleSelect(String photoId) {
     if (!selectedIds.remove(photoId)) selectedIds.add(photoId);
-    selectMode.value = selectedIds.isNotEmpty;
   }
 
   void selectAllVisible() {
     selectedIds.addAll(visiblePhotos.map((p) => p.photoId));
-    selectMode.value = selectedIds.isNotEmpty;
   }
 
-  /// A grid thumbnail tapped while NOT selecting → open it in the swipe view
-  /// for detailed review.
-  void openInSwipe(String photoId) {
+  /// Long-press on a grid thumbnail → open it in the swipe view for detailed
+  /// review. This also leaves the grid, so an active selection warns first.
+  Future<void> openInSwipe(String photoId) async {
+    if (!await _confirmDiscardSelection()) return;
     final idx = visiblePhotos.indexWhere((p) => p.photoId == photoId);
     if (idx < 0) return;
     currentIndex.value = idx;
     gridMode.value = false;
-    exitSelectMode();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (pageController.hasClients) pageController.jumpToPage(idx);
     });
@@ -370,7 +411,7 @@ class PhotoReviewController extends GetxController {
       _enqueue(photoId: id, action: action);
       decisions[id] = action;
     }
-    exitSelectMode();
+    clearSelection();
     await _flushQueue();
   }
 
@@ -837,20 +878,6 @@ class PhotoReviewPage extends StatelessWidget {
           iconTheme: const IconThemeData(color: Colors.white),
           title: Text('Review Photos', style: ts_appBarTitle),
           actions: [
-            Obx(
-              () => IconButton(
-                icon: Icon(
-                  controller.gridMode.value
-                      ? Icons.view_carousel_outlined
-                      : Icons.grid_view,
-                  color: Colors.white,
-                ),
-                tooltip: controller.gridMode.value
-                    ? 'Single photo view'
-                    : 'Grid view',
-                onPressed: controller.toggleGridMode,
-              ),
-            ),
             IconButton(
               icon: const Icon(Icons.refresh, color: Colors.white),
               onPressed: controller.loadPhotos,
@@ -1050,6 +1077,25 @@ class _TabPills extends StatelessWidget {
               isSelected: active == PhotoReviewTab.reviewed,
               onTap: () => controller.switchTab(PhotoReviewTab.reviewed),
             ),
+            const SizedBox(width: 12),
+            // Grid ⇄ carousel toggle — lives with the content it switches.
+            GestureDetector(
+              onTap: () => unawaited(controller.toggleGridMode()),
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: controller.gridMode.value ? hc_red : Colors.white24,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Icon(
+                  controller.gridMode.value
+                      ? Icons.view_carousel_outlined
+                      : Icons.grid_view,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+            ),
           ],
         ),
       );
@@ -1190,20 +1236,18 @@ class _PhotoGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final photos = controller.visiblePhotos;
-      final selecting = controller.selectMode.value;
       return Column(
         children: [
-          if (!selecting)
-            Container(
-              width: double.infinity,
-              color: Colors.black38,
-              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-              child: Text(
-                'Tap a photo to open it · long-press to select',
-                style: ts_bodySmall.copyWith(color: Colors.white70),
-                textAlign: TextAlign.center,
-              ),
+          Container(
+            width: double.infinity,
+            color: Colors.black38,
+            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+            child: Text(
+              'Tap to select · long-press to open a photo',
+              style: ts_bodySmall.copyWith(color: Colors.white70),
+              textAlign: TextAlign.center,
             ),
+          ),
           Expanded(
             child: GridView.builder(
               padding: const EdgeInsets.all(8),
@@ -1217,20 +1261,17 @@ class _PhotoGrid extends StatelessWidget {
               itemBuilder: (context, i) {
                 final p = photos[i];
                 return GestureDetector(
-                  onTap: () => selecting
-                      ? controller.toggleSelect(p.photoId)
-                      : controller.openInSwipe(p.photoId),
-                  onLongPress: () => controller.toggleSelect(p.photoId),
+                  onTap: () => controller.toggleSelect(p.photoId),
+                  onLongPress: () => controller.openInSwipe(p.photoId),
                   child: _GridThumb(
                     photo: p,
-                    selecting: selecting,
                     selected: controller.isSelected(p.photoId),
                   ),
                 );
               },
             ),
           ),
-          if (selecting) _BulkActionBar(controller: controller),
+          _BulkActionBar(controller: controller),
         ],
       );
     });
@@ -1240,11 +1281,9 @@ class _PhotoGrid extends StatelessWidget {
 class _GridThumb extends StatelessWidget {
   const _GridThumb({
     required this.photo,
-    required this.selecting,
     required this.selected,
   });
   final KennelPendingPhoto photo;
-  final bool selecting;
   final bool selected;
 
   @override
@@ -1285,21 +1324,17 @@ class _GridThumb extends StatelessWidget {
                 ),
               ),
             ),
-          if (selecting) ...[
-            if (selected)
-              Container(color: hc_blue.withValues(alpha: 0.35)),
-            Positioned(
-              right: 4,
-              top: 4,
-              child: Icon(
-                selected
-                    ? Icons.check_circle
-                    : Icons.radio_button_unchecked,
-                color: selected ? hc_blue : Colors.white,
-                size: 22,
-              ),
+          // Selection indicator only — no overlay tint, so the photo stays
+          // fully visible while selected.
+          Positioned(
+            right: 4,
+            top: 4,
+            child: Icon(
+              selected ? Icons.check_circle : Icons.radio_button_unchecked,
+              color: selected ? Colors.green : Colors.white,
+              size: 22,
             ),
-          ],
+          ),
         ],
       ),
     );
@@ -1332,9 +1367,9 @@ class _BulkActionBar extends StatelessWidget {
                   child: Text('Select all', style: ts_button),
                 ),
                 TextButton(
-                  onPressed: controller.exitSelectMode,
+                  onPressed: controller.clearSelection,
                   child: Text(
-                    'Cancel',
+                    'Clear',
                     style: ts_button.copyWith(color: Colors.white70),
                   ),
                 ),
