@@ -9,6 +9,8 @@ enum EnumMemberPopupActions {
   permanentMembership,
   editKennelAdmin,
   editMismanagementRole,
+  grantAlumni,
+  revokeAlumni,
   cancelDialog,
 }
 
@@ -421,6 +423,38 @@ class KennelMemberListItem extends StatelessWidget {
                           ];
 
                       // if the current user of this device is a superAdmin
+                      // Alumni standing: content access (member-tier photos/chat)
+                      // that survives membership lapse. Permissive by design —
+                      // available to anyone who can open this menu.
+                      buttons.add(<String, dynamic>{
+                        'title': 'Grant alumni access',
+                        'icon': <Widget>[
+                          const SizedBox(
+                            height: 30,
+                            width: 30,
+                            child: Icon(
+                              MaterialCommunityIcons.school,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                        'returnValue': EnumMemberPopupActions.grantAlumni,
+                      });
+                      buttons.add(<String, dynamic>{
+                        'title': 'Revoke alumni access',
+                        'icon': <Widget>[
+                          SizedBox(
+                            height: 30,
+                            width: 30,
+                            child: Icon(
+                              MaterialCommunityIcons.school_outline,
+                              color: Colors.grey.shade400,
+                            ),
+                          ),
+                        ],
+                        'returnValue': EnumMemberPopupActions.revokeAlumni,
+                      });
+
                       // give them the ability to set and clear admin flags for other
                       // users
                       if (kennelListAggregate.hkm?.appAccess.isSuperAdmin ??

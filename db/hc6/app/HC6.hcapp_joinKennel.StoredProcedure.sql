@@ -11,6 +11,8 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_joinKennel]
     @monthsToAddToMembership     SMALLINT         = NULL,
     @appAccessFlags              INT              = NULL,
     @mismanagementRoles          INT              = NULL,
+    @kennelStandingSet           INT              = NULL,
+    @kennelStandingClear         INT              = NULL,
     @paymentAmount               DECIMAL(12,6)    = NULL,
     @kennelsUpdatedAfter         NVARCHAR(50),
     @hasherKennelMapUpdatedAfter NVARCHAR(50),
@@ -211,6 +213,11 @@ BEGIN TRY
                 [AppAccessFlags]             = COALESCE(@appAccessFlags, AppAccessFlags),
                 [HcWebPermissionFlags]       = COALESCE(@appAccessFlags, HcWebPermissionFlags),
                 [MismanagementRoles]         = COALESCE(@mismanagementRoles, MismanagementRoles),
+                -- Manual standing grants (ALUMNI/TRUSTED/ADMIN): set/clear specific
+                -- bits without read-modify-write races. The automated MEMBER bit
+                -- (0x0001) is owned by nonApi_syncMemberStandingBit (runs below).
+                [KennelStanding]             = (KennelStanding | COALESCE(@kennelStandingSet, 0))
+                                               & ~COALESCE(@kennelStandingClear, 0),
                 [KennelNotificationPreference] = COALESCE(@notificationState, KennelNotificationPreference, 0),
                 [KennelEmailAlertPreference]   = COALESCE(@emailAlertState,   KennelEmailAlertPreference,   0),
                 [MembershipExpirationDate]   = CASE

@@ -1,3 +1,6 @@
+1.0.28+26
+    • MemberStandingSweep timer (daily 03:10 UTC) calls HC6.nonApi_sweepMemberStanding — the API shim is now the consolidation point for scheduled automation
+
 
 1.0.27+25
     • GetPositions returns the owning kennel's PackTrack trail-type config on the full fetch (powers app + web trail filtering)

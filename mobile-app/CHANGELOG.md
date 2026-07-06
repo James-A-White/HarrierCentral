@@ -1,5 +1,12 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.12.0+1195 (2026-07-06)
+
+### New Features
+- **Kennel chat**: every kennel you follow now has its own chat, not tied to any run — open it from the chat icon on the kennel list, and unread kennel chats appear in Unseen Chats.
+- **Photo audiences**: photo review now uses audiences — **Private / Members / Public** — plus a **Featured** flag for the kennel home page and a one-per-run **Cover**. Members-only photos are visible only to current members and alumni.
+- **Alumni access**: kennel admins can grant (or revoke) alumni access from the member menu — alumni keep members-only content access even after paid membership lapses.
+
 ## 2.11.14+1194 (2026-07-06)
 
 ### Fixes

@@ -627,6 +627,21 @@ class KennelMemberListState extends State<KennelMembersList>
                                         -9999,
                                       );
                                       break;
+                                    case EnumMemberPopupActions.grantAlumni:
+                                      // ALUMNI bit 0x0002 (manual grant)
+                                      await _setUserProperties(
+                                        snapshot,
+                                        index,
+                                        kennelStandingSet: 0x0002,
+                                      );
+                                      break;
+                                    case EnumMemberPopupActions.revokeAlumni:
+                                      await _setUserProperties(
+                                        snapshot,
+                                        index,
+                                        kennelStandingClear: 0x0002,
+                                      );
+                                      break;
                                     case EnumMemberPopupActions.editKennelAdmin:
                                       final int? appAccessResult =
                                           await Navigator.push<int>(
@@ -1094,6 +1109,8 @@ class KennelMemberListState extends State<KennelMembersList>
     int index, {
     int appAccessFlags = -1,
     int mismanagementRoles = -1,
+    int kennelStandingSet = -1,
+    int kennelStandingClear = -1,
   }) async {
     final HasherKennelMapService srv = HasherKennelMapService();
     widget.kennelListAggregate.extensions.followingRequested = -1;
@@ -1111,6 +1128,8 @@ class KennelMemberListState extends State<KennelMembersList>
         targetUserId: snapshot.data![index].hasherId,
         appAccessFlags: appAccessFlags,
         mismanagementRoles: mismanagementRoles,
+        kennelStandingSet: kennelStandingSet,
+        kennelStandingClear: kennelStandingClear,
       );
     } catch (e, s) {
       debugPrint('_setUserProperties: updateHasherKennelStatus error: $e');

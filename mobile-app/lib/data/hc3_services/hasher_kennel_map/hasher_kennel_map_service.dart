@@ -233,6 +233,8 @@ class HasherKennelMapService {
     int isHomeKennel = -1,
     int appAccessFlags = -1,
     int mismanagementRoles = -1,
+    int kennelStandingSet = -1,
+    int kennelStandingClear = -1,
   }) async {
     List<dynamic> adHocData = <dynamic>[];
 
@@ -288,6 +290,8 @@ class HasherKennelMapService {
       'notificationState': notificationState,
       'emailAlertState': emailAlertState,
       'monthsToAddToMembership': monthsToAddToMembership,
+      if (kennelStandingSet != -1) 'kennelStandingSet': kennelStandingSet,
+      if (kennelStandingClear != -1) 'kennelStandingClear': kennelStandingClear,
       'appAccessFlags': appAccessFlags,
       'mismanagementRoles': mismanagementRoles,
       'hasherKennelMapUpdatedAfter': ('${hasherKennelMapUpdatedAfter}000000')
