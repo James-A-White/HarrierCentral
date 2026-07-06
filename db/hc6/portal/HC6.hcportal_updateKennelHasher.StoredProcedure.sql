@@ -173,6 +173,13 @@ BEGIN TRY
             INNER JOIN HC.Kennel k on hkm.KennelId = k.id
             WHERE h.PublicHasherId = @hasherBeingEditedPublicId
             AND k.PublicKennelId = @publicKennelId
+
+        -- Keep the automated MEMBER standing bit (0x0001) in sync with the
+        -- expiration just written (KennelStanding design of record).
+        DECLARE @standingUserId UNIQUEIDENTIFIER, @standingKennelId UNIQUEIDENTIFIER;
+        SELECT @standingUserId   = h.id FROM HC.Hasher h WHERE h.PublicHasherId = @hasherBeingEditedPublicId;
+        SELECT @standingKennelId = k.id FROM HC.Kennel k WHERE k.PublicKennelId = @publicKennelId;
+        EXEC HC6.nonApi_syncMemberStandingBit @userId = @standingUserId, @kennelId = @standingKennelId;
     END
 
     -- Update membership status if provided

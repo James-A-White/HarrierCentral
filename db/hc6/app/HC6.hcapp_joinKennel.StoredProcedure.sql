@@ -231,6 +231,10 @@ BEGIN TRY
             WHERE id = @hkmId;
         END
 
+        -- Keep the automated MEMBER standing bit (0x0001) in sync (covers both
+        -- the INSERT and UPDATE branches above).
+        EXEC HC6.nonApi_syncMemberStandingBit @userId = @targetUserId, @kennelId = @kennelId;
+
         -- Update kennel mismanagement team string when roles change
         IF (@mismanagementRoles IS NOT NULL)
         BEGIN
