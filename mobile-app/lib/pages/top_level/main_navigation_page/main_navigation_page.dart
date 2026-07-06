@@ -64,6 +64,15 @@ class MainNavigationPage extends StatelessWidget {
                                         RunsToDisplay.unreadChats;
                                     badgeController.runsTimeScope.value =
                                         RunsTimeScope.all;
+                                    // Refresh the unread-chat runs on entry so
+                                    // the list isn't stale/empty under a
+                                    // non-zero badge. Fire-and-forget: cached
+                                    // rows show immediately, the fetch re-runs
+                                    // the list UI when it lands.
+                                    if (Get.isRegistered<NotificationService>()) {
+                                      unawaited(Get.find<NotificationService>()
+                                          .getEventChatMessageCounts());
+                                    }
                                   } else {
                                     badgeController.runsToDisplay.value =
                                         RunsToDisplay.allRuns;

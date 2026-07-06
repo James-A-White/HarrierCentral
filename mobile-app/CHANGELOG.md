@@ -1,5 +1,11 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.11.14+1194 (2026-07-06)
+
+### Fixes
+- **New runs get the right start time**: creating a run in the app now uses the kennel's default run start time on the day you picked (previously new runs were created at midnight).
+- **Unseen Chats**: the list refreshes from the server when you open it via the chat badge, and runs that were deleted or hidden no longer appear.
+
 ## 2.11.13+1193 (2026-07-02)
 
 ### Fixes

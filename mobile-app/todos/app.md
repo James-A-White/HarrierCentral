@@ -174,16 +174,11 @@ Session 1/2 audit above is complete; this section tracks the hardening pass.
 - [x] **Grid multi-select persisted across tabs** — `PhotoReviewController.switchTab`
   didn't clear the selection, so a bulk action after switching Pending↔Reviewed
   could target now-hidden photos. Fixed: `switchTab` → `exitSelectMode()`.
-- [ ] **Unseen Chats uses cached counts on entry** — the chat-badge tap renders
-  `NotificationService.unreadChatRuns` from the last fetch; it's not refreshed on
-  entry. Usually fresh (boot + push + after opening a chat), but a stale/empty
-  cache would show an empty list under a non-zero badge. Fire
-  `getEventChatMessageCounts()` when entering chats mode (it re-runs the list on
-  completion). Low risk.
-- [ ] **Unseen Chats SP includes deleted/invisible events** —
-  `HC6.hcapp_getEventBadgeCount` Mode 3 joins HC.Event/HC.Kennel with no
-  `e.deleted = 0` / `e.IsVisible <> 0` guard, so a deleted run with unread chats
-  could surface. Add the guard (+ redeploy SP). Low.
+- [x] **Unseen Chats uses cached counts on entry** — fixed: the chat-badge tap
+  now fires `getEventChatMessageCounts()` (fire-and-forget) when entering chats
+  mode; cached rows show immediately and the list re-runs when the fetch lands.
+- [x] **Unseen Chats SP includes deleted/invisible events** — fixed: Mode 3 now
+  guards `e.deleted = 0 AND e.IsVisible <> 0` (SP redeployed).
 
 ### Device-verify checklist (on current TestFlight 1191)
 - [ ] Runs list opens anchored on the "My past runs" divider; scroll up = past runs.

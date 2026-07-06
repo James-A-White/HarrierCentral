@@ -173,4 +173,6 @@ FROM (
 ) AS unread
 INNER JOIN HC.Event  e ON e.id = unread.EventId
 INNER JOIN HC.Kennel k ON k.id = e.KennelId
-WHERE unread.BadgeCount > 0;
+WHERE unread.BadgeCount > 0
+  AND e.deleted = 0
+  AND e.IsVisible <> 0;
