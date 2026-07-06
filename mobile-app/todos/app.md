@@ -199,3 +199,46 @@ Session 1/2 audit above is complete; this section tracks the hardening pass.
   passes (all builds so far are TestFlight only).
 - [ ] Consider reviving the commented-out test infra (sqflite_ffi) for regression
   safety — see project_mobile_test_plan.
+
+---
+
+## 3.0 FEATURE SET — KennelStanding + photo audiences + kennel chat
+Designed 2026-07-06 — full design of record in memory
+`project_kennel_standing_design`. Cross-component (db/api/portal/app).
+
+### KennelStanding foundation (db + api)
+- [ ] Migration (JAMES RUNS — HKM is synced, trigger-disable dance):
+  `HKM.KennelStanding INT NOT NULL DEFAULT 0` + backfill (MEMBER bit where
+  membershipExpirationDate >= now; ADMIN bit from mismanagement/AppAccessFlags).
+- [ ] `HC.KennelAccessTier` inline TVF — the single access oracle (OR-mask read).
+- [ ] `nonApi_syncMemberStandingBit` helper + hooks in every SP that writes
+  membershipExpirationDate.
+- [ ] `nonApi_sweepMemberStanding` daily sweep + Azure Functions timer trigger
+  in the API shim (consolidation point for scheduled automation; existing
+  Logic-App daily task to migrate later).
+- [ ] Grant UI: "Alumni/Trusted" toggles on kennel members page (portal + app),
+  gated by the mismanagement-roles permission rule.
+
+### Photo audience re-slice (db + app + public-web)
+- [ ] Status migration: Shared→Public, RunGallery→Public, HomeGallery→Public+Featured,
+  Cover implies Public; add `Featured` flag (orthogonal to audience).
+- [ ] Photo read SPs filter Members tier via the TVF; public-web SPs serve
+  Public only (member web login doesn't exist yet).
+- [ ] Cover uniqueness enforced in SP (new cover demotes old to Public).
+- [ ] Hash Flash review bar + grid status tags relabelled:
+  Delete / Private / Members / Public / Cover (+ Featured control).
+
+### Kennel-level chat (db + api + app)
+- [ ] Schema: nullable EventId + KennelId on EventMessage + EventMessageBadgeCounts
+  (kennel thread = KennelId set, EventId NULL — no sentinel events).
+- [ ] Send/read/mark-read SP kennel paths; pushes resolve from
+  KennelNotificationPreference (no event override step).
+- [ ] Badge SP includes kennel threads; Unseen Chats shows kennel rows
+  (kennel logo, no run number), pinned at top.
+- [ ] Entry point: chat icon on kennel page/row.
+
+### Deferred to 3.0.x (designed, do not build in 3.0)
+- Per-message chat audiences: ONE thread + composer audience selector,
+  read-side TVF filter, COUNT-based badges, colour tint + chip (never colour
+  alone), reuse @messageReleasabilityFlags. App-local standing (sync vs adHoc)
+  decided here.
