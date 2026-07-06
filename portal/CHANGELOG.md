@@ -2,6 +2,13 @@
 
 ---
 
+## 2.0.43+678 — 2026-07-06
+
+### Improvements
+- **Default run day/time cleanup**: the kennel's default run day-of-week now lives in its own database column (`DefaultRunDayOfWeek`) instead of being encoded in the fractional seconds of the default start time. The kennel Other tab and the new-run default date derivation use the real field.
+
+---
+
 ## 2.0.42+677 — 2026-06-29
 
 ### Improvements
