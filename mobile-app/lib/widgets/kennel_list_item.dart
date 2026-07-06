@@ -282,6 +282,36 @@ class KennelListItemState extends State<KennelListItem> {
                   ),
                 ),
                 if (Utilities.isConnected()) ...<Widget>[
+                  // Kennel-level chat (not bound to a run). Available to
+                  // followers — the SP enforces the HKM requirement.
+                  if (widget.kennelItem.hkm != null)
+                    IconButton(
+                      icon: const Icon(MaterialCommunityIcons.chat_outline),
+                      iconSize: Theme.of(context).iconTheme.size,
+                      color: Colors.black54,
+                      splashColor: Theme.of(context).highlightColor,
+                      onPressed: () async {
+                        final k = widget.kennelItem.kennel;
+                        await Get.to(
+                          () => Scaffold(
+                            appBar: AppBar(
+                              title: Text('${k.kennelShortName} Kennel Chat'),
+                              backgroundColor: themeButtonColors,
+                              foregroundColor: Colors.white,
+                            ),
+                            body: ChatPage(
+                              eventId: k.kennelId,
+                              publicEventId: k.publicKennelId,
+                              isKennelThread: true,
+                            ),
+                          ),
+                        );
+                        if (Get.isRegistered<NotificationService>()) {
+                          unawaited(Get.find<NotificationService>()
+                              .getEventChatMessageCounts());
+                        }
+                      },
+                    ),
                   IconButton(
                     icon: const Icon(MaterialCommunityIcons.dots_vertical),
                     iconSize: Theme.of(context).iconTheme.size,

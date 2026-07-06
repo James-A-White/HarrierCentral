@@ -775,9 +775,11 @@ class FutureRunsListPage extends StatelessWidget {
   /// run name/number, date, and the unread-message count. Taps straight into the
   /// chat, so it works even for runs that aren't synced locally.
   Widget _chatRunRow(EventChatSummary s) {
-    final String title = (s.kennelShortName != null && s.eventNumber != null)
-        ? '${s.kennelShortName} #${s.eventNumber}'
-        : (s.eventName ?? 'Run');
+    final String title = s.isKennelThread
+        ? '${s.kennelShortName ?? s.eventName ?? 'Kennel'} Kennel Chat'
+        : (s.kennelShortName != null && s.eventNumber != null)
+            ? '${s.kennelShortName} #${s.eventNumber}'
+            : (s.eventName ?? 'Run');
     String dateStr = '';
     final gmt = s.eventStartDatetimeGmt;
     if (gmt != null && gmt.isNotEmpty) {
@@ -826,7 +828,9 @@ class FutureRunsListPage extends StatelessWidget {
           ),
         ),
         onTap: () async {
-          if (s.eventId == null) return;
+          final bool kennelThread = s.isKennelThread;
+          if (!kennelThread && s.eventId == null) return;
+          if (kennelThread && (s.publicKennelId ?? '').isEmpty) return;
           // ChatPage is normally a tab body inside RunDetailsPage, which
           // supplies the app bar (back) and keyboard-safe Scaffold. Opened
           // standalone from here it needs its own Scaffold + AppBar so there's
@@ -839,8 +843,10 @@ class FutureRunsListPage extends StatelessWidget {
                 foregroundColor: Colors.white,
               ),
               body: ChatPage(
-                eventId: s.eventId!,
-                publicEventId: s.publicEventId,
+                eventId: kennelThread ? s.kennelId! : s.eventId!,
+                publicEventId:
+                    kennelThread ? s.publicKennelId! : s.publicEventId,
+                isKennelThread: kennelThread,
               ),
             ),
           );
@@ -1444,6 +1450,7 @@ class EventChatSummary {
   final String? eventStartDatetimeGmt;
   final String? eventImage;
   final String? kennelId;
+  final String? publicKennelId;
   final String? kennelShortName;
   final String? kennelLogo;
 
@@ -1456,13 +1463,18 @@ class EventChatSummary {
     this.eventStartDatetimeGmt,
     this.eventImage,
     this.kennelId,
+    this.publicKennelId,
     this.kennelShortName,
     this.kennelLogo,
   });
 
+  /// Kennel-thread rows (kennel-level chat) carry kennelId/publicKennelId and
+  /// have NO event identity.
+  bool get isKennelThread => eventId == null && kennelId != null;
+
   factory EventChatSummary.fromJson(Map<String, dynamic> json) {
     return EventChatSummary(
-      publicEventId: json['PublicEventId'] as String,
+      publicEventId: json['PublicEventId'] as String? ?? '',
       badgeCount: (json[BADGE_COUNT_JSON_KEY] as num?)?.toInt() ?? 0,
       eventId: json['EventId'] as String?,
       eventName: json['EventName'] as String?,
@@ -1470,6 +1482,7 @@ class EventChatSummary {
       eventStartDatetimeGmt: json['EventStartDatetimeGmt'] as String?,
       eventImage: json['EventImage'] as String?,
       kennelId: json['KennelId'] as String?,
+      publicKennelId: json['PublicKennelId'] as String?,
       kennelShortName: json['KennelShortName'] as String?,
       kennelLogo: json['KennelLogo'] as String?,
     );

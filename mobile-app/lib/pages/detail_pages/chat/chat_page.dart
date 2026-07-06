@@ -3,13 +3,24 @@ import 'package:intl/intl.dart';
 import 'package:harrier_central/imports.dart';
 
 class ChatPage extends StatelessWidget {
-  ChatPage({required this.eventId, required this.publicEventId, super.key});
+  ChatPage({
+    required this.eventId,
+    required this.publicEventId,
+    this.isKennelThread = false,
+    super.key,
+  });
 
+  /// Kennel thread: [eventId]=kennelId, [publicEventId]=publicKennelId.
   final String eventId;
   final String publicEventId;
+  final bool isKennelThread;
 
   late final ChatPageController controller = Get.put(
-    ChatPageController(eventId: eventId, publicEventId: publicEventId),
+    ChatPageController(
+      eventId: eventId,
+      publicEventId: publicEventId,
+      isKennelThread: isKennelThread,
+    ),
   );
 
   static final _chatTheme = () {

@@ -119,14 +119,23 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       // Populate unreadEventCounts with RxInt values derived from clientChatCounts.
       unreadEventCounts.value = {
         for (final summary in serverChatSummary)
-          summary.publicEventId: summary.badgeCount.obs,
+          if (summary.publicEventId.isNotEmpty)
+            summary.publicEventId: summary.badgeCount.obs,
       };
+
+      // Kennel-thread rows contribute to the global badge separately.
+      for (final summary in serverChatSummary) {
+        if (summary.isKennelThread && (summary.publicKennelId ?? '').isNotEmpty) {
+          unreadEventCounts[summary.publicKennelId!] = summary.badgeCount.obs;
+        }
+      }
 
       // Keep the display-bearing rows (those that carry event data) for the
       // Unseen Chats list, newest-first.
       final withData =
           serverChatSummary
-              .where((s) => s.badgeCount > 0 && s.eventId != null)
+              .where((s) =>
+                  s.badgeCount > 0 && (s.eventId != null || s.isKennelThread))
               .toList()
             ..sort(
               (a, b) => (b.eventStartDatetimeGmt ?? '').compareTo(

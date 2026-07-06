@@ -4,10 +4,20 @@ import 'package:harrier_central/imports.dart';
 const int kChatReleasabilityAll = 63;
 
 class ChatPageController extends GetxController {
-  ChatPageController({required this.eventId, required this.publicEventId});
+  ChatPageController({
+    required this.eventId,
+    required this.publicEventId,
+    this.isKennelThread = false,
+  });
 
+  /// For a KENNEL thread, [eventId] carries the kennel id and [publicEventId]
+  /// carries the public kennel id (the thread's roomId) — the SPs mirror the
+  /// event-thread rowset shapes so everything downstream is unchanged.
   final String eventId;
   final String publicEventId;
+  final bool isKennelThread;
+
+  String get _idKey => isKennelThread ? 'kennelId' : 'eventId';
 
   final chatController = core.InMemoryChatController();
   final _userCache = <String, core.User>{};
@@ -151,14 +161,15 @@ class ChatPageController extends GetxController {
 
     final result = await ServiceCommon.sendHttpPost(
       () => jsonEncode(<String, dynamic>{
-        'queryType': 'markEventChatRead',
+        'queryType':
+            isKennelThread ? 'markKennelChatRead' : 'markEventChatRead',
         'deviceId': deviceId,
         'accessToken': Utilities.generateToken(
           userId,
-          'hcapp_markEventChatRead',
+          isKennelThread ? 'hcapp_markKennelChatRead' : 'hcapp_markEventChatRead',
           paramString: deviceSecret,
         ),
-        'eventId': eventId,
+        _idKey: eventId,
       }),
     );
 
@@ -173,14 +184,14 @@ class ChatPageController extends GetxController {
     final String deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
 
     final body = <String, dynamic>{
-      'queryType': 'getEventMessages',
+      'queryType': isKennelThread ? 'getKennelMessages' : 'getEventMessages',
       'deviceId': deviceId,
       'accessToken': Utilities.generateToken(
         userId,
-        'hcapp_getEventMessages',
+        isKennelThread ? 'hcapp_getKennelMessages' : 'hcapp_getEventMessages',
         paramString: deviceSecret,
       ),
-      'eventId': eventId,
+      _idKey: eventId,
     };
     if (sinceSequenceCount != null) {
       body['sinceSequenceCount'] = sinceSequenceCount;
@@ -314,14 +325,14 @@ class ChatPageController extends GetxController {
 
     final result = await ServiceCommon.sendHttpPost(
       () => jsonEncode(<String, dynamic>{
-        'queryType': 'sendEventMessage',
+        'queryType': isKennelThread ? 'sendKennelMessage' : 'sendEventMessage',
         'deviceId': deviceId,
         'accessToken': Utilities.generateToken(
           userId,
-          'hcapp_sendEventMessage',
+          isKennelThread ? 'hcapp_sendKennelMessage' : 'hcapp_sendEventMessage',
           paramString: deviceSecret,
         ),
-        'eventId': eventId,
+        _idKey: eventId,
         'messageId': uuid,
         'messageContent': text,
         'messageReleasabilityFlags': kChatReleasabilityAll,
