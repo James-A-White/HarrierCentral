@@ -242,3 +242,22 @@ Designed 2026-07-06 — full design of record in memory
   read-side TVF filter, COUNT-based badges, colour tint + chip (never colour
   alone), reuse @messageReleasabilityFlags. App-local standing (sync vs adHoc)
   decided here.
+
+---
+
+## ☀️ MORNING RUNBOOK (2026-07-07) — deploy gate for TestFlight 2.12.0+1195
+
+Build 1195 (kennel chat, photo audiences, alumni grants) is on TestFlight but
+**DO NOT TEST IT until this sequence runs** — it depends on the new schema+SPs.
+
+1. **James**: run the HKM migration (synced table — your step):
+   `set -a; . ./.env; set +a && sqlcmd -S "$HC_SQL_SERVER" -d "$HC_SQL_DATABASE" -U "$HC_SQL_USERNAME" -P "$HC_SQL_PASSWORD" -i db/hc6/portal/add_KennelStanding_to_HKM.sql`
+   (expect verification row; MemberBits/AdminBits > 0) — or just tell Claude "run the morning deploy" and step 1 will be confirmed with you first.
+2. Run the two non-synced migrations (Claude can run these on your go):
+   `db/hc6/app/add_Featured_to_KennelPhotos.sql`, `db/hc6/app/add_KennelChat_to_EventMessage.sql`
+3. Deploy SPs: `./tools/deploy_hc6.sh`
+4. Deploy API (timer function): `cd api && func publish harriercentralpublicapi`
+5. Archive the three migration scripts to their archive/ dirs + commit.
+6. Test 1195 end-to-end (device-verify checklist above + new: kennel chat
+   send/receive/badge, photo Members/Public/Featured/Cover flows, alumni
+   grant→lapsed-member photo access).
