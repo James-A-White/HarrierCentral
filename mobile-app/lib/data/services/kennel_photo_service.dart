@@ -5,10 +5,11 @@ import 'package:photo_manager/photo_manager.dart';
 // Actions 3–6 are cumulative: each level implies all lower approval levels.
 const int photoActionDelete          = 1; // hard-delete (inappropriate content)
 const int photoActionKeepPrivate     = 2; // back to uploader-only (status 0)
-const int photoActionShare           = 3; // visible to all HC users on run maps (status 2)
-const int photoActionAddToGallery    = 4; // + appears in run photo gallery (status 3)
-const int photoActionAddToHomeGallery = 5; // + appears on kennel home page (status 4)
-const int photoActionMakeEventCover  = 6; // + set as run cover photo (status 5)
+const int photoActionMembers         = 3; // kennel members only (status 2)
+const int photoActionPublic          = 4; // everyone: app + public web (status 3)
+const int photoActionFeature         = 5; // set Featured flag (kennel home showcase) — status unchanged
+const int photoActionMakeEventCover  = 6; // public + run cover photo (status 5, one per run)
+const int photoActionUnfeature       = 7; // clear Featured flag
 
 class KennelPhotoService {
   /// Orchestrates the full capture → upload → record flow.

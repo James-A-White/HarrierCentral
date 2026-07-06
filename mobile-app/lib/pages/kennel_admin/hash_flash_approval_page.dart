@@ -9,6 +9,7 @@ class KennelPendingPhoto {
     required this.photoId,
     required this.eventId,
     required this.status,
+    this.featured = 0,
     required this.blobUrl,
     this.editedBlobUrl,
     required this.uploaderDisplayName,
@@ -23,6 +24,8 @@ class KennelPendingPhoto {
   final String photoId;
   final String eventId;
   final int status;
+  /// Orthogonal showcase flag (kennel home page) — not an audience level.
+  final int featured;
   final DateTime? deletedAt;
   final String blobUrl;
   /// Hash-Flash-edited crop. Null until the Hash Flash crops the photo.
@@ -46,6 +49,7 @@ class KennelPendingPhoto {
       photoId: photoId,
       eventId: eventId,
       status: status,
+      featured: featured,
       deletedAt: deletedAt,
       blobUrl: blobUrl,
       editedBlobUrl: editedBlobUrl,
@@ -65,6 +69,7 @@ class KennelPendingPhoto {
       photoId: photoId,
       eventId: eventId,
       status: status,
+      featured: featured,
       deletedAt: deletedAt,
       blobUrl: blobUrl,
       editedBlobUrl: newEditedBlobUrl,
@@ -86,6 +91,7 @@ class KennelPendingPhoto {
         (json['EventId'] ?? json['eventId'])?.toString() ?? '',
       ),
       status: (json['Status'] ?? json['status'] as num?)?.toInt() ?? 0,
+      featured: (json['Featured'] as num?)?.toInt() ?? 0,
       deletedAt: () {
         final raw =
             (json['DeletedAt'] ?? json['deletedAt'])?.toString();
@@ -987,11 +993,11 @@ class _RunHeader extends StatelessWidget {
                           count: c.private,
                           color: Colors.grey.shade600),
                       _CountChip(
-                          label: 'Shared',
+                          label: 'Members',
                           count: c.shared,
                           color: Colors.green.shade600),
                       _CountChip(
-                          label: 'Gallery',
+                          label: 'Public',
                           count: c.runGallery,
                           color: Colors.green.shade700),
                       _CountChip(
@@ -1216,11 +1222,11 @@ class _PhotoBody extends StatelessWidget {
     case 0:
       return (label: 'Private', color: Colors.blueGrey.shade600);
     case 2:
-      return (label: 'Shared', color: Colors.blue.shade700);
+      return (label: 'Members', color: Colors.blue.shade700);
     case 3:
-      return (label: 'Gallery', color: Colors.green.shade700);
-    case 4:
-      return (label: 'Home', color: Colors.teal.shade700);
+      return (label: 'Public', color: Colors.green.shade700);
+    case 4: // legacy home-gallery rows read as Public
+      return (label: 'Public', color: Colors.green.shade700);
     case 5:
       return (label: 'Cover', color: Colors.amber.shade800);
     default:
@@ -1391,12 +1397,11 @@ class _BulkActionBar extends StatelessWidget {
                     photoActionDelete),
                 _bulkBtn(Icons.lock_outline, 'Private', Colors.blueGrey.shade600,
                     photoActionKeepPrivate),
-                _bulkBtn(Icons.public, 'Share', Colors.blue.shade700,
-                    photoActionShare),
-                _bulkBtn(Icons.photo_library_outlined, 'Gallery',
-                    Colors.green.shade700, photoActionAddToGallery),
-                _bulkBtn(Icons.home_outlined, 'Home', Colors.teal.shade700,
-                    photoActionAddToHomeGallery),
+                _bulkBtn(Icons.people_outline, 'Members', Colors.blue.shade700,
+                    photoActionMembers),
+                _bulkBtn(Icons.public, 'Public',
+                    Colors.green.shade700, photoActionPublic),
+                _bulkBtn(Icons.home_outlined, 'Featured', Colors.teal.shade700,                    photoActionFeature),
               ],
             ),
           ],
@@ -1641,9 +1646,9 @@ class _PhotoPageView extends StatelessWidget {
                   ? photoActionDelete
                   : switch (photo.status) {
                       0 => photoActionKeepPrivate,
-                      2 => photoActionShare,
-                      3 => photoActionAddToGallery,
-                      4 => photoActionAddToHomeGallery,
+                      2 => photoActionMembers,
+                      3 => photoActionPublic,
+                      4 => photoActionPublic, // legacy home-gallery rows read as Public
                       5 => photoActionMakeEventCover,
                       _ => null, // status 1 = pending, no badge until actioned
                     };
@@ -1688,9 +1693,9 @@ class _PhotoPageView extends StatelessWidget {
   String _actionLabel(int action) => switch (action) {
         photoActionKeepPrivate => 'Keep Private',
         photoActionDelete => 'Deleted',
-        photoActionShare => 'Share on Maps',
-        photoActionAddToGallery => 'Run Gallery',
-        photoActionAddToHomeGallery => 'Home Page Gallery',
+        photoActionMembers => 'Members',
+        photoActionPublic => 'Public',
+        photoActionFeature => 'Featured',
         photoActionMakeEventCover => 'Event Cover Photo',
         _ => 'Actioned',
       };
@@ -1698,9 +1703,9 @@ class _PhotoPageView extends StatelessWidget {
   Color _badgeColor(int action) => switch (action) {
         photoActionKeepPrivate    => Colors.grey.shade600,
         photoActionDelete         => hc_red,
-        photoActionShare          => Colors.green.shade600,
-        photoActionAddToGallery   => Colors.green.shade700,
-        photoActionAddToHomeGallery => Colors.teal.shade600,
+        photoActionMembers          => Colors.green.shade600,
+        photoActionPublic   => Colors.green.shade700,
+        photoActionFeature => Colors.teal.shade600,
         photoActionMakeEventCover => Colors.teal.shade800,
         _ => Colors.white38,
       };
@@ -1731,9 +1736,9 @@ class _ActionPanel extends StatelessWidget {
               ? photoActionDelete
               : switch (photo.status) {
                   0 => photoActionKeepPrivate,
-                  2 => photoActionShare,
-                  3 => photoActionAddToGallery,
-                  4 => photoActionAddToHomeGallery,
+                  2 => photoActionMembers,
+                  3 => photoActionPublic,
+                  4 => photoActionPublic, // legacy home-gallery rows read as Public
                   5 => photoActionMakeEventCover,
                   _ => null,
                 });
@@ -1782,7 +1787,7 @@ class _ActionPanel extends StatelessWidget {
                   Padding(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 10),
-                    child: Text('Publish as…',
+                    child: Text('Audience…',
                         style: ts_bodySmall.copyWith(
                             color: Colors.white54,
                             fontStyle: FontStyle.italic)),
@@ -1797,20 +1802,20 @@ class _ActionPanel extends StatelessWidget {
                 Expanded(
                   child: _ActionButton(
                     icon: Icons.people_outline,
-                    label: 'Share on Maps',
-                    color: Colors.green.shade600,
-                    isSelected: selected == photoActionShare,
-                    onTap: () => act(photoActionShare),
+                    label: 'Members',
+                    color: Colors.blue.shade700,
+                    isSelected: selected == photoActionMembers,
+                    onTap: () => act(photoActionMembers),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: _ActionButton(
-                    icon: Icons.photo_library_outlined,
-                    label: 'Run Gallery',
+                    icon: Icons.public,
+                    label: 'Public',
                     color: Colors.green.shade700,
-                    isSelected: selected == photoActionAddToGallery,
-                    onTap: () => act(photoActionAddToGallery),
+                    isSelected: selected == photoActionPublic,
+                    onTap: () => act(photoActionPublic),
                   ),
                 ),
               ],
@@ -1821,10 +1826,18 @@ class _ActionPanel extends StatelessWidget {
                 Expanded(
                   child: _ActionButton(
                     icon: Icons.home_outlined,
-                    label: 'Home Page Gallery',
+                    label: 'Featured',
                     color: Colors.teal.shade600,
-                    isSelected: selected == photoActionAddToHomeGallery,
-                    onTap: () => act(photoActionAddToHomeGallery),
+                    // Orthogonal flag: highlighted when the photo is featured
+                    // (or a feature decision is queued); tap toggles.
+                    isSelected: selected == photoActionFeature ||
+                        (photo.featured == 1 &&
+                            selected != photoActionUnfeature),
+                    onTap: () => act(
+                      (photo.featured == 1 || selected == photoActionFeature)
+                          ? photoActionUnfeature
+                          : photoActionFeature,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
