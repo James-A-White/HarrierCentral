@@ -6,89 +6,91 @@ part of 'application_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_ApplicationModel _$ApplicationModelFromJson(Map<String, dynamic> json) =>
-    _ApplicationModel(
-      applicationPublicId:
-          const UuidConverter().fromJson(json['applicationPublicId'] as String),
-      challengeIndex: (json['challengeIndex'] as num).toInt(),
-      title: json['title'] as String,
-      shortDescription: json['shortDescription'] as String,
-      applicationImageAsset: json['applicationImageAsset'] as String,
-      tagsValid: json['tagsValid'] as String? ?? BOOL_TRUE,
-      applicationIsSubmitable:
-          json['applicationIsSubmitable'] as bool? ?? false,
-      quadChart: json['quadChart'] == null
-          ? null
-          : PdfDocumentModel.fromJson(
-              json['quadChart'] as Map<String, dynamic>),
-      proposal: json['proposal'] == null
-          ? null
-          : PdfDocumentModel.fromJson(json['proposal'] as Map<String, dynamic>),
-      applicationImageUrl: json['applicationImageUrl'] as String?,
-      applicationCvAdmin: json['applicationCvAdmin'] == null
-          ? null
-          : PdfDocumentModel.fromJson(
-              json['applicationCvAdmin'] as Map<String, dynamic>),
-      applicationCvCeo: json['applicationCvCeo'] == null
-          ? null
-          : PdfDocumentModel.fromJson(
-              json['applicationCvCeo'] as Map<String, dynamic>),
-      applicationCvComm: json['applicationCvComm'] == null
-          ? null
-          : PdfDocumentModel.fromJson(
-              json['applicationCvComm'] as Map<String, dynamic>),
-      applicationCvTech: json['applicationCvTech'] == null
-          ? null
-          : PdfDocumentModel.fromJson(
-              json['applicationCvTech'] as Map<String, dynamic>),
-      applicationPicAdmin: json['applicationPicAdmin'] as String?,
-      applicationPicCeo: json['applicationPicCeo'] as String?,
-      applicationPicComm: json['applicationPicComm'] as String?,
-      applicationPicTech: json['applicationPicTech'] as String?,
-      nameAdmin: json['nameAdmin'] as String?,
-      nameCeo: json['nameCeo'] as String?,
-      nameComm: json['nameComm'] as String?,
-      nameTech: json['nameTech'] as String?,
-      emailAdmin: json['emailAdmin'] as String?,
-      emailCeo: json['emailCeo'] as String?,
-      emailComm: json['emailComm'] as String?,
-      emailTech: json['emailTech'] as String?,
-      formTechnicalDescriptionValid:
-          json['formTechnicalDescriptionValid'] as String?,
-      formCommercialroposalValid: json['formCommercialroposalValid'] as String?,
-      formProjectPlanValid: json['formProjectPlanValid'] as String?,
-      formOverviewValid: json['formOverviewValid'] as String?,
-      formTechnicalDescription: json['formTechnicalDescription'] as String?,
-      formCommercialViability: json['formCommercialViability'] as String?,
-      formOverivew: json['formOverivew'] as String?,
-      formProjectPlan: json['formProjectPlan'] as String?,
-      tagKeys: json['tagKeys'] as String?,
-      tagLabels: json['tagLabels'] as String?,
-      agreeTsAndCs: json['agreeTsAndCs'] as String?,
-      agreeTsAndCsDetails: json['agreeTsAndCsDetails'] as String?,
-      isSubmitted: json['isSubmitted'] as String?,
-      isSubmittedDetails: json['isSubmittedDetails'] as String?,
-      mfaUserId: json['mfaUserId'] as String?,
-      mfaLastValidated: json['mfaLastValidated'] == null
-          ? null
-          : DateTime.parse(json['mfaLastValidated'] as String),
-      optInToReceivePromotions:
-          json['optInToReceivePromotions'] as String? ?? "0",
-      optOutToShareWithNations:
-          json['optOutToShareWithNations'] as String? ?? "1",
-      submissionDate: json['submissionDate'] == null
-          ? null
-          : DateTime.parse(json['submissionDate'] as String),
-      progressEmptyFields: (json['progressEmptyFields'] as num?)?.toInt() ?? 0,
-      progressValidFields: (json['progressValidFields'] as num?)?.toInt() ?? 0,
-      progressInvalidFields:
-          (json['progressInvalidFields'] as num?)?.toInt() ?? 0,
-    );
+_ApplicationModel _$ApplicationModelFromJson(
+  Map<String, dynamic> json,
+) => _ApplicationModel(
+  applicationPublicId: const UuidConverter().fromJson(
+    json['applicationPublicId'] as String,
+  ),
+  challengeIndex: (json['challengeIndex'] as num).toInt(),
+  title: json['title'] as String,
+  shortDescription: json['shortDescription'] as String,
+  applicationImageAsset: json['applicationImageAsset'] as String,
+  tagsValid: json['tagsValid'] as String? ?? BOOL_TRUE,
+  applicationIsSubmitable: json['applicationIsSubmitable'] as bool? ?? false,
+  quadChart: json['quadChart'] == null
+      ? null
+      : PdfDocumentModel.fromJson(json['quadChart'] as Map<String, dynamic>),
+  proposal: json['proposal'] == null
+      ? null
+      : PdfDocumentModel.fromJson(json['proposal'] as Map<String, dynamic>),
+  applicationImageUrl: json['applicationImageUrl'] as String?,
+  applicationCvAdmin: json['applicationCvAdmin'] == null
+      ? null
+      : PdfDocumentModel.fromJson(
+          json['applicationCvAdmin'] as Map<String, dynamic>,
+        ),
+  applicationCvCeo: json['applicationCvCeo'] == null
+      ? null
+      : PdfDocumentModel.fromJson(
+          json['applicationCvCeo'] as Map<String, dynamic>,
+        ),
+  applicationCvComm: json['applicationCvComm'] == null
+      ? null
+      : PdfDocumentModel.fromJson(
+          json['applicationCvComm'] as Map<String, dynamic>,
+        ),
+  applicationCvTech: json['applicationCvTech'] == null
+      ? null
+      : PdfDocumentModel.fromJson(
+          json['applicationCvTech'] as Map<String, dynamic>,
+        ),
+  applicationPicAdmin: json['applicationPicAdmin'] as String?,
+  applicationPicCeo: json['applicationPicCeo'] as String?,
+  applicationPicComm: json['applicationPicComm'] as String?,
+  applicationPicTech: json['applicationPicTech'] as String?,
+  nameAdmin: json['nameAdmin'] as String?,
+  nameCeo: json['nameCeo'] as String?,
+  nameComm: json['nameComm'] as String?,
+  nameTech: json['nameTech'] as String?,
+  emailAdmin: json['emailAdmin'] as String?,
+  emailCeo: json['emailCeo'] as String?,
+  emailComm: json['emailComm'] as String?,
+  emailTech: json['emailTech'] as String?,
+  formTechnicalDescriptionValid:
+      json['formTechnicalDescriptionValid'] as String?,
+  formCommercialroposalValid: json['formCommercialroposalValid'] as String?,
+  formProjectPlanValid: json['formProjectPlanValid'] as String?,
+  formOverviewValid: json['formOverviewValid'] as String?,
+  formTechnicalDescription: json['formTechnicalDescription'] as String?,
+  formCommercialViability: json['formCommercialViability'] as String?,
+  formOverivew: json['formOverivew'] as String?,
+  formProjectPlan: json['formProjectPlan'] as String?,
+  tagKeys: json['tagKeys'] as String?,
+  tagLabels: json['tagLabels'] as String?,
+  agreeTsAndCs: json['agreeTsAndCs'] as String?,
+  agreeTsAndCsDetails: json['agreeTsAndCsDetails'] as String?,
+  isSubmitted: json['isSubmitted'] as String?,
+  isSubmittedDetails: json['isSubmittedDetails'] as String?,
+  mfaUserId: json['mfaUserId'] as String?,
+  mfaLastValidated: json['mfaLastValidated'] == null
+      ? null
+      : DateTime.parse(json['mfaLastValidated'] as String),
+  optInToReceivePromotions: json['optInToReceivePromotions'] as String? ?? "0",
+  optOutToShareWithNations: json['optOutToShareWithNations'] as String? ?? "1",
+  submissionDate: json['submissionDate'] == null
+      ? null
+      : DateTime.parse(json['submissionDate'] as String),
+  progressEmptyFields: (json['progressEmptyFields'] as num?)?.toInt() ?? 0,
+  progressValidFields: (json['progressValidFields'] as num?)?.toInt() ?? 0,
+  progressInvalidFields: (json['progressInvalidFields'] as num?)?.toInt() ?? 0,
+);
 
 Map<String, dynamic> _$ApplicationModelToJson(_ApplicationModel instance) =>
     <String, dynamic>{
-      'applicationPublicId':
-          const UuidConverter().toJson(instance.applicationPublicId),
+      'applicationPublicId': const UuidConverter().toJson(
+        instance.applicationPublicId,
+      ),
       'challengeIndex': instance.challengeIndex,
       'title': instance.title,
       'shortDescription': instance.shortDescription,
@@ -140,20 +142,24 @@ Map<String, dynamic> _$ApplicationModelToJson(_ApplicationModel instance) =>
 
 _PdfDocumentModel _$PdfDocumentModelFromJson(Map<String, dynamic> json) =>
     _PdfDocumentModel(
-      pdfDocumentPublicId:
-          const UuidConverter().fromJson(json['pdfDocumentPublicId'] as String),
-      fkApplicationPublicId: const UuidConverter()
-          .fromJson(json['fkApplicationPublicId'] as String),
+      pdfDocumentPublicId: const UuidConverter().fromJson(
+        json['pdfDocumentPublicId'] as String,
+      ),
+      fkApplicationPublicId: const UuidConverter().fromJson(
+        json['fkApplicationPublicId'] as String,
+      ),
       documentUrl: json['documentUrl'] as String,
       documentType: $enumDecode(_$DocumentTypeEnumMap, json['documentType']),
     );
 
 Map<String, dynamic> _$PdfDocumentModelToJson(_PdfDocumentModel instance) =>
     <String, dynamic>{
-      'pdfDocumentPublicId':
-          const UuidConverter().toJson(instance.pdfDocumentPublicId),
-      'fkApplicationPublicId':
-          const UuidConverter().toJson(instance.fkApplicationPublicId),
+      'pdfDocumentPublicId': const UuidConverter().toJson(
+        instance.pdfDocumentPublicId,
+      ),
+      'fkApplicationPublicId': const UuidConverter().toJson(
+        instance.fkApplicationPublicId,
+      ),
       'documentUrl': instance.documentUrl,
       'documentType': _$DocumentTypeEnumMap[instance.documentType]!,
     };

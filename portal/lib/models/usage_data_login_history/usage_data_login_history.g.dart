@@ -18,13 +18,13 @@ _UdLoginHistoryModel _$UdLoginHistoryModelFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$UdLoginHistoryModelToJson(
-        _UdLoginHistoryModel instance) =>
-    <String, dynamic>{
-      'loginDate': instance.loginDate.toIso8601String(),
-      'hcVersion': instance.hcVersion,
-      'systemVersion': instance.systemVersion,
-      'isIphone': instance.isIphone,
-      'latitude': instance.latitude,
-      'longitude': instance.longitude,
-      'locationName': instance.locationName,
-    };
+  _UdLoginHistoryModel instance,
+) => <String, dynamic>{
+  'loginDate': instance.loginDate.toIso8601String(),
+  'hcVersion': instance.hcVersion,
+  'systemVersion': instance.systemVersion,
+  'isIphone': instance.isIphone,
+  'latitude': instance.latitude,
+  'longitude': instance.longitude,
+  'locationName': instance.locationName,
+};
