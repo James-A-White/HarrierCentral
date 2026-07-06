@@ -160,6 +160,7 @@ SELECT
     e.EventStartDatetimeGmt,
     e.EventImage,
     e.KennelId,
+    CAST(NULL AS UNIQUEIDENTIFIER) AS PublicKennelId,   -- run threads: no kennel-thread identity
     k.KennelShortName,
     k.KennelLogo
 FROM (
@@ -168,11 +169,40 @@ FROM (
         MAX(em.MessageSequenceCount) - embc.LastSequenceCount AS BadgeCount
     FROM HC.EventMessageBadgeCounts embc
     INNER JOIN HC.EventMessage em ON em.EventId = embc.EventId
-    WHERE embc.UserId = @userId
+    WHERE embc.UserId = @userId AND embc.EventId IS NOT NULL
     GROUP BY embc.EventId, embc.LastSequenceCount
 ) AS unread
 INNER JOIN HC.Event  e ON e.id = unread.EventId
 INNER JOIN HC.Kennel k ON k.id = e.KennelId
 WHERE unread.BadgeCount > 0
   AND e.deleted = 0
-  AND e.IsVisible <> 0;
+  AND e.IsVisible <> 0
+
+UNION ALL
+
+-- Kennel-level chat threads the user follows that have messages they haven't
+-- seen. A user with NO badge row yet sees the full thread count (unlike run
+-- threads, kennel threads must surface before first read).
+SELECT
+    t.MaxSeq - COALESCE(embc.LastSequenceCount, 0) AS BadgeCount,
+    CAST(NULL AS UNIQUEIDENTIFIER)                 AS PublicEventId,
+    CAST(NULL AS UNIQUEIDENTIFIER)                 AS EventId,
+    k.KennelName                                   AS EventName,
+    0                                              AS EventNumber,
+    CAST(NULL AS DATETIMEOFFSET(7))                AS EventStartDatetimeGmt,
+    CAST(NULL AS NVARCHAR(500))                    AS EventImage,
+    k.id                                           AS KennelId,
+    k.PublicKennelId                               AS PublicKennelId,
+    k.KennelShortName,
+    k.KennelLogo
+FROM (
+    SELECT em.KennelId, MAX(em.MessageSequenceCount) AS MaxSeq
+    FROM HC.EventMessage em
+    WHERE em.KennelId IS NOT NULL AND em.EventId IS NULL AND em.Removed = 0
+    GROUP BY em.KennelId
+) AS t
+INNER JOIN HC.Kennel k ON k.id = t.KennelId
+INNER JOIN HC.HasherKennelMap hkm ON hkm.KennelId = t.KennelId AND hkm.UserId = @userId
+LEFT JOIN HC.EventMessageBadgeCounts embc
+    ON embc.KennelId = t.KennelId AND embc.UserId = @userId AND embc.EventId IS NULL
+WHERE t.MaxSeq - COALESCE(embc.LastSequenceCount, 0) > 0;
