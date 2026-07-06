@@ -4,7 +4,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_batchUpdatePhotoStatus]
     @accessToken NVARCHAR(1000),
     @kennelId   UNIQUEIDENTIFIER,
     @updates    NVARCHAR(MAX)
-    -- @updates: JSON array  [{"photoId":"<uuid>","action":<1-6>}, ...]
+    -- @updates: JSON array  [{"photoId":"<uuid>","action":<1-7>}, ...]
     -- Actions: 1=soft-delete  2=private(0)  3=share(2)  4=gallery(3)
     --          5=home_gallery(4)  6=event_cover(5)
 
@@ -21,7 +21,7 @@ AS
 --   @deviceId    - Registered device UUID
 --   @accessToken - Token validated against DeviceSecret
 --   @kennelId    - Kennel that owns all photos in the batch
---   @updates     - JSON array: [{"photoId":"...","action":N}, ...]
+--   @updates     - JSON array: [{"photoId":"...","action":N}, ...] (1-7)
 -- Returns:
 --   On success (rowset 0): { success, successCount, failureCount }
 --   On error  (rowset 0): { success, errorCode, errorType }
@@ -102,7 +102,7 @@ WITH (
     action  TINYINT      '$.action'
 ) j
 WHERE TRY_CAST(j.photoId AS UNIQUEIDENTIFIER) IS NOT NULL
-  AND j.action BETWEEN 1 AND 6;
+  AND j.action BETWEEN 1 AND 7;
 
 DECLARE @submitted INT = (SELECT COUNT(*) FROM #Updates);
 
@@ -134,20 +134,37 @@ BEGIN TRY
     INNER JOIN #Updates u ON u.photoId = kp.id AND u.action = 1
     WHERE kp.KennelId = @kennelId;
 
-    -- 2. Status changes (actions 2–6): clear DeletedAt, set new Status
+    -- 2. Audience changes (actions 2,3,4,6): clear DeletedAt, set new Status
+    --    (audience model: 0=Private, 2=Members, 3=Public, 5=Cover)
     UPDATE kp
     SET kp.Status    = CASE u.action
                            WHEN 2 THEN 0
                            WHEN 3 THEN 2
                            WHEN 4 THEN 3
-                           WHEN 5 THEN 4
                            WHEN 6 THEN 5
                        END,
         kp.DeletedAt = NULL,
         kp.UpdatedAt = GETUTCDATE()
     FROM HC.KennelPhotos kp
-    INNER JOIN #Updates u ON u.photoId = kp.id AND u.action BETWEEN 2 AND 6
+    INNER JOIN #Updates u ON u.photoId = kp.id AND u.action IN (2, 3, 4, 6)
     WHERE kp.KennelId = @kennelId;
+
+    -- 2b. Featured toggles (5=feature, 7=unfeature) — orthogonal to audience
+    UPDATE kp
+    SET kp.Featured  = CASE u.action WHEN 5 THEN 1 ELSE 0 END,
+        kp.UpdatedAt = GETUTCDATE()
+    FROM HC.KennelPhotos kp
+    INNER JOIN #Updates u ON u.photoId = kp.id AND u.action IN (5, 7)
+    WHERE kp.KennelId = @kennelId;
+
+    -- 2c. Cover uniqueness: demote previous covers of affected events to Public
+    UPDATE prev
+    SET prev.Status = 3, prev.UpdatedAt = GETUTCDATE()
+    FROM HC.KennelPhotos prev
+    WHERE prev.Status = 5 AND prev.KennelId = @kennelId
+      AND EXISTS (SELECT 1 FROM HC.KennelPhotos kp
+                  INNER JOIN #Updates u ON u.photoId = kp.id AND u.action = 6
+                  WHERE kp.EventId = prev.EventId AND kp.id <> prev.id);
 
     -- 3. Event cover (action = 6): propagate effective URL to HC.Event.
     --    Uses EditedBlobUrl when present (Hash Flash may have cropped the photo)

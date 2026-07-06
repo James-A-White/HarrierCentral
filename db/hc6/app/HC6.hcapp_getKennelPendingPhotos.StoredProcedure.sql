@@ -101,6 +101,7 @@ SELECT
     kp.UserId,
     kp.BlobUrl,
     kp.EditedBlobUrl,
+    kp.Featured,
     kp.Latitude,
     kp.Longitude,
     kp.Title,

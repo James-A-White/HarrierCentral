@@ -94,6 +94,7 @@ SELECT
     kp.Latitude,
     kp.Longitude,
     kp.Status,
+    kp.Featured,
     kp.Title,
     kp.Description,
     kp.CreatedAt,
@@ -113,6 +114,7 @@ SELECT
     kp.Latitude,
     kp.Longitude,
     kp.Status,
+    kp.Featured,
     kp.Title,
     kp.Description,
     kp.CreatedAt,
@@ -122,6 +124,11 @@ FROM HC.KennelPhotos kp
 INNER JOIN HC.Hasher h ON h.id = kp.UserId
 WHERE kp.EventId  = @eventId
   AND kp.UserId  <> @userId
-  AND kp.Status   >= 2
   AND kp.DeletedAt IS NULL
+  -- Audience model: Public(3+) for everyone; Members(2) only for member-tier
+  -- viewers of the photo's kennel (HC.KennelAccessTier = the single oracle).
+  AND ( kp.Status >= 3
+        OR (kp.Status = 2 AND EXISTS (
+              SELECT 1 FROM HC.KennelAccessTier(@userId, kp.KennelId) t
+              WHERE t.Tier >= 10)) )
   AND (@afterUpdatedAt IS NULL OR kp.UpdatedAt > @afterUpdatedAt);

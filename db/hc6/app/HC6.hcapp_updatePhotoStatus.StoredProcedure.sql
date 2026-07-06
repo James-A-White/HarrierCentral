@@ -27,8 +27,8 @@ AS
 --   @deviceId    - Registered device UUID
 --   @accessToken - Token validated against DeviceSecret
 --   @photoId     - UUID of the photo to action
---   @action      - 1=delete, 2=keep_private, 3=share, 4=gallery,
---                  5=home_gallery, 6=event_cover
+--   @action      - 1=delete, 2=private, 3=members, 4=public,
+--                  5=feature, 7=unfeature (Featured flag), 6=make event cover
 -- Returns:
 --   On success (rowset 0): { success, errorCode, errorType }
 --   On success (rowset 1): { photoId, newStatus, deletedAt }
@@ -78,12 +78,12 @@ BEGIN
     RETURN;
 END
 
-IF (@action NOT IN (1, 2, 3, 4, 5, 6))
+IF (@action NOT IN (1, 2, 3, 4, 5, 6, 7))
 BEGIN
     SET @errorCode = 1233; SET @errorType = 12; SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, '<unknown>', 'Invalid action',
-            CONCAT('@action must be 1–6; received: ', @action), @procName, @userId);
+            CONCAT('@action must be 1–7; received: ', @action), @procName, @userId);
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Invalid action' AS errorTitle,
@@ -138,12 +138,13 @@ BEGIN
     RETURN;
 END
 
--- Map action → new status (only used for non-delete actions)
+-- Map action → new status (audience model: 0=Private,1=Pending,2=Members,
+-- 3=Public,5=Cover). Actions 5/7 toggle the ORTHOGONAL Featured flag and do
+-- not change status (old action 5 'home gallery' ≈ new Featured — compatible).
 DECLARE @newStatus TINYINT = CASE @action
     WHEN 2 THEN 0
     WHEN 3 THEN 2
     WHEN 4 THEN 3
-    WHEN 5 THEN 4
     WHEN 6 THEN 5
     ELSE 0
 END;
@@ -161,9 +162,17 @@ BEGIN TRY
             UpdatedAt = GETUTCDATE()
         WHERE id = @photoId;
     END
+    ELSE IF (@action IN (5, 7))
+    BEGIN
+        -- Featured toggle only — audience status untouched
+        UPDATE HC.KennelPhotos
+        SET Featured  = CASE WHEN @action = 5 THEN 1 ELSE 0 END,
+            UpdatedAt = GETUTCDATE()
+        WHERE id = @photoId;
+    END
     ELSE
     BEGIN
-        -- Any approval/rejection action: set new status, clear DeletedAt
+        -- Audience action: set new status, clear DeletedAt
         UPDATE HC.KennelPhotos
         SET Status    = @newStatus,
             DeletedAt = NULL,
@@ -171,9 +180,16 @@ BEGIN TRY
         WHERE id = @photoId;
 
         IF (@action = 6 AND @photoEventId IS NOT NULL)
+        BEGIN
+            -- A run has exactly ONE cover: demote any previous cover to Public
+            UPDATE HC.KennelPhotos
+            SET Status = 3, UpdatedAt = GETUTCDATE()
+            WHERE EventId = @photoEventId AND Status = 5 AND id <> @photoId;
+
             UPDATE HC.Event
             SET EventCoverPhotoUrl = COALESCE(@photoEditedBlobUrl, @photoBlobUrl)
             WHERE id = @photoEventId;
+        END
     END
 
     COMMIT TRANSACTION;

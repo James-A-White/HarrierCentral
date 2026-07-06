@@ -102,6 +102,7 @@ SELECT
     kp.id                   AS photoId,
     kp.EventId,
     kp.Status,
+    kp.Featured,
     kp.DeletedAt,
     kp.BlobUrl,
     kp.EditedBlobUrl,

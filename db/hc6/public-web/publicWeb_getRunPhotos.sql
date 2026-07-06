@@ -45,6 +45,6 @@ SELECT
 FROM HC.KennelPhotos kp
 INNER JOIN HC.Event   e ON e.id = kp.EventId AND e.PublicEventId = @publicEventId
 INNER JOIN HC.Hasher  h ON h.id = kp.UserId
-WHERE kp.Status    = 2
+WHERE kp.Status    >= 3  -- audience model: Public(3) and Cover(5) only
   AND kp.DeletedAt IS NULL
 ORDER BY kp.CreatedAt ASC;
