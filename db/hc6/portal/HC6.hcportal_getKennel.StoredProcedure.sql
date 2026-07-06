@@ -134,6 +134,7 @@ BEGIN TRY
 		, k.[DefaultEventPriceForMembers] as defaultEventPriceForMembers
 		, k.[DefaultEventPriceForNonMembers] as defaultEventPriceForNonMembers
 		, CAST(k.[DefaultRunStartTime] as DateTime) as defaultRunStartTime
+		, COALESCE(k.[DefaultRunDayOfWeek], 1) as defaultRunDayOfWeek
 		, k.[BankScheme] as bankScheme
 		, k.[BankAccountNumber] as bankAccountNumber
 		, k.[BankBic] as bankBic

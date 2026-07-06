@@ -45,9 +45,9 @@ extension KennelOtherControlsExtension on KennelPageFormController {
   void _registerDefaultDayOfWeekControl(String tabKey, int tabIndex) {
     final fieldKey = '${tabKey}_defaultDayOfWeek';
 
-    // Extract day of week from defaultRunStartTime milliseconds
-    var dayOfWeek = originalData.defaultRunStartTime.millisecond ~/ 100;
-    if (dayOfWeek == 0) dayOfWeek = 1;
+    // Real column (DefaultRunDayOfWeek) — the old fractional-seconds encoding
+    // inside DefaultRunStartTime is retired.
+    final dayOfWeek = originalData.defaultRunDayOfWeek.clamp(1, 7);
 
     uiControls[fieldKey] = UiControlDefinition(
       controlType: UiControlType.dropdown,
@@ -75,20 +75,9 @@ extension KennelOtherControlsExtension on KennelPageFormController {
         7: 'Sunday',
       },
       updateEditedValue: (String? value) {
-        final intValue = int.tryParse(value ?? '1') ?? 1;
-        final currentTime = editedData.value.defaultRunStartTime;
-        final newRunStartTime = DateTime(
-          1900,
-          1,
-          1,
-          currentTime.hour,
-          currentTime.minute,
-          0,
-          intValue * 100,
-        );
-        defaultRunStartTime.value = newRunStartTime;
+        final intValue = (int.tryParse(value ?? '1') ?? 1).clamp(1, 7);
         editedData.value = editedData.value.copyWith(
-          defaultRunStartTime: newRunStartTime,
+          defaultRunDayOfWeek: intValue,
         );
         uiControls[fieldKey]?.editedFieldValue = value;
       },

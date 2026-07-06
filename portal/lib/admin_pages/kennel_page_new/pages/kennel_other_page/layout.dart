@@ -179,14 +179,14 @@ class KennelOtherTabContent extends StatelessWidget {
     );
 
     if (pickedTime != null) {
+      // Pure time-of-day — the default weekday now lives in its own field
+      // (defaultRunDayOfWeek), no longer encoded in the milliseconds.
       final newRunStartTime = DateTime(
         1900,
         1,
         1,
         pickedTime.hour,
         pickedTime.minute,
-        0,
-        controller.defaultRunStartTime.value.millisecond,
       );
 
       controller.defaultRunStartTime.value = newRunStartTime;
@@ -204,9 +204,9 @@ class KennelOtherTabContent extends StatelessWidget {
 
     if (uiControl == null) return const SizedBox.shrink();
 
-    // Extract day of week from defaultRunStartTime milliseconds
+    // Real field — the fractional-seconds encoding is retired.
     final dayOfWeek = Rx<int>(
-      (controller.defaultRunStartTime.value.millisecond ~/ 100).clamp(1, 7),
+      controller.editedData.value.defaultRunDayOfWeek.clamp(1, 7),
     );
 
     return MouseRegion(

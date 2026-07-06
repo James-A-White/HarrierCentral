@@ -33,6 +33,7 @@ _KennelModel _$KennelModelFromJson(Map<String, dynamic> json) => _KennelModel(
   defaultEventPriceForNonMembers:
       (json['defaultEventPriceForNonMembers'] as num).toDouble(),
   defaultRunStartTime: DateTime.parse(json['defaultRunStartTime'] as String),
+  defaultRunDayOfWeek: (json['defaultRunDayOfWeek'] as num?)?.toInt() ?? 1,
   allowSelfPayment: (json['allowSelfPayment'] as num).toInt(),
   allowNegativeCredit: (json['allowNegativeCredit'] as num).toInt(),
   cityId: const UuidConverter().fromJson(json['cityId'] as String),
@@ -151,6 +152,7 @@ Map<String, dynamic> _$KennelModelToJson(
   'defaultEventPriceForMembers': instance.defaultEventPriceForMembers,
   'defaultEventPriceForNonMembers': instance.defaultEventPriceForNonMembers,
   'defaultRunStartTime': instance.defaultRunStartTime.toIso8601String(),
+  'defaultRunDayOfWeek': instance.defaultRunDayOfWeek,
   'allowSelfPayment': instance.allowSelfPayment,
   'allowNegativeCredit': instance.allowNegativeCredit,
   'cityId': const UuidConverter().toJson(instance.cityId),

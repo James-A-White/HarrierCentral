@@ -103,6 +103,7 @@ BEGIN TRY
     , coalesce(k.CurrencySymbol, n.CurrencySymbol) as defaultCurrencySymbol
     , coalesce(k.DigitsAfterDecimal, n.DigitsAfterDecimal) as defaultDigitsAfterDecimal
     , cast(k.DefaultRunStartTime as datetime) as defaultRunStartTime
+    , coalesce(k.DefaultRunDayOfWeek, 1) as defaultRunDayOfWeek
     , k.Latitude as kennelLat
     , k.Longitude as kennelLon
     , c.Latitude as cityLat

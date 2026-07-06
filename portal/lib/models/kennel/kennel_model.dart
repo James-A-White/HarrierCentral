@@ -38,6 +38,7 @@ abstract class KennelModel with _$KennelModel {
     required double defaultEventPriceForMembers,
     required double defaultEventPriceForNonMembers,
     required DateTime defaultRunStartTime,
+    @Default(1) int defaultRunDayOfWeek,
     required int allowSelfPayment,
     required int allowNegativeCredit,
     @UuidConverter() required UuidValue cityId,

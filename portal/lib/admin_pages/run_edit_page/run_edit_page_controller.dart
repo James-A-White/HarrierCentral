@@ -675,15 +675,11 @@ class RunEditPageController extends TabUiController
     editedData.value = originalData.copyWith();
 
     // In add mode, derive the default start datetime from the kennel's
-    // defaultRunStartTime which encodes the day-of-week (in the milliseconds
-    // field, value / 100) and the hour/minute of the run.
+    // default run weekday (DefaultRunDayOfWeek) and start time-of-day
+    // (DefaultRunStartTime). The old fractional-seconds day encoding is retired.
     if (isAddMode) {
-      var defaultStartDayOfWeek =
-          kennelData.defaultRunStartTime.millisecond ~/ 100;
-
-      if (defaultStartDayOfWeek < 1 || defaultStartDayOfWeek > 7) {
-        defaultStartDayOfWeek = 1;
-      }
+      final defaultStartDayOfWeek =
+          kennelData.defaultRunDayOfWeek.clamp(1, 7);
 
       // Advance from the last run date (or today) until we land on the
       // correct day of the week

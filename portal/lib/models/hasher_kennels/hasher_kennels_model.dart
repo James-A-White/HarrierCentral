@@ -31,6 +31,7 @@ abstract class HasherKennelsModel with _$HasherKennelsModel {
     required int defaultDigitsAfterDecimal,
     required String defaultCurrencySymbol,
     required DateTime defaultRunStartTime,
+    @Default(1) int defaultRunDayOfWeek,
     required double cityLat,
     required double cityLon,
     required double defaultEventPriceForMembers,

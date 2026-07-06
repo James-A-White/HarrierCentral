@@ -27,6 +27,7 @@ _HasherKennelsModel _$HasherKennelsModelFromJson(
   defaultDigitsAfterDecimal: (json['defaultDigitsAfterDecimal'] as num).toInt(),
   defaultCurrencySymbol: json['defaultCurrencySymbol'] as String,
   defaultRunStartTime: DateTime.parse(json['defaultRunStartTime'] as String),
+  defaultRunDayOfWeek: (json['defaultRunDayOfWeek'] as num?)?.toInt() ?? 1,
   cityLat: (json['cityLat'] as num).toDouble(),
   cityLon: (json['cityLon'] as num).toDouble(),
   defaultEventPriceForMembers: (json['defaultEventPriceForMembers'] as num)
@@ -65,6 +66,7 @@ Map<String, dynamic> _$HasherKennelsModelToJson(_HasherKennelsModel instance) =>
       'defaultDigitsAfterDecimal': instance.defaultDigitsAfterDecimal,
       'defaultCurrencySymbol': instance.defaultCurrencySymbol,
       'defaultRunStartTime': instance.defaultRunStartTime.toIso8601String(),
+      'defaultRunDayOfWeek': instance.defaultRunDayOfWeek,
       'cityLat': instance.cityLat,
       'cityLon': instance.cityLon,
       'defaultEventPriceForMembers': instance.defaultEventPriceForMembers,
