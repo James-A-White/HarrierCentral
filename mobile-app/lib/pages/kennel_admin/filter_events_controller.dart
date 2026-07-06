@@ -257,6 +257,20 @@ class FilterEventsController extends GetxController {
     if (type != 'cancel') {
       dateBeingUpdated.value = eventStartDate;
 
+      // The user picked the DAY on the calendar; the TIME comes from the
+      // kennel's default run start time (HC.Kennel.DefaultRunStartTime —
+      // hour/minute; see memory re: the day-of-week encoded in its fractional
+      // seconds, which is irrelevant here). Previously this passed
+      // toDateOnly(), creating every new run at midnight.
+      final DateTime defaultTime = kennel.kennel.defaultRunStartTime;
+      final DateTime startWithKennelTime = DateTime(
+        eventStartDate.year,
+        eventStartDate.month,
+        eventStartDate.day,
+        defaultTime.hour,
+        defaultTime.minute,
+      );
+
       final EventsService nSvc = EventsService();
       await nSvc.addEditEvent(
         kennelId: kennel.kennel.kennelId,
@@ -265,7 +279,7 @@ class FilterEventsController extends GetxController {
             ? true
             : false,
         eventName: eventName,
-        eventStartDatetime: toDateOnly(eventStartDate),
+        eventStartDatetime: startWithKennelTime,
       );
 
       await _refreshEventFromTables(true);
