@@ -739,6 +739,9 @@ class FutureRunsListPage extends StatelessWidget {
                                   'run-${normalizeUuid(run.event.eventId)}',
                                 ),
                                 futureRun: run,
+                                // Rows above the divider are the past section.
+                                isPastRun: listController.showsInlinePast &&
+                                    index < listController.pastRuns.length,
                                 onItemTapped: () async {
                                   await listController.openRun(
                                     run,

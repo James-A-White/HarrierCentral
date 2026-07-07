@@ -185,11 +185,19 @@ class RunListItemController extends GetxController {
 }
 
 class RunListItem extends StatelessWidget {
-  RunListItem({super.key, required this.futureRun, required this.onItemTapped})
-    : rliController = RunListItemController.forRun(futureRun);
+  RunListItem({
+    super.key,
+    required this.futureRun,
+    required this.onItemTapped,
+    this.isPastRun = false,
+  }) : rliController = RunListItemController.forRun(futureRun);
 
   final RunDetailsAggregate futureRun;
   final Function onItemTapped;
+
+  /// True for rows in the runs list's past section (above the 'My past runs'
+  /// divider) — tints the card so users can tell they've scrolled into history.
+  final bool isPastRun;
   final RunListItemController rliController;
 
   @override
@@ -260,7 +268,10 @@ class RunListItem extends StatelessWidget {
             duration: const Duration(milliseconds: 200),
             color: isFlashing
                 ? themeButtonColors.withValues(alpha: 0.35)
-                : Colors.white,
+                : isPastRun
+                    // 20% accent tint over the white card — past-section marker.
+                    ? themeButtonColors.withValues(alpha: 0.2)
+                    : Colors.white,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
