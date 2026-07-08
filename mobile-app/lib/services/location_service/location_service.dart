@@ -362,7 +362,7 @@ class LocationService extends GetxService {
     );
   }
 
-  Future<void> markSlot(TrailSlot slot, {String? label, String? debugTag}) async {
+  Future<void> markSlot(TrailSlot slot, {String? label}) async {
     final position = await Geolocator.getCurrentPosition(
       locationSettings: const LocationSettings(accuracy: LocationAccuracy.best),
     );
@@ -371,7 +371,6 @@ class LocationService extends GetxService {
       forceFlush: true,
       slotIcon: slot.icon,
       label: label,
-      debugTag: debugTag,
     );
   }
 
@@ -451,7 +450,6 @@ class LocationService extends GetxService {
     String? slotIcon,
     String? rawType,
     String? label,
-    String? debugTag,
   }) async {
     final lat = position.latitude.toDouble();
     final lon = position.longitude.toDouble();
@@ -527,16 +525,6 @@ class LocationService extends GetxService {
         if (label != null) {
           pointStr += '::$label';
         }
-      }
-
-      // PackTrack diagnostic (debug users only): ride the per-tap id in the label
-      // slot so "one tap → many marks" is visible in the server data. Kept in the
-      // label segment (after '::') so the icon still parses — the map splits the
-      // type on '::'. Strip once the mark-multiplication bug is resolved.
-      if (pointStr != null &&
-          debugTag != null &&
-          getBoolPref(BoolPrefsEnum.debugHarvestEnabled) == true) {
-        pointStr += pointStr.contains('::') ? '~$debugTag' : '::~$debugTag';
       }
 
       if (pointStr != null) {

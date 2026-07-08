@@ -148,8 +148,8 @@ class LiveRunGeneralController extends GetxController {
     _stopElapsedTicker();
   }
 
-  Future<void> markSlot(TrailSlot slot, {String? label, String? debugTag}) async {
-    await _locationService.markSlot(slot, label: label, debugTag: debugTag);
+  Future<void> markSlot(TrailSlot slot, {String? label}) async {
+    await _locationService.markSlot(slot, label: label);
   }
 
   /// Returns the timestamp (epoch ms) that should be stamped on the GPS track
@@ -693,11 +693,6 @@ class LiveRunGeneralPage extends StatelessWidget {
   Widget _buildSlotButton(BuildContext context, TrailSlot slot) {
     return InkWell(
       onTap: () async {
-        // PackTrack diagnostic: a per-tap id, embedded in the mark data (only when
-        // debugHarvestEnabled) so "one tap → many marks" is visible in the server
-        // data. See LocationService.updateDeviceLocation. Strip when resolved.
-        final String tapId =
-            DateTime.now().millisecondsSinceEpoch.toString().substring(7);
         String? label;
 
         if (slot.parsedAction == TrailSlotAction.addText) {
@@ -722,7 +717,7 @@ class LiveRunGeneralPage extends StatelessWidget {
         if (!context.mounted) return;
         unawaited(_showSlotFlash(context, slot, label));
 
-        await controller.markSlot(slot, label: label, debugTag: tapId);
+        await controller.markSlot(slot, label: label);
 
         if (slot.parsedAction == TrailSlotAction.endRun) {
           controller.stopTracking();

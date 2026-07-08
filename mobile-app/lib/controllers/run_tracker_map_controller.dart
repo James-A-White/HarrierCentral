@@ -884,9 +884,16 @@ class RunTrackerMapController extends GetxController
     // checkpoints — never draw them.
     if (typeKey == 'TRL') return null;
 
-    final customLabel = parts.length > 1
+    var customLabel = parts.length > 1
         ? parts.sublist(1).join('::').trim()
         : null;
+
+    // Strip the retired mark-multiplication diagnostic suffix ('~<tapId>')
+    // still present on marks stored while the instrumentation was live —
+    // without this every such mark renders an integer label badge.
+    if (customLabel != null) {
+      customLabel = customLabel.replaceFirst(RegExp(r'~\d+$'), '').trim();
+    }
 
     final label = (customLabel != null && customLabel.isNotEmpty)
         ? customLabel
