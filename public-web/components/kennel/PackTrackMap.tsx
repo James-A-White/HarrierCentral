@@ -269,7 +269,9 @@ interface PackTrackViewProps {
 }
 
 function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, trailTypesConfigJson }: PackTrackViewProps) {
-  const [progress, setProgress] = useState(0);    // 0.0 → 1.0
+  // Opens at 1.0 — the most recent position info (live view); playing from the
+  // end restarts from 0 via togglePlay's reset.
+  const [progress, setProgress] = useState(1);    // 0.0 → 1.0
   const [playing, setPlaying] = useState(false);
   const [pickedId, setPickedId] = useState<string | null>(null);
   const [follow, setFollow] = useState(true);
@@ -612,7 +614,7 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, trailTy
   );
 
   // Refs used inside rAF loop — updated without triggering re-renders
-  const progressRef = useRef(0);
+  const progressRef = useRef(1);
   const playingRef  = useRef(false);
   const zoomRef     = useRef(15);
   const rafIdRef    = useRef<number | null>(null);
@@ -1060,34 +1062,57 @@ export default function PackTrackMap({
   useEffect(() => { onTrackLoadedRef.current = onTrackLoaded; });
 
   useEffect(() => {
-    fetchPackTrack(eventId).then(data => {
-      // Clean each runner's track (drop GPS noise, interpolate gaps) and drop
-      // runners left with nothing so they don't show as empty selector chips.
-      const live = (data?.users ?? [])
-        .map(u => ({ ...u, positions: filterAndInterpolate(u.positions) }))
-        .filter(u => u.positions.length > 0);
+    let disposed = false;
 
-      if (live.length === 0) {
+    const load = (isRefresh: boolean) => {
+      fetchPackTrack(eventId).then(data => {
+        if (disposed) return;
+        // Clean each runner's track (drop GPS noise, interpolate gaps) and drop
+        // runners left with nothing so they don't show as empty selector chips.
+        const live = (data?.users ?? [])
+          .map(u => ({ ...u, positions: filterAndInterpolate(u.positions) }))
+          .filter(u => u.positions.length > 0);
+
+        if (live.length === 0) {
+          if (!isRefresh) {
+            setLoading(false);
+            onTrackLoadedRef.current?.(false);
+          }
+          return;
+        }
+        const allTs = live.flatMap(u => u.positions.map(p => p.timestampMs));
+        const mn = Math.min(...allTs);
+        const mx = Math.max(...allTs);
+        setUsers(live);
+        setMinTs(mn);
+        setMaxTs(mx);
+        setHasTrack(true);
         setLoading(false);
-        onTrackLoadedRef.current?.(false);
-        return;
-      }
-      const allTs = live.flatMap(u => u.positions.map(p => p.timestampMs));
-      const mn = Math.min(...allTs);
-      const mx = Math.max(...allTs);
-      setUsers(live);
-      setMinTs(mn);
-      setMaxTs(mx);
-      setHasTrack(true);
-      setLoading(false);
-      if (data?.trailTypesConfigJson) setTrailCfg(data.trailTypesConfigJson);
-      onTrackLoadedRef.current?.(true);
+        if (data?.trailTypesConfigJson) setTrailCfg(data.trailTypesConfigJson);
+        onTrackLoadedRef.current?.(true);
 
-      // Resolve runner display names (optional — failures fall back to "Runner N").
-      if (publicEventId) {
-        fetchRunnerNames(publicEventId, live.map(u => u.id)).then(setNames);
-      }
-    });
+        // Resolve runner display names (optional — failures fall back to "Runner N").
+        if (publicEventId) {
+          fetchRunnerNames(publicEventId, live.map(u => u.id)).then(n => {
+            if (!disposed) setNames(n);
+          });
+        }
+      });
+    };
+
+    load(false);
+
+    // Live view: re-fetch every 30 s so tracks grow while the run is underway.
+    // Skipped while the tab is hidden — the next visible tick catches up.
+    const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      load(true);
+    }, 30_000);
+
+    return () => {
+      disposed = true;
+      clearInterval(interval);
+    };
   }, [eventId, publicEventId]);
 
   const viewProps: PackTrackViewProps = { lat, lon, users, minTs, maxTs, hasTrack, names, trailTypesConfigJson: trailCfg };
