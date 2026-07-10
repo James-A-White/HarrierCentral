@@ -1,5 +1,10 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.12.1+1197 (2026-07-10)
+
+### New Features
+- **Tilt to control playback**: on the run tracking map, enable the tilt toggle next to play — tilt your phone away to speed the replay up (to x4), toward you to slow it down and even reverse. A live speed indicator shows the current rate.
+
 ## 2.12.0+1196 (2026-07-10)
 
 ### Improvements
