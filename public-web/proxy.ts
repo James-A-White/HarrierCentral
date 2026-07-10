@@ -63,6 +63,18 @@ async function resolveCustomDomain(hostname: string): Promise<string | null> {
 export async function proxy(request: NextRequest) {
   const hostname = (request.headers.get("host") ?? "").split(":")[0];
 
+  // Case-insensitive URLs: 301 any page path containing uppercase to its
+  // lowercase form (/LH3/About → /lh3/about) so shared/typed links always
+  // resolve and search engines see one canonical casing. File-like segments
+  // (anything with an extension) are left untouched.
+  const rawPath = request.nextUrl.pathname;
+  const lastSegment = rawPath.split("/").pop() ?? "";
+  if (!lastSegment.includes(".") && /[A-Z]/.test(rawPath)) {
+    const url = request.nextUrl.clone();
+    url.pathname = rawPath.toLowerCase();
+    return NextResponse.redirect(url, 301);
+  }
+
   if (!hostname || isSystemHost(hostname)) return NextResponse.next();
 
   // Strip www. so both apex and www resolve to the same DB entry.

@@ -281,19 +281,11 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, trailTy
   };
 
   useEffect(() => {
-    let cancelled = false;
-    if (typeof navigator !== "undefined" && navigator.permissions?.query) {
-      navigator.permissions
-        .query({ name: "geolocation" as PermissionName })
-        .then((status) => {
-          if (cancelled) return;
-          if (status.state === "granted") startViewerWatch();
-          else if (status.state === "denied") setGeoDenied(true);
-        })
-        .catch(() => { /* Permissions API unavailable — wait for button tap */ });
-    }
+    // Prompt for location permission on open so the blue dot defaults to ON —
+    // watchPosition triggers the browser prompt if not yet granted. Denial is
+    // handled by the watch error callback (dot + button hide).
+    startViewerWatch();
     return () => {
-      cancelled = true;
       if (geoWatchId.current != null && navigator.geolocation) {
         navigator.geolocation.clearWatch(geoWatchId.current);
         geoWatchId.current = null;
@@ -524,10 +516,10 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, trailTy
             )}
             <CircleMarker
               center={[viewerPos.lat, viewerPos.lng]}
-              radius={7}
+              radius={10}
               pathOptions={{
                 color: "#ffffff",
-                weight: 2.5,
+                weight: 3,
                 fillColor: "#2a7fff",
                 fillOpacity: 1,
               }}
