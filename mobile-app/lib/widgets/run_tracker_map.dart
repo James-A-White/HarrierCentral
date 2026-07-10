@@ -276,6 +276,42 @@ class RunTrackerMap extends StatelessWidget {
                   ),
                   onPressed: controller.togglePlayback,
                 ),
+                // Tilt-to-scrub toggle: tilt the phone away to speed playback
+                // up, toward you to slow and reverse. Shows the live multiplier
+                // while enabled.
+                Obx(
+                  () => controller.tiltEnabled.value
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(
+                                Icons.screen_rotation_alt,
+                                color: Colors.lightBlueAccent,
+                              ),
+                              tooltip: 'Tilt control on',
+                              onPressed: controller.toggleTilt,
+                            ),
+                            Text(
+                              '${controller.tiltSpeed.value < 0 ? '⏪' : ''}'
+                              '×${controller.tiltSpeed.value.abs().toStringAsFixed(1)}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        )
+                      : IconButton(
+                          icon: const Icon(
+                            Icons.screen_rotation_alt,
+                            color: Colors.white54,
+                          ),
+                          tooltip: 'Tilt to control playback speed',
+                          onPressed: controller.toggleTilt,
+                        ),
+                ),
                 Expanded(
                   child: Slider(
                     value: controller.currentTimestampMs.value!,

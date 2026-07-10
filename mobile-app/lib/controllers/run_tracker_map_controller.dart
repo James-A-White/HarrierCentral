@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/util/track_point_filter.dart';
+import 'package:sensors_plus/sensors_plus.dart';
 import 'package:harrier_central/widgets/camera_photo_marker.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 
@@ -74,6 +75,24 @@ class RunTrackerMapController extends GetxController
   final RxnDouble currentTimestampMs = RxnDouble();
   final RxBool isPlaying = false.obs;
   final RxnString selectedRunnerId = RxnString();
+
+  // ── Tilt-to-scrub playback (ported from the web PackTrack) ────────────────
+  // Opt-in: tilt the phone away to speed playback up (to ×4), toward you to
+  // slow, then REVERSE (to −×2). While enabled, the AnimationController is
+  // stopped and a ticker drives _playbackController.value directly (the value
+  // setter fires the normal tick handler, so everything downstream is
+  // unchanged). Calibrates the neutral holding angle on enable; ±8° dead zone,
+  // ±32° span, EMA smoothing — same tuning as the web.
+  final RxBool tiltEnabled = false.obs;
+  final RxDouble tiltSpeed = 1.0.obs; // smoothed multiplier, for the indicator
+  StreamSubscription<AccelerometerEvent>? _tiltSub;
+  Timer? _tiltTicker;
+  double? _tiltNeutralDeg;
+  final List<double> _tiltCalibSamples = [];
+  double _tiltEma = 1.0;
+  DateTime? _lastTiltTick;
+  static const double _tiltDeadDeg = 8.0;
+  static const double _tiltSpanDeg = 32.0;
 
   // Trail-type filtering: the kennel's config (bundled by GetPositions on the
   // full fetch), the set of lanes currently shown, and the lanes ever seen so
@@ -493,6 +512,8 @@ class RunTrackerMapController extends GetxController
   void onClose() {
     WidgetsBinding.instance.removeObserver(this);
     _stopAutoUpdateTimer();
+    unawaited(_tiltSub?.cancel());
+    _tiltTicker?.cancel();
     _timelineWorker?.dispose();
     _selectionWorker?.dispose();
     unawaited(_mapEventsSub?.cancel());
@@ -742,7 +763,9 @@ class RunTrackerMapController extends GetxController
 
   void togglePlayback() {
     if (!timelineAvailable) return;
-    if (_playbackController.isAnimating) {
+    // _isPlaybackActive (not just isAnimating) so pause also works in tilt
+    // mode, where the ticker — not the AnimationController — drives playback.
+    if (_isPlaybackActive) {
       _playbackController.stop();
       isPlaying.value = false;
       _startAutoUpdateTimer();
@@ -759,15 +782,30 @@ class RunTrackerMapController extends GetxController
         : _currentPlaybackProgress();
     isPlaying.value = true;
     _stopAutoUpdateTimer();
-    unawaited(_playbackController.forward());
+    // In tilt mode the periodic ticker advances the value; otherwise the
+    // AnimationController plays as normal.
+    if (!tiltEnabled.value) {
+      unawaited(_playbackController.forward());
+    } else {
+      _lastTiltTick = null;
+    }
   }
 
   void seekTo(double value) {
-    if (_playbackController.isAnimating) {
+    // _isPlaybackActive so a scrub also pauses tilt-driven playback (where the
+    // AnimationController isn't animating but the ticker is driving).
+    if (_isPlaybackActive) {
       _playbackController.stop();
       isPlaying.value = false;
     }
     currentTimestampMs.value = value;
+    // Keep the controller's progress in sync so resuming (tilt or normal)
+    // continues from the scrubbed position rather than the pre-scrub one.
+    final double? mn = minTimestampMs.value;
+    final double? mx = maxTimestampMs.value;
+    if (mn != null && mx != null && mx > mn) {
+      _playbackController.value = ((value - mn) / (mx - mn)).clamp(0.0, 1.0);
+    }
     _startAutoUpdateTimer();
   }
 
@@ -777,6 +815,114 @@ class RunTrackerMapController extends GetxController
     }
     isPlaying.value = false;
     _startAutoUpdateTimer();
+  }
+
+  // ── Tilt-to-scrub ──────────────────────────────────────────────────────────
+
+  void toggleTilt() {
+    if (tiltEnabled.value) {
+      _stopTilt();
+    } else {
+      _startTilt();
+    }
+  }
+
+  void _startTilt() {
+    tiltEnabled.value = true;
+    _tiltNeutralDeg = null;
+    _tiltCalibSamples.clear();
+    _tiltEma = 1.0;
+    tiltSpeed.value = 1.0;
+    _lastTiltTick = null;
+
+    _tiltSub = accelerometerEventStream(
+      samplingPeriod: SensorInterval.uiInterval,
+    ).listen(_onTiltAccel, onError: (Object _) => _stopTilt());
+
+    // Manual drive replaces the AnimationController while tilt is active.
+    if (_playbackController.isAnimating) _playbackController.stop();
+    _tiltTicker = Timer.periodic(
+      const Duration(milliseconds: 33),
+      (_) => _tiltDriveTick(),
+    );
+  }
+
+  void _stopTilt() {
+    unawaited(_tiltSub?.cancel());
+    _tiltSub = null;
+    _tiltTicker?.cancel();
+    _tiltTicker = null;
+    _tiltNeutralDeg = null;
+    _tiltEma = 1.0;
+    tiltSpeed.value = 1.0;
+    tiltEnabled.value = false;
+    // Hand playback back to the AnimationController if we were mid-play.
+    if (isPlaying.value && timelineAvailable) {
+      _applyPlaybackDurationFromZoom();
+      unawaited(
+        _playbackController.forward(
+          from: _playbackController.value.clamp(0.0, 1.0),
+        ),
+      );
+    }
+  }
+
+  void _onTiltAccel(AccelerometerEvent e) {
+    // Pitch: 0° upright (portrait), +90° flat screen-up. Gravity is included in
+    // the plain accelerometer stream, so atan2(z, y) gives the holding angle.
+    final double pitch = math.atan2(e.z, e.y) * 180.0 / math.pi;
+
+    // Calibrate: average the first samples as the neutral holding angle.
+    if (_tiltNeutralDeg == null) {
+      _tiltCalibSamples.add(pitch);
+      if (_tiltCalibSamples.length >= 10) {
+        _tiltNeutralDeg =
+            _tiltCalibSamples.reduce((a, b) => a + b) /
+            _tiltCalibSamples.length;
+      }
+      return;
+    }
+
+    // Away (screen flattening upward) = positive delta = faster.
+    final double delta = pitch - _tiltNeutralDeg!;
+    double target;
+    if (delta.abs() <= _tiltDeadDeg) {
+      target = 1.0;
+    } else if (delta > 0) {
+      target = 1.0 +
+          math.min((delta - _tiltDeadDeg) / _tiltSpanDeg, 1.0) * 3.0; // → ×4
+    } else {
+      target = 1.0 +
+          math.max((delta + _tiltDeadDeg) / _tiltSpanDeg, -1.0) * 3.0; // → −×2
+    }
+    // Smooth (EMA) so hand shake doesn't jitter the playback rate.
+    _tiltEma = _tiltEma * 0.8 + target * 0.2;
+    if ((tiltSpeed.value - _tiltEma).abs() > 0.1) {
+      tiltSpeed.value = _tiltEma;
+    }
+  }
+
+  void _tiltDriveTick() {
+    if (!tiltEnabled.value || !isPlaying.value || !timelineAvailable) {
+      _lastTiltTick = null;
+      return;
+    }
+    final now = DateTime.now();
+    final int dtMs = _lastTiltTick == null
+        ? 0
+        : now.difference(_lastTiltTick!).inMilliseconds;
+    _lastTiltTick = now;
+    if (dtMs <= 0) return;
+
+    final int durMs =
+        (_lastPlaybackDuration ?? _playbackController.duration)
+                ?.inMilliseconds ??
+            10000;
+    final double dv = dtMs / durMs * _tiltEma;
+    // Hold at either bound instead of stopping — tilting the other way
+    // resumes from there, which makes tilt-scrubbing feel continuous.
+    _playbackController.value =
+        (_playbackController.value + dv).clamp(0.0, 1.0);
   }
 
   void updateTrueNorthLock(bool value) {
