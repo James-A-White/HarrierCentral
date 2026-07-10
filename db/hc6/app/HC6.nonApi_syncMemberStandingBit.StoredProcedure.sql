@@ -24,7 +24,7 @@ UPDATE hkm SET KennelStanding =
     CASE WHEN hkm.MembershipExpirationDate IS NOT NULL
               AND hkm.MembershipExpirationDate >= GETDATE()
          THEN hkm.KennelStanding | 0x0001
-         ELSE hkm.KennelStanding & ~0x0001
+         ELSE hkm.KennelStanding & ~1  /* MEMBER bit; int literal — ~varbinary(0x...) is invalid in T-SQL */
     END
 FROM HC.HasherKennelMap hkm
 WHERE hkm.UserId = @userId AND hkm.KennelId = @kennelId
@@ -32,5 +32,5 @@ WHERE hkm.UserId = @userId AND hkm.KennelId = @kennelId
     CASE WHEN hkm.MembershipExpirationDate IS NOT NULL
               AND hkm.MembershipExpirationDate >= GETDATE()
          THEN hkm.KennelStanding | 0x0001
-         ELSE hkm.KennelStanding & ~0x0001
+         ELSE hkm.KennelStanding & ~1  /* MEMBER bit; int literal — ~varbinary(0x...) is invalid in T-SQL */
     END;  -- no-op when already correct: avoids a pointless updatedAt restamp

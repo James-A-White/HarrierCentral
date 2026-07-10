@@ -27,14 +27,14 @@ UPDATE hkm SET KennelStanding =
     CASE WHEN hkm.MembershipExpirationDate IS NOT NULL
               AND hkm.MembershipExpirationDate >= @cutoff
          THEN hkm.KennelStanding | 0x0001
-         ELSE hkm.KennelStanding & ~0x0001
+         ELSE hkm.KennelStanding & ~1  /* MEMBER bit; int literal — ~varbinary(0x...) is invalid in T-SQL */
     END
 FROM HC.HasherKennelMap hkm
 WHERE hkm.KennelStanding <>
     CASE WHEN hkm.MembershipExpirationDate IS NOT NULL
               AND hkm.MembershipExpirationDate >= @cutoff
          THEN hkm.KennelStanding | 0x0001
-         ELSE hkm.KennelStanding & ~0x0001
+         ELSE hkm.KennelStanding & ~1  /* MEMBER bit; int literal — ~varbinary(0x...) is invalid in T-SQL */
     END;
 
 SELECT @@ROWCOUNT AS rowsChanged;

@@ -1,5 +1,13 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.12.0+1196 (2026-07-10)
+
+### Improvements
+- **Past runs at a glance**: past-run cards in the runs list now carry a purple tint so it's obvious when you've scrolled into history.
+
+### Fixes
+- **Trail marks**: symbols on the live run map no longer show a spurious integer tag (leftover diagnostics removed; existing marks render clean).
+
 ## 2.12.0+1195 (2026-07-06)
 
 ### New Features
