@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { MapContainer, TileLayer, Polyline, Marker, CircleMarker, Circle, useMap, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Polyline, Marker, Circle, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import { Play, Pause, X, LocateFixed, Navigation, Smartphone } from "lucide-react";
 import {
@@ -65,6 +65,33 @@ function userDotIcon(color: string, big: boolean): L.DivIcon {
     iconAnchor: [s / 2, s / 2],
   });
   dotIconCache.set(key, icon);
+  return icon;
+}
+
+// Viewer "you are here" dot — blue dot with an optional compass wedge showing
+// which way the phone is pointing. Cached per 5°-quantised heading.
+const viewerIconCache = new Map<string, L.DivIcon>();
+function viewerDotIcon(heading: number | null): L.DivIcon {
+  const key = heading == null ? "none" : String(heading);
+  const cached = viewerIconCache.get(key);
+  if (cached) return cached;
+  const wedge = heading == null
+    ? ""
+    : `<div style="position:absolute;left:50%;top:50%;width:0;height:0;` +
+      `transform:translate(-50%,-50%) rotate(${heading}deg) translateY(-17px);` +
+      `border-left:9px solid transparent;border-right:9px solid transparent;` +
+      `border-bottom:15px solid rgba(42,127,255,0.85);` +
+      `filter:drop-shadow(0 1px 2px rgba(0,0,0,0.3))"></div>`;
+  const icon = L.divIcon({
+    html: `<div style="position:relative;width:52px;height:52px">${wedge}` +
+      `<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);` +
+      `width:20px;height:20px;border-radius:50%;background:#2a7fff;` +
+      `border:3px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,0.5)"></div></div>`,
+    className: "",
+    iconSize: [52, 52],
+    iconAnchor: [26, 26],
+  });
+  viewerIconCache.set(key, icon);
   return icon;
 }
 
@@ -297,7 +324,96 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, trailTy
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ── Viewer heading (compass wedge on the blue dot) ────────────────────────
+  // Android delivers compass heading without a permission; iOS 13+ requires
+  // DeviceOrientationEvent.requestPermission() from a user gesture — we
+  // piggyback on the locate-button tap and the tilt toggle.
+  const [viewerHeading, setViewerHeading] = useState<number | null>(null);
+  const headingRef = useRef<number | null>(null);
+  const headingHandlerRef =
+    useRef<((e: DeviceOrientationEvent) => void) | null>(null);
+
+  const requestOrientationPermission = async (): Promise<boolean> => {
+    try {
+      const doe = DeviceOrientationEvent as unknown as {
+        requestPermission?: () => Promise<string>;
+      };
+      if (doe.requestPermission) {
+        return (await doe.requestPermission()) === "granted";
+      }
+      return true; // no gate (Android / older iOS)
+    } catch {
+      return false;
+    }
+  };
+
+  const startHeadingWatch = () => {
+    if (headingHandlerRef.current) return;
+    if (typeof window === "undefined" || !("DeviceOrientationEvent" in window)) return;
+
+    const handler = (e: DeviceOrientationEvent) => {
+      // iOS: webkitCompassHeading is already degrees CW from true north.
+      // Android: absolute alpha is CCW from north → heading = 360 - alpha.
+      const webkit = (e as unknown as { webkitCompassHeading?: number })
+        .webkitCompassHeading;
+      let h: number | null = null;
+      if (typeof webkit === "number" && !Number.isNaN(webkit)) {
+        h = webkit;
+      } else if (e.absolute && e.alpha != null) {
+        h = (360 - e.alpha) % 360;
+      }
+      if (h == null) return;
+
+      // Shortest-arc smoothing so the wedge doesn't spin the long way round.
+      const prev = headingRef.current;
+      const smoothed = prev == null
+        ? h
+        : (prev + (((h - prev + 540) % 360) - 180) * 0.3 + 360) % 360;
+      headingRef.current = smoothed;
+      // Quantise to 5° for state — keeps icon churn (and re-renders) low.
+      setViewerHeading(v => {
+        const q = Math.round(smoothed / 5) * 5 % 360;
+        return v === q ? v : q;
+      });
+    };
+
+    headingHandlerRef.current = handler;
+    // deviceorientationabsolute (Android) gives north-referenced alpha;
+    // plain deviceorientation covers iOS (webkitCompassHeading).
+    window.addEventListener(
+      "ondeviceorientationabsolute" in window
+        ? "deviceorientationabsolute"
+        : "deviceorientation",
+      handler as EventListener,
+    );
+  };
+
+  useEffect(() => {
+    // Android (and any non-gated browser) can start the compass immediately;
+    // on iOS the listener simply never fires until permission is granted via
+    // the locate button or tilt toggle.
+    startHeadingWatch();
+    return () => {
+      if (headingHandlerRef.current) {
+        window.removeEventListener(
+          "deviceorientationabsolute",
+          headingHandlerRef.current as EventListener,
+        );
+        window.removeEventListener(
+          "deviceorientation",
+          headingHandlerRef.current as EventListener,
+        );
+        headingHandlerRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleLocateTap = () => {
+    // Unlock the compass on iOS — this tap is the required user gesture.
+    void requestOrientationPermission().then(ok => {
+      if (ok) startHeadingWatch();
+    });
     if (viewerPos) {
       // Already tracking — recentre the map on the viewer.
       setViewerPanNonce(n => n + 1);
@@ -407,6 +523,8 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, trailTy
     tiltHandlerRef.current = handler;
     window.addEventListener("deviceorientation", handler);
     setTiltOn(true);
+    // Permission just granted — the compass wedge can start too.
+    startHeadingWatch();
   };
 
   const toggleTilt = () => {
@@ -635,15 +753,11 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, trailTy
                 }}
               />
             )}
-            <CircleMarker
-              center={[viewerPos.lat, viewerPos.lng]}
-              radius={10}
-              pathOptions={{
-                color: "#ffffff",
-                weight: 3,
-                fillColor: "#2a7fff",
-                fillOpacity: 1,
-              }}
+            <Marker
+              position={[viewerPos.lat, viewerPos.lng]}
+              icon={viewerDotIcon(viewerHeading)}
+              zIndexOffset={500}
+              interactive={false}
             />
             <ViewerPanner
               target={[viewerPos.lat, viewerPos.lng]}
