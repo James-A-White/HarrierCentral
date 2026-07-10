@@ -66,7 +66,12 @@ export function parseMark(rawType: string | null | undefined): ParsedMark | null
 
   const parts = value.split("::");
   const key = parts[0].trim();
-  const labelRaw = parts.length > 1 ? parts.slice(1).join("::").trim() : "";
+  // Strip the retired mark-multiplication diagnostic suffix ("~<tapId>") still
+  // present on marks stored Jun–Jul 2026 — without this every such mark renders
+  // an integer label badge. (Photo blob-ids never match ~<digits>$.)
+  const labelRaw = (parts.length > 1 ? parts.slice(1).join("::").trim() : "")
+    .replace(/~\d+$/, "")
+    .trim();
   const label = labelRaw.length > 0 ? labelRaw : null;
 
   // Trail-type declaration — metadata, not a drawable mark.

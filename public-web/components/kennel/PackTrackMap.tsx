@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { MapContainer, TileLayer, Polyline, Marker, useMap, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Polyline, Marker, CircleMarker, Circle, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
-import { Play, Pause, X, LocateFixed } from "lucide-react";
+import { Play, Pause, X, LocateFixed, Navigation } from "lucide-react";
 import {
   fetchPackTrack, fetchRunnerNames, parseMark, trackUpTo, sumDistanceMeters,
   haversineMeters, formatTrackTimestamp, formatDistanceLabel, filterAndInterpolate,
@@ -65,6 +65,17 @@ function userDotIcon(color: string, big: boolean): L.DivIcon {
   return icon;
 }
 
+// Escape user-entered label text before interpolating into DivIcon HTML —
+// labels are arbitrary hasher input on an unauthenticated public page.
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 // Checkpoint icon — PNG from the dynamic icon collection, with an optional
 // label badge floated above (yellow, or red for Caution), matching the app.
 const checkpointIconCache = new Map<string, L.DivIcon>();
@@ -77,7 +88,7 @@ function checkpointIcon(iconUrl: string, label: string | null, isCaution: boolea
       `background:${isCaution ? "#dc2626" : "#fef9c3"};color:${isCaution ? "#fff" : "#000"};` +
       `border:1.6px solid ${isCaution ? "#991b1b" : "#dc2626"};border-radius:6px;` +
       `padding:3px 6px;font:700 11px system-ui,sans-serif;line-height:1.25;white-space:normal;` +
-      `max-width:140px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.4)">${label}</div>`
+      `max-width:140px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.4)">${escapeHtml(label)}</div>`
     : "";
   const icon = L.divIcon({
     html: `<div style="position:relative;width:${ICON_PX}px;height:${ICON_PX}px">` +
@@ -137,6 +148,20 @@ function BoundsFitter({ points }: { points: [number, number][] }) {
       map.fitBounds(L.latLngBounds(points), { padding: [40, 40] });
     }
   }, [map, points]);
+  return null;
+}
+
+// Flies the camera to the viewer's location when the locate button is tapped
+// (nonce bumps). Never moves the camera on its own — trail fitting and runner
+// follow own the camera otherwise.
+function ViewerPanner({ target, nonce }: { target: [number, number] | null; nonce: number }) {
+  const map = useMap();
+  useEffect(() => {
+    if (nonce > 0 && target) {
+      map.flyTo(target, Math.max(map.getZoom(), 16));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nonce]);
   return null;
 }
 
@@ -218,6 +243,75 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, trailTy
   const [playing, setPlaying] = useState(false);
   const [pickedId, setPickedId] = useState<string | null>(null);
   const [follow, setFollow] = useState(true);
+
+  // ── Viewer location ("you are here") ──────────────────────────────────────
+  // Shows a live blue dot for the person viewing the page so they can orient
+  // themselves to the trail. Starts automatically ONLY when the browser
+  // permission is already granted; otherwise the locate button triggers the
+  // permission prompt on tap (no unsolicited prompts on page load).
+  const [viewerPos, setViewerPos] =
+    useState<{ lat: number; lng: number; acc: number } | null>(null);
+  const [geoDenied, setGeoDenied] = useState(false);
+  const [viewerPanNonce, setViewerPanNonce] = useState(0);
+  const geoWatchId = useRef<number | null>(null);
+
+  const startViewerWatch = () => {
+    if (geoWatchId.current != null) return;
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+    geoWatchId.current = navigator.geolocation.watchPosition(
+      (p) => {
+        setGeoDenied(false);
+        setViewerPos({
+          lat: p.coords.latitude,
+          lng: p.coords.longitude,
+          acc: p.coords.accuracy,
+        });
+      },
+      (err) => {
+        if (err.code === err.PERMISSION_DENIED) {
+          setGeoDenied(true);
+          if (geoWatchId.current != null) {
+            navigator.geolocation.clearWatch(geoWatchId.current);
+            geoWatchId.current = null;
+          }
+        }
+      },
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 },
+    );
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    if (typeof navigator !== "undefined" && navigator.permissions?.query) {
+      navigator.permissions
+        .query({ name: "geolocation" as PermissionName })
+        .then((status) => {
+          if (cancelled) return;
+          if (status.state === "granted") startViewerWatch();
+          else if (status.state === "denied") setGeoDenied(true);
+        })
+        .catch(() => { /* Permissions API unavailable — wait for button tap */ });
+    }
+    return () => {
+      cancelled = true;
+      if (geoWatchId.current != null && navigator.geolocation) {
+        navigator.geolocation.clearWatch(geoWatchId.current);
+        geoWatchId.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleLocateTap = () => {
+    if (viewerPos) {
+      // Already tracking — recentre the map on the viewer.
+      setViewerPanNonce(n => n + 1);
+    } else {
+      // Not yet tracking — this tap is the user gesture that triggers the
+      // browser's permission prompt.
+      startViewerWatch();
+    }
+  };
 
   // ── Trail-type filtering ──────────────────────────────────────────────────
   const trailTypeMap = useMemo(
@@ -411,6 +505,40 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, trailTy
         {/* Overview fit owns the camera only when not actively following. */}
         {(!hasTrack || !follow) && <BoundsFitter points={allPoints} />}
 
+        {/* Viewer location — live blue dot + accuracy halo, so the person
+            viewing can orient themselves to the trail. */}
+        {viewerPos && (
+          <>
+            {viewerPos.acc > 25 && (
+              <Circle
+                center={[viewerPos.lat, viewerPos.lng]}
+                radius={viewerPos.acc}
+                pathOptions={{
+                  color: "#3b82f6",
+                  weight: 1,
+                  opacity: 0.35,
+                  fillColor: "#3b82f6",
+                  fillOpacity: 0.08,
+                }}
+              />
+            )}
+            <CircleMarker
+              center={[viewerPos.lat, viewerPos.lng]}
+              radius={7}
+              pathOptions={{
+                color: "#ffffff",
+                weight: 2.5,
+                fillColor: "#2a7fff",
+                fillOpacity: 1,
+              }}
+            />
+            <ViewerPanner
+              target={[viewerPos.lat, viewerPos.lng]}
+              nonce={viewerPanNonce}
+            />
+          </>
+        )}
+
         {hasTrack ? (
           <>
             <FollowController
@@ -458,6 +586,23 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, trailTy
           <Marker position={[lat, lon]} icon={PIN_ICON} />
         )}
       </MapContainer>
+
+      {/* "Show my location" — hidden once permission is denied. Placed below
+          the top corners, which the fullscreen close/expand buttons occupy. */}
+      {!geoDenied && (
+        <button
+          onClick={handleLocateTap}
+          title={viewerPos ? "Centre on my location" : "Show my location"}
+          aria-label={viewerPos ? "Centre on my location" : "Show my location"}
+          className="absolute top-16 right-3 z-[1000] flex items-center justify-center w-10 h-10 rounded-full border transition-colors backdrop-blur-sm"
+          style={{
+            backgroundColor: viewerPos ? "#2a7fff" : "rgba(0,0,0,0.55)",
+            borderColor: viewerPos ? "#fff" : "rgba(255,255,255,0.25)",
+          }}
+        >
+          <Navigation className="h-4 w-4 text-white" />
+        </button>
+      )}
 
       {/* PackTrack control panel */}
       {hasTrack && (
