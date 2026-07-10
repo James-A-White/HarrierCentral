@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 // upstream URL server-side. Resolves PackTrack runner ids to display names.
 const BASE = process.env.HC_API_URL ?? "http://localhost:7071";
 
-interface RunnerRow { userId?: string; displayName?: string }
+interface RunnerRow { userId?: string; displayName?: string; photo?: string | null }
 
 export async function GET(req: NextRequest) {
   const publicEventId = req.nextUrl.searchParams.get("publicEventId");
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
       console.warn(`[runner-names] upstream ${res.status}`);
       return NextResponse.json({ runners: [] });
     }
-    // Shape: [[{ EventFound: 1 }], [{ userId, displayName }, ...]]
+    // Shape: [[{ EventFound: 1 }], [{ userId, displayName, photo }, ...]]
     const data = (await res.json()) as RunnerRow[][];
     const runners = Array.isArray(data?.[1]) ? data[1] : [];
     return NextResponse.json(

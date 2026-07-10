@@ -362,24 +362,35 @@ export function sumDistanceMeters(points: TrackPoint[]): number {
  * optional UI sugar, so any failure yields an empty map (callers fall back to
  * "Runner N").
  */
+export interface RunnerIdentity {
+  names: Record<string, string>;
+  /** Lowercased userId → profile photo URL. Only present for hashers who opted
+   *  into the global directory (the public-display consent signal). */
+  photos: Record<string, string>;
+}
+
 export async function fetchRunnerNames(
   publicEventId: string,
   userIds: string[],
-): Promise<Record<string, string>> {
-  if (!publicEventId || userIds.length === 0) return {};
+): Promise<RunnerIdentity> {
+  const empty: RunnerIdentity = { names: {}, photos: {} };
+  if (!publicEventId || userIds.length === 0) return empty;
   try {
     const params = new URLSearchParams({ publicEventId, userIds: userIds.join("|") });
     const res = await fetch(`/api/runner-names?${params.toString()}`);
-    if (!res.ok) return {};
-    const data = (await res.json()) as { runners?: { userId?: string; displayName?: string }[] };
-    const map: Record<string, string> = {};
+    if (!res.ok) return empty;
+    const data = (await res.json()) as {
+      runners?: { userId?: string; displayName?: string; photo?: string | null }[];
+    };
+    const map: RunnerIdentity = { names: {}, photos: {} };
     for (const r of data.runners ?? []) {
-      if (r.userId && r.displayName) map[r.userId.toLowerCase()] = r.displayName;
+      if (r.userId && r.displayName) map.names[r.userId.toLowerCase()] = r.displayName;
+      if (r.userId && r.photo) map.photos[r.userId.toLowerCase()] = r.photo;
     }
     return map;
   } catch (err) {
     console.error("[runner-names] client fetch error:", err);
-    return {};
+    return empty;
   }
 }
 

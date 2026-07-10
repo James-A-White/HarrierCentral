@@ -13,7 +13,8 @@ AS
 -- Description: Resolves PackTrack runner ids to public display names for the
 --   run map on the public website. Unauthenticated. The ids are already exposed
 --   via the public GetPositions endpoint; this only maps them to the hasher's
---   public DisplayName (no email, photo, or other PII).
+--   public DisplayName, plus Photo ONLY when IncludeInGlobalHashDirectory=1
+--   (the user's consent signal for identifiable public display). No email/PII.
 -- Parameters:
 --   @publicEventId - HC.Event.PublicEventId (public-facing UUID); used as an
 --                    existence guard so an empty name list is not treated as 404.
@@ -43,7 +44,10 @@ WHERE PublicEventId = @publicEventId;
 -- match the (lowercased) ids the frontend holds from the position payload.
 SELECT
     LOWER(CONVERT(NVARCHAR(36), h.id)) AS userId,
-    h.DisplayName                       AS displayName
+    h.DisplayName                       AS displayName,
+    -- Photo only for hashers who opted into the global directory — the
+    -- consent signal for appearing identifiably on public pages.
+    CASE WHEN h.IncludeInGlobalHashDirectory = 1 THEN h.Photo ELSE NULL END AS photo
 FROM HC.Hasher h
 WHERE h.id IN (
         SELECT TRY_CONVERT(UNIQUEIDENTIFIER, value)

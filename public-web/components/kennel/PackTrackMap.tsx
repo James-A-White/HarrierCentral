@@ -68,6 +68,33 @@ function userDotIcon(color: string, big: boolean): L.DivIcon {
   return icon;
 }
 
+// App-style runner marker: profile photo (or coloured initials) inset in the
+// grey square pin, ringed with the runner's track colour. Cached per identity.
+const runnerPinCache = new Map<string, L.DivIcon>();
+function runnerPinIcon(color: string, photoUrl: string | null, initials: string, big: boolean): L.DivIcon {
+  const key = `${color}|${photoUrl ?? ""}|${initials}|${big}`;
+  const cached = runnerPinCache.get(key);
+  if (cached) return cached;
+  const w = big ? 44 : 34;
+  const h = Math.round(w * 1.19); // pin PNG aspect (square head + pointer)
+  const inset = photoUrl
+    ? `<img src="${photoUrl}" style="position:absolute;left:9%;top:5%;width:82%;height:70%;` +
+      `object-fit:cover;border-radius:4px;border:2px solid ${color}"/>`
+    : `<div style="position:absolute;left:9%;top:5%;width:82%;height:70%;border-radius:4px;` +
+      `border:2px solid #fff;background:${color};display:flex;align-items:center;justify-content:center;` +
+      `color:#fff;font:700 ${big ? 14 : 11}px system-ui,sans-serif">${escapeHtml(initials)}</div>`;
+  const icon = L.divIcon({
+    html: `<div style="position:relative;width:${w}px;height:${h}px;` +
+      `background:url(/images/grey_square_pin.png) center/contain no-repeat;` +
+      `filter:drop-shadow(0 1px 4px rgba(0,0,0,0.5))">${inset}</div>`,
+    className: "",
+    iconSize: [w, h],
+    iconAnchor: [w / 2, h],
+  });
+  runnerPinCache.set(key, icon);
+  return icon;
+}
+
 // Viewer "you are here" dot — blue dot with an optional compass wedge showing
 // which way the phone is pointing. Cached per 5°-quantised heading.
 const viewerIconCache = new Map<string, L.DivIcon>();
@@ -264,11 +291,13 @@ interface PackTrackViewProps {
   hasTrack: boolean;
   /** Lowercased userId → display name. Missing ids fall back to "Runner N". */
   names: Record<string, string>;
+  /** Lowercased userId → profile photo URL (directory-opted-in hashers only). */
+  photos: Record<string, string>;
   /** Per-kennel trail-type config JSON (from the packtrack payload), or null. */
   trailTypesConfigJson?: string | null;
 }
 
-function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, trailTypesConfigJson }: PackTrackViewProps) {
+function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos, trailTypesConfigJson }: PackTrackViewProps) {
   // Opens at 1.0 — the most recent position info (live view); playing from the
   // end restarts from 0 via togglePlay's reset.
   const [progress, setProgress] = useState(1);    // 0.0 → 1.0
@@ -718,6 +747,55 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, trailTy
 
   const runnerName = (id: string) =>
     names[id.toLowerCase()] ?? `Runner ${users.findIndex(u => u.id === id) + 1}`;
+  const runnerInitials = (id: string) =>
+    runnerName(id)
+      .split(/\s+/)
+      .slice(0, 2)
+      .map(w => w[0]?.toUpperCase() ?? "")
+      .join("") || "?";
+
+  // ── Runner carousel (app-style picker: centred tile = selected) ──────────
+  const carouselRef = useRef<HTMLDivElement | null>(null);
+  const carouselSyncing = useRef(false);
+  const carouselScrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const onCarouselScroll = () => {
+    if (carouselSyncing.current) return;
+    if (carouselScrollTimer.current) clearTimeout(carouselScrollTimer.current);
+    carouselScrollTimer.current = setTimeout(() => {
+      const el = carouselRef.current;
+      if (!el) return;
+      const center = el.scrollLeft + el.clientWidth / 2;
+      let bestId: string | null = null;
+      let bestDist = Infinity;
+      for (const child of Array.from(el.children)) {
+        const c = child as HTMLElement;
+        const mid = c.offsetLeft + c.offsetWidth / 2;
+        const d = Math.abs(mid - center);
+        if (d < bestDist) { bestDist = d; bestId = c.dataset.runnerId ?? null; }
+      }
+      if (bestId && bestId !== selectedId) setPickedId(bestId);
+    }, 120);
+  };
+
+  // Selecting a runner elsewhere (tapping their pin) recentres the carousel.
+  useEffect(() => {
+    const el = carouselRef.current;
+    if (!el || !selectedId) return;
+    const child = Array.from(el.children).find(
+      c => (c as HTMLElement).dataset.runnerId === selectedId,
+    ) as HTMLElement | undefined;
+    if (!child) return;
+    carouselSyncing.current = true;
+    el.scrollTo({
+      left: child.offsetLeft + child.offsetWidth / 2 - el.clientWidth / 2,
+      behavior: "smooth",
+    });
+    const t = setTimeout(() => { carouselSyncing.current = false; }, 450);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedId]);
+
   const runnerEmoji = (id: string) =>
     (trailTypeMap.get(laneById.get(id) ?? 3)?.emoji) ?? "";
 
@@ -806,7 +884,12 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, trailTy
               <Marker
                 key={`${r.id}-dot`}
                 position={[r.last.lat, r.last.lng]}
-                icon={userDotIcon(r.color, r.id === selectedId)}
+                icon={runnerPinIcon(
+                  r.color,
+                  photos[r.id.toLowerCase()] ?? null,
+                  runnerInitials(r.id),
+                  r.id === selectedId,
+                )}
                 zIndexOffset={r.id === selectedId ? 1000 : 0}
               />
             ) : null)}
@@ -838,31 +921,68 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, trailTy
         <div className="absolute bottom-2 left-2 right-2 z-[1000] rounded-xl px-3 pt-2 pb-2.5"
           style={{ background: "rgba(0,0,0,0.65)" }}
         >
-          {/* Runner selector */}
+          {/* Runner carousel — app-style picker: swipe, centred tile = selected */}
           {visibleUsers.length > 1 && (
-            <div className="flex items-center justify-center gap-2 flex-wrap pb-1.5">
+            <div
+              ref={carouselRef}
+              onScroll={onCarouselScroll}
+              className="flex items-center gap-2.5 overflow-x-auto pb-1.5"
+              style={{
+                scrollSnapType: "x mandatory",
+                paddingLeft: "50%",
+                paddingRight: "50%",
+                scrollbarWidth: "none",
+              }}
+            >
               {visibleUsers.map((u) => {
                 const active = u.id === selectedId;
                 const emoji = runnerEmoji(u.id);
+                const photo = photos[u.id.toLowerCase()];
+                const color = colorById.get(u.id) ?? TRACK_COLORS[0];
                 return (
                   <button
                     key={u.id}
+                    data-runner-id={u.id}
                     onClick={() => setPickedId(u.id)}
-                    className="flex items-center gap-1.5 rounded-full pl-1 pr-2.5 py-1 transition-colors"
-                    style={{ background: active ? "rgba(255,255,255,0.16)" : "transparent" }}
                     aria-pressed={active}
+                    className="relative shrink-0 rounded-full transition-transform"
+                    style={{
+                      scrollSnapAlign: "center",
+                      width: 44,
+                      height: 44,
+                      transform: active ? "scale(1.15)" : "scale(1)",
+                      opacity: active ? 1 : 0.65,
+                    }}
+                    title={runnerName(u.id)}
                   >
-                    <span
-                      className="w-3.5 h-3.5 rounded-full border"
-                      style={{
-                        backgroundColor: colorById.get(u.id) ?? TRACK_COLORS[0],
-                        borderColor: active ? "#fff" : "rgba(255,255,255,0.4)",
-                        borderWidth: active ? 2 : 1,
-                      }}
-                    />
-                    <span className="text-xs font-semibold max-w-[10rem] truncate" style={{ color: active ? "#fff" : "rgba(255,255,255,0.6)" }}>
-                      {emoji ? `${emoji} ` : ""}{runnerName(u.id)}
-                    </span>
+                    {photo ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={photo}
+                        alt={runnerName(u.id)}
+                        className="w-full h-full rounded-full object-cover"
+                        style={{
+                          border: `2.5px solid ${color}`,
+                          boxShadow: active ? "0 0 0 2px #fff" : "none",
+                        }}
+                      />
+                    ) : (
+                      <span
+                        className="flex w-full h-full items-center justify-center rounded-full text-white text-sm font-bold"
+                        style={{
+                          background: color,
+                          border: "2.5px solid rgba(255,255,255,0.7)",
+                          boxShadow: active ? "0 0 0 2px #fff" : "none",
+                        }}
+                      >
+                        {runnerInitials(u.id)}
+                      </span>
+                    )}
+                    {emoji && (
+                      <span className="absolute -bottom-1 -right-1 text-[13px] leading-none">
+                        {emoji}
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -1056,6 +1176,7 @@ export default function PackTrackMap({
   const [loading, setLoading] = useState(true);
   const [hasTrack, setHasTrack] = useState(false);
   const [names, setNames] = useState<Record<string, string>>({});
+  const [photos, setPhotos] = useState<Record<string, string>>({});
   const [trailCfg, setTrailCfg] = useState<string | null>(null);
 
   const onTrackLoadedRef = useRef(onTrackLoaded);
@@ -1094,7 +1215,9 @@ export default function PackTrackMap({
         // Resolve runner display names (optional — failures fall back to "Runner N").
         if (publicEventId) {
           fetchRunnerNames(publicEventId, live.map(u => u.id)).then(n => {
-            if (!disposed) setNames(n);
+            if (disposed) return;
+            setNames(n.names);
+            setPhotos(n.photos);
           });
         }
       });
@@ -1115,7 +1238,7 @@ export default function PackTrackMap({
     };
   }, [eventId, publicEventId]);
 
-  const viewProps: PackTrackViewProps = { lat, lon, users, minTs, maxTs, hasTrack, names, trailTypesConfigJson: trailCfg };
+  const viewProps: PackTrackViewProps = { lat, lon, users, minTs, maxTs, hasTrack, names, photos, trailTypesConfigJson: trailCfg };
 
   // Standalone full-viewport page (dedicated PackTrack route). Fills the screen
   // with the playback view; the close button hands control back to the caller.
