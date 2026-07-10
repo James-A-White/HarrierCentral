@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getEventRunners",
-  "version": "1.0.0",
-  "description": "Resolves PackTrack runner ids (HC.Hasher.id) to public display names for the public-website run map. Unauthenticated.",
+  "version": "1.1.0",
+  "description": "Resolves PackTrack runner ids (HC.Hasher.id) to public display names and profile photos for the public-website run map. Unauthenticated. Photo exposure was explicitly approved by James (2026-07-10); IncludeInGlobalHashDirectory must NOT be used to gate it (unimplemented feature, not a consent flag).",
   "parameters": [
     {
       "name": "publicEventId",
@@ -34,7 +34,8 @@
       "description": "One row per resolved runner; may be empty if no ids match a live hasher.",
       "columns": [
         { "name": "userId", "type": "NVARCHAR(36)", "nullable": false, "description": "Lowercased HC.Hasher.id." },
-        { "name": "displayName", "type": "NVARCHAR(250)", "nullable": false, "description": "Hasher's computed public DisplayName." }
+        { "name": "displayName", "type": "NVARCHAR(250)", "nullable": false, "description": "Hasher's computed public DisplayName." },
+        { "name": "photo", "type": "NVARCHAR(1000)", "nullable": true, "description": "Hasher.Photo as-is. May be a blob URL or an app-only 'bundle://avatar-NN' value — web clients must skip non-http(s) values." }
       ]
     }
   ],
@@ -44,6 +45,7 @@
     "Never remove a column from any rowset",
     "Never rename a parameter",
     "Never change a parameter type",
-    "Never expose additional hasher PII (email, photo) without an explicit auth decision"
+    "Never expose additional hasher PII (email etc.) without an explicit decision from James (photo was approved 2026-07-10)",
+    "Never use IncludeInGlobalHashDirectory in decision logic — it belongs to the unimplemented Global Hash Directory feature"
   ]
 }
