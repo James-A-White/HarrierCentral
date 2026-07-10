@@ -315,6 +315,15 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
   const [geoDenied, setGeoDenied] = useState(false);
   const [viewerPanNonce, setViewerPanNonce] = useState(0);
   const geoWatchId = useRef<number | null>(null);
+  const geoDeniedRef = useRef(false);
+  const lastFixAtRef = useRef(0);
+
+  const stopViewerWatch = () => {
+    if (geoWatchId.current != null && navigator.geolocation) {
+      navigator.geolocation.clearWatch(geoWatchId.current);
+      geoWatchId.current = null;
+    }
+  };
 
   const startViewerWatch = () => {
     if (geoWatchId.current != null) return;
@@ -322,6 +331,8 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
     geoWatchId.current = navigator.geolocation.watchPosition(
       (p) => {
         setGeoDenied(false);
+        geoDeniedRef.current = false;
+        lastFixAtRef.current = Date.now();
         setViewerPos({
           lat: p.coords.latitude,
           lng: p.coords.longitude,
@@ -331,10 +342,8 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
       (err) => {
         if (err.code === err.PERMISSION_DENIED) {
           setGeoDenied(true);
-          if (geoWatchId.current != null) {
-            navigator.geolocation.clearWatch(geoWatchId.current);
-            geoWatchId.current = null;
-          }
+          geoDeniedRef.current = true;
+          stopViewerWatch();
         }
       },
       { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 },
@@ -346,11 +355,30 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
     // watchPosition triggers the browser prompt if not yet granted. Denial is
     // handled by the watch error callback (dot + button hide).
     startViewerWatch();
+
+    // iOS Safari silently kills a geolocation watch when the page is
+    // backgrounded (lock screen, app switch) and never resumes it — the dot
+    // freezes while the 30 s track refresh recovers. Re-register the watch on
+    // tab-visible, and health-check it on the same 30 s cadence as the track
+    // refresh: no fix in 30 s while visible → restart the watch.
+    const restartViewerWatch = () => {
+      if (geoDeniedRef.current) return;
+      stopViewerWatch();
+      startViewerWatch();
+    };
+    const onVisible = () => {
+      if (!document.hidden) restartViewerWatch();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    const healthInterval = setInterval(() => {
+      if (document.hidden || geoWatchId.current == null) return;
+      if (Date.now() - lastFixAtRef.current > 30_000) restartViewerWatch();
+    }, 30_000);
+
     return () => {
-      if (geoWatchId.current != null && navigator.geolocation) {
-        navigator.geolocation.clearWatch(geoWatchId.current);
-        geoWatchId.current = null;
-      }
+      document.removeEventListener("visibilitychange", onVisible);
+      clearInterval(healthInterval);
+      stopViewerWatch();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
