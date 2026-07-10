@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { MapContainer, TileLayer, Polyline, Marker, CircleMarker, Circle, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
-import { Play, Pause, X, LocateFixed, Navigation } from "lucide-react";
+import { Play, Pause, X, LocateFixed, Navigation, Smartphone } from "lucide-react";
 import {
   fetchPackTrack, fetchRunnerNames, parseMark, trackUpTo, sumDistanceMeters,
   haversineMeters, formatTrackTimestamp, formatDistanceLabel, filterAndInterpolate,
@@ -15,14 +15,14 @@ import type { UserTrack, TrackPoint } from "@/lib/packtrack";
 // ── Constants matching the mobile app ─────────────────────────────────────────
 
 // Playback duration scales with the trail's length, not a fixed wall-clock time:
-// the zoomed-out rate is 1 s/km (a 28 km run plays in 28 s, a 5 km run in 5 s),
-// and zooming in slows that down toward 8 s/km so detail is watchable. The rate
-// is interpolated by zoom between ZOOM_FAST and ZOOM_SLOW.
+// the zoomed-out rate is 2.5 s/km, slowing toward 20 s/km as you zoom in so
+// detail is watchable. The rate interpolates by zoom between ZOOM_FAST and
+// ZOOM_SLOW, then the user speed multiplier (button or tilt) scales it.
 const ZOOM_FAST = 15;
 const ZOOM_SLOW = 22;
-const MS_PER_KM_FAST = 1_000;   // 1 s/km — fully zoomed out (zoom ≤ 15)
-const MS_PER_KM_SLOW = 8_000;   // 8 s/km — fully zoomed in (zoom ≥ 22)
-const MIN_DURATION_MS = 3_000;  // floor so a very short trail doesn't flash past
+const MS_PER_KM_FAST = 2_500;   // 2.5 s/km — fully zoomed out (zoom ≤ 15)
+const MS_PER_KM_SLOW = 20_000;  // 20 s/km — fully zoomed in (zoom ≥ 22)
+const MIN_DURATION_MS = 5_000;  // floor so a very short trail does not flash past
 
 const TRACK_COLORS = [
   "#ef4444", "#3b82f6", "#22c55e", "#f59e0b",
@@ -30,6 +30,9 @@ const TRACK_COLORS = [
 ];
 
 const ICON_PX = 40; // checkpoint icon size (app uses 72; scaled down for web embed)
+
+// Playback speed steps cycled by the speed button (tilt control is continuous).
+const SPEED_STEPS = [0.5, 1, 2, 4];
 
 const PIN_ICON = L.icon({
   iconUrl: "/images/map_pin_foot.png",
@@ -305,6 +308,118 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, trailTy
     }
   };
 
+  // ── Playback speed ─────────────────────────────────────────────────────────
+  // A multiplier over the zoom-scaled base rate. The button cycles fixed steps;
+  // tilt control (opt-in) drives it continuously, including negative = reverse.
+  const [speed, setSpeed] = useState(1);       // display value
+  const speedRef = useRef(1);                  // live value used by the rAF loop
+  const buttonSpeedRef = useRef(1);            // last button-cycled value
+
+  const cycleSpeed = () => {
+    const idx = SPEED_STEPS.indexOf(buttonSpeedRef.current);
+    const next = SPEED_STEPS[(idx + 1) % SPEED_STEPS.length] ?? 1;
+    buttonSpeedRef.current = next;
+    speedRef.current = next;
+    setSpeed(next);
+  };
+
+  // ── Tilt control (opt-in) ──────────────────────────────────────────────────
+  // Tilt the phone away to speed up (to ×4), toward you to slow, then reverse
+  // (to −×2). Calibrated against the phone's angle at enable time, with a dead
+  // zone and smoothing so it doesn't feel twitchy.
+  const [tiltOn, setTiltOn] = useState(false);
+  const tiltNeutral = useRef<number | null>(null);
+  const tiltSamples = useRef<number[]>([]);
+  const tiltEma = useRef(1);
+  const tiltHandlerRef = useRef<((e: DeviceOrientationEvent) => void) | null>(null);
+
+  const tiltSupported =
+    typeof window !== "undefined" &&
+    "DeviceOrientationEvent" in window &&
+    "ontouchstart" in window;
+
+  const stopTilt = () => {
+    if (tiltHandlerRef.current) {
+      window.removeEventListener("deviceorientation", tiltHandlerRef.current);
+      tiltHandlerRef.current = null;
+    }
+    tiltNeutral.current = null;
+    tiltSamples.current = [];
+    setTiltOn(false);
+    // Hand control back to the button value.
+    speedRef.current = buttonSpeedRef.current;
+    setSpeed(buttonSpeedRef.current);
+  };
+
+  const startTilt = async () => {
+    // iOS 13+ requires an explicit permission request from a user gesture —
+    // this tap is that gesture.
+    try {
+      const doe = DeviceOrientationEvent as unknown as {
+        requestPermission?: () => Promise<string>;
+      };
+      if (doe.requestPermission) {
+        const perm = await doe.requestPermission();
+        if (perm !== "granted") return;
+      }
+    } catch {
+      return;
+    }
+
+    const handler = (e: DeviceOrientationEvent) => {
+      const beta = e.beta;
+      if (beta == null) return;
+
+      // Calibrate: average the first few samples as the neutral holding angle.
+      if (tiltNeutral.current == null) {
+        tiltSamples.current.push(beta);
+        if (tiltSamples.current.length >= 6) {
+          tiltNeutral.current =
+            tiltSamples.current.reduce((a, b) => a + b, 0) /
+            tiltSamples.current.length;
+        }
+        return;
+      }
+
+      // beta increases as the top of the phone tilts toward you — tilting
+      // AWAY (screen flattening) decreases beta. Away = faster.
+      const delta = tiltNeutral.current - beta;
+      const DEAD = 8;   // degrees of neutral zone
+      const SPAN = 32;  // degrees from dead-zone edge to full effect
+      let target: number;
+      if (Math.abs(delta) <= DEAD) {
+        target = 1;
+      } else if (delta > 0) {
+        target = 1 + Math.min((delta - DEAD) / SPAN, 1) * 3;   // ×1 → ×4
+      } else {
+        target = 1 + Math.max((delta + DEAD) / SPAN, -1) * 3;  // ×1 → −×2
+      }
+      // Smooth (EMA) so hand shake doesn't jitter the playback rate.
+      tiltEma.current = tiltEma.current * 0.8 + target * 0.2;
+      speedRef.current = tiltEma.current;
+      // Throttle state updates — the indicator doesn't need 60 fps.
+      setSpeed(s =>
+        Math.abs(s - tiltEma.current) > 0.1 ? tiltEma.current : s,
+      );
+    };
+
+    tiltEma.current = speedRef.current;
+    tiltHandlerRef.current = handler;
+    window.addEventListener("deviceorientation", handler);
+    setTiltOn(true);
+  };
+
+  const toggleTilt = () => {
+    if (tiltOn) stopTilt();
+    else void startTilt();
+  };
+
+  useEffect(() => () => {
+    if (tiltHandlerRef.current) {
+      window.removeEventListener("deviceorientation", tiltHandlerRef.current);
+    }
+  }, []);
+
   // ── Trail-type filtering ──────────────────────────────────────────────────
   const trailTypeMap = useMemo(
     () => resolveTrailTypeMap(trailTypesConfigJson),
@@ -421,10 +536,16 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, trailTy
       if (lastRafTs.current !== null) {
         const elapsed = rafTime - lastRafTs.current;
         const duration = durationFor(zoomRef.current, trailMetersRef.current);
-        const next = Math.min(progressRef.current + elapsed / duration, 1);
+        // speedRef scales the base rate; negative = reverse (tilt control).
+        const next = Math.min(
+          Math.max(progressRef.current + (elapsed / duration) * speedRef.current, 0),
+          1,
+        );
         progressRef.current = next;
         setProgress(next);
-        if (next >= 1) {
+        // Stop at the end only for forward button playback — while tilt is
+        // active, hold at either bound so tilting back resumes from there.
+        if (next >= 1 && speedRef.current > 0 && !tiltHandlerRef.current) {
           playingRef.current = false;
           setPlaying(false);
           lastRafTs.current = null;
@@ -699,6 +820,39 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, trailTy
               className="flex-1 h-1.5 cursor-pointer"
               style={{ accentColor: "#3b82f6" }}
             />
+            <button
+              onClick={cycleSpeed}
+              disabled={tiltOn}
+              title={tiltOn ? "Speed is tilt-controlled" : "Playback speed"}
+              className="shrink-0 flex items-center justify-center h-8 min-w-11 px-1.5 rounded-full border transition-colors text-white text-[11px] font-bold tabular-nums"
+              style={{
+                backgroundColor: speed !== 1 ? "#3b82f6" : "rgba(255,255,255,0.12)",
+                borderColor: speed !== 1 ? "#3b82f6" : "rgba(255,255,255,0.2)",
+                opacity: tiltOn ? 0.9 : 1,
+              }}
+            >
+              {speed < 0 ? "⏪ " : ""}×{Math.abs(speed) < 1
+                ? Math.abs(speed).toFixed(1)
+                : (Math.round(Math.abs(speed) * 10) / 10)
+                    .toString()
+                    .replace(/\.0$/, "")}
+            </button>
+            {tiltSupported && (
+              <button
+                onClick={toggleTilt}
+                aria-pressed={tiltOn}
+                title={tiltOn
+                  ? "Tilt control on — tilt away to speed up, toward you to reverse"
+                  : "Tilt to control playback speed"}
+                className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full border transition-colors"
+                style={{
+                  backgroundColor: tiltOn ? "#3b82f6" : "rgba(255,255,255,0.12)",
+                  borderColor: tiltOn ? "#3b82f6" : "rgba(255,255,255,0.2)",
+                }}
+              >
+                <Smartphone className="h-4 w-4 text-white" />
+              </button>
+            )}
             <button
               onClick={() => setFollow(f => !f)}
               aria-pressed={follow}
