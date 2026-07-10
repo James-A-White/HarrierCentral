@@ -385,7 +385,11 @@ export async function fetchRunnerNames(
     const map: RunnerIdentity = { names: {}, photos: {} };
     for (const r of data.runners ?? []) {
       if (r.userId && r.displayName) map.names[r.userId.toLowerCase()] = r.displayName;
-      if (r.userId && r.photo) map.photos[r.userId.toLowerCase()] = r.photo;
+      // Only real URLs — some hashers have app-bundled avatars ("bundle://avatar-NN")
+      // that the web can't render.
+      if (r.userId && r.photo && /^https?:\/\//i.test(r.photo)) {
+        map.photos[r.userId.toLowerCase()] = r.photo;
+      }
     }
     return map;
   } catch (err) {

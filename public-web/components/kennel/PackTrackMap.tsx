@@ -79,8 +79,8 @@ function runnerPinIcon(color: string, photoUrl: string | null, initials: string,
   const h = Math.round(w * 1.19); // pin PNG aspect (square head + pointer)
   const inset = photoUrl
     ? `<img src="${photoUrl}" style="position:absolute;left:9%;top:5%;width:82%;height:70%;` +
-      `object-fit:cover;border-radius:4px;border:2px solid ${color}"/>`
-    : `<div style="position:absolute;left:9%;top:5%;width:82%;height:70%;border-radius:4px;` +
+      `object-fit:cover;border-radius:5px;border:2px solid ${color}"/>`
+    : `<div style="position:absolute;left:9%;top:5%;width:82%;height:70%;border-radius:5px;` +
       `border:2px solid #fff;background:${color};display:flex;align-items:center;justify-content:center;` +
       `color:#fff;font:700 ${big ? 14 : 11}px system-ui,sans-serif">${escapeHtml(initials)}</div>`;
   const icon = L.divIcon({
@@ -929,6 +929,9 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
               className="flex items-center gap-2.5 overflow-x-auto pb-1.5"
               style={{
                 scrollSnapType: "x mandatory",
+                // Top/side headroom so the scaled selected tile + white ring
+                // aren't clipped by the scroll container.
+                paddingTop: 8,
                 paddingLeft: "50%",
                 paddingRight: "50%",
                 scrollbarWidth: "none",
@@ -945,12 +948,13 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
                     data-runner-id={u.id}
                     onClick={() => setPickedId(u.id)}
                     aria-pressed={active}
-                    className="relative shrink-0 rounded-full transition-transform"
+                    className="relative shrink-0 transition-transform"
                     style={{
                       scrollSnapAlign: "center",
                       width: 44,
                       height: 44,
-                      transform: active ? "scale(1.15)" : "scale(1)",
+                      borderRadius: 5,
+                      transform: active ? "scale(1.12)" : "scale(1)",
                       opacity: active ? 1 : 0.65,
                     }}
                     title={runnerName(u.id)}
@@ -960,16 +964,18 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
                       <img
                         src={photo}
                         alt={runnerName(u.id)}
-                        className="w-full h-full rounded-full object-cover"
+                        className="w-full h-full object-cover"
                         style={{
+                          borderRadius: 5,
                           border: `2.5px solid ${color}`,
                           boxShadow: active ? "0 0 0 2px #fff" : "none",
                         }}
                       />
                     ) : (
                       <span
-                        className="flex w-full h-full items-center justify-center rounded-full text-white text-sm font-bold"
+                        className="flex w-full h-full items-center justify-center text-white text-sm font-bold"
                         style={{
+                          borderRadius: 5,
                           background: color,
                           border: "2.5px solid rgba(255,255,255,0.7)",
                           boxShadow: active ? "0 0 0 2px #fff" : "none",
