@@ -37,7 +37,9 @@ WHERE PublicEventId = @publicEventId;
 -- unauthenticated public endpoint and GPS coordinates must not be exposed (M15 fix).
 SELECT
     kp.id           AS photoId,
-    kp.BlobUrl,
+    -- Display URL: the non-destructive edit (crop) when one exists, else the
+    -- original — same display rule as the app.
+    COALESCE(NULLIF(kp.EditedBlobUrl, ''), kp.BlobUrl) AS BlobUrl,
     kp.Title,
     kp.Description,
     kp.CreatedAt,

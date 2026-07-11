@@ -398,6 +398,49 @@ export async function fetchRunnerNames(
   }
 }
 
+/** A Hash Flash-approved public photo, keyed off PHO::<photoId> track marks. */
+export interface RunPhoto {
+  url: string;
+  title: string | null;
+  description: string | null;
+  uploader: string | null;
+}
+
+/** Fetch the run's approved PUBLIC photos as photoId (lowercase) -> RunPhoto. */
+export async function fetchRunPhotos(
+  publicEventId: string | null,
+): Promise<Record<string, RunPhoto>> {
+  if (!publicEventId) return {};
+  try {
+    const res = await fetch(`/api/run-photos?publicEventId=${encodeURIComponent(publicEventId)}`);
+    if (!res.ok) return {};
+    const data = (await res.json()) as {
+      photos?: {
+        photoId?: string;
+        BlobUrl?: string;
+        Title?: string | null;
+        Description?: string | null;
+        uploaderDisplayName?: string | null;
+      }[];
+    };
+    const map: Record<string, RunPhoto> = {};
+    for (const p of data.photos ?? []) {
+      if (p.photoId && p.BlobUrl) {
+        map[p.photoId.toLowerCase()] = {
+          url: p.BlobUrl,
+          title: p.Title ?? null,
+          description: p.Description ?? null,
+          uploader: p.uploaderDisplayName ?? null,
+        };
+      }
+    }
+    return map;
+  } catch (err) {
+    console.error("[run-photos] client fetch error:", err);
+    return {};
+  }
+}
+
 export async function fetchPackTrack(eventId: string): Promise<PackTrackPayload | null> {
   try {
     const res = await fetch(`/api/packtrack?eventId=${encodeURIComponent(eventId)}`);

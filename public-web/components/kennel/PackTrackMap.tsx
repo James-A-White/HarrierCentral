@@ -6,11 +6,11 @@ import { MapContainer, TileLayer, Polyline, Marker, Circle, useMap, useMapEvents
 import L from "leaflet";
 import { Play, Pause, X, LocateFixed, Navigation, Smartphone } from "lucide-react";
 import {
-  fetchPackTrack, fetchRunnerNames, parseMark, trackUpTo, sumDistanceMeters,
+  fetchPackTrack, fetchRunnerNames, fetchRunPhotos, parseMark, trackUpTo, sumDistanceMeters,
   haversineMeters, formatTrackTimestamp, formatDistanceLabel, filterAndInterpolate,
   MARK_DEDUPE_METERS, resolveTrailTypeMap, trailValueForTrack,
 } from "@/lib/packtrack";
-import type { UserTrack, TrackPoint } from "@/lib/packtrack";
+import type { UserTrack, TrackPoint, RunPhoto } from "@/lib/packtrack";
 
 // ── Constants matching the mobile app ─────────────────────────────────────────
 
@@ -159,6 +159,59 @@ function checkpointIcon(iconUrl: string, label: string | null, isCaution: boolea
   return icon;
 }
 
+// Run-photo marker (app-style): the photo thumbnail in a white rounded frame.
+// Cached per URL — playback re-renders ~60x/s.
+const photoIconCache = new Map<string, L.DivIcon>();
+function runPhotoIcon(url: string): L.DivIcon {
+  const cached = photoIconCache.get(url);
+  if (cached) return cached;
+  const size = 56;
+  const icon = L.divIcon({
+    html: `<div style="width:${size}px;height:${size}px;border-radius:9px;background:#fff;padding:3px;` +
+      `box-shadow:0 2px 8px rgba(0,0,0,0.55)">` +
+      `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;display:block"/></div>`,
+    className: "",
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+  });
+  photoIconCache.set(url, icon);
+  return icon;
+}
+
+interface PhotoMarkEntry {
+  point: TrackPoint;
+  photoId: string;
+  photo: RunPhoto;
+}
+
+// Gather visible (<= cutoff) PHO:: marks whose photoId resolves to a Hash
+// Flash-approved PUBLIC photo, in track order, deduped by photoId. Unresolved
+// marks (unapproved / members-only) stay hidden. Legacy full-URL PHO labels
+// (pre-photoId marks) predate the approval flow and are deliberately NOT shown
+// on the unauthenticated public page.
+function visiblePhotoMarks(
+  users: UserTrack[],
+  cutoff: number,
+  photos: Record<string, RunPhoto>,
+): PhotoMarkEntry[] {
+  const kept: PhotoMarkEntry[] = [];
+  const seen = new Set<string>();
+  for (const user of users) {
+    for (const p of user.positions) {
+      if (p.timestampMs > cutoff) break;
+      const parsed = parseMark(p.type);
+      if (!parsed?.isPhoto || !parsed.label || parsed.label.startsWith("http")) continue;
+      const id = parsed.label.toLowerCase();
+      if (seen.has(id)) continue;
+      const photo = photos[id];
+      if (!photo) continue;
+      seen.add(id);
+      kept.push({ point: p, photoId: id, photo });
+    }
+  }
+  return kept;
+}
+
 interface MarkEntry {
   point: TrackPoint;
   rawType: string;
@@ -295,9 +348,11 @@ interface PackTrackViewProps {
   photos: Record<string, string>;
   /** Per-kennel trail-type config JSON (from the packtrack payload), or null. */
   trailTypesConfigJson?: string | null;
+  /** Approved public run photos: photoId (lowercase) -> RunPhoto. */
+  runPhotos: Record<string, RunPhoto>;
 }
 
-function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos, trailTypesConfigJson }: PackTrackViewProps) {
+function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos, trailTypesConfigJson, runPhotos }: PackTrackViewProps) {
   // Opens at 1.0 — the most recent position info (live view); playing from the
   // end restarts from 0 via togglePlay's reset.
   const [progress, setProgress] = useState(1);    // 0.0 → 1.0
@@ -797,6 +852,24 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
   // laid by runners on several lanes still shows while any of them is visible.
   const marks = useMemo(() => visibleMarks(visibleUsers, currentTs), [visibleUsers, currentTs]);
 
+  // Approved public photos laid on the trail, in track order (lane-filtered +
+  // timeline-cutoff like every other mark). Tapping one opens the lightbox.
+  const photoMarks = useMemo(
+    () => visiblePhotoMarks(visibleUsers, currentTs, runPhotos),
+    [visibleUsers, currentTs, runPhotos],
+  );
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+  useEffect(() => {
+    if (lightboxIdx == null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxIdx(null);
+      if (e.key === "ArrowRight") setLightboxIdx(i => (i == null ? i : Math.min(i + 1, photoMarks.length - 1)));
+      if (e.key === "ArrowLeft") setLightboxIdx(i => (i == null ? i : Math.max(i - 1, 0)));
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [lightboxIdx, photoMarks.length]);
+
   const selected = runnerTracks.find(r => r.id === selectedId) ?? runnerTracks[0] ?? null;
   const followTarget: [number, number] | null =
     selected?.last ? [selected.last.lat, selected.last.lng] : null;
@@ -937,6 +1010,17 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
                 key={`mark-${i}-${m.rawType}`}
                 position={[m.point.lat, m.point.lng]}
                 icon={checkpointIcon(m.iconUrl, m.label, m.isCaution)}
+              />
+            ))}
+
+            {/* Hash Flash-approved public photos — tap to open the lightbox */}
+            {photoMarks.map((m, i) => (
+              <Marker
+                key={`photo-${m.photoId}`}
+                position={[m.point.lat, m.point.lng]}
+                icon={runPhotoIcon(m.photo.url)}
+                zIndexOffset={800}
+                eventHandlers={{ click: () => setLightboxIdx(i) }}
               />
             ))}
 
@@ -1171,6 +1255,66 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
           </div>
         </div>
       )}
+
+      {/* Photo lightbox — app-style full-screen viewer with caption overlay */}
+      {lightboxIdx != null && photoMarks[lightboxIdx] && typeof document !== "undefined" && createPortal(
+        <div
+          className="fixed inset-0 z-[3000] bg-black/95 flex flex-col"
+          onClick={() => setLightboxIdx(null)}
+        >
+          <button
+            onClick={() => setLightboxIdx(null)}
+            aria-label="Close photo"
+            className="absolute top-3 right-3 z-10 flex items-center justify-center w-10 h-10 rounded-full bg-black/55 border border-white/25"
+          >
+            <X className="h-5 w-5 text-white" />
+          </button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={photoMarks[lightboxIdx].photo.url}
+            alt={photoMarks[lightboxIdx].photo.title ?? "Run photo"}
+            className="flex-1 min-h-0 w-full object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <div
+            className="shrink-0 px-4 pt-3 text-center"
+            style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 14px)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {photoMarks[lightboxIdx].photo.title && (
+              <div className="text-white font-semibold text-sm">{photoMarks[lightboxIdx].photo.title}</div>
+            )}
+            {photoMarks[lightboxIdx].photo.description && (
+              <div className="text-white/80 text-xs mt-0.5">{photoMarks[lightboxIdx].photo.description}</div>
+            )}
+            <div className="text-white/50 text-[11px] mt-1">
+              {photoMarks[lightboxIdx].photo.uploader ? `📷 ${photoMarks[lightboxIdx].photo.uploader} · ` : ""}
+              {lightboxIdx + 1} / {photoMarks.length}
+            </div>
+          </div>
+          {photoMarks.length > 1 && (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); setLightboxIdx(Math.max(lightboxIdx - 1, 0)); }}
+                disabled={lightboxIdx === 0}
+                aria-label="Previous photo"
+                className="absolute left-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/50 border border-white/25 text-white text-xl disabled:opacity-30"
+              >
+                ‹
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); setLightboxIdx(Math.min(lightboxIdx + 1, photoMarks.length - 1)); }}
+                disabled={lightboxIdx === photoMarks.length - 1}
+                aria-label="Next photo"
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/50 border border-white/25 text-white text-xl disabled:opacity-30"
+              >
+                ›
+              </button>
+            </>
+          )}
+        </div>,
+        document.body,
+      )}
     </>
   );
 }
@@ -1243,6 +1387,7 @@ export default function PackTrackMap({
   const [hasTrack, setHasTrack] = useState(false);
   const [names, setNames] = useState<Record<string, string>>({});
   const [photos, setPhotos] = useState<Record<string, string>>({});
+  const [runPhotos, setRunPhotos] = useState<Record<string, RunPhoto>>({});
   const [trailCfg, setTrailCfg] = useState<string | null>(null);
 
   const onTrackLoadedRef = useRef(onTrackLoaded);
@@ -1285,6 +1430,12 @@ export default function PackTrackMap({
             setNames(n.names);
             setPhotos(n.photos);
           });
+          // Approved public run photos — re-fetched with every track refresh so
+          // photos the Hash Flash approves DURING the run appear live.
+          fetchRunPhotos(publicEventId).then(p => {
+            if (disposed) return;
+            setRunPhotos(p);
+          });
         }
       });
     };
@@ -1318,7 +1469,7 @@ export default function PackTrackMap({
     };
   }, [eventId, publicEventId]);
 
-  const viewProps: PackTrackViewProps = { lat, lon, users, minTs, maxTs, hasTrack, names, photos, trailTypesConfigJson: trailCfg };
+  const viewProps: PackTrackViewProps = { lat, lon, users, minTs, maxTs, hasTrack, names, photos, trailTypesConfigJson: trailCfg, runPhotos };
 
   // Standalone full-viewport page (dedicated PackTrack route). Fills the screen
   // with the playback view; the close button hands control back to the caller.
