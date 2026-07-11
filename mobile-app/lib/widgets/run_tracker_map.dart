@@ -312,6 +312,22 @@ class RunTrackerMap extends StatelessWidget {
                           onPressed: controller.toggleTilt,
                         ),
                 ),
+                // Follow toggle (mirrors the web): while on, the camera tracks
+                // the selected runner; off = pan freely without snap-back.
+                Obx(
+                  () => IconButton(
+                    icon: Icon(
+                      Icons.my_location,
+                      color: controller.followRunner.value
+                          ? Colors.lightBlueAccent
+                          : Colors.white54,
+                    ),
+                    tooltip: controller.followRunner.value
+                        ? 'Following runner'
+                        : 'Follow runner',
+                    onPressed: controller.toggleFollow,
+                  ),
+                ),
                 Expanded(
                   child: Slider(
                     value: controller.currentTimestampMs.value!,

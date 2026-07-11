@@ -85,6 +85,12 @@ class RunTrackerMapController extends GetxController
   // ±32° span, EMA smoothing — same tuning as the web.
   final RxBool tiltEnabled = false.obs;
   final RxDouble tiltSpeed = 1.0.obs; // smoothed multiplier, for the indicator
+
+  // Camera follow (mirrors the web's follow toggle): while ON the camera
+  // tracks the selected runner on every timeline/position update; OFF lets
+  // the user pan freely without the map snapping back. Explicit actions
+  // (tapping a runner, picking in the carousel) still recenter either way.
+  final RxBool followRunner = true.obs;
   StreamSubscription<AccelerometerEvent>? _tiltSub;
   Timer? _tiltTicker;
   double? _tiltNeutralDeg;
@@ -817,6 +823,14 @@ class RunTrackerMapController extends GetxController
     _startAutoUpdateTimer();
   }
 
+  void toggleFollow() {
+    followRunner.value = !followRunner.value;
+    if (followRunner.value) {
+      // Re-engaging follow snaps straight back to the selected runner.
+      _centerOnSelectedRunner();
+    }
+  }
+
   // ── Tilt-to-scrub ──────────────────────────────────────────────────────────
 
   void toggleTilt() {
@@ -1438,7 +1452,7 @@ class RunTrackerMapController extends GetxController
 
   void _moveToRunner(String userId) {
     if (selectedRunnerId.value != userId) return;
-    _updateCameraForSelection();
+    _centerOnSelectedRunner();
   }
 
   int? _runnerIndex(String userId) {
@@ -1478,7 +1492,15 @@ class RunTrackerMapController extends GetxController
     }
   }
 
+  // Follow-gated camera update — the automatic path (timeline ticks,
+  // position refreshes). Explicit user actions call _centerOnSelectedRunner
+  // directly so they work even with follow off.
   void _updateCameraForSelection() {
+    if (!followRunner.value) return;
+    _centerOnSelectedRunner();
+  }
+
+  void _centerOnSelectedRunner() {
     if (!_mapReady) return;
     final runner = _runnerById(selectedRunnerId.value);
     if (runner == null || runner.positions.isEmpty) return;

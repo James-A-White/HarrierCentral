@@ -1135,7 +1135,6 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
             >
               <LocateFixed className="h-4 w-4 text-white" />
             </button>
-            <span className="text-[10px] font-semibold tracking-wider text-white/40 uppercase shrink-0">PackTrack</span>
           </div>
         </div>
       )}
