@@ -1,5 +1,10 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.12.2+1198 (2026-07-11)
+
+### Fixes
+- **Runs no longer show twice**: runs starting within a few hours of now could appear in both "My past Runs" and "My upcoming runs". A run now stays upcoming until 3 hours after its start time, then moves to past — never both.
+
 ## 2.12.1+1197 (2026-07-10)
 
 ### New Features
