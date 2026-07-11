@@ -792,7 +792,10 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
     return { id: u.id, color: colorById.get(u.id) ?? TRACK_COLORS[0], pts, last };
   }), [visibleUsers, currentTs, colorById]);
 
-  const marks = useMemo(() => visibleMarks(users, currentTs), [users, currentTs]);
+  // Marks come from the lane-FILTERED set — hiding a trail (e.g. Ballbreaker)
+  // must hide the marks its runners put down, not just the polyline. A mark
+  // laid by runners on several lanes still shows while any of them is visible.
+  const marks = useMemo(() => visibleMarks(visibleUsers, currentTs), [visibleUsers, currentTs]);
 
   const selected = runnerTracks.find(r => r.id === selectedId) ?? runnerTracks[0] ?? null;
   const followTarget: [number, number] | null =
