@@ -256,8 +256,10 @@ class RunTrackerMapController extends GetxController
     final cutoff = timelineAvailable ? currentTimestampMs.value : null;
 
     // Gather the mark points that belong on this layer (checkpoints vs photos).
+    // Only from lane-VISIBLE runners: hiding a trail type (e.g. Ballbreaker)
+    // must hide the marks its runners put down, not just the polyline.
     final entries = <_MarkEntry>[];
-    for (final point in userPositions.expand((user) => user.positions)) {
+    for (final point in visibleRunners.expand((user) => user.positions)) {
       final rawType = (point.type ?? '').trim();
       if (rawType.isEmpty) continue;
       if (cutoff != null && point.timestampMs.toDouble() > cutoff) continue;
