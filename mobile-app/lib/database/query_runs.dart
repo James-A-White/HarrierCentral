@@ -666,8 +666,8 @@ class QueryRuns {
           julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetime}) as eventJulianLocal,
           julianday('now') as nowJulian,
           julianday('now','$offsetFromGmtToLocal') as nowJulianLocal,
-          case when julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-4 hours') then 1 else 0 end as showAsFutureEvent,
-          case when julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) <= julianday('now','+4 hours') then 1 else 0 end as showAsPastEvent,
+          case when julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-3 hours') then 1 else 0 end as showAsFutureEvent,
+          case when julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) < julianday('now','-3 hours') then 1 else 0 end as showAsPastEvent,
           $searchRunsField
           FROM ${EnumDataTables.events.commonTableName} evt
           INNER JOIN ${EnumDataTables.kennels.commonTableName} k on k.kennelId = evt.kennelId
@@ -683,14 +683,16 @@ class QueryRuns {
     var timeFilterWhereClause = '';
 
     if (runsToDisplay.showFuturePastToggle) {
+      // Single boundary: a run is FUTURE until 3 hours after its start, then
+      // PAST. The two predicates are exact complements — a run can never
+      // appear in both lists (the old ±4h window double-listed anything
+      // starting within 4 hours of now).
       if (runsTimeScope == RunsTimeScope.future) {
-        // where = '''AND julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-4 hours')''';
         timeFilterWhereClause =
-            '''AND julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-4 hours')''';
+            '''AND julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-3 hours')''';
       } else if (runsTimeScope == RunsTimeScope.past) {
-        // where = '''AND julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) <= julianday('now','+4 hours')''';
         timeFilterWhereClause =
-            '''AND julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) <= julianday('now','+4 hours')''';
+            '''AND julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) < julianday('now','-3 hours')''';
       } // 'all' is also an option, but we don't want to apply a where clause in that case
     }
 
@@ -715,7 +717,7 @@ class QueryRuns {
     final String whereClauseForKennelDetailsPage = kennelId == null
         ? ''
         : '''
-            WHERE julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-4 hours') 
+            WHERE julianday(evt.${tableModel.eventsTableHelper.colEventStartDatetimeGmt}) >= julianday('now','-3 hours') 
             AND evt.${tableModel.eventsTableHelper.colIsVisible} = 1
             AND evt.${tableModel.eventsTableHelper.colKennelId} = "$kennelId"
             AND evt.${tableModel.eventsTableHelper.colRemoved} = 0
