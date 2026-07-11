@@ -1,5 +1,10 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.12.3+1199 (2026-07-11)
+
+### New Features
+- **Follow runner toggle**: on the run tracking map, the new follow button (next to tilt) lets you turn off camera tracking and pan the map freely — tap it again to snap back to the selected runner.
+
 ## 2.12.2+1198 (2026-07-11)
 
 ### Fixes
