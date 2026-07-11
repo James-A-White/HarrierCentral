@@ -1,5 +1,9 @@
 # public-web Changelog
 
+## 0.21.10 — 2026-07-11
+
+- New: "Harrier Central 3.0" adventure-style title banner across the top of the PackTrack map (embedded run card, full-screen, and full-page views)
+
 ## 0.21.9 — 2026-06-27
 
 - New: filter PackTrack playback by trail type — chips for the trail types present on a run, with a per-runner trail emoji badge (track colours still mark runner identity)

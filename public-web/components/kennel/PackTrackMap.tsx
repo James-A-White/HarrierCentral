@@ -11,6 +11,7 @@ import {
   MARK_DEDUPE_METERS, resolveTrailTypeMap, trailValueForTrack,
 } from "@/lib/packtrack";
 import type { UserTrack, TrackPoint, RunPhoto } from "@/lib/packtrack";
+import { AdventureTitle } from "./AdventureTitle";
 
 // ── Constants matching the mobile app ─────────────────────────────────────────
 
@@ -350,9 +351,11 @@ interface PackTrackViewProps {
   trailTypesConfigJson?: string | null;
   /** Approved public run photos: photoId (lowercase) -> RunPhoto. */
   runPhotos: Record<string, RunPhoto>;
+  /** Show the "Harrier Central 3.0" adventure title overlaid at the top. */
+  showTitle?: boolean;
 }
 
-function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos, trailTypesConfigJson, runPhotos }: PackTrackViewProps) {
+function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos, trailTypesConfigJson, runPhotos, showTitle = false }: PackTrackViewProps) {
   // Opens at 1.0 — the most recent position info (live view); playing from the
   // end restarts from 0 via togglePlay's reset.
   const [progress, setProgress] = useState(1);    // 0.0 → 1.0
@@ -1044,6 +1047,15 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
         )}
       </MapContainer>
 
+      {/* "Harrier Central 3.0" adventure title — branding overlay across the
+          top-centre of the live map. Non-interactive so it never blocks the
+          map or the corner controls. */}
+      {showTitle && (
+        <div className="pointer-events-none absolute top-2 left-1/2 -translate-x-1/2 z-[1000] w-[min(88vw,520px)]">
+          <AdventureTitle />
+        </div>
+      )}
+
       {/* "Show my location" — hidden once permission is denied. Placed below
           the top corners, which the fullscreen close/expand buttons occupy. */}
       {!geoDenied && (
@@ -1340,7 +1352,7 @@ function PackTrackFullscreen({ onClose, ...viewProps }: PackTrackFullscreenProps
   return createPortal(
     <div className="fixed inset-0 z-[2000] bg-black">
       <div className="relative h-full w-full">
-        <PackTrackView {...viewProps} />
+        <PackTrackView {...viewProps} showTitle />
         <button
           onClick={onClose}
           aria-label="Close PackTrack"
@@ -1476,7 +1488,7 @@ export default function PackTrackMap({
   if (fullPage) {
     return (
       <div className="fixed inset-0 bg-black">
-        <PackTrackView {...viewProps} />
+        <PackTrackView {...viewProps} showTitle />
         {loading && (
           <div className="absolute inset-0 z-[1001] flex items-center justify-center bg-black/30 backdrop-blur-sm">
             <span className="text-sm text-white/60">Loading track…</span>
@@ -1498,7 +1510,7 @@ export default function PackTrackMap({
   return (
     <>
       <div className="relative w-full overflow-hidden rounded-xl" style={{ height }}>
-        <PackTrackView {...viewProps} />
+        <PackTrackView {...viewProps} showTitle />
         {loading && (
           <div className="absolute inset-0 z-[1001] flex items-center justify-center bg-black/30 backdrop-blur-sm rounded-xl">
             <span className="text-sm text-white/60">Loading track…</span>
