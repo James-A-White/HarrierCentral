@@ -370,6 +370,7 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
       if (!document.hidden) restartViewerWatch();
     };
     document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("pageshow", onVisible);
     const healthInterval = setInterval(() => {
       if (document.hidden || geoWatchId.current == null) return;
       if (Date.now() - lastFixAtRef.current > 30_000) restartViewerWatch();
@@ -377,6 +378,7 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
 
     return () => {
       document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("pageshow", onVisible);
       clearInterval(healthInterval);
       stopViewerWatch();
     };
@@ -699,6 +701,32 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
   useEffect(() => { trailMetersRef.current = trailMeters; }, [trailMeters]);
 
   const currentTs = minTs + (maxTs - minTs) * progress;
+
+  // Keep the thumb meaningful across the 30 s live refreshes. At (or near) the
+  // live edge it stays PINNED to the edge, so the view keeps tracking the
+  // newest positions as the timeline grows. Anywhere else it keeps pointing at
+  // the same wall-clock moment (re-anchored by timestamp), instead of silently
+  // drifting as the span rescales — the old behaviour left the view stuck
+  // behind the live edge after any scrub/tilt until a full page reload.
+  const prevSpanRef = useRef<{ min: number; max: number } | null>(null);
+  useEffect(() => {
+    const prev = prevSpanRef.current;
+    prevSpanRef.current = { min: minTs, max: maxTs };
+    if (!prev || (prev.min === minTs && prev.max === maxTs)) return;
+    if (playingRef.current) return; // playback owns the thumb
+    if (progressRef.current >= 0.995) {
+      progressRef.current = 1;
+      setProgress(1);
+      return;
+    }
+    const span = maxTs - minTs;
+    if (span <= 0) return;
+    const anchoredTs = prev.min + (prev.max - prev.min) * progressRef.current;
+    const next = Math.min(1, Math.max(0, (anchoredTs - minTs) / span));
+    progressRef.current = next;
+    setProgress(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [minTs, maxTs]);
 
   // ── rAF animation loop ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -1265,9 +1293,21 @@ export default function PackTrackMap({
       load(true);
     }, 30_000);
 
+    // Catch up IMMEDIATELY on wake instead of waiting out the interval:
+    // visibilitychange covers unlock/app-switch; pageshow covers iOS Safari
+    // restoring the page from the back/forward cache (which doesn't reliably
+    // fire visibilitychange).
+    const onWake = () => {
+      if (!document.hidden) load(true);
+    };
+    document.addEventListener("visibilitychange", onWake);
+    window.addEventListener("pageshow", onWake);
+
     return () => {
       disposed = true;
       clearInterval(interval);
+      document.removeEventListener("visibilitychange", onWake);
+      window.removeEventListener("pageshow", onWake);
     };
   }, [eventId, publicEventId]);
 
