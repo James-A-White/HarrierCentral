@@ -371,6 +371,7 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
     };
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("pageshow", onVisible);
+    window.addEventListener("focus", onVisible);
     const healthInterval = setInterval(() => {
       if (document.hidden || geoWatchId.current == null) return;
       if (Date.now() - lastFixAtRef.current > 30_000) restartViewerWatch();
@@ -379,6 +380,7 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
     return () => {
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("pageshow", onVisible);
+      window.removeEventListener("focus", onVisible);
       clearInterval(healthInterval);
       stopViewerWatch();
     };
@@ -1302,12 +1304,14 @@ export default function PackTrackMap({
     };
     document.addEventListener("visibilitychange", onWake);
     window.addEventListener("pageshow", onWake);
+    window.addEventListener("focus", onWake); // older iOS misses visibilitychange
 
     return () => {
       disposed = true;
       clearInterval(interval);
       document.removeEventListener("visibilitychange", onWake);
       window.removeEventListener("pageshow", onWake);
+      window.removeEventListener("focus", onWake);
     };
   }, [eventId, publicEventId]);
 
