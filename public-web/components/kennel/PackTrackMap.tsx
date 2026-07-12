@@ -752,11 +752,12 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
   }, []);
 
   // ── Auto-photo showcase (opt-in 📷) ────────────────────────────────────────
-  // When armed, playback pauses as the playhead crosses a Hash Flash photo so it
-  // can zoom out of its map pin, hold, and shrink back automatically — then
-  // playback resumes. The zoom always auto-completes; screen tilt scales the
-  // in/out rate (tilt away = snappier), otherwise the playback speed scales it
-  // so fast playback isn't held up.
+  // When armed, playback pauses as the playhead crosses (in EITHER direction) a
+  // Hash Flash photo on the SELECTED track, zooming it out of its pin and back
+  // before resuming. No tilt ⇒ timed auto in→hold→out (~2.6 s, scaled by playback
+  // speed). Tilt on ⇒ zoom direction is automatic (in→full→out) and the tilt-
+  // driven playback-speed magnitude sets the rate; holding at the zero-motion
+  // tilt freezes it at its current zoom.
   const [autoPhoto, setAutoPhoto] = useState(false);
   const autoPhotoRef = useRef(false);
   useEffect(() => { autoPhotoRef.current = autoPhoto; }, [autoPhoto]);
@@ -765,6 +766,7 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
   const activePhotoRef = useRef<PhotoMarkEntry | null>(null);
   const [photoZoom, setPhotoZoom] = useState(0);          // 0 = at pin, 1 = full
   const photoZoomRef = useRef(0);
+  const photoPhaseRef = useRef<"in" | "out">("in");        // tilt-mode zoom phase
   const showElapsedRef = useRef(0);                        // timed-mode clock (ms)
   const photoCuesRef = useRef<{ frac: number; entry: PhotoMarkEntry }[]>([]);
 
@@ -910,23 +912,42 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
       if (lastRafTs.current !== null) {
         const elapsed = rafTime - lastRafTs.current;
         if (activePhotoRef.current) {
-          // A photo is on screen — advance its auto zoom (in → hold → out) instead
-          // of the playhead. The animation always completes on its own; `rate`
-          // scales the whole in/hold/out clock: while tilting, the tilt factor
-          // controls the in AND out speed (tilt away = snappier); otherwise the
-          // playback speed scales it so fast playback isn't held up.
-          const rate = tiltHandlerRef.current
-            ? Math.min(4, Math.max(0.25, speedRef.current))
-            : (Math.abs(buttonSpeedRef.current) || 1);
-          showElapsedRef.current += elapsed * rate;
-          const IN = 450, HOLD = 1500, OUT = 650;   // ~2.6 s in-hold-out at rate 1
-          const t = showElapsedRef.current;
-          let z: number;
-          if (t < IN) z = t / IN;
-          else if (t < IN + HOLD) z = 1;
-          else if (t < IN + HOLD + OUT) z = 1 - (t - IN - HOLD) / OUT;
-          else { endPhotoShow(); z = 0; }
-          if (activePhotoRef.current) { photoZoomRef.current = z; setPhotoZoom(z); }
+          // A photo is on screen — advance its zoom instead of the playhead. Both
+          // paths auto-complete (zoom in fully → out → resume playback).
+          if (tiltHandlerRef.current) {
+            // Tilt: the zoom DIRECTION is automatic (in until full, then out);
+            // the tilt-driven playback-speed magnitude sets the RATE. At the
+            // resting ×1 it auto-cycles; tilt away ⇒ faster; tilting toward the
+            // zero-motion point slows it to a freeze (image holds at its current
+            // zoom); pushing past into reverse speeds it again, so navigating
+            // backward behaves identically.
+            const PHOTO_ZOOM_MS = 950;   // in/out traverse time at ×1
+            const dz = (Math.abs(speedRef.current) * elapsed) / PHOTO_ZOOM_MS;
+            let z = photoZoomRef.current;
+            if (photoPhaseRef.current === "in") {
+              z = Math.min(1, z + dz);
+              if (z >= 1) photoPhaseRef.current = "out";
+              photoZoomRef.current = z;
+              setPhotoZoom(z);
+            } else {
+              z -= dz;
+              if (z <= 0) endPhotoShow();
+              else { photoZoomRef.current = z; setPhotoZoom(z); }
+            }
+          } else {
+            // No tilt: timed auto in → hold → out (~2.6 s at ×1), scaled by the
+            // playback speed so fast playback isn't held up.
+            const rate = Math.abs(buttonSpeedRef.current) || 1;
+            showElapsedRef.current += elapsed * rate;
+            const IN = 450, HOLD = 1500, OUT = 650;
+            const t = showElapsedRef.current;
+            let z: number;
+            if (t < IN) z = t / IN;
+            else if (t < IN + HOLD) z = 1;
+            else if (t < IN + HOLD + OUT) z = 1 - (t - IN - HOLD) / OUT;
+            else { endPhotoShow(); z = 0; }
+            if (activePhotoRef.current) { photoZoomRef.current = z; setPhotoZoom(z); }
+          }
         } else {
           const duration = durationFor(zoomRef.current, trailMetersRef.current);
           const from = progressRef.current;
@@ -934,9 +955,13 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
           const next = Math.min(Math.max(from + (elapsed / duration) * speedRef.current, 0), 1);
           progressRef.current = next;
           setProgress(next);
-          // Auto-photo: on a forward crossing of a photo cue, pause and show it.
-          if (autoPhotoRef.current && speedRef.current > 0 && next > from) {
-            const cue = photoCuesRef.current.find(c => c.frac > from && c.frac <= next);
+          // Auto-photo: on a crossing of a photo cue in EITHER direction (forward
+          // playback or tilt-driven reverse), pause and show it.
+          if (autoPhotoRef.current && next !== from) {
+            const cues = photoCuesRef.current;
+            const cue = next > from
+              ? cues.find(c => c.frac > from && c.frac <= next)
+              : [...cues].reverse().find(c => c.frac < from && c.frac >= next);
             if (cue) beginPhotoShow(cue.entry, cue.frac);
           }
           // Stop at the end only for forward button playback — while tilt is
@@ -963,6 +988,7 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
     setActivePhoto(entry);
     photoZoomRef.current = 0;
     setPhotoZoom(0);
+    photoPhaseRef.current = "in";
     showElapsedRef.current = 0;
   }
 
@@ -1007,19 +1033,26 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
   // laid by runners on several lanes still shows while any of them is visible.
   const marks = useMemo(() => visibleMarks(visibleUsers, currentTs), [visibleUsers, currentTs]);
 
-  // Approved public photos laid on the trail, in track order (lane-filtered +
-  // timeline-cutoff like every other mark). Tapping one opens the lightbox.
+  // Approved public photos laid on the trail, in track order. Scoped to the
+  // SELECTED runner's track only — photos from other (often offscreen) runners
+  // popping in during the showcase felt disorienting, so pins + showcase both
+  // follow the track currently being displayed.
+  const selectedUserList = useMemo(() => {
+    const u = visibleUsers.find(v => v.id === selectedId);
+    return u ? [u] : [];
+  }, [visibleUsers, selectedId]);
+
   const photoMarks = useMemo(
-    () => visiblePhotoMarks(visibleUsers, currentTs, runPhotos),
-    [visibleUsers, currentTs, runPhotos],
+    () => visiblePhotoMarks(selectedUserList, currentTs, runPhotos),
+    [selectedUserList, currentTs, runPhotos],
   );
 
-  // Every approved photo across the WHOLE timeline (not cutoff-limited), stored
-  // as progress fractions so the rAF loop can detect the playhead crossing one.
-  // Recomputed as the live span grows so the fractions stay accurate.
+  // Every approved photo on the selected track across the WHOLE timeline (not
+  // cutoff-limited), stored as progress fractions so the rAF loop can detect the
+  // playhead crossing one. Recomputed as the live span grows / selection changes.
   const allPhotoMarks = useMemo(
-    () => visiblePhotoMarks(visibleUsers, Number.POSITIVE_INFINITY, runPhotos),
-    [visibleUsers, runPhotos],
+    () => visiblePhotoMarks(selectedUserList, Number.POSITIVE_INFINITY, runPhotos),
+    [selectedUserList, runPhotos],
   );
   useEffect(() => {
     const span = maxTs - minTs;

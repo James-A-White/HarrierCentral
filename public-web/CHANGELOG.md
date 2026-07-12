@@ -1,5 +1,10 @@
 # public-web Changelog
 
+## 0.21.13 — 2026-07-12
+
+- PackTrack photo showcase: photos now come only from the selected runner's track (no more pop-ins from an offscreen track); the zoom triggers when navigating backwards as well as forwards
+- PackTrack photo showcase (tilt): removed the fixed timer — zoom in/out rate now follows the tilt-driven playback speed (tilt away = faster, tilt to the stop-point = freeze the photo at its current zoom), the same going forwards or backwards
+
 ## 0.21.12 — 2026-07-12
 
 - Fix: PackTrack photo showcase now always auto zooms back out (in → hold → out) instead of holding at full; screen tilt scales the in/out rate, and the zoom-in is quicker

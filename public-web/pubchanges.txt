@@ -1,3 +1,6 @@
+0.21.13
+    • PackTrack photo showcase: photos scoped to the selected runner's track; zoom now triggers navigating backwards too; tilt drives zoom rate off playback speed (tilt to the stop-point to freeze a photo)
+
 0.21.12
     • Fix: PackTrack photo showcase now always auto zooms back out (tilt scales the in/out rate); quicker zoom-in
 
