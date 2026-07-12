@@ -118,6 +118,13 @@ class DrinksListState extends State<DrinksList>
   }
 
   Future<void> _refreshDrinksFromTable(bool forceRefresh) async {
+    // Run/haring milestone counts must be INCLUSIVE of this run. hem.totalRuns/
+    // HaringThisKennel is a cumulative-per-event stamp written by a nightly
+    // backend SP, so it is NULL for a live (same-day) event — falling straight
+    // back to historical-only badly under-counts. When it is NULL, fall back to
+    // the standing HC total + 1 (this run): + always for runs, + only when the
+    // hasher is a hare on this event for haring. Historical baseline is added on
+    // top in every case.
     final String query =
         '''
         SELECT 
@@ -129,10 +136,15 @@ class DrinksListState extends State<DrinksList>
             h.${tableModel.hashersTableHelper.colFirstName} || " " || h.${tableModel.hashersTableHelper.colLastName},"<no name>") as dispName,
           lower(" " || coalesce(h.${tableModel.hashersTableHelper.colHashName},"") || " " || coalesce(h.${tableModel.hashersTableHelper.colDispName},"") || " " || coalesce(h.${tableModel.hashersTableHelper.colFirstName},"") || " " || coalesce(h.${tableModel.hashersTableHelper.colLastName},"") || " ") as nameForSort,
           h.${tableModel.hashersTableHelper.colPhoto},         
-          coalesce(hem.${tableModel.hasherEventMapTableHelper.colTotalHaringThisKennel},0) 
+          coalesce(
+            hem.${tableModel.hasherEventMapTableHelper.colTotalHaringThisKennel},
+            coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colHcHaringCount},0)
+              + case when hem.${tableModel.hasherEventMapTableHelper.colIsHare} = 1 then 1 else 0 end)
           + coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalHaringCount},0)
           as totalHaringThisKennel,
-          coalesce(hem.${tableModel.hasherEventMapTableHelper.colTotalRunsThisKennel},0) 
+          coalesce(
+            hem.${tableModel.hasherEventMapTableHelper.colTotalRunsThisKennel},
+            coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colHcTotalRunCount},0) + 1)
           + coalesce(hkm.${tableModel.hasherKennelMapTableHelper.colHistoricalTotalRunCount},0)
           as totalRunsThisKennel,
           hem.${tableModel.hasherEventMapTableHelper.colIsHare}

@@ -1,5 +1,10 @@
 # Harrier Central Mobile App — Changelog
 
+## 2.12.4+1200 (2026-07-12)
+
+### Fixes
+- **Run-count awards (Drink chug-a-lug) fixed**: milestone counts were dropping every hasher's HC-era runs on the day of a run — the current run isn't stamped with its cumulative count until an overnight job, so counts collapsed to the historical-only baseline and the wrong people (and wrong numbers) got badges. Counts are now inclusive of today's run whether or not the overnight job has run, so run/haring milestones are correct live at the circle.
+
 ## 2.12.3+1199 (2026-07-11)
 
 ### New Features
