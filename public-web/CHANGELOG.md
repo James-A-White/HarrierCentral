@@ -1,5 +1,9 @@
 # public-web Changelog
 
+## 0.21.14 — 2026-07-12
+
+- PackTrack tilt: widened the neutral (paused) zone so there's latitude to hold the phone at the stop-point without drifting in/out; the speed bubble now turns red with a pause icon while in that neutral zone
+
 ## 0.21.13 — 2026-07-12
 
 - PackTrack photo showcase: photos now come only from the selected runner's track (no more pop-ins from an offscreen track); the zoom triggers when navigating backwards as well as forwards

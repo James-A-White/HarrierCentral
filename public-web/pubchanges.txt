@@ -1,3 +1,6 @@
+0.21.14
+    • PackTrack tilt: wider neutral/paused zone at the stop-point; speed bubble turns red with a pause icon while paused
+
 0.21.13
     • PackTrack photo showcase: photos scoped to the selected runner's track; zoom now triggers navigating backwards too; tilt drives zoom rate off playback speed (tilt to the stop-point to freeze a photo)
 

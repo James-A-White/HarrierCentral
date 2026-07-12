@@ -723,6 +723,11 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
       } else {
         target = 1 + Math.max((delta + DEAD) / SPAN, -1) * 3;  // ×1 → −×2
       }
+      // Widen the "paused" latitude: a band of tilt around the zero-motion point
+      // (where playback — and the photo zoom — stop) all snap to a settled 0, so
+      // it's easy to hold the pause without drifting in or out of it.
+      const NEUTRAL_BAND = 0.5;
+      if (Math.abs(target) <= NEUTRAL_BAND) target = 0;
       // Smooth (EMA) so hand shake doesn't jitter the playback rate.
       tiltEma.current = tiltEma.current * 0.8 + target * 0.2;
       speedRef.current = tiltEma.current;
@@ -1062,6 +1067,11 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
           .sort((a, b) => a.frac - b.frac)
       : [];
   }, [allPhotoMarks, minTs, maxTs]);
+
+  // In tilt mode, the speed bubble doubles as a live indicator. When the tilt is
+  // inside the widened neutral band, the speed settles to ~0 — surface that as a
+  // red "paused" state so it's obvious playback (and the photo zoom) is frozen.
+  const tiltPaused = tiltOn && Math.abs(speed) < 0.15;
 
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   useEffect(() => {
@@ -1427,19 +1437,24 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
             <button
               onClick={cycleSpeed}
               disabled={tiltOn}
-              title={tiltOn ? "Speed is tilt-controlled" : "Playback speed"}
+              title={tiltPaused ? "Paused — in the neutral tilt zone"
+                : tiltOn ? "Speed is tilt-controlled" : "Playback speed"}
               className="shrink-0 flex items-center justify-center h-8 min-w-11 px-1.5 rounded-full border transition-colors text-white text-[11px] font-bold tabular-nums"
               style={{
-                backgroundColor: speed !== 1 ? "#3b82f6" : "rgba(255,255,255,0.12)",
-                borderColor: speed !== 1 ? "#3b82f6" : "rgba(255,255,255,0.2)",
+                backgroundColor: tiltPaused ? "#ef4444" : speed !== 1 ? "#3b82f6" : "rgba(255,255,255,0.12)",
+                borderColor: tiltPaused ? "#ef4444" : speed !== 1 ? "#3b82f6" : "rgba(255,255,255,0.2)",
                 opacity: tiltOn ? 0.9 : 1,
               }}
             >
-              {speed < 0 ? "⏪ " : ""}×{Math.abs(speed) < 1
-                ? Math.abs(speed).toFixed(1)
-                : (Math.round(Math.abs(speed) * 10) / 10)
-                    .toString()
-                    .replace(/\.0$/, "")}
+              {tiltPaused ? (
+                <Pause className="h-3.5 w-3.5 text-white" />
+              ) : (
+                <>{speed < 0 ? "⏪ " : ""}×{Math.abs(speed) < 1
+                  ? Math.abs(speed).toFixed(1)
+                  : (Math.round(Math.abs(speed) * 10) / 10)
+                      .toString()
+                      .replace(/\.0$/, "")}</>
+              )}
             </button>
             {allPhotoMarks.length > 0 && (
               <button
