@@ -1,5 +1,9 @@
 # public-web Changelog
 
+## 0.21.11 — 2026-07-12
+
+- New: opt-in photo showcase on the PackTrack map (📷 camera toggle) — playback pauses as each Hash Flash photo is reached, zooming it out of its map pin and back; ~3 s at ×1 (scaled by playback speed), or hand-driven by screen tilt (tilt away to zoom in, back to dismiss)
+
 ## 0.21.10 — 2026-07-11
 
 - New: "Harrier Central 3.0" adventure-style title banner across the top of the PackTrack map (embedded run card, full-screen, and full-page views)

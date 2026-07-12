@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { MapContainer, TileLayer, Polyline, Marker, Circle, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
-import { Play, Pause, X, LocateFixed, Navigation, Smartphone } from "lucide-react";
+import { Play, Pause, X, LocateFixed, Navigation, Smartphone, Camera } from "lucide-react";
 import {
   fetchPackTrack, fetchRunnerNames, fetchRunPhotos, parseMark, trackUpTo, sumDistanceMeters,
   haversineMeters, formatTrackTimestamp, formatDistanceLabel, filterAndInterpolate,
@@ -330,6 +330,98 @@ function FollowController({
   }, [map, follow, target, selectedId]);
 
   return null;
+}
+
+// Auto-photo showcase overlay. While a photo is being shown it grows out of its
+// map pin toward the centre and shrinks back, driven by `z` (0 = at the pin,
+// 1 = fully zoomed). Re-projects the pin's screen position every frame so it
+// stays glued to the marker even if the map moves. Portalled into the map
+// container so it sits above the tiles/markers but below the outside controls.
+function PhotoZoomOverlay({
+  entry, z, onDismiss,
+}: {
+  entry: PhotoMarkEntry | null;
+  z: number;
+  onDismiss: () => void;
+}) {
+  const map = useMap();
+  // Leaflet's .leaflet-container sets only overflow:hidden — guarantee it is a
+  // positioning context so the portalled overlay anchors to the map, not to an
+  // outer wrapper.
+  useEffect(() => {
+    const c = map.getContainer();
+    if (getComputedStyle(c).position === "static") c.style.position = "relative";
+  }, [map]);
+
+  if (!entry) return null;
+
+  const start = map.latLngToContainerPoint([entry.point.lat, entry.point.lng]);
+  const sz = map.getSize();
+  const cx = sz.x / 2;
+  const cy = sz.y * 0.44;             // a touch above centre so the caption fits
+  const x = start.x + (cx - start.x) * z;
+  const y = start.y + (cy - start.y) * z;
+
+  const START_PX = 56;                // matches the photo pin thumbnail size
+  const endW = Math.min(sz.x * 0.84, sz.y * 0.66);
+  const w = START_PX + (endW - START_PX) * z;
+  const captionOpacity = Math.max(0, (z - 0.6) / 0.4);
+  const caption = entry.photo.title ?? entry.photo.description ?? null;
+
+  return createPortal(
+    <div
+      onClick={onDismiss}
+      style={{
+        position: "absolute",
+        left: x,
+        top: y,
+        width: w,
+        transform: "translate(-50%, -50%)",
+        zIndex: 640,
+        pointerEvents: z > 0.05 ? "auto" : "none",
+        cursor: "pointer",
+      }}
+    >
+      <div
+        style={{
+          background: "#fff",
+          padding: 3 + 3 * z,
+          borderRadius: 10,
+          boxShadow: `0 ${4 + 16 * z}px ${12 + 28 * z}px rgba(0,0,0,${0.35 + 0.35 * z})`,
+        }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={entry.photo.url}
+          alt={entry.photo.title ?? "Run photo"}
+          style={{
+            display: "block",
+            width: "100%",
+            height: "auto",
+            maxHeight: sz.y * 0.6,
+            objectFit: "cover",
+            borderRadius: 7,
+          }}
+        />
+        {caption && captionOpacity > 0 && (
+          <div
+            style={{
+              opacity: captionOpacity,
+              color: "#111",
+              fontSize: 12,
+              fontWeight: 600,
+              textAlign: "center",
+              padding: "5px 6px 1px",
+              lineHeight: 1.2,
+            }}
+          >
+            {caption}
+          </div>
+        )}
+      </div>
+    </div>,
+    map.getContainer(),
+  );
 }
 
 // ── Map + controls view ────────────────────────────────────────────────────────
@@ -659,6 +751,23 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
     }
   }, []);
 
+  // ── Auto-photo showcase (opt-in 📷) ────────────────────────────────────────
+  // When armed, playback pauses as the playhead crosses a Hash Flash photo so it
+  // can zoom out of its map pin, hold, and shrink back — then playback resumes.
+  // With tilt control on the zoom is hand-driven (tilt away = zoom in / hold at
+  // full, tilt toward = zoom out & dismiss); otherwise it runs on a ~3 s timer at
+  // ×1, scaled down by the playback speed so fast playback isn't held up.
+  const [autoPhoto, setAutoPhoto] = useState(false);
+  const autoPhotoRef = useRef(false);
+  useEffect(() => { autoPhotoRef.current = autoPhoto; }, [autoPhoto]);
+
+  const [activePhoto, setActivePhoto] = useState<PhotoMarkEntry | null>(null);
+  const activePhotoRef = useRef<PhotoMarkEntry | null>(null);
+  const [photoZoom, setPhotoZoom] = useState(0);          // 0 = at pin, 1 = full
+  const photoZoomRef = useRef(0);
+  const showElapsedRef = useRef(0);                        // timed-mode clock (ms)
+  const photoCuesRef = useRef<{ frac: number; entry: PhotoMarkEntry }[]>([]);
+
   // ── Trail-type filtering ──────────────────────────────────────────────────
   const trailTypeMap = useMemo(
     () => resolveTrailTypeMap(trailTypesConfigJson),
@@ -800,21 +909,50 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
       if (!playingRef.current) return;
       if (lastRafTs.current !== null) {
         const elapsed = rafTime - lastRafTs.current;
-        const duration = durationFor(zoomRef.current, trailMetersRef.current);
-        // speedRef scales the base rate; negative = reverse (tilt control).
-        const next = Math.min(
-          Math.max(progressRef.current + (elapsed / duration) * speedRef.current, 0),
-          1,
-        );
-        progressRef.current = next;
-        setProgress(next);
-        // Stop at the end only for forward button playback — while tilt is
-        // active, hold at either bound so tilting back resumes from there.
-        if (next >= 1 && speedRef.current > 0 && !tiltHandlerRef.current) {
-          playingRef.current = false;
-          setPlaying(false);
-          lastRafTs.current = null;
-          return;
+        if (activePhotoRef.current) {
+          // A photo is on screen — advance its zoom instead of the playhead.
+          if (tiltHandlerRef.current) {
+            // Tilt-driven: speedRef is the signed tilt rate. Tilt away (>0) zooms
+            // in and holds at full; tilt toward (<0) zooms out and dismisses.
+            const PHOTO_ZOOM_MS = 1100;   // time to fully zoom at ×1-equivalent tilt
+            const z = Math.min(1, Math.max(0,
+              photoZoomRef.current + (speedRef.current * elapsed) / PHOTO_ZOOM_MS));
+            photoZoomRef.current = z;
+            setPhotoZoom(z);
+            if (z <= 0.001 && speedRef.current < 0) endPhotoShow();
+          } else {
+            // Timed: ~3 s at ×1 (in → hold → out), scaled down by playback speed.
+            showElapsedRef.current += elapsed;
+            const sp = Math.abs(buttonSpeedRef.current) || 1;
+            const IN = 650 / sp, HOLD = 1700 / sp, OUT = 650 / sp;
+            const t = showElapsedRef.current;
+            let z: number;
+            if (t < IN) z = t / IN;
+            else if (t < IN + HOLD) z = 1;
+            else if (t < IN + HOLD + OUT) z = 1 - (t - IN - HOLD) / OUT;
+            else { endPhotoShow(); z = 0; }
+            if (activePhotoRef.current) { photoZoomRef.current = z; setPhotoZoom(z); }
+          }
+        } else {
+          const duration = durationFor(zoomRef.current, trailMetersRef.current);
+          const from = progressRef.current;
+          // speedRef scales the base rate; negative = reverse (tilt control).
+          const next = Math.min(Math.max(from + (elapsed / duration) * speedRef.current, 0), 1);
+          progressRef.current = next;
+          setProgress(next);
+          // Auto-photo: on a forward crossing of a photo cue, pause and show it.
+          if (autoPhotoRef.current && speedRef.current > 0 && next > from) {
+            const cue = photoCuesRef.current.find(c => c.frac > from && c.frac <= next);
+            if (cue) beginPhotoShow(cue.entry, cue.frac);
+          }
+          // Stop at the end only for forward button playback — while tilt is
+          // active, hold at either bound so tilting back resumes from there.
+          if (next >= 1 && speedRef.current > 0 && !tiltHandlerRef.current) {
+            playingRef.current = false;
+            setPlaying(false);
+            lastRafTs.current = null;
+            return;
+          }
         }
       }
       lastRafTs.current = rafTime;
@@ -824,14 +962,34 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
     return () => { if (rafIdRef.current !== null) cancelAnimationFrame(rafIdRef.current); };
   }, [playing]);
 
+  function beginPhotoShow(entry: PhotoMarkEntry, frac: number) {
+    progressRef.current = frac;      // snap the playhead onto the photo's pin
+    setProgress(frac);
+    activePhotoRef.current = entry;
+    setActivePhoto(entry);
+    photoZoomRef.current = 0;
+    setPhotoZoom(0);
+    showElapsedRef.current = 0;
+  }
+
+  function endPhotoShow() {
+    if (!activePhotoRef.current) return;
+    activePhotoRef.current = null;
+    setActivePhoto(null);
+    photoZoomRef.current = 0;
+    setPhotoZoom(0);
+    showElapsedRef.current = 0;
+  }
+
   function handleScrub(e: React.ChangeEvent<HTMLInputElement>) {
     const val = Number(e.target.value) / 10000;
+    endPhotoShow();                  // scrubbing cancels any in-progress showcase
     progressRef.current = val;
     setProgress(val);
   }
 
   function togglePlay() {
-    if (progress >= 1) { progressRef.current = 0; setProgress(0); lastRafTs.current = null; }
+    if (progress >= 1) { endPhotoShow(); progressRef.current = 0; setProgress(0); lastRafTs.current = null; }
     const next = !playing;
     playingRef.current = next;
     setPlaying(next);
@@ -861,6 +1019,23 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
     () => visiblePhotoMarks(visibleUsers, currentTs, runPhotos),
     [visibleUsers, currentTs, runPhotos],
   );
+
+  // Every approved photo across the WHOLE timeline (not cutoff-limited), stored
+  // as progress fractions so the rAF loop can detect the playhead crossing one.
+  // Recomputed as the live span grows so the fractions stay accurate.
+  const allPhotoMarks = useMemo(
+    () => visiblePhotoMarks(visibleUsers, Number.POSITIVE_INFINITY, runPhotos),
+    [visibleUsers, runPhotos],
+  );
+  useEffect(() => {
+    const span = maxTs - minTs;
+    photoCuesRef.current = span > 0
+      ? allPhotoMarks
+          .map(m => ({ frac: (m.point.timestampMs - minTs) / span, entry: m }))
+          .sort((a, b) => a.frac - b.frac)
+      : [];
+  }, [allPhotoMarks, minTs, maxTs]);
+
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   useEffect(() => {
     if (lightboxIdx == null) return;
@@ -1026,6 +1201,9 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
                 eventHandlers={{ click: () => setLightboxIdx(i) }}
               />
             ))}
+
+            {/* Auto-photo showcase — grows out of the pin, driven by rAF/tilt */}
+            <PhotoZoomOverlay entry={activePhoto} z={photoZoom} onDismiss={endPhotoShow} />
 
             {/* Current position of each runner */}
             {runnerTracks.map(r => r.last ? (
@@ -1236,6 +1414,22 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
                     .toString()
                     .replace(/\.0$/, "")}
             </button>
+            {allPhotoMarks.length > 0 && (
+              <button
+                onClick={() => { if (autoPhoto) endPhotoShow(); setAutoPhoto(a => !a); }}
+                aria-pressed={autoPhoto}
+                title={autoPhoto
+                  ? "Photo showcase on — playback pauses to zoom into each photo"
+                  : "Pause playback to zoom into each photo as it appears"}
+                className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full border transition-colors"
+                style={{
+                  backgroundColor: autoPhoto ? "#3b82f6" : "rgba(255,255,255,0.12)",
+                  borderColor: autoPhoto ? "#3b82f6" : "rgba(255,255,255,0.2)",
+                }}
+              >
+                <Camera className="h-4 w-4 text-white" />
+              </button>
+            )}
             {tiltSupported && (
               <button
                 onClick={toggleTilt}

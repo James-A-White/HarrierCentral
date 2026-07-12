@@ -1,3 +1,6 @@
+0.21.11
+    • New: opt-in 📷 photo showcase on the PackTrack map — playback pauses to zoom each Hash Flash photo out of its pin and back (timed ~3s or tilt-controlled)
+
 0.21.10
     • Added a "Harrier Central 3.0" title banner to the top of the PackTrack live map
 
