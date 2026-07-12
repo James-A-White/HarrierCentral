@@ -1,5 +1,9 @@
 # public-web Changelog
 
+## 0.21.12 — 2026-07-12
+
+- Fix: PackTrack photo showcase now always auto zooms back out (in → hold → out) instead of holding at full; screen tilt scales the in/out rate, and the zoom-in is quicker
+
 ## 0.21.11 — 2026-07-12
 
 - New: opt-in photo showcase on the PackTrack map (📷 camera toggle) — playback pauses as each Hash Flash photo is reached, zooming it out of its map pin and back; ~3 s at ×1 (scaled by playback speed), or hand-driven by screen tilt (tilt away to zoom in, back to dismiss)

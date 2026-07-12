@@ -753,10 +753,10 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
 
   // ── Auto-photo showcase (opt-in 📷) ────────────────────────────────────────
   // When armed, playback pauses as the playhead crosses a Hash Flash photo so it
-  // can zoom out of its map pin, hold, and shrink back — then playback resumes.
-  // With tilt control on the zoom is hand-driven (tilt away = zoom in / hold at
-  // full, tilt toward = zoom out & dismiss); otherwise it runs on a ~3 s timer at
-  // ×1, scaled down by the playback speed so fast playback isn't held up.
+  // can zoom out of its map pin, hold, and shrink back automatically — then
+  // playback resumes. The zoom always auto-completes; screen tilt scales the
+  // in/out rate (tilt away = snappier), otherwise the playback speed scales it
+  // so fast playback isn't held up.
   const [autoPhoto, setAutoPhoto] = useState(false);
   const autoPhotoRef = useRef(false);
   useEffect(() => { autoPhotoRef.current = autoPhoto; }, [autoPhoto]);
@@ -910,29 +910,23 @@ function PackTrackView({ lat, lon, users, minTs, maxTs, hasTrack, names, photos,
       if (lastRafTs.current !== null) {
         const elapsed = rafTime - lastRafTs.current;
         if (activePhotoRef.current) {
-          // A photo is on screen — advance its zoom instead of the playhead.
-          if (tiltHandlerRef.current) {
-            // Tilt-driven: speedRef is the signed tilt rate. Tilt away (>0) zooms
-            // in and holds at full; tilt toward (<0) zooms out and dismisses.
-            const PHOTO_ZOOM_MS = 1100;   // time to fully zoom at ×1-equivalent tilt
-            const z = Math.min(1, Math.max(0,
-              photoZoomRef.current + (speedRef.current * elapsed) / PHOTO_ZOOM_MS));
-            photoZoomRef.current = z;
-            setPhotoZoom(z);
-            if (z <= 0.001 && speedRef.current < 0) endPhotoShow();
-          } else {
-            // Timed: ~3 s at ×1 (in → hold → out), scaled down by playback speed.
-            showElapsedRef.current += elapsed;
-            const sp = Math.abs(buttonSpeedRef.current) || 1;
-            const IN = 650 / sp, HOLD = 1700 / sp, OUT = 650 / sp;
-            const t = showElapsedRef.current;
-            let z: number;
-            if (t < IN) z = t / IN;
-            else if (t < IN + HOLD) z = 1;
-            else if (t < IN + HOLD + OUT) z = 1 - (t - IN - HOLD) / OUT;
-            else { endPhotoShow(); z = 0; }
-            if (activePhotoRef.current) { photoZoomRef.current = z; setPhotoZoom(z); }
-          }
+          // A photo is on screen — advance its auto zoom (in → hold → out) instead
+          // of the playhead. The animation always completes on its own; `rate`
+          // scales the whole in/hold/out clock: while tilting, the tilt factor
+          // controls the in AND out speed (tilt away = snappier); otherwise the
+          // playback speed scales it so fast playback isn't held up.
+          const rate = tiltHandlerRef.current
+            ? Math.min(4, Math.max(0.25, speedRef.current))
+            : (Math.abs(buttonSpeedRef.current) || 1);
+          showElapsedRef.current += elapsed * rate;
+          const IN = 450, HOLD = 1500, OUT = 650;   // ~2.6 s in-hold-out at rate 1
+          const t = showElapsedRef.current;
+          let z: number;
+          if (t < IN) z = t / IN;
+          else if (t < IN + HOLD) z = 1;
+          else if (t < IN + HOLD + OUT) z = 1 - (t - IN - HOLD) / OUT;
+          else { endPhotoShow(); z = 0; }
+          if (activePhotoRef.current) { photoZoomRef.current = z; setPhotoZoom(z); }
         } else {
           const duration = durationFor(zoomRef.current, trailMetersRef.current);
           const from = progressRef.current;

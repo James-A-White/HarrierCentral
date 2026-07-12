@@ -1,3 +1,6 @@
+0.21.12
+    • Fix: PackTrack photo showcase now always auto zooms back out (tilt scales the in/out rate); quicker zoom-in
+
 0.21.11
     • New: opt-in 📷 photo showcase on the PackTrack map — playback pauses to zoom each Hash Flash photo out of its pin and back (timed ~3s or tilt-controlled)
 
